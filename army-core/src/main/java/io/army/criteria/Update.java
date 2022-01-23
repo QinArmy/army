@@ -7,7 +7,6 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -72,9 +71,9 @@ public interface Update extends Statement {
 
         SR set(FieldMeta<?, ?> field, @Nullable Object value);
 
-        SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
+        SR setParam(FieldMeta<?, ?> field, @Nullable Object value);
 
-        SR setValues(Map<FieldMeta<?, ?>, Expression<?>> fieldValues);
+        SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
 
         <F extends Number> SR setPlus(FieldMeta<?, F> field, F value);
 
@@ -98,11 +97,9 @@ public interface Update extends Statement {
 
         SR ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
 
-        SR ifSetValues(Function<C, Map<FieldMeta<?, ?>, Expression<?>>> function);
+        SR ifSet(FieldMeta<?, ?> field, @Nullable Object value);
 
-        SR ifSetValues(Supplier<Map<FieldMeta<?, ?>, Expression<?>>> supplier);
-
-        <F> SR ifSet(FieldMeta<?, F> field, @Nullable F value);
+        SR ifSetParam(FieldMeta<?, ?> field, @Nullable Object value);
 
         <F extends Number> SR ifSetPlus(FieldMeta<?, F> field, @Nullable F value);
 
@@ -113,6 +110,16 @@ public interface Update extends Statement {
         <F extends Number> SR ifSetDivide(FieldMeta<?, F> field, @Nullable F value);
 
         <F extends Number> SR ifSetMod(FieldMeta<?, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetPlusParam(FieldMeta<?, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetMinusParam(FieldMeta<?, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetMultiplyParam(FieldMeta<?, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetDivideParam(FieldMeta<?, F> field, @Nullable F value);
+
+        <F extends Number> SR ifSetModParam(FieldMeta<?, F> field, @Nullable F value);
 
 
     }

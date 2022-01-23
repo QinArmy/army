@@ -283,9 +283,13 @@ public abstract class _AbstractDialect implements _Dialect {
                     builder.append(Constant.SPACE_ONLY);
                 }
                 builder.append(Constant.SPACE)
-                        .append(dialect.quoteIfNeed(((TableMeta<?>) tablePart).tableName()));
+                        .append(dialect.quoteIfNeed(((TableMeta<?>) tablePart).tableName()))
+                        .append(Constant.SPACE_AS_SPACE)
+                        .append(dialect.quoteIfNeed(block.alias()));
             } else if (tablePart instanceof SubQuery) {
                 this.subQuery((SubQuery) tablePart, context);
+                builder.append(Constant.SPACE_AS_SPACE)
+                        .append(dialect.quoteIfNeed(block.alias()));
             } else {
                 this.handleDialectTablePart(tablePart, context);
             }
@@ -762,14 +766,23 @@ public abstract class _AbstractDialect implements _Dialect {
 
     }
 
-    private void selectListClause(final List<SelectPart> selectPartList, final _SqlContext context) {
+    private void selectListClause(final List<? extends SelectPart> selectPartList, final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder();
         final int size = selectPartList.size();
+        SelectPart selectPart;
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 builder.append(Constant.SPACE_COMMA);
             }
-            ((_SelfDescribed) selectPartList.get(i)).appendSql(context);
+            selectPart = selectPartList.get(i);
+            if (selectPart instanceof Selection) {
+                ((_Selection) selectPart).appendSelection(context);
+            } else if (selectPart instanceof SelectionGroup) {
+                ((_SelfDescribed) selectPart).appendSql(context);
+            } else {
+                throw _Exceptions.unknownSelectPart(selectPart);
+            }
+
         }
 
     }
@@ -960,7 +973,7 @@ public abstract class _AbstractDialect implements _Dialect {
         if (offset >= 0 && rowCount >= 0) {
             builder.append(Constant.SPACE_LIMIT_SPACE)
                     .append(offset)
-                    .append(Constant.SPACE)
+                    .append(Constant.SPACE_COMMA_SPACE)
                     .append(rowCount);
         } else if (rowCount >= 0) {
             builder.append(Constant.SPACE_LIMIT_SPACE)

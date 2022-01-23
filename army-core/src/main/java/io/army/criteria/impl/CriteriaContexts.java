@@ -27,16 +27,21 @@ abstract class CriteriaContexts {
         return new SimpleQueryContext(criteria);
     }
 
-    static CriteriaContext valueInsertContext(@Nullable Object criteria) {
-        return new ValueInsertContext(criteria);
+    static CriteriaContext insertContext(@Nullable Object criteria) {
+        return new InsertContext(criteria);
     }
 
+    @Deprecated
     static <C> CriteriaContext primaryContext(@Nullable C criteria) {
         throw new UnsupportedOperationException();
     }
 
     static <C> CriteriaContext multiDeleteContext(@Nullable C criteria) {
         throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext singleDmlContext(@Nullable Object criteria) {
+        return new SingleDmlContext(criteria);
     }
 
     static CriteriaContext unionContext(Query query) {
@@ -72,6 +77,10 @@ abstract class CriteriaContexts {
 
     private static CriteriaException valueInsertDontSupport() {
         return new CriteriaException("Value insert statement context don't support this operation.");
+    }
+
+    private static CriteriaException singleDmlDontSupport() {
+        return new CriteriaException("Single table syntax dml statement context don't support this operation.");
     }
 
 
@@ -295,16 +304,16 @@ abstract class CriteriaContexts {
     }
 
     /**
-     * @see #valueInsertContext(Object)
+     * @see #insertContext(Object)
      */
-    private static final class ValueInsertContext extends AbstractContext {
+    private static final class InsertContext extends AbstractContext {
 
-        private ValueInsertContext(@Nullable Object criteria) {
+        private InsertContext(@Nullable Object criteria) {
             super(criteria);
         }
 
         @Override
-        public void selectList(List<SelectPart> selectPartList) {
+        public void selectList(List<? extends SelectPart> selectPartList) {
             // here bug.
             throw new UnsupportedOperationException("Value insert statement not support.");
         }
@@ -329,7 +338,44 @@ abstract class CriteriaContexts {
             return Collections.emptyList();
         }
 
-    }// ValueInsertContext
+    }// InsertContext
+
+
+    /**
+     * @see #singleDmlContext(Object)
+     */
+    private static final class SingleDmlContext extends AbstractContext {
+
+        private SingleDmlContext(@Nullable Object criteria) {
+            super(criteria);
+        }
+
+        @Override
+        public void selectList(List<? extends SelectPart> selectPartList) {
+            throw singleDmlDontSupport();
+        }
+
+        @Override
+        public <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field) {
+            throw singleDmlDontSupport();
+        }
+
+        @Override
+        public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
+            throw singleDmlDontSupport();
+        }
+
+        @Override
+        public <E> Expression<E> ref(String selectionAlias) {
+            throw singleDmlDontSupport();
+        }
+
+        @Override
+        public List<_TableBlock> clear() {
+            return Collections.emptyList();
+        }
+
+    }//SingleDmlContext
 
 
     private static final class SimpleQueryContext extends JoinableContext {
@@ -343,9 +389,9 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void selectList(List<SelectPart> selectPartList) {
+        public void selectList(List<? extends SelectPart> selectPartList) {
             if (this.groupList != null || this.aliasToBlock.size() != 0) {
-                throw new IllegalStateException("error");
+                throw _Exceptions.castCriteriaApi();
             }
             List<DerivedGroup> selectionGroupList = null;
             for (SelectPart selectPart : selectPartList) {

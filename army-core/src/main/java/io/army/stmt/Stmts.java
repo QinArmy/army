@@ -37,9 +37,7 @@ public abstract class Stmts {
 
 
     public static SimpleStmt selectStmt(String sql, List<ParamValue> paramList, List<Selection> selectionList) {
-
-
-        return null;
+        return new SelectStmt(sql, paramList, selectionList);
     }
 
     public static SimpleStmt simple(String sql, List<ParamValue> paramList, Selection selection) {
@@ -207,6 +205,42 @@ public abstract class Stmts {
         }
 
     }//MinBatchDmlStmt
+
+    private static final class SelectStmt implements SimpleStmt {
+
+        private final String sql;
+
+        private final List<ParamValue> paramGroup;
+
+        private final List<Selection> selectionList;
+
+        private SelectStmt(String sql, List<ParamValue> paramGroup, List<Selection> selectionList) {
+            this.sql = sql;
+            this.paramGroup = CollectionUtils.unmodifiableList(paramGroup);
+            this.selectionList = CollectionUtils.unmodifiableList(selectionList);
+        }
+
+        @Override
+        public String sql() {
+            return this.sql;
+        }
+
+        @Override
+        public boolean hasOptimistic() {
+            return false;
+        }
+
+        @Override
+        public List<ParamValue> paramGroup() {
+            return this.paramGroup;
+        }
+
+        @Override
+        public List<Selection> selectionList() {
+            return this.selectionList;
+        }
+
+    }//SelectStmt
 
 
 }

@@ -30,7 +30,7 @@ final class UnaryPredicate extends OperationPredicate {
         }
         if (expression instanceof GenericField
                 && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) expression).fieldName())) {
-            throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) expression);
+            throw _Exceptions.visibleField((GenericField<?, ?>) expression);
         }
         switch (operator) {
             case IS_NULL:

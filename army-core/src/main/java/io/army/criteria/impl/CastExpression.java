@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.impl.inner._Expression;
-import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 
@@ -23,11 +22,7 @@ class CastExpression<E> extends OperationExpression<E> {
 
     @Override
     public final void appendSql(final _SqlContext context) {
-        final StringBuilder builder = context.sqlBuilder()
-                .append(" CAST(");
         this.expression.appendSql(context);
-        builder.append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
     }
 
 

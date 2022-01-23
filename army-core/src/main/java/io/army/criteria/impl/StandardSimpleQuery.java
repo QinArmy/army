@@ -83,6 +83,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     StandardSimpleQuery(@Nullable C criteria) {
         super(CriteriaContexts.queryContext(criteria));
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override

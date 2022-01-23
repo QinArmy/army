@@ -2,20 +2,21 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
-import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Selection;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.util._Assert;
-
-import java.util.Collection;
+import io.army.util._Exceptions;
 
 
 final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F>
-        implements QualifiedField<T, F> {
+        implements QualifiedField<T, F>, _Selection {
 
 
     private final String tableAlias;
@@ -48,11 +49,23 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F
 
     @Override
     public ParamMeta paramMeta() {
-        return this.field.paramMeta();
+        return this.field;
+    }
+
+    @Override
+    public void appendSelection(_SqlContext context) {
+        context.appendField(this.tableAlias, this.field);
+
+        context.sqlBuilder()
+                .append(Constant.SPACE_AS_SPACE)
+                .append(context.dialect().quoteIfNeed(this.field.fieldName()));
     }
 
     @Override
     public void appendSql(final _SqlContext context) {
+        if (_MetaBridge.VISIBLE.equals(this.field.fieldName())) {
+            throw _Exceptions.visibleField(this);
+        }
         context.appendField(this.tableAlias, this.field);
     }
 
@@ -100,27 +113,6 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F
     @Override
     public MappingType mappingType() {
         return this.field.mappingType();
-    }
-
-
-    @Override
-    public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return ((_Expression<?>) this.field).containsField(fieldMetas);
-    }
-
-    @Override
-    public boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return ((_Expression<?>) this.field).containsFieldOf(tableMeta);
-    }
-
-    @Override
-    public int containsFieldCount(TableMeta<?> tableMeta) {
-        return ((_Expression<?>) this.field).containsFieldCount(tableMeta);
-    }
-
-    @Override
-    public boolean containsSubQuery() {
-        return false;
     }
 
 

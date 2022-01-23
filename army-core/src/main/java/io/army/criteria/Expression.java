@@ -40,7 +40,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.equal({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.equal({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     IPredicate equalParam(Object parameter);
@@ -68,7 +68,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.equal({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.equal({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     @Nullable
@@ -109,7 +109,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.lessThan({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.lessThan({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     IPredicate lessThanParam(Object parameter);
@@ -149,7 +149,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.lessEqual({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.lessEqual({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     IPredicate lessEqualParam(Object parameter);
@@ -189,7 +189,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.greatThan({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.greatThan({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     IPredicate greatThanParam(Object parameter);
@@ -229,7 +229,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.greatEqual({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.greatEqual({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     IPredicate greatEqualParam(Object parameter);
@@ -269,7 +269,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.notEqual({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.notEqual({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     IPredicate notEqualParam(Object parameter);
@@ -328,7 +328,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Parameters will be wrapped with {@link SQLs#optimizingParams(Expression, Collection)}.
+     * Parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
      * </p>
      *
      * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
@@ -337,7 +337,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.in({@link SQLs#params(Expression, Collection)})
+     * Equivalence : this.in({@link SQLs#params(ParamMeta, Collection)})
      * </p>
      */
     <O> IPredicate inParam(Collection<O> parameters);
@@ -351,7 +351,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * If parameters non-null parameters will be wrapped with {@link SQLs#optimizingParams(Expression, Collection)}.
+     * If parameters non-null parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
      * </p>
      *
      * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
@@ -370,7 +370,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Parameters will be wrapped with {@link SQLs#optimizingParams(Expression, Collection)}.
+     * Parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
      * </p>
      *
      * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
@@ -379,7 +379,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.notIn({@link SQLs#params(Expression, Collection)})
+     * Equivalence : this.notIn({@link SQLs#params(ParamMeta, Collection)})
      * </p>
      */
     <O> IPredicate notInParam(Collection<O> parameters);
@@ -393,7 +393,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * If parameters non-null,then parameters will be wrapped with {@link SQLs#optimizingParams(Expression, Collection)}.
+     * If parameters non-null,then parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
      * </p>
      *
      * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
@@ -416,7 +416,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.mod({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.mod({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> modParam(Object parameter);
@@ -442,7 +442,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.multiply({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.multiply({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> multiplyParam(Object parameter);
@@ -468,7 +468,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.plus({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.plus({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> plusParam(Object parameter);
@@ -494,7 +494,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.minus({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.minus({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> minusParam(Object parameter);
@@ -520,7 +520,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.divide({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.divide({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> divideParam(Object parameter);
@@ -558,7 +558,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.bitwiseAnd({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.bitwiseAnd({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> bitwiseAndParam(Object parameter);
@@ -596,7 +596,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.bitwiseOr({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.bitwiseOr({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> bitwiseOrParam(Object parameter);
@@ -633,7 +633,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.xor({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.xor({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> xorParam(Object parameter);
@@ -670,7 +670,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.rightShift({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.rightShift({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> rightShiftParam(Number parameter);
@@ -708,7 +708,7 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     /**
      * <p>
-     * Equivalence : this.leftShift({@link SQLs#param(Expression, Object)})
+     * Equivalence : this.leftShift({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
     Expression<E> leftShiftParam(Number parameter);

@@ -4,7 +4,8 @@ import io.army.ArmyException;
 import io.army.annotation.Codec;
 import io.army.annotation.Column;
 import io.army.annotation.UpdateMode;
-import io.army.criteria.Selection;
+import io.army.criteria.impl.inner._Selection;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -12,9 +13,9 @@ import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Assert;
+import io.army.util._Exceptions;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +25,7 @@ import java.util.concurrent.ConcurrentMap;
  * @since 1.0
  */
 abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, F>
-        implements FieldMeta<T, F>, Selection {
+        implements FieldMeta<T, F>, _Selection {
 
     private static final String ID = _MetaBridge.ID;
 
@@ -341,30 +342,22 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
     }
 
     @Override
+    public final void appendSelection(final _SqlContext context) {
+        context.appendField(this);
+
+        context.sqlBuilder()
+                .append(Constant.SPACE_AS_SPACE)
+                .append(context.dialect().quoteIfNeed(this.fieldName));
+    }
+
+    @Override
     public final void appendSql(final _SqlContext context) {
+        if (this.fieldName.equals(_MetaBridge.VISIBLE)) {
+            throw _Exceptions.visibleField(this);
+        }
         context.appendField(this);
     }
 
-
-    @Override
-    public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return fieldMetas.contains(this);
-    }
-
-    @Override
-    public final boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return tableMeta == this.table;
-    }
-
-    @Override
-    public final int containsFieldCount(TableMeta<?> tableMeta) {
-        return tableMeta == this.table ? 1 : 0;
-    }
-
-    @Override
-    public final boolean containsSubQuery() {
-        return false;
-    }
 
     /*################################## blow private method ##################################*/
 

@@ -5,12 +5,10 @@ import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.tx.Isolation;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -222,6 +220,7 @@ public abstract class SQLs extends StandardFunctions {
         return resultExpression;
     }
 
+
     /**
      * <p>
      * Create strict param expression
@@ -237,17 +236,8 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict param expression
      * </p>
      */
-    public static <E> Expression<E> param(final MappingType type, final @Nullable E value) {
-        return ParamExpression.strict(type, value);
-    }
-
-    /**
-     * <p>
-     * Create strict param expression
-     * </p>
-     */
-    public static <E> Expression<E> param(final Expression<?> type, final @Nullable E value) {
-        return ParamExpression.strict(type.paramMeta(), value);
+    public static <E> Expression<E> param(final ParamMeta paramMeta, final @Nullable E value) {
+        return ParamExpression.strict(paramMeta, value);
     }
 
     /**
@@ -255,8 +245,26 @@ public abstract class SQLs extends StandardFunctions {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <E> Expression<Collection<E>> optimizingParams(Expression<?> type, Collection<E> value) {
-        return CollectionParamExpression.optimizing(type, value);
+    public static <E> Expression<Collection<E>> optimizingParams(ParamMeta paramMeta, Collection<E> value) {
+        return CollectionParamExpression.optimizing(paramMeta, value);
+    }
+
+    /**
+     * <p>
+     * Create optimizing collection param expression
+     * </p>
+     */
+    public static <E> Expression<Collection<E>> optimizingParams(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
+        return CollectionParamExpression.optimizing(paramMeta, supplier.get());
+    }
+
+    /**
+     * <p>
+     * Create optimizing collection param expression
+     * </p>
+     */
+    public static <C, E> Expression<Collection<E>> optimizingParams(ParamMeta paramMeta, Function<C, Collection<E>> function) {
+        return CollectionParamExpression.optimizing(paramMeta, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     /**
@@ -264,8 +272,8 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict collection param expression
      * </p>
      */
-    public static <E> Expression<Collection<E>> params(Expression<?> type, Collection<E> value) {
-        return CollectionParamExpression.strict(type, value);
+    public static <E> Expression<Collection<E>> params(ParamMeta paramMeta, Collection<E> value) {
+        return CollectionParamExpression.strict(paramMeta, value);
     }
 
     /**
@@ -273,8 +281,8 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict collection param expression
      * </p>
      */
-    public static <E> Expression<Collection<E>> params(Expression<?> type, Supplier<Collection<E>> supplier) {
-        return CollectionParamExpression.strict(type, supplier.get());
+    public static <E> Expression<Collection<E>> params(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
+        return CollectionParamExpression.strict(paramMeta, supplier.get());
     }
 
     /**
@@ -282,8 +290,8 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict collection param expression
      * </p>
      */
-    public static <C, E> Expression<Collection<E>> params(Expression<?> type, Function<C, Collection<E>> function) {
-        return CollectionParamExpression.strict(type, function.apply(CriteriaContextStack.getCriteria()));
+    public static <C, E> Expression<Collection<E>> params(ParamMeta paramMeta, Function<C, Collection<E>> function) {
+        return CollectionParamExpression.strict(paramMeta, function.apply(CriteriaContextStack.getCriteria()));
     }
 
 
@@ -379,7 +387,6 @@ public abstract class SQLs extends StandardFunctions {
         return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
     }
 
-
     public static <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
         return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
     }
@@ -453,16 +460,16 @@ public abstract class SQLs extends StandardFunctions {
         return SelectionGroups.singleGroup(tableAlias, fieldList);
     }
 
-
+    /**
+     * @return a group that no {@link ParentTableMeta#id()} column
+     */
     public static <T extends IDomain> SelectionGroup parentGroup(ParentTableMeta<T> parent, String alias) {
         return SelectionGroups.parentGroup(parent, alias);
     }
 
-    public static <T extends IDomain> List<SelectionGroup> childGroup(ChildTableMeta<T> childMeta, String parentAlias, String childAlias) {
-        final List<SelectionGroup> list = new ArrayList<>(2);
-        list.add(SelectionGroups.parentGroup(childMeta.parentMeta(), parentAlias));
-        list.add(SelectionGroups.singleGroup(childMeta, childAlias));
-        return list;
+    public static <T extends IDomain> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias
+            , String parentAlias) {
+        return SelectionGroups.childGroup(child, childAlias, parentAlias);
     }
 
     public static SelectionGroup derivedGroup(String subQueryAlias) {

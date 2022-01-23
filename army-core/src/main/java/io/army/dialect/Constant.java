@@ -68,6 +68,8 @@ public interface Constant {
 
     String SPACE_COMMA = " ,";
 
+    String SPACE_COMMA_SPACE = " , ";
+
     String SPACE_LEFT_BRACKET = " (";
 
     String SPACE_RIGHT_BRACKET = " )";

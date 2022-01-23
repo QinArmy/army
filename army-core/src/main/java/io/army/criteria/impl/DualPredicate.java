@@ -1,9 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.GenericField;
 import io.army.dialect._SqlContext;
-import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
 import java.util.function.Function;
@@ -22,13 +20,13 @@ final class DualPredicate extends OperationPredicate {
     }
 
     static DualPredicate create(final ArmyExpression<?> left, final DualOperator operator, final Expression<?> right) {
-        if (left instanceof GenericField
-                && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) left).fieldName()))) {
-            throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) left);
-        } else if (right instanceof GenericField
-                && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) right).fieldName()))) {
-            throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) right);
-        }
+//        if (left instanceof GenericField
+//                && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) left).fieldName()))) {
+//            throw _Exceptions.visibleField((GenericField<?, ?>) left);
+//        } else if (right instanceof GenericField
+//                && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) right).fieldName()))) {
+//            throw _Exceptions.visibleField((GenericField<?, ?>) right);
+//        }
 
         final DualPredicate predicate;
         switch (operator) {

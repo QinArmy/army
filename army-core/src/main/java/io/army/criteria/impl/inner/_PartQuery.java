@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface _PartQuery extends _Statement {
 
-    List<SelectPart> selectPartList();
+    List<? extends SelectPart> selectPartList();
 
     List<SortPart> orderByList();
 

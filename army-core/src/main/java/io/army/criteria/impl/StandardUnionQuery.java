@@ -71,7 +71,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    public final List<SelectPart> selectPartList() {
+    public final List<? extends SelectPart> selectPartList() {
         return ((_PartQuery) this.left).selectPartList();
     }
 

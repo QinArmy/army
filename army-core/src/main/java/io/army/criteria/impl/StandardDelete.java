@@ -28,6 +28,7 @@ import java.util.function.Supplier;
  *
  * @param <C> criteria java type used to crate dynamic delete and sub query
  */
+@SuppressWarnings("unchecked")
 abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
         implements Delete.StandardDeleteClause<DR> {
 
@@ -45,7 +46,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     private String tableAlias;
 
     private StandardDelete(@Nullable C criteria) {
-        super(CriteriaContexts.primaryContext(criteria));
+        super(CriteriaContexts.singleDmlContext(criteria));
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 

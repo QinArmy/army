@@ -26,9 +26,9 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     private List<SortPart> orderByList;
 
-    private long offset;
+    private long offset = -1L;
 
-    private long rowCount;
+    private long rowCount = -1L;
 
     private boolean prepared;
 

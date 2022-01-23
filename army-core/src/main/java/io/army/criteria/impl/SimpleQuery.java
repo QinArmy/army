@@ -11,7 +11,6 @@ import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -30,7 +29,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     private List<SQLModifier> modifierList;
 
-    private List<SelectPart> selectPartList;
+    private List<? extends SelectPart> selectPartList;
 
     private List<_TableBlock> tableBlockList;
 
@@ -51,26 +50,15 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
 
     @Override
-    public final <S extends SelectPart> SR select(Function<C, List<Hint>> hints, List<SQLModifier> modifiers
-            , Function<C, List<S>> function) {
-        return this.select(hints.apply(this.criteria), modifiers, function.apply(this.criteria));
-    }
-
-    @Override
     public final <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function) {
         return this.select(hints, modifiers, function.apply(this.criteria));
     }
 
     @Override
     public final <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList) {
-        if (hints.size() > 0) {
-            this.hintList = new ArrayList<>(hints);
-        }
-        if (modifiers.size() > 0) {
-            this.modifierList = new ArrayList<>(modifiers);
-        }
-        this.selectPartList = new ArrayList<>(selectPartList);
-        return (SR) this;
+        this.hintList = CollectionUtils.asUnmodifiableList(hints);
+        this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+        return this.select(selectPartList);
     }
 
     @Override
@@ -99,42 +87,61 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
+    public final <S extends SelectPart> SR select(Consumer<List<S>> consumer) {
+        final List<S> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.select(list);
+    }
+
+    @Override
     public final SR select(SQLModifier sqlModifier, SelectPart selectPart) {
         this.modifierList = Collections.singletonList(sqlModifier);
-        this.selectPartList = Collections.singletonList(selectPart);
-        return (SR) this;
+        return this.select(selectPart);
     }
 
     @Override
     public final SR select(SelectPart selectPart) {
-        this.selectPartList = Collections.singletonList(selectPart);
+        final List<? extends SelectPart> selectPartList;
+        selectPartList = Collections.singletonList(selectPart);
+
+        this.criteriaContext.selectList(selectPartList); // notify context
+
+        this.selectPartList = selectPartList;
         return (SR) this;
     }
 
 
     @Override
     public final SR select(SelectPart selectPart1, SelectPart selectPart2) {
-        this.selectPartList = Arrays.asList(selectPart1, selectPart2);
-        return (SR) this;
-    }
+        final List<? extends SelectPart> selectPartList;
+        selectPartList = ArrayUtils.asUnmodifiableList(selectPart1, selectPart2);
 
+        this.criteriaContext.selectList(selectPartList); // notify context
 
-    @Override
-    public final SR select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3) {
-        this.selectPartList = Arrays.asList(selectPart1, selectPart2, selectPart3);
+        this.selectPartList = selectPartList;
         return (SR) this;
     }
 
     @Override
     public final <S extends SelectPart> SR select(List<SQLModifier> modifiers, List<S> selectPartList) {
-        this.modifierList = new ArrayList<>(modifiers);
-        this.selectPartList = new ArrayList<>(selectPartList);
-        return (SR) this;
+        return this.select(Collections.emptyList(), modifiers, selectPartList);
+    }
+
+    @Override
+    public final <S extends SelectPart> SR select(SQLModifier modifier, Consumer<List<S>> consumer) {
+        final List<S> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.select(modifier, list);
     }
 
     @Override
     public final <S extends SelectPart> SR select(List<S> selectPartList) {
-        this.selectPartList = new ArrayList<>(selectPartList);
+        final List<S> selectParts;
+        selectParts = CollectionUtils.asUnmodifiableList(selectPartList);
+
+        this.criteriaContext.selectList(selectParts);// notify context
+
+        this.selectPartList = selectParts;
         return (SR) this;
     }
 
@@ -613,7 +620,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final List<SelectPart> selectPartList() {
+    public final List<? extends SelectPart> selectPartList() {
         prepared();
         return this.selectPartList;
     }
@@ -663,7 +670,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
             this.modifierList = Collections.emptyList();
         }
         // selection list
-        final List<SelectPart> selectPartList = this.selectPartList;
+        final List<? extends SelectPart> selectPartList = this.selectPartList;
         if (CollectionUtils.isEmpty(selectPartList)) {
             throw _Exceptions.selectListIsEmpty();
         }

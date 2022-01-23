@@ -11,7 +11,7 @@ import java.util.List;
 
 interface CriteriaContext {
 
-    void selectList(List<SelectPart> selectPartList);
+    void selectList(List<? extends SelectPart> selectPartList);
 
     <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field);
 

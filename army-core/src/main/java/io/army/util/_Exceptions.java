@@ -134,8 +134,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is managed by Army.", field));
     }
 
-    public static CriteriaException visibleFieldNoPredicate(GenericField<?, ?> field) {
-        return new CriteriaException(String.format("%s couldn't present in where clause.", field));
+    public static CriteriaException visibleField(GenericField<?, ?> field) {
+        return new CriteriaException(String.format("%s couldn't present in non-selection expression.", field));
     }
 
     public static CriteriaException insertExpDontSupportField(FieldMeta<?, ?> field) {
@@ -284,8 +284,13 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("You couldn't cast criteria api instance");
     }
 
-    public static CriteriaException unknownSelectPart(SelectPart selectPart) {
-        String m = String.format("unknown %s type[%s]", SelectPart.class.getName(), selectPart.getClass().getName());
+    public static CriteriaException unknownSelectPart(@Nullable SelectPart selectPart) {
+        final String m;
+        if (selectPart == null) {
+            m = String.format("unknown %s type[null]", SelectPart.class.getName());
+        } else {
+            m = String.format("unknown %s type[%s]", SelectPart.class.getName(), selectPart.getClass().getName());
+        }
         return new CriteriaException(m);
     }
 

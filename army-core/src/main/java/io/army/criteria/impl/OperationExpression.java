@@ -535,12 +535,12 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
 
     @Override
     public final <O> IPredicate in(Collection<O> parameters) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.optimizingParams(this, parameters));
+        return DualPredicate.create(this, DualOperator.IN, SQLs.optimizingParams(this.paramMeta(), parameters));
     }
 
     @Override
     public final <O> IPredicate inParam(Collection<O> parameters) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.params(this, parameters));
+        return DualPredicate.create(this, DualOperator.IN, SQLs.params(this.paramMeta(), parameters));
     }
 
     @Override
@@ -575,12 +575,12 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
 
     @Override
     public final <O> IPredicate notIn(Collection<O> parameters) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.optimizingParams(this, parameters));
+        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.optimizingParams(this.paramMeta(), parameters));
     }
 
     @Override
     public final <O> IPredicate notInParam(Collection<O> parameters) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.params(this, parameters));
+        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.params(this.paramMeta(), parameters));
     }
 
     @Override

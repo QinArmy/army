@@ -1,12 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Delete;
-import io.army.criteria.Insert;
-import io.army.criteria.Select;
-import io.army.criteria.Update;
+import io.army.criteria.*;
 import io.army.dialect.Dialect;
 import io.army.example.domain.*;
 import io.army.example.struct.IdentityType;
+import io.army.example.struct.UserType;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import org.slf4j.Logger;
@@ -61,7 +59,7 @@ public class StandardCriteriaUnitTests {
                 .update(ChinaRegion_.T, "c")
                 .set(ChinaRegion_.name, "武侠江湖")
                 .setPlus(ChinaRegion_.regionGdp, addGdp)
-                .where(ChinaRegion_.id.equal(1))
+                .where(ChinaRegion_.id.equal("1"))
                 .and(ChinaRegion_.name.equal("江湖"))
                 .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
                 .asUpdate();
@@ -201,13 +199,22 @@ public class StandardCriteriaUnitTests {
     @Test
     public void simpleSelect() {
         final Select select;
+
         select = SQLs.query()
-                .select(User_.nickName)
-                .from(User_.T, "u")
+                .select(SQLs.childGroup(Person_.T, "p", "u"))
+                .from(Person_.T, "p")
+                .join(User_.T, "u").on(Person_.id.equal(User_.id))
+                .where(Person_.id.equal("1"))
+                .and(User_.nickName.equal("脉兽秀秀"))
+                .groupBy(User_.userType)
+                .having(User_.userType.equal(UserType.PERSON))
+                .orderBy(Person_.id)
+                .limit(0, 10)
+                .lock(LockMode.WRITE)
                 .asQuery();
 
         for (Dialect dialect : Dialect.values()) {
-            LOG.debug("simpleSelect:\nselect sql:\n{}", select.mockAsString(dialect));
+            LOG.debug("simpleSelect:\n{}", select.mockAsString(dialect));
         }
 
     }

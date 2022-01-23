@@ -14,7 +14,6 @@ import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -43,7 +42,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     private boolean prepared;
 
     JoinableUpdate(CriteriaContext criteriaContext) {
-        super(criteriaContext.criteria());
+        super(criteriaContext);
         this.criteriaContext = criteriaContext;
 
     }
@@ -63,23 +62,15 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         return (SR) this;
     }
 
-    @Override
-    public final SR setValues(Map<FieldMeta<?, ?>, Expression<?>> fieldValues) {
-        if (fieldValues.size() == 0) {
-            throw new CriteriaException("fieldList must not empty.");
-        }
-        for (Map.Entry<FieldMeta<?, ?>, Expression<?>> e : fieldValues.entrySet()) {
-            this.set(e.getKey(), e.getValue());
-        }
-        return (SR) this;
-    }
 
     @Override
     public final SR set(FieldMeta<?, ?> field, @Nullable Object value) {
-        if (value != null) {
-            this.set(field, SQLs.paramWithExp(field, value));
-        }
-        return (SR) this;
+        return this.set(field, SQLs.paramWithExp(field, value));
+    }
+
+    @Override
+    public final SR setParam(FieldMeta<?, ?> field, @Nullable Object value) {
+        return this.set(field, SQLs.strictParamWithExp(field, value));
     }
 
     @Override
@@ -204,26 +195,6 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetValues(Function<C, Map<FieldMeta<?, ?>, Expression<?>>> function) {
-        final Map<FieldMeta<?, ?>, Expression<?>> map;
-        map = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(map)) {
-            this.setValues(map);
-        }
-        return (SR) this;
-    }
-
-    @Override
-    public final SR ifSetValues(Supplier<Map<FieldMeta<?, ?>, Expression<?>>> supplier) {
-        final Map<FieldMeta<?, ?>, Expression<?>> map;
-        map = supplier.get();
-        if (!CollectionUtils.isEmpty(map)) {
-            this.setValues(map);
-        }
-        return (SR) this;
-    }
-
-    @Override
     public final SR ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field) {
         if (predicate.test(this.criteria)) {
             this.set(field, SQLs.nullWord());
@@ -233,9 +204,17 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
 
     @Override
-    public final <F> SR ifSet(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSet(FieldMeta<?, ?> field, @Nullable Object value) {
         if (value != null) {
             this.set(field, SQLs.paramWithExp(field, value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetParam(FieldMeta<?, ?> field, @Nullable Object value) {
+        if (value != null) {
+            this.set(field, SQLs.strictParamWithExp(field, value));
         }
         return (SR) this;
     }
@@ -296,6 +275,46 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     public final <F extends Number> SR ifSetMod(FieldMeta<?, F> field, @Nullable F value) {
         if (value != null) {
             this.set(field, field.mod(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <F extends Number> SR ifSetPlusParam(FieldMeta<?, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.plusParam(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <F extends Number> SR ifSetMinusParam(FieldMeta<?, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.minusParam(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <F extends Number> SR ifSetMultiplyParam(FieldMeta<?, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.multiplyParam(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <F extends Number> SR ifSetDivideParam(FieldMeta<?, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.divideParam(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <F extends Number> SR ifSetModParam(FieldMeta<?, F> field, @Nullable F value) {
+        if (value != null) {
+            this.set(field, field.modParam(value));
         }
         return (SR) this;
     }

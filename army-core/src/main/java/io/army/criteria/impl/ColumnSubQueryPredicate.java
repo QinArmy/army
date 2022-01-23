@@ -30,7 +30,7 @@ class ColumnSubQueryPredicate extends OperationPredicate {
         if (operator == DualOperator.EQ) {
             if (operand instanceof GenericField
                     && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) operand).fieldName())) {
-                throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) operand);
+                throw _Exceptions.visibleField((GenericField<?, ?>) operand);
             }
         }
         switch (subQueryOperator) {
@@ -54,7 +54,7 @@ class ColumnSubQueryPredicate extends OperationPredicate {
     static ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator, ColumnSubQuery subQuery) {
         if (operand instanceof GenericField
                 && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) operand).fieldName())) {
-            throw _Exceptions.visibleFieldNoPredicate((GenericField<?, ?>) operand);
+            throw _Exceptions.visibleField((GenericField<?, ?>) operand);
         }
         switch (operator) {
             case IN:

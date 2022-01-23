@@ -47,7 +47,7 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
 
 
     private StandardUpdate(@Nullable C criteria) {
-        super(CriteriaContexts.primaryContext(criteria));
+        super(CriteriaContexts.singleDmlContext(criteria));
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 

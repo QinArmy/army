@@ -1,22 +1,19 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._SelectionGroup;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.PrimaryFieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.*;
 
-abstract class SelectionGroups implements _SelectionGroup {
+abstract class SelectionGroups {
 
 
     static <T extends IDomain> SelectionGroup singleGroup(
@@ -32,6 +29,10 @@ abstract class SelectionGroups implements _SelectionGroup {
         return new TableFieldGroup<>(tableAlias, table);
     }
 
+    static <T extends IDomain> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias, String parentAlias) {
+        return new ChildTableGroup<>(child, childAlias, child.parentMeta(), parentAlias);
+    }
+
 
     static SelectionGroup buildDerivedGroup(String subQueryAlias) {
         return new SubQuerySelectionGroupImpl(subQueryAlias);
@@ -41,34 +42,11 @@ abstract class SelectionGroups implements _SelectionGroup {
         return new SubQueryListSelectionGroup(subQueryAlias, new ArrayList<>(derivedFieldNameList));
     }
 
-    private SelectionGroups() {
-    }
-
-    @Override
-    public void appendSql(final _SqlContext context) {
-        StringBuilder builder = context.sqlBuilder().append(" ");
-        final _Dialect dialect = context.dialect();
-        final String safeTableAlias = dialect.quoteIfNeed(tableAlias());
-        int index = 0;
-        for (Selection selection : selectionList()) {
-            if (index > 0) {
-                builder.append(",");
-            }
-            String safeAlias = dialect.quoteIfNeed(selection.alias());
-            builder.append(safeTableAlias)
-                    .append(".")
-                    .append(safeAlias)
-                    .append(" AS ")
-                    .append(safeAlias);
-            index++;
-        }
-    }
-
 
     /*################################## blow static inner class  ##################################*/
 
 
-    private static final class TableFieldGroup<T extends IDomain> implements _SelectionGroup {
+    private static final class TableFieldGroup<T extends IDomain> implements SelectionGroup, _SelfDescribed {
 
         private final String tableAlias;
 
@@ -99,11 +77,6 @@ abstract class SelectionGroups implements _SelectionGroup {
 
 
         @Override
-        public String tableAlias() {
-            return this.tableAlias;
-        }
-
-        @Override
         public List<? extends Selection> selectionList() {
             return this.fieldList;
         }
@@ -113,16 +86,19 @@ abstract class SelectionGroups implements _SelectionGroup {
             final StringBuilder builder = context.sqlBuilder();
             final _Dialect dialect = context.dialect();
             final String tableAlias = this.tableAlias;
-            int index = 0;
-            for (FieldMeta<T, ?> field : this.fieldList) {
-                if (index > 0) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.COMMA);
+
+            final List<FieldMeta<T, ?>> fieldList = this.fieldList;
+            final int size = fieldList.size();
+            FieldMeta<T, ?> field;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append(Constant.SPACE_COMMA);
                 }
+                field = fieldList.get(i);
                 context.appendField(tableAlias, field);
-                builder.append(" AS ")
+
+                builder.append(Constant.SPACE_AS_SPACE)
                         .append(dialect.quoteIfNeed(field.fieldName()));
-                index++;
             }
 
         }
@@ -132,26 +108,128 @@ abstract class SelectionGroups implements _SelectionGroup {
             final StringBuilder builder = new StringBuilder()
                     .append(Constant.SPACE);
             int index = 0;
-            for (FieldMeta<T, ?> field : fieldList) {
+            for (FieldMeta<T, ?> field : this.fieldList) {
                 if (index > 0) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.COMMA);
+                    builder.append(Constant.SPACE_COMMA);
                 }
                 builder.append(Constant.SPACE)
                         .append(this.tableAlias)
                         .append(Constant.POINT)
                         .append(field.columnName())
-                        .append(" AS ")
+                        .append(Constant.SPACE_AS_SPACE)
                         .append(field.fieldName());
                 index++;
             }
-
             return builder.toString();
         }
 
     }//TableFieldGroup
 
-    private static class SubQuerySelectionGroupImpl implements DerivedGroup, _SelectionGroup {
+
+    private static final class ChildTableGroup<P extends IDomain, T extends IDomain>
+            implements SelectionGroup, _SelfDescribed {
+
+        private final String childAlias;
+
+        private final String parentAlias;
+
+        private final List<FieldMeta<?, ?>> fieldList;
+
+        private final int parentSize;
+
+        private ChildTableGroup(ChildTableMeta<T> child, String childAlias
+                , ParentTableMeta<P> parent, String parentAlias) {
+            this.parentAlias = parentAlias;
+            this.childAlias = childAlias;
+
+            final Collection<FieldMeta<P, ?>> parentFields = parent.fields();
+            final Collection<FieldMeta<T, ?>> childFields = child.fields();
+            this.parentSize = parentFields.size() - 1;
+
+            final List<FieldMeta<?, ?>> fieldList = new ArrayList<>(this.parentSize + childFields.size());
+            for (FieldMeta<P, ?> field : parentFields) {
+                if (field instanceof PrimaryFieldMeta) {
+                    continue;
+                }
+                fieldList.add(field);
+            }
+            fieldList.addAll(childFields);
+            this.fieldList = Collections.unmodifiableList(fieldList);
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() {
+            return this.fieldList;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+
+            final _Dialect dialect = context.dialect();
+
+            final StringBuilder builder = context.sqlBuilder()
+                    .append(Constant.SPACE);
+
+            final List<FieldMeta<?, ?>> fieldList = this.fieldList;
+            final int parentSize = this.parentSize;
+            final String parentAlias = this.parentAlias;
+            final String childAlias = this.childAlias;
+
+
+            final int size = fieldList.size();
+            FieldMeta<?, ?> field;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append(Constant.SPACE_COMMA);
+                }
+                field = fieldList.get(i);
+                if (i < parentSize) {
+                    context.appendField(parentAlias, field);
+                } else {
+                    context.appendField(childAlias, field);
+                }
+                builder.append(Constant.SPACE_AS_SPACE)
+                        .append(dialect.quoteIfNeed(field.fieldName()));
+
+            }
+
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder()
+                    .append(Constant.SPACE);
+
+            final List<FieldMeta<?, ?>> fieldList = this.fieldList;
+            final int parentSize = this.parentSize;
+            final String parentAlias = this.parentAlias;
+            final String childAlias = this.childAlias;
+
+            final int size = fieldList.size();
+            FieldMeta<?, ?> field;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append(Constant.SPACE_COMMA);
+                }
+                field = fieldList.get(i);
+                if (i < parentSize) {
+                    builder.append(parentAlias);
+                } else {
+                    builder.append(childAlias);
+                }
+                builder.append(Constant.POINT)
+                        .append(field.columnName())
+                        .append(Constant.SPACE_AS_SPACE)
+                        .append(field.fieldName());
+
+            }
+            return builder.toString();
+        }
+
+
+    }//ChildTableGroup
+
+    private static class SubQuerySelectionGroupImpl implements DerivedGroup, _SelfDescribed {
 
         final String subQueryAlias;
 
@@ -159,11 +237,6 @@ abstract class SelectionGroups implements _SelectionGroup {
 
         private SubQuerySelectionGroupImpl(String subQueryAlias) {
             this.subQueryAlias = subQueryAlias;
-        }
-
-        @Override
-        public final String tableAlias() {
-            return this.subQueryAlias;
         }
 
         @Override
@@ -189,6 +262,11 @@ abstract class SelectionGroups implements _SelectionGroup {
                 }
             }
             return Collections.unmodifiableList(selectionList);
+        }
+
+        @Override
+        public String tableAlias() {
+            return this.subQueryAlias;
         }
 
         @Override

@@ -14,12 +14,17 @@ public abstract class CollectionUtils extends io.qinarmy.util.CollectionUtils {
                 list = Collections.emptyList();
                 break;
             case 1: {
-                List<T> temp = null;
-                for (T v : collection) {
-                    temp = Collections.singletonList(v);
-                    break;
+                if (collection instanceof List) {
+                    list = Collections.singletonList(((List<T>) collection).get(0));
+                } else {
+                    List<T> temp = null;
+                    for (T v : collection) {
+                        temp = Collections.singletonList(v);
+                        break;
+                    }
+                    list = temp;
                 }
-                list = temp;
+
             }
             break;
             default: {

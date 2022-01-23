@@ -20,8 +20,6 @@ public abstract class CriteriaUtils {
     }
 
 
-
-
     public static <T extends IDomain> Select createSelectIdByUnique(TableMeta<T> tableMeta, List<String> propNameList
             , List<Object> valueList) {
         Select select;
@@ -54,14 +52,14 @@ public abstract class CriteriaUtils {
             final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
             select = SQLs.query()
-                    .select(SQLs.childGroup(childMeta, "p", "c"))
+                    .select(SQLs.childGroup(childMeta, "c", "p"))
                     .from(childMeta, "c") // small table first
                     .join(parentMeta, "p").on(childMeta.id().equal(parentMeta.id()))
                     .where(childMeta.id().equal(id))
                     .asQuery();
         } else {
             select = SQLs.query()
-                    .select(SQLs.group((SingleTableMeta<? extends IDomain>) tableMeta, "t"))
+                    .select(SQLs.group(tableMeta, "t"))
                     .from(tableMeta, "t")
                     .where(tableMeta.id().equal(id))
                     .asQuery();
@@ -77,7 +75,7 @@ public abstract class CriteriaUtils {
             final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
             select = SQLs.query()
-                    .select(SQLs.childGroup(childMeta, "p", "c"))
+                    .select(SQLs.childGroup(childMeta, "c", "p"))
                     .from(childMeta, "c")
                     .join(parentMeta, "p").on(parentMeta.id().equal(childMeta.id()))
                     .where(createPredicateList(tableMeta, propNameList, valueList))

@@ -42,8 +42,6 @@ public interface Query extends Statement {
 
     interface SelectClause<C, SR> {
 
-        <S extends SelectPart> SR select(Function<C, List<Hint>> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
-
         <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
 
         <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList);
@@ -56,19 +54,21 @@ public interface Query extends Statement {
 
         <S extends SelectPart> SR select(Supplier<List<S>> supplier);
 
+        <S extends SelectPart> SR select(Consumer<List<S>> consumer);
+
         SR select(SQLModifier modifier, SelectPart selectPart);
 
         SR select(SelectPart selectPart);
 
         SR select(SelectPart selectPart1, SelectPart selectPart2);
 
-        SR select(SelectPart selectPart1, SelectPart selectPart2, SelectPart selectPart3);
-
         <S extends SelectPart> SR select(List<SQLModifier> modifiers, List<S> selectPartList);
 
         <S extends SelectPart> SR select(List<S> selectPartList);
 
         <S extends SelectPart> SR select(SQLModifier modifier, List<S> selectPartList);
+
+        <S extends SelectPart> SR select(SQLModifier modifier, Consumer<List<S>> consumer);
 
     }
 
