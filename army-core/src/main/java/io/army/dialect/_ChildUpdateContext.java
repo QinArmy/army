@@ -1,7 +1,7 @@
 package io.army.dialect;
 
-import io.army.criteria.SetTargetPart;
-import io.army.criteria.SetValueItem;
+import io.army.criteria.SetLeftItem;
+import io.army.criteria.SetRightItem;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.meta.ChildTableMeta;
 
@@ -13,9 +13,9 @@ public interface _ChildUpdateContext extends _UpdateContext {
 
     String childTableAlias();
 
-    List<? extends SetTargetPart> childTargetParts();
+    List<? extends SetLeftItem> childTargetParts();
 
-    List<? extends SetValueItem> childValueParts();
+    List<? extends SetRightItem> childValueParts();
 
     List<_Predicate> childPredicates();
 

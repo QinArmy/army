@@ -9,7 +9,7 @@ public interface _PartQuery extends _Statement {
 
     List<? extends SelectItem> selectPartList();
 
-    List<SortItem> orderByList();
+    List<? extends SortItem> orderByList();
 
     long offset();
 

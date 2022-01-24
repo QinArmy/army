@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  *
  * @param <E> java type of expression
  */
-abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
+abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem {
 
 
     NoNOperationExpression() {

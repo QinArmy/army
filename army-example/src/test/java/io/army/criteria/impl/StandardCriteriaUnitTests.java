@@ -221,6 +221,60 @@ public class StandardCriteriaUnitTests {
 
     }
 
+    @Test
+    public void unionSelect() {
+        final Select select;
+
+        select = SQLs.query()
+                .select(User_.id)
+                .from(User_.T, "p")
+                .where(User_.id.equal("1"))
+                .and(User_.nickName.equal("脉兽秀秀"))
+                //.and(User_.visible.equal(false))
+                .ifGroupBy(Collections::emptyList)
+                .having(User_.userType.equal(UserType.PERSON))
+                .orderBy(User_.id.desc())
+                .limit(0, 10)
+                .lock(LockMode.WRITE)
+                .bracket()
+
+                .union()
+
+                .select(User_.id)
+                .from(User_.T, "p")
+                .where(User_.id.equal("2"))
+                .and(User_.nickName.equal("远浪舰长"))
+                //.and(User_.visible.equal(false))
+                .ifGroupBy(Collections::emptyList)
+                .having(User_.userType.equal(UserType.PERSON))
+                .orderBy(User_.id.desc())
+                .limit(0, 10)
+                .lock(LockMode.WRITE)
+                .bracket()
+
+                .unionAll()
+
+                .select(User_.id)
+                .from(User_.T, "p")
+                .where(User_.id.equal("3"))
+                .and(User_.nickName.equal("蛮大人"))
+                //.and(User_.visible.equal(false))
+                .ifGroupBy(Collections::emptyList)
+                .having(User_.userType.equal(UserType.PERSON))
+                .orderBy(User_.id.desc())
+                .limit(0, 10)
+                .lock(LockMode.WRITE)
+                .bracket()
+                .orderBy(SQLs.ref(User_.ID))
+                .limit(0, 5)
+                .bracket()
+                .asQuery();
+
+        for (Dialect dialect : Dialect.values()) {
+            LOG.debug("union select:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        }
+    }
+
 
     private List<ChinaRegion> createRegionList() {
         List<ChinaRegion> domainList = new ArrayList<>();

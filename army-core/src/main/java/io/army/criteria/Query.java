@@ -132,7 +132,7 @@ public interface Query extends Statement {
 
     interface UnionClause<C, UR, SP, Q extends Query> {
 
-        UR bracketsQuery();
+        UR bracket();
 
         UR union(Function<C, Q> function);
 

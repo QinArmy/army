@@ -65,7 +65,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
     final Q left;
 
     private MySQL80UnionQuery(final Q left) {
-        super(CriteriaContexts.getUnionContext(left));
+        super(CriteriaContexts.unionContext(left));
         this.left = left;
     }
 
@@ -75,7 +75,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    public final UnionOrderBy80Spec<C, Q> bracketsQuery() {
+    public final UnionOrderBy80Spec<C, Q> bracket() {
         return MySQL80UnionQuery.bracketQuery(this.left);
     }
 

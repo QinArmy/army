@@ -128,22 +128,72 @@ public abstract class _AbstractDialect implements _Dialect {
 
     @Override
     public final SimpleStmt select(final Select select, final Visible visible) {
+        //1. assert prepared
         select.prepared();
-        final SimpleStmt stmt;
+
+        //2. assert select implementation class.
         if (select instanceof StandardQuery) {
             _SQLCounselor.assertStandardSelect(select);
-            stmt = this.handleStandardSelect(select, visible);
         } else {
             this.assertDialectSelect(select);
-            stmt = this.handleDialectSelect(select, visible);
         }
-        return stmt;
+
+        //3. parse select
+        final _SelectContext context;
+        if (select instanceof _UnionQuery) {
+            context = UnionSelectContext.create(select, this, visible);
+            this.standardUnionQuery((_UnionQuery) select, context);
+        } else {
+            context = SimpleSelectContext.create(select, this, visible);
+            if (select instanceof StandardQuery) {
+                this.standardSimpleQuery((_StandardQuery) select, context);
+            } else {
+                this.handleDialectQuery((_Query) select, context);
+            }
+        }
+        return context.build();
     }
 
     @Override
     public final void select(final Select select, final _SqlContext original) {
+        if (!(original instanceof _SelectContext)) {
+            throw new IllegalArgumentException("not select context.");
+        }
+        //1. assert prepared
+        select.prepared();
+
+        //2. assert select implementation class.
+        if (select instanceof StandardQuery) {
+            _SQLCounselor.assertStandardSelect(select);
+        } else {
+            this.assertDialectSelect(select);
+        }
+
+        //3. parse select
+        if (select instanceof _UnionQuery) {
+            if (original instanceof _UnionQueryContext) {
+                this.standardUnionQuery((_UnionQuery) select, original);
+            } else {
+                final UnionSelectContext context;
+                context = UnionSelectContext.create(select, (_SelectContext) original);
+                this.standardUnionQuery((_UnionQuery) select, context);
+            }
+        } else {
+            final StringBuilder builder = original.sqlBuilder();
+            if (builder.length() > 0) {
+                builder.append(Constant.SPACE); // append space before select key word
+            }
+            final SimpleSelectContext context;
+            context = SimpleSelectContext.create(select, (_SelectContext) original);//create new simple select context
+            if (select instanceof StandardQuery) {
+                this.standardSimpleQuery((_StandardQuery) select, context);
+            } else {
+                this.handleDialectQuery((_Query) select, context);
+            }
+        }
 
     }
+
 
     @Override
     public final void subQuery(SubQuery subQuery, _SqlContext original) {
@@ -232,7 +282,7 @@ public abstract class _AbstractDialect implements _Dialect {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt handleDialectSelect(Select select, Visible visible) {
+    protected SimpleStmt handleDialectQuery(_Query query, _SelectContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -255,6 +305,20 @@ public abstract class _AbstractDialect implements _Dialect {
 
     protected void handleDialectTablePart(TableItem tableItem, _SqlContext context) {
 
+    }
+
+    /**
+     * @see #select(Select, _SqlContext)
+     */
+    protected final void standardUnionQuery(final _UnionQuery query, final _SqlContext context) {
+
+        query.appendSql(context);
+
+        final List<? extends SortItem> orderByList = query.orderByList();
+        if (orderByList.size() > 0) {
+            this.orderByClause(orderByList, context);
+        }
+        this.limitClause(query.offset(), query.rowCount(), context);
     }
 
     protected void standardLockClause(LockMode lockMode, _SqlContext context) {
@@ -397,17 +461,16 @@ public abstract class _AbstractDialect implements _Dialect {
                 .append(safeChildTableAlias)
                 .append(Constant.POINT)
                 .append(_MetaBridge.ID)
-                .append(Constant.SPACE_EQUAL)
-                .append(Constant.SPACE)
+                .append(Constant.SPACE_EQUAL_SPACE)
                 .append(safeParentTableAlias)
                 .append(Constant.POINT)
                 .append(_MetaBridge.ID);
     }
 
-    protected final void groupByClause(final List<SortItem> groupByList, final _SqlContext context) {
+    protected final void groupByClause(final List<? extends SortItem> groupByList, final _SqlContext context) {
         final int size = groupByList.size();
         if (size == 0) {
-            throw new IllegalArgumentException("groupByList is empty");
+            return;
         }
         final StringBuilder builder = context.sqlBuilder()
                 .append(Constant.SPACE_GROUP_BY);
@@ -436,7 +499,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
     }
 
-    protected final void orderByClause(final List<SortItem> orderByList, final _SqlContext context) {
+    protected final void orderByClause(final List<? extends SortItem> orderByList, final _SqlContext context) {
         final int size = orderByList.size();
         if (size == 0) {
             return;
@@ -453,6 +516,18 @@ public abstract class _AbstractDialect implements _Dialect {
 
     }
 
+    protected final void limitClause(final long offset, final long rowCount, final _SqlContext context) {
+        if (offset >= 0 && rowCount >= 0) {
+            context.sqlBuilder().append(Constant.SPACE_LIMIT_SPACE)
+                    .append(offset)
+                    .append(Constant.SPACE_COMMA_SPACE)
+                    .append(rowCount);
+        } else if (rowCount >= 0) {
+            context.sqlBuilder().append(Constant.SPACE_LIMIT_SPACE)
+                    .append(rowCount);
+        }
+    }
+
 
     protected final void discriminator(TableMeta<?> table, String safeTableAlias, _StmtContext context) {
         final FieldMeta<?, ?> field;
@@ -465,13 +540,11 @@ public abstract class _AbstractDialect implements _Dialect {
         }
         final _Dialect dialect = context.dialect();
         context.sqlBuilder()
-                .append(Constant.SPACE_AND)
-                .append(Constant.SPACE)
+                .append(Constant.SPACE_AND_SPACE)
                 .append(safeTableAlias)
                 .append(Constant.POINT)
                 .append(dialect.quoteIfNeed(field.columnName()))
-                .append(Constant.SPACE_EQUAL)
-                .append(Constant.SPACE)
+                .append(Constant.SPACE_EQUAL_SPACE)
                 .append(table.discriminatorValue());
     }
 
@@ -497,14 +570,12 @@ public abstract class _AbstractDialect implements _Dialect {
             final _Dialect dialect = context.dialect();
             final StringBuilder sqlBuilder = context.sqlBuilder();
 
-            sqlBuilder.append(Constant.SPACE_AND)
-                    .append(Constant.SPACE)
+            sqlBuilder.append(Constant.SPACE_AND_SPACE)
                     .append(safeTableAlias)
                     .append(Constant.POINT)
                     .append(dialect.quoteIfNeed(field.columnName()))
-                    .append(Constant.SPACE_EQUAL)
-                    .append(Constant.SPACE)
-                    .append(dialect.literal(field.mappingType(), visibleValue));
+                    .append(Constant.SPACE_EQUAL_SPACE)
+                    .append(dialect.literal(field, visibleValue));
         }
 
     }
@@ -519,7 +590,7 @@ public abstract class _AbstractDialect implements _Dialect {
         for (GenericField<?, ?> field : conditionFields) {
             final char[] safeColumnAlias = dialect.safeColumnName(field.columnName()).toCharArray();
             sqlBuilder
-                    .append(Constant.SPACE_AND)
+                    .append(Constant.SPACE_AND_SPACE)
                     .append(Constant.SPACE)
                     .append(safeTableAlias)
                     .append(Constant.POINT)
@@ -533,8 +604,7 @@ public abstract class _AbstractDialect implements _Dialect {
                     if (!supportOnlyDefault) {
                         throw _Exceptions.dontSupportOnlyDefault(dialect);
                     }
-                    sqlBuilder.append(Constant.SPACE_EQUAL)
-                            .append(Constant.SPACE)
+                    sqlBuilder.append(Constant.SPACE_EQUAL_SPACE)
                             .append(dialect.defaultFuncName())
                             .append(Constant.SPACE_LEFT_BRACKET)
                             .append(safeTableAlias)
@@ -572,8 +642,8 @@ public abstract class _AbstractDialect implements _Dialect {
 
     protected final List<GenericField<?, ?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
 
-        final List<? extends SetTargetPart> targetPartList = clause.targetParts();
-        final List<? extends SetValueItem> valuePartList = clause.valueParts();
+        final List<? extends SetLeftItem> targetPartList = clause.targetParts();
+        final List<? extends SetRightItem> valuePartList = clause.valueParts();
         final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
         final int targetCount = targetPartList.size();
 
@@ -593,8 +663,8 @@ public abstract class _AbstractDialect implements _Dialect {
             if (i > 0) {
                 sqlBuilder.append(Constant.SPACE_COMMA);
             }
-            final SetTargetPart targetPart = targetPartList.get(i);
-            final SetValueItem valuePart = valuePartList.get(i);
+            final SetLeftItem targetPart = targetPartList.get(i);
+            final SetRightItem valuePart = valuePartList.get(i);
             if (targetPart instanceof Row) {
                 if (!(valuePart instanceof RowSubQuery)) {
                     throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
@@ -857,19 +927,6 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
 
-    private SimpleStmt handleStandardSelect(final Select select, final Visible visible) {
-        final _SelectContext context;
-        if (select instanceof _UnionQuery) {
-            context = UnionSelectContext.create(select, null, this, visible);
-            ((_UnionQuery) select).appendSql(context);
-        } else {
-            context = SimpleSelectContext.create(select, this, visible);
-            this.standardQuery((_StandardQuery) select, context);
-        }
-        return context.build();
-    }
-
-
     /**
      * @see #update(Update, Visible)
      */
@@ -995,7 +1052,7 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
 
-    private void standardQuery(_StandardQuery query, _SqlContext context) {
+    private void standardSimpleQuery(_StandardQuery query, _SqlContext context) {
         //1. select clause
         this.standardSelectClause(query.modifierList(), context);
         //2. select list clause
@@ -1008,7 +1065,7 @@ public abstract class _AbstractDialect implements _Dialect {
         this.queryWhereClause(blockList, query.predicateList(), context);
 
         //5. groupBy clause
-        final List<SortItem> groupByList = query.groupPartList();
+        final List<? extends SortItem> groupByList = query.groupPartList();
         if (groupByList.size() > 0) {
             this.groupByClause(groupByList, context);
             this.havingClause(query.havingList(), context);
@@ -1016,22 +1073,9 @@ public abstract class _AbstractDialect implements _Dialect {
         //6. orderBy clause
         this.orderByClause(query.orderByList(), context);
 
-        final StringBuilder builder = context.sqlBuilder();
-
         //7. limit clause
-        final long offset, rowCount;
-        offset = query.offset();
-        rowCount = query.rowCount();
-        if (offset >= 0 && rowCount >= 0) {
-            builder.append(Constant.SPACE_LIMIT_SPACE)
-                    .append(offset)
-                    .append(Constant.SPACE_COMMA_SPACE)
-                    .append(rowCount);
-        } else if (rowCount >= 0) {
-            builder.append(Constant.SPACE_LIMIT_SPACE)
-                    .append(Constant.SPACE)
-                    .append(rowCount);
-        }
+        this.limitClause(query.offset(), query.rowCount(), context);
+
         //8. lock clause
         final LockMode lock = query.lockMode();
         if (lock != null) {

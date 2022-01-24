@@ -4,7 +4,7 @@ import io.army.criteria.SortItem;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._SqlContext;
 
-final class SortItemImpl implements _SelfDescribed, SortItem {
+final class SortItemImpl implements _SortItem {
 
     private final SortItem sortItem;
 

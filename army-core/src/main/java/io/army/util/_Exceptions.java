@@ -209,17 +209,17 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static CriteriaException unknownSetTargetPart(SetTargetPart target) {
-        return new CriteriaException(String.format("Unknown %s type[%s].", SetTargetPart.class.getName(), target));
+    public static CriteriaException unknownSetTargetPart(SetLeftItem target) {
+        return new CriteriaException(String.format("Unknown %s type[%s].", SetLeftItem.class.getName(), target));
     }
 
     public static CriteriaException unknownQueryType(Query query) {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 
-    public static CriteriaException setTargetAndValuePartNotMatch(SetTargetPart target, SetValueItem value) {
-        return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetTargetPart.class.getName(), target
-                , SetValueItem.class.getName(), value));
+    public static CriteriaException setTargetAndValuePartNotMatch(SetLeftItem target, SetRightItem value) {
+        return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetLeftItem.class.getName(), target
+                , SetRightItem.class.getName(), value));
     }
 
     public static CriteriaException selfJoinNoLogicField(GenericField<?, ?> field) {

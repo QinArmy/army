@@ -2,6 +2,7 @@ package io.army.criteria;
 
 import io.army.ErrorCode;
 
+@Deprecated
 public final class NotFoundRouteException extends CriteriaException {
 
     public NotFoundRouteException(String format, Object... args) {

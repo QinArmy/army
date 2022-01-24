@@ -71,31 +71,51 @@ public interface Update extends Statement {
 
         SR set(FieldMeta<?, ?> field, @Nullable Object value);
 
-        SR setParam(FieldMeta<?, ?> field, @Nullable Object value);
-
-        SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
-
         <F extends Number> SR setPlus(FieldMeta<?, F> field, F value);
+
+        <F extends Number> SR setPlusParam(FieldMeta<?, F> field, F value);
 
         <F extends Number> SR setPlus(FieldMeta<?, F> field, Expression<F> value);
 
         <F extends Number> SR setMinus(FieldMeta<?, F> field, F value);
 
+        <F extends Number> SR setMinusParam(FieldMeta<?, F> field, F value);
+
         <F extends Number> SR setMinus(FieldMeta<?, F> field, Expression<F> value);
 
         <F extends Number> SR setMultiply(FieldMeta<?, F> field, F value);
+
+        <F extends Number> SR setMultiplyParam(FieldMeta<?, F> field, F value);
 
         <F extends Number> SR setMultiply(FieldMeta<?, F> field, Expression<F> value);
 
         <F extends Number> SR setDivide(FieldMeta<?, F> field, F value);
 
+        <F extends Number> SR setDivideParam(FieldMeta<?, F> field, F value);
+
         <F extends Number> SR setDivide(FieldMeta<?, F> field, Expression<F> value);
 
         <F extends Number> SR setMod(FieldMeta<?, F> field, F value);
 
+        <F extends Number> SR setModParam(FieldMeta<?, F> field, F value);
+
         <F extends Number> SR setMod(FieldMeta<?, F> field, Expression<F> value);
 
-        SR ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList);
+        SR setParam(FieldMeta<?, ?> field, @Nullable Object value);
+
+        SR setPairs(List<ItemPair> pairList);
+
+        SR setPairs(Supplier<List<ItemPair>> supplier);
+
+        SR setPairs(Function<C, List<ItemPair>> function);
+
+        SR setPairs(Consumer<List<ItemPair>> consumer);
+
+        SR ifSetPairs(List<ItemPair> pairList);
+
+        SR ifSetPairs(Supplier<List<ItemPair>> supplier);
+
+        SR ifSetPairs(Function<C, List<ItemPair>> function);
 
         SR ifSet(FieldMeta<?, ?> field, @Nullable Object value);
 

@@ -147,7 +147,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final UnionOrderBy57Spec<C, Q> bracketsQuery() {
+    public final UnionOrderBy57Spec<C, Q> bracket() {
         final UnionOrderBy57Spec<C, Q> unionSpec;
         if (this instanceof AbstractUnionAndQuery) {
             final AbstractUnionAndQuery<C, Q> andQuery = (AbstractUnionAndQuery<C, Q>) this;
@@ -172,14 +172,14 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     @Override
-    final Q onAsQuery(final boolean justAsQuery) {
+    final Q onAsQuery(final boolean outer) {
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
             thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
         } else {
             thisQuery = (Q) this;
         }
-        if (justAsQuery && this instanceof AbstractUnionAndQuery) {
+        if (outer && this instanceof AbstractUnionAndQuery) {
             final AbstractUnionAndQuery<C, Q> unionAndQuery = (AbstractUnionAndQuery<C, Q>) this;
             resultQuery = MySQL57UnionQuery.unionQuery(unionAndQuery.left, unionAndQuery.unionType, thisQuery)
                     .asQuery();

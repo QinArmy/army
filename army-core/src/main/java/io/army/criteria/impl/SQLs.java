@@ -356,6 +356,20 @@ public abstract class SQLs extends StandardFunctions {
     }
 
     /**
+     * @param value expression or parameter
+     */
+    public static ItemPair itemPair(FieldMeta<?, ?> field, @Nullable Object value) {
+        final Expression<?> valueExp;
+        if (value instanceof Expression) {
+            valueExp = (Expression<?>) value;
+        } else {
+            valueExp = SQLs.param(field, value);
+        }
+        return new FieldExpPair(field, valueExp);
+    }
+
+
+    /**
      * Only used to update set clause.
      */
     @SuppressWarnings("unchecked")
@@ -576,6 +590,33 @@ public abstract class SQLs extends StandardFunctions {
 
 
     }// NullWord
+
+
+    /**
+     * @see #itemPair(FieldMeta, Object)
+     */
+    private static final class FieldExpPair implements ItemPair {
+
+        private final FieldMeta<?, ?> field;
+
+        private final Expression<?> value;
+
+        private FieldExpPair(FieldMeta<?, ?> field, Expression<?> value) {
+            this.field = field;
+            this.value = value;
+        }
+
+        @Override
+        public SetLeftItem left() {
+            return this.field;
+        }
+
+        @Override
+        public SetRightItem right() {
+            return this.value;
+        }
+
+    }//FieldExpPair
 
 
 }

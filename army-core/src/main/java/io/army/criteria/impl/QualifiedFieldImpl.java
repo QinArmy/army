@@ -15,6 +15,8 @@ import io.army.modelgen._MetaBridge;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
 
+import java.util.Objects;
+
 
 final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F>
         implements QualifiedField<T, F>, _Selection {
@@ -75,6 +77,24 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F
         return this.field.fieldName();
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.tableAlias, this.field);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof QualifiedFieldImpl) {
+            final QualifiedFieldImpl<?, ?> o = (QualifiedFieldImpl<?, ?>) obj;
+            match = o.field == this.field && o.tableAlias.equals(this.tableAlias);
+        } else {
+            match = false;
+        }
+        return match;
+    }
 
     @Override
     public String toString() {

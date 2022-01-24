@@ -1,8 +1,8 @@
 package io.army.dialect;
 
 
-import io.army.criteria.SetTargetPart;
-import io.army.criteria.SetValueItem;
+import io.army.criteria.SetLeftItem;
+import io.army.criteria.SetRightItem;
 
 import java.util.List;
 
@@ -10,8 +10,8 @@ public interface _SetBlock extends _Block {
 
     boolean hasSelfJoint();
 
-    List<? extends SetTargetPart> targetParts();
+    List<? extends SetLeftItem> targetParts();
 
-    List<? extends SetValueItem> valueParts();
+    List<? extends SetRightItem> valueParts();
 
 }

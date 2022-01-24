@@ -234,11 +234,11 @@ public abstract class _DmlUtils {
 
 
     static void assertUpdateSetAndWhereClause(_Update update) {
-        final List<? extends SetTargetPart> fieldList = update.fieldList();
+        final List<? extends SetLeftItem> fieldList = update.fieldList();
         if (CollectionUtils.isEmpty(fieldList)) {
             throw new CriteriaException("update must have set clause.");
         }
-        final List<? extends SetValueItem> valueExpList = update.valueExpList();
+        final List<? extends SetRightItem> valueExpList = update.valueExpList();
         if (fieldList.size() != valueExpList.size()) {
             String m;
             m = String.format("update set clause field list size[%s] and value expression list size[%s] not match."

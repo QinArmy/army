@@ -2,9 +2,6 @@ package io.army.dialect;
 
 import io.army.ErrorCode;
 import io.army.criteria.CriteriaException;
-import io.army.criteria.IPredicate;
-import io.army.criteria.ParentChildJoinPredicate;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -14,7 +11,6 @@ import io.army.util._Exceptions;
 import java.sql.JDBCType;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
 
 public abstract class _DialectUtils {
 
@@ -82,15 +78,6 @@ public abstract class _DialectUtils {
     /*################################## blow package method ##################################*/
 
 
-    @Nullable
-    private static ParentChildJoinPredicate findParentChildJoinPredicate(List<IPredicate> onPredicateList) {
-        for (IPredicate predicate : onPredicateList) {
-            if (predicate instanceof ParentChildJoinPredicate) {
-                return (ParentChildJoinPredicate) predicate;
-            }
-        }
-        return null;
-    }
 
     public static String parentAlias(final String tableAlias) {
         return "p_of_" + tableAlias;

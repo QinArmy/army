@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 /**
  * this class is base class of most implementation of {@link Expression}
  */
-abstract class OperationExpression<E> implements ArmyExpression<E> {
+abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
 
     OperationExpression() {
     }

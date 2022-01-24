@@ -34,6 +34,8 @@ public interface Constant {
 
     String SPACE_AND = " AND";
 
+    String SPACE_AND_SPACE = " AND ";
+
     String SPACE_OR = " OR";
 
     String SPACE_GROUP_BY = " GROUP BY";

@@ -23,7 +23,7 @@ public interface _Query extends _PartQuery {
     /**
      * @return a unmodifiable list
      */
-    List<SortItem> groupPartList();
+    List<? extends SortItem> groupPartList();
 
     /**
      * @return a unmodifiable list

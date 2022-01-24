@@ -28,7 +28,7 @@ public class MySQLsTests {
                 .useIndex(Collections.emptyList())
                 .join(table, "")
                 .on(Collections.emptyList())
-                .set(Collections.emptyList(), Collections.emptyList())
+                .setPairs(Collections.emptyList())
                 .where(Collections.emptyList())
         ;
 

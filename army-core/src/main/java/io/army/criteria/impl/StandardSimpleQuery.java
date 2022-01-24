@@ -83,7 +83,24 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     StandardSimpleQuery(@Nullable C criteria) {
         super(CriteriaContexts.queryContext(criteria));
-        CriteriaContextStack.setContextStack(this.criteriaContext);
+        if (this instanceof Select) {
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        } else {
+            CriteriaContextStack.push(this.criteriaContext);
+        }
+    }
+
+    StandardSimpleQuery(CriteriaContext context) {
+        super(context);
+        if (!(this instanceof AbstractUnionAndQuery)) {
+            throw new IllegalStateException("this error.");
+        }
+        if (this instanceof Select) {
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        } else {
+            CriteriaContextStack.push(this.criteriaContext);
+        }
+
     }
 
     @Override
@@ -130,7 +147,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final StandardUnionSpec<C, Q> bracketsQuery() {
+    public final StandardUnionSpec<C, Q> bracket() {
         final StandardUnionSpec<C, Q> unionSpec;
         if (this instanceof AbstractUnionAndQuery) {
             final AbstractUnionAndQuery<C, Q> andQuery = (AbstractUnionAndQuery<C, Q>) this;
@@ -209,14 +226,14 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     @SuppressWarnings("unchecked")
     @Override
-    final Q onAsQuery(final boolean justAsQuery) {
+    final Q onAsQuery(final boolean outer) {
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
             thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
         } else {
             thisQuery = (Q) this;
         }
-        if (justAsQuery && this instanceof AbstractUnionAndQuery) {
+        if (outer && this instanceof AbstractUnionAndQuery) {
             final AbstractUnionAndQuery<C, Q> unionAndQuery = (AbstractUnionAndQuery<C, Q>) this;
             resultQuery = StandardUnionQuery.unionQuery(unionAndQuery.left, unionAndQuery.unionType, thisQuery)
                     .asQuery();
@@ -350,7 +367,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         private final UnionType unionType;
 
         AbstractUnionAndQuery(Q left, UnionType unionType) {
-            super(CriteriaUtils.getCriteria(left));
+            super(CriteriaContexts.unionAndContext(left));
             this.left = left;
             this.unionType = unionType;
         }

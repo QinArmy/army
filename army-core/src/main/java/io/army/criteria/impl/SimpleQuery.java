@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-
+@SuppressWarnings("unchecked")
 abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, HR, OR, LR, UR, SP>
         extends PartQuery<C, Q, UR, OR, LR, SP> implements Query.SelectClause<C, SR>, Statement.JoinClause<C, JT, JS>
         , Statement.WhereClause<C, WR, AR>, Statement.WhereAndClause<C, AR>
@@ -35,7 +35,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
-    private List<SortItem> groupByList;
+    private List<_SortItem> groupByList;
 
     private List<_Predicate> havingList;
 
@@ -365,7 +365,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     public final WR where(final List<IPredicate> predicateList) {
         final List<_Predicate> list = this.predicateList;
         for (IPredicate predicate : predicateList) {
-            list.add((OperationPredicate) predicate);
+            list.add((OperationPredicate) predicate);// must cast to OperationPredicate
         }
         return (WR) this;
     }
@@ -390,14 +390,14 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final AR where(@Nullable IPredicate predicate) {
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         }
         return (AR) this;
     }
 
     @Override
     public final AR and(IPredicate predicate) {
-        this.predicateList.add((OperationPredicate) predicate);
+        this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         return (AR) this;
     }
 
@@ -406,7 +406,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final IPredicate predicate;
         predicate = supplier.get();
         assert predicate != null;
-        this.predicateList.add((OperationPredicate) predicate);
+        this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         return (AR) this;
     }
 
@@ -415,14 +415,14 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         assert predicate != null;
-        this.predicateList.add((OperationPredicate) predicate);
+        this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         return (AR) this;
     }
 
     @Override
     public final AR ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         }
         return (AR) this;
     }
@@ -432,7 +432,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         }
         return (AR) this;
     }
@@ -442,26 +442,26 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);
+            this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         }
         return (AR) this;
     }
 
     @Override
     public final GR groupBy(SortItem sortItem) {
-        this.groupByList = Collections.singletonList(sortItem);
+        this.groupByList = Collections.singletonList((_SortItem) sortItem);
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(SortItem sortItem1, SortItem sortItem2) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2);
+        this.groupByList = ArrayUtils.asUnmodifiableList((_SortItem) sortItem1, (_SortItem) sortItem2);
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2, sortItem3);
+        this.groupByList = ArrayUtils.asUnmodifiableList((_SortItem) sortItem1, (_SortItem) sortItem2, (_SortItem) sortItem3);
         return (GR) this;
     }
 
@@ -470,12 +470,16 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         final int size = sortItemList.size();
         switch (size) {
             case 0:
-                throw new CriteriaException("sortPartList must be not empty.");
+                throw new CriteriaException("sortItemList must be not empty.");
             case 1:
-                this.groupByList = Collections.singletonList(sortItemList.get(0));
+                this.groupByList = Collections.singletonList((_SortItem) sortItemList.get(0));
                 break;
             default: {
-                this.groupByList = Collections.unmodifiableList(new ArrayList<>(sortItemList));
+                final List<_SortItem> tempList = new ArrayList<>(size);
+                for (SortItem sortItem : sortItemList) {
+                    tempList.add((_SortItem) sortItem);
+                }
+                this.groupByList = Collections.unmodifiableList(tempList);
             }
         }
         return (GR) this;
@@ -501,7 +505,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final GR ifGroupBy(@Nullable SortItem sortItem) {
         if (sortItem != null) {
-            this.groupByList = Collections.singletonList(sortItem);
+            this.groupByList = Collections.singletonList((_SortItem) sortItem);
         }
         return (GR) this;
     }
@@ -644,7 +648,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final List<SortItem> groupPartList() {
+    public final List<? extends SortItem> groupPartList() {
         return this.groupByList;
     }
 
@@ -686,7 +690,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         }
 
         // group by and having
-        final List<SortItem> groupByList = this.groupByList;
+        final List<? extends SortItem> groupByList = this.groupByList;
         if (CollectionUtils.isEmpty(groupByList)) {
             this.groupByList = Collections.emptyList();
             this.hintList = Collections.emptyList();
@@ -768,7 +772,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         return block;
     }
 
-    final <T extends TableItem> JS ifJoinTablePart(_JoinType joinType, @Nullable TableItem tableItem, String alias) {
+    final JS ifJoinTablePart(_JoinType joinType, @Nullable TableItem tableItem, String alias) {
         final JS block;
         if (tableItem == null) {
             block = this.getNoActionOnBlock();

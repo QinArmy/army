@@ -35,9 +35,9 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     final CriteriaContext criteriaContext;
 
-    private List<SetTargetPart> fieldList = new ArrayList<>();
+    private List<SetLeftItem> fieldList = new ArrayList<>();
 
-    private List<SetValueItem> valueExpList = new ArrayList<>();
+    private List<SetRightItem> valueExpList = new ArrayList<>();
 
     private boolean prepared;
 
@@ -45,32 +45,6 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         super(criteriaContext);
         this.criteriaContext = criteriaContext;
 
-    }
-
-    @Override
-    public final SR set(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList) {
-        final int fieldSize = fieldList.size();
-        if (fieldSize != valueList.size()) {
-            throw _Exceptions.fieldAndValueSizeNotMatch(fieldSize, valueList.size());
-        }
-        if (fieldSize == 0) {
-            throw new CriteriaException("fieldList must not empty.");
-        }
-        for (int i = 0; i < fieldSize; i++) {
-            this.set(fieldList.get(i), valueList.get(i));
-        }
-        return (SR) this;
-    }
-
-
-    @Override
-    public final SR set(FieldMeta<?, ?> field, @Nullable Object value) {
-        return this.set(field, SQLs.paramWithExp(field, value));
-    }
-
-    @Override
-    public final SR setParam(FieldMeta<?, ?> field, @Nullable Object value) {
-        return this.set(field, SQLs.strictParamWithExp(field, value));
     }
 
     @Override
@@ -95,6 +69,18 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         this.valueExpList.add(value);
         return (SR) this;
     }
+
+
+    @Override
+    public final SR set(FieldMeta<?, ?> field, @Nullable Object value) {
+        return this.set(field, SQLs.paramWithExp(field, value));
+    }
+
+    @Override
+    public final SR setParam(FieldMeta<?, ?> field, @Nullable Object value) {
+        return this.set(field, SQLs.strictParamWithExp(field, value));
+    }
+
 
     @Override
     public final <F> SR set(FieldMeta<?, F> field, Function<C, Expression<F>> function) {
@@ -123,6 +109,12 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
+    public final <F extends Number> SR setPlusParam(FieldMeta<?, F> field, F value) {
+        Objects.requireNonNull(value);
+        return this.set(field, field.plusParam(value));
+    }
+
+    @Override
     public final <F extends Number> SR setPlus(FieldMeta<?, F> field, Expression<F> value) {
         if (((ArmyExpression<F>) value).isNullableValue()) {
             throw _Exceptions.nonNullExpression(field);
@@ -134,6 +126,12 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     public final <F extends Number> SR setMinus(FieldMeta<?, F> field, F value) {
         Objects.requireNonNull(value);
         return this.set(field, field.minus(value));
+    }
+
+    @Override
+    public final <F extends Number> SR setMinusParam(FieldMeta<?, F> field, F value) {
+        Objects.requireNonNull(value);
+        return this.set(field, field.minusParam(value));
     }
 
     @Override
@@ -151,6 +149,12 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
+    public final <F extends Number> SR setMultiplyParam(FieldMeta<?, F> field, F value) {
+        Objects.requireNonNull(value);
+        return this.set(field, field.multiplyParam(value));
+    }
+
+    @Override
     public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, Expression<F> value) {
         if (((ArmyExpression<F>) value).isNullableValue()) {
             throw _Exceptions.nonNullExpression(field);
@@ -162,6 +166,12 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     public final <F extends Number> SR setDivide(FieldMeta<?, F> field, F value) {
         Objects.requireNonNull(value);
         return this.set(field, field.divide(value));
+    }
+
+    @Override
+    public final <F extends Number> SR setDivideParam(FieldMeta<?, F> field, F value) {
+        Objects.requireNonNull(value);
+        return this.set(field, field.divideParam(value));
     }
 
     @Override
@@ -179,19 +189,17 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
+    public final <F extends Number> SR setModParam(FieldMeta<?, F> field, F value) {
+        Objects.requireNonNull(value);
+        return this.set(field, field.modParam(value));
+    }
+
+    @Override
     public final <F extends Number> SR setMod(FieldMeta<?, F> field, Expression<F> value) {
         if (((ArmyExpression<F>) value).isNullableValue()) {
             throw _Exceptions.nonNullExpression(field);
         }
         return this.set(field, field.mod(value));
-    }
-
-    @Override
-    public final SR ifSet(List<FieldMeta<?, ?>> fieldList, List<Expression<?>> valueList) {
-        if (fieldList.size() > 0) {
-            this.set(fieldList, valueList);
-        }
-        return (SR) this;
     }
 
     @Override
@@ -202,6 +210,54 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         return (SR) this;
     }
 
+    @Override
+    public final SR setPairs(List<ItemPair> pairList) {
+        if (pairList.size() == 0) {
+            throw new CriteriaException("pair list must not empty.");
+        }
+        for (ItemPair pair : pairList) {
+            if (!(pair instanceof FieldMeta)) {
+                throw new UnsupportedOperationException();
+            }
+            this.set((FieldMeta<?, ?>) pair.left(), (ArmyExpression<?>) pair.right());
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR setPairs(Supplier<List<ItemPair>> supplier) {
+        return this.setPairs(supplier.get());
+    }
+
+    @Override
+    public final SR setPairs(Function<C, List<ItemPair>> function) {
+        return this.setPairs(function.apply(this.criteria));
+    }
+
+    @Override
+    public final SR setPairs(Consumer<List<ItemPair>> consumer) {
+        final List<ItemPair> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.setPairs(list);
+    }
+
+    @Override
+    public final SR ifSetPairs(List<ItemPair> pairList) {
+        if (pairList.size() > 0) {
+            this.setPairs(pairList);
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetPairs(Supplier<List<ItemPair>> supplier) {
+        return this.ifSetPairs(supplier.get());
+    }
+
+    @Override
+    public final SR ifSetPairs(Function<C, List<ItemPair>> function) {
+        return this.ifSetPairs(function.apply(this.criteria));
+    }
 
     @Override
     public final SR ifSet(FieldMeta<?, ?> field, @Nullable Object value) {
@@ -468,8 +524,8 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        final List<SetTargetPart> targetParts = this.fieldList;
-        final List<SetValueItem> valueParts = this.valueExpList;
+        final List<SetLeftItem> targetParts = this.fieldList;
+        final List<SetRightItem> valueParts = this.valueExpList;
         if (CollectionUtils.isEmpty(targetParts)) {
             throw _Exceptions.updateFieldListEmpty();
         }
@@ -505,13 +561,13 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
 
     @Override
-    public final List<? extends SetTargetPart> fieldList() {
+    public final List<? extends SetLeftItem> fieldList() {
         _Assert.prepared(this.prepared);
         return this.fieldList;
     }
 
     @Override
-    public final List<? extends SetValueItem> valueExpList() {
+    public final List<? extends SetRightItem> valueExpList() {
         return this.valueExpList;
     }
 

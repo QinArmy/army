@@ -1,8 +1,8 @@
 package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.SetTargetPart;
-import io.army.criteria.SetValueItem;
+import io.army.criteria.SetLeftItem;
+import io.army.criteria.SetRightItem;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.lang.Nullable;
@@ -34,9 +34,9 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         return context;
     }
 
-    final List<? extends SetTargetPart> fieldList;
+    final List<? extends SetLeftItem> fieldList;
 
-    final List<? extends SetValueItem> valueExpList;
+    final List<? extends SetRightItem> valueExpList;
 
     private final ChildSetBlock childSetClause;
 
@@ -44,8 +44,8 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         super(update, dialect, visible);
 
         final SingleTableMeta<?> table = (SingleTableMeta<?>) update.table();
-        final List<? extends SetTargetPart> fieldList = update.fieldList();
-        for (SetTargetPart part : fieldList) {
+        final List<? extends SetLeftItem> fieldList = update.fieldList();
+        for (SetLeftItem part : fieldList) {
             if (!(part instanceof FieldMeta)) {
                 continue;
             }
@@ -65,16 +65,16 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
         final SingleTableMeta<?> parentTable = childTable.parentMeta();
-        final List<? extends SetTargetPart> fieldList = update.fieldList();
-        final List<? extends SetValueItem> valueExpList = update.valueExpList();
+        final List<? extends SetLeftItem> fieldList = update.fieldList();
+        final List<? extends SetRightItem> valueExpList = update.valueExpList();
         final int fieldCount = fieldList.size();
 
-        final List<SetTargetPart> parenFields = new ArrayList<>(), fields = new ArrayList<>();
-        final List<SetValueItem> parentValues = new ArrayList<>(), values = new ArrayList<>();
+        final List<SetLeftItem> parenFields = new ArrayList<>(), fields = new ArrayList<>();
+        final List<SetRightItem> parentValues = new ArrayList<>(), values = new ArrayList<>();
 
         FieldMeta<?, ?> field;
         TableMeta<?> belongOf;
-        SetTargetPart part;
+        SetLeftItem part;
         for (int i = 0; i < fieldCount; i++) {
             part = fieldList.get(i);
             if (!(part instanceof FieldMeta)) {
@@ -131,12 +131,12 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
     }
 
     @Override
-    public List<? extends SetTargetPart> targetParts() {
+    public List<? extends SetLeftItem> targetParts() {
         return this.fieldList;
     }
 
     @Override
-    public List<? extends SetValueItem> valueParts() {
+    public List<? extends SetRightItem> valueParts() {
         return this.valueExpList;
     }
 
@@ -148,14 +148,14 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
 
     private static final class ChildSetBlock extends ChildBlock implements _SetBlock {
 
-        final List<SetTargetPart> fieldList;
+        final List<SetLeftItem> fieldList;
 
-        final List<SetValueItem> valueExpList;
+        final List<SetRightItem> valueExpList;
 
         private final StandardUpdateContext parentContext;
 
         private ChildSetBlock(ChildTableMeta<?> table, final String tableAlias
-                , List<SetTargetPart> fieldList, List<SetValueItem> valueExpList
+                , List<SetLeftItem> fieldList, List<SetRightItem> valueExpList
                 , StandardUpdateContext parentContext) {
             super(table, tableAlias, parentContext);
             this.fieldList = CollectionUtils.unmodifiableList(fieldList);
@@ -169,12 +169,12 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         }
 
         @Override
-        public List<SetTargetPart> targetParts() {
+        public List<SetLeftItem> targetParts() {
             return this.fieldList;
         }
 
         @Override
-        public List<SetValueItem> valueParts() {
+        public List<SetRightItem> valueParts() {
             return this.valueExpList;
         }
 

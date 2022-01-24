@@ -26,6 +26,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         implements StandardQuery.StandardUnionSpec<C, Q>, _UnionQuery, StandardQuery {
 
     static <C, Q extends Query> StandardUnionSpec<C, Q> bracketQuery(final Q query) {
+        query.prepared();
         final StandardUnionSpec<C, ?> unionSpec;
         if (query instanceof Select) {
             unionSpec = new BracketSelect<>((Select) query);
@@ -45,6 +46,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
 
 
     static <C, Q extends Query> StandardUnionSpec<C, Q> unionQuery(Q left, UnionType unionType, Q right) {
+        left.prepared();
+        // never validate right,possibly union and select
         final StandardUnionSpec<C, ?> unionSpec;
         if (left instanceof Select) {
             unionSpec = new UnionSelect<>((Select) left, unionType, (Select) right);
@@ -66,8 +69,13 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     final Q left;
 
     private StandardUnionQuery(Q left) {
-        super(CriteriaContexts.getUnionContext(left));
+        super(CriteriaContexts.unionContext(left));
         this.left = left;
+        if (this instanceof Select) {
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        } else {
+            CriteriaContextStack.push(this.criteriaContext);
+        }
     }
 
     @Override
@@ -76,7 +84,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    public final StandardUnionSpec<C, Q> bracketsQuery() {
+    public final StandardUnionSpec<C, Q> bracket() {
         return bracketQuery(this.asQuery());
     }
 
@@ -93,6 +101,12 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     @SuppressWarnings("unchecked")
     @Override
     final Q internalAsQuery(final boolean justAsQuery) {
+        if (this instanceof Select) {
+            CriteriaContextStack.clearContextStack(this.criteriaContext);
+        } else {
+            CriteriaContextStack.pop(this.criteriaContext);
+        }
+
         final Q query;
         if (this instanceof ScalarSubQuery) {
             query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
@@ -126,9 +140,13 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder()
-                    .append(Constant.SPACE_LEFT_BRACKET);
+            final StringBuilder builder = context.sqlBuilder();
 
+            if (builder.length() == 0) {
+                builder.append(Constant.LEFT_BRACKET);
+            } else {
+                builder.append(Constant.SPACE_LEFT_BRACKET);
+            }
             context.dialect().select(this.left, context);
 
             builder.append(Constant.SPACE_RIGHT_BRACKET);
@@ -144,8 +162,13 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
 
         @Override
         public final void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder()
-                    .append(Constant.SPACE_LEFT_BRACKET);
+            final StringBuilder builder = context.sqlBuilder();
+
+            if (builder.length() == 0) {
+                builder.append(Constant.LEFT_BRACKET);
+            } else {
+                builder.append(Constant.SPACE_LEFT_BRACKET);
+            }
 
             context.dialect().subQuery(this.left, context);
 
@@ -228,7 +251,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
             dialect.select(this.left, context);
 
             context.sqlBuilder()
-                    .append(Constant.SPACE)
                     .append(this.unionType.keyWords);
 
             dialect.select(this.right, context);

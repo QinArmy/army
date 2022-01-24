@@ -4,7 +4,7 @@ import io.army.domain.IDomain;
 
 import java.util.List;
 
-public interface Row<T extends IDomain> extends SetTargetPart {
+public interface Row<T extends IDomain> extends SetLeftItem {
 
     List<? extends GenericField<T, ?>> columnList();
 

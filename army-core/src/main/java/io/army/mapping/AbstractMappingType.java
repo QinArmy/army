@@ -32,7 +32,7 @@ public abstract class AbstractMappingType implements MappingType {
 
     @Override
     public final String toString() {
-        return String.format("%s javaType[%s] jdbcType[%s]", super.toString(), javaType().getName(), jdbcType());
+        return String.format("%s Mapping javaType[%s]", super.toString(), javaType().getName());
     }
 
     protected final ParamException notSupportConvertBeforeBind(final Object nonNull) {

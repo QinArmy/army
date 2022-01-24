@@ -13,6 +13,6 @@ package io.army.criteria;
  * @see Expression
  * @see RowSubQuery
  */
-public interface SetValueItem {
+public interface SetRightItem {
 
 }

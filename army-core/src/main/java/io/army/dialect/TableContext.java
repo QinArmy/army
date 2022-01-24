@@ -1,9 +1,11 @@
 package io.army.dialect;
 
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.TableItem;
+import io.army.criteria.TableItemGroup;
+import io.army.criteria.Visible;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
@@ -30,8 +32,7 @@ final class TableContext {
     }
 
 
-    static TableContext createContext(Query query, _Dialect dialect, final Visible visible) {
-        final List<? extends _TableBlock> blockList = ((_Query) query).tableBlockList();
+    static TableContext createContext(List<? extends _TableBlock> blockList, _Dialect dialect, final Visible visible) {
         final Map<String, TableItem> aliasToTable = new HashMap<>((int) (blockList.size() / 0.75F));
         final Map<TableMeta<?>, String> tableToSafeAlias = new HashMap<>((int) (blockList.size() / 0.75F));
 
@@ -148,7 +149,7 @@ final class TableContext {
                     , Visible.class.getSimpleName(), Visible.BOTH
                     , parent, _MetaBridge.VISIBLE
                     , child, childAlias
-                    , "contain on predicate child.id = parent.id", parent);
+                    , "exists on predicate child.id = parent.id", parent);
             throw new CriteriaException(m);
         }
 

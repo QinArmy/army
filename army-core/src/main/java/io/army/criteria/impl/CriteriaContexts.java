@@ -1,8 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner._UnionQuery;
 import io.army.dialect.Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
@@ -44,24 +46,23 @@ abstract class CriteriaContexts {
         return new SingleDmlContext(criteria);
     }
 
-    static CriteriaContext unionContext(Query query) {
-        throw new UnsupportedOperationException();
+
+    static CriteriaContext unionContext(final Query leftQuery) {
+        final AbstractContext leftContext = (AbstractContext) ((CriteriaContextSpec) leftQuery).getCriteriaContext();
+        final CriteriaContext criteriaContext;
+        if (leftQuery instanceof SimpleQuery) {
+            criteriaContext = new UnionQueryContext(leftContext, ((_Query) leftQuery).selectPartList());
+        } else if (leftQuery instanceof _UnionQuery) {
+            criteriaContext = leftContext;
+        } else {
+            throw _Exceptions.unknownQueryType(leftQuery);
+        }
+        return criteriaContext;
     }
 
-    static CriteriaContext getUnionContext(final Query query) {
-//        final CriteriaContext criteriaContext;
-//        if (query instanceof SimpleQuery) {
-//            criteriaContext = new CriteriaContextImpl<>(((_Query) query).selectPartList());
-//        } else if (query instanceof _UnionQuery) {
-//            criteriaContext = ((CriteriaContextSpec) query).getCriteriaContext();
-//            if (!(criteriaContext instanceof UnionQueryContext)) {
-//                throw CriteriaUtils.unknownCriteriaContext(criteriaContext);
-//            }
-//        } else {
-//            throw _Exceptions.unknownQueryType(query);
-//        }
-//        return criteriaContext;
-        throw new UnsupportedOperationException();
+    static CriteriaContext unionAndContext(final Query leftQuery) {
+        final AbstractContext leftContext = (AbstractContext) ((CriteriaContextSpec) leftQuery).getCriteriaContext();
+        return new SimpleQueryContext(leftContext);
     }
 
 
@@ -83,14 +84,25 @@ abstract class CriteriaContexts {
         return new CriteriaException("Single table syntax dml statement context don't support this operation.");
     }
 
+    private static CriteriaException unionQueryDontSupport() {
+        return new CriteriaException("Union query statement context don't support this operation.");
+    }
+
 
     private static abstract class AbstractContext implements CriteriaContext {
 
         final Object criteria;
 
+        Map<String, VarExpression<?>> varMap;
+
 
         private AbstractContext(@Nullable Object criteria) {
             this.criteria = criteria;
+        }
+
+        private AbstractContext(AbstractContext leftContext) {
+            this.criteria = leftContext.criteria;
+            this.varMap = leftContext.varMap;
         }
 
 
@@ -219,7 +231,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <E> Expression<E> ref(String selectionAlias) {
+        public final <E> Expression<E> ref(String selectionAlias) {
             throw dontSupportRefSelection();
         }
 
@@ -350,6 +362,10 @@ abstract class CriteriaContexts {
             super(criteria);
         }
 
+        private SingleDmlContext(AbstractContext leftContext) {
+            super(leftContext);
+        }
+
         @Override
         public void selectList(List<? extends SelectItem> selectPartList) {
             throw singleDmlDontSupport();
@@ -468,6 +484,82 @@ abstract class CriteriaContexts {
         }
 
     }//SimpleQueryContext
+
+    private static final class UnionQueryContext extends AbstractContext {
+
+        private final List<? extends SelectItem> selectItemList;
+
+        private Map<String, SelectionExpression<?>> aliasToSelection;
+
+        private UnionQueryContext(AbstractContext leftContext, List<? extends SelectItem> selectItemList) {
+            super(leftContext);
+            this.selectItemList = selectItemList;
+        }
+
+        @Override
+        public void selectList(List<? extends SelectItem> selectPartList) {
+            //here bug.
+            throw new UnsupportedOperationException("union query don't support");
+        }
+
+        @Override
+        public <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field) {
+            throw unionQueryDontSupport();
+        }
+
+        @Override
+        public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
+            throw unionQueryDontSupport();
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <E> Expression<E> ref(final String selectionAlias) {
+            Map<String, SelectionExpression<?>> aliasToSelection = this.aliasToSelection;
+            if (aliasToSelection == null) {
+                aliasToSelection = new HashMap<>();
+                this.aliasToSelection = aliasToSelection;
+            }
+            final Expression<?> expression;
+            expression = aliasToSelection.computeIfAbsent(selectionAlias, this::createSelectionExpression);
+            return (Expression<E>) expression;
+        }
+
+        @Override
+        public List<_TableBlock> clear() {
+            return Collections.emptyList();
+        }
+
+
+        private <E> SelectionExpression<E> createSelectionExpression(final String selectionAlias) {
+            Selection selection = null;
+            outFor:
+            for (SelectItem selectItem : this.selectItemList) {
+                if (selectItem instanceof Selection && selectionAlias.equals(((Selection) selectItem).alias())) {
+                    selection = (Selection) selectItem;
+                    break;
+                } else if (!(selectItem instanceof SelectionGroup)) {
+                    throw _Exceptions.unknownSelectPart(selectItem);
+                }
+
+                for (Selection s : ((SelectionGroup) selectItem).selectionList()) {
+                    if (selectionAlias.equals(s.alias())) {
+                        selection = s;
+                        break outFor;
+                    }
+                }
+
+            }
+
+            if (selection == null) {
+                String m = String.format("Unknown selection alias[%s]", selectionAlias);
+                throw new CriteriaException(m);
+            }
+            return new SelectionExpression<>(selection);
+        }
+
+    }//UnionQueryContext
+
 
     private static final class DerivedSelection<E> extends OperationExpression<E>
             implements DerivedField<E>, _Selection {
@@ -609,6 +701,31 @@ abstract class CriteriaContexts {
         }
 
     }
+
+    /**
+     * @see UnionQueryContext#ref(String)
+     */
+    private static final class SelectionExpression<E> extends OperationExpression<E> {
+
+        private final Selection selection;
+
+        private SelectionExpression(Selection selection) {
+            this.selection = selection;
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            return this.selection.paramMeta();
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder()
+                    .append(Constant.SPACE)
+                    .append(context.dialect().quoteIfNeed(this.selection.alias()));
+        }
+
+    }// SelectionExpression
 
 
 }

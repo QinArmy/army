@@ -67,7 +67,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     final Q left;
 
     MySQL57UnionQuery(Q left) {
-        super(CriteriaContexts.getUnionContext(left));
+        super(CriteriaContexts.unionContext(left));
         this.left = left;
     }
 
@@ -77,7 +77,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    public final MySQL57Query.UnionOrderBy57Spec<C, Q> bracketsQuery() {
+    public final MySQL57Query.UnionOrderBy57Spec<C, Q> bracket() {
         return bracketQuery(this.asQuery());
     }
 

@@ -10,6 +10,7 @@ import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -24,7 +25,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     final CriteriaContext criteriaContext;
 
-    private List<SortItem> orderByList;
+    private List<_SortItem> orderByList;
 
     private long offset = -1L;
 
@@ -95,31 +96,42 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     @Override
     public final OR orderBy(SortItem sortItem) {
-        this.orderByList = Collections.singletonList(sortItem);
+        this.orderByList = Collections.singletonList((_SortItem) sortItem);
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
-        this.orderByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2);
+        this.orderByList = ArrayUtils.asUnmodifiableList((_SortItem) sortItem1, (_SortItem) sortItem2);
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        this.orderByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2, sortItem3);
+        this.orderByList = ArrayUtils.asUnmodifiableList((_SortItem) sortItem1, (_SortItem) sortItem2, (_SortItem) sortItem3);
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(List<SortItem> sortItemList) {
-        if (sortItemList.size() == 0) {
-            throw new CriteriaException("sortPartList must not empty.");
+        final int size = sortItemList.size();
+        switch (sortItemList.size()) {
+            case 0:
+                throw new CriteriaException("sortItemList must not empty.");
+            case 1:
+                this.orderByList = Collections.singletonList((_SortItem) sortItemList);
+                break;
+            default: {
+                final List<_SortItem> tempList = new ArrayList<>(size);
+                for (SortItem sortItem : sortItemList) {
+                    tempList.add((_SortItem) sortItem);
+                }
+                this.orderByList = Collections.unmodifiableList(tempList);
+            }
         }
-        this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
         this.afterOrderBy();
         return (OR) this;
     }
@@ -137,7 +149,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     @Override
     public final OR ifOrderBy(@Nullable SortItem sortItem) {
         if (sortItem != null) {
-            this.orderByList = Collections.singletonList(sortItem);
+            this.orderByList = Collections.singletonList((_SortItem) sortItem);
         }
         this.afterOrderBy();
         return (OR) this;
@@ -238,7 +250,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final List<SortItem> orderByList() {
+    public final List<? extends SortItem> orderByList() {
         _Assert.prepared(this.prepared);
         return this.orderByList;
     }
@@ -342,7 +354,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     private Q innerAsQuery(final boolean justAsQuery) {
         _Assert.nonPrepared(this.prepared);
 
-        final List<SortItem> sortItemList = this.orderByList;
+        final List<? extends SortItem> sortItemList = this.orderByList;
         if (sortItemList == null) {
             this.orderByList = Collections.emptyList();
         }

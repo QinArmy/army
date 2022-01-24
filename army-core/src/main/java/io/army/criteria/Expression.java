@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionSpec, TypeInfer, SortItem, SetValueItem {
+public interface Expression<E> extends SelectionSpec, TypeInfer, SortItem, SetRightItem {
 
     /**
      * relational operate with {@code =}

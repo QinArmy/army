@@ -4,7 +4,6 @@ import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._PartQuery;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
@@ -14,9 +13,12 @@ import java.util.List;
 
 final class UnionSelectContext extends _BaseSqlContext implements _UnionQueryContext, _SelectContext {
 
-    static UnionSelectContext create(Select select, @Nullable _SelectContext outerContext
-            , _Dialect dialect, Visible visible) {
-        return new UnionSelectContext(select, outerContext, dialect, visible);
+    static UnionSelectContext create(Select select, _Dialect dialect, Visible visible) {
+        return new UnionSelectContext(select, dialect, visible);
+    }
+
+    static UnionSelectContext create(Select select, _SelectContext outerContext) {
+        return new UnionSelectContext(select, outerContext);
     }
 
 
@@ -24,10 +26,17 @@ final class UnionSelectContext extends _BaseSqlContext implements _UnionQueryCon
 
     private final _SelectContext outerContext;
 
-    private UnionSelectContext(Select select, @Nullable _SelectContext outerContext, _Dialect dialect, Visible visible) {
+    private UnionSelectContext(Select select, _Dialect dialect, Visible visible) {
         super(dialect, visible);
-        this.outerContext = outerContext;
+        this.outerContext = null;
         this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectPartList());
+    }
+
+
+    private UnionSelectContext(Select select, _SelectContext outerContext) {
+        super((_BaseSqlContext) outerContext);
+        this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectPartList());
+        this.outerContext = outerContext;
     }
 
     @Override
@@ -37,19 +46,7 @@ final class UnionSelectContext extends _BaseSqlContext implements _UnionQueryCon
 
     @Override
     public void appendField(FieldMeta<?, ?> field) {
-        boolean isSelection = false;
-        for (Selection selection : selectionList) {
-            if (selection == field) {
-                isSelection = true;
-                break;
-            }
-        }
-        if (!isSelection) {
-            throw _Exceptions.unknownColumn(null, field);
-        }
-        this.sqlBuilder
-                .append(Constant.SPACE)
-                .append(this.dialect.quoteIfNeed(field.columnName()));
+        throw _Exceptions.unknownColumn(null, field);
     }
 
     @Override

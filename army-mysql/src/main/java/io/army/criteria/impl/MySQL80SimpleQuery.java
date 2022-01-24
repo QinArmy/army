@@ -341,7 +341,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final UnionOrderBy80Spec<C, Q> bracketsQuery() {
+    public final UnionOrderBy80Spec<C, Q> bracket() {
         final UnionOrderBy80Spec<C, Q> unionSpec;
         if (this instanceof AbstractUnionAndQuery) {
             final AbstractUnionAndQuery<C, Q> andQuery = (AbstractUnionAndQuery<C, Q>) this;

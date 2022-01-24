@@ -10,9 +10,5 @@ public interface ScalarSubQuery<E> extends ColumnSubQuery, RowSubQuery, TypeInfe
     }
 
 
-    interface StandardScalarSubQuerySpec<C, E>
-            extends StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> {
-
-    }
 
 }
