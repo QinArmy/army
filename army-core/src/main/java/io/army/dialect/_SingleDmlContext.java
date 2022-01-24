@@ -265,9 +265,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(Constant.POINT)
                 .append(_MetaBridge.ID)
 
-                .append(Constant.SPACE)
-                .append(Constant.EQUAL)
-                .append(Constant.SPACE)
+                .append(Constant.SPACE_EQUAL_SPACE)
 
                 .append(parentContext.safeTableAlias())
                 .append(Constant.POINT)
@@ -325,9 +323,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(Constant.POINT)
                 .append(_MetaBridge.ID)
 
-                .append(Constant.SPACE)
-                .append(Constant.EQUAL)
-                .append(Constant.SPACE)
+                .append(Constant.SPACE_EQUAL_SPACE)
 
                 //below child table id
                 .append(childContext.safeTableAlias())
@@ -342,9 +338,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(Constant.POINT)
                 .append(dialect.safeColumnName(discriminator.columnName()))
 
-                .append(Constant.SPACE)
-                .append(Constant.EQUAL)
-                .append(Constant.SPACE)
+                .append(Constant.SPACE_EQUAL_SPACE)
 
                 //below child table discriminator literal
                 .append(dialect.literal(discriminator, childTable.discriminatorValue()))

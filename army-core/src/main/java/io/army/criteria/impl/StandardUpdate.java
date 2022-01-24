@@ -101,10 +101,6 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         return s;
     }
 
-    @Override
-    public final void mock(Dialect dialect) {
-        System.out.println(this.mockAsString(dialect));
-    }
 
     @Override
     public final String mockAsString(Dialect dialect) {

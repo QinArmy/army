@@ -171,8 +171,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final StandardJoinSpec<C, Q> addFirstTablePartBlock(TablePart tablePart, String alias) {
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(tablePart, alias));
+    final StandardJoinSpec<C, Q> addFirstTablePartBlock(TableItem tableItem, String alias) {
+        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(tableItem, alias));
         return this;
     }
 
@@ -182,8 +182,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final StandardOnSpec<C, Q> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
-        return new OnBlock<>(joinType, tablePart, alias, this);
+    final StandardOnSpec<C, Q> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        return new OnBlock<>(joinType, tableItem, alias, this);
     }
 
     @Override
@@ -258,8 +258,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
         private final StandardSimpleQuery<C, Q> query;
 
-        OnBlock(_JoinType joinType, TablePart tablePart, String alias, StandardSimpleQuery<C, Q> query) {
-            super(joinType, tablePart, alias);
+        OnBlock(_JoinType joinType, TableItem tableItem, String alias, StandardSimpleQuery<C, Q> query) {
+            super(joinType, tableItem, alias);
             this.query = query;
         }
 

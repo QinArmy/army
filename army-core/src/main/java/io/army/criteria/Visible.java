@@ -8,7 +8,7 @@ public enum Visible {
     ONLY_NON_VISIBLE(Boolean.FALSE),
     BOTH(null);
 
-    private final Boolean visible;
+    public final Boolean visible;
 
     Visible(@Nullable Boolean visible) {
         this.visible = visible;
@@ -26,8 +26,4 @@ public enum Visible {
         return visibleEnm;
     }
 
-    @Nullable
-    public Boolean value() {
-        return visible;
-    }
 }

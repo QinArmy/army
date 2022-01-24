@@ -100,7 +100,7 @@ abstract class MySQLDialect extends _AbstractDialect {
     }
 
     @Override
-    public Dialect mode() {
+    public Dialect dialect() {
         return null;
     }
 

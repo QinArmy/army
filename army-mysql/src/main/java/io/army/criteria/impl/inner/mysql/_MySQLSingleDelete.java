@@ -1,6 +1,6 @@
 package io.army.criteria.impl.inner.mysql;
 
-import io.army.criteria.SortPart;
+import io.army.criteria.SortItem;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.meta.SingleTableMeta;
 
@@ -14,7 +14,7 @@ public interface _MySQLSingleDelete extends _MySQLDelete, _SingleDelete {
     /**
      * @return a unmodifiable list
      */
-    List<SortPart> orderByList();
+    List<SortItem> orderByList();
 
     long rowCount();
 

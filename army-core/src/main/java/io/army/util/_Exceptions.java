@@ -134,8 +134,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is managed by Army.", field));
     }
 
-    public static CriteriaException visibleField(GenericField<?, ?> field) {
-        return new CriteriaException(String.format("%s couldn't present in non-selection expression.", field));
+    public static CriteriaException visibleField(Visible visible, GenericField<?, ?> field) {
+        String m = String.format("%s mode is %s,%s couldn't present in non-selection expression."
+                , Visible.class.getSimpleName(), visible, field);
+        return new CriteriaException(m);
     }
 
     public static CriteriaException insertExpDontSupportField(FieldMeta<?, ?> field) {
@@ -215,9 +217,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 
-    public static CriteriaException setTargetAndValuePartNotMatch(SetTargetPart target, SetValuePart value) {
+    public static CriteriaException setTargetAndValuePartNotMatch(SetTargetPart target, SetValueItem value) {
         return new CriteriaException(String.format("%s[%s] and %s[%s] not match.", SetTargetPart.class.getName(), target
-                , SetValuePart.class.getName(), value));
+                , SetValueItem.class.getName(), value));
     }
 
     public static CriteriaException selfJoinNoLogicField(GenericField<?, ?> field) {
@@ -256,9 +258,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new ArmyException(m);
     }
 
-    public static CriteriaException multiDmlOnlySupportTable(_MultiDml dml, TablePart tablePart) {
+    public static CriteriaException multiDmlOnlySupportTable(_MultiDml dml, TableItem tableItem) {
         String m = String.format("Multi table dml only support %s.but present %s"
-                , dml.getClass().getName(), tablePart.getClass().getName());
+                , dml.getClass().getName(), tableItem.getClass().getName());
         return new CriteriaException(m);
     }
 
@@ -284,12 +286,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("You couldn't cast criteria api instance");
     }
 
-    public static CriteriaException unknownSelectPart(@Nullable SelectPart selectPart) {
+    public static CriteriaException unknownSelectPart(@Nullable SelectItem selectItem) {
         final String m;
-        if (selectPart == null) {
-            m = String.format("unknown %s type[null]", SelectPart.class.getName());
+        if (selectItem == null) {
+            m = String.format("unknown %s type[null]", SelectItem.class.getName());
         } else {
-            m = String.format("unknown %s type[%s]", SelectPart.class.getName(), selectPart.getClass().getName());
+            m = String.format("unknown %s type[%s]", SelectItem.class.getName(), selectItem.getClass().getName());
         }
         return new CriteriaException(m);
     }
@@ -317,12 +319,12 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static CriteriaException firstTableHasJoinClause() {
-        String m = String.format("From clause first %s must no join clause.", TablePart.class.getName());
+        String m = String.format("From clause first %s must no join clause.", TableItem.class.getName());
         return new CriteriaException(m);
     }
 
     public static CriteriaException firstTableHasOnClause() {
-        String m = String.format("From clause first %s must no on clause.", TablePart.class.getName());
+        String m = String.format("From clause first %s must no on clause.", TableItem.class.getName());
         return new CriteriaException(m);
     }
 

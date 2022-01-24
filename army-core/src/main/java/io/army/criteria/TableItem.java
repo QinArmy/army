@@ -10,9 +10,7 @@ package io.army.criteria;
  *     </ul>
  * </p>
  */
-public interface TablePart {
-
-
+public interface TableItem {
 
 
 }

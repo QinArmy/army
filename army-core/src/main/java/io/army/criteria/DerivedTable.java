@@ -4,9 +4,9 @@ import io.army.lang.Nullable;
 
 import java.util.List;
 
-public interface DerivedTable extends TablePart {
+public interface DerivedTable extends TableItem {
 
-    List<? extends SelectPart> selectPartList();
+    List<? extends SelectItem> selectPartList();
 
     @Nullable
     default Selection selection(String derivedFieldName) {

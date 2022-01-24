@@ -1,11 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.GenericField;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._SqlContext;
-import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
 import java.util.Objects;
@@ -27,10 +25,6 @@ final class UnaryPredicate extends OperationPredicate {
     static UnaryPredicate create(final UnaryOperator operator, final _Expression<?> expression) {
         if (expression instanceof SubQuery) {
             throw new IllegalArgumentException("expression couldn't be sub query.");
-        }
-        if (expression instanceof GenericField
-                && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) expression).fieldName())) {
-            throw _Exceptions.visibleField((GenericField<?, ?>) expression);
         }
         switch (operator) {
             case IS_NULL:

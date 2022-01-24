@@ -46,6 +46,8 @@ public interface Constant {
 
     String SPACE_EQUAL = " =";
 
+    String SPACE_EQUAL_SPACE = " = ";
+
     String SPACE_AS_SPACE = " AS ";
 
     String INSERT_INTO = "INSERT INTO";
@@ -90,9 +92,6 @@ public interface Constant {
 
     char PLACEHOLDER = '?';
 
-    char EQUAL = '=';
-
-    char NEW_LINE = '\n';
 
 
 }

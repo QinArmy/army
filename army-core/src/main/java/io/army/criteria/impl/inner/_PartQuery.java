@@ -1,15 +1,15 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.SelectPart;
-import io.army.criteria.SortPart;
+import io.army.criteria.SelectItem;
+import io.army.criteria.SortItem;
 
 import java.util.List;
 
 public interface _PartQuery extends _Statement {
 
-    List<? extends SelectPart> selectPartList();
+    List<? extends SelectItem> selectPartList();
 
-    List<SortPart> orderByList();
+    List<SortItem> orderByList();
 
     long offset();
 

@@ -31,10 +31,6 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         return field instanceof FieldMeta ? (FieldMeta<?, ?>) field : field.paramMeta();
     }
 
-    @Override
-    public boolean nullable() {
-        return this.field.nullable();
-    }
 
     @Override
     public FieldMeta<?, ?> fieldMeta() {

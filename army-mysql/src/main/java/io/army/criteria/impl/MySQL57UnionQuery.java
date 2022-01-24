@@ -72,7 +72,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    public final List<? extends SelectPart> selectPartList() {
+    public final List<? extends SelectItem> selectPartList() {
         return ((_PartQuery) this.left).selectPartList();
     }
 

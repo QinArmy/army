@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Statement;
-import io.army.criteria.TablePart;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._Dml;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
@@ -37,7 +37,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS leftJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS leftJoin(Function<C, T> function, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -45,7 +45,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS leftJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -58,12 +58,12 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS ifLeftJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifLeftJoin(Function<C, T> function, String alias) {
         return this.ifAddOnBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifLeftJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifLeftJoin(Supplier<T> supplier, String alias) {
         return this.ifAddOnBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
     }
 
@@ -76,7 +76,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS join(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS join(Function<C, T> function, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -84,7 +84,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS join(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS join(Supplier<T> supplier, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -97,12 +97,12 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS ifJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifJoin(Function<C, T> function, String alias) {
         return this.ifAddOnBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifJoin(Supplier<T> supplier, String alias) {
         return this.ifAddOnBlock(_JoinType.JOIN, supplier.get(), alias);
     }
 
@@ -115,7 +115,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS rightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS rightJoin(Function<C, T> function, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -123,7 +123,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS rightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -136,12 +136,12 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS ifRightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias) {
         return this.ifAddOnBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifRightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias) {
         return this.ifAddOnBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
     }
 
@@ -154,7 +154,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS crossJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS crossJoin(Function<C, T> function, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -162,7 +162,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS crossJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS crossJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -175,12 +175,12 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS ifCrossJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifCrossJoin(Function<C, T> function, String alias) {
         return this.ifAddOnBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifCrossJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifCrossJoin(Supplier<T> supplier, String alias) {
         return this.ifAddOnBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
     }
 
@@ -193,7 +193,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS fullJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS fullJoin(Function<C, T> function, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -201,7 +201,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS fullJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -214,18 +214,18 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     }
 
     @Override
-    public final <T extends TablePart> JS ifFullJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifFullJoin(Function<C, T> function, String alias) {
         return this.ifAddOnBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifFullJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias) {
         return this.ifAddOnBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
     }
 
     abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS createOnBlock(_JoinType joinType, TablePart tablePart, String alias);
+    abstract JS createOnBlock(_JoinType joinType, TableItem tableItem, String alias);
 
     abstract JT createNoActionTableBlock();
 
@@ -239,12 +239,12 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     /*################################## blow private method ##################################*/
 
 
-    final <T extends TablePart> JS ifAddOnBlock(_JoinType joinType, @Nullable TablePart tablePart, String alias) {
+    final <T extends TableItem> JS ifAddOnBlock(_JoinType joinType, @Nullable TableItem tableItem, String alias) {
         final JS block;
-        if (tablePart == null) {
+        if (tableItem == null) {
             block = getNoActionOnBlock();
         } else {
-            block = createOnBlock(joinType, tablePart, alias);
+            block = createOnBlock(joinType, tableItem, alias);
         }
         return block;
     }

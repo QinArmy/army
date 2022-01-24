@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.testng.Assert.assertTrue;
@@ -206,15 +207,16 @@ public class StandardCriteriaUnitTests {
                 .join(User_.T, "u").on(Person_.id.equal(User_.id))
                 .where(Person_.id.equal("1"))
                 .and(User_.nickName.equal("脉兽秀秀"))
-                .groupBy(User_.userType)
+                //.and(User_.visible.equal(false))
+                .ifGroupBy(Collections::emptyList)
                 .having(User_.userType.equal(UserType.PERSON))
-                .orderBy(Person_.id)
+                .orderBy(Person_.id.desc())
                 .limit(0, 10)
                 .lock(LockMode.WRITE)
                 .asQuery();
 
         for (Dialect dialect : Dialect.values()) {
-            LOG.debug("simpleSelect:\n{}", select.mockAsString(dialect));
+            LOG.debug("simpleSelect:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
         }
 
     }

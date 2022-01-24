@@ -91,7 +91,7 @@ public interface _Dialect {
 
     boolean setClauseTableAlias();
 
-    Dialect mode();
+    Dialect dialect();
 
     String defaultFuncName();
 

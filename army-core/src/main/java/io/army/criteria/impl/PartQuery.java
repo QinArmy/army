@@ -24,7 +24,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     final CriteriaContext criteriaContext;
 
-    private List<SortPart> orderByList;
+    private List<SortItem> orderByList;
 
     private long offset = -1L;
 
@@ -94,51 +94,58 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final OR orderBy(SortPart sortPart) {
-        this.orderByList = Collections.singletonList(sortPart);
+    public final OR orderBy(SortItem sortItem) {
+        this.orderByList = Collections.singletonList(sortItem);
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(SortPart sortPart1, SortPart sortPart2) {
-        this.orderByList = ArrayUtils.asUnmodifiableList(sortPart1, sortPart2);
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
+        this.orderByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2);
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(List<SortPart> sortPartList) {
-        if (sortPartList.size() == 0) {
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
+        this.orderByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2, sortItem3);
+        this.afterOrderBy();
+        return (OR) this;
+    }
+
+    @Override
+    public final OR orderBy(List<SortItem> sortItemList) {
+        if (sortItemList.size() == 0) {
             throw new CriteriaException("sortPartList must not empty.");
         }
-        this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
+        this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Function<C, List<SortPart>> function) {
+    public final OR orderBy(Function<C, List<SortItem>> function) {
         return this.orderBy(function.apply(this.criteria));
     }
 
     @Override
-    public final OR orderBy(Supplier<List<SortPart>> supplier) {
+    public final OR orderBy(Supplier<List<SortItem>> supplier) {
         return this.orderBy(supplier.get());
     }
 
     @Override
-    public final OR ifOrderBy(@Nullable SortPart sortPart) {
-        if (sortPart != null) {
-            this.orderByList = Collections.singletonList(sortPart);
+    public final OR ifOrderBy(@Nullable SortItem sortItem) {
+        if (sortItem != null) {
+            this.orderByList = Collections.singletonList(sortItem);
         }
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR ifOrderBy(Supplier<List<SortPart>> supplier) {
-        final List<SortPart> supplierResult;
+    public final OR ifOrderBy(Supplier<List<SortItem>> supplier) {
+        final List<SortItem> supplierResult;
         supplierResult = supplier.get();
         if (!CollectionUtils.isEmpty(supplierResult)) {
             this.orderBy(supplierResult);
@@ -148,8 +155,8 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final OR ifOrderBy(Function<C, List<SortPart>> function) {
-        final List<SortPart> supplierResult;
+    public final OR ifOrderBy(Function<C, List<SortItem>> function) {
+        final List<SortItem> supplierResult;
         supplierResult = function.apply(this.criteria);
         if (!CollectionUtils.isEmpty(supplierResult)) {
             this.orderBy(supplierResult);
@@ -224,10 +231,6 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         _Assert.prepared(this.prepared);
     }
 
-    @Override
-    public final boolean requiredBrackets() {
-        return !CollectionUtils.isEmpty(this.orderByList) || this.offset >= 0L || this.rowCount >= 0L;
-    }
 
     @Override
     public final Q asQuery() {
@@ -235,7 +238,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final List<SortPart> orderByList() {
+    public final List<SortItem> orderByList() {
         _Assert.prepared(this.prepared);
         return this.orderByList;
     }
@@ -259,27 +262,23 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         this.internalClear();
     }
 
-    @Override
-    public final void mock(Dialect dialect) {
-        System.out.println(this.mockAsString(dialect));
-    }
 
     @Override
-    public final String mockAsString(Dialect dialect) {
-
+    public final String mockAsString(Dialect dialect, Visible visible, boolean beautify) {
         final SimpleStmt stmt;
-        stmt = this.mockAsStmt(dialect);
+        stmt = this.mockAsStmt(dialect, visible);
         return "SELECT sql:\n" + stmt.sql();
     }
 
+
     @Override
-    public final SimpleStmt mockAsStmt(Dialect dialect) {
+    public final SimpleStmt mockAsStmt(Dialect dialect, Visible visible) {
         if (this instanceof SubQuery) {
             throw new IllegalStateException("mockAsStmt(DialectMode) support only Select statement.");
         }
         this.validateDialect(dialect);
         final SimpleStmt stmt;
-        stmt = _MockDialects.from(dialect).select((Select) this, Visible.ONLY_VISIBLE);
+        stmt = _MockDialects.from(dialect).select((Select) this, visible);
         _Assert.noNamedParam(stmt.paramGroup());
         return stmt;
     }
@@ -288,7 +287,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     public final String toString() {
         final String s;
         if (this.prepared && this instanceof Select) {
-            s = this.mockAsString(this.defaultDialect());
+            s = this.mockAsString(this.defaultDialect(), Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }
@@ -343,8 +342,8 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     private Q innerAsQuery(final boolean justAsQuery) {
         _Assert.nonPrepared(this.prepared);
 
-        final List<SortPart> sortPartList = this.orderByList;
-        if (sortPartList == null) {
+        final List<SortItem> sortItemList = this.orderByList;
+        if (sortItemList == null) {
             this.orderByList = Collections.emptyList();
         }
         final Q query;

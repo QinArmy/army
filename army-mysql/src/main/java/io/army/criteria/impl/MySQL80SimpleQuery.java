@@ -180,7 +180,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final OrderBy80Spec<C, Q> window(String name, Expression<?> partition, SortPart order) {
+    public final OrderBy80Spec<C, Q> window(String name, Expression<?> partition, SortItem order) {
         return this;
     }
 
@@ -418,9 +418,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final On80Spec<C, Q> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
-        Objects.requireNonNull(tablePart);
-        return new OnBlock<>(joinType, tablePart, alias, this);
+    final On80Spec<C, Q> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        Objects.requireNonNull(tableItem);
+        return new OnBlock<>(joinType, tableItem, alias, this);
     }
 
     @Override
@@ -647,8 +647,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private final MySQL80SimpleQuery<C, Q> query;
 
-        private OnBlock(_JoinType joinType, TablePart tablePart, String alias, MySQL80SimpleQuery<C, Q> query) {
-            super(joinType, tablePart, alias);
+        private OnBlock(_JoinType joinType, TableItem tableItem, String alias, MySQL80SimpleQuery<C, Q> query) {
+            super(joinType, tableItem, alias);
             this.query = query;
         }
 

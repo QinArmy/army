@@ -7,7 +7,7 @@ public interface _Predicate extends IPredicate, _Expression<Boolean> {
 
     boolean isOptimistic();
 
-
+    boolean isParentChildJoin();
 
 
 }

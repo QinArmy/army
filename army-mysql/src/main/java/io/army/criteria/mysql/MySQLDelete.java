@@ -122,9 +122,9 @@ public interface MySQLDelete extends Delete {
 
         DP from(TableMeta<?> table);
 
-        <T extends TablePart> DR from(Supplier<T> supplier, String alias);
+        <T extends TableItem> DR from(Supplier<T> supplier, String alias);
 
-        <T extends TablePart> DR from(Function<C, T> function, String alias);
+        <T extends TableItem> DR from(Function<C, T> function, String alias);
 
     }
 
@@ -134,9 +134,9 @@ public interface MySQLDelete extends Delete {
 
         DP using(TableMeta<?> table);
 
-        <T extends TablePart> DR using(Supplier<T> supplier, String alias);
+        <T extends TableItem> DR using(Supplier<T> supplier, String alias);
 
-        <T extends TablePart> DR using(Function<C, T> function, String alias);
+        <T extends TableItem> DR using(Function<C, T> function, String alias);
 
     }
 

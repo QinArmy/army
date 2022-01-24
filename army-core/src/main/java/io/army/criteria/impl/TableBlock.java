@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.TablePart;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 
@@ -10,25 +10,25 @@ import java.util.Objects;
 
 abstract class TableBlock implements _TableBlock {
 
-    final TablePart tablePart;
+    final TableItem tableItem;
 
     final _JoinType joinType;
 
     @Deprecated
-    TableBlock(TablePart tablePart, _JoinType joinType) {
-        this.tablePart = tablePart;
+    TableBlock(TableItem tableItem, _JoinType joinType) {
+        this.tableItem = tableItem;
         this.joinType = joinType;
     }
 
-    TableBlock(_JoinType joinType, TablePart tablePart) {
+    TableBlock(_JoinType joinType, TableItem tableItem) {
         this.joinType = joinType;
-        this.tablePart = tablePart;
+        this.tableItem = tableItem;
 
     }
 
     @Override
-    public final TablePart table() {
-        return this.tablePart;
+    public final TableItem tableItem() {
+        return this.tableItem;
     }
 
     @Override
@@ -37,9 +37,9 @@ abstract class TableBlock implements _TableBlock {
     }
 
 
-    static TableBlock firstBlock(TablePart tablePart, String alias) {
-        Objects.requireNonNull(tablePart);
-        return new SimpleTableBlock(tablePart, alias);
+    static TableBlock firstBlock(TableItem tableItem, String alias) {
+        Objects.requireNonNull(tableItem);
+        return new SimpleTableBlock(tableItem, alias);
     }
 
 
@@ -47,8 +47,8 @@ abstract class TableBlock implements _TableBlock {
 
         private final String alias;
 
-        SimpleTableBlock(TablePart tablePart, String alias) {
-            super(tablePart, _JoinType.NONE);
+        SimpleTableBlock(TableItem tableItem, String alias) {
+            super(tableItem, _JoinType.NONE);
             this.alias = alias;
         }
 

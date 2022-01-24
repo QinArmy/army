@@ -132,7 +132,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
 
     @Override
-    public final <T extends TablePart> DR from(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> DR from(Supplier<T> supplier, String alias) {
         if (CollectionUtils.isEmpty(this.tableList)) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -141,7 +141,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
     }
 
     @Override
-    public final <T extends TablePart> DR from(Function<C, T> function, String alias) {
+    public final <T extends TableItem> DR from(Function<C, T> function, String alias) {
         if (CollectionUtils.isEmpty(this.tableList)) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -160,12 +160,12 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
     }
 
     @Override
-    public final <T extends TablePart> DR using(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> DR using(Supplier<T> supplier, String alias) {
         return this.from(supplier, alias);
     }
 
     @Override
-    public final <T extends TablePart> DR using(Function<C, T> function, String alias) {
+    public final <T extends TableItem> DR using(Function<C, T> function, String alias) {
         return this.from(function, alias);
     }
 
@@ -203,7 +203,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
     }
 
     @Override
-    public final <T extends TablePart> JT straightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JT straightJoin(Function<C, T> function, String alias) {
         final JT block;
         block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -211,7 +211,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
     }
 
     @Override
-    public final <T extends TablePart> JT straightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JT straightJoin(Supplier<T> supplier, String alias) {
         final JT block;
         block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -224,12 +224,12 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
     }
 
     @Override
-    public final <T extends TablePart> JT ifStraightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JT ifStraightJoin(Supplier<T> supplier, String alias) {
         return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
     }
 
     @Override
-    public final <T extends TablePart> JT ifStraightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JT ifStraightJoin(Function<C, T> function, String alias) {
         return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
@@ -360,8 +360,8 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         }
 
         @Override
-        final MultiOnSpec<C> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
-            return new SimpleOnBlock<>(joinType, tablePart, alias, this);
+        final MultiOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+            return new SimpleOnBlock<>(joinType, tableItem, alias, this);
         }
 
         @Override
@@ -448,8 +448,8 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         }
 
         @Override
-        final BatchMultiOnSpec<C> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
-            return new BatchOnBlock<>(joinType, tablePart, alias, this);
+        final BatchMultiOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+            return new BatchOnBlock<>(joinType, tableItem, alias, this);
         }
 
         @Override
@@ -729,7 +729,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
 
     /**
-     * @see SimpleDelete#createOnBlock(_JoinType, TablePart, String)
+     * @see SimpleDelete#createOnBlock(_JoinType, TableItem, String)
      * @see SimpleDelete#createTableBlock(_JoinType, TableMeta, String)
      */
     private static class SimpleOnBlock<C> extends OnClauseTableBlock<C, MySQLDelete.MultiJoinSpec<C>>
@@ -737,8 +737,8 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
         private final SimpleDelete<C> delete;
 
-        private SimpleOnBlock(_JoinType joinType, TablePart tablePart, String alias, SimpleDelete<C> delete) {
-            super(joinType, tablePart, alias);
+        private SimpleOnBlock(_JoinType joinType, TableItem tableItem, String alias, SimpleDelete<C> delete) {
+            super(joinType, tableItem, alias);
             this.delete = delete;
         }
 
@@ -762,9 +762,9 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
         private final List<String> partitionList;
 
-        private SimpleOnBlockWithPartition(_JoinType joinType, TablePart tablePart
+        private SimpleOnBlockWithPartition(_JoinType joinType, TableItem tableItem
                 , String alias, SimpleDelete<C> delete, List<String> partitionList) {
-            super(joinType, tablePart, alias, delete);
+            super(joinType, tableItem, alias, delete);
             switch (partitionList.size()) {
                 case 0:
                 case 1:
@@ -828,7 +828,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
     /**
      * @see BatchDelete#createTableBlock(_JoinType, TableMeta, String)
-     * @see BatchDelete#createOnBlock(_JoinType, TablePart, String)
+     * @see BatchDelete#createOnBlock(_JoinType, TableItem, String)
      */
     private static class BatchOnBlock<C> extends OnClauseTableBlock<C, MySQLDelete.BatchMultiJoinSpec<C>>
             implements MySQLDelete.BatchMultiOnSpec<C> {
@@ -836,8 +836,8 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
         private final BatchDelete<C> delete;
 
-        private BatchOnBlock(_JoinType joinType, TablePart tablePart, String alias, BatchDelete<C> delete) {
-            super(joinType, tablePart, alias);
+        private BatchOnBlock(_JoinType joinType, TableItem tableItem, String alias, BatchDelete<C> delete) {
+            super(joinType, tableItem, alias);
             this.delete = delete;
         }
 
@@ -858,9 +858,9 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
         private final List<String> partitionList;
 
-        private BatchOnBlockWithPartition(_JoinType joinType, TablePart tablePart, String alias
+        private BatchOnBlockWithPartition(_JoinType joinType, TableItem tableItem, String alias
                 , BatchDelete<C> delete, List<String> partitionList) {
-            super(joinType, tablePart, alias, delete);
+            super(joinType, tableItem, alias, delete);
 
             switch (partitionList.size()) {
                 case 0:

@@ -153,7 +153,7 @@ abstract class CriteriaContexts {
         @Override
         public final void onFirstBlock(final _TableBlock block) {
             if (block.jointType() != _JoinType.NONE || block.predicates().size() > 0) {
-                throw new IllegalArgumentException("Not first block");
+                throw _Exceptions.castCriteriaApi();
             }
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
             if (aliasToBlock.size() > 0) {
@@ -197,12 +197,12 @@ abstract class CriteriaContexts {
         public <E> DerivedField<E> ref(final String subQueryAlias, final String fieldName) {
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
             final _TableBlock block = aliasToBlock.get(subQueryAlias);
-            final TablePart subQuery;
+            final TableItem subQuery;
             final DerivedField<E> field;
             if (block == null) {
                 field = getField(subQueryAlias, fieldName, true);
                 assert field != null;
-            } else if (!((subQuery = block.table()) instanceof SubQuery)) {
+            } else if (!((subQuery = block.tableItem()) instanceof SubQuery)) {
                 //TODO handle MySQL TablePartGroup
                 String m = String.format("%s isn't alias of %s ", subQueryAlias, SubQuery.class.getName());
                 throw new CriteriaException(m);
@@ -313,7 +313,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void selectList(List<? extends SelectPart> selectPartList) {
+        public void selectList(List<? extends SelectItem> selectPartList) {
             // here bug.
             throw new UnsupportedOperationException("Value insert statement not support.");
         }
@@ -351,7 +351,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void selectList(List<? extends SelectPart> selectPartList) {
+        public void selectList(List<? extends SelectItem> selectPartList) {
             throw singleDmlDontSupport();
         }
 
@@ -389,19 +389,19 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void selectList(List<? extends SelectPart> selectPartList) {
+        public void selectList(List<? extends SelectItem> selectPartList) {
             if (this.groupList != null || this.aliasToBlock.size() != 0) {
                 throw _Exceptions.castCriteriaApi();
             }
             List<DerivedGroup> selectionGroupList = null;
-            for (SelectPart selectPart : selectPartList) {
-                if (!(selectPart instanceof DerivedGroup)) {
+            for (SelectItem selectItem : selectPartList) {
+                if (!(selectItem instanceof DerivedGroup)) {
                     continue;
                 }
                 if (selectionGroupList == null) {
                     selectionGroupList = new LinkedList<>();
                 }
-                selectionGroupList.add((DerivedGroup) selectPart);
+                selectionGroupList.add((DerivedGroup) selectItem);
             }
             if (selectionGroupList == null) {
                 this.groupList = Collections.emptyList();
@@ -413,12 +413,12 @@ abstract class CriteriaContexts {
         @Override
         void doOnAddBlock(final _TableBlock block) {
             //TODO handle MySQL TablePartGroup
-            final TablePart tablePart;
-            tablePart = block.table();
-            if (!(tablePart instanceof SubQuery)) {
+            final TableItem tableItem;
+            tableItem = block.tableItem();
+            if (!(tableItem instanceof SubQuery)) {
                 return;
             }
-            final SubQuery subQuery = (SubQuery) tablePart;
+            final SubQuery subQuery = (SubQuery) tableItem;
             final String queryAlias = block.alias();
 
             final Map<String, Map<String, RefSelection<?>>> aliasToDerivedField = this.aliasToDerivedField;
@@ -492,11 +492,6 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public boolean nullable() {
-            return this.selection.nullable();
-        }
-
-        @Override
         public ParamMeta paramMeta() {
             return this.selection.paramMeta();
         }
@@ -557,11 +552,6 @@ abstract class CriteriaContexts {
         @Override
         public String alias() {
             return this.fieldName;
-        }
-
-        @Override
-        public boolean nullable() {
-            return false;
         }
 
         @Override

@@ -427,7 +427,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public final int hashCode() {
-        return Objects.hash(this.javaType);
+        return this.javaType.hashCode();
     }
 
     @Override

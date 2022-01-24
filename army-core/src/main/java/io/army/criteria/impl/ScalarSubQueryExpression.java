@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.ScalarQueryExpression;
 import io.army.criteria.ScalarSubQuery;
-import io.army.criteria.SelectPart;
+import io.army.criteria.SelectItem;
 import io.army.criteria.Selection;
 import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
@@ -26,18 +26,13 @@ final class ScalarSubQueryExpression<E> extends OperationExpression<E> implement
     }
 
     @Override
-    public List<? extends SelectPart> selectPartList() {
+    public List<? extends SelectItem> selectPartList() {
         return this.subQuery.selectPartList();
     }
 
     @Override
     public Selection selection(String derivedFieldName) {
         return this.subQuery.selection(derivedFieldName);
-    }
-
-    @Override
-    public boolean requiredBrackets() {
-        return this.subQuery.requiredBrackets();
     }
 
     @Override

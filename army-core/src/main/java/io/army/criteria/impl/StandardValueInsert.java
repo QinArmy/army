@@ -286,10 +286,6 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
         return s;
     }
 
-    @Override
-    public void mock(Dialect dialect) {
-        System.out.println(mockAsString(dialect));
-    }
 
     @Override
     public String mockAsString(Dialect dialect) {

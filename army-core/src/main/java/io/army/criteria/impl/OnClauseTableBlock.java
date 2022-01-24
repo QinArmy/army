@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
-import io.army.criteria.TablePart;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._Predicate;
 
 import java.util.ArrayList;
@@ -19,8 +19,8 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
 
     private List<_Predicate> onPredicates;
 
-    OnClauseTableBlock(_JoinType joinType, TablePart tablePart, String alias) {
-        super(joinType, tablePart);
+    OnClauseTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        super(joinType, tableItem);
         this.alias = alias;
     }
 

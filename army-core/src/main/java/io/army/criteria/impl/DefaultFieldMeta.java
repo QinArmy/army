@@ -4,6 +4,7 @@ import io.army.ArmyException;
 import io.army.annotation.Codec;
 import io.army.annotation.Column;
 import io.army.annotation.UpdateMode;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
@@ -352,8 +353,8 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
     @Override
     public final void appendSql(final _SqlContext context) {
-        if (this.fieldName.equals(_MetaBridge.VISIBLE)) {
-            throw _Exceptions.visibleField(this);
+        if (context.visible() != Visible.BOTH && this.fieldName.equals(_MetaBridge.VISIBLE)) {
+            throw _Exceptions.visibleField(context.visible(), this);
         }
         context.appendField(this);
     }

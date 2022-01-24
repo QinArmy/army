@@ -97,7 +97,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TablePart> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
@@ -106,13 +106,13 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TablePart> US update(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> US update(Supplier<T> supplier, String alias) {
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
         return (US) this;
     }
 
     @Override
-    public final <T extends TablePart> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
@@ -121,7 +121,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TablePart> US update(Function<C, T> function, String alias) {
+    public final <T extends TableItem> US update(Function<C, T> function, String alias) {
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
@@ -263,7 +263,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TablePart> JS straightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -271,7 +271,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TablePart> JS straightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -284,7 +284,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TablePart> JS ifStraightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias) {
         return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
     }
 
@@ -294,7 +294,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TablePart> JS ifStraightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias) {
         return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
@@ -554,8 +554,8 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         }
 
         @Override
-        final MultiOnSpec<C> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
-            return new SimpleOnBlock<>(joinType, tablePart, alias, this);
+        final MultiOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+            return new SimpleOnBlock<>(joinType, tableItem, alias, this);
         }
 
         @Override
@@ -656,8 +656,8 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         }
 
         @Override
-        final BatchMultiOnSpec<C> createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
-            return new BatchOnBlock<>(joinType, tablePart, alias, this);
+        final BatchMultiOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+            return new BatchOnBlock<>(joinType, tableItem, alias, this);
         }
 
         @Override
@@ -900,15 +900,15 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
 
     /**
-     * @see SimpleUpdate#createOnBlock(_JoinType, TablePart, String)
+     * @see SimpleUpdate#createOnBlock(_JoinType, TableItem, String)
      */
     private static final class SimpleOnBlock<C> extends OnClauseTableBlock<C, MySQLUpdate.MultiJoinSpec<C>>
             implements MySQLUpdate.MultiOnSpec<C> {
 
         private final SimpleUpdate<C> update;
 
-        private SimpleOnBlock(_JoinType joinType, TablePart tablePart, String alias, SimpleUpdate<C> update) {
-            super(joinType, tablePart, alias);
+        private SimpleOnBlock(_JoinType joinType, TableItem tableItem, String alias, SimpleUpdate<C> update) {
+            super(joinType, tableItem, alias);
             this.update = update;
         }
 
@@ -1017,15 +1017,15 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
 
     /**
-     * @see BatchUpdate#createOnBlock(_JoinType, TablePart, String)
+     * @see BatchUpdate#createOnBlock(_JoinType, TableItem, String)
      */
     private static final class BatchOnBlock<C> extends OnClauseTableBlock<C, MySQLUpdate.BatchMultiJoinSpec<C>>
             implements BatchMultiOnSpec<C> {
 
         private final BatchUpdate<C> update;
 
-        private BatchOnBlock(_JoinType joinType, TablePart tablePart, String alias, BatchUpdate<C> update) {
-            super(joinType, tablePart, alias);
+        private BatchOnBlock(_JoinType joinType, TableItem tableItem, String alias, BatchUpdate<C> update) {
+            super(joinType, tableItem, alias);
             this.update = update;
         }
 

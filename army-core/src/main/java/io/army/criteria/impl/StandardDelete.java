@@ -102,11 +102,6 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     }
 
     @Override
-    public final void mock(Dialect dialect) {
-        System.out.println(this.mockAsString(dialect));
-    }
-
-    @Override
     public final String mockAsString(Dialect dialect) {
         final Stmt stmt;
         stmt = this.mockAsStmt(dialect);

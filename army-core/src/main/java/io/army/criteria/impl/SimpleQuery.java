@@ -29,13 +29,13 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     private List<SQLModifier> modifierList;
 
-    private List<? extends SelectPart> selectPartList;
+    private List<? extends SelectItem> selectPartList;
 
     private List<_TableBlock> tableBlockList;
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
-    private List<SortPart> groupByList;
+    private List<SortItem> groupByList;
 
     private List<_Predicate> havingList;
 
@@ -50,59 +50,59 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
 
     @Override
-    public final <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function) {
+    public final <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function) {
         return this.select(hints, modifiers, function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList) {
+    public final <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList) {
         this.hintList = CollectionUtils.asUnmodifiableList(hints);
         this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
         return this.select(selectPartList);
     }
 
     @Override
-    public final <S extends SelectPart> SR select(SQLModifier sqlModifier, List<S> selectPartList) {
+    public final <S extends SelectItem> SR select(SQLModifier sqlModifier, List<S> selectPartList) {
         return this.select(Collections.emptyList(), Collections.singletonList(sqlModifier), selectPartList);
     }
 
     @Override
-    public final <S extends SelectPart> SR select(List<SQLModifier> modifiers, Function<C, List<S>> function) {
+    public final <S extends SelectItem> SR select(List<SQLModifier> modifiers, Function<C, List<S>> function) {
         return this.select(Collections.emptyList(), modifiers, function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectPart> SR select(List<SQLModifier> modifiers, Supplier<List<S>> supplier) {
+    public final <S extends SelectItem> SR select(List<SQLModifier> modifiers, Supplier<List<S>> supplier) {
         return this.select(Collections.emptyList(), modifiers, supplier.get());
     }
 
     @Override
-    public final <S extends SelectPart> SR select(Function<C, List<S>> function) {
+    public final <S extends SelectItem> SR select(Function<C, List<S>> function) {
         return this.select(function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectPart> SR select(Supplier<List<S>> supplier) {
+    public final <S extends SelectItem> SR select(Supplier<List<S>> supplier) {
         return this.select(supplier.get());
     }
 
     @Override
-    public final <S extends SelectPart> SR select(Consumer<List<S>> consumer) {
+    public final <S extends SelectItem> SR select(Consumer<List<S>> consumer) {
         final List<S> list = new ArrayList<>();
         consumer.accept(list);
         return this.select(list);
     }
 
     @Override
-    public final SR select(SQLModifier sqlModifier, SelectPart selectPart) {
+    public final SR select(SQLModifier sqlModifier, SelectItem selectItem) {
         this.modifierList = Collections.singletonList(sqlModifier);
-        return this.select(selectPart);
+        return this.select(selectItem);
     }
 
     @Override
-    public final SR select(SelectPart selectPart) {
-        final List<? extends SelectPart> selectPartList;
-        selectPartList = Collections.singletonList(selectPart);
+    public final SR select(SelectItem selectItem) {
+        final List<? extends SelectItem> selectPartList;
+        selectPartList = Collections.singletonList(selectItem);
 
         this.criteriaContext.selectList(selectPartList); // notify context
 
@@ -112,9 +112,9 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
 
     @Override
-    public final SR select(SelectPart selectPart1, SelectPart selectPart2) {
-        final List<? extends SelectPart> selectPartList;
-        selectPartList = ArrayUtils.asUnmodifiableList(selectPart1, selectPart2);
+    public final SR select(SelectItem selectItem1, SelectItem selectItem2) {
+        final List<? extends SelectItem> selectPartList;
+        selectPartList = ArrayUtils.asUnmodifiableList(selectItem1, selectItem2);
 
         this.criteriaContext.selectList(selectPartList); // notify context
 
@@ -123,19 +123,19 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <S extends SelectPart> SR select(List<SQLModifier> modifiers, List<S> selectPartList) {
+    public final <S extends SelectItem> SR select(List<SQLModifier> modifiers, List<S> selectPartList) {
         return this.select(Collections.emptyList(), modifiers, selectPartList);
     }
 
     @Override
-    public final <S extends SelectPart> SR select(SQLModifier modifier, Consumer<List<S>> consumer) {
+    public final <S extends SelectItem> SR select(SQLModifier modifier, Consumer<List<S>> consumer) {
         final List<S> list = new ArrayList<>();
         consumer.accept(list);
         return this.select(modifier, list);
     }
 
     @Override
-    public final <S extends SelectPart> SR select(List<S> selectPartList) {
+    public final <S extends SelectItem> SR select(List<S> selectPartList) {
         final List<S> selectParts;
         selectParts = CollectionUtils.asUnmodifiableList(selectPartList);
 
@@ -154,12 +154,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> FS from(Function<C, T> function, String alias) {
+    public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
         return this.addFirstTablePartBlock(function.apply(this.criteria), alias);
     }
 
     @Override
-    public final <T extends TablePart> FS from(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> FS from(Supplier<T> supplier, String alias) {
         return this.addFirstTablePartBlock(supplier.get(), alias);
     }
 
@@ -175,7 +175,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS leftJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -183,7 +183,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS leftJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS leftJoin(Function<C, T> function, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -196,12 +196,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS ifLeftJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifLeftJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTablePart(_JoinType.LEFT_JOIN, supplier.get(), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifLeftJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifLeftJoin(Function<C, T> function, String alias) {
         return this.ifJoinTablePart(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
     }
 
@@ -214,7 +214,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS join(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS join(Supplier<T> supplier, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -222,7 +222,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS join(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS join(Function<C, T> function, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -235,12 +235,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS ifJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTablePart(_JoinType.JOIN, supplier.get(), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifJoin(Function<C, T> function, String alias) {
         return this.ifJoinTablePart(_JoinType.JOIN, function.apply(this.criteria), alias);
     }
 
@@ -253,7 +253,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS rightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -261,7 +261,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS rightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS rightJoin(Function<C, T> function, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -274,12 +274,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS ifRightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTablePart(_JoinType.RIGHT_JOIN, supplier.get(), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifRightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias) {
         return this.ifJoinTablePart(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
@@ -292,7 +292,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS crossJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS crossJoin(Function<C, T> function, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -300,7 +300,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS crossJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS crossJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -313,12 +313,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS ifCrossJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifCrossJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTablePart(_JoinType.CROSS_JOIN, supplier.get(), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifCrossJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifCrossJoin(Function<C, T> function, String alias) {
         return this.ifJoinTablePart(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
     }
 
@@ -331,7 +331,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS fullJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -339,7 +339,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS fullJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS fullJoin(Function<C, T> function, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -352,12 +352,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final <T extends TablePart> JS ifFullJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTablePart(_JoinType.FULL_JOIN, supplier.get(), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifFullJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifFullJoin(Function<C, T> function, String alias) {
         return this.ifJoinTablePart(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
     }
 
@@ -448,61 +448,67 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final GR groupBy(SortPart sortPart) {
-        this.groupByList = Collections.singletonList(sortPart);
+    public final GR groupBy(SortItem sortItem) {
+        this.groupByList = Collections.singletonList(sortItem);
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(SortPart sortPart1, SortPart sortPart2) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(sortPart1, sortPart2);
+    public final GR groupBy(SortItem sortItem1, SortItem sortItem2) {
+        this.groupByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2);
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(List<SortPart> sortPartList) {
-        final int size = sortPartList.size();
+    public final GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
+        this.groupByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2, sortItem3);
+        return (GR) this;
+    }
+
+    @Override
+    public final GR groupBy(List<SortItem> sortItemList) {
+        final int size = sortItemList.size();
         switch (size) {
             case 0:
                 throw new CriteriaException("sortPartList must be not empty.");
             case 1:
-                this.groupByList = Collections.singletonList(sortPartList.get(0));
+                this.groupByList = Collections.singletonList(sortItemList.get(0));
                 break;
             default: {
-                this.groupByList = Collections.unmodifiableList(new ArrayList<>(sortPartList));
+                this.groupByList = Collections.unmodifiableList(new ArrayList<>(sortItemList));
             }
         }
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(Function<C, List<SortPart>> function) {
+    public final GR groupBy(Function<C, List<SortItem>> function) {
         return this.groupBy(function.apply(this.criteria));
     }
 
     @Override
-    public final GR groupBy(Supplier<List<SortPart>> supplier) {
+    public final GR groupBy(Supplier<List<SortItem>> supplier) {
         return this.groupBy(supplier.get());
     }
 
     @Override
-    public final GR groupBy(Consumer<List<SortPart>> consumer) {
-        final List<SortPart> list = new ArrayList<>();
+    public final GR groupBy(Consumer<List<SortItem>> consumer) {
+        final List<SortItem> list = new ArrayList<>();
         consumer.accept(list);
         return this.groupBy(list);
     }
 
     @Override
-    public final GR ifGroupBy(@Nullable SortPart sortPart) {
-        if (sortPart != null) {
-            this.groupByList = Collections.singletonList(sortPart);
+    public final GR ifGroupBy(@Nullable SortItem sortItem) {
+        if (sortItem != null) {
+            this.groupByList = Collections.singletonList(sortItem);
         }
         return (GR) this;
     }
 
     @Override
-    public final GR ifGroupBy(Supplier<List<SortPart>> supplier) {
-        final List<SortPart> list;
+    public final GR ifGroupBy(Supplier<List<SortItem>> supplier) {
+        final List<SortItem> list;
         list = supplier.get();
         if (!CollectionUtils.isEmpty(list)) {
             this.groupBy(list);
@@ -511,8 +517,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final GR ifGroupBy(Function<C, List<SortPart>> function) {
-        final List<SortPart> list;
+    public final GR ifGroupBy(Function<C, List<SortItem>> function) {
+        final List<SortItem> list;
         list = function.apply(this.criteria);
         if (!CollectionUtils.isEmpty(list)) {
             this.groupBy(list);
@@ -620,7 +626,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final List<? extends SelectPart> selectPartList() {
+    public final List<? extends SelectItem> selectPartList() {
         prepared();
         return this.selectPartList;
     }
@@ -638,7 +644,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final List<SortPart> groupPartList() {
+    public final List<SortItem> groupPartList() {
         return this.groupByList;
     }
 
@@ -670,7 +676,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
             this.modifierList = Collections.emptyList();
         }
         // selection list
-        final List<? extends SelectPart> selectPartList = this.selectPartList;
+        final List<? extends SelectItem> selectPartList = this.selectPartList;
         if (CollectionUtils.isEmpty(selectPartList)) {
             throw _Exceptions.selectListIsEmpty();
         }
@@ -680,7 +686,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         }
 
         // group by and having
-        final List<SortPart> groupByList = this.groupByList;
+        final List<SortItem> groupByList = this.groupByList;
         if (CollectionUtils.isEmpty(groupByList)) {
             this.groupByList = Collections.emptyList();
             this.hintList = Collections.emptyList();
@@ -721,12 +727,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     abstract FT addFirstTableBlock(TableMeta<?> table, String tableAlias);
 
-    abstract FS addFirstTablePartBlock(TablePart tablePart, String alias);
+    abstract FS addFirstTablePartBlock(TableItem tableItem, String alias);
 
 
     abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS createOnBlock(_JoinType joinType, TablePart tablePart, String alias);
+    abstract JS createOnBlock(_JoinType joinType, TableItem tableItem, String alias);
 
     abstract JT createNoActionTableBlock();
 
@@ -762,12 +768,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         return block;
     }
 
-    final <T extends TablePart> JS ifJoinTablePart(_JoinType joinType, @Nullable TablePart tablePart, String alias) {
+    final <T extends TableItem> JS ifJoinTablePart(_JoinType joinType, @Nullable TableItem tableItem, String alias) {
         final JS block;
-        if (tablePart == null) {
+        if (tableItem == null) {
             block = this.getNoActionOnBlock();
         } else {
-            block = this.createOnBlock(joinType, tablePart, alias);
+            block = this.createOnBlock(joinType, tableItem, alias);
         }
         return block;
     }

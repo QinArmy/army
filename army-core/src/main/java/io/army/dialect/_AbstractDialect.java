@@ -253,7 +253,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
     }
 
-    protected void handleDialectTablePart(TablePart tablePart, _SqlContext context) {
+    protected void handleDialectTablePart(TableItem tableItem, _SqlContext context) {
 
     }
 
@@ -277,21 +277,21 @@ public abstract class _AbstractDialect implements _Dialect {
             if (i > 0) {
                 builder.append(block.jointType().render());
             }
-            final TablePart tablePart = block.table();
-            if (tablePart instanceof TableMeta) {
+            final TableItem tableItem = block.tableItem();
+            if (tableItem instanceof TableMeta) {
                 if (supportTableOnly) {
                     builder.append(Constant.SPACE_ONLY);
                 }
                 builder.append(Constant.SPACE)
-                        .append(dialect.quoteIfNeed(((TableMeta<?>) tablePart).tableName()))
+                        .append(dialect.quoteIfNeed(((TableMeta<?>) tableItem).tableName()))
                         .append(Constant.SPACE_AS_SPACE)
                         .append(dialect.quoteIfNeed(block.alias()));
-            } else if (tablePart instanceof SubQuery) {
-                this.subQuery((SubQuery) tablePart, context);
+            } else if (tableItem instanceof SubQuery) {
+                this.subQuery((SubQuery) tableItem, context);
                 builder.append(Constant.SPACE_AS_SPACE)
                         .append(dialect.quoteIfNeed(block.alias()));
             } else {
-                this.handleDialectTablePart(tablePart, context);
+                this.handleDialectTablePart(tableItem, context);
             }
             if (block instanceof _DialectTableBlock) {
                 this.handleDialectTableBlock(block, context);
@@ -313,19 +313,63 @@ public abstract class _AbstractDialect implements _Dialect {
 
     }
 
-    protected final void queryWhereClause(final List<_Predicate> predicateList, final _SqlContext context) {
-        final int size = predicateList.size();
-        if (size == 0) {
+    protected final void queryWhereClause(final List<? extends _TableBlock> blockList
+            , final List<_Predicate> predicateList, final _SqlContext context) {
+        final int predicateSize = predicateList.size();
+        final Visible visible = context.visible();
+        if (predicateSize == 0 && visible == Visible.BOTH) {
             return;
         }
+        //1. append where key word
         final StringBuilder builder = context.sqlBuilder()
                 .append(Constant.SPACE_WHERE);
-        for (int i = 0; i < size; i++) {
+        //2. append where predicates
+        for (int i = 0; i < predicateSize; i++) {
             if (i > 0) {
                 builder.append(Constant.SPACE_AND);
             }
             predicateList.get(i).appendSql(context);
         }
+
+        if (visible == Visible.BOTH) {
+            return;
+        }
+        final Boolean visibleValue = visible.visible;
+        assert visibleValue != null;
+
+        final _Dialect dialect = context.dialect();
+
+        final int blockSize = blockList.size();
+
+        TableItem tableItem;
+        FieldMeta<?, ?> visibleField;
+        _TableBlock block;
+        //3. append visible
+        for (int i = 0, outputCount = 0; i < blockSize; i++) {
+            block = blockList.get(i);
+            tableItem = block.tableItem();
+            if (!(tableItem instanceof SingleTableMeta)
+                    || !((SingleTableMeta<?>) tableItem).containField(_MetaBridge.VISIBLE)) {
+                continue;
+            }
+
+            if (outputCount > 0 || predicateSize > 0) {
+                builder.append(Constant.SPACE_AND);
+            }
+
+            visibleField = ((SingleTableMeta<?>) tableItem).getField(_MetaBridge.VISIBLE);
+
+            builder.append(Constant.SPACE)
+                    .append(dialect.quoteIfNeed(block.alias()))
+                    .append(Constant.POINT)
+                    .append(dialect.quoteIfNeed(visibleField.columnName()))
+                    .append(Constant.SPACE_EQUAL_SPACE)
+                    .append(dialect.literal(visibleField, visibleValue));
+
+            outputCount++;
+
+        }// for
+
     }
 
 
@@ -360,7 +404,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 .append(_MetaBridge.ID);
     }
 
-    protected final void groupByClause(final List<SortPart> groupByList, final _SqlContext context) {
+    protected final void groupByClause(final List<SortItem> groupByList, final _SqlContext context) {
         final int size = groupByList.size();
         if (size == 0) {
             throw new IllegalArgumentException("groupByList is empty");
@@ -392,7 +436,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
     }
 
-    protected final void orderByClause(final List<SortPart> orderByList, final _SqlContext context) {
+    protected final void orderByClause(final List<SortItem> orderByList, final _SqlContext context) {
         final int size = orderByList.size();
         if (size == 0) {
             return;
@@ -529,7 +573,7 @@ public abstract class _AbstractDialect implements _Dialect {
     protected final List<GenericField<?, ?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
 
         final List<? extends SetTargetPart> targetPartList = clause.targetParts();
-        final List<? extends SetValuePart> valuePartList = clause.valueParts();
+        final List<? extends SetValueItem> valuePartList = clause.valueParts();
         final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
         final int targetCount = targetPartList.size();
 
@@ -550,7 +594,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 sqlBuilder.append(Constant.SPACE_COMMA);
             }
             final SetTargetPart targetPart = targetPartList.get(i);
-            final SetValuePart valuePart = valuePartList.get(i);
+            final SetValueItem valuePart = valuePartList.get(i);
             if (targetPart instanceof Row) {
                 if (!(valuePart instanceof RowSubQuery)) {
                     throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
@@ -601,7 +645,7 @@ public abstract class _AbstractDialect implements _Dialect {
             sqlBuilder.append(dialect.safeColumnName(field.columnName()))
                     .append(Constant.SPACE_EQUAL);
 
-            if (!field.nullable() && ((_Expression<?>) valuePart).nullableExp()) {
+            if (!field.nullable() && ((_Expression<?>) valuePart).isNullableValue()) {
                 throw _Exceptions.nonNullField(field.fieldMeta());
             }
             ((_Expression<?>) valuePart).appendSql(context);
@@ -766,21 +810,21 @@ public abstract class _AbstractDialect implements _Dialect {
 
     }
 
-    private void selectListClause(final List<? extends SelectPart> selectPartList, final _SqlContext context) {
+    private void selectListClause(final List<? extends SelectItem> selectPartList, final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder();
         final int size = selectPartList.size();
-        SelectPart selectPart;
+        SelectItem selectItem;
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 builder.append(Constant.SPACE_COMMA);
             }
-            selectPart = selectPartList.get(i);
-            if (selectPart instanceof Selection) {
-                ((_Selection) selectPart).appendSelection(context);
-            } else if (selectPart instanceof SelectionGroup) {
-                ((_SelfDescribed) selectPart).appendSql(context);
+            selectItem = selectPartList.get(i);
+            if (selectItem instanceof Selection) {
+                ((_Selection) selectItem).appendSelection(context);
+            } else if (selectItem instanceof SelectionGroup) {
+                ((_SelfDescribed) selectItem).appendSql(context);
             } else {
-                throw _Exceptions.unknownSelectPart(selectPart);
+                throw _Exceptions.unknownSelectPart(selectItem);
             }
 
         }
@@ -946,17 +990,25 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
 
+    private static void blocksVisible(List<_TableBlock> blockList, _SqlContext context) {
+
+    }
+
+
     private void standardQuery(_StandardQuery query, _SqlContext context) {
         //1. select clause
         this.standardSelectClause(query.modifierList(), context);
         //2. select list clause
         this.selectListClause(query.selectPartList(), context);
         //3. from clause
-        this.fromClause(query.tableBlockList(), context);
+        final List<? extends _TableBlock> blockList = query.tableBlockList();
+        this.fromClause(blockList, context);
         //4. where clause
-        this.queryWhereClause(query.predicateList(), context);
+
+        this.queryWhereClause(blockList, query.predicateList(), context);
+
         //5. groupBy clause
-        final List<SortPart> groupByList = query.groupPartList();
+        final List<SortItem> groupByList = query.groupPartList();
         if (groupByList.size() > 0) {
             this.groupByClause(groupByList, context);
             this.havingClause(query.havingList(), context);

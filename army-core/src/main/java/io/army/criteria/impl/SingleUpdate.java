@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.TablePart;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
@@ -18,7 +18,7 @@ abstract class SingleUpdate<C, WR, WA, SR> extends JoinableUpdate<C, Void, Void,
     }
 
     @Override
-    final Void createOnBlock(_JoinType joinType, TablePart tablePart, String alias) {
+    final Void createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
         throw _Exceptions.castCriteriaApi();
     }
 

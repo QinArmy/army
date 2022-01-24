@@ -40,7 +40,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final boolean nullableExp() {
+    public final boolean isNullableValue() {
         final boolean nullable;
         if (this instanceof ValueExpression) {
             nullable = ((ValueExpression<?>) this).value() == null;
@@ -1035,12 +1035,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final SortPart asc() {
+    public final SortItem asc() {
         throw unsupportedOperation();
     }
 
     @Override
-    public final SortPart desc() {
+    public final SortItem desc() {
         throw unsupportedOperation();
     }
 

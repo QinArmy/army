@@ -58,7 +58,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
     private MySQLIndexHint.Command command;
 
-    private List<SortPart> orderByList;
+    private List<SortItem> orderByList;
 
     private long rowCount;
 
@@ -308,57 +308,63 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     /*################################## blow OrderByClause method ##################################*/
 
     @Override
-    public final OR orderBy(SortPart sortPart) {
-        this.orderByList = Collections.singletonList(sortPart);
+    public final OR orderBy(SortItem sortItem) {
+        this.orderByList = Collections.singletonList(sortItem);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(SortPart sortPart1, SortPart sortPart2) {
-        this.orderByList = ArrayUtils.asUnmodifiableList(sortPart1, sortPart2);
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
+        this.orderByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(List<SortPart> sortPartList) {
-        this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
+        this.orderByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2, sortItem3);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Function<C, List<SortPart>> function) {
+    public final OR orderBy(List<SortItem> sortItemList) {
+        this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
+        return (OR) this;
+    }
+
+    @Override
+    public final OR orderBy(Function<C, List<SortItem>> function) {
         return this.orderBy(function.apply(this.criteria));
     }
 
     @Override
-    public final OR orderBy(Supplier<List<SortPart>> supplier) {
+    public final OR orderBy(Supplier<List<SortItem>> supplier) {
         return this.orderBy(supplier.get());
     }
 
     @Override
-    public final OR ifOrderBy(@Nullable SortPart sortPart) {
-        if (sortPart != null) {
-            this.orderByList = Collections.singletonList(sortPart);
+    public final OR ifOrderBy(@Nullable SortItem sortItem) {
+        if (sortItem != null) {
+            this.orderByList = Collections.singletonList(sortItem);
         }
         return (OR) this;
     }
 
     @Override
-    public final OR ifOrderBy(Supplier<List<SortPart>> supplier) {
-        final List<SortPart> sortPartList;
-        sortPartList = supplier.get();
-        if (!CollectionUtils.isEmpty(sortPartList)) {
-            this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
+    public final OR ifOrderBy(Supplier<List<SortItem>> supplier) {
+        final List<SortItem> sortItemList;
+        sortItemList = supplier.get();
+        if (!CollectionUtils.isEmpty(sortItemList)) {
+            this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
         }
         return (OR) this;
     }
 
     @Override
-    public final OR ifOrderBy(Function<C, List<SortPart>> function) {
-        final List<SortPart> sortPartList;
-        sortPartList = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(sortPartList)) {
-            this.orderByList = CollectionUtils.asUnmodifiableList(sortPartList);
+    public final OR ifOrderBy(Function<C, List<SortItem>> function) {
+        final List<SortItem> sortItemList;
+        sortItemList = function.apply(this.criteria);
+        if (!CollectionUtils.isEmpty(sortItemList)) {
+            this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
         }
         return (OR) this;
     }
@@ -509,7 +515,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     }
 
     @Override
-    public final List<SortPart> orderByList() {
+    public final List<SortItem> orderByList() {
         return this.orderByList;
     }
 

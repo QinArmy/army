@@ -41,7 +41,7 @@ final class DualPredicate extends OperationPredicate {
             case IN:
             case NOT_IN: {
                 final ArmyExpression<?> rightExp = (ArmyExpression<?>) right;
-                if (rightExp.nullableExp()) {
+                if (rightExp.isNullableValue()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
                 predicate = new DualPredicate(left, operator, rightExp);

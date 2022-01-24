@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.SetTargetPart;
-import io.army.criteria.SetValuePart;
+import io.army.criteria.SetValueItem;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.meta.ChildTableMeta;
 
@@ -15,7 +15,7 @@ public interface _ChildUpdateContext extends _UpdateContext {
 
     List<? extends SetTargetPart> childTargetParts();
 
-    List<? extends SetValuePart> childValueParts();
+    List<? extends SetValueItem> childValueParts();
 
     List<_Predicate> childPredicates();
 

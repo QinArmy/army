@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetValuePart {
+public interface Expression<E> extends SelectionSpec, TypeInfer, SortItem, SetValueItem {
 
     /**
      * relational operate with {@code =}
@@ -745,9 +745,9 @@ public interface Expression<E> extends SelectionAble, TypeInfer, SortPart, SetVa
 
     Expression<E> bracket();
 
-    SortPart asc();
+    SortItem asc();
 
-    SortPart desc();
+    SortItem desc();
 
     IPredicate like(String patternParameter);
 

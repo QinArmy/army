@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Query;
 import io.army.criteria.SQLModifier;
-import io.army.criteria.TablePart;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLQuery;
@@ -214,7 +214,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     }
 
     @Override
-    public final <T extends TablePart> JS straightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -222,7 +222,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     }
 
     @Override
-    public final <T extends TablePart> JS straightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
         final JS block;
         block = createOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
@@ -230,12 +230,12 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     }
 
     @Override
-    public final <T extends TablePart> JS ifStraightJoin(Function<C, T> function, String alias) {
+    public final <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias) {
         return this.ifJoinTablePart(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
-    public final <T extends TablePart> JS ifStraightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTablePart(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
     }
 
@@ -293,9 +293,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     }
 
     @Override
-    final FS addFirstTablePartBlock(TablePart tablePart, String alias) {
-        Objects.requireNonNull(tablePart);
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(tablePart, alias));
+    final FS addFirstTablePartBlock(TableItem tableItem, String alias) {
+        Objects.requireNonNull(tableItem);
+        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(tableItem, alias));
         return (FS) this;
     }
 

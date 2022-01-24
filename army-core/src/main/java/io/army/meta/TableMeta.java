@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.criteria.TablePart;
+import io.army.criteria.TableItem;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.struct.CodeEnum;
@@ -14,7 +14,7 @@ import java.util.List;
  * @see IndexMeta
  * @see IndexFieldMeta
  */
-public interface TableMeta<T extends IDomain> extends TablePart, Meta {
+public interface TableMeta<T extends IDomain> extends TableItem, Meta {
 
 
     Class<T> javaType();

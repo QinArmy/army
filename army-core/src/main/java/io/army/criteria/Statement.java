@@ -18,6 +18,7 @@ import java.util.function.Supplier;
  * @see Update
  * @see Delete
  * @see SubQuery
+ * @since 1.0
  */
 public interface Statement {
 
@@ -31,15 +32,22 @@ public interface Statement {
     }
 
 
-    default void mock(Dialect dialect) {
-
-    }
-
+    @Deprecated
     default String mockAsString(Dialect dialect) {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     default Stmt mockAsStmt(Dialect dialect) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    default String mockAsString(Dialect dialect, Visible visible, boolean beautify) {
+        throw new UnsupportedOperationException();
+    }
+
+    default Stmt mockAsStmt(Dialect dialect, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
@@ -70,9 +78,9 @@ public interface Statement {
 
         FT from(TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> FS from(Function<C, T> function, String alias);
+        <T extends TableItem> FS from(Function<C, T> function, String alias);
 
-        <T extends TablePart> FS from(Supplier<T> supplier, String alias);
+        <T extends TableItem> FS from(Supplier<T> supplier, String alias);
     }
 
     interface OnClause<C, OR> {
@@ -96,63 +104,63 @@ public interface Statement {
 
         JT leftJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS leftJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS leftJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS leftJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias);
 
         JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS ifLeftJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS ifLeftJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS ifLeftJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS ifLeftJoin(Supplier<T> supplier, String alias);
 
         JT join(TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS join(Function<C, T> function, String alias);
+        <T extends TableItem> JS join(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS join(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS join(Supplier<T> supplier, String alias);
 
         JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS ifJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS ifJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS ifJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS ifJoin(Supplier<T> supplier, String alias);
 
         JT rightJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS rightJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS rightJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS rightJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias);
 
         JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS ifRightJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS ifRightJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias);
 
         JT crossJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS crossJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS crossJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS crossJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS crossJoin(Supplier<T> supplier, String alias);
 
         JT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS ifCrossJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS ifCrossJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS ifCrossJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS ifCrossJoin(Supplier<T> supplier, String alias);
 
         JT fullJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS fullJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS fullJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS fullJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias);
 
         JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS ifFullJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS ifFullJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS ifFullJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias);
 
     }
 

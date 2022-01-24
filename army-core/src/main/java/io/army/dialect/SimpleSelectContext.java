@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.Select;
 import io.army.criteria.Selection;
-import io.army.criteria.TablePart;
+import io.army.criteria.TableItem;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Query;
 import io.army.meta.FieldMeta;
@@ -20,19 +20,19 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
 
     static SimpleSelectContext create(Select select, _Dialect dialect, Visible visible) {
         final TableContext tableContext;
-        tableContext = TableContext.createContext(select, dialect);
+        tableContext = TableContext.createContext(select, dialect, visible);
         return new SimpleSelectContext(select, tableContext, dialect, visible);
     }
 
     static SimpleSelectContext create(Select select, _SelectContext outerContext) {
         final TableContext tableContext;
-        tableContext = TableContext.createContext(select, outerContext.dialect());
+        tableContext = TableContext.createContext(select, outerContext.dialect(), outerContext.visible());
         return new SimpleSelectContext(tableContext, outerContext);
     }
 
     private final List<Selection> selectionList;
 
-    private final Map<String, TablePart> aliasToTable;
+    private final Map<String, TableItem> aliasToTable;
 
     private final Map<TableMeta<?>, String> tableToSafeAlias;
 
@@ -56,8 +56,8 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
 
     @Override
     public void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
-        final TablePart tablePart = this.aliasToTable.get(tableAlias);
-        if (!(tablePart instanceof TableMeta) || field.tableMeta() != tablePart) {
+        final TableItem tableItem = this.aliasToTable.get(tableAlias);
+        if (!(tableItem instanceof TableMeta) || field.tableMeta() != tableItem) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
         final _Dialect dialect = this.dialect;

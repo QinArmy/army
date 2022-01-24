@@ -60,7 +60,7 @@ public abstract class _DmlUtils {
         if (field == table.discriminator()) {
             throw _Exceptions.armyManageField(field);
         }
-        if (!field.nullable() && value.nullableExp()) {
+        if (!field.nullable() && value.isNullableValue()) {
             throw _Exceptions.nonNullField(field);
         }
         if (FORBID_INSERT_FIELDS.contains(field.fieldName())) {
@@ -222,11 +222,11 @@ public abstract class _DmlUtils {
      */
     static List<Selection> selectionList(SubQuery subQuery) {
         List<Selection> selectionList = new ArrayList<>();
-        for (SelectPart selectPart : subQuery.selectPartList()) {
-            if (selectPart instanceof SelectionGroup) {
-                selectionList.addAll(((SelectionGroup) selectPart).selectionList());
+        for (SelectItem selectItem : subQuery.selectPartList()) {
+            if (selectItem instanceof SelectionGroup) {
+                selectionList.addAll(((SelectionGroup) selectItem).selectionList());
             } else {
-                selectionList.add((Selection) selectPart);
+                selectionList.add((Selection) selectItem);
             }
         }
         return Collections.unmodifiableList(selectionList);
@@ -238,7 +238,7 @@ public abstract class _DmlUtils {
         if (CollectionUtils.isEmpty(fieldList)) {
             throw new CriteriaException("update must have set clause.");
         }
-        final List<? extends SetValuePart> valueExpList = update.valueExpList();
+        final List<? extends SetValueItem> valueExpList = update.valueExpList();
         if (fieldList.size() != valueExpList.size()) {
             String m;
             m = String.format("update set clause field list size[%s] and value expression list size[%s] not match."

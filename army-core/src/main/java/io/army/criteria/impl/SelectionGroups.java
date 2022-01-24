@@ -15,6 +15,9 @@ import java.util.*;
 
 abstract class SelectionGroups {
 
+    private SelectionGroups() {
+        throw new UnsupportedOperationException();
+    }
 
     static <T extends IDomain> SelectionGroup singleGroup(
             String tableAlias, List<FieldMeta<T, ?>> fieldList) {
@@ -105,8 +108,8 @@ abstract class SelectionGroups {
 
         @Override
         public String toString() {
-            final StringBuilder builder = new StringBuilder()
-                    .append(Constant.SPACE);
+            final StringBuilder builder = new StringBuilder();
+
             int index = 0;
             for (FieldMeta<T, ?> field : this.fieldList) {
                 if (index > 0) {
@@ -167,8 +170,7 @@ abstract class SelectionGroups {
 
             final _Dialect dialect = context.dialect();
 
-            final StringBuilder builder = context.sqlBuilder()
-                    .append(Constant.SPACE);
+            final StringBuilder builder = context.sqlBuilder();
 
             final List<FieldMeta<?, ?>> fieldList = this.fieldList;
             final int parentSize = this.parentSize;
@@ -197,8 +199,7 @@ abstract class SelectionGroups {
 
         @Override
         public String toString() {
-            final StringBuilder builder = new StringBuilder()
-                    .append(Constant.SPACE);
+            final StringBuilder builder = new StringBuilder();
 
             final List<FieldMeta<?, ?>> fieldList = this.fieldList;
             final int parentSize = this.parentSize;
@@ -211,6 +212,7 @@ abstract class SelectionGroups {
                 if (i > 0) {
                     builder.append(Constant.SPACE_COMMA);
                 }
+                builder.append(Constant.SPACE);
                 field = fieldList.get(i);
                 if (i < parentSize) {
                     builder.append(parentAlias);
@@ -252,13 +254,13 @@ abstract class SelectionGroups {
 
         List<Selection> createSelectionList(SubQuery subQuery) {
             final List<Selection> selectionList = new ArrayList<>();
-            for (SelectPart selectPart : subQuery.selectPartList()) {
-                if (selectPart instanceof Selection) {
-                    selectionList.add((Selection) selectPart);
-                } else if (selectPart instanceof SelectionGroup) {
-                    selectionList.addAll(((SelectionGroup) selectPart).selectionList());
+            for (SelectItem selectItem : subQuery.selectPartList()) {
+                if (selectItem instanceof Selection) {
+                    selectionList.add((Selection) selectItem);
+                } else if (selectItem instanceof SelectionGroup) {
+                    selectionList.addAll(((SelectionGroup) selectItem).selectionList());
                 } else {
-                    throw _Exceptions.unknownSelectPart(selectPart);
+                    throw _Exceptions.unknownSelectPart(selectItem);
                 }
             }
             return Collections.unmodifiableList(selectionList);
@@ -320,20 +322,20 @@ abstract class SelectionGroups {
         List<Selection> createSelectionList(SubQuery subQuery) {
             final Set<String> filedNameSet = new HashSet<>(this.derivedFieldNameList);
             final List<Selection> selectionList = new ArrayList<>(filedNameSet.size());
-            for (SelectPart selectPart : subQuery.selectPartList()) {
+            for (SelectItem selectItem : subQuery.selectPartList()) {
 
-                if (selectPart instanceof Selection) {
-                    if (filedNameSet.contains(((Selection) selectPart).alias())) {
-                        selectionList.add((Selection) selectPart);
+                if (selectItem instanceof Selection) {
+                    if (filedNameSet.contains(((Selection) selectItem).alias())) {
+                        selectionList.add((Selection) selectItem);
                     }
-                } else if (selectPart instanceof SelectionGroup) {
-                    for (Selection selection : ((SelectionGroup) selectPart).selectionList()) {
+                } else if (selectItem instanceof SelectionGroup) {
+                    for (Selection selection : ((SelectionGroup) selectItem).selectionList()) {
                         if (filedNameSet.contains(selection.alias())) {
                             selectionList.add(selection);
                         }
                     }
                 } else {
-                    throw _Exceptions.unknownSelectPart(selectPart);
+                    throw _Exceptions.unknownSelectPart(selectItem);
                 }
             }
             if (selectionList.size() != this.derivedFieldNameList.size()) {

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
@@ -63,8 +64,8 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F
 
     @Override
     public void appendSql(final _SqlContext context) {
-        if (_MetaBridge.VISIBLE.equals(this.field.fieldName())) {
-            throw _Exceptions.visibleField(this);
+        if (context.visible() != Visible.BOTH && _MetaBridge.VISIBLE.equals(this.field.fieldName())) {
+            throw _Exceptions.visibleField(context.visible(), this);
         }
         context.appendField(this.tableAlias, this.field);
     }

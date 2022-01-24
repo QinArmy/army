@@ -2,14 +2,11 @@ package io.army.criteria.impl;
 
 import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.Expression;
-import io.army.criteria.GenericField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.modelgen._MetaBridge;
-import io.army.util._Exceptions;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -27,12 +24,6 @@ class ColumnSubQueryPredicate extends OperationPredicate {
 
     static ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator
             , SubQueryOperator subQueryOperator, ColumnSubQuery subQuery) {
-        if (operator == DualOperator.EQ) {
-            if (operand instanceof GenericField
-                    && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) operand).fieldName())) {
-                throw _Exceptions.visibleField((GenericField<?, ?>) operand);
-            }
-        }
         switch (subQueryOperator) {
             case ALL:
             case ANY:
@@ -52,10 +43,6 @@ class ColumnSubQueryPredicate extends OperationPredicate {
     }
 
     static ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator, ColumnSubQuery subQuery) {
-        if (operand instanceof GenericField
-                && _MetaBridge.VISIBLE.equals(((GenericField<?, ?>) operand).fieldName())) {
-            throw _Exceptions.visibleField((GenericField<?, ?>) operand);
-        }
         switch (operator) {
             case IN:
             case NOT_IN:

@@ -1,39 +1,36 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SortPart;
+import io.army.criteria.SortItem;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 
-final class SortPartImpl implements _SelfDescribed, SortPart {
+final class SortItemImpl implements _SelfDescribed, SortItem {
 
-    private final SortPart sortPart;
+    private final SortItem sortItem;
 
     private final boolean ascExp;
 
-    SortPartImpl(SortPart sortPart, boolean ascExp) {
-        this.sortPart = sortPart;
+    SortItemImpl(SortItem sortItem, boolean ascExp) {
+        this.sortItem = sortItem;
         this.ascExp = ascExp;
     }
 
     @Override
     public void appendSql(final _SqlContext context) {
-        ((_SelfDescribed) this.sortPart).appendSql(context);
-
-        final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE);
-
+        ((_SelfDescribed) this.sortItem).appendSql(context);
         if (this.ascExp) {
-            builder.append(" ASC");
+            context.sqlBuilder()
+                    .append(" ASC");
         } else {
-            builder.append(" DESC");
+            context.sqlBuilder()
+                    .append(" DESC");
         }
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder()
-                .append(this.sortPart);
+                .append(this.sortItem);
         if (this.ascExp) {
             builder.append(" ASC");
         } else {

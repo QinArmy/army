@@ -23,7 +23,7 @@ abstract class CriteriaUtils {
      *
      * @return a unmodifiable map
      */
-    static Map<String, Selection> createSelectionMap(List<SelectPart> selectPartList) {
+    static Map<String, Selection> createSelectionMap(List<SelectItem> selectItemList) {
 //
 //        Map<String, Selection> selectionMap = new HashMap<>();
 //        for (SelectPart selectPart : selectPartList) {

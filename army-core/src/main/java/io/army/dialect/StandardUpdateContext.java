@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SetTargetPart;
-import io.army.criteria.SetValuePart;
+import io.army.criteria.SetValueItem;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.lang.Nullable;
@@ -36,7 +36,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
 
     final List<? extends SetTargetPart> fieldList;
 
-    final List<? extends SetValuePart> valueExpList;
+    final List<? extends SetValueItem> valueExpList;
 
     private final ChildSetBlock childSetClause;
 
@@ -66,11 +66,11 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
         final SingleTableMeta<?> parentTable = childTable.parentMeta();
         final List<? extends SetTargetPart> fieldList = update.fieldList();
-        final List<? extends SetValuePart> valueExpList = update.valueExpList();
+        final List<? extends SetValueItem> valueExpList = update.valueExpList();
         final int fieldCount = fieldList.size();
 
         final List<SetTargetPart> parenFields = new ArrayList<>(), fields = new ArrayList<>();
-        final List<SetValuePart> parentValues = new ArrayList<>(), values = new ArrayList<>();
+        final List<SetValueItem> parentValues = new ArrayList<>(), values = new ArrayList<>();
 
         FieldMeta<?, ?> field;
         TableMeta<?> belongOf;
@@ -136,7 +136,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
     }
 
     @Override
-    public List<? extends SetValuePart> valueParts() {
+    public List<? extends SetValueItem> valueParts() {
         return this.valueExpList;
     }
 
@@ -150,12 +150,12 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
 
         final List<SetTargetPart> fieldList;
 
-        final List<SetValuePart> valueExpList;
+        final List<SetValueItem> valueExpList;
 
         private final StandardUpdateContext parentContext;
 
         private ChildSetBlock(ChildTableMeta<?> table, final String tableAlias
-                , List<SetTargetPart> fieldList, List<SetValuePart> valueExpList
+                , List<SetTargetPart> fieldList, List<SetValueItem> valueExpList
                 , StandardUpdateContext parentContext) {
             super(table, tableAlias, parentContext);
             this.fieldList = CollectionUtils.unmodifiableList(fieldList);
@@ -174,7 +174,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         }
 
         @Override
-        public List<SetValuePart> valueParts() {
+        public List<SetValueItem> valueParts() {
             return this.valueExpList;
         }
 

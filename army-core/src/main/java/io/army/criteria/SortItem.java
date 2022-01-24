@@ -1,9 +1,11 @@
 package io.army.criteria;
 
+
 /**
+ * @see Expression
  * @see Selection
- * @see SelectionGroup
  */
-public interface SelectPart {
+public interface SortItem {
+
 
 }

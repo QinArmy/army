@@ -297,15 +297,15 @@ public interface MySQLUpdate extends Update {
 
         UT update(TableMeta<? extends IDomain> table, String tableAlias);
 
-        <T extends TablePart> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
                 , Supplier<T> supplier, String alias);
 
-        <T extends TablePart> US update(Supplier<T> tablePart, String alias);
+        <T extends TableItem> US update(Supplier<T> tablePart, String alias);
 
-        <T extends TablePart> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
                 , Function<C, T> tablePart, String alias);
 
-        <T extends TablePart> US update(Function<C, T> tablePart, String alias);
+        <T extends TableItem> US update(Function<C, T> tablePart, String alias);
     }
 
 

@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.TablePart;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.meta.TableMeta;
@@ -27,8 +27,8 @@ final class MySQLFirstBlock<C, OR> extends OnClauseTableBlock<C, OR> implements 
         this.stmt = stmt;
     }
 
-    MySQLFirstBlock(TablePart tablePart, String alias, OR stmt) {
-        super(_JoinType.NONE, tablePart, alias);
+    MySQLFirstBlock(TableItem tableItem, String alias, OR stmt) {
+        super(_JoinType.NONE, tableItem, alias);
         this.partitionList = Collections.emptyList();
         this.stmt = stmt;
     }

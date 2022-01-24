@@ -37,7 +37,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     private List<SetTargetPart> fieldList = new ArrayList<>();
 
-    private List<SetValuePart> valueExpList = new ArrayList<>();
+    private List<SetValueItem> valueExpList = new ArrayList<>();
 
     private boolean prepared;
 
@@ -88,7 +88,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
             throw _Exceptions.armyManageField(field);
         }
-        if (!field.nullable() && ((_Expression<?>) value).nullableExp()) {
+        if (!field.nullable() && ((_Expression<?>) value).isNullableValue()) {
             throw _Exceptions.nonNullField(field);
         }
         this.fieldList.add(field);
@@ -124,7 +124,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setPlus(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).nullableExp()) {
+        if (((ArmyExpression<F>) value).isNullableValue()) {
             throw _Exceptions.nonNullExpression(field);
         }
         return this.set(field, field.plus(value));
@@ -138,7 +138,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setMinus(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).nullableExp()) {
+        if (((ArmyExpression<F>) value).isNullableValue()) {
             throw _Exceptions.nonNullExpression(field);
         }
         return this.set(field, field.minus(value));
@@ -152,7 +152,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).nullableExp()) {
+        if (((ArmyExpression<F>) value).isNullableValue()) {
             throw _Exceptions.nonNullExpression(field);
         }
         return this.set(field, field.multiply(value));
@@ -166,7 +166,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setDivide(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).nullableExp()) {
+        if (((ArmyExpression<F>) value).isNullableValue()) {
             throw _Exceptions.nonNullExpression(field);
         }
         return this.set(field, field.divide(value));
@@ -180,7 +180,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     @Override
     public final <F extends Number> SR setMod(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).nullableExp()) {
+        if (((ArmyExpression<F>) value).isNullableValue()) {
             throw _Exceptions.nonNullExpression(field);
         }
         return this.set(field, field.mod(value));
@@ -469,7 +469,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
         final List<SetTargetPart> targetParts = this.fieldList;
-        final List<SetValuePart> valueParts = this.valueExpList;
+        final List<SetValueItem> valueParts = this.valueExpList;
         if (CollectionUtils.isEmpty(targetParts)) {
             throw _Exceptions.updateFieldListEmpty();
         }
@@ -511,7 +511,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final List<? extends SetValuePart> valueExpList() {
+    public final List<? extends SetValueItem> valueExpList() {
         return this.valueExpList;
     }
 

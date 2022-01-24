@@ -25,10 +25,9 @@ import java.util.function.Supplier;
  * @see RowSubQuery
  * @see ColumnSubQuery
  * @see ScalarSubQuery
+ * @since 1.0
  */
 public interface Query extends Statement {
-
-    boolean requiredBrackets();
 
 
     interface QuerySpec<Q extends Query> {
@@ -42,56 +41,58 @@ public interface Query extends Statement {
 
     interface SelectClause<C, SR> {
 
-        <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
+        <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectPart> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList);
+        <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList);
 
-        <S extends SelectPart> SR select(List<SQLModifier> modifiers, Function<C, List<S>> function);
+        <S extends SelectItem> SR select(List<SQLModifier> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectPart> SR select(List<SQLModifier> modifiers, Supplier<List<S>> supplier);
+        <S extends SelectItem> SR select(List<SQLModifier> modifiers, Supplier<List<S>> supplier);
 
-        <S extends SelectPart> SR select(Function<C, List<S>> function);
+        <S extends SelectItem> SR select(Function<C, List<S>> function);
 
-        <S extends SelectPart> SR select(Supplier<List<S>> supplier);
+        <S extends SelectItem> SR select(Supplier<List<S>> supplier);
 
-        <S extends SelectPart> SR select(Consumer<List<S>> consumer);
+        <S extends SelectItem> SR select(Consumer<List<S>> consumer);
 
-        SR select(SQLModifier modifier, SelectPart selectPart);
+        SR select(SQLModifier modifier, SelectItem selectItem);
 
-        SR select(SelectPart selectPart);
+        SR select(SelectItem selectItem);
 
-        SR select(SelectPart selectPart1, SelectPart selectPart2);
+        SR select(SelectItem selectItem1, SelectItem selectItem2);
 
-        <S extends SelectPart> SR select(List<SQLModifier> modifiers, List<S> selectPartList);
+        <S extends SelectItem> SR select(List<SQLModifier> modifiers, List<S> selectPartList);
 
-        <S extends SelectPart> SR select(List<S> selectPartList);
+        <S extends SelectItem> SR select(List<S> selectPartList);
 
-        <S extends SelectPart> SR select(SQLModifier modifier, List<S> selectPartList);
+        <S extends SelectItem> SR select(SQLModifier modifier, List<S> selectPartList);
 
-        <S extends SelectPart> SR select(SQLModifier modifier, Consumer<List<S>> consumer);
+        <S extends SelectItem> SR select(SQLModifier modifier, Consumer<List<S>> consumer);
 
     }
 
 
     interface GroupClause<C, GR> {
 
-        GR groupBy(SortPart sortPart);
+        GR groupBy(SortItem sortItem);
 
-        GR groupBy(SortPart sortPart1, SortPart sortPart2);
+        GR groupBy(SortItem sortItem1, SortItem sortItem2);
 
-        GR groupBy(List<SortPart> sortPartList);
+        GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
 
-        GR groupBy(Function<C, List<SortPart>> function);
+        GR groupBy(List<SortItem> sortItemList);
 
-        GR groupBy(Supplier<List<SortPart>> supplier);
+        GR groupBy(Function<C, List<SortItem>> function);
 
-        GR groupBy(Consumer<List<SortPart>> consumer);
+        GR groupBy(Supplier<List<SortItem>> supplier);
 
-        GR ifGroupBy(@Nullable SortPart sortPart);
+        GR groupBy(Consumer<List<SortItem>> consumer);
 
-        GR ifGroupBy(Supplier<List<SortPart>> supplier);
+        GR ifGroupBy(@Nullable SortItem sortItem);
 
-        GR ifGroupBy(Function<C, List<SortPart>> function);
+        GR ifGroupBy(Supplier<List<SortItem>> supplier);
+
+        GR ifGroupBy(Function<C, List<SortItem>> function);
     }
 
 
@@ -156,21 +157,23 @@ public interface Query extends Statement {
 
     interface OrderByClause<C, OR> {
 
-        OR orderBy(SortPart sortPart);
+        OR orderBy(SortItem sortItem);
 
-        OR orderBy(SortPart sortPart1, SortPart sortPart2);
+        OR orderBy(SortItem sortItem1, SortItem sortItem2);
 
-        OR orderBy(List<SortPart> sortPartList);
+        OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
 
-        OR orderBy(Function<C, List<SortPart>> function);
+        OR orderBy(List<SortItem> sortItemList);
 
-        OR orderBy(Supplier<List<SortPart>> supplier);
+        OR orderBy(Function<C, List<SortItem>> function);
 
-        OR ifOrderBy(@Nullable SortPart sortPart);
+        OR orderBy(Supplier<List<SortItem>> supplier);
 
-        OR ifOrderBy(Supplier<List<SortPart>> supplier);
+        OR ifOrderBy(@Nullable SortItem sortItem);
 
-        OR ifOrderBy(Function<C, List<SortPart>> function);
+        OR ifOrderBy(Supplier<List<SortItem>> supplier);
+
+        OR ifOrderBy(Function<C, List<SortItem>> function);
 
     }
 

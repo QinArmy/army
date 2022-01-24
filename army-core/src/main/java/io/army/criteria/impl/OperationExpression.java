@@ -33,16 +33,12 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final boolean nullableExp() {
+    public final boolean isNullableValue() {
         final boolean nullable;
-        if (this instanceof Selection) {
-            nullable = ((Selection) this).nullable();
-        } else if (this instanceof ValueExpression) {
+        if (this instanceof ValueExpression) {
             nullable = ((ValueExpression<?>) this).value() == null;
-        } else if (this instanceof ScalarSubQuery) {
-            nullable = ((ScalarSubQuery<?>) this).selection().nullable();
         } else {
-            nullable = !(this instanceof NonNullNamedParam);
+            nullable = this instanceof NamedParam && !(this instanceof NonNullNamedParam);
         }
         return nullable;
     }
@@ -1055,13 +1051,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E> {
     }
 
     @Override
-    public final SortPart asc() {
-        return new SortPartImpl(this, true);
+    public final SortItem asc() {
+        return new SortItemImpl(this, true);
     }
 
     @Override
-    public final SortPart desc() {
-        return new SortPartImpl(this, false);
+    public final SortItem desc() {
+        return new SortItemImpl(this, false);
     }
 
     @Override

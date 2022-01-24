@@ -46,15 +46,15 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         JT straightJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TablePart> JS straightJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS straightJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS straightJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias);
 
         JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias);
 
-        <T extends TablePart> JS ifStraightJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias);
 
-        <T extends TablePart> JS ifStraightJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias);
 
         JP leftJoin(TableMeta<?> table);
 
@@ -186,7 +186,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         WC window(String name, Expression<?> partition);
 
-        WC window(String name, Expression<?> partition, SortPart order);
+        WC window(String name, Expression<?> partition, SortItem order);
 
         WC window(NamedWindow namedWindow);
 

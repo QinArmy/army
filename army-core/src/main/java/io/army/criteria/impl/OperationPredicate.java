@@ -5,7 +5,9 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.NamedParam;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping._MappingFactory;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.ParamMeta;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 
 import java.util.ArrayList;
@@ -70,8 +72,7 @@ abstract class OperationPredicate extends OperationExpression<Boolean> implement
     public final boolean isOptimistic() {
         final boolean match;
         final DualPredicate predicate;
-        if (!(this instanceof DualPredicate)
-                || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
+        if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
             match = false;
         } else if (predicate.left instanceof GenericField
                 && _MetaBridge.VERSION.equals(((GenericField<?, ?>) predicate.left).fieldName())) {
@@ -82,6 +83,32 @@ abstract class OperationPredicate extends OperationExpression<Boolean> implement
             match = predicate.left instanceof ValueExpression
                     || predicate.left instanceof NamedParam;
 
+        } else {
+            match = false;
+        }
+        return match;
+    }
+
+    @Override
+    public final boolean isParentChildJoin() {
+        final boolean match;
+        final DualPredicate predicate;
+        if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
+            match = false;
+        } else if (!(predicate.left instanceof GenericField && predicate.right instanceof GenericField)) {
+            match = false;
+        } else if (_MetaBridge.ID.equals(((GenericField<?, ?>) predicate.left).fieldName())
+                && _MetaBridge.ID.equals(((GenericField<?, ?>) predicate.right).fieldName())) {
+            final TableMeta<?> leftTable, rightTable;
+            leftTable = ((GenericField<?, ?>) predicate.left).tableMeta();
+            rightTable = ((GenericField<?, ?>) predicate.right).tableMeta();
+            if (leftTable instanceof ChildTableMeta) {
+                match = ((ChildTableMeta<?>) leftTable).parentMeta() == rightTable;
+            } else if (rightTable instanceof ChildTableMeta) {
+                match = ((ChildTableMeta<?>) rightTable).parentMeta() == leftTable;
+            } else {
+                match = false;
+            }
         } else {
             match = false;
         }

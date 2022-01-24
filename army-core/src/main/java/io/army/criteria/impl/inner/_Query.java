@@ -2,7 +2,7 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.Hint;
 import io.army.criteria.SQLModifier;
-import io.army.criteria.SortPart;
+import io.army.criteria.SortItem;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public interface _Query extends _PartQuery {
     /**
      * @return a unmodifiable list
      */
-    List<SortPart> groupPartList();
+    List<SortItem> groupPartList();
 
     /**
      * @return a unmodifiable list

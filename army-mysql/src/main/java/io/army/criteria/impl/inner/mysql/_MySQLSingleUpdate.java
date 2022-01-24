@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner.mysql;
 
 
-import io.army.criteria.SortPart;
+import io.army.criteria.SortItem;
 import io.army.criteria.impl.inner._SingleUpdate;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public interface _MySQLSingleUpdate extends _MySQLUpdate, _SingleUpdate {
     /**
      * @return a unmodifiable list
      */
-    List<SortPart> orderByList();
+    List<SortItem> orderByList();
 
     long rowCount();
 

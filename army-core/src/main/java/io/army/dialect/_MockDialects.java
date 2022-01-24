@@ -22,6 +22,7 @@ public abstract class _MockDialects {
         return DIALECT_MAP.computeIfAbsent(dialect, _MockDialects::createDialect);
     }
 
+
     private static _Dialect createDialect(final Dialect mode) {
         final ServerMeta meta;
         switch (mode) {

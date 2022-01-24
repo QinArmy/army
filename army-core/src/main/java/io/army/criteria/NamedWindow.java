@@ -22,21 +22,21 @@ public interface NamedWindow {
 
     interface PartitionClause<C, PR> {
 
-        PR partitionBy(SortPart sortPart);
+        PR partitionBy(SortItem sortItem);
 
-        PR partitionBy(SortPart sortPart1, SortPart sortPart2);
+        PR partitionBy(SortItem sortItem1, SortItem sortItem2);
 
-        PR partitionBy(List<SortPart> sortPartList);
+        PR partitionBy(List<SortItem> sortItemList);
 
-        PR partitionBy(Function<C, List<SortPart>> function);
+        PR partitionBy(Function<C, List<SortItem>> function);
 
-        PR partitionBy(Supplier<List<SortPart>> supplier);
+        PR partitionBy(Supplier<List<SortItem>> supplier);
 
-        PR ifPartitionBy(@Nullable SortPart sortPart);
+        PR ifPartitionBy(@Nullable SortItem sortItem);
 
-        PR ifPartitionBy(Supplier<List<SortPart>> supplier);
+        PR ifPartitionBy(Supplier<List<SortItem>> supplier);
 
-        PR ifPartitionBy(Function<C, List<SortPart>> function);
+        PR ifPartitionBy(Function<C, List<SortItem>> function);
 
     }
 

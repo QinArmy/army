@@ -24,9 +24,7 @@ public interface _Expression<E> extends Expression<E>, _SelfDescribed {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * design for non batch update
-     */
-    boolean nullableExp();
+
+    boolean isNullableValue();
 
 }

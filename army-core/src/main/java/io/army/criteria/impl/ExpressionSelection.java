@@ -46,11 +46,6 @@ final class ExpressionSelection implements _Selection {
 
 
     @Override
-    public boolean nullable() {
-        return this.expression.nullableExp();
-    }
-
-    @Override
     public String toString() {
         return String.format(" %s AS %s", this.expression, this.alias);
     }

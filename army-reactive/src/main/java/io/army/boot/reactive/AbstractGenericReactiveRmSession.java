@@ -65,7 +65,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
 
     @Override
     public final <R> Flux<Optional<R>> selectOptional(Select select, Class<R> columnClass, Visible visible) {
-        List<? extends SelectPart> selectPartList = ((_Select) select).selectPartList();
+        List<? extends SelectItem> selectPartList = ((_Select) select).selectPartList();
         if (selectPartList.size() != 1 || !(selectPartList.get(0) instanceof Selection)) {
             return Flux.error(new IllegalArgumentException(
                     "select isn't single column query,please use select method."));
@@ -327,9 +327,9 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
             // 1. iterate tableWrapperList
             mono = Flux.fromIterable(((_MultiDml) sqlStatement).tableBlockList())
                     // 2. filter TableMeta
-                    .filter(tableWrapper -> tableWrapper.table() instanceof TableMeta)
+                    .filter(tableWrapper -> tableWrapper.tableItem() instanceof TableMeta)
                     // map tableWrapper to table meta
-                    .map(tableWrapper -> (TableMeta<?>) tableWrapper.table())
+                    .map(tableWrapper -> (TableMeta<?>) tableWrapper.tableItem())
                     // 3. invoke before domain insert
                     .flatMap(function)
                     .then();
@@ -352,9 +352,9 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
             // 1. iterate tableWrapperList
             mono = Flux.fromIterable(((_MultiDml) sqlStatement).tableBlockList())
                     // 2. filter TableMeta
-                    .filter(tableWrapper -> tableWrapper.table() instanceof TableMeta)
+                    .filter(tableWrapper -> tableWrapper.tableItem() instanceof TableMeta)
                     // map tableWrapper to table meta
-                    .map(tableWrapper -> (TableMeta<?>) tableWrapper.table())
+                    .map(tableWrapper -> (TableMeta<?>) tableWrapper.tableItem())
                     // 3. invoke before domain insert
                     .flatMap(tableMeta -> function.apply(tableMeta, ex))
                     .then();

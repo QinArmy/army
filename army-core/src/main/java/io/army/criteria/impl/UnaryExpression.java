@@ -24,7 +24,7 @@ final class UnaryExpression<E> extends OperationExpression<E> {
         switch (operator) {
             case INVERT:
             case NEGATED: {
-                if (expression.nullableExp()) {
+                if (expression.isNullableValue()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
             }
