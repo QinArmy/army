@@ -40,7 +40,7 @@ abstract class CriteriaContextStack {
             m = "Current context and the context of sub query ( or with clause ) not match,reject pop.";
             throw new CriteriaException(m);
         }
-        stack.pop().clear();
+        stack.pop();
     }
 
     static void push(final CriteriaContext subContext) {

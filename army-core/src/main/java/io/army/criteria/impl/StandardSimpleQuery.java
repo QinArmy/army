@@ -1,8 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.dialect.Dialect;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
@@ -306,10 +308,22 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     /**
      * @see #subQuery(Object)
      */
-    private static class SimpleSubQuery<C, Q extends SubQuery> extends StandardSimpleQuery<C, Q> implements SubQuery {
+    private static class SimpleSubQuery<C, Q extends SubQuery> extends StandardSimpleQuery<C, Q>
+            implements SubQuery, _SelfDescribed {
 
         private SimpleSubQuery(@Nullable C criteria) {
             super(criteria);
+        }
+
+        @Override
+        public final Selection selection(String derivedFieldName) {
+            //TODO
+            return SubQuery.super.selection(derivedFieldName);
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            context.dialect().subQuery(this, context);
         }
 
 
@@ -387,10 +401,15 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     private static class UnionAndSubQuery<C, Q extends SubQuery> extends AbstractUnionAndQuery<C, Q>
-            implements SubQuery {
+            implements SubQuery, _SelfDescribed {
 
         private UnionAndSubQuery(Q left, UnionType unionType) {
             super(left, unionType);
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            context.dialect().subQuery(this, context);
         }
 
     }// UnionAndSubQuery

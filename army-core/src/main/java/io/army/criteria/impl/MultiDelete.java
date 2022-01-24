@@ -41,6 +41,11 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends JoinableDml<C, JT, JS, WR,
     }
 
     @Override
+    public final boolean isPrepared() {
+        return this.prepared;
+    }
+
+    @Override
     public final Delete asDelete() {
         _Assert.nonPrepared(this.prepared);
 

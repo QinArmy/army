@@ -279,7 +279,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     public String toString() {
         final String s;
         if (this.prepared) {
-            s = this.mockAsString(Dialect.MySQL57);
+            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }
@@ -288,7 +288,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
 
 
     @Override
-    public String mockAsString(Dialect dialect) {
+    public String mockAsString(final Dialect dialect, final Visible visible, boolean beautify) {
         final Stmt stmt;
         stmt = mockAsStmt(dialect);
         final StringBuilder builder = new StringBuilder();
@@ -307,8 +307,8 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     }
 
     @Override
-    public Stmt mockAsStmt(Dialect dialect) {
-        return _MockDialects.from(dialect).insert(this, Visible.ONLY_VISIBLE);
+    public Stmt mockAsStmt(Dialect dialect, Visible visible) {
+        return _MockDialects.from(dialect).insert(this, visible);
     }
 
     /*################################## blow SQLStatement method ##################################*/
@@ -316,6 +316,11 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     @Override
     public void prepared() {
         _Assert.prepared(this.prepared);
+    }
+
+    @Override
+    public boolean isPrepared() {
+        return this.prepared;
     }
 
 

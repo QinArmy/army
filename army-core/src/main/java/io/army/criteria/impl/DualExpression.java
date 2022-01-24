@@ -141,11 +141,6 @@ final class DualExpression<E> extends OperationExpression<E> {
 
     }
 
-    @Override
-    public boolean containsSubQuery() {
-        return this.left.containsSubQuery()
-                || this.right.containsSubQuery();
-    }
 
     @Override
     public String toString() {

@@ -20,14 +20,6 @@ final class DualPredicate extends OperationPredicate {
     }
 
     static DualPredicate create(final ArmyExpression<?> left, final DualOperator operator, final Expression<?> right) {
-//        if (left instanceof GenericField
-//                && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) left).fieldName()))) {
-//            throw _Exceptions.visibleField((GenericField<?, ?>) left);
-//        } else if (right instanceof GenericField
-//                && _MetaBridge.VISIBLE.equals((((GenericField<?, ?>) right).fieldName()))) {
-//            throw _Exceptions.visibleField((GenericField<?, ?>) right);
-//        }
-
         final DualPredicate predicate;
         switch (operator) {
             case NOT_EQ:
@@ -77,11 +69,6 @@ final class DualPredicate extends OperationPredicate {
         this.right.appendSql(context);
     }
 
-
-    @Override
-    public boolean containsSubQuery() {
-        return this.left.containsSubQuery() || this.right.containsSubQuery();
-    }
 
 
     @Override

@@ -61,10 +61,6 @@ class NamedParamImpl<E> extends OperationExpression<E> implements NamedParam<E> 
         return " ?:" + this.name;
     }
 
-    @Override
-    public final boolean containsSubQuery() {
-        return false;
-    }
 
     /**
      * <p>

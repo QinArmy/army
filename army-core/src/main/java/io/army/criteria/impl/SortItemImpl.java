@@ -1,23 +1,21 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SortItem;
-import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._SqlContext;
 
-final class SortItemImpl implements _SortItem {
+final class SortItemImpl implements ArmySortItem {
 
-    private final SortItem sortItem;
+    private final ArmySortItem sortItem;
 
     private final boolean ascExp;
 
-    SortItemImpl(SortItem sortItem, boolean ascExp) {
+    SortItemImpl(ArmySortItem sortItem, boolean ascExp) {
         this.sortItem = sortItem;
         this.ascExp = ascExp;
     }
 
     @Override
     public void appendSql(final _SqlContext context) {
-        ((_SelfDescribed) this.sortItem).appendSql(context);
+        this.sortItem.appendSql(context);
         if (this.ascExp) {
             context.sqlBuilder()
                     .append(" ASC");

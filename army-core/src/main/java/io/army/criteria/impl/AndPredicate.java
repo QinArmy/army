@@ -41,10 +41,6 @@ final class AndPredicate extends OperationPredicate {
         this.rightList = rightList;
     }
 
-    @Override
-    public boolean containsSubQuery() {
-        return false;
-    }
 
     @Override
     public void appendSql(final _SqlContext context) {

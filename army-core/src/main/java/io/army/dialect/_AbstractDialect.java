@@ -133,9 +133,9 @@ public abstract class _AbstractDialect implements _Dialect {
 
         //2. assert select implementation class.
         if (select instanceof StandardQuery) {
-            _SQLCounselor.assertStandardSelect(select);
+            _SQLCounselor.assertStandardQuery(select);
         } else {
-            this.assertDialectSelect(select);
+            this.assertDialectQuery(select);
         }
 
         //3. parse select
@@ -164,9 +164,9 @@ public abstract class _AbstractDialect implements _Dialect {
 
         //2. assert select implementation class.
         if (select instanceof StandardQuery) {
-            _SQLCounselor.assertStandardSelect(select);
+            _SQLCounselor.assertStandardQuery(select);
         } else {
-            this.assertDialectSelect(select);
+            this.assertDialectQuery(select);
         }
 
         //3. parse select
@@ -196,7 +196,47 @@ public abstract class _AbstractDialect implements _Dialect {
 
 
     @Override
-    public final void subQuery(SubQuery subQuery, _SqlContext original) {
+    public final void subQuery(final SubQuery subQuery, final _SqlContext original) {
+        //1. assert prepared
+        subQuery.prepared();
+
+        //2. assert sub query implementation class.
+        if (subQuery instanceof StandardQuery) {
+            _SQLCounselor.assertStandardQuery(subQuery);
+        } else {
+            this.assertDialectQuery(subQuery);
+        }
+        final StringBuilder builder = original.sqlBuilder();
+
+        final boolean outerBrackets;
+        outerBrackets = !(original instanceof _SubQueryContext) || original instanceof _SimpleQueryContext;
+
+        if (outerBrackets) {
+            builder.append(Constant.SPACE_LEFT_BRACKET);// append space left bracket before select key word
+        }
+        //3. parse sub query
+        if (subQuery instanceof _UnionQuery) {
+            if (original instanceof _SubQueryContext && original instanceof _UnionQueryContext) {
+                this.standardUnionQuery((_UnionQuery) subQuery, original);
+            } else {
+                final UnionSubQueryContext context;
+                context = UnionSubQueryContext.create(original);
+                this.standardUnionQuery((_UnionQuery) subQuery, context);
+            }
+        } else {
+            builder.append(Constant.SPACE); //append space before select key word
+            final SimpleSubQueryContext context;
+            context = SimpleSubQueryContext.create(subQuery, original);//create new simple sub query context
+            if (subQuery instanceof StandardQuery) {
+                this.standardSimpleQuery((_StandardQuery) subQuery, context);
+            } else {
+                this.handleDialectQuery((_Query) subQuery, context);
+            }
+        }
+
+        if (outerBrackets) {
+            builder.append(Constant.SPACE_RIGHT_BRACKET);// append space left bracket after sub query end.
+        }
 
     }
 
@@ -250,8 +290,8 @@ public abstract class _AbstractDialect implements _Dialect {
         throw new CriteriaException(m);
     }
 
-    protected void assertDialectSelect(Select select) {
-        String m = String.format("%s don't support this dialect select[%s]", this, select.getClass().getName());
+    protected void assertDialectQuery(Query query) {
+        String m = String.format("%s don't support this dialect select[%s]", this, query.getClass().getName());
         throw new CriteriaException(m);
     }
 
@@ -282,7 +322,7 @@ public abstract class _AbstractDialect implements _Dialect {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt handleDialectQuery(_Query query, _SelectContext context) {
+    protected void handleDialectQuery(_Query query, _SqlContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -363,13 +403,16 @@ public abstract class _AbstractDialect implements _Dialect {
             if (i == 0) {
                 continue;
             }
-            index = 0;// reset to 0
-            for (_Predicate predicate : block.predicates()) {
-                if (index > 0) {
+            final List<_Predicate> onPredicates = block.predicates();
+            final int onSize = onPredicates.size();
+            if (onSize > 0) {
+                builder.append(Constant.SPACE_ON);
+            }
+            for (int j = 0; j < onSize; j++) {
+                if (j > 0) {
                     builder.append(Constant.SPACE_AND);
                 }
-                predicate.appendSql(context);
-                index++;
+                onPredicates.get(j).appendSql(context);
             }
 
         }// for
@@ -385,8 +428,11 @@ public abstract class _AbstractDialect implements _Dialect {
             return;
         }
         //1. append where key word
-        final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE_WHERE);
+        final StringBuilder builder = context.sqlBuilder();
+
+        if (predicateSize > 0) {
+            builder.append(Constant.SPACE_WHERE);
+        }
         //2. append where predicates
         for (int i = 0; i < predicateSize; i++) {
             if (i > 0) {
@@ -419,6 +465,8 @@ public abstract class _AbstractDialect implements _Dialect {
 
             if (outputCount > 0 || predicateSize > 0) {
                 builder.append(Constant.SPACE_AND);
+            } else {
+                builder.append(Constant.SPACE_WHERE);
             }
 
             visibleField = ((SingleTableMeta<?>) tableItem).getField(_MetaBridge.VISIBLE);
@@ -702,7 +750,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 throw _Exceptions.armyManageField(field.fieldMeta());
             }
             if (hasSelfJoin && !(field instanceof QualifiedField)) {
-                throw _Exceptions.selfJoinNoLogicField(field);
+                throw _Exceptions.selfJoinNonQualifiedField(field);
             }
             if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?, ?>) field).tableAlias())) {
                 throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);
@@ -776,7 +824,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 throw _Exceptions.armyManageField(field.fieldMeta());
             }
             if (hasSelfJoin && !(field instanceof QualifiedField)) {
-                throw _Exceptions.selfJoinNoLogicField(field);
+                throw _Exceptions.selfJoinNonQualifiedField(field);
             }
             if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?, ?>) field).tableAlias())) {
                 throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);

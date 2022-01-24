@@ -5,10 +5,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 
-import java.util.Collection;
 import java.util.function.Function;
 
 class ColumnSubQueryPredicate extends OperationPredicate {
@@ -96,25 +93,6 @@ class ColumnSubQueryPredicate extends OperationPredicate {
     }
 
 
-    @Override
-    public final boolean containsSubQuery() {
-        return true;
-    }
-
-    @Override
-    public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return this.operand.containsField(fieldMetas);
-    }
-
-    @Override
-    public final boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return this.operand.containsFieldOf(tableMeta);
-    }
-
-    @Override
-    public final int containsFieldCount(TableMeta<?> tableMeta) {
-        return this.operand.containsFieldCount(tableMeta);
-    }
 
 
     private static final class RelationColumnSubQueryPredicate extends ColumnSubQueryPredicate {

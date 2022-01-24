@@ -4,11 +4,8 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -98,54 +95,5 @@ final class OrPredicate extends OperationPredicate {
                 .toString();
     }
 
-    @Override
-    public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        boolean contains = this.left.containsField(fieldMetas);
-        if (!contains) {
-            for (_Predicate predicate : this.rights) {
-                if (predicate.containsField(fieldMetas)) {
-                    contains = true;
-                    break;
-                }
-            }
-        }
-        return contains;
-    }
 
-    @Override
-    public boolean containsFieldOf(TableMeta<?> tableMeta) {
-        boolean contains = this.left.containsFieldOf(tableMeta);
-        if (!contains) {
-            for (_Predicate predicate : this.rights) {
-                if (predicate.containsFieldOf(tableMeta)) {
-                    contains = true;
-                    break;
-                }
-            }
-        }
-        return contains;
-    }
-
-    @Override
-    public int containsFieldCount(TableMeta<?> tableMeta) {
-        int count = this.left.containsFieldCount(tableMeta);
-        for (_Predicate predicate : this.rights) {
-            count += predicate.containsFieldCount(tableMeta);
-        }
-        return count;
-    }
-
-    @Override
-    public boolean containsSubQuery() {
-        boolean contains = this.left.containsSubQuery();
-        if (!contains) {
-            for (_Predicate predicate : this.rights) {
-                if (predicate.containsSubQuery()) {
-                    contains = true;
-                    break;
-                }
-            }
-        }
-        return contains;
-    }
 }

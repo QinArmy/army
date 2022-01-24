@@ -35,7 +35,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
-    private List<_SortItem> groupByList;
+    private List<ArmySortItem> groupByList;
 
     private List<_Predicate> havingList;
 
@@ -449,19 +449,19 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final GR groupBy(SortItem sortItem) {
-        this.groupByList = Collections.singletonList((_SortItem) sortItem);
+        this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(SortItem sortItem1, SortItem sortItem2) {
-        this.groupByList = ArrayUtils.asUnmodifiableList((_SortItem) sortItem1, (_SortItem) sortItem2);
+        this.groupByList = ArrayUtils.asUnmodifiableList((ArmySortItem) sortItem1, (ArmySortItem) sortItem2);
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        this.groupByList = ArrayUtils.asUnmodifiableList((_SortItem) sortItem1, (_SortItem) sortItem2, (_SortItem) sortItem3);
+        this.groupByList = ArrayUtils.asUnmodifiableList((ArmySortItem) sortItem1, (ArmySortItem) sortItem2, (ArmySortItem) sortItem3);
         return (GR) this;
     }
 
@@ -472,12 +472,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
             case 0:
                 throw new CriteriaException("sortItemList must be not empty.");
             case 1:
-                this.groupByList = Collections.singletonList((_SortItem) sortItemList.get(0));
+                this.groupByList = Collections.singletonList((ArmySortItem) sortItemList.get(0));
                 break;
             default: {
-                final List<_SortItem> tempList = new ArrayList<>(size);
+                final List<ArmySortItem> tempList = new ArrayList<>(size);
                 for (SortItem sortItem : sortItemList) {
-                    tempList.add((_SortItem) sortItem);
+                    tempList.add((ArmySortItem) sortItem);
                 }
                 this.groupByList = Collections.unmodifiableList(tempList);
             }
@@ -505,7 +505,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final GR ifGroupBy(@Nullable SortItem sortItem) {
         if (sortItem != null) {
-            this.groupByList = Collections.singletonList((_SortItem) sortItem);
+            this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
         }
         return (GR) this;
     }
@@ -631,8 +631,9 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final List<? extends SelectItem> selectPartList() {
-        prepared();
-        return this.selectPartList;
+        final List<? extends SelectItem> selectItemList = this.selectPartList;
+        assert selectItemList != null;
+        return selectItemList;
     }
 
     @Override

@@ -50,11 +50,6 @@ abstract class ParamExpression<E> extends OperationExpression<E> implements Valu
         return this.paramMeta;
     }
 
-    @Override
-    public final boolean containsSubQuery() {
-        // always false
-        return false;
-    }
 
     @Override
     public final String toString() {

@@ -183,14 +183,17 @@ public interface Query extends Statement {
 
         LR limit(long offset, long rowCount);
 
+        LR limit(Supplier<Long> rowCount);
+
+        LR limit(Supplier<Long> offset, Supplier<Long> rowCount);
 
         LR limit(Function<C, LimitOption> function);
 
-        LR limit(Supplier<LimitOption> supplier);
-
         LR ifLimit(Function<C, LimitOption> function);
 
-        LR ifLimit(Supplier<LimitOption> supplier);
+        LR ifLimit(Supplier<Long> rowCount);
+
+        LR ifLimit(Supplier<Long> offset, Supplier<Long> rowCount);
 
     }
 

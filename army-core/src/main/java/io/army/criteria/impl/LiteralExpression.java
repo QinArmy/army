@@ -61,12 +61,6 @@ final class LiteralExpression<E> extends OperationExpression<E> implements Value
         return this.literal;
     }
 
-
-    @Override
-    public boolean containsSubQuery() {
-        return false;
-    }
-
     @Override
     public String toString() {
         return String.valueOf(this.literal);

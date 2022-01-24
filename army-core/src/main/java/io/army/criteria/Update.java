@@ -103,18 +103,46 @@ public interface Update extends Statement {
 
         SR setParam(FieldMeta<?, ?> field, @Nullable Object value);
 
+        /**
+         * @param pairList non-null and non-empty.
+         * @see SQLs#itemPair(FieldMeta, Object)
+         */
         SR setPairs(List<ItemPair> pairList);
 
+        /**
+         * @param supplier supply  non-null and non-empty list.
+         * @see SQLs#itemPair(FieldMeta, Object)
+         */
         SR setPairs(Supplier<List<ItemPair>> supplier);
 
+        /**
+         * @param function supply  non-null and non-empty list.
+         * @see SQLs#itemPair(FieldMeta, Object)
+         */
         SR setPairs(Function<C, List<ItemPair>> function);
 
+        /**
+         * @param consumer supply  non-null and non-empty list.
+         * @see SQLs#itemPair(FieldMeta, Object)
+         */
         SR setPairs(Consumer<List<ItemPair>> consumer);
 
+        /**
+         * @param pairList non-null list.
+         * @see SQLs#itemPair(FieldMeta, Object)
+         */
         SR ifSetPairs(List<ItemPair> pairList);
 
+        /**
+         * @param supplier supply non-null list.
+         * @see SQLs#itemPair(FieldMeta, Object)
+         */
         SR ifSetPairs(Supplier<List<ItemPair>> supplier);
 
+        /**
+         * @param function supply non-null list.
+         * @see SQLs#itemPair(FieldMeta, Object)
+         */
         SR ifSetPairs(Function<C, List<ItemPair>> function);
 
         SR ifSet(FieldMeta<?, ?> field, @Nullable Object value);

@@ -30,6 +30,8 @@ public interface Constant {
 
     String SPACE_ON_SPACE = " ON ";
 
+    String SPACE_ON = " ON";
+
     String SPACE_WHERE = " WHERE";
 
     String SPACE_AND = " AND";

@@ -239,7 +239,9 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final SchemaMeta schemaMeta;
 
-    final Map<String, FieldMeta<T, ?>> fieldToFieldMeta;
+    final Map<String, FieldMeta<T, ?>> fieldNameToFields;
+
+    private final Collection<FieldMeta<T, ?>> fields;
 
     private final List<IndexMeta<T>> indexMetaList;
 
@@ -269,12 +271,13 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
             final TableMetaUtils.FieldMetaPair<T> pair;
             pair = TableMetaUtils.createFieldMetaPair(this);
-            this.fieldToFieldMeta = pair.fieldMetaMap;
+
+            this.fieldNameToFields = pair.fieldMap;
             this.indexMetaList = pair.indexMetaList;
+            this.fields = this.fieldNameToFields.values();
+            this.generatorChain = TableMetaUtils.createGeneratorChain(this.fieldNameToFields);
 
-            this.generatorChain = TableMetaUtils.createGeneratorChain(this.fieldToFieldMeta);
-
-            this.primaryField = (PrimaryFieldMeta<T, Object>) this.fieldToFieldMeta.get(_MetaBridge.ID);
+            this.primaryField = (PrimaryFieldMeta<T, Object>) this.fieldNameToFields.get(_MetaBridge.ID);
             if (this.primaryField == null) {
                 String m = String.format("Not found primary field meta in domain[%s]", domainClass.getName());
                 throw new NullPointerException(m);
@@ -338,7 +341,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public final Collection<FieldMeta<T, ?>> fields() {
-        return this.fieldToFieldMeta.values();
+        return this.fields;
     }
 
     @Override
@@ -353,7 +356,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @Override
     public final boolean containField(final String fieldName) {
-        return this.fieldToFieldMeta.containsKey(fieldName);
+        return this.fieldNameToFields.containsKey(fieldName);
     }
 
 
@@ -361,7 +364,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     @Override
     public final FieldMeta<T, Object> getField(final String fieldName) throws MetaException {
         final FieldMeta<T, ?> fieldMeta;
-        fieldMeta = this.fieldToFieldMeta.get(fieldName);
+        fieldMeta = this.fieldNameToFields.get(fieldName);
         if (fieldMeta == null) {
             String m = String.format("%s's %s[%s] not found", this, FieldMeta.class.getName(), fieldName);
             throw new IllegalArgumentException(m);
@@ -477,7 +480,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
         private DefaultParentTable(final Class<T> domainClass) {
             super(domainClass);
-            this.discriminator = TableMetaUtils.discriminator(this.fieldToFieldMeta, domainClass);
+            this.discriminator = TableMetaUtils.discriminator(this.fieldNameToFields, domainClass);
         }
 
         @SuppressWarnings("unchecked")

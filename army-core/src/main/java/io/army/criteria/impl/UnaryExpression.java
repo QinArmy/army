@@ -137,10 +137,4 @@ final class UnaryExpression<E> extends OperationExpression<E> {
     }
 
 
-    @Override
-    public boolean containsSubQuery() {
-        return this.expression.containsSubQuery();
-    }
-
-
 }

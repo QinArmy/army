@@ -25,7 +25,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     final CriteriaContext criteriaContext;
 
-    private List<_SortItem> orderByList;
+    private List<ArmySortItem> orderByList;
 
     private long offset = -1L;
 
@@ -96,21 +96,21 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     @Override
     public final OR orderBy(SortItem sortItem) {
-        this.orderByList = Collections.singletonList((_SortItem) sortItem);
+        this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
-        this.orderByList = ArrayUtils.asUnmodifiableList((_SortItem) sortItem1, (_SortItem) sortItem2);
+        this.orderByList = ArrayUtils.asUnmodifiableList((ArmySortItem) sortItem1, (ArmySortItem) sortItem2);
         this.afterOrderBy();
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        this.orderByList = ArrayUtils.asUnmodifiableList((_SortItem) sortItem1, (_SortItem) sortItem2, (_SortItem) sortItem3);
+        this.orderByList = ArrayUtils.asUnmodifiableList((ArmySortItem) sortItem1, (ArmySortItem) sortItem2, (ArmySortItem) sortItem3);
         this.afterOrderBy();
         return (OR) this;
     }
@@ -122,12 +122,12 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
             case 0:
                 throw new CriteriaException("sortItemList must not empty.");
             case 1:
-                this.orderByList = Collections.singletonList((_SortItem) sortItemList);
+                this.orderByList = Collections.singletonList((ArmySortItem) sortItemList);
                 break;
             default: {
-                final List<_SortItem> tempList = new ArrayList<>(size);
+                final List<ArmySortItem> tempList = new ArrayList<>(size);
                 for (SortItem sortItem : sortItemList) {
-                    tempList.add((_SortItem) sortItem);
+                    tempList.add((ArmySortItem) sortItem);
                 }
                 this.orderByList = Collections.unmodifiableList(tempList);
             }
@@ -149,11 +149,12 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     @Override
     public final OR ifOrderBy(@Nullable SortItem sortItem) {
         if (sortItem != null) {
-            this.orderByList = Collections.singletonList((_SortItem) sortItem);
+            this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
         }
         this.afterOrderBy();
         return (OR) this;
     }
+
 
     @Override
     public final OR ifOrderBy(Supplier<List<SortItem>> supplier) {
@@ -202,12 +203,15 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR limit(Supplier<LimitOption> supplier) {
-        final LimitOption option;
-        option = supplier.get();
-        assert option != null;
-        this.offset = option.offset();
-        this.rowCount = option.rowCount();
+    public final LR limit(Supplier<Long> rowCount) {
+        this.rowCount = rowCount.get();
+        return (LR) this;
+    }
+
+    @Override
+    public final LR limit(Supplier<Long> offset, Supplier<Long> rowCount) {
+        this.offset = offset.get();
+        this.rowCount = rowCount.get();
         return (LR) this;
     }
 
@@ -223,12 +227,23 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR ifLimit(Supplier<LimitOption> supplier) {
-        final LimitOption option;
-        option = supplier.get();
-        if (option != null) {
-            this.offset = option.offset();
-            this.rowCount = option.rowCount();
+    public final LR ifLimit(Supplier<Long> rowCountSupplier) {
+        final Long rowCount;
+        rowCount = rowCountSupplier.get();
+        if (rowCount != null) {
+            this.rowCount = rowCount;
+        }
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Supplier<Long> offsetSupplier, Supplier<Long> rowCountSupplier) {
+        final Long offset, rowCount;
+        offset = offsetSupplier.get();
+        rowCount = rowCountSupplier.get();
+        if (offset != null && rowCount != null) {
+            this.offset = offset;
+            this.rowCount = rowCount;
         }
         return (LR) this;
     }

@@ -188,6 +188,9 @@ public abstract class SQLs extends StandardFunctions {
         } else if (value instanceof Supplier) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression<?>) ((Supplier<?>) value).get();
+        } else if (type instanceof ParamMeta) {
+            // use optimizing param expression
+            resultExpression = ParamExpression.optimizing((ParamMeta) type, value);
         } else {
             // use optimizing param expression
             resultExpression = ParamExpression.optimizing(type.paramMeta(), value);
@@ -213,8 +216,11 @@ public abstract class SQLs extends StandardFunctions {
         } else if (value instanceof Supplier) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression<?>) ((Supplier<?>) value).get();
+        } else if (type instanceof ParamMeta) {
+            // use strict param expression
+            resultExpression = ParamExpression.strict((ParamMeta) type, value);
         } else {
-            // use optimizing param expression
+            // use strict param expression
             resultExpression = ParamExpression.strict(type.paramMeta(), value);
         }
         return resultExpression;
@@ -357,6 +363,7 @@ public abstract class SQLs extends StandardFunctions {
 
     /**
      * @param value expression or parameter
+     * @see Update.SimpleSetClause#setPairs(List)
      */
     public static ItemPair itemPair(FieldMeta<?, ?> field, @Nullable Object value) {
         final Expression<?> valueExp;
@@ -498,19 +505,19 @@ public abstract class SQLs extends StandardFunctions {
     /*################################## blow sql key word operate method ##################################*/
 
     public static IPredicate exists(Supplier<SubQuery> supplier) {
-        return UnaryPredicate.create(UnaryOperator.EXISTS, supplier.get());
+        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, supplier.get());
     }
 
     public static <C> IPredicate exists(Function<C, SubQuery> function) {
-        return UnaryPredicate.create(UnaryOperator.EXISTS, function.apply(CriteriaContextStack.getCriteria()));
+        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     public static IPredicate notExists(Supplier<SubQuery> supplier) {
-        return UnaryPredicate.create(UnaryOperator.NOT_EXISTS, supplier.get());
+        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, supplier.get());
     }
 
     public static <C> IPredicate notExists(Function<C, SubQuery> function) {
-        return UnaryPredicate.create(UnaryOperator.NOT_EXISTS, function.apply(CriteriaContextStack.getCriteria()));
+        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     static <T extends IDomain> ExpressionRow<T> row(List<Expression<?>> columnList) {

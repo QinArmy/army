@@ -9,17 +9,13 @@ public abstract class _SQLCounselor {
     }
 
 
-    public static void assertStandardSelect(Select select) {
-        if (!(select instanceof StandardSimpleQuery) && !(select instanceof StandardUnionQuery)) {
+    public static void assertStandardQuery(Query query) {
+        if (!(query instanceof StandardSimpleQuery) && !(query instanceof StandardUnionQuery)) {
             String m = String.format("%s isn't instance of %s or %s"
-                    , select.getClass().getName(), StandardSimpleQuery.class.getName()
+                    , query.getClass().getName(), StandardSimpleQuery.class.getName()
                     , StandardUnionQuery.class.getName());
             throw new CriteriaException(m);
         }
-    }
-
-    public static void assertStandardSubQuery(SubQuery subQuery) {
-        //
     }
 
 

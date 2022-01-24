@@ -48,10 +48,5 @@ final class BracketsExpression<E> extends OperationExpression<E> {
         return String.format(" (%s )", this.expression);
     }
 
-    @Override
-    public boolean containsSubQuery() {
-        return this.expression.containsSubQuery();
-    }
-
 
 }

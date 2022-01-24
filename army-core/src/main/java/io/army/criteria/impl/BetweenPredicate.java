@@ -37,12 +37,6 @@ class BetweenPredicate extends OperationPredicate {
         return String.format(" %s BETWEEN%s AND%s", left, center, right);
     }
 
-    @Override
-    public final boolean containsSubQuery() {
-        return this.left.containsSubQuery()
-                || this.center.containsSubQuery()
-                || this.right.containsSubQuery();
-    }
 
     /*################################## blow private static inner class ##################################*/
 

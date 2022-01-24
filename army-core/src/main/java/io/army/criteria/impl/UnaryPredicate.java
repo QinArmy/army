@@ -10,7 +10,7 @@ import java.util.Objects;
 
 final class UnaryPredicate extends OperationPredicate {
 
-    static UnaryPredicate create(UnaryOperator operator, SubQuery subQuery) {
+    static UnaryPredicate fromSubQuery(UnaryOperator operator, SubQuery subQuery) {
         Objects.requireNonNull(subQuery);
         switch (operator) {
             case NOT_EXISTS:
@@ -90,11 +90,6 @@ final class UnaryPredicate extends OperationPredicate {
         return builder.toString();
     }
 
-    @Override
-    public boolean containsSubQuery() {
-        return (this.expressionOrSubQuery instanceof SubQuery)
-                || ((_Expression<?>) this.expressionOrSubQuery).containsSubQuery();
-    }
 
     /*################################## blow private static inner class ##################################*/
 

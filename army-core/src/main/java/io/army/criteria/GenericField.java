@@ -3,10 +3,13 @@ package io.army.criteria;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+
+import java.util.function.Supplier;
 
 /**
  * This interface is base interface of below interface:
@@ -47,11 +50,17 @@ public interface GenericField<T extends IDomain, F> extends Expression<F>, Field
      */
     IPredicate equalNamed();
 
+    @Nullable
+    IPredicate ifLessThan(Supplier<Object> parameter);
+
     IPredicate lessThanNamed();
 
     IPredicate lessEqualNamed();
 
     IPredicate greatThanNamed();
+
+    @Nullable
+    IPredicate ifGreatThan(Supplier<Object> parameter);
 
     IPredicate greatEqualNamed();
 

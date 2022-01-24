@@ -198,7 +198,26 @@ public class StandardCriteriaUnitTests {
     }
 
     @Test
-    public void simpleSelect() {
+    public void simpleSingleSelect() {
+        final Select select;
+
+        select = SQLs.query()
+                .select(SQLs.group(User_.T, "u"))
+                .from(User_.T, "u")
+                .ifGroupBy(Collections::emptyList)
+                .having(User_.userType.equal(UserType.PERSON))// group by is empty ,so having clause no action
+                .orderBy(User_.id.desc())
+                .limit(0, 10)
+                .lock(LockMode.WRITE)
+                .asQuery();
+
+        for (Dialect dialect : Dialect.values()) {
+            LOG.debug("simpleSingleSelect:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        }
+    }
+
+    @Test
+    public void simpleChildSelect() {
         final Select select;
 
         select = SQLs.query()
@@ -216,7 +235,7 @@ public class StandardCriteriaUnitTests {
                 .asQuery();
 
         for (Dialect dialect : Dialect.values()) {
-            LOG.debug("simpleSelect:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            LOG.debug("simpleChildSelect:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
         }
 
     }
@@ -268,6 +287,27 @@ public class StandardCriteriaUnitTests {
                 .orderBy(SQLs.ref(User_.ID))
                 .limit(0, 5)
                 .bracket()
+                .asQuery();
+
+        for (Dialect dialect : Dialect.values()) {
+            LOG.debug("union select:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        }
+    }
+
+    @Test
+    public void simpleSubQuery() {
+        final Select select;
+        select = SQLs.query()
+                .select(User_.nickName)
+                .from(User_.T, "u")
+                .where(User_.nickName.equal("蛮吉"))
+                .and(SQLs.exists(() -> SQLs.subQuery()
+                        .select(ChinaProvince_.id)
+                        .from(ChinaProvince_.T, "p")
+                        .join(ChinaRegion_.T, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
+                        .where(ChinaProvince_.governor.equal(User_.nickName))
+                        .asQuery())
+                )
                 .asQuery();
 
         for (Dialect dialect : Dialect.values()) {

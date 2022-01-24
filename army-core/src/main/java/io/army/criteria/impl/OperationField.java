@@ -4,6 +4,9 @@ import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
+
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -27,6 +30,14 @@ abstract class OperationField<T extends IDomain, E> extends OperationExpression<
         return this.lessThan(SQLs.namedParam(this));
     }
 
+    @Nullable
+    @Override
+    public final IPredicate ifLessThan(Supplier<Object> parameter) {
+        final Object parameterValue;
+        parameterValue = parameter.get();
+        return parameterValue == null ? null : this.lessThan(parameterValue);
+    }
+
     @Override
     public final IPredicate lessEqualNamed() {
         return this.lessEqual(SQLs.namedParam(this));
@@ -35,6 +46,14 @@ abstract class OperationField<T extends IDomain, E> extends OperationExpression<
     @Override
     public final IPredicate greatThanNamed() {
         return this.greatThan(SQLs.namedParam(this));
+    }
+
+    @Nullable
+    @Override
+    public final IPredicate ifGreatThan(Supplier<Object> parameter) {
+        final Object parameterValue;
+        parameterValue = parameter.get();
+        return parameterValue == null ? null : this.greatThan(parameterValue);
     }
 
     @Override

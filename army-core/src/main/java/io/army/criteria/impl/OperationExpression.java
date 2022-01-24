@@ -3,10 +3,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.ParamMeta;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -16,7 +14,7 @@ import java.util.function.Supplier;
 /**
  * this class is base class of most implementation of {@link Expression}
  */
-abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
+abstract class OperationExpression<E> implements ArmyExpression<E> {
 
     OperationExpression() {
     }
@@ -44,18 +42,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate equal(Expression<?> operand) {
-        return DualPredicate.create(this, DualOperator.EQ, operand);
+    public final IPredicate equal(Object operand) {
+        return DualPredicate.create(this, DualOperator.EQ, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final IPredicate equal(Object parameter) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final IPredicate equalParam(Object parameter) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs.strictParamWithExp(this, parameter));
+    public final IPredicate equalParam(Object operand) {
+        return DualPredicate.create(this, DualOperator.EQ, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
@@ -64,14 +57,14 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate ifEqualParam(@Nullable Object parameter) {
-        return parameter == null ? null : this.equalParam(parameter);
+    public final IPredicate ifEqualParam(@Nullable Object operand) {
+        return operand == null ? null : this.equalParam(operand);
     }
 
     @Nullable
     @Override
-    public final IPredicate ifEqual(final @Nullable Object parameter) {
-        return parameter == null ? null : this.equal(parameter);
+    public final IPredicate ifEqual(final @Nullable Object operand) {
+        return operand == null ? null : this.equal(operand);
     }
 
     @Override
@@ -105,18 +98,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate lessThan(Expression<?> expression) {
-        return DualPredicate.create(this, DualOperator.LT, expression);
+    public final IPredicate lessThan(Object operand) {
+        return DualPredicate.create(this, DualOperator.LT, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final IPredicate lessThan(Object parameter) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final IPredicate lessThanParam(Object parameter) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.strictParamWithExp(this, parameter));
+    public final IPredicate lessThanParam(Object operand) {
+        return DualPredicate.create(this, DualOperator.LT, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
@@ -124,16 +112,16 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
         return DualPredicate.create(this, DualOperator.LT, SQLs.namedParam(paramName, this.paramMeta()));
     }
 
+    @Nullable
     @Override
-    public final IPredicate ifLessThan(@Nullable Object parameter) {
-        return parameter == null ? null : this.lessThan(parameter);
+    public final IPredicate ifLessThan(@Nullable Object operand) {
+        return operand == null ? null : this.lessThan(operand);
     }
 
     @Override
-    public final IPredicate ifLessThanParam(@Nullable Object parameter) {
-        return parameter == null ? null : this.lessThanParam(parameter);
+    public final IPredicate ifLessThanParam(@Nullable Object operand) {
+        return operand == null ? null : this.lessThanParam(operand);
     }
-
 
     @Override
     public final <C, O> IPredicate lessThan(Function<C, Expression<O>> function) {
@@ -176,18 +164,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate lessEqual(Expression<?> operand) {
-        return DualPredicate.create(this, DualOperator.LE, operand);
+    public final IPredicate lessEqual(Object operand) {
+        return DualPredicate.create(this, DualOperator.LE, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final IPredicate lessEqual(Object parameter) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final IPredicate lessEqualParam(Object parameter) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.strictParamWithExp(this, parameter));
+    public final IPredicate lessEqualParam(Object operand) {
+        return DualPredicate.create(this, DualOperator.LE, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
@@ -196,13 +179,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate ifLessEqual(@Nullable Object parameter) {
-        return parameter == null ? null : this.lessEqual(parameter);
+    public final IPredicate ifLessEqual(@Nullable Object operand) {
+        return operand == null ? null : this.lessEqual(operand);
     }
 
     @Override
-    public final IPredicate ifLessEqualParam(@Nullable Object parameter) {
-        return parameter == null ? null : this.lessEqualParam(parameter);
+    public final IPredicate ifLessEqualParam(@Nullable Object operand) {
+        return operand == null ? null : this.lessEqualParam(operand);
     }
 
     @Override
@@ -247,18 +230,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate greatThan(Expression<?> operand) {
-        return DualPredicate.create(this, DualOperator.GT, operand);
+    public final IPredicate greatThan(Object operand) {
+        return DualPredicate.create(this, DualOperator.GT, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final IPredicate greatThan(Object parameter) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final IPredicate greatThanParam(Object parameter) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.strictParamWithExp(this, parameter));
+    public final IPredicate greatThanParam(Object operand) {
+        return DualPredicate.create(this, DualOperator.GT, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
@@ -267,13 +245,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate ifGreatThan(@Nullable Object parameter) {
-        return parameter == null ? null : this.greatThan(parameter);
+    public final IPredicate ifGreatThan(@Nullable Object operand) {
+        return operand == null ? null : this.greatThan(operand);
     }
 
     @Override
-    public final IPredicate ifGreatThanParam(@Nullable Object parameter) {
-        return parameter == null ? null : this.greatThanParam(parameter);
+    public final IPredicate ifGreatThanParam(@Nullable Object operand) {
+        return operand == null ? null : this.greatThanParam(operand);
     }
 
     @Override
@@ -319,18 +297,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate greatEqual(Expression<?> operand) {
-        return DualPredicate.create(this, DualOperator.GE, operand);
+    public final IPredicate greatEqual(Object operand) {
+        return DualPredicate.create(this, DualOperator.GE, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final IPredicate greatEqual(Object parameter) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final IPredicate greatEqualParam(Object parameter) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.strictParamWithExp(this, parameter));
+    public final IPredicate greatEqualParam(Object operand) {
+        return DualPredicate.create(this, DualOperator.GE, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
@@ -339,13 +312,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate IfGreatEqual(@Nullable Object parameter) {
-        return parameter == null ? null : this.greatEqual(parameter);
+    public final IPredicate IfGreatEqual(@Nullable Object operand) {
+        return operand == null ? null : this.greatEqual(operand);
     }
 
     @Override
-    public final IPredicate ifGreatEqualParam(@Nullable Object parameter) {
-        return parameter == null ? null : this.greatEqualParam(parameter);
+    public final IPredicate ifGreatEqualParam(@Nullable Object operand) {
+        return operand == null ? null : this.greatEqualParam(operand);
     }
 
 
@@ -390,19 +363,15 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
         return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ALL, supplier.get());
     }
 
+
     @Override
-    public final IPredicate notEqual(Expression<?> expression) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, expression);
+    public final IPredicate notEqual(Object operand) {
+        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final IPredicate notEqual(Object parameter) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final IPredicate notEqualParam(Object parameter) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.strictParamWithExp(this, parameter));
+    public final IPredicate notEqualParam(Object operand) {
+        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.strictParamWithExp(this, operand));
 
     }
 
@@ -412,13 +381,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate ifNotEqual(@Nullable Object parameter) {
-        return parameter == null ? null : this.notEqual(parameter);
+    public final IPredicate ifNotEqual(@Nullable Object operand) {
+        return operand == null ? null : this.notEqual(operand);
     }
 
     @Override
-    public final IPredicate ifNotEqualParam(@Nullable Object parameter) {
-        return parameter == null ? null : this.notEqualParam(parameter);
+    public final IPredicate ifNotEqualParam(@Nullable Object operand) {
+        return operand == null ? null : this.notEqualParam(operand);
     }
 
     @Override
@@ -461,55 +430,40 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
         return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, supplier.get());
     }
 
-
     @Override
-    public final IPredicate between(Expression<?> first, Expression<?> parameter) {
-        return BetweenPredicate.between(this, first, parameter);
+    public final IPredicate between(Object firstOperand, Object secondOperand) {
+        Objects.requireNonNull(firstOperand);
+        Objects.requireNonNull(secondOperand);
+
+        final Expression<?> first, second;
+        first = SQLs.paramWithExp(this, firstOperand);
+        second = SQLs.paramWithExp(this, secondOperand);
+        return BetweenPredicate.between(this, first, second);
     }
 
     @Override
-    public final IPredicate between(Object firstParameter, Object secondParameter) {
-        Objects.requireNonNull(firstParameter);
-        Objects.requireNonNull(secondParameter);
-        return BetweenPredicate.between(this, SQLs.paramWithExp(this, firstParameter), SQLs.paramWithExp(this, secondParameter));
+    public final IPredicate betweenParam(Object firstOperand, Object secondOperand) {
+        Objects.requireNonNull(firstOperand);
+        Objects.requireNonNull(secondOperand);
+
+        final Expression<?> first, second;
+        first = SQLs.strictParamWithExp(this, firstOperand);
+        second = SQLs.strictParamWithExp(this, secondOperand);
+        return BetweenPredicate.between(this, first, second);
     }
 
+
     @Override
-    public final IPredicate ifBetween(@Nullable Object firstParameter, @Nullable Object secondParameter) {
+    public final IPredicate ifBetween(@Nullable Object firstOperand, @Nullable Object secondOperand) {
         final IPredicate predicate;
-        if (firstParameter != null && secondParameter != null) {
-            predicate = this.between(firstParameter, secondParameter);
+        if (firstOperand != null && secondOperand != null) {
+            predicate = this.between(firstOperand, secondOperand);
         } else {
             predicate = null;
         }
         return predicate;
     }
 
-    @Override
-    public final IPredicate between(Expression<?> first, Object parameter) {
-        return BetweenPredicate.between(this, first, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final IPredicate ifBetween(Expression<?> first, @Nullable Object parameter) {
-        return parameter == null ? null : this.between(first, parameter);
-    }
-
-    @Override
-    public final IPredicate between(Object parameter, Expression<?> second) {
-        return BetweenPredicate.between(this, SQLs.paramWithExp(this, parameter), second);
-    }
-
-    @Override
-    public final IPredicate ifBetween(@Nullable Object firstParameter, Expression<?> second) {
-        final IPredicate predicate;
-        if (firstParameter != null) {
-            predicate = this.between(firstParameter, second);
-        } else {
-            predicate = null;
-        }
-        return predicate;
-    }
 
     @Override
     public final <C> IPredicate between(Function<C, BetweenWrapper> function) {
@@ -518,6 +472,18 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
         assert wrapper != null;
         return BetweenPredicate.between(this, wrapper.first(), wrapper.second());
     }
+
+    @Override
+    public final IPredicate ifBetweenParam(@Nullable Object firstOperand, @Nullable Object secondOperand) {
+        final IPredicate predicate;
+        if (firstOperand != null && secondOperand != null) {
+            predicate = this.betweenParam(firstOperand, secondOperand);
+        } else {
+            predicate = null;
+        }
+        return predicate;
+    }
+
 
     @Override
     public final IPredicate isNull() {
@@ -610,24 +576,22 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate like(String patternParameter) {
-        return DualPredicate.create(this, DualOperator.LIKE, SQLs.strictParamWithExp(this, patternParameter));
+    public final IPredicate like(Object pattern) {
+        if (!(pattern instanceof String || pattern instanceof Expression)) {
+            throw new CriteriaException("pattern must be String or Expression.");
+        }
+        return DualPredicate.create(this, DualOperator.LIKE, SQLs.strictParamWithExp(this, pattern));
+    }
+
+    @Nullable
+    @Override
+    public final IPredicate ifLike(@Nullable Object pattern) {
+        return pattern == null ? null : this.like(pattern);
     }
 
     @Override
     public final IPredicate likeNamed(String paramName) {
         return DualPredicate.create(this, DualOperator.LIKE, SQLs.namedParam(paramName, this.paramMeta()));
-    }
-
-    @Nullable
-    @Override
-    public final IPredicate ifLike(@Nullable String patternParameter) {
-        return patternParameter == null ? null : this.like(patternParameter);
-    }
-
-    @Override
-    public final IPredicate like(Expression<String> pattern) {
-        return DualPredicate.create(this, DualOperator.LIKE, pattern);
     }
 
     @Override
@@ -641,8 +605,16 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final IPredicate notLike(String patternParameter) {
-        return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.strictParamWithExp(this, patternParameter));
+    public final IPredicate notLike(Object pattern) {
+        if (!(pattern instanceof String || pattern instanceof Expression)) {
+            throw new CriteriaException("pattern must be String or Expression.");
+        }
+        return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.strictParamWithExp(this, pattern));
+    }
+
+    @Override
+    public final IPredicate ifNotLike(@Nullable Object pattern) {
+        return pattern == null ? null : this.notLike(pattern);
     }
 
     @Override
@@ -650,16 +622,6 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
         return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.namedParam(paramName, this.paramMeta()));
     }
 
-    @Nullable
-    @Override
-    public final IPredicate ifNotLike(@Nullable String patternParameter) {
-        return patternParameter == null ? null : this.notLike(patternParameter);
-    }
-
-    @Override
-    public final IPredicate notLike(Expression<String> pattern) {
-        return DualPredicate.create(this, DualOperator.NOT_LIKE, pattern);
-    }
 
     @Override
     public final <C> IPredicate notLike(Function<C, Expression<String>> function) {
@@ -672,33 +634,18 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> mod(Expression<?> operator) {
-        return DualExpression.create(this, DualOperator.MOD, operator);
+    public final Expression<E> mod(Object operand) {
+        return DualExpression.create(this, DualOperator.MOD, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final Expression<E> mod(Object parameter) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final Expression<E> modParam(Object parameter) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> modParam(Object operand) {
+        return DualExpression.create(this, DualOperator.MOD, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
     public final Expression<E> modNamed(String paramName) {
         return DualExpression.create(this, DualOperator.MOD, SQLs.namedParam(paramName, this.paramMeta()));
-    }
-
-    @Override
-    public final Expression<E> mod(String subQueryAlias, String derivedFieldName) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.ref(subQueryAlias, derivedFieldName));
-    }
-
-    @Override
-    public final Expression<E> mod(String tableAlias, FieldMeta<?, ?> field) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.field(tableAlias, field));
     }
 
     @Override
@@ -712,33 +659,18 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> multiply(Expression<?> multiplicand) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, multiplicand);
+    public final Expression<E> multiply(Object multiplicand) {
+        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.paramWithExp(this, multiplicand));
     }
 
     @Override
-    public final Expression<E> multiply(Object parameter) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final Expression<E> multiplyParam(Object parameter) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> multiplyParam(Object multiplicand) {
+        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.strictParamWithExp(this, multiplicand));
     }
 
     @Override
     public final Expression<E> multiplyNamed(String paramName) {
         return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.namedParam(paramName, this.paramMeta()));
-    }
-
-    @Override
-    public final Expression<E> multiply(String subQueryAlias, String derivedFieldName) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.ref(subQueryAlias, derivedFieldName));
-    }
-
-    @Override
-    public final Expression<E> multiply(String tableAlias, FieldMeta<?, ?> field) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.field(tableAlias, field));
     }
 
     @Override
@@ -752,18 +684,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> plus(Expression<?> augend) {
-        return DualExpression.create(this, DualOperator.PLUS, augend);
+    public final Expression<E> plus(Object augend) {
+        return DualExpression.create(this, DualOperator.PLUS, SQLs.paramWithExp(this, augend));
     }
 
     @Override
-    public final Expression<E> plus(Object parameter) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final Expression<E> plusParam(Object parameter) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> plusParam(Object augend) {
+        return DualExpression.create(this, DualOperator.PLUS, SQLs.strictParamWithExp(this, augend));
     }
 
     @Override
@@ -771,15 +698,6 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
         return DualExpression.create(this, DualOperator.PLUS, SQLs.namedParam(paramName, this.paramMeta()));
     }
 
-    @Override
-    public final Expression<E> plus(String subQueryAlias, String derivedFieldName) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.ref(subQueryAlias, derivedFieldName));
-    }
-
-    @Override
-    public final Expression<E> plus(String tableAlias, FieldMeta<?, ?> field) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.field(tableAlias, field));
-    }
 
     @Override
     public final <C, O> Expression<E> plus(Function<C, Expression<O>> function) {
@@ -792,33 +710,18 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> minus(Expression<?> subtrahend) {
-        return DualExpression.create(this, DualOperator.MINUS, subtrahend);
+    public final Expression<E> minus(Object minuend) {
+        return DualExpression.create(this, DualOperator.MINUS, SQLs.paramWithExp(this, minuend));
     }
 
     @Override
-    public final Expression<E> minus(Object parameter) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final Expression<E> minusParam(Object parameter) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> minusParam(Object minuend) {
+        return DualExpression.create(this, DualOperator.MINUS, SQLs.strictParamWithExp(this, minuend));
     }
 
     @Override
     public final Expression<E> minusNamed(String paramName) {
         return DualExpression.create(this, DualOperator.MINUS, SQLs.namedParam(paramName, this.paramMeta()));
-    }
-
-    @Override
-    public final Expression<E> minus(String subQueryAlias, String derivedFieldName) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.ref(subQueryAlias, derivedFieldName));
-    }
-
-    @Override
-    public final Expression<E> minus(String tableAlias, FieldMeta<?, ?> field) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.field(tableAlias, field));
     }
 
     @Override
@@ -832,33 +735,18 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> divide(Expression<?> divisor) {
-        return DualExpression.create(this, DualOperator.DIVIDE, divisor);
+    public final Expression<E> divide(Object divisor) {
+        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.paramWithExp(this, divisor));
     }
 
     @Override
-    public final Expression<E> divide(Object parameter) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final Expression<E> divideParam(Object parameter) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> divideParam(Object divisor) {
+        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.strictParamWithExp(this, divisor));
     }
 
     @Override
     public final Expression<E> divideNamed(String paramName) {
         return DualExpression.create(this, DualOperator.DIVIDE, SQLs.namedParam(paramName, this.paramMeta()));
-    }
-
-    @Override
-    public final Expression<E> divide(String subQueryAlias, String derivedFieldName) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.ref(subQueryAlias, derivedFieldName));
-    }
-
-    @Override
-    public final Expression<E> divide(String tableAlias, FieldMeta<?, ?> field) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.field(tableAlias, field));
     }
 
     @Override
@@ -877,18 +765,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> bitwiseAnd(Expression<?> operand) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, operand);
+    public final Expression<E> bitwiseAnd(Object operand) {
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final Expression<E> bitwiseAnd(Object parameter) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final Expression<E> bitwiseAndParam(Object parameter) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> bitwiseAndParam(Object operand) {
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
@@ -907,18 +790,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> bitwiseOr(Expression<?> operand) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, operand);
+    public final Expression<E> bitwiseOr(Object operand) {
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final Expression<E> bitwiseOr(Object parameter) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final Expression<E> bitwiseOrParam(Object parameter) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> bitwiseOrParam(Object operand) {
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
@@ -937,18 +815,13 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> xor(Expression<?> operand) {
-        return DualExpression.create(this, DualOperator.XOR, operand);
+    public final Expression<E> xor(Object operand) {
+        return DualExpression.create(this, DualOperator.XOR, SQLs.paramWithExp(this, operand));
     }
 
     @Override
-    public final Expression<E> xor(Object parameter) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.paramWithExp(this, parameter));
-    }
-
-    @Override
-    public final Expression<E> xorParam(Object parameter) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> xorParam(Object operand) {
+        return DualExpression.create(this, DualOperator.XOR, SQLs.strictParamWithExp(this, operand));
     }
 
     @Override
@@ -972,23 +845,18 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> rightShift(Number bitNumberParameter) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.paramWithExp(this, bitNumberParameter));
+    public final Expression<E> rightShift(Object bitNumber) {
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.paramWithExp(this, bitNumber));
     }
 
     @Override
-    public final Expression<E> rightShiftParam(Number parameter) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> rightShiftParam(Object bitNumber) {
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.strictParamWithExp(this, bitNumber));
     }
 
     @Override
     public final Expression<E> rightShiftNamed(String paramName) {
         return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.namedParam(paramName, this.paramMeta()));
-    }
-
-    @Override
-    public final <N extends Number> Expression<E> rightShift(Expression<N> bitNumber) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, bitNumber);
     }
 
     @Override
@@ -1002,23 +870,18 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final Expression<E> leftShift(Number bitNumberParameter) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.paramWithExp(this, bitNumberParameter));
+    public final Expression<E> leftShift(Object bitNumber) {
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.paramWithExp(this, bitNumber));
     }
 
     @Override
-    public final Expression<E> leftShiftParam(Number parameter) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.strictParamWithExp(this, parameter));
+    public final Expression<E> leftShiftParam(Object bitNumber) {
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.strictParamWithExp(this, bitNumber));
     }
 
     @Override
     public final Expression<E> leftShiftNamed(String paramName) {
         return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.namedParam(paramName, this.paramMeta()));
-    }
-
-    @Override
-    public final <N extends Number> Expression<E> leftShift(Expression<N> bitNumber) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, bitNumber);
     }
 
     @Override
@@ -1037,13 +900,12 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
     }
 
     @Override
-    public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
-        return CastExpression.cast(this, longMapping);
-    }
-
-    @Override
-    public final <O> Expression<O> asType(Class<O> convertType, FieldMeta<?, O> longMapping) {
-        return CastExpression.cast(this, longMapping);
+    public final <O> Expression<O> asType(Class<O> convertType, ParamMeta paramMeta) {
+        if (convertType != paramMeta.mappingType().javaType()) {
+            String m = String.format("convertType[%s] java type of paramMeta[%s]", convertType.getName(), paramMeta);
+            throw new CriteriaException(m);
+        }
+        return CastExpression.cast(this, paramMeta);
     }
 
     public final Expression<E> bracket() {
@@ -1060,20 +922,6 @@ abstract class OperationExpression<E> implements ArmyExpression<E>, _SortItem {
         return new SortItemImpl(this, false);
     }
 
-    @Override
-    public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return false;
-    }
-
-    @Override
-    public boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return false;
-    }
-
-    @Override
-    public int containsFieldCount(TableMeta<?> tableMeta) {
-        return 0;
-    }
 
     /*################################## blow protected template method ##################################*/
 

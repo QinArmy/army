@@ -3,7 +3,9 @@ package io.army.util;
 import io.army.ArmyException;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._Update;
+import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
@@ -15,8 +17,6 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.session.DialectSessionFactory;
 import io.army.session.TimeoutException;
-import io.army.sharding.DatabaseRoute;
-import io.army.sharding.Route;
 import io.army.sharding.RouteContext;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
@@ -222,7 +222,7 @@ public abstract class _Exceptions extends ExceptionUtils {
                 , SetRightItem.class.getName(), value));
     }
 
-    public static CriteriaException selfJoinNoLogicField(GenericField<?, ?> field) {
+    public static CriteriaException selfJoinNonQualifiedField(GenericField<?, ?> field) {
         return new CriteriaException(String.format("%s self join but don't use %s."
                 , field.tableMeta(), QualifiedField.class.getName()));
     }
@@ -231,43 +231,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is unsupported by %s.", nonNull.getClass(), type.getClass()));
     }
 
-    public static CriteriaException valueRouteAndNamedRouteConflict(_BatchDml batchDml
-            , final byte tableIndex, FieldMeta<?, ?> routeField) {
-        String m = String.format("Batch dml[%s] value table route[%s] and named table route field[%s] conflict."
-                , batchDml.getClass().getName(), tableIndex, routeField);
-        return new CriteriaException(m);
-    }
 
-    public static CriteriaException routeFieldIsNull(FieldMeta<?, ?> field, int batchIndex) {
-        String m = String.format("Route field[%s] is null,batch index[%s],couldn't parse statement.", field, batchIndex);
-        return new CriteriaException(m);
-    }
 
-    public static ArmyException routeFuncError(Route route, Object value) {
-        String m = String.format("Table route %s parse value[%s] error.", route.getClass().getName(), value);
-        return new ArmyException(m);
-    }
-
-    public static ArmyException notFoundDatabaseRouteFunc(FieldMeta<?, ?> field) {
-        String m = String.format("Not found %s for %s", DatabaseRoute.class.getName(), field);
-        return new ArmyException(m);
-    }
-
-    public static ArmyException predicateImplError(_Predicate predicate) {
-        String m = String.format("The implementation of %s error.", predicate.getClass().getName());
-        return new ArmyException(m);
-    }
-
-    public static CriteriaException multiDmlOnlySupportTable(_MultiDml dml, TableItem tableItem) {
-        String m = String.format("Multi table dml only support %s.but present %s"
-                , dml.getClass().getName(), tableItem.getClass().getName());
-        return new CriteriaException(m);
-    }
-
-    public static CriteriaException databaseRouteAllFollow(_MultiDml dml) {
-        String m = String.format("%s all follow primary route.", dml.getClass().getName());
-        return new CriteriaException(m);
-    }
 
     public static CriteriaException selectListIsEmpty() {
         return new CriteriaException("select list must not empty");

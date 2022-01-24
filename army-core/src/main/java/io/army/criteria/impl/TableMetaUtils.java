@@ -896,15 +896,15 @@ abstract class TableMetaUtils {
 
         final List<IndexMeta<T>> indexMetaList;
 
-        final Map<String, FieldMeta<T, ?>> fieldMetaMap;
+        final Map<String, FieldMeta<T, ?>> fieldMap;
 
-        private FieldMetaPair(List<IndexMeta<T>> indexMetaList, Map<String, FieldMeta<T, ?>> fieldMetaMap) {
+        private FieldMetaPair(List<IndexMeta<T>> indexMetaList, Map<String, FieldMeta<T, ?>> fieldMap) {
             if (indexMetaList.size() == 1) {
                 this.indexMetaList = Collections.singletonList(indexMetaList.get(0));
             } else {
                 this.indexMetaList = Collections.unmodifiableList(indexMetaList);
             }
-            this.fieldMetaMap = Collections.unmodifiableMap(fieldMetaMap);
+            this.fieldMap = Collections.unmodifiableMap(fieldMap);
         }
 
     }

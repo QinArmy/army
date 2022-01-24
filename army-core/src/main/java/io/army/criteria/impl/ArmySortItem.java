@@ -6,6 +6,6 @@ import io.army.criteria.impl.inner._SelfDescribed;
 /**
  * package interface
  */
-interface _SortItem extends SortItem, _SelfDescribed {
+interface ArmySortItem extends SortItem, _SelfDescribed {
 
 }

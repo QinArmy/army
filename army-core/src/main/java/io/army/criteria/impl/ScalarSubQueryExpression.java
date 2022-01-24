@@ -5,11 +5,8 @@ import io.army.criteria.ScalarSubQuery;
 import io.army.criteria.SelectItem;
 import io.army.criteria.Selection;
 import io.army.dialect._SqlContext;
-import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.meta.TableMeta;
 
-import java.util.Collection;
 import java.util.List;
 
 final class ScalarSubQueryExpression<E> extends OperationExpression<E> implements ScalarQueryExpression<E> {
@@ -19,7 +16,7 @@ final class ScalarSubQueryExpression<E> extends OperationExpression<E> implement
     }
 
 
-     final ScalarSubQuery<E> subQuery;
+    final ScalarSubQuery<E> subQuery;
 
     private ScalarSubQueryExpression(ScalarSubQuery<E> subQuery) {
         this.subQuery = subQuery;
@@ -46,33 +43,19 @@ final class ScalarSubQueryExpression<E> extends OperationExpression<E> implement
     }
 
     @Override
+    public boolean isPrepared() {
+        return this.subQuery.isPrepared();
+    }
+
+    @Override
     public ParamMeta paramMeta() {
         return this.subQuery.paramMeta();
     }
 
-    @Override
-    public boolean containsSubQuery() {
-        return true;
-    }
 
     @Override
     public void appendSql(final _SqlContext context) {
         context.dialect().subQuery(this.subQuery, context);
-    }
-
-    @Override
-    public boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return super.containsField(fieldMetas);
-    }
-
-    @Override
-    public boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return super.containsFieldOf(tableMeta);
-    }
-
-    @Override
-    public int containsFieldCount(TableMeta<?> tableMeta) {
-        return super.containsFieldCount(tableMeta);
     }
 
 

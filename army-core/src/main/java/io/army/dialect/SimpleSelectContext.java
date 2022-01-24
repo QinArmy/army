@@ -73,7 +73,7 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
     public void appendField(final FieldMeta<?, ?> field) {
         final String safeAlias = this.tableToSafeAlias.get(field.tableMeta());
         if (safeAlias == null) {
-            throw _Exceptions.selfJoinNoLogicField(field);
+            throw _Exceptions.selfJoinNonQualifiedField(field);
         }
         this.sqlBuilder
                 .append(Constant.SPACE)

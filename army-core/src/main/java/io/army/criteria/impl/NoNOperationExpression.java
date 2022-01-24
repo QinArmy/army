@@ -2,9 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
 import java.util.Collection;
@@ -24,7 +22,7 @@ import java.util.function.Supplier;
  *
  * @param <E> java type of expression
  */
-abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem {
+abstract class NoNOperationExpression<E> implements ArmyExpression<E> {
 
 
     NoNOperationExpression() {
@@ -48,11 +46,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
             nullable = this instanceof SQLs.NullWord;
         }
         return nullable;
-    }
-
-    @Override
-    public final IPredicate equal(Expression<?> operand) {
-        throw unsupportedOperation();
     }
 
     @Override
@@ -107,11 +100,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
 
     @Override
     public final IPredicate equalSome(Supplier<ColumnSubQuery> subQuery) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate lessThan(Expression<?> expression) {
         throw unsupportedOperation();
     }
 
@@ -181,11 +169,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final IPredicate lessEqual(Expression<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate lessEqual(Object parameter) {
         throw unsupportedOperation();
     }
@@ -248,12 +231,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
 
     @Override
     public final IPredicate lessEqualAll(Supplier<ColumnSubQuery> supplier) {
-        throw unsupportedOperation();
-    }
-
-
-    @Override
-    public final IPredicate greatThan(Expression<?> operand) {
         throw unsupportedOperation();
     }
 
@@ -324,11 +301,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final IPredicate greatEqual(Expression<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate greatEqual(Object parameter) {
         throw unsupportedOperation();
     }
@@ -394,17 +366,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final IPredicate notEqual(Expression<?> expression) {
+    public final IPredicate notEqual(Object operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate notEqual(Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notEqualParam(Object parameter) {
+    public final IPredicate notEqualParam(Object operand) {
         throw unsupportedOperation();
     }
 
@@ -414,12 +381,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final IPredicate ifNotEqual(@Nullable Object parameter) {
+    public final IPredicate ifNotEqual(@Nullable Object operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifNotEqualParam(@Nullable Object parameter) {
+    public final IPredicate ifNotEqualParam(@Nullable Object operand) {
         throw unsupportedOperation();
     }
 
@@ -464,37 +431,22 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final IPredicate between(Expression<?> first, Expression<?> parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate between(Object firstParameter, Object secondParameter) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifBetween(@Nullable Object firstParameter, @Nullable Object secondParameter) {
+    public final IPredicate ifBetween(@Nullable Object firstOperand, @Nullable Object secondOperand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate between(Expression<?> first, Object parameter) {
+    public final IPredicate betweenParam(Object firstOperand, Object secondOperand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifBetween(Expression<?> first, @Nullable Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate between(Object parameter, Expression<?> second) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifBetween(@Nullable Object firstParameter, Expression<?> second) {
+    public final IPredicate ifBetweenParam(@Nullable Object firstOperand, @Nullable Object secondOperand) {
         throw unsupportedOperation();
     }
 
@@ -594,12 +546,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final IPredicate like(String patternParameter) {
+    public IPredicate like(Object pattern) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifLike(@Nullable String patternParameter) {
+    public IPredicate ifLike(@Nullable Object pattern) {
         throw unsupportedOperation();
     }
 
@@ -619,27 +571,17 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final IPredicate notLike(String patternParameter) {
+    public final IPredicate notLike(Object pattern) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifNotLike(@Nullable String patternParameter) {
+    public final IPredicate ifNotLike(@Nullable Object pattern) {
         throw unsupportedOperation();
     }
 
     @Override
     public final IPredicate notLikeNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate like(Expression<String> pattern) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notLike(Expression<String> pattern) {
         throw unsupportedOperation();
     }
 
@@ -653,33 +595,19 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
         throw unsupportedOperation();
     }
 
+
     @Override
-    public final Expression<E> mod(Expression<?> operator) {
+    public final Expression<E> mod(Object operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> mod(Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> modParam(Object parameter) {
+    public final Expression<E> modParam(Object operand) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> modNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> mod(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> mod(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
@@ -690,11 +618,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
 
     @Override
     public final <O> Expression<E> mod(Supplier<Expression<O>> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> multiply(Expression<?> multiplicand) {
         throw unsupportedOperation();
     }
 
@@ -714,16 +637,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final Expression<E> multiply(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> multiply(String tableAlias, FieldMeta<?, ?> field) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C, O> Expression<E> multiply(Function<C, Expression<O>> function) {
         throw unsupportedOperation();
     }
@@ -734,32 +647,17 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final Expression<E> plus(Expression<?> augend) {
+    public final Expression<E> plus(Object augend) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> plus(Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> plusParam(Object parameter) {
+    public final Expression<E> plusParam(Object augend) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> plusNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> plus(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> plus(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
@@ -774,32 +672,17 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final Expression<E> minus(Expression<?> subtrahend) {
+    public final Expression<E> minus(Object minuend) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> minus(Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> minusParam(Object parameter) {
+    public final Expression<E> minusParam(Object minuend) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> minusNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> minus(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> minus(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
@@ -813,33 +696,19 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
         throw unsupportedOperation();
     }
 
+
     @Override
-    public final Expression<E> divide(Expression<?> divisor) {
+    public final Expression<E> divide(Object divisor) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> divide(Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> divideParam(Object parameter) {
+    public final Expression<E> divideParam(Object divisor) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> divideNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> divide(String subQueryAlias, String derivedFieldName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> divide(String tableAlias, FieldMeta<?, ?> field) {
         throw unsupportedOperation();
     }
 
@@ -859,17 +728,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final Expression<E> bitwiseAnd(Expression<?> operand) {
+    public final Expression<E> bitwiseAnd(Object operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> bitwiseAnd(Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> bitwiseAndParam(Object parameter) {
+    public final Expression<E> bitwiseAndParam(Object operand) {
         throw unsupportedOperation();
     }
 
@@ -889,17 +753,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final Expression<E> bitwiseOr(Expression<?> operand) {
+    public final Expression<E> bitwiseOr(Object operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> bitwiseOr(Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> bitwiseOrParam(Object parameter) {
+    public final Expression<E> bitwiseOrParam(Object operand) {
         throw unsupportedOperation();
     }
 
@@ -919,17 +778,12 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final Expression<E> xor(Expression<?> operand) {
+    public final Expression<E> xor(Object operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> xor(Object parameter) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final Expression<E> xorParam(Object parameter) {
+    public final Expression<E> xorParam(Object operand) {
         throw unsupportedOperation();
     }
 
@@ -954,22 +808,17 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final Expression<E> rightShift(Number bitNumberParameter) {
+    public final Expression<E> rightShift(Object bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> rightShiftParam(Number parameter) {
+    public final Expression<E> rightShiftParam(Object bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> rightShiftNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <N extends Number> Expression<E> rightShift(Expression<N> bitNumber) {
         throw unsupportedOperation();
     }
 
@@ -984,22 +833,17 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final Expression<E> leftShift(Number bitNumberParameter) {
+    public final Expression<E> leftShift(Object bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression<E> leftShiftParam(Number parameter) {
+    public final Expression<E> leftShiftParam(Object bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
     public final Expression<E> leftShiftNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <N extends Number> Expression<E> leftShift(Expression<N> bitNumber) {
         throw unsupportedOperation();
     }
 
@@ -1020,12 +864,7 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
     }
 
     @Override
-    public final <O> Expression<O> asType(Class<O> convertType, MappingType longMapping) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <O> Expression<O> asType(Class<O> convertType, FieldMeta<?, O> longMapping) {
+    public final <O> Expression<O> asType(Class<O> convertType, ParamMeta paramMeta) {
         throw unsupportedOperation();
     }
 
@@ -1044,26 +883,6 @@ abstract class NoNOperationExpression<E> implements ArmyExpression<E>, _SortItem
         throw unsupportedOperation();
     }
 
-    @Override
-    public final boolean containsField(Collection<FieldMeta<?, ?>> fieldMetas) {
-        return false;
-    }
-
-    @Override
-    public final boolean containsFieldOf(TableMeta<?> tableMeta) {
-        return false;
-    }
-
-
-    @Override
-    public final boolean containsSubQuery() {
-        return false;
-    }
-
-    @Override
-    public final int containsFieldCount(TableMeta<?> tableMeta) {
-        return 0;
-    }
 
 
     static UnsupportedOperationException unsupportedOperation() {

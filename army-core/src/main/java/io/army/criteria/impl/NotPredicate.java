@@ -47,11 +47,6 @@ final class NotPredicate extends OperationPredicate {
     }
 
     @Override
-    public boolean containsSubQuery() {
-        return this.predicate.containsSubQuery();
-    }
-
-    @Override
     public String toString() {
         return String.format(" ( NOT%s )", this.predicate);
     }

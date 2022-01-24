@@ -71,6 +71,10 @@ public abstract class AbstractGenericSession implements GenericSession {
             this.prepared = true;
         }
 
+        @Override
+        public boolean isPrepared() {
+            return false;
+        }
 
         @Override
         public TableMeta<?> table() {

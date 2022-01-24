@@ -27,9 +27,7 @@ public interface Statement {
      */
     void prepared();
 
-    default boolean isPrepared() {
-        throw new UnsupportedOperationException();
-    }
+     boolean isPrepared();
 
 
     @Deprecated

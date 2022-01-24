@@ -31,10 +31,6 @@ class CastExpression<E> extends OperationExpression<E> {
         return this.paramMeta;
     }
 
-    @Override
-    public final boolean containsSubQuery() {
-        return this.expression.containsSubQuery();
-    }
 
     @Override
     public final String toString() {
