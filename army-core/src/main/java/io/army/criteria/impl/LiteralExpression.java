@@ -15,28 +15,26 @@ import java.util.concurrent.ConcurrentMap;
  * <p>
  * This class representing sql literal expression.
  * </p>
- *
- * @param <E> The java type of sql literal.
  */
-final class LiteralExpression<E> extends OperationExpression<E> implements ValueExpression<E> {
+final class LiteralExpression extends OperationExpression implements ValueExpression {
 
-    private static final ConcurrentMap<Object, LiteralExpression<?>> CONSTANT_EXP_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Object, LiteralExpression> CONSTANT_EXP_CACHE = new ConcurrentHashMap<>();
 
 
-    static <E> LiteralExpression<E> literal(final ParamMeta paramMeta, final E literal) {
-        return new LiteralExpression<>(paramMeta, literal);
+    static LiteralExpression literal(final ParamMeta paramMeta, final Object literal) {
+        return new LiteralExpression(paramMeta, literal);
     }
 
-    static <E> LiteralExpression<E> literal(final E constant) {
+    static LiteralExpression literal(final Object constant) {
         Objects.requireNonNull(constant);
         return literal(_MappingFactory.getMapping(constant.getClass()), constant);
     }
 
     private final ParamMeta paramMeta;
 
-    private final E literal;
+    private final Object literal;
 
-    private LiteralExpression(ParamMeta paramMeta, E literal) {
+    private LiteralExpression(ParamMeta paramMeta, Object literal) {
         this.paramMeta = paramMeta;
         this.literal = literal;
     }
@@ -57,7 +55,7 @@ final class LiteralExpression<E> extends OperationExpression<E> implements Value
 
     @NonNull
     @Override
-    public E value() {
+    public Object value() {
         return this.literal;
     }
 

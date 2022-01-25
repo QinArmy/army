@@ -4,9 +4,6 @@ import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
-
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -17,7 +14,7 @@ import java.util.function.Supplier;
  *     </ul>
  * </p>
  */
-abstract class OperationField<T extends IDomain, E> extends OperationExpression<E> implements GenericField<T, E> {
+abstract class OperationField<T extends IDomain, F> extends OperationExpression implements GenericField<T, F> {
 
 
     @Override
@@ -30,14 +27,6 @@ abstract class OperationField<T extends IDomain, E> extends OperationExpression<
         return this.lessThan(SQLs.namedParam(this));
     }
 
-    @Nullable
-    @Override
-    public final IPredicate ifLessThan(Supplier<Object> parameter) {
-        final Object parameterValue;
-        parameterValue = parameter.get();
-        return parameterValue == null ? null : this.lessThan(parameterValue);
-    }
-
     @Override
     public final IPredicate lessEqualNamed() {
         return this.lessEqual(SQLs.namedParam(this));
@@ -46,14 +35,6 @@ abstract class OperationField<T extends IDomain, E> extends OperationExpression<
     @Override
     public final IPredicate greatThanNamed() {
         return this.greatThan(SQLs.namedParam(this));
-    }
-
-    @Nullable
-    @Override
-    public final IPredicate ifGreatThan(Supplier<Object> parameter) {
-        final Object parameterValue;
-        parameterValue = parameter.get();
-        return parameterValue == null ? null : this.greatThan(parameterValue);
     }
 
     @Override
@@ -67,52 +48,52 @@ abstract class OperationField<T extends IDomain, E> extends OperationExpression<
     }
 
     @Override
-    public final Expression<E> modNamed() {
+    public final Expression modNamed() {
         return this.mod(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> plusNamed() {
+    public final Expression plusNamed() {
         return this.plus(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> minusNamed() {
+    public final Expression minusNamed() {
         return this.minus(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> multiplyNamed() {
+    public final Expression multiplyNamed() {
         return this.multiply(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> divideNamed() {
+    public final Expression divideNamed() {
         return this.divide(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> bitwiseAndNamed() {
+    public final Expression bitwiseAndNamed() {
         return this.bitwiseAnd(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> bitwiseOrNamed() {
+    public final Expression bitwiseOrNamed() {
         return this.bitwiseOr(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> xorNamed() {
+    public final Expression xorNamed() {
         return this.xor(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> rightShiftNamed() {
+    public final Expression rightShiftNamed() {
         return this.rightShift(SQLs.namedParam(this));
     }
 
     @Override
-    public final Expression<E> leftShiftNamed() {
+    public final Expression leftShiftNamed() {
         return this.leftShift(SQLs.namedParam(this));
     }
 

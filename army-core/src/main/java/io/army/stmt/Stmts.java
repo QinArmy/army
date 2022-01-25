@@ -53,7 +53,7 @@ public abstract class Stmts {
         final int paramSize = paramGroup.size();
         final List<List<ParamValue>> groupList = new ArrayList<>(wrapperList.size());
 
-        NamedParam<?> namedParam = null;
+        NamedParam namedParam = null;
         for (ReadWrapper wrapper : wrapperList) {
             final List<ParamValue> group = new ArrayList<>(paramSize);
 
@@ -62,10 +62,10 @@ public abstract class Stmts {
                     group.add(param);
                     continue;
                 }
-                namedParam = ((NamedParam<?>) param);
+                namedParam = ((NamedParam) param);
                 final Object value = wrapper.get(namedParam.name());
                 if (value == null && param instanceof NonNullNamedParam) {
-                    throw _Exceptions.nonNullNamedParam((NonNullNamedParam<?>) param);
+                    throw _Exceptions.nonNullNamedParam((NonNullNamedParam) param);
                 }
                 group.add(ParamValue.build(param.paramMeta(), value));
             }

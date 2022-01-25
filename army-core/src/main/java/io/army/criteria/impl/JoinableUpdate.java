@@ -1,13 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.modelgen._MetaBridge;
 import io.army.util.CollectionUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
@@ -35,9 +32,9 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     final CriteriaContext criteriaContext;
 
-    private List<SetLeftItem> fieldList = new ArrayList<>();
+    private List<SetLeftItem> leftList = new ArrayList<>();
 
-    private List<SetRightItem> valueExpList = new ArrayList<>();
+    private List<SetRightItem> rightList = new ArrayList<>();
 
     private boolean prepared;
 
@@ -47,179 +44,22 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     }
 
-    @Override
-    public final SR set(FieldMeta<?, ?> field, Expression<?> value) {
-        if (!(field instanceof DefaultFieldMeta)) {
-            throw CriteriaUtils.nonArmyExpression(field);
-        }
-        if (!(value instanceof ArmyExpression)) {
-            throw CriteriaUtils.nonArmyExpression(value);
-        }
-        if (field.updateMode() == UpdateMode.IMMUTABLE) {
-            throw _Exceptions.immutableField(field);
-        }
-        final String fieldName = field.fieldName();
-        if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
-            throw _Exceptions.armyManageField(field);
-        }
-        if (!field.nullable() && ((_Expression<?>) value).isNullableValue()) {
-            throw _Exceptions.nonNullField(field);
-        }
-        this.fieldList.add(field);
-        this.valueExpList.add(value);
-        return (SR) this;
-    }
-
-
-    @Override
-    public final SR set(FieldMeta<?, ?> field, @Nullable Object value) {
-        return this.set(field, SQLs.paramWithExp(field, value));
-    }
-
-    @Override
-    public final SR setParam(FieldMeta<?, ?> field, @Nullable Object value) {
-        return this.set(field, SQLs.strictParamWithExp(field, value));
-    }
-
-
-    @Override
-    public final <F> SR set(FieldMeta<?, F> field, Function<C, Expression<F>> function) {
-        return this.set(field, function.apply(this.criteria));
-    }
-
-    @Override
-    public final <F> SR set(FieldMeta<?, F> field, Supplier<Expression<F>> supplier) {
-        return this.set(field, supplier.get());
-    }
-
-    @Override
-    public final SR setNull(FieldMeta<?, ?> field) {
-        return this.set(field, SQLs.nullWord());
-    }
-
-    @Override
-    public final SR setDefault(FieldMeta<?, ?> field) {
-        return this.set(field, SQLs.defaultWord());
-    }
-
-    @Override
-    public final <F extends Number> SR setPlus(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.plus(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setPlusParam(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.plusParam(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setPlus(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).isNullableValue()) {
-            throw _Exceptions.nonNullExpression(field);
-        }
-        return this.set(field, field.plus(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setMinus(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.minus(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setMinusParam(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.minusParam(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setMinus(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).isNullableValue()) {
-            throw _Exceptions.nonNullExpression(field);
-        }
-        return this.set(field, field.minus(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.multiply(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setMultiplyParam(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.multiplyParam(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setMultiply(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).isNullableValue()) {
-            throw _Exceptions.nonNullExpression(field);
-        }
-        return this.set(field, field.multiply(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setDivide(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.divide(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setDivideParam(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.divideParam(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setDivide(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).isNullableValue()) {
-            throw _Exceptions.nonNullExpression(field);
-        }
-        return this.set(field, field.divide(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setMod(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.mod(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setModParam(FieldMeta<?, F> field, F value) {
-        Objects.requireNonNull(value);
-        return this.set(field, field.modParam(value));
-    }
-
-    @Override
-    public final <F extends Number> SR setMod(FieldMeta<?, F> field, Expression<F> value) {
-        if (((ArmyExpression<F>) value).isNullableValue()) {
-            throw _Exceptions.nonNullExpression(field);
-        }
-        return this.set(field, field.mod(value));
-    }
-
-    @Override
-    public final SR ifSetNull(Predicate<C> predicate, FieldMeta<?, ?> field) {
-        if (predicate.test(this.criteria)) {
-            this.set(field, SQLs.nullWord());
-        }
-        return (SR) this;
-    }
+    /*################################## blow SetClause method ##################################*/
 
     @Override
     public final SR setPairs(List<ItemPair> pairList) {
         if (pairList.size() == 0) {
             throw new CriteriaException("pair list must not empty.");
         }
-        for (ItemPair pair : pairList) {
-            if (!(pair instanceof FieldMeta)) {
-                throw new UnsupportedOperationException();
+        final List<SetLeftItem> leftList = this.leftList;
+        final List<SetRightItem> rightList = this.rightList;
+
+        for (ItemPair itemPair : pairList) {
+            if (!(itemPair instanceof SQLs.ItemPairImpl)) {
+                throw new CriteriaException("pair is Illegal.");
             }
-            this.set((FieldMeta<?, ?>) pair.left(), (ArmyExpression<?>) pair.right());
+            leftList.add(((SQLs.ItemPairImpl) itemPair).left);
+            rightList.add(((SQLs.ItemPairImpl) itemPair).right);
         }
         return (SR) this;
     }
@@ -260,130 +100,357 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSet(FieldMeta<?, ?> field, @Nullable Object value) {
+    public final SR setExp(FieldMeta<?, ?> field, Function<C, Expression> function) {
+        return this.setExp(field, function.apply(this.criteria));
+    }
+
+    @Override
+    public final SR setExp(FieldMeta<?, ?> field, Supplier<Expression> supplier) {
+        return this.setExp(field, supplier.get());
+    }
+
+    @Override
+    public final SR ifSetExp(FieldMeta<?, ?> field, Function<C, Expression> function) {
+        final Expression exp;
+        exp = function.apply(this.criteria);
+        if (exp != null) {
+            this.setExp(field, exp);
+        }
+        return (SR) this;
+    }
+
+    /*################################## blow SimpleSetClause method ##################################*/
+
+    @Override
+    public final SR set(FieldMeta<?, ?> field, @Nullable Object paramOrExp) {
+        return this.setExp(field, SQLs.paramWithNullable(field, paramOrExp));
+    }
+
+    @Override
+    public final SR setLiteral(FieldMeta<?, ?> field, @Nullable Object paramOrExp) {
+        return this.setExp(field, SQLs.literalWithNullable(field, paramOrExp));
+    }
+
+    @Override
+    public final SR setPlus(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.plus(paramOrExp));
+    }
+
+    @Override
+    public final SR setPlusLiteral(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.plusLiteral(paramOrExp));
+    }
+
+    @Override
+    public final SR setMinus(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.minus(paramOrExp));
+    }
+
+    @Override
+    public final SR setMinusLiteral(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.minusLiteral(paramOrExp));
+    }
+
+    @Override
+    public final SR setMultiply(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.multiply(paramOrExp));
+    }
+
+    @Override
+    public final SR setMultiplyLiteral(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.multiplyLiteral(paramOrExp));
+    }
+
+    @Override
+    public final SR setDivide(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.divide(paramOrExp));
+    }
+
+    @Override
+    public final SR setDivideLiteral(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.divideLiteral(paramOrExp));
+    }
+
+    @Override
+    public final SR setMod(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.mod(paramOrExp));
+    }
+
+    @Override
+    public final SR setModLiteral(FieldMeta<?, ?> field, Object paramOrExp) {
+        return this.setExp(field, field.modLiteral(paramOrExp));
+    }
+
+    @Override
+    public final SR ifSet(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
         if (value != null) {
-            this.set(field, SQLs.paramWithExp(field, value));
+            this.setExp(field, SQLs.paramWithNonNull(field, value));
         }
         return (SR) this;
     }
 
     @Override
-    public final SR ifSetParam(FieldMeta<?, ?> field, @Nullable Object value) {
+    public final SR ifSet(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
         if (value != null) {
-            this.set(field, SQLs.strictParamWithExp(field, value));
+            this.setExp(field, SQLs.paramWithNonNull(field, value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F> SR ifSet(FieldMeta<?, F> field, Function<C, Expression<F>> function) {
-        final Expression<F> value;
-        value = function.apply(this.criteria);
+    public final SR ifSetLiteral(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
         if (value != null) {
-            this.set(field, value);
+            this.setExp(field, SQLs.literalWithNonNull(field, value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F> SR ifSet(FieldMeta<?, F> field, Supplier<Expression<F>> supplier) {
-        final Expression<F> value;
-        value = supplier.get();
+    public final SR ifSetLiteral(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
         if (value != null) {
-            this.set(field, value);
+            this.setExp(field, SQLs.literalWithNonNull(field, value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetPlus(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetPlus(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
         if (value != null) {
-            this.set(field, field.plus(value));
+            this.setExp(field, field.plus(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetMinus(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetPlus(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
         if (value != null) {
-            this.set(field, field.minus(value));
+            this.setExp(field, field.plus(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetMultiply(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetMinus(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
         if (value != null) {
-            this.set(field, field.multiply(value));
+            this.setExp(field, field.minus(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetDivide(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetMinus(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
         if (value != null) {
-            this.set(field, field.divide(value));
+            this.setExp(field, field.minus(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetMod(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetMultiply(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
         if (value != null) {
-            this.set(field, field.mod(value));
+            this.setExp(field, field.multiply(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetPlusParam(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetMultiply(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
         if (value != null) {
-            this.set(field, field.plusParam(value));
+            this.setExp(field, field.multiply(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetMinusParam(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetDivide(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
         if (value != null) {
-            this.set(field, field.minusParam(value));
+            this.setExp(field, field.divide(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetMultiplyParam(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetDivide(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
         if (value != null) {
-            this.set(field, field.multiplyParam(value));
+            this.setExp(field, field.divide(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetDivideParam(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetMod(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
         if (value != null) {
-            this.set(field, field.divideParam(value));
+            this.setExp(field, field.mod(value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <F extends Number> SR ifSetModParam(FieldMeta<?, F> field, @Nullable F value) {
+    public final SR ifSetMod(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
         if (value != null) {
-            this.set(field, field.modParam(value));
+            this.setExp(field, field.mod(value));
         }
         return (SR) this;
     }
 
-    /*################################## blow batch set clause  method ##################################*/
+    @Override
+    public final SR ifSetPlusLiteral(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.setExp(field, field.plusLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetPlusLiteral(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
+        if (value != null) {
+            this.setExp(field, field.plusLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetMinusLiteral(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.setExp(field, field.minusLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetMinusLiteral(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
+        if (value != null) {
+            this.setExp(field, field.minusLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetMultiplyLiteral(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.setExp(field, field.multiplyLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetMultiplyLiteral(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
+        if (value != null) {
+            this.setExp(field, field.multiplyLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetDivideLiteral(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.setExp(field, field.divideLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetDivideLiteral(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
+        if (value != null) {
+            this.setExp(field, field.divideLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetModLiteral(FieldMeta<?, ?> field, Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.setExp(field, field.modLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetModLiteral(FieldMeta<?, ?> field, Supplier<Object> paramOrExp) {
+        final Object value;
+        value = paramOrExp.get();
+        if (value != null) {
+            this.setExp(field, field.modLiteral(value));
+        }
+        return (SR) this;
+    }
+
+    /*################################## blow BatchSetClause  method ##################################*/
+
+    @Override
+    public final SR setExp(FieldMeta<?, ?> field, Expression value) {
+        Objects.requireNonNull(value);
+        this.leftList.add(field);
+        this.rightList.add(value);
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetExp(FieldMeta<?, ?> field, Supplier<Expression> supplier) {
+        final Expression exp;
+        exp = supplier.get();
+        if (exp != null) {
+            this.setExp(field, exp);
+        }
+        return (SR) this;
+    }
 
     @Override
     public final SR setNullable(List<FieldMeta<?, ?>> fieldList) {
         if (fieldList.size() == 0) {
             throw batchSetLisEmpty();
         }
+        final List<SetLeftItem> leftList = this.leftList;
+        final List<SetRightItem> rightList = this.rightList;
         for (FieldMeta<?, ?> field : fieldList) {
-            this.set(field, SQLs.nullableNamedParam(field));
+            leftList.add(field);
+            rightList.add(SQLs.nullableNamedParam(field));
         }
         return (SR) this;
     }
@@ -393,8 +460,11 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         if (fieldList.size() == 0) {
             throw batchSetLisEmpty();
         }
+        final List<SetLeftItem> leftList = this.leftList;
+        final List<SetRightItem> rightList = this.rightList;
         for (FieldMeta<?, ?> field : fieldList) {
-            this.set(field, SQLs.namedParam(field));
+            leftList.add(field);
+            rightList.add(SQLs.namedParam(field));
         }
         return (SR) this;
     }
@@ -435,45 +505,45 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final <F> SR setNullable(FieldMeta<?, F> field) {
-        return this.set(field, SQLs.nullableNamedParam(field));
+    public final SR setNullable(FieldMeta<?, ?> field) {
+        return this.setExp(field, SQLs.nullableNamedParam(field));
     }
 
     @Override
-    public <F> SR set(FieldMeta<?, F> field) {
-        return this.set(field, SQLs.namedParam(field));
+    public final SR set(FieldMeta<?, ?> field) {
+        return this.setExp(field, SQLs.namedParam(field));
     }
 
     @Override
-    public final <F extends Number> SR setPlus(FieldMeta<?, F> field) {
-        return this.set(field, field.plus(SQLs.namedParam(field)));
+    public final SR setPlus(FieldMeta<?, ?> field) {
+        return this.setExp(field, field.plus(SQLs.namedParam(field)));
     }
 
     @Override
-    public final <F extends Number> SR setMinus(FieldMeta<?, F> field) {
-        return this.set(field, field.minus(SQLs.namedParam(field)));
+    public final SR setMinus(FieldMeta<?, ?> field) {
+        return this.setExp(field, field.minus(SQLs.namedParam(field)));
     }
 
     @Override
-    public final <F extends Number> SR setMultiply(FieldMeta<?, F> field) {
-        return this.set(field, field.multiply(SQLs.namedParam(field)));
+    public final SR setMultiply(FieldMeta<?, ?> field) {
+        return this.setExp(field, field.multiply(SQLs.namedParam(field)));
     }
 
     @Override
-    public final <F extends Number> SR setDivide(FieldMeta<?, F> field) {
-        return this.set(field, field.divide(SQLs.namedParam(field)));
+    public final SR setDivide(FieldMeta<?, ?> field) {
+        return this.setExp(field, field.divide(SQLs.namedParam(field)));
     }
 
     @Override
-    public final <F extends Number> SR setMod(FieldMeta<?, F> field) {
-        return this.set(field, field.mod(SQLs.namedParam(field)));
+    public final SR setMod(FieldMeta<?, ?> field) {
+        return this.setExp(field, field.mod(SQLs.namedParam(field)));
     }
 
     @Override
     public final SR ifSet(Function<C, List<FieldMeta<?, ?>>> function) {
         final List<FieldMeta<?, ?>> fieldList;
         fieldList = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(fieldList)) {
+        if (fieldList.size() > 0) {
             this.set(fieldList);
         }
         return (SR) this;
@@ -483,7 +553,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     public final SR ifSetNullable(Function<C, List<FieldMeta<?, ?>>> function) {
         final List<FieldMeta<?, ?>> fieldList;
         fieldList = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(fieldList)) {
+        if (fieldList.size() > 0) {
             this.setNullable(fieldList);
         }
         return (SR) this;
@@ -492,7 +562,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     @Override
     public final SR ifSet(Predicate<C> test, FieldMeta<?, ?> field) {
         if (test.test(this.criteria)) {
-            this.set(field, SQLs.namedParam(field));
+            this.setExp(field, SQLs.namedParam(field));
         }
         return (SR) this;
     }
@@ -500,7 +570,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     @Override
     public final SR ifSetNullable(Predicate<C> test, FieldMeta<?, ?> field) {
         if (test.test(this.criteria)) {
-            this.set(field, SQLs.nullableNamedParam(field));
+            this.setExp(field, SQLs.nullableNamedParam(field));
         }
         return (SR) this;
     }
@@ -524,8 +594,8 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        final List<SetLeftItem> targetParts = this.fieldList;
-        final List<SetRightItem> valueParts = this.valueExpList;
+        final List<SetLeftItem> targetParts = this.leftList;
+        final List<SetRightItem> valueParts = this.rightList;
         if (CollectionUtils.isEmpty(targetParts)) {
             throw _Exceptions.updateFieldListEmpty();
         }
@@ -533,8 +603,8 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
             // no bug ,never here
             throw new IllegalStateException("target and value size not match.");
         }
-        this.fieldList = CollectionUtils.unmodifiableList(targetParts);
-        this.valueExpList = CollectionUtils.unmodifiableList(valueParts);
+        this.leftList = CollectionUtils.unmodifiableList(targetParts);
+        this.rightList = CollectionUtils.unmodifiableList(valueParts);
 
         final List<_Predicate> predicates = this.predicateList;
         if (CollectionUtils.isEmpty(predicates)) {
@@ -552,8 +622,8 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         _Assert.prepared(this.prepared);
 
         this.prepared = false;
-        this.fieldList = null;
-        this.valueExpList = null;
+        this.leftList = null;
+        this.rightList = null;
         this.predicateList = null;
 
         this.onClear();
@@ -563,12 +633,12 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     @Override
     public final List<? extends SetLeftItem> fieldList() {
         _Assert.prepared(this.prepared);
-        return this.fieldList;
+        return this.leftList;
     }
 
     @Override
     public final List<? extends SetRightItem> valueExpList() {
-        return this.valueExpList;
+        return this.rightList;
     }
 
 

@@ -50,15 +50,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C> With80Spec<C, RowSubQuery> rowSubQuery(@Nullable C criteria) {
-        return new SimpleRowSubQuery<>(criteria);
-    }
 
-    static <C> With80Spec<C, ColumnSubQuery> columnSubQuery(@Nullable C criteria) {
-        return new SimpleColumnSubQuery<>(criteria);
-    }
-
-    static <C, E> With80Spec<C, ScalarQueryExpression<E>> scalarSubQuery(@Nullable C criteria) {
+    static <C> With80Spec<C, ScalarQueryExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarQuery<>(criteria);
     }
 
@@ -68,11 +61,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (left instanceof Select) {
             with80Spec = new UnionAndSelect<>((Select) left, unionType);
         } else if (left instanceof ScalarSubQuery) {
-            with80Spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression<?>) left, unionType);
-        } else if (left instanceof ColumnSubQuery) {
-            with80Spec = new UnionAndColumnSubQuery<>((ColumnSubQuery) left, unionType);
-        } else if (left instanceof RowSubQuery) {
-            with80Spec = new UnionAndRowSubQuery<>((RowSubQuery) left, unionType);
+            with80Spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression) left, unionType);
         } else if (left instanceof SubQuery) {
             with80Spec = new UnionAndSubQuery<>((SubQuery) left, unionType);
         } else {
@@ -174,13 +163,13 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final OrderBy80Spec<C, Q> window(String name, Expression<?> partition) {
+    public final OrderBy80Spec<C, Q> window(String name, Expression partition) {
         //TODO
         return this;
     }
 
     @Override
-    public final OrderBy80Spec<C, Q> window(String name, Expression<?> partition, SortItem order) {
+    public final OrderBy80Spec<C, Q> window(String name, Expression partition, SortItem order) {
         return this;
     }
 
@@ -348,7 +337,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             final Q thisQuery = this.asQueryAndQuery();
             if (this instanceof ScalarSubQuery) {
                 if (!(thisQuery instanceof ScalarSubQueryExpression)
-                        || ((ScalarSubQueryExpression<?>) thisQuery).subQuery != this) {
+                        || ((ScalarSubQueryExpression) thisQuery).subQuery != this) {
                     throw asQueryMethodError();
                 }
             } else if (thisQuery != this) {
@@ -385,7 +374,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     final Q onAsQuery(final boolean outer) {
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
+            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
         } else {
             thisQuery = (Q) this;
         }
@@ -535,8 +524,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }//SimpleColumnSubQuery
 
-    private static final class SimpleScalarQuery<C, E> extends SimpleSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
+    private static final class SimpleScalarQuery<C> extends SimpleSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
         private SimpleScalarQuery(@Nullable C criteria) {
             super(criteria);
@@ -598,10 +587,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }//UnionAndColumnSubQuery
 
-    private static final class UnionAndScalarSubQuery<C, E> extends UnionAndSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
+    private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
-        private UnionAndScalarSubQuery(ScalarQueryExpression<E> left, UnionType unionType) {
+        private UnionAndScalarSubQuery(ScalarQueryExpression left, UnionType unionType) {
             super(left, unionType);
         }
 

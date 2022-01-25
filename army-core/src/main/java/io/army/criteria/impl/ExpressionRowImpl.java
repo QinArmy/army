@@ -1,28 +1,25 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ExpressionRow;
+import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
 import io.army.criteria.RowSubQuery;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._SqlContext;
-import io.army.domain.IDomain;
-import io.army.meta.FieldMeta;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
+final class ExpressionRowImpl implements ExpressionRow, _SelfDescribed {
 
-    private final List<FieldMeta<T, ?>> columnList;
+    private final List<GenericField<?, ?>> columnList;
 
-    ExpressionRowImpl(List<FieldMeta<T, ?>> columnList) {
-        List<FieldMeta<T, ?>> list = new ArrayList<>(columnList);
-        this.columnList = Collections.unmodifiableList(list);
+    public ExpressionRowImpl(List<GenericField<?, ?>> columnList) {
+        this.columnList = columnList;
     }
 
     @Override
-    public List<FieldMeta<T, ?>> columnList() {
-        return columnList;
+    public List<GenericField<?, ?>> field() {
+        return null;
     }
 
     @Override
@@ -51,8 +48,8 @@ final class ExpressionRowImpl<T extends IDomain> implements ExpressionRow<T> {
         StringBuilder builder = new StringBuilder();
         builder.append("ROW(");
         int index = 0;
-        for (FieldMeta<T, ?> fieldMeta : this.columnList) {
-            if(index > 0){
+        for (GenericField<?, ?> fieldMeta : this.columnList) {
+            if (index > 0) {
                 builder.append(",");
             }
             builder.append(fieldMeta.fieldName());

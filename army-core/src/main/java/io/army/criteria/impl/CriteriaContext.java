@@ -15,19 +15,19 @@ interface CriteriaContext {
 
     <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field);
 
-    <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName);
+     DerivedField ref(String subQueryAlias, String derivedFieldName);
 
-    <E> Expression<E> ref(String selectionAlias);
+    Expression ref(String selectionAlias);
 
     /**
      * @throws CriteriaException when var exists.
      */
-    <E> VarExpression<E> createVar(String name, ParamMeta paramMeta) throws CriteriaException;
+    VarExpression createVar(String name, ParamMeta paramMeta) throws CriteriaException;
 
     /**
      * @throws CriteriaException when var not exists.
      */
-    <E> VarExpression<E> var(String name) throws CriteriaException;
+    VarExpression var(String name) throws CriteriaException;
 
 
     default void onAddBlock(_TableBlock block) {

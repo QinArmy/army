@@ -37,7 +37,7 @@ public abstract class _Assert extends org.springframework.util.Assert {
     public static void noNamedParam(List<ParamValue> paramGroup) {
         for (ParamValue paramValue : paramGroup) {
             if (paramValue instanceof NamedParam) {
-                throw _Exceptions.namedParamInNonBatch((NamedParam<?>) paramValue);
+                throw _Exceptions.namedParamInNonBatch((NamedParam) paramValue);
             }
         }
     }

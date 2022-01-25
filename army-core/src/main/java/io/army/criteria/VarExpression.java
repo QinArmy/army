@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public interface VarExpression<E> extends Expression<E> {
+public interface VarExpression extends Expression {
 
     String name();
 

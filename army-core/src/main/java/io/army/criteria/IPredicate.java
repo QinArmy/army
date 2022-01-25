@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
-public interface IPredicate extends Expression<Boolean> {
+public interface IPredicate extends Expression {
 
     /**
      * Logical OR

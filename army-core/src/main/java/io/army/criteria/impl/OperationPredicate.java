@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 /**
  * This class is base class of all {@link IPredicate} implementation .
  */
-abstract class OperationPredicate extends OperationExpression<Boolean> implements _Predicate {
+abstract class OperationPredicate extends OperationExpression implements _Predicate {
 
     @Override
     public final ParamMeta paramMeta() {

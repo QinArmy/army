@@ -30,11 +30,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
         if (query instanceof Select) {
             spec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
-            spec = new BracketScalarSubQuery<>((ScalarQueryExpression<?>) query);
-        } else if (query instanceof ColumnSubQuery) {
-            spec = new BracketColumnSubQuery<>((ColumnSubQuery) query);
-        } else if (query instanceof RowSubQuery) {
-            spec = new BracketRowSubQuery<>((RowSubQuery) query);
+            spec = new BracketScalarSubQuery<>((ScalarQueryExpression) query);
         } else if (query instanceof SubQuery) {
             spec = new BracketSubQuery<>((SubQuery) query);
         } else {
@@ -50,11 +46,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
         if (left instanceof Select) {
             spec = new UnionSelect<>((Select) left, unionType, (Select) right);
         } else if (left instanceof ScalarSubQuery) {
-            spec = new UnionScalarSubQuery<>((ScalarQueryExpression<?>) left, unionType, (ScalarQueryExpression<?>) right);
-        } else if (left instanceof RowSubQuery) {
-            spec = new UnionRowSubQuery<>((RowSubQuery) left, unionType, (RowSubQuery) right);
-        } else if (left instanceof ColumnSubQuery) {
-            spec = new UnionColumnSubQuery<>((ColumnSubQuery) left, unionType, (ColumnSubQuery) right);
+            spec = new UnionScalarSubQuery<>((ScalarQueryExpression) left, unionType, (ScalarQueryExpression) right);
         } else if (left instanceof SubQuery) {
             spec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
         } else {
@@ -96,7 +88,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     final Q internalAsQuery(boolean justAsQuery) {
         final Q query;
         if (this instanceof ScalarSubQuery) {
-            query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
+            query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
         } else {
             query = (Q) this;
         }
@@ -165,28 +157,11 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
 
     }//
 
-    private static final class BracketRowSubQuery<C> extends BracketSubQuery<C, RowSubQuery>
-            implements RowSubQuery {
 
-        private BracketRowSubQuery(RowSubQuery left) {
-            super(left);
-        }
+    private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
-    }
-
-    private static final class BracketColumnSubQuery<C> extends BracketSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private BracketColumnSubQuery(ColumnSubQuery left) {
-            super(left);
-        }
-
-    }//BracketColumnSubQuery
-
-    private static final class BracketScalarSubQuery<C, E> extends BracketSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
-
-        private BracketScalarSubQuery(ScalarQueryExpression<E> left) {
+        private BracketScalarSubQuery(ScalarQueryExpression left) {
             super(left);
         }
 
@@ -255,31 +230,11 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }//UnionSubQuery
 
 
-    private static final class UnionRowSubQuery<C> extends UnionSubQuery<C, RowSubQuery>
-            implements RowSubQuery {
+    private static final class UnionScalarSubQuery<C> extends UnionSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
-        private UnionRowSubQuery(RowSubQuery left, UnionType unionType, RowSubQuery right) {
+        private UnionScalarSubQuery(ScalarQueryExpression left, UnionType unionType, ScalarQueryExpression right) {
             super(left, unionType, right);
-        }
-
-
-    }//UnionRowSubQuery
-
-    private static final class UnionColumnSubQuery<C> extends UnionSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private UnionColumnSubQuery(ColumnSubQuery left, UnionType unionType, ColumnSubQuery right) {
-            super(left, unionType, right);
-        }
-
-
-    }//UnionColumnSubQuery
-
-    private static final class UnionScalarSubQuery<C, E> extends UnionSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
-
-        private UnionScalarSubQuery(ScalarQueryExpression<E> left, UnionType unionType, ScalarQueryExpression<?> right) {
-            super(left, unionType, (ScalarQueryExpression<E>) right);
         }
 
         @Override

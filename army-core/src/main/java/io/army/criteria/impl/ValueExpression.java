@@ -14,9 +14,9 @@ import io.army.lang.Nullable;
  *
  * @param <E> java type of expression
  */
-interface ValueExpression<E> extends Expression<E> {
+interface ValueExpression extends Expression {
 
     @Nullable
-    E value();
+    Object value();
 
 }

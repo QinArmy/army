@@ -15,5 +15,4 @@ public interface ItemPair {
 
     SetRightItem right();
 
-
 }

@@ -184,9 +184,9 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     interface WindowClause<C, WC> {
 
-        WC window(String name, Expression<?> partition);
+        WC window(String name, Expression partition);
 
-        WC window(String name, Expression<?> partition, SortItem order);
+        WC window(String name, Expression partition, SortItem order);
 
         WC window(NamedWindow namedWindow);
 

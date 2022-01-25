@@ -31,11 +31,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         if (query instanceof Select) {
             unionSpec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
-            unionSpec = new BracketScalarSubQuery<>((ScalarQueryExpression<?>) query);
-        } else if (query instanceof ColumnSubQuery) {
-            unionSpec = new BracketColumnSubQuery<>((ColumnSubQuery) query);
-        } else if (query instanceof RowSubQuery) {
-            unionSpec = new BracketRowSubQuery<>((RowSubQuery) query);
+            unionSpec = new BracketScalarSubQuery<>((ScalarQueryExpression) query);
         } else if (query instanceof SubQuery) {
             unionSpec = new BracketSubQuery<>((SubQuery) query);
         } else {
@@ -52,11 +48,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         if (left instanceof Select) {
             unionSpec = new UnionSelect<>((Select) left, unionType, (Select) right);
         } else if (left instanceof ScalarSubQuery) {
-            unionSpec = new UnionScalarSubQuery<>((ScalarQueryExpression<?>) left, unionType, (ScalarQueryExpression<?>) right);
-        } else if (left instanceof ColumnSubQuery) {
-            unionSpec = new UnionColumnSubQuery<>((ColumnSubQuery) left, unionType, (ColumnSubQuery) right);
-        } else if (left instanceof RowSubQuery) {
-            unionSpec = new UnionRowSubQuery<>((RowSubQuery) left, unionType, (RowSubQuery) right);
+            unionSpec = new UnionScalarSubQuery<>((ScalarQueryExpression) left, unionType, (ScalarQueryExpression) right);
         } else if (left instanceof SubQuery) {
             unionSpec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
         } else {
@@ -109,7 +101,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
 
         final Q query;
         if (this instanceof ScalarSubQuery) {
-            query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
+            query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
         } else {
             query = (Q) this;
         }
@@ -179,28 +171,10 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }
 
 
-    private static final class BracketRowSubQuery<C> extends BracketSubQuery<C, RowSubQuery> implements RowSubQuery {
+    private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
-        private BracketRowSubQuery(RowSubQuery query) {
-            super(query);
-        }
-
-    }//BracketRowSubQuery
-
-    private static final class BracketColumnSubQuery<C> extends BracketSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private BracketColumnSubQuery(ColumnSubQuery query) {
-            super(query);
-        }
-
-    }//BracketColumnSubQuery
-
-
-    private static final class BracketScalarSubQuery<C, E> extends BracketSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
-
-        private BracketScalarSubQuery(ScalarQueryExpression<E> query) {
+        private BracketScalarSubQuery(ScalarQueryExpression query) {
             super(query);
         }
 
@@ -301,12 +275,12 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }//UnionColumnSubQuery
 
 
-    private static final class UnionScalarSubQuery<C, E> extends UnionSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
+    private static final class UnionScalarSubQuery<C> extends UnionSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
-        private UnionScalarSubQuery(ScalarQueryExpression<E> left, UnionType unionType
-                , ScalarQueryExpression<?> right) {
-            super(left, unionType, (ScalarQueryExpression<E>) right);
+        private UnionScalarSubQuery(ScalarQueryExpression left, UnionType unionType
+                , ScalarQueryExpression right) {
+            super(left, unionType, right);
         }
 
         @Override

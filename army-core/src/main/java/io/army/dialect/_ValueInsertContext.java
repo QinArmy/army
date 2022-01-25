@@ -14,7 +14,7 @@ public interface _ValueInsertContext extends _StmtContext, _InsertBlock {
     @Override
     SingleTableMeta<?> table();
 
-    Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap();
+    Map<FieldMeta<?, ?>, _Expression> commonExpMap();
 
     List<? extends ReadWrapper> domainList();
 

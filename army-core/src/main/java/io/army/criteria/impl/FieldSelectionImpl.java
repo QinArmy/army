@@ -44,7 +44,7 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         if (field instanceof FieldMeta) {
             context.appendField((FieldMeta<?, ?>) field);
         } else {
-            ((_Expression<?>) field).appendSql(context);
+            ((_Expression) field).appendSql(context);
         }
         context.sqlBuilder()
                 .append(Constant.SPACE_AS_SPACE)

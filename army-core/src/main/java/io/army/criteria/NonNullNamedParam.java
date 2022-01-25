@@ -8,7 +8,7 @@ package io.army.criteria;
  *
  * @param <E> java type of named parameter
  */
-public interface NonNullNamedParam<E> extends NamedParam<E> {
+public interface NonNullNamedParam extends NamedParam {
 
 
 }

@@ -13,17 +13,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-final class CollectionParamExpression<E> extends NoNOperationExpression<Collection<E>> {
+final class CollectionParamExpression extends NoNOperationExpression {
 
-    static <E> CollectionParamExpression<E> strict(ParamMeta paramMeta, Collection<E> values) {
+    static <E> CollectionParamExpression strict(ParamMeta paramMeta, Collection<E> values) {
         return create(paramMeta, values, false);
     }
 
-    static <E> CollectionParamExpression<E> optimizing(ParamMeta paramMeta, Collection<E> values) {
+    static <E> CollectionParamExpression optimizing(ParamMeta paramMeta, Collection<E> values) {
         return create(paramMeta, values, true);
     }
 
-    private static <E> CollectionParamExpression<E> create(final ParamMeta paramMeta, final Collection<E> values
+    private static <E> CollectionParamExpression create(final ParamMeta paramMeta, final Collection<E> values
             , final boolean optimizing) {
         final int size = values.size();
         if (size == 0) {
@@ -36,16 +36,16 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
             }
             list.add(v);
         }
-        return new CollectionParamExpression<>(paramMeta, list, optimizing);
+        return new CollectionParamExpression(paramMeta, list, optimizing);
     }
 
     private final ParamMeta paramMeta;
 
-    private final List<E> value;
+    private final List<?> value;
 
     private final boolean optimizing;
 
-    private CollectionParamExpression(final ParamMeta paramMeta, final List<E> valueList, final boolean optimizing) {
+    private CollectionParamExpression(final ParamMeta paramMeta, final List<?> valueList, final boolean optimizing) {
         this.paramMeta = paramMeta;
         this.value = Collections.unmodifiableList(valueList);
         this.optimizing = optimizing;
@@ -65,7 +65,7 @@ final class CollectionParamExpression<E> extends NoNOperationExpression<Collecti
         final boolean optimizing = this.optimizing && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping;
         final _Dialect dialect = context.dialect();
         int index = 0;
-        for (E v : this.value) {
+        for (Object v : this.value) {
             if (v == null) {
                 throw elementIsNull();
             }

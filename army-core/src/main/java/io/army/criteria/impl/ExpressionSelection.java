@@ -10,11 +10,11 @@ import io.army.util._Assert;
 
 final class ExpressionSelection implements _Selection {
 
-    private final _Expression<?> expression;
+    private final _Expression expression;
 
     private final String alias;
 
-    ExpressionSelection(_Expression<?> expression, String alias) {
+    ExpressionSelection(_Expression expression, String alias) {
         _Assert.hasText(alias, "alias required for Selection");
         this.expression = expression;
         this.alias = alias;

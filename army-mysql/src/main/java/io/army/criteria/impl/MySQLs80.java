@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.ScalarQueryExpression;
+import io.army.criteria.Select;
+import io.army.criteria.SubQuery;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLUpdate;
@@ -33,41 +35,17 @@ public abstract class MySQLs80 extends MySQLSyntax {
         return MySQL80SimpleQuery.subQuery(criteria);
     }
 
-    public static MySQL80Query.With80Spec<Void, RowSubQuery> rowSubQuery() {
-        return MySQL80SimpleQuery.rowSubQuery(null);
-    }
 
-    public static <C> MySQL80Query.With80Spec<C, RowSubQuery> rowSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.rowSubQuery(criteria);
-    }
-
-    public static MySQL80Query.With80Spec<Void, ColumnSubQuery> columnSubQuery() {
-        return MySQL80SimpleQuery.columnSubQuery(null);
-    }
-
-    public static <C> MySQL80Query.With80Spec<C, ColumnSubQuery> columnSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.columnSubQuery(criteria);
-    }
-
-    public static <E> MySQL80Query.With80Spec<Void, ScalarQueryExpression<E>> scalarSubQuery() {
+    public static MySQL80Query.With80Spec<Void, ScalarQueryExpression> scalarSubQuery() {
         return MySQL80SimpleQuery.scalarSubQuery(null);
     }
 
-    public static <E> MySQL80Query.With80Spec<Void, ScalarQueryExpression<E>> scalarSubQuery(Class<E> type) {
-        return MySQL80SimpleQuery.scalarSubQuery(null);
-    }
 
-    public static <C, E> MySQL80Query.With80Spec<C, ScalarQueryExpression<E>> scalarSubQuery(C criteria) {
+    public static <C> MySQL80Query.With80Spec<C, ScalarQueryExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.scalarSubQuery(criteria);
     }
 
-    public static <C, E> MySQL80Query.With80Spec<C, ScalarQueryExpression<E>> scalarSubQuery(Class<E> type, C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.scalarSubQuery(criteria);
-    }
 
     public static MySQLUpdate.SingleWithAndUpdateSpec<Void> singleUpdate() {
         return MySQLSingleUpdate.simple80(null);

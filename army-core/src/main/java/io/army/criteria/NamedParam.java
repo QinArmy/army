@@ -10,7 +10,7 @@ import io.army.stmt.ParamValue;
  * @param <E> java type of named parameter
  * @see NonNullNamedParam
  */
-public interface NamedParam<E> extends Expression<E>, ParamValue {
+public interface NamedParam extends Expression, ParamValue {
 
     String name();
 

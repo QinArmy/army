@@ -5,28 +5,28 @@ import io.army.mapping.MappingType;
 
 import java.util.List;
 
-abstract class SQLFunctions<E> extends OperationExpression<E> implements Expression<E> {
+abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
-    static <E> Expression<E> noArgumentFunc(String name, MappingType returnType) {
+    static Expression noArgumentFunc(String name, MappingType returnType) {
         // return new NoArgumentFunc<>(name, returnType);
         return null;
     }
 
-    static <E> Expression<E> oneArgumentFunc(String name, MappingType returnType, Expression<?> one) {
-        // return new OneArgumentFunc<>(name, returnType, (_Expression<?>) one);
+    static Expression oneArgumentFunc(String name, MappingType returnType, Expression one) {
+        // return new OneArgumentFunc<>(name, returnType, (_Expression) one);
         return null;
     }
 
-    static <E> Expression<E> twoArgumentFunc(String name, MappingType returnType, Expression<?> one
-            , Expression<?> two) {
-        //  return new TwoArgumentFunc<>(name, returnType, (_Expression<?>) one, (_Expression<?>) two);
+    static Expression twoArgumentFunc(String name, MappingType returnType, Expression one
+            , Expression two) {
+        //  return new TwoArgumentFunc<>(name, returnType, (_Expression) one, (_Expression) two);
         return null;
     }
 
-    static <E> Expression<E> twoArgumentFunc(String name, MappingType returnType, List<String> format
-            , Expression<?> one, Expression<?> two) {
-        //  return new TwoArgumentFunc<>(name, returnType, format, (_Expression<?>) one, (_Expression<?>) two);
+    static Expression twoArgumentFunc(String name, MappingType returnType, List<String> format
+            , Expression one, Expression two) {
+        //  return new TwoArgumentFunc<>(name, returnType, format, (_Expression) one, (_Expression) two);
         return null;
     }
 
@@ -77,7 +77,7 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements Express
 //
 //    /*################################## blow static class  ##################################*/
 //
-//    private static final class NoArgumentFunc<E> extends SQLFunctions<E> {
+//    private static final class NoArgumentFunc extends SQLFunctions {
 //
 //        NoArgumentFunc(String name, MappingType returnType) {
 //            super(name, returnType);
@@ -95,13 +95,13 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements Express
 //
 //    }
 //
-//    static final class OneArgumentFunc<E> extends SQLFunctions<E> {
+//    static final class OneArgumentFunc extends SQLFunctions {
 //
-//        private final _Expression<?> one;
+//        private final _Expression one;
 //
 //        private final List<MappingType> argumentTypeList;
 //
-//        private OneArgumentFunc(String name, MappingType returnType, _Expression<?> one) {
+//        private OneArgumentFunc(String name, MappingType returnType, _Expression one) {
 //            super(name, returnType);
 //            this.one = one;
 //            this.argumentTypeList = Collections.singletonList(one.mappingType());
@@ -119,20 +119,20 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements Express
 //
 //    }
 //
-//    static class TwoArgumentFunc<E> extends SQLFunctions<E> {
+//    static class TwoArgumentFunc extends SQLFunctions {
 //
 //        private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", "");
 //
 //        private final List<String> format;
 //
-//        private final _Expression<?> one;
+//        private final _Expression one;
 //
-//        private final _Expression<?> two;
+//        private final _Expression two;
 //
 //        private final List<MappingType> argumentTypeList;
 //
-//        private TwoArgumentFunc(String name, MappingType returnType, List<String> format, _Expression<?> one
-//                , _Expression<?> two) {
+//        private TwoArgumentFunc(String name, MappingType returnType, List<String> format, _Expression one
+//                , _Expression two) {
 //            super(name, returnType);
 //            _Assert.isTrue(format.size() >= 3, "");
 //            this.format = format;
@@ -145,7 +145,7 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements Express
 //            this.argumentTypeList = Collections.unmodifiableList(typeList);
 //        }
 //
-//        private TwoArgumentFunc(String name, MappingType returnType, _Expression<?> one, _Expression<?> two) {
+//        private TwoArgumentFunc(String name, MappingType returnType, _Expression one, _Expression two) {
 //            this(name, returnType, FORMAT_LIST, one, two);
 //        }
 //
@@ -166,28 +166,28 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements Express
 //
 //    }
 //
-//    static final class ThreeArgumentFunc<E> extends SQLFunctions<E> {
+//    static final class ThreeArgumentFunc extends SQLFunctions {
 //
 //        private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", ",", "");
 //
 //        private final List<String> format;
 //
-//        private final _Expression<?> one;
+//        private final _Expression one;
 //
-//        private final _Expression<?> two;
+//        private final _Expression two;
 //
-//        protected final _Expression<?> three;
+//        protected final _Expression three;
 //
 //        private final List<MappingType> argumentTypeList;
 //
-//        ThreeArgumentFunc(String name, MappingType returnType, List<String> format, Expression<?> one
-//                , Expression<?> two, Expression<?> three) {
+//        ThreeArgumentFunc(String name, MappingType returnType, List<String> format, Expression one
+//                , Expression two, Expression three) {
 //            super(name, returnType);
 //            _Assert.isTrue(format.size() >= 4, "showSQL error");
 //            this.format = format;
-//            this.one = (_Expression<?>) one;
-//            this.two = (_Expression<?>) two;
-//            this.three = (_Expression<?>) three;
+//            this.one = (_Expression) one;
+//            this.two = (_Expression) two;
+//            this.three = (_Expression) three;
 //
 //            List<MappingType> typeList = new ArrayList<>(3);
 //            typeList.add(one.mappingType());
@@ -196,8 +196,8 @@ abstract class SQLFunctions<E> extends OperationExpression<E> implements Express
 //            this.argumentTypeList = Collections.unmodifiableList(typeList);
 //        }
 //
-//        ThreeArgumentFunc(String name, MappingType returnType, Expression<?> one
-//                , Expression<?> two, Expression<?> three) {
+//        ThreeArgumentFunc(String name, MappingType returnType, Expression one
+//                , Expression two, Expression three) {
 //            this(name, returnType, FORMAT_LIST, one, two, three);
 //        }
 //

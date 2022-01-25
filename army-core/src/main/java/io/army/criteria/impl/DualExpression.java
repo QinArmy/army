@@ -14,23 +14,20 @@ import java.util.function.Function;
  * This class is a implementation of {@link Expression}.
  * The expression consist of a left {@link Expression} ,a {@link DualOperator} and right {@link Expression}.
  *
- * @param <E> expression result java type
  * @since 1.0
  */
-final class DualExpression<E> extends OperationExpression<E> {
+final class DualExpression extends OperationExpression {
 
-    static <C, E, O> DualExpression<E> functionCreate(ArmyExpression<E> left, DualOperator operator
-            , Function<C, Expression<O>> function) {
-        final Expression<O> functionResult;
+    static <C> DualExpression functionCreate(ArmyExpression left, DualOperator operator
+            , Function<C, Object> function) {
+        final Object functionResult;
         functionResult = function.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
-        return create(left, operator, functionResult);
+        return create(left, operator, SQLs.paramWithNonNull(left, functionResult));
     }
 
-
-    @SuppressWarnings("unchecked")
-    static <E> DualExpression<E> create(ArmyExpression<E> left, final DualOperator operator, Expression<?> right) {
-        final ArmyExpression<E> rightExp = (ArmyExpression<E>) right;
+    static DualExpression create(ArmyExpression left, final DualOperator operator, Expression right) {
+        final ArmyExpression rightExp = (ArmyExpression) right;
         switch (operator) {
             case PLUS:
             case MINUS:
@@ -50,17 +47,17 @@ final class DualExpression<E> extends OperationExpression<E> {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new DualExpression<>(left, operator, rightExp);
+        return new DualExpression(left, operator, rightExp);
     }
 
-    private final ArmyExpression<?> left;
+    private final ArmyExpression left;
 
     private final DualOperator operator;
 
-    private final ArmyExpression<?> right;
+    private final ArmyExpression right;
 
 
-    private DualExpression(ArmyExpression<?> left, DualOperator operator, ArmyExpression<?> right) {
+    private DualExpression(ArmyExpression left, DualOperator operator, ArmyExpression right) {
         this.left = left;
         this.operator = operator;
         this.right = right;
@@ -75,7 +72,7 @@ final class DualExpression<E> extends OperationExpression<E> {
     @Override
     public void appendSql(final _SqlContext context) {
 
-        final _Expression<?> left = this.left, right = this.right;
+        final _Expression left = this.left, right = this.right;
         final boolean outerBracket, leftInnerBracket, rightInnerBracket;
         switch (this.operator) {
             case PLUS:

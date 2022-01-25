@@ -15,12 +15,10 @@ import io.army.util._Exceptions;
  * </p>
  * This class is a implementation of {@link Expression}.
  * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
- *
- * @param <E> expression result java type
  */
-final class UnaryExpression<E> extends OperationExpression<E> {
+final class UnaryExpression extends OperationExpression {
 
-    static <E> UnaryExpression<E> create(ArmyExpression<E> expression, UnaryOperator operator) {
+    static UnaryExpression create(ArmyExpression expression, UnaryOperator operator) {
         switch (operator) {
             case INVERT:
             case NEGATED: {
@@ -28,18 +26,18 @@ final class UnaryExpression<E> extends OperationExpression<E> {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
             }
-            return new UnaryExpression<>(expression, operator);
+            return new UnaryExpression(expression, operator);
             default:
                 throw _Exceptions.unexpectedEnum(operator);
 
         }
     }
 
-    final ArmyExpression<E> expression;
+    final ArmyExpression expression;
 
     private final UnaryOperator operator;
 
-    private UnaryExpression(ArmyExpression<E> expression, UnaryOperator operator) {
+    private UnaryExpression(ArmyExpression expression, UnaryOperator operator) {
         this.expression = expression;
         this.operator = operator;
     }
@@ -70,7 +68,7 @@ final class UnaryExpression<E> extends OperationExpression<E> {
 
         builder.append(this.operator.rendered());
 
-        final _Expression<E> expression = this.expression;
+        final _Expression expression = this.expression;
         final boolean innerBracket = !(expression instanceof ValueExpression
                 || expression instanceof GenericField
                 || expression instanceof NonNullNamedParam
@@ -114,7 +112,7 @@ final class UnaryExpression<E> extends OperationExpression<E> {
         builder.append(Constant.SPACE)
                 .append(this.operator.rendered());
 
-        final _Expression<E> expression = this.expression;
+        final _Expression expression = this.expression;
         final boolean innerBracket = !(expression instanceof ValueExpression
                 || expression instanceof GenericField
                 || expression instanceof NonNullNamedParam

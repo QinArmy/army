@@ -9,16 +9,16 @@ import io.army.meta.ParamMeta;
 
 import java.util.List;
 
-final class ScalarSubQueryExpression<E> extends OperationExpression<E> implements ScalarQueryExpression<E> {
+final class ScalarSubQueryExpression extends OperationExpression implements ScalarQueryExpression {
 
-    static <E> ScalarSubQueryExpression<E> create(ScalarSubQuery<E> subQuery) {
-        return new ScalarSubQueryExpression<>(subQuery);
+    static ScalarSubQueryExpression create(ScalarSubQuery subQuery) {
+        return new ScalarSubQueryExpression(subQuery);
     }
 
 
-    final ScalarSubQuery<E> subQuery;
+    final ScalarSubQuery subQuery;
 
-    private ScalarSubQueryExpression(ScalarSubQuery<E> subQuery) {
+    private ScalarSubQueryExpression(ScalarSubQuery subQuery) {
         this.subQuery = subQuery;
     }
 

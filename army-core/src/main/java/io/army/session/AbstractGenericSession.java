@@ -31,16 +31,16 @@ public abstract class AbstractGenericSession implements GenericSession {
             final Set<FieldMeta<?, ?>> set = advice.targetFieldSet();
 
             List<FieldMeta<?, ?>> targetList = new ArrayList<>(set.size());
-            List<_Expression<?>> valueList = new ArrayList<>(set.size());
+            List<_Expression> valueList = new ArrayList<>(set.size());
             DomainReadonlyWrapper readonlyWrapper = advice.readonlyWrapper();
 
             for (FieldMeta<?, ?> field : set) {
                 targetList.add(field);
                 Object value = readonlyWrapper.get(field.fieldName());
                 if (value == null) {
-                    valueList.add((_Expression<?>) SQLs.param(field, null));
+                    valueList.add((_Expression) SQLs.param(field, null));
                 } else {
-                    valueList.add((_Expression<?>) SQLs.param(field, value));
+                    valueList.add((_Expression) SQLs.param(field, value));
                 }
             }
             return new CacheDomainUpdate(advice, targetList, valueList);
@@ -52,14 +52,14 @@ public abstract class AbstractGenericSession implements GenericSession {
 
         private List<FieldMeta<?, ?>> targetFieldList;
 
-        private List<_Expression<?>> valueExpList;
+        private List<_Expression> valueExpList;
 
         private List<_Predicate> predicateList;
 
         private boolean prepared;
 
         private CacheDomainUpdate(DomainUpdateAdvice advice, List<FieldMeta<?, ?>> targetFieldList
-                , List<_Expression<?>> valueExpList) {
+                , List<_Expression> valueExpList) {
 
             this.tableMeta = advice.readonlyWrapper().tableMeta();
             this.tableAlias = "t";
@@ -93,7 +93,7 @@ public abstract class AbstractGenericSession implements GenericSession {
         }
 
         @Override
-        public List<_Expression<?>> valueExpList() {
+        public List<_Expression> valueExpList() {
             return this.valueExpList;
         }
 

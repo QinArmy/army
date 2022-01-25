@@ -30,7 +30,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     private static void checkCommonExpMap(_ValuesInsert insert) {
         final TableMeta<?> table = insert.table();
-        for (Map.Entry<FieldMeta<?, ?>, _Expression<?>> e : insert.commonExpMap().entrySet()) {
+        for (Map.Entry<FieldMeta<?, ?>, _Expression> e : insert.commonExpMap().entrySet()) {
             _DmlUtils.checkInsertExpField(table, e.getKey(), e.getValue());
         }
     }
@@ -39,7 +39,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     final List<FieldMeta<?, ?>> fieldList;
 
-    final Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap;
+    final Map<FieldMeta<?, ?>, _Expression> commonExpMap;
 
     final List<? extends ReadWrapper> domainList;
 
@@ -134,7 +134,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
     @Override
-    public Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap() {
+    public Map<FieldMeta<?, ?>, _Expression> commonExpMap() {
         return this.commonExpMap;
     }
 

@@ -59,13 +59,13 @@ public interface NamedWindow {
 
         ER unboundedFollowing();
 
-        ER preceding(Expression<?> expression);
+        ER preceding(Expression expression);
 
-        ER following(Expression<?> expression);
+        ER following(Expression expression);
 
-        <E> ER preceding(Supplier<Expression<E>> supplier);
+        <E> ER preceding(Supplier<Expression> supplier);
 
-        <E> ER following(Function<C, Expression<E>> function);
+        <E> ER following(Function<C, Expression> function);
 
     }
 

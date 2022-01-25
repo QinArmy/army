@@ -1,10 +1,7 @@
 package io.army.criteria;
 
 
-import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.domain.IDomain;
-
-public interface ExpressionRow<T extends IDomain> extends _SelfDescribed, Row<T> {
+public interface ExpressionRow extends Row {
 
     IPredicate eq(RowSubQuery rowSubQuery);
 

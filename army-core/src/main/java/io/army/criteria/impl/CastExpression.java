@@ -5,18 +5,18 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 
-class CastExpression<E> extends OperationExpression<E> {
+class CastExpression extends OperationExpression {
 
-    static <O> CastExpression<O> cast(Expression<?> expression, ParamMeta paramMeta) {
-        return new CastExpression<>(expression, paramMeta);
+    static CastExpression cast(Expression expression, ParamMeta paramMeta) {
+        return new CastExpression(expression, paramMeta);
     }
 
-    private final _Expression<?> expression;
+    private final _Expression expression;
 
     private final ParamMeta paramMeta;
 
-    private CastExpression(Expression<?> expression, ParamMeta paramMeta) {
-        this.expression = (_Expression<?>) expression;
+    private CastExpression(Expression expression, ParamMeta paramMeta) {
+        this.expression = (_Expression) expression;
         this.paramMeta = paramMeta;
     }
 

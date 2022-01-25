@@ -133,38 +133,13 @@ public abstract class SQLs extends StandardFunctions {
         return StandardSimpleQuery.subQuery(criteria);
     }
 
-    public static StandardQuery.StandardSelectSpec<Void, RowSubQuery> rowSubQuery() {
-        return StandardSimpleQuery.rowSubQuery(null);
-    }
 
-    public static <C> StandardQuery.StandardSelectSpec<C, RowSubQuery> rowSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardSimpleQuery.rowSubQuery(criteria);
-    }
-
-    public static StandardQuery.StandardSelectSpec<Void, ColumnSubQuery> columnSubQuery() {
-        return StandardSimpleQuery.columnSubQuery(null);
-    }
-
-    public static <C, E> StandardQuery.StandardSelectSpec<C, ColumnSubQuery> columnSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardSimpleQuery.columnSubQuery(criteria);
-    }
-
-    public static <E> StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression<E>> scalarSubQuery() {
+    public static StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression> scalarSubQuery() {
         return StandardSimpleQuery.scalarSubQuery(null);
     }
 
-    public static <E> StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression<E>> scalarSubQuery(Class<E> type) {
-        return StandardSimpleQuery.scalarSubQuery(null);
-    }
 
-    public static <C, E> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> scalarSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardSimpleQuery.scalarSubQuery(criteria);
-    }
-
-    public static <C, E> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression<E>> scalarSubQuery(Class<E> type, C criteria) {
+    public static <C> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.scalarSubQuery(criteria);
     }
@@ -172,28 +147,38 @@ public abstract class SQLs extends StandardFunctions {
 
     /**
      * package method
+     *
+     * @param value {@link Expression} or parameter
      */
-    @SuppressWarnings("unchecked")
-    static Expression<?> paramWithExp(final Expression<?> type, final @Nullable Object value) {
+    static Expression paramWithNonNull(final Expression type, final @Nullable Object value) {
         if (value == null) {
-            throw new CriteriaException("Operator right value must be not null.");
+            throw new CriteriaException("Right operand of operator must be not null.");
         }
-        final Expression<?> resultExpression;
+        final Expression resultExpression;
         if (value instanceof Expression) {
-            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
-            resultExpression = (Expression<?>) value;
-        } else if (value instanceof Function) {
-            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
-            resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
-        } else if (value instanceof Supplier) {
-            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
-            resultExpression = (Expression<?>) ((Supplier<?>) value).get();
+            resultExpression = (Expression) value;
         } else if (type instanceof ParamMeta) {
-            // use optimizing param expression
-            resultExpression = ParamExpression.optimizing((ParamMeta) type, value);
+            resultExpression = ParamExpression.create((ParamMeta) type, value);
         } else {
-            // use optimizing param expression
-            resultExpression = ParamExpression.optimizing(type.paramMeta(), value);
+            resultExpression = ParamExpression.create(type.paramMeta(), value);
+        }
+        return resultExpression;
+    }
+
+    /**
+     * package method
+     *
+     * @param value {@link Expression} or parameter
+     * @see Update.SimpleSetClause#set(FieldMeta, Object)
+     */
+    static Expression paramWithNullable(final Expression type, final @Nullable Object value) {
+        final Expression resultExpression;
+        if (value instanceof Expression) {
+            resultExpression = (Expression) value;
+        } else if (type instanceof ParamMeta) {
+            resultExpression = ParamExpression.create((ParamMeta) type, value);
+        } else {
+            resultExpression = ParamExpression.create(type.paramMeta(), value);
         }
         return resultExpression;
     }
@@ -201,27 +186,37 @@ public abstract class SQLs extends StandardFunctions {
     /**
      * package method
      */
-    @SuppressWarnings("unchecked")
-    static Expression<?> strictParamWithExp(final Expression<?> type, final @Nullable Object value) {
-        if (value == null) {
-            throw new CriteriaException("Operator right value must be not null.");
-        }
-        final Expression<?> resultExpression;
+    static Expression literalWithNonNull(final Expression type, final @Nullable Object value) {
+        final Expression resultExpression;
         if (value instanceof Expression) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
-            resultExpression = (Expression<?>) value;
-        } else if (value instanceof Function) {
-            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
-            resultExpression = ((Function<Object, Expression<?>>) value).apply(CriteriaContextStack.getCriteria());
-        } else if (value instanceof Supplier) {
-            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
-            resultExpression = (Expression<?>) ((Supplier<?>) value).get();
-        } else if (type instanceof ParamMeta) {
-            // use strict param expression
-            resultExpression = ParamExpression.strict((ParamMeta) type, value);
+            resultExpression = (Expression) value;
+        } else if (value instanceof Function || value instanceof Supplier) {
+            String m = String.format("Right value couldn't be %s,please check parameter type."
+                    , value.getClass().getName());
+            throw new CriteriaException(m);
+        } else if (value == null) {
+            resultExpression = SQLs.nullWord();
         } else {
-            // use strict param expression
-            resultExpression = ParamExpression.strict(type.paramMeta(), value);
+            resultExpression = LiteralExpression.literal(type.paramMeta(), value);
+        }
+        return resultExpression;
+    }
+
+    /**
+     * package method
+     *
+     * @see Update.SimpleSetClause#setLiteral(FieldMeta, Object)
+     */
+    static Expression literalWithNullable(final Expression type, final @Nullable Object value) {
+        final Expression resultExpression;
+        if (value instanceof Expression) {
+            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
+            resultExpression = (Expression) value;
+        } else if (value == null) {
+            resultExpression = SQLs.nullWord();
+        } else {
+            resultExpression = LiteralExpression.literal(type.paramMeta(), value);
         }
         return resultExpression;
     }
@@ -232,9 +227,9 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict param expression
      * </p>
      */
-    public static <E> Expression<E> param(final E value) {
+    public static Expression param(final Object value) {
         Objects.requireNonNull(value);
-        return ParamExpression.strict(_MappingFactory.getMapping(value.getClass()), value);
+        return ParamExpression.create(_MappingFactory.getMapping(value.getClass()), value);
     }
 
     /**
@@ -242,8 +237,8 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict param expression
      * </p>
      */
-    public static <E> Expression<E> param(final ParamMeta paramMeta, final @Nullable E value) {
-        return ParamExpression.strict(paramMeta, value);
+    public static Expression param(final ParamMeta paramMeta, final @Nullable Object value) {
+        return ParamExpression.create(paramMeta, value);
     }
 
     /**
@@ -251,7 +246,7 @@ public abstract class SQLs extends StandardFunctions {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <E> Expression<Collection<E>> optimizingParams(ParamMeta paramMeta, Collection<E> value) {
+    public static <E> Expression optimizingParams(ParamMeta paramMeta, Collection<E> value) {
         return CollectionParamExpression.optimizing(paramMeta, value);
     }
 
@@ -260,7 +255,7 @@ public abstract class SQLs extends StandardFunctions {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <E> Expression<Collection<E>> optimizingParams(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
+    public static <E> Expression optimizingParams(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
         return CollectionParamExpression.optimizing(paramMeta, supplier.get());
     }
 
@@ -269,7 +264,7 @@ public abstract class SQLs extends StandardFunctions {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <C, E> Expression<Collection<E>> optimizingParams(ParamMeta paramMeta, Function<C, Collection<E>> function) {
+    public static <C, E> Expression optimizingParams(ParamMeta paramMeta, Function<C, Collection<E>> function) {
         return CollectionParamExpression.optimizing(paramMeta, function.apply(CriteriaContextStack.getCriteria()));
     }
 
@@ -278,7 +273,7 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict collection param expression
      * </p>
      */
-    public static <E> Expression<Collection<E>> params(ParamMeta paramMeta, Collection<E> value) {
+    public static <E> Expression params(ParamMeta paramMeta, Collection<E> value) {
         return CollectionParamExpression.strict(paramMeta, value);
     }
 
@@ -287,7 +282,7 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict collection param expression
      * </p>
      */
-    public static <E> Expression<Collection<E>> params(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
+    public static <E> Expression params(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
         return CollectionParamExpression.strict(paramMeta, supplier.get());
     }
 
@@ -296,7 +291,7 @@ public abstract class SQLs extends StandardFunctions {
      * Create strict collection param expression
      * </p>
      */
-    public static <C, E> Expression<Collection<E>> params(ParamMeta paramMeta, Function<C, Collection<E>> function) {
+    public static <C, E> Expression params(ParamMeta paramMeta, Function<C, Collection<E>> function) {
         return CollectionParamExpression.strict(paramMeta, function.apply(CriteriaContextStack.getCriteria()));
     }
 
@@ -308,7 +303,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @see io.army.criteria.Update.BatchSetClause
      */
-    public static <E> Expression<E> nullableNamedParam(String name, ParamMeta paramMeta) {
+    public static Expression nullableNamedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nullable(name, paramMeta);
     }
 
@@ -319,7 +314,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @see io.army.criteria.Update.BatchSetClause
      */
-    public static <E> Expression<E> nullableNamedParam(GenericField<?, ?> field) {
+    public static Expression nullableNamedParam(GenericField<?, ?> field) {
         return NamedParamImpl.nullable(field.fieldName(), field);
     }
 
@@ -334,7 +329,7 @@ public abstract class SQLs extends StandardFunctions {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static <E> Expression<E> namedParam(String name, ParamMeta paramMeta) {
+    public static Expression namedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nonNull(name, paramMeta);
     }
 
@@ -348,16 +343,16 @@ public abstract class SQLs extends StandardFunctions {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static <E> Expression<E> namedParam(GenericField<?, ?> field) {
+    public static Expression namedParam(GenericField<?, ?> field) {
         return NamedParamImpl.nonNull(field.fieldName(), field);
     }
 
-    public static <E> Expression<E> literal(E value) {
+    public static Expression literal(Object value) {
         Objects.requireNonNull(value);
         return LiteralExpression.literal(_MappingFactory.getMapping(value.getClass()), value);
     }
 
-    public static <E> Expression<E> literal(ParamMeta paramMeta, E value) {
+    public static Expression literal(ParamMeta paramMeta, Object value) {
         return LiteralExpression.literal(paramMeta, value);
     }
 
@@ -366,30 +361,28 @@ public abstract class SQLs extends StandardFunctions {
      * @see Update.SimpleSetClause#setPairs(List)
      */
     public static ItemPair itemPair(FieldMeta<?, ?> field, @Nullable Object value) {
-        final Expression<?> valueExp;
+        final Expression valueExp;
         if (value instanceof Expression) {
-            valueExp = (Expression<?>) value;
+            valueExp = (Expression) value;
         } else {
             valueExp = SQLs.param(field, value);
         }
-        return new FieldExpPair(field, valueExp);
+        return new ItemPairImpl(field, valueExp);
     }
 
 
     /**
      * Only used to update set clause.
      */
-    @SuppressWarnings("unchecked")
-    public static <E> Expression<E> defaultWord() {
-        return (Expression<E>) SQLs.DefaultWord.INSTANCE;
+    public static Expression defaultWord() {
+        return SQLs.DefaultWord.INSTANCE;
     }
 
     /**
      * Only used to update set clause.
      */
-    @SuppressWarnings("unchecked")
-    public static <E> Expression<E> nullWord() {
-        return (Expression<E>) SQLs.NullWord.INSTANCE;
+    public static Expression nullWord() {
+        return SQLs.NullWord.INSTANCE;
     }
 
 
@@ -404,15 +397,12 @@ public abstract class SQLs extends StandardFunctions {
         return CriteriaContextStack.peek().qualifiedField(tableAlias, field);
     }
 
-    public static <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
+    public static DerivedField ref(String subQueryAlias, String derivedFieldName) {
         return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
     }
 
-    public static <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName, Class<E> selectionType) {
-        return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
-    }
 
-    public static <E> Expression<E> ref(String selectionAlias) {
+    public static Expression ref(String selectionAlias) {
         return CriteriaContextStack.peek().ref(selectionAlias);
     }
 
@@ -423,26 +413,10 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @throws CriteriaException when var not exists
      */
-    public static <E> VarExpression<E> var(String varName) {
+    public static VarExpression var(String varName) {
         return CriteriaContextStack.root().var(varName);
     }
 
-    /**
-     * <p>
-     * Reference {@link Number} type session variable.
-     * </p>
-     *
-     * @throws CriteriaException when var not exists or var type isn't number type.
-     */
-    public static <N extends Number> VarExpression<N> numVar(String varName) {
-        final VarExpression<N> expression;
-        expression = CriteriaContextStack.root().var(varName);
-        if (!Number.class.isAssignableFrom(expression.paramMeta().mappingType().javaType())) {
-            String m = String.format("Session variable[%s] type isn't number.", varName);
-            throw new CriteriaException(m);
-        }
-        return expression;
-    }
 
     /**
      * <p>
@@ -451,27 +425,11 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @throws CriteriaException when var exists.
      */
-    public static <E> VarExpression<E> createVar(String varName, ParamMeta paramMeta)
+    public static VarExpression createVar(String varName, ParamMeta paramMeta)
             throws CriteriaException {
         return CriteriaContextStack.root().createVar(varName, paramMeta);
     }
 
-    /**
-     * <p>
-     * Create {@link Number} type session variable.
-     * </p>
-     *
-     * @param paramMeta number type {@link ParamMeta}.
-     * @throws CriteriaException when var exists.
-     */
-    public static <N extends Number> VarExpression<N> createNumVar(String varName, ParamMeta paramMeta)
-            throws CriteriaException {
-        if (!Number.class.isAssignableFrom(paramMeta.mappingType().javaType())) {
-            String m = String.format("Session variable[%s] type isn't number.", varName);
-            throw new CriteriaException(m);
-        }
-        return CriteriaContextStack.root().createVar(varName, paramMeta);
-    }
 
     public static <T extends IDomain> SelectionGroup group(TableMeta<T> table, String alias) {
         return SelectionGroups.singleGroup(table, alias);
@@ -520,11 +478,11 @@ public abstract class SQLs extends StandardFunctions {
         return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(CriteriaContextStack.getCriteria()));
     }
 
-    static <T extends IDomain> ExpressionRow<T> row(List<Expression<?>> columnList) {
-        return new ExpressionRowImpl<>(null);
+    static <T extends IDomain> ExpressionRow row(List<Expression> columnList) {
+        return new ExpressionRowImpl(null);
     }
 
-    static <T extends IDomain, C> ExpressionRow<T> row(Function<C, List<Expression<?>>> function) {
+    static <T extends IDomain, C> ExpressionRow row(Function<C, List<Expression>> function) {
        /* return new ExpressionRowImpl(function.apply(
                 CriteriaContextHolder.getContext().criteria()
         ));*/
@@ -539,7 +497,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @param <E> The java type The expression thant reference kwy word {@code DEFAULT}
      */
-    static final class DefaultWord<E> extends NoNOperationExpression<E> {
+    static final class DefaultWord<E> extends NoNOperationExpression {
 
         private static final DefaultWord<?> INSTANCE = new DefaultWord<>();
 
@@ -572,7 +530,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @param <E> The java type The expression thant reference kwy word {@code NULL}
      */
-    static final class NullWord<E> extends NoNOperationExpression<E> {
+    static final class NullWord<E> extends NoNOperationExpression {
 
         private static final NullWord<?> INSTANCE = new NullWord<>();
 
@@ -602,28 +560,34 @@ public abstract class SQLs extends StandardFunctions {
     /**
      * @see #itemPair(FieldMeta, Object)
      */
-    private static final class FieldExpPair implements ItemPair {
+    static final class ItemPairImpl implements ItemPair {
 
-        private final FieldMeta<?, ?> field;
+        final SetLeftItem left;
 
-        private final Expression<?> value;
+        final SetRightItem right;
 
-        private FieldExpPair(FieldMeta<?, ?> field, Expression<?> value) {
-            this.field = field;
-            this.value = value;
+        private ItemPairImpl(FieldMeta<?, ?> left, Expression right) {
+            this.left = left;
+            this.right = right;
         }
+
+        private ItemPairImpl(Row left, SubQuery right) {
+            this.left = left;
+            this.right = right;
+        }
+
 
         @Override
         public SetLeftItem left() {
-            return this.field;
+            return this.left;
         }
 
         @Override
         public SetRightItem right() {
-            return this.value;
+            return this.right;
         }
 
-    }//FieldExpPair
+    }//ItemPairImpl
 
 
 }

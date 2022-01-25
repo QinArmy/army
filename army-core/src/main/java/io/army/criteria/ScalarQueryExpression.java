@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public interface ScalarQueryExpression<E> extends ScalarSubQuery<E>, Expression<E> {
+public interface ScalarQueryExpression extends ScalarSubQuery, Expression {
 
 
 }

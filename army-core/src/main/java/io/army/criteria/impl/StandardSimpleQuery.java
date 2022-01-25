@@ -49,15 +49,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C> StandardSelectSpec<C, RowSubQuery> rowSubQuery(@Nullable C criteria) {
-        return new SimpleRowSubQuery<>(criteria);
-    }
-
-    static <C> StandardSelectSpec<C, ColumnSubQuery> columnSubQuery(@Nullable C criteria) {
-        return new SimpleColumnSubQuery<>(criteria);
-    }
-
-    static <C, E> StandardSelectSpec<C, ScalarQueryExpression<E>> scalarSubQuery(@Nullable C criteria) {
+    static <C, E> StandardSelectSpec<C, ScalarQueryExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(criteria);
     }
 
@@ -67,11 +59,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         if (query instanceof Select) {
             spec = new UnionAndSelect<>((Select) query, unionType);
         } else if (query instanceof ScalarSubQuery) {
-            spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression<?>) query, unionType);
-        } else if (query instanceof ColumnSubQuery) {
-            spec = new UnionAndColumnSubQuery<>((ColumnSubQuery) query, unionType);
-        } else if (query instanceof RowSubQuery) {
-            spec = new UnionAndRowSubQuery<>((RowSubQuery) query, unionType);
+            spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression) query, unionType);
         } else if (query instanceof SubQuery) {
             spec = new UnionAndSubQuery<>((SubQuery) query, unionType);
         } else {
@@ -156,7 +144,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             final Q thisQuery = this.asQueryAndQuery();
             if (this instanceof ScalarSubQuery) {
                 if (!(thisQuery instanceof ScalarSubQueryExpression)
-                        || ((ScalarSubQueryExpression<?>) thisQuery).subQuery != this) {
+                        || ((ScalarSubQueryExpression) thisQuery).subQuery != this) {
                     throw asQueryMethodError();
                 }
             } else if (thisQuery != this) {
@@ -231,7 +219,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     final Q onAsQuery(final boolean outer) {
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
+            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
         } else {
             thisQuery = (Q) this;
         }
@@ -329,37 +317,11 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     } // SimpleSubQuery
 
-
-    /**
-     * @see #rowSubQuery(Object)
-     */
-    private static final class SimpleRowSubQuery<C> extends SimpleSubQuery<C, RowSubQuery>
-            implements RowSubQuery {
-
-        private SimpleRowSubQuery(@Nullable C criteria) {
-            super(criteria);
-        }
-
-    } // SimpleRowSubQuery
-
-    /**
-     * @see #columnSubQuery(Object)
-     */
-    private static final class SimpleColumnSubQuery<C> extends SimpleSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private SimpleColumnSubQuery(@Nullable C criteria) {
-            super(criteria);
-        }
-
-    }//SimpleColumnSubQuery
-
-
     /**
      * @see #scalarSubQuery(Object)
      */
-    private static final class SimpleScalarSubQuery<C, E> extends SimpleSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
+    private static final class SimpleScalarSubQuery<C> extends SimpleSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
         private SimpleScalarSubQuery(@Nullable C criteria) {
             super(criteria);
@@ -415,31 +377,10 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }// UnionAndSubQuery
 
 
-    private static final class UnionAndRowSubQuery<C> extends UnionAndSubQuery<C, RowSubQuery>
-            implements RowSubQuery, RowSubQuery.StandardRowSubQuerySpec<C> {
+    private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
-        private UnionAndRowSubQuery(RowSubQuery left, UnionType unionType) {
-            super(left, unionType);
-        }
-
-    }// UnionAndRowSubQuery
-
-
-    private static final class UnionAndColumnSubQuery<C> extends UnionAndSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private UnionAndColumnSubQuery(ColumnSubQuery left, UnionType unionType) {
-            super(left, unionType);
-        }
-
-
-    }// UnionAndColumnSubQuery
-
-
-    private static final class UnionAndScalarSubQuery<C, E> extends UnionAndSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
-
-        private UnionAndScalarSubQuery(ScalarQueryExpression<E> left, UnionType unionType) {
+        private UnionAndScalarSubQuery(ScalarQueryExpression left, UnionType unionType) {
             super(left, unionType);
         }
 

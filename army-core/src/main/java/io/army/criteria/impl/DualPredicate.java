@@ -11,15 +11,15 @@ import java.util.function.Function;
  */
 final class DualPredicate extends OperationPredicate {
 
-    static <C, E, O> DualPredicate create(final ArmyExpression<E> left, DualOperator operator
-            , Function<C, Expression<O>> expOrSubQuery) {
-        final Expression<O> functionResult;
+    static <C, E> DualPredicate create(final ArmyExpression left, DualOperator operator
+            , Function<C, Object> expOrSubQuery) {
+        final Object functionResult;
         functionResult = expOrSubQuery.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
-        return create(left, operator, functionResult);
+        return create(left, operator, SQLs.paramWithNonNull(left, functionResult));
     }
 
-    static DualPredicate create(final ArmyExpression<?> left, final DualOperator operator, final Expression<?> right) {
+    static DualPredicate create(final ArmyExpression left, final DualOperator operator, final Expression right) {
         final DualPredicate predicate;
         switch (operator) {
             case NOT_EQ:
@@ -32,7 +32,7 @@ final class DualPredicate extends OperationPredicate {
             case NOT_LIKE:
             case IN:
             case NOT_IN: {
-                final ArmyExpression<?> rightExp = (ArmyExpression<?>) right;
+                final ArmyExpression rightExp = (ArmyExpression) right;
                 if (rightExp.isNullableValue()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
@@ -49,13 +49,13 @@ final class DualPredicate extends OperationPredicate {
 
     /*################################## blow instance member ##################################*/
 
-    final ArmyExpression<?> left;
+    final ArmyExpression left;
 
     final DualOperator operator;
 
-    final ArmyExpression<?> right;
+    final ArmyExpression right;
 
-    private DualPredicate(ArmyExpression<?> left, DualOperator operator, ArmyExpression<?> right) {
+    private DualPredicate(ArmyExpression left, DualOperator operator, ArmyExpression right) {
         this.left = left;
         this.operator = operator;
         this.right = right;

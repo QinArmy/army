@@ -22,7 +22,7 @@ final class UnaryPredicate extends OperationPredicate {
 
     }
 
-    static UnaryPredicate create(final UnaryOperator operator, final _Expression<?> expression) {
+    static UnaryPredicate create(final UnaryOperator operator, final _Expression expression) {
         if (expression instanceof SubQuery) {
             throw new IllegalArgumentException("expression couldn't be sub query.");
         }

@@ -10,7 +10,7 @@ public interface _ValuesInsert extends _Insert {
 
     boolean migrationData();
 
-    Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap();
+    Map<FieldMeta<?, ?>, _Expression> commonExpMap();
 
     List<ObjectWrapper> domainList();
 

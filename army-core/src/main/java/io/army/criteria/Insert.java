@@ -44,11 +44,11 @@ public interface Insert extends Statement {
 
         InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value);
 
-        InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Expression<?> value);
+        InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Expression value);
 
-        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Function<C, Expression<F>> function);
+        InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Function<C, Expression> function);
 
-        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Supplier<Expression<F>> supplier);
+        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Supplier<Expression> supplier);
 
         InsertValuesSpec<T, C> setDefault(FieldMeta<? super T, ?> field);
 

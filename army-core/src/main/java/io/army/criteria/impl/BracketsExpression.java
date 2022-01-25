@@ -2,29 +2,28 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.GenericField;
-import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 
-final class BracketsExpression<E> extends OperationExpression<E> {
+final class BracketsExpression extends OperationExpression {
 
-    static <E> Expression<E> bracket(final Expression<E> expression) {
-        final Expression<E> result;
+    static Expression bracket(final Expression expression) {
+        final Expression result;
         if (expression instanceof BracketsExpression
                 || expression instanceof GenericField
                 || expression instanceof ValueExpression) {
             result = expression;
         } else {
-            result = new BracketsExpression<>(expression);
+            result = new BracketsExpression(expression);
         }
         return result;
     }
 
-    private final _Expression<E> expression;
+    private final ArmyExpression expression;
 
-    private BracketsExpression(Expression<E> expression) {
-        this.expression = (_Expression<E>) expression;
+    private BracketsExpression(Expression expression) {
+        this.expression = (ArmyExpression) expression;
     }
 
     @Override

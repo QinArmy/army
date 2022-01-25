@@ -44,7 +44,7 @@ public abstract class _DmlUtils {
 
 
     public static void checkInsertExpField(final TableMeta<?> table, final FieldMeta<?, ?> field
-            , final _Expression<?> value) {
+            , final _Expression value) {
 
         if (table instanceof ChildTableMeta) {
             final TableMeta<?> belongOf = field.tableMeta();
@@ -115,9 +115,9 @@ public abstract class _DmlUtils {
         final FieldMeta<?, ?> discriminator = context.table().discriminator();
 
         int batch = 0;
-        final Map<FieldMeta<?, ?>, _Expression<?>> expMap = context.commonExpMap();
+        final Map<FieldMeta<?, ?>, _Expression> expMap = context.commonExpMap();
         final boolean mockEnvironment = dialect instanceof _MockDialects;
-        _Expression<?> expression;
+        _Expression expression;
         GeneratorMeta generatorMeta;
         Object value;
         //2.2 append values

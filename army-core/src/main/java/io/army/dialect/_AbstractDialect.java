@@ -717,7 +717,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 if (!(valuePart instanceof RowSubQuery)) {
                     throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
                 }
-                this.appendRowTarget(clause, (Row<?>) targetPart, conditionFields, context);
+                this.appendRowTarget(clause, (Row) targetPart, conditionFields, context);
                 sqlBuilder.append(Constant.SPACE_EQUAL);
                 dialect.subQuery((SubQuery) targetPart, context);
                 continue;
@@ -763,10 +763,10 @@ public abstract class _AbstractDialect implements _Dialect {
             sqlBuilder.append(dialect.safeColumnName(field.columnName()))
                     .append(Constant.SPACE_EQUAL);
 
-            if (!field.nullable() && ((_Expression<?>) valuePart).isNullableValue()) {
+            if (!field.nullable() && ((_Expression) valuePart).isNullableValue()) {
                 throw _Exceptions.nonNullField(field.fieldMeta());
             }
-            ((_Expression<?>) valuePart).appendSql(context);
+            ((_Expression) valuePart).appendSql(context);
         }
         final TableMeta<?> table = clause.table();
         if (table instanceof SingleTableMeta) {
@@ -778,7 +778,7 @@ public abstract class _AbstractDialect implements _Dialect {
     /**
      * @see #setClause(boolean, _SetBlock, _UpdateContext)
      */
-    private void appendRowTarget(final _SetBlock clause, final Row<?> row
+    private void appendRowTarget(final _SetBlock clause, final Row row
             , List<GenericField<?, ?>> conditionFields, final _UpdateContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
@@ -789,7 +789,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final boolean hasSelfJoin = clause.hasSelfJoint(), supportTableAlias = dialect.setClauseTableAlias();
         sqlBuilder.append(Constant.SPACE_LEFT_BRACKET);
         int index = 0;
-        for (GenericField<?, ?> field : row.columnList()) {
+        for (GenericField<?, ?> field : row.field()) {
             if (index > 0) {
                 sqlBuilder.append(Constant.SPACE_COMMA);
             }

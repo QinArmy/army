@@ -93,7 +93,7 @@ abstract class CriteriaContexts {
 
         final Object criteria;
 
-        Map<String, VarExpression<?>> varMap;
+        Map<String, VarExpression> varMap;
 
 
         private AbstractContext(@Nullable Object criteria) {
@@ -107,12 +107,12 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final <E> VarExpression<E> createVar(String name, ParamMeta paramMeta) throws CriteriaException {
+        public final VarExpression createVar(String name, ParamMeta paramMeta) throws CriteriaException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public final <E> VarExpression<E> var(String name) throws CriteriaException {
+        public final VarExpression var(String name) throws CriteriaException {
             throw new UnsupportedOperationException();
         }
 
@@ -139,9 +139,9 @@ abstract class CriteriaContexts {
 
         private Map<String, Map<FieldMeta<?, ?>, QualifiedField<?, ?>>> aliasToField;
 
-        Map<String, Map<String, RefSelection<?>>> aliasToDerivedField;
+        Map<String, Map<String, RefSelection>> aliasToDerivedField;
 
-        private Map<String, Map<String, DerivedSelection<?>>> aliasToSelection;
+        private Map<String, Map<String, DerivedSelection>> aliasToSelection;
 
 
         private JoinableContext(@Nullable Object criteria) {
@@ -206,11 +206,11 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public <E> DerivedField<E> ref(final String subQueryAlias, final String fieldName) {
+        public DerivedField ref(final String subQueryAlias, final String fieldName) {
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
             final _TableBlock block = aliasToBlock.get(subQueryAlias);
             final TableItem subQuery;
-            final DerivedField<E> field;
+            final DerivedField field;
             if (block == null) {
                 field = getField(subQueryAlias, fieldName, true);
                 assert field != null;
@@ -219,7 +219,7 @@ abstract class CriteriaContexts {
                 String m = String.format("%s isn't alias of %s ", subQueryAlias, SubQuery.class.getName());
                 throw new CriteriaException(m);
             } else {
-                final DerivedField<E> temp;
+                final DerivedField temp;
                 temp = getField(subQueryAlias, fieldName, false);
                 if (temp == null) {
                     field = getSelection((SubQuery) subQuery, subQueryAlias, fieldName);
@@ -231,7 +231,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final <E> Expression<E> ref(String selectionAlias) {
+        public final Expression ref(String selectionAlias) {
             throw dontSupportRefSelection();
         }
 
@@ -265,18 +265,17 @@ abstract class CriteriaContexts {
 
 
         @Nullable
-        @SuppressWarnings("unchecked")
-        private <E> DerivedField<E> getField(final String subQueryAlias, final String fieldName, final boolean create) {
-            Map<String, Map<String, RefSelection<?>>> aliasToDerivedField = this.aliasToDerivedField;
+        private DerivedField getField(final String subQueryAlias, final String fieldName, final boolean create) {
+            Map<String, Map<String, RefSelection>> aliasToDerivedField = this.aliasToDerivedField;
             if (aliasToDerivedField == null) {
                 aliasToDerivedField = new HashMap<>();
                 this.aliasToDerivedField = aliasToDerivedField;
             }
-            final Map<String, RefSelection<?>> fieldMap;
-            final DerivedField<?> field;
+            final Map<String, RefSelection> fieldMap;
+            final DerivedField field;
             if (create) {
                 fieldMap = aliasToDerivedField.computeIfAbsent(subQueryAlias, k -> new HashMap<>());
-                field = fieldMap.computeIfAbsent(fieldName, k -> new RefSelection<>(subQueryAlias, fieldName));
+                field = fieldMap.computeIfAbsent(fieldName, k -> new RefSelection(subQueryAlias, fieldName));
             } else {
                 fieldMap = aliasToDerivedField.get(subQueryAlias);
                 if (fieldMap == null) {
@@ -285,21 +284,20 @@ abstract class CriteriaContexts {
                     field = fieldMap.get(fieldName);
                 }
             }
-            return (DerivedField<E>) field;
+            return field;
         }
 
-        @SuppressWarnings("unchecked")
-        private <E> DerivedSelection<E> getSelection(final SubQuery subQuery, final String subQueryAlias
+        private DerivedSelection getSelection(final SubQuery subQuery, final String subQueryAlias
                 , final String fieldName) {
-            Map<String, Map<String, DerivedSelection<?>>> aliasToSelection = this.aliasToSelection;
+            Map<String, Map<String, DerivedSelection>> aliasToSelection = this.aliasToSelection;
             if (aliasToSelection == null) {
                 aliasToSelection = new HashMap<>();
                 this.aliasToSelection = aliasToSelection;
             }
-            final Map<String, DerivedSelection<?>> fieldMap;
+            final Map<String, DerivedSelection> fieldMap;
             fieldMap = aliasToSelection.computeIfAbsent(subQueryAlias, k -> new HashMap<>());
 
-            final DerivedSelection<?> field;
+            final DerivedSelection field;
             field = fieldMap.computeIfAbsent(fieldName
                     , k -> {
                         final Selection selection;
@@ -307,9 +305,9 @@ abstract class CriteriaContexts {
                         if (selection == null) {
                             throw invalidRef(subQueryAlias, fieldName);
                         }
-                        return new DerivedSelection<>(subQueryAlias, selection);
+                        return new DerivedSelection(subQueryAlias, selection);
                     });
-            return (DerivedSelection<E>) field;
+            return field;
         }
 
 
@@ -336,12 +334,12 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
+        public DerivedField ref(String subQueryAlias, String derivedFieldName) {
             throw valueInsertDontSupport();
         }
 
         @Override
-        public <E> Expression<E> ref(String selectionAlias) {
+        public Expression ref(String selectionAlias) {
             throw valueInsertDontSupport();
         }
 
@@ -377,12 +375,12 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
+        public DerivedField ref(String subQueryAlias, String derivedFieldName) {
             throw singleDmlDontSupport();
         }
 
         @Override
-        public <E> Expression<E> ref(String selectionAlias) {
+        public Expression ref(String selectionAlias) {
             throw singleDmlDontSupport();
         }
 
@@ -437,12 +435,12 @@ abstract class CriteriaContexts {
             final SubQuery subQuery = (SubQuery) tableItem;
             final String queryAlias = block.alias();
 
-            final Map<String, Map<String, RefSelection<?>>> aliasToDerivedField = this.aliasToDerivedField;
+            final Map<String, Map<String, RefSelection>> aliasToDerivedField = this.aliasToDerivedField;
             if (aliasToDerivedField != null) {
-                final Map<String, RefSelection<?>> fieldMap;
+                final Map<String, RefSelection> fieldMap;
                 fieldMap = aliasToDerivedField.get(queryAlias);
                 if (fieldMap != null) {
-                    for (RefSelection<?> field : fieldMap.values()) {
+                    for (RefSelection field : fieldMap.values()) {
                         Selection selection;
                         selection = subQuery.selection(field.fieldName);
                         if (selection == null) {
@@ -489,7 +487,7 @@ abstract class CriteriaContexts {
 
         private final List<? extends SelectItem> selectItemList;
 
-        private Map<String, SelectionExpression<?>> aliasToSelection;
+        private Map<String, SelectionExpression> aliasToSelection;
 
         private UnionQueryContext(AbstractContext leftContext, List<? extends SelectItem> selectItemList) {
             super(leftContext);
@@ -508,21 +506,20 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <E> DerivedField<E> ref(String subQueryAlias, String derivedFieldName) {
+        public DerivedField ref(String subQueryAlias, String derivedFieldName) {
             throw unionQueryDontSupport();
         }
 
-        @SuppressWarnings("unchecked")
         @Override
-        public <E> Expression<E> ref(final String selectionAlias) {
-            Map<String, SelectionExpression<?>> aliasToSelection = this.aliasToSelection;
+        public Expression ref(final String selectionAlias) {
+            Map<String, SelectionExpression> aliasToSelection = this.aliasToSelection;
             if (aliasToSelection == null) {
                 aliasToSelection = new HashMap<>();
                 this.aliasToSelection = aliasToSelection;
             }
-            final Expression<?> expression;
+            final Expression expression;
             expression = aliasToSelection.computeIfAbsent(selectionAlias, this::createSelectionExpression);
-            return (Expression<E>) expression;
+            return expression;
         }
 
         @Override
@@ -531,7 +528,7 @@ abstract class CriteriaContexts {
         }
 
 
-        private <E> SelectionExpression<E> createSelectionExpression(final String selectionAlias) {
+        private SelectionExpression createSelectionExpression(final String selectionAlias) {
             Selection selection = null;
             outFor:
             for (SelectItem selectItem : this.selectItemList) {
@@ -555,14 +552,14 @@ abstract class CriteriaContexts {
                 String m = String.format("Unknown selection alias[%s]", selectionAlias);
                 throw new CriteriaException(m);
             }
-            return new SelectionExpression<>(selection);
+            return new SelectionExpression(selection);
         }
 
     }//UnionQueryContext
 
 
-    private static final class DerivedSelection<E> extends OperationExpression<E>
-            implements DerivedField<E>, _Selection {
+    private static final class DerivedSelection extends OperationExpression
+            implements DerivedField, _Selection {
 
         private final String tableName;
 
@@ -574,7 +571,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public String tableName() {
+        public String subQueryAlias() {
             return this.tableName;
         }
 
@@ -622,7 +619,7 @@ abstract class CriteriaContexts {
     }//DerivedSelection
 
 
-    private static final class RefSelection<E> extends OperationExpression<E> implements DerivedField<E>, _Selection {
+    private static final class RefSelection extends OperationExpression implements DerivedField, _Selection {
 
         final String tableName;
 
@@ -637,7 +634,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public String tableName() {
+        public String subQueryAlias() {
             return this.tableName;
         }
 
@@ -705,7 +702,7 @@ abstract class CriteriaContexts {
     /**
      * @see UnionQueryContext#ref(String)
      */
-    private static final class SelectionExpression<E> extends OperationExpression<E> {
+    private static final class SelectionExpression extends OperationExpression {
 
         private final Selection selection;
 

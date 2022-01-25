@@ -3,13 +3,10 @@ package io.army.criteria;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-
-import java.util.function.Supplier;
 
 /**
  * This interface is base interface of below interface:
@@ -23,7 +20,7 @@ import java.util.function.Supplier;
  * @see FieldMeta
  * @see QualifiedField
  */
-public interface GenericField<T extends IDomain, F> extends Expression<F>, FieldSelection, ParamMeta, SetLeftItem {
+public interface GenericField<T extends IDomain, F> extends Expression, FieldSelection, ParamMeta, SetLeftItem {
 
     TableMeta<T> tableMeta();
 
@@ -50,41 +47,35 @@ public interface GenericField<T extends IDomain, F> extends Expression<F>, Field
      */
     IPredicate equalNamed();
 
-    @Nullable
-    IPredicate ifLessThan(Supplier<Object> parameter);
-
     IPredicate lessThanNamed();
 
     IPredicate lessEqualNamed();
 
     IPredicate greatThanNamed();
 
-    @Nullable
-    IPredicate ifGreatThan(Supplier<Object> parameter);
-
     IPredicate greatEqualNamed();
 
     IPredicate notEqualNamed();
 
-    Expression<F> modNamed();
+    Expression modNamed();
 
-    Expression<F> plusNamed();
+    Expression plusNamed();
 
-    Expression<F> minusNamed();
+    Expression minusNamed();
 
-    Expression<F> multiplyNamed();
+    Expression multiplyNamed();
 
-    Expression<F> divideNamed();
+    Expression divideNamed();
 
-    Expression<F> bitwiseAndNamed();
+    Expression bitwiseAndNamed();
 
-    Expression<F> bitwiseOrNamed();
+    Expression bitwiseOrNamed();
 
-    Expression<F> xorNamed();
+    Expression xorNamed();
 
-    Expression<F> rightShiftNamed();
+    Expression rightShiftNamed();
 
-    Expression<F> leftShiftNamed();
+    Expression leftShiftNamed();
 
     IPredicate likeNamed();
 

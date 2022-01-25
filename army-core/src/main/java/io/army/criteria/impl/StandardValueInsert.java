@@ -53,7 +53,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
 
     private List<FieldMeta<?, ?>> fieldList;
 
-    private Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap;
+    private Map<FieldMeta<?, ?>, _Expression> commonExpMap;
 
     private List<ObjectWrapper> domainList;
 
@@ -127,30 +127,30 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
 
     @Override
     public InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value) {
-        return this.set(field, SQLs.paramWithExp(field, value));
+        return this.set(field, SQLs.paramWithNonNull(field, value));
     }
 
 
     @Override
-    public InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Expression<?> value) {
-        _DmlUtils.checkInsertExpField(this.table, field, (_Expression<?>) value);
+    public InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Expression value) {
+        _DmlUtils.checkInsertExpField(this.table, field, (_Expression) value);
 
-        Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap = this.commonExpMap;
+        Map<FieldMeta<?, ?>, _Expression> commonExpMap = this.commonExpMap;
         if (commonExpMap == null) {
             commonExpMap = new HashMap<>();
             this.commonExpMap = commonExpMap;
         }
-        commonExpMap.put(field, (_Expression<?>) value);
+        commonExpMap.put(field, (_Expression) value);
         return this;
     }
 
     @Override
-    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Function<C, Expression<F>> function) {
+    public InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Function<C, Expression> function) {
         return this.set(field, function.apply(this.criteria));
     }
 
     @Override
-    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Supplier<Expression<F>> supplier) {
+    public <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Supplier<Expression> supplier) {
         return this.set(field, supplier.get());
     }
 
@@ -220,7 +220,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
     }
 
     @Override
-    public Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap() {
+    public Map<FieldMeta<?, ?>, _Expression> commonExpMap() {
         return this.commonExpMap;
     }
 
@@ -265,7 +265,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
             this.domainList = Collections.unmodifiableList(domainList);
         }
 
-        final Map<FieldMeta<?, ?>, _Expression<?>> commonExpMap = this.commonExpMap;
+        final Map<FieldMeta<?, ?>, _Expression> commonExpMap = this.commonExpMap;
         if (CollectionUtils.isEmpty(commonExpMap)) {
             this.commonExpMap = Collections.emptyMap();
         } else {

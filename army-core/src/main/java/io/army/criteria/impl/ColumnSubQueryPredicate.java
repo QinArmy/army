@@ -1,26 +1,27 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ColumnSubQuery;
 import io.army.criteria.Expression;
+import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 class ColumnSubQueryPredicate extends OperationPredicate {
 
     static <C> ColumnSubQueryPredicate create(
-            Expression<?> operand, DualOperator operator
-            , SubQueryOperator subQueryOperator, Function<C, ColumnSubQuery> function) {
-        final ColumnSubQuery functionResult;
+            Expression operand, DualOperator operator
+            , SubQueryOperator subQueryOperator, Function<C, SubQuery> function) {
+        final SubQuery functionResult;
         functionResult = function.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
         return ColumnSubQueryPredicate.create(operand, operator, subQueryOperator, functionResult);
     }
 
-    static ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator
-            , SubQueryOperator subQueryOperator, ColumnSubQuery subQuery) {
+    static ColumnSubQueryPredicate create(Expression operand, DualOperator operator
+            , SubQueryOperator subQueryOperator, SubQuery subQuery) {
         switch (subQueryOperator) {
             case ALL:
             case ANY:
@@ -31,15 +32,16 @@ class ColumnSubQueryPredicate extends OperationPredicate {
         }
     }
 
-    static <C> ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator
-            , Function<C, ColumnSubQuery> function) {
-        final ColumnSubQuery functionResult;
+    static <C> ColumnSubQueryPredicate create(Expression operand, DualOperator operator
+            , Function<C, SubQuery> function) {
+        final SubQuery functionResult;
         functionResult = function.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
         return create(operand, operator, functionResult);
     }
 
-    static ColumnSubQueryPredicate create(Expression<?> operand, DualOperator operator, ColumnSubQuery subQuery) {
+    static ColumnSubQueryPredicate create(Expression operand, DualOperator operator, SubQuery subQuery) {
+        Objects.requireNonNull(subQuery);
         switch (operator) {
             case IN:
             case NOT_IN:
@@ -49,14 +51,14 @@ class ColumnSubQueryPredicate extends OperationPredicate {
         }
     }
 
-    private final _Expression<?> operand;
+    private final _Expression operand;
 
     private final DualOperator operator;
 
-    private final ColumnSubQuery subQuery;
+    private final SubQuery subQuery;
 
-    private ColumnSubQueryPredicate(Expression<?> operand, DualOperator operator, ColumnSubQuery subQuery) {
-        this.operand = (_Expression<?>) operand;
+    private ColumnSubQueryPredicate(Expression operand, DualOperator operator, SubQuery subQuery) {
+        this.operand = (_Expression) operand;
         this.operator = operator;
         this.subQuery = subQuery;
     }
@@ -93,14 +95,12 @@ class ColumnSubQueryPredicate extends OperationPredicate {
     }
 
 
-
-
     private static final class RelationColumnSubQueryPredicate extends ColumnSubQueryPredicate {
 
         private final SubQueryOperator subQueryOperator;
 
-        private RelationColumnSubQueryPredicate(Expression<?> operand, DualOperator operator
-                , SubQueryOperator subQueryOperator, ColumnSubQuery subQuery) {
+        private RelationColumnSubQueryPredicate(Expression operand, DualOperator operator
+                , SubQueryOperator subQueryOperator, SubQuery subQuery) {
             super(operand, operator, subQuery);
             this.subQueryOperator = subQueryOperator;
         }

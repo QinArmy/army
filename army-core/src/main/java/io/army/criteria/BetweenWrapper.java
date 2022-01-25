@@ -8,11 +8,11 @@ import java.util.function.Function;
  */
 public interface BetweenWrapper {
 
-    Expression<?> first();
+    Expression first();
 
-    Expression<?> second();
+    Expression second();
 
-    static BetweenWrapper build(Expression<?> first, Expression<?> second) {
+    static BetweenWrapper build(Expression first, Expression second) {
         return new BetweenWrapperImpl(first, second);
     }
 

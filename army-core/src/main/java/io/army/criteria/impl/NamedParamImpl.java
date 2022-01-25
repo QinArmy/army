@@ -12,19 +12,17 @@ import java.util.Objects;
  * <p>
  * This class is a implementation of {@link NamedParam}.
  * </p>
- *
- * @param <E> java type of named parameter
  */
-class NamedParamImpl<E> extends OperationExpression<E> implements NamedParam<E> {
+class NamedParamImpl extends OperationExpression implements NamedParam {
 
-    static <E> NamedParam<E> nullable(String name, ParamMeta paramMeta) {
+    static NamedParam nullable(String name, ParamMeta paramMeta) {
         Objects.requireNonNull(name);
-        return new NamedParamImpl<>(name, paramMeta);
+        return new NamedParamImpl(name, paramMeta);
     }
 
-    static <E> NonNullNamedParam<E> nonNull(String name, ParamMeta paramMeta) {
+    static NonNullNamedParam nonNull(String name, ParamMeta paramMeta) {
         Objects.requireNonNull(name);
-        return new NonNullNamedParamImpl<>(name, paramMeta);
+        return new NonNullNamedParamImpl(name, paramMeta);
     }
 
     private final String name;
@@ -67,9 +65,8 @@ class NamedParamImpl<E> extends OperationExpression<E> implements NamedParam<E> 
      * This class is a implementation of {@link NonNullNamedParam}.
      * </p>
      *
-     * @param <E> java type of named parameter
      */
-    private static final class NonNullNamedParamImpl<E> extends NamedParamImpl<E> implements NonNullNamedParam<E> {
+    private static final class NonNullNamedParamImpl extends NamedParamImpl implements NonNullNamedParam {
 
         private NonNullNamedParamImpl(String name, ParamMeta paramMeta) {
             super(name, paramMeta);

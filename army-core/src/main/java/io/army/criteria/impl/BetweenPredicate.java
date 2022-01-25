@@ -6,20 +6,20 @@ import io.army.dialect._SqlContext;
 
 class BetweenPredicate extends OperationPredicate {
 
-    static BetweenPredicate between(Expression<?> left, Expression<?> center, Expression<?> right) {
+    static BetweenPredicate between(Expression left, Expression center, Expression right) {
         return new BetweenPredicate(left, center, right);
     }
 
-    final _Expression<?> left;
+    final _Expression left;
 
-    final _Expression<?> center;
+    final _Expression center;
 
-    final _Expression<?> right;
+    final _Expression right;
 
-    private BetweenPredicate(Expression<?> left, Expression<?> center, Expression<?> right) {
-        this.left = (_Expression<?>) left;
-        this.center = (_Expression<?>) center;
-        this.right = (_Expression<?>) right;
+    private BetweenPredicate(Expression left, Expression center, Expression right) {
+        this.left = (_Expression) left;
+        this.center = (_Expression) center;
+        this.right = (_Expression) right;
     }
 
     @Override

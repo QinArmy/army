@@ -49,15 +49,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C> Select57Spec<C, RowSubQuery> rowSubQuery(@Nullable C criteria) {
-        return new SimpleRowSubQuery<>(criteria);
-    }
-
-    static <C> Select57Spec<C, ColumnSubQuery> columnSubQuery(@Nullable C criteria) {
-        return new SimpleColumnSubQuery<>(criteria);
-    }
-
-    static <C, E> Select57Spec<C, ScalarQueryExpression<E>> scalarSubQuery(@Nullable C criteria) {
+    static <C, E> Select57Spec<C, ScalarQueryExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(criteria);
     }
 
@@ -68,11 +60,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (left instanceof Select) {
             select57Spec = new UnionAndSelect<>((Select) left, unionType, criteria);
         } else if (left instanceof ScalarSubQuery) {
-            select57Spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression<?>) left, unionType, criteria);
-        } else if (left instanceof ColumnSubQuery) {
-            select57Spec = new UnionAndColumnSubQuery<>((ColumnSubQuery) left, unionType, criteria);
-        } else if (left instanceof RowSubQuery) {
-            select57Spec = new UnionAndRowSubQuery<>((RowSubQuery) left, unionType, criteria);
+            select57Spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression) left, unionType, criteria);
         } else if (left instanceof SubQuery) {
             select57Spec = new UnionAndSubQuery<>((SubQuery) left, unionType, criteria);
         } else {
@@ -87,8 +75,13 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private SQLModifier lockModifier;
 
     private MySQL57SimpleQuery(@Nullable C criteria) {
-        super(CriteriaContexts.primaryContext(criteria));
-        CriteriaContextStack.setContextStack(this.criteriaContext);
+        super(CriteriaContexts.queryContext(criteria));
+        if (this instanceof Select) {
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        } else {
+            CriteriaContextStack.push(this.criteriaContext);
+        }
+
     }
 
 
@@ -154,7 +147,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             final Q thisQuery = this.asQueryAndQuery();
             if (this instanceof ScalarSubQuery) {
                 if (!(thisQuery instanceof ScalarSubQueryExpression)
-                        || ((ScalarSubQueryExpression<?>) thisQuery).subQuery != this) {
+                        || ((ScalarSubQueryExpression) thisQuery).subQuery != this) {
                     throw asQueryMethodError();
                 }
             } else if (thisQuery != this) {
@@ -175,7 +168,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     final Q onAsQuery(final boolean outer) {
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery<?>) this);
+            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
         } else {
             thisQuery = (Q) this;
         }
@@ -259,9 +252,6 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
 
-
-
-
     /*################################## blow inner class ##################################*/
 
     private static final class SimpleSelect<C> extends MySQL57SimpleQuery<C, Select>
@@ -284,25 +274,9 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }// SimpleSubQuery
 
-    private static final class SimpleRowSubQuery<C> extends SimpleSubQuery<C, RowSubQuery> implements RowSubQuery {
 
-        private SimpleRowSubQuery(@Nullable C criteria) {
-            super(criteria);
-        }
-
-    }// SimpleRowSubQuery
-
-    private static final class SimpleColumnSubQuery<C> extends SimpleSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private SimpleColumnSubQuery(@Nullable C criteria) {
-            super(criteria);
-        }
-
-    }// SimpleColumnSubQuery
-
-    private static final class SimpleScalarSubQuery<C, E> extends SimpleSubQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
+    private static final class SimpleScalarSubQuery<C> extends SimpleSubQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
         private SimpleScalarSubQuery(@Nullable C criteria) {
             super(criteria);
@@ -347,28 +321,11 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }// UnionAndSubQuery
 
-    private static final class UnionAndRowSubQuery<C> extends AbstractUnionAndQuery<C, RowSubQuery>
-            implements RowSubQuery {
 
-        private UnionAndRowSubQuery(RowSubQuery left, UnionType unionType, @Nullable C criteria) {
-            super(left, unionType, criteria);
-        }
+    private static final class UnionAndScalarSubQuery<C> extends AbstractUnionAndQuery<C, ScalarQueryExpression>
+            implements ScalarSubQuery {
 
-    }// UnionAndRowSubQuery
-
-    private static final class UnionAndColumnSubQuery<C> extends AbstractUnionAndQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private UnionAndColumnSubQuery(ColumnSubQuery left, UnionType unionType, @Nullable C criteria) {
-            super(left, unionType, criteria);
-        }
-
-    }// UnionAndColumnSubQuery
-
-    private static final class UnionAndScalarSubQuery<C, E> extends AbstractUnionAndQuery<C, ScalarQueryExpression<E>>
-            implements ScalarSubQuery<E> {
-
-        private UnionAndScalarSubQuery(ScalarQueryExpression<E> left, UnionType unionType, @Nullable C criteria) {
+        private UnionAndScalarSubQuery(ScalarQueryExpression left, UnionType unionType, @Nullable C criteria) {
             super(left, unionType, criteria);
         }
 

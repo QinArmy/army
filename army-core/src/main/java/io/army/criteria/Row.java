@@ -1,12 +1,9 @@
 package io.army.criteria;
 
-import io.army.domain.IDomain;
-
 import java.util.List;
 
-public interface Row<T extends IDomain> extends SetLeftItem {
+public interface Row extends SetLeftItem {
 
-    List<? extends GenericField<T, ?>> columnList();
-
+    List<GenericField<?, ?>> field();
 
 }
