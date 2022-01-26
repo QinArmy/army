@@ -48,6 +48,26 @@ abstract class OperationField<T extends IDomain, F> extends OperationExpression 
     }
 
     @Override
+    public final IPredicate likeNamed() {
+        return this.like(SQLs.namedParam(this));
+    }
+
+    @Override
+    public final IPredicate notLikeNamed() {
+        return this.notLike(SQLs.namedParam(this));
+    }
+
+    @Override
+    public final IPredicate inNamed() {
+        return DualPredicate.create(this, DualOperator.IN, SQLs.namedParam(this));
+    }
+
+    @Override
+    public final IPredicate notInNamed() {
+        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedParam(this));
+    }
+
+    @Override
     public final Expression modNamed() {
         return this.mod(SQLs.namedParam(this));
     }
@@ -95,16 +115,6 @@ abstract class OperationField<T extends IDomain, F> extends OperationExpression 
     @Override
     public final Expression leftShiftNamed() {
         return this.leftShift(SQLs.namedParam(this));
-    }
-
-    @Override
-    public final IPredicate likeNamed() {
-        return this.like(SQLs.namedParam(this));
-    }
-
-    @Override
-    public final IPredicate notLikeNamed() {
-        return this.notLike(SQLs.namedParam(this));
     }
 
 

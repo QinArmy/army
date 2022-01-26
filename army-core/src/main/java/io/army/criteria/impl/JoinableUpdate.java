@@ -56,7 +56,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
         for (ItemPair itemPair : pairList) {
             if (!(itemPair instanceof SQLs.ItemPairImpl)) {
-                throw new CriteriaException("pair is Illegal.");
+                throw new CriteriaException("pair is Illegal");
             }
             leftList.add(((SQLs.ItemPairImpl) itemPair).left);
             rightList.add(((SQLs.ItemPairImpl) itemPair).right);
@@ -123,12 +123,12 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
     @Override
     public final SR set(FieldMeta<?, ?> field, @Nullable Object paramOrExp) {
-        return this.setExp(field, SQLs.paramWithNullable(field, paramOrExp));
+        return this.setExp(field, SQLs.nullableParam(field, paramOrExp));
     }
 
     @Override
     public final SR setLiteral(FieldMeta<?, ?> field, @Nullable Object paramOrExp) {
-        return this.setExp(field, SQLs.literalWithNullable(field, paramOrExp));
+        return this.setExp(field, SQLs.nullableLiteral(field, paramOrExp));
     }
 
     @Override
@@ -186,7 +186,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.setExp(field, SQLs.paramWithNonNull(field, value));
+            this.setExp(field, SQLs.nonNullParam(field, value));
         }
         return (SR) this;
     }
@@ -196,7 +196,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
-            this.setExp(field, SQLs.paramWithNonNull(field, value));
+            this.setExp(field, SQLs.nonNullParam(field, value));
         }
         return (SR) this;
     }
@@ -206,7 +206,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.setExp(field, SQLs.literalWithNonNull(field, value));
+            this.setExp(field, SQLs.nonNullLiteral(field, value));
         }
         return (SR) this;
     }
@@ -216,7 +216,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
-            this.setExp(field, SQLs.literalWithNonNull(field, value));
+            this.setExp(field, SQLs.nonNullLiteral(field, value));
         }
         return (SR) this;
     }

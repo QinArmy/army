@@ -150,7 +150,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @param value {@link Expression} or parameter
      */
-    static Expression paramWithNonNull(final Expression type, final @Nullable Object value) {
+    static Expression nonNullParam(final Expression type, final @Nullable Object value) {
         if (value == null) {
             throw new CriteriaException("Right operand of operator must be not null.");
         }
@@ -171,7 +171,7 @@ public abstract class SQLs extends StandardFunctions {
      * @param value {@link Expression} or parameter
      * @see Update.SimpleSetClause#set(FieldMeta, Object)
      */
-    static Expression paramWithNullable(final Expression type, final @Nullable Object value) {
+    static Expression nullableParam(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
@@ -186,17 +186,15 @@ public abstract class SQLs extends StandardFunctions {
     /**
      * package method
      */
-    static Expression literalWithNonNull(final Expression type, final @Nullable Object value) {
+    static Expression nonNullLiteral(final Expression type, final @Nullable Object value) {
+        if (value == null) {
+            throw new CriteriaException("Right operand of operator must be not null.");
+        }
         final Expression resultExpression;
         if (value instanceof Expression) {
-            //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression) value;
-        } else if (value instanceof Function || value instanceof Supplier) {
-            String m = String.format("Right value couldn't be %s,please check parameter type."
-                    , value.getClass().getName());
-            throw new CriteriaException(m);
-        } else if (value == null) {
-            resultExpression = SQLs.nullWord();
+        } else if (type instanceof ParamMeta) {
+            resultExpression = LiteralExpression.literal((ParamMeta) type, value);
         } else {
             resultExpression = LiteralExpression.literal(type.paramMeta(), value);
         }
@@ -208,7 +206,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @see Update.SimpleSetClause#setLiteral(FieldMeta, Object)
      */
-    static Expression literalWithNullable(final Expression type, final @Nullable Object value) {
+    static Expression nullableLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value instanceof Expression) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
@@ -357,7 +355,7 @@ public abstract class SQLs extends StandardFunctions {
     }
 
     /**
-     * @param value expression or parameter
+     * @param value {@link Expression} or parameter.
      * @see Update.SimpleSetClause#setPairs(List)
      */
     public static ItemPair itemPair(FieldMeta<?, ?> field, @Nullable Object value) {
@@ -368,6 +366,36 @@ public abstract class SQLs extends StandardFunctions {
             valueExp = SQLs.param(field, value);
         }
         return new ItemPairImpl(field, valueExp);
+    }
+
+    public static ExpressionPair expPair(final Object first, final Object second) {
+        final Expression firstExp, secondExp;
+        if (first instanceof Expression) {
+            firstExp = (Expression) first;
+        } else {
+            firstExp = SQLs.param(first);
+        }
+        if (second instanceof Expression) {
+            secondExp = (Expression) second;
+        } else {
+            secondExp = SQLs.param(second);
+        }
+        return new ExpressionPairImpl(firstExp, secondExp);
+    }
+
+    public static ExpressionPair expPair(ParamMeta paramMeta, final Object first, final Object second) {
+        final Expression firstExp, secondExp;
+        if (first instanceof Expression) {
+            firstExp = (Expression) first;
+        } else {
+            firstExp = SQLs.param(paramMeta, first);
+        }
+        if (second instanceof Expression) {
+            secondExp = (Expression) second;
+        } else {
+            secondExp = SQLs.param(paramMeta, second);
+        }
+        return new ExpressionPairImpl(firstExp, secondExp);
     }
 
 
@@ -588,6 +616,32 @@ public abstract class SQLs extends StandardFunctions {
         }
 
     }//ItemPairImpl
+
+
+    /**
+     * @see #expPair(Object, Object)
+     */
+    private static final class ExpressionPairImpl implements ExpressionPair {
+
+        private final Expression first;
+
+        private final Expression second;
+
+        private ExpressionPairImpl(Expression first, Expression second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        @Override
+        public Expression first() {
+            return this.first;
+        }
+
+        @Override
+        public Expression second() {
+            return this.second;
+        }
+    }//BetweenPair
 
 
 }

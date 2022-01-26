@@ -23,7 +23,7 @@ final class DualExpression extends OperationExpression {
         final Object functionResult;
         functionResult = function.apply(CriteriaContextStack.getCriteria());
         assert functionResult != null;
-        return create(left, operator, SQLs.paramWithNonNull(left, functionResult));
+        return create(left, operator, SQLs.nonNullParam(left, functionResult));
     }
 
     static DualExpression create(ArmyExpression left, final DualOperator operator, Expression right) {

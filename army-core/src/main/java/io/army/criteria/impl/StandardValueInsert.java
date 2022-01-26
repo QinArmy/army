@@ -127,7 +127,7 @@ final class StandardValueInsert<T extends IDomain, C> implements Insert
 
     @Override
     public InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value) {
-        return this.set(field, SQLs.paramWithNonNull(field, value));
+        return this.set(field, SQLs.nonNullParam(field, value));
     }
 
 

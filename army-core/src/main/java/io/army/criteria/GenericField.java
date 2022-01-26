@@ -57,6 +57,14 @@ public interface GenericField<T extends IDomain, F> extends Expression, FieldSel
 
     IPredicate notEqualNamed();
 
+    IPredicate likeNamed();
+
+    IPredicate notLikeNamed();
+
+    IPredicate inNamed();
+
+    IPredicate notInNamed();
+
     Expression modNamed();
 
     Expression plusNamed();
@@ -77,8 +85,6 @@ public interface GenericField<T extends IDomain, F> extends Expression, FieldSel
 
     Expression leftShiftNamed();
 
-    IPredicate likeNamed();
 
-    IPredicate notLikeNamed();
 
 }

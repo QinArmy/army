@@ -4,30 +4,21 @@ import io.army.criteria.Expression;
 import io.army.dialect._SqlContext;
 import io.army.util._Exceptions;
 
-import java.util.function.Function;
-
 /**
  *
  */
 final class DualPredicate extends OperationPredicate {
 
-    static <C, E> DualPredicate create(final ArmyExpression left, DualOperator operator
-            , Function<C, Object> expOrSubQuery) {
-        final Object functionResult;
-        functionResult = expOrSubQuery.apply(CriteriaContextStack.getCriteria());
-        assert functionResult != null;
-        return create(left, operator, SQLs.paramWithNonNull(left, functionResult));
-    }
 
     static DualPredicate create(final ArmyExpression left, final DualOperator operator, final Expression right) {
         final DualPredicate predicate;
         switch (operator) {
+            case EQ:
             case NOT_EQ:
             case LT:
             case LE:
             case GT:
             case GE:
-            case EQ:
             case LIKE:
             case NOT_LIKE:
             case IN:
@@ -70,10 +61,9 @@ final class DualPredicate extends OperationPredicate {
     }
 
 
-
     @Override
     public String toString() {
-        return String.format("%s %s%s", this.left, this.operator, this.right);
+        return String.format(" %s%s%s", this.left, this.operator, this.right);
     }
 
 

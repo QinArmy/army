@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
@@ -48,7 +47,7 @@ abstract class NoNOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate equal(Object operand) {
-        throw unsupportedOperation();
+         throw unsupportedOperation();
     }
 
     @Override
@@ -62,22 +61,37 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifEqual(@Nullable Object operand) {
+    public final <C> IPredicate equalExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifEqualLiteral(@Nullable Object operand) {
+    public final IPredicate equalExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate equal(Function<C, Object> function) {
+    public final IPredicate ifEqual(Supplier<Object> operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate equal(Supplier<Object> supplier) {
+    public final <C> IPredicate ifEqual(Function<C, Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifEqual(Function<String, Object> operand, String keyName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifEqualLiteral(Supplier<Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifEqualLiteral(Function<String, Object> operand, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -117,22 +131,37 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifLessThan(@Nullable Object operand) {
+    public final <C> IPredicate lessThanExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifLessThanLiteral(@Nullable Object operand) {
+    public final IPredicate lessThanExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate lessThan(Function<C, Object> function) {
+    public final IPredicate ifLessThan(Supplier<Object> operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate lessThan(Supplier<Object> supplier) {
+    public final <C> IPredicate ifLessThan(Function<C, Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifLessThan(Function<String, Object> function, String keyName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifLessThanLiteral(Supplier<Object> supplier) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifLessThanLiteral(Function<String, Object> function, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -182,22 +211,37 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifLessEqual(@Nullable Object operand) {
+    public final <C> IPredicate lessEqualExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifLessEqualLiteral(@Nullable Object operand) {
+    public final IPredicate lessEqualExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate lessEqual(Function<C, Object> function) {
+    public final IPredicate ifLessEqual(Supplier<Object> operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate lessEqual(Supplier<Object> supplier) {
+    public final <C> IPredicate ifLessEqual(Function<C, Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifLessEqual(Function<String, Object> operand, String keyName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifLessEqualLiteral(Supplier<Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifLessEqualLiteral(Function<String, Object> operand, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -247,22 +291,37 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifGreatThan(@Nullable Object operand) {
+    public final <C> IPredicate greatThanExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifGreatThanLiteral(@Nullable Object operand) {
+    public final IPredicate greatThanExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate greatThan(Function<C, Object> function) {
+    public final IPredicate ifGreatThan(Supplier<Object> operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate greatThan(Supplier<Object> supplier) {
+    public final <C> IPredicate ifGreatThan(Function<C, Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifGreatThan(Function<String, Object> operand, String keyName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifGreatThanLiteral(Supplier<Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifGreatThanLiteral(Function<String, Object> operand, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -312,22 +371,37 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifGreatEqual(@Nullable Object operand) {
+    public final <C> IPredicate greatEqualExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifGreatEqualLiteral(@Nullable Object operand) {
+    public final IPredicate greatEqualExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate greatEqual(Function<C, Object> function) {
+    public final IPredicate ifGreatEqual(Supplier<Object> operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate greatEqual(Supplier<Object> supplier) {
+    public final <C> IPredicate ifGreatEqual(Function<C, Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifGreatEqual(Function<String, Object> operand, String keyName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifGreatEqualLiteral(Supplier<Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifGreatEqualLiteral(Function<String, Object> operand, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -377,22 +451,37 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifNotEqual(@Nullable Object operand) {
+    public final <C> IPredicate notEqualExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifNotEqualLiteral(@Nullable Object operand) {
+    public final IPredicate notEqualExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate notEqual(Function<C, Object> function) {
+    public final IPredicate ifNotEqual(Supplier<Object> operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate notEqual(Supplier<Object> supplier) {
+    public final <C> IPredicate ifNotEqual(Function<C, Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifNotEqual(Function<String, Object> operand, String keyName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifNotEqualLiteral(Supplier<Object> operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifNotEqualLiteral(Function<String, Object> operand, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -437,17 +526,32 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifBetween(@Nullable Object firstOperand, @Nullable Object secondOperand) {
+    public final IPredicate ifBetween(Supplier<Object> firstOperand, Supplier<Object> secondOperand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifBetweenLiteral(@Nullable Object firstOperand, @Nullable Object secondOperand) {
+    public final IPredicate ifBetween(Function<String, Object> function, String firstKey, String secondKey) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate between(Function<C, BetweenWrapper> function) {
+    public final IPredicate ifBetweenLiteral(Supplier<Object> firstOperand, Supplier<Object> secondOperand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifBetweenLiteral(Function<String, Object> function, String firstKey, String secondKey) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate between(Function<C, ExpressionPair> function) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate ifBetween(Function<C, ExpressionPair> function) {
         throw unsupportedOperation();
     }
 
@@ -477,27 +581,32 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <O> IPredicate ifIn(@Nullable Collection<O> parameters) {
+    public final <C> IPredicate in(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate ifInParam(@Nullable Collection<O> parameters) {
+    public final IPredicate in(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate in(Expression parameters) {
+    public final <O> IPredicate ifIn(Supplier<Collection<O>> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate in(Function<C, SubQuery> function) {
+    public final <O> IPredicate ifInParam(Supplier<Collection<O>> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate in(Supplier<SubQuery> supplier) {
+    public final IPredicate ifInExp(Supplier<Expression> supplier) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate ifInExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
@@ -517,27 +626,102 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <O> IPredicate ifNotIn(@Nullable Collection<O> parameters) {
+    public final <C> IPredicate notInExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate ifNotInParam(@Nullable Collection<O> parameters) {
+    public final IPredicate notInExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate notIn(Expression values) {
+    public final <O> IPredicate ifNotIn(Supplier<Collection<O>> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate notIn(Function<C, SubQuery> function) {
+    public final <O> IPredicate ifNotInParam(Supplier<Collection<O>> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate notIn(Supplier<SubQuery> supplier) {
+    public final IPredicate ifNotInExp(Supplier<Expression> supplier) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate ifNotInExp(Function<C, Expression> function) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate like(Object pattern) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate likeNamed(String paramName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate likeExp(Function<C, Expression> function) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate likeExp(Supplier<Expression> supplier) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifLike(Supplier<Object> pattern) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate ifLike(Function<C, Object> pattern) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifLike(Function<String, Object> function, String keyName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate notLike(Object pattern) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate notLikeNamed(String paramName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate notLikeExp(Function<C, Expression> function) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate notLikeExp(Supplier<Expression> supplier) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifNotLike(Supplier<Object> pattern) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate ifNotLike(Function<C, Object> pattern) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifNotLike(Function<String, Object> function, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -557,12 +741,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression mod(Function<C, Object> function) {
+    public final <C> Expression modExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression mod(Supplier<Object> supplier) {
+    public final Expression modExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
@@ -582,12 +766,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression multiply(Function<C, Object> function) {
+    public final <C> Expression multiplyExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression multiply(Supplier<Object> supplier) {
+    public final Expression multiplyExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
@@ -607,12 +791,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression plus(Function<C, Object> function) {
+    public final <C> Expression plusExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression plus(Supplier<Object> supplier) {
+    public final Expression plusExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
@@ -632,12 +816,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression minus(Function<C, Object> function) {
+    public final <C> Expression minusExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression minus(Supplier<Object> supplier) {
+    public final Expression minusExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
@@ -657,12 +841,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression divide(Function<C, Object> function) {
+    public final <C> Expression divideExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression divide(Supplier<Object> supplier) {
+    public final Expression divideExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
@@ -687,12 +871,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression bitwiseAnd(Function<C, Object> function) {
+    public final <C> Expression bitwiseAndExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression bitwiseAnd(Supplier<Object> supplier) {
+    public final Expression bitwiseAndExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
@@ -712,12 +896,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression bitwiseOr(Function<C, Object> function) {
+    public final <C> Expression bitwiseOrExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression bitwiseOr(Supplier<Object> supplier) {
+    public final Expression bitwiseOrExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
@@ -737,12 +921,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression xor(Function<C, Object> function) {
+    public final <C> Expression xorExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression xor(Supplier<Object> supplier) {
+    public final Expression xorExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
@@ -752,102 +936,52 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression rightShift(@Nullable Object bitNumber) {
+    public final Expression rightShift(Object bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression rightShiftLiteral(@Nullable Object bitNumber) {
+    public final Expression rightShiftLiteral(Object bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression rightShiftNamed(@Nullable String paramName) {
+    public final Expression rightShiftNamed(String paramName) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> Expression rightShift(@Nullable Function<C, Object> function) {
+    public final <C> Expression rightShiftExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression rightShift(@Nullable Supplier<Object> supplier) {
+    public final Expression rightShiftExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression leftShift(@Nullable Object bitNumber) {
+    public final Expression leftShift(Object bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression leftShiftLiteral(@Nullable Object bitNumber) {
+    public final Expression leftShiftLiteral(Object bitNumber) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression leftShiftNamed(@Nullable String paramName) {
+    public final Expression leftShiftNamed(String paramName) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> Expression leftShift(@Nullable Function<C, Object> function) {
+    public final <C> Expression leftShiftExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression leftShift(@Nullable Supplier<Object> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate like(Object pattern) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLike(@Nullable Object pattern) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate likeNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate like(Function<C, Object> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate like(Supplier<Object> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notLike(Object pattern) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotLike(@Nullable Object pattern) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notLikeNamed(String paramName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate notLike(Function<C, Object> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate notLike(Supplier<Object> supplier) {
+    public final Expression leftShiftExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 

@@ -7,12 +7,13 @@ import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
  * this class is base class of most implementation of {@link Expression}
+ *
+ * @since 1.0
  */
 abstract class OperationExpression implements ArmyExpression {
 
@@ -43,12 +44,12 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate equal(Object operand) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs.paramWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.EQ, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final IPredicate equalLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs.literalWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.EQ, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -57,54 +58,84 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifEqualLiteral(@Nullable Object operand) {
-        return operand == null ? null : this.equalLiteral(operand);
+    public final <C> IPredicate equalExp(Function<C, Expression> function) {
+        return DualPredicate.create(this, DualOperator.EQ, function.apply(CriteriaContextStack.getCriteria()));
+    }
+
+    @Override
+    public final IPredicate equalExp(Supplier<Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.EQ, supplier.get());
     }
 
     @Nullable
     @Override
-    public final IPredicate ifEqual(final @Nullable Object operand) {
-        return operand == null ? null : this.equal(operand);
+    public final IPredicate ifEqual(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.equal(value);
     }
 
     @Override
-    public final <C> IPredicate equal(Function<C, Object> function) {
-        return this.equal(function.apply(CriteriaContextStack.getCriteria()));
+    public final <C> IPredicate ifEqual(Function<C, Object> operand) {
+        final Object value;
+        value = operand.apply(CriteriaContextStack.getCriteria());
+        return value == null ? null : this.equal(value);
     }
 
     @Override
-    public final IPredicate equal(Supplier<Object> supplier) {
-        return this.equal(supplier.get());
+    public final IPredicate ifEqual(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.equal(value);
     }
+
+    @Override
+    public final IPredicate ifEqualLiteral(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.equalLiteral(value);
+    }
+
+    @Override
+    public final IPredicate ifEqualLiteral(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.equalLiteral(value);
+    }
+
 
     @Override
     public final <C> IPredicate equalAny(Function<C, SubQuery> subQuery) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.ANY, subQuery);
+        final SubQuery query;
+        query = subQuery.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate equalAny(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate equalSome(Function<C, SubQuery> subQuery) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.SOME, subQuery);
+        final SubQuery query;
+        query = subQuery.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate equalSome(Supplier<SubQuery> subQuery) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.SOME, subQuery.get());
+        return SubQueryPredicate.create(this, DualOperator.EQ, SubQueryOperator.SOME, subQuery.get());
     }
 
     @Override
     public final IPredicate lessThan(Object operand) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.paramWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.LT, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final IPredicate lessThanLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.literalWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.LT, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -112,65 +143,97 @@ abstract class OperationExpression implements ArmyExpression {
         return DualPredicate.create(this, DualOperator.LT, SQLs.namedParam(paramName, this.paramMeta()));
     }
 
+    @Override
+    public final <C> IPredicate lessThanExp(Function<C, Expression> function) {
+        return DualPredicate.create(this, DualOperator.LT, function.apply(CriteriaContextStack.getCriteria()));
+    }
+
+    @Override
+    public final IPredicate lessThanExp(Supplier<Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.LT, supplier.get());
+    }
+
     @Nullable
     @Override
-    public final IPredicate ifLessThan(@Nullable Object operand) {
-        return operand == null ? null : this.lessThan(operand);
+    public final IPredicate ifLessThan(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.lessThan(value);
     }
 
     @Override
-    public final IPredicate ifLessThanLiteral(@Nullable Object operand) {
-        return operand == null ? null : this.lessThanLiteral(operand);
+    public final <C> IPredicate ifLessThan(Function<C, Object> operand) {
+        final Object value;
+        value = operand.apply(CriteriaContextStack.getCriteria());
+        return value == null ? null : this.lessThan(value);
     }
 
     @Override
-    public final <C> IPredicate lessThan(Function<C, Object> function) {
-        return DualPredicate.create(this, DualOperator.LT, function);
+    public final IPredicate ifLessThan(Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        return value == null ? null : this.lessThan(value);
     }
 
     @Override
-    public final IPredicate lessThan(Supplier<Object> supplier) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.paramWithNonNull(this, supplier.get()));
+    public final IPredicate ifLessThanLiteral(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.lessThanLiteral(value);
     }
+
+    @Override
+    public final IPredicate ifLessThanLiteral(Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        return value == null ? null : this.lessThanLiteral(value);
+    }
+
 
     @Override
     public final <C> IPredicate lessThanAny(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ANY, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate lessThanAny(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate lessThanSome(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.SOME, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate lessThanSome(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.SOME, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.SOME, supplier.get());
     }
 
     @Override
     public final <C> IPredicate lessThanAll(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ALL, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ALL, query);
     }
 
     @Override
     public final IPredicate lessThanAll(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ALL, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LT, SubQueryOperator.ALL, supplier.get());
     }
 
     @Override
     public final IPredicate lessEqual(Object operand) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.paramWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.LE, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final IPredicate lessEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.literalWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.LE, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -179,64 +242,96 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifLessEqual(@Nullable Object operand) {
-        return operand == null ? null : this.lessEqual(operand);
+    public final <C> IPredicate lessEqualExp(Function<C, Expression> function) {
+        return DualPredicate.create(this, DualOperator.LE, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final IPredicate ifLessEqualLiteral(@Nullable Object operand) {
-        return operand == null ? null : this.lessEqualLiteral(operand);
+    public final IPredicate lessEqualExp(Supplier<Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.LE, supplier.get());
+    }
+
+
+    @Override
+    public final IPredicate ifLessEqual(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.lessEqual(value);
     }
 
     @Override
-    public final <C> IPredicate lessEqual(Function<C, Object> function) {
-        return DualPredicate.create(this, DualOperator.LE, function);
+    public final <C> IPredicate ifLessEqual(Function<C, Object> operand) {
+        final Object value;
+        value = operand.apply(CriteriaContextStack.getCriteria());
+        return value == null ? null : this.lessEqual(value);
     }
 
     @Override
-    public final IPredicate lessEqual(Supplier<Object> supplier) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.paramWithNonNull(this, supplier.get()));
+    public final IPredicate ifLessEqual(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.lessEqual(value);
+    }
+
+    @Override
+    public final IPredicate ifLessEqualLiteral(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.lessEqualLiteral(value);
+    }
+
+    @Override
+    public final IPredicate ifLessEqualLiteral(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.lessEqualLiteral(value);
     }
 
     @Override
     public final <C> IPredicate lessEqualAny(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ANY, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate lessEqualAny(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate lessEqualSome(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.SOME, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate lessEqualSome(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.SOME, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.SOME, supplier.get());
     }
 
 
     @Override
     public final <C> IPredicate lessEqualAll(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ALL, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ALL, query);
     }
 
     @Override
     public final IPredicate lessEqualAll(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ALL, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.LE, SubQueryOperator.ALL, supplier.get());
     }
 
     @Override
     public final IPredicate greatThan(Object operand) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.paramWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.GT, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final IPredicate greatThanLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.literalWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.GT, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -245,65 +340,96 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifGreatThan(@Nullable Object operand) {
-        return operand == null ? null : this.greatThan(operand);
+    public final <C> IPredicate greatThanExp(Function<C, Expression> function) {
+        return DualPredicate.create(this, DualOperator.GT, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final IPredicate ifGreatThanLiteral(@Nullable Object operand) {
-        return operand == null ? null : this.greatThanLiteral(operand);
+    public final IPredicate greatThanExp(Supplier<Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.GT, supplier.get());
     }
 
     @Override
-    public final <C> IPredicate greatThan(Function<C, Object> function) {
-        return DualPredicate.create(this, DualOperator.GT, function);
+    public final IPredicate ifGreatThan(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.greatThan(value);
     }
 
     @Override
-    public final IPredicate greatThan(Supplier<Object> supplier) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.paramWithNonNull(this, supplier.get()));
+    public final <C> IPredicate ifGreatThan(Function<C, Object> operand) {
+        final Object value;
+        value = operand.apply(CriteriaContextStack.getCriteria());
+        return value == null ? null : this.greatThan(value);
     }
 
+    @Override
+    public final IPredicate ifGreatThan(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.greatThan(value);
+    }
+
+
+    @Override
+    public final IPredicate ifGreatThanLiteral(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.greatThanLiteral(value);
+    }
+
+    @Override
+    public final IPredicate ifGreatThanLiteral(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.greatThanLiteral(value);
+    }
 
     @Override
     public final <C> IPredicate greatThanAny(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ANY, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate greatThanAny(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ANY, supplier.get());
     }
 
 
     @Override
     public final <C> IPredicate greatThanSome(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.SOME, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate greatThanSome(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.SOME, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.SOME, supplier.get());
     }
 
     @Override
     public final <C> IPredicate greatThanAll(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ALL, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ALL, query);
     }
 
     @Override
     public final IPredicate greatThanAll(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ALL, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GT, SubQueryOperator.ALL, supplier.get());
     }
 
     @Override
     public final IPredicate greatEqual(Object operand) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.paramWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.GE, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final IPredicate greatEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.literalWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.GE, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -312,66 +438,95 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifGreatEqual(@Nullable Object operand) {
-        return operand == null ? null : this.greatEqual(operand);
+    public final <C> IPredicate greatEqualExp(Function<C, Expression> function) {
+        return DualPredicate.create(this, DualOperator.GE, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final IPredicate ifGreatEqualLiteral(@Nullable Object operand) {
-        return operand == null ? null : this.greatEqualLiteral(operand);
-    }
-
-
-    @Override
-    public final <C> IPredicate greatEqual(Function<C, Object> function) {
-        return DualPredicate.create(this, DualOperator.GE, function);
+    public final IPredicate greatEqualExp(Supplier<Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.GE, supplier.get());
     }
 
     @Override
-    public final IPredicate greatEqual(Supplier<Object> supplier) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.paramWithNonNull(this, supplier.get()));
+    public final IPredicate ifGreatEqual(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.greatEqual(value);
     }
 
+    @Override
+    public final <C> IPredicate ifGreatEqual(Function<C, Object> operand) {
+        final Object value;
+        value = operand.apply(CriteriaContextStack.getCriteria());
+        return value == null ? null : this.greatEqual(value);
+    }
+
+    @Override
+    public final IPredicate ifGreatEqual(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.greatEqual(value);
+    }
+
+    @Override
+    public final IPredicate ifGreatEqualLiteral(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.greatEqualLiteral(value);
+    }
+
+    @Override
+    public final IPredicate ifGreatEqualLiteral(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.greatEqualLiteral(value);
+    }
 
     @Override
     public final <C> IPredicate greatEqualAny(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ANY, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate greatEqualAny(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate greatEqualSome(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.SOME, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate greatEqualSome(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.SOME, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.SOME, supplier.get());
     }
 
     @Override
     public final <C> IPredicate greatEqualAll(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ALL, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ALL, query);
     }
 
     @Override
     public final IPredicate greatEqualAll(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ALL, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.GE, SubQueryOperator.ALL, supplier.get());
     }
 
 
     @Override
     public final IPredicate notEqual(Object operand) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.paramWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final IPredicate notEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.literalWithNonNull(this, operand));
+        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.nonNullLiteral(this, operand));
 
     }
 
@@ -381,109 +536,176 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifNotEqual(@Nullable Object operand) {
-        return operand == null ? null : this.notEqual(operand);
+    public final <C> IPredicate notEqualExp(Function<C, Expression> function) {
+        return DualPredicate.create(this, DualOperator.NOT_EQ, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final IPredicate ifNotEqualLiteral(@Nullable Object operand) {
-        return operand == null ? null : this.notEqualLiteral(operand);
+    public final IPredicate notEqualExp(Supplier<Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.NOT_EQ, supplier.get());
     }
 
     @Override
-    public final <C> IPredicate notEqual(Function<C, Object> function) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, function);
+    public final IPredicate ifNotEqual(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.notEqual(value);
+    }
+
+
+    @Override
+    public final <C> IPredicate ifNotEqual(Function<C, Object> operand) {
+        final Object value;
+        value = operand.apply(CriteriaContextStack.getCriteria());
+        return value == null ? null : this.notEqual(value);
     }
 
     @Override
-    public final IPredicate notEqual(Supplier<Object> supplier) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.paramWithNonNull(this, supplier.get()));
+    public final IPredicate ifNotEqual(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.notEqual(value);
     }
+
+    @Override
+    public final IPredicate ifNotEqualLiteral(Supplier<Object> operand) {
+        final Object value;
+        value = operand.get();
+        return value == null ? null : this.notEqualLiteral(value);
+    }
+
+    @Override
+    public final IPredicate ifNotEqualLiteral(Function<String, Object> operand, String keyName) {
+        final Object value;
+        value = operand.apply(keyName);
+        return value == null ? null : this.notEqualLiteral(value);
+    }
+
 
     @Override
     public final <C> IPredicate notEqualAny(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ANY, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ANY, query);
     }
 
     @Override
     public final IPredicate notEqualAny(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ANY, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ANY, supplier.get());
     }
 
     @Override
     public final <C> IPredicate notEqualSome(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.SOME, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.SOME, query);
     }
 
     @Override
     public final IPredicate notEqualSome(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.SOME, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.SOME, supplier.get());
     }
 
     @Override
     public final <C> IPredicate notEqualAll(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, function);
+        final SubQuery query;
+        query = function.apply(CriteriaContextStack.getCriteria());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, query);
     }
 
     @Override
     public final IPredicate notEqualAll(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, supplier.get());
+        return SubQueryPredicate.create(this, DualOperator.NOT_EQ, SubQueryOperator.ALL, supplier.get());
     }
 
     @Override
     public final IPredicate between(Object firstOperand, Object secondOperand) {
-        Objects.requireNonNull(firstOperand);
-        Objects.requireNonNull(secondOperand);
-
         final Expression first, second;
-        first = SQLs.paramWithNonNull(this, firstOperand);
-        second = SQLs.paramWithNonNull(this, secondOperand);
+        first = SQLs.nonNullParam(this, firstOperand);
+        second = SQLs.nonNullParam(this, secondOperand);
         return BetweenPredicate.between(this, first, second);
     }
 
     @Override
     public final IPredicate betweenLiteral(Object firstOperand, Object secondOperand) {
-        Objects.requireNonNull(firstOperand);
-        Objects.requireNonNull(secondOperand);
-
         final Expression first, second;
-        first = SQLs.literalWithNonNull(this, firstOperand);
-        second = SQLs.literalWithNonNull(this, secondOperand);
+        first = SQLs.nonNullLiteral(this, firstOperand);
+        second = SQLs.nonNullLiteral(this, secondOperand);
         return BetweenPredicate.between(this, first, second);
     }
 
-
     @Override
-    public final IPredicate ifBetween(@Nullable Object firstOperand, @Nullable Object secondOperand) {
-        final IPredicate predicate;
-        if (firstOperand != null && secondOperand != null) {
-            predicate = this.between(firstOperand, secondOperand);
-        } else {
-            predicate = null;
-        }
-        return predicate;
-    }
-
-
-    @Override
-    public final <C> IPredicate between(Function<C, BetweenWrapper> function) {
-        final BetweenWrapper wrapper;
+    public final <C> IPredicate between(Function<C, ExpressionPair> function) {
+        final ExpressionPair wrapper;
         wrapper = function.apply(CriteriaContextStack.getCriteria());
         assert wrapper != null;
         return BetweenPredicate.between(this, wrapper.first(), wrapper.second());
     }
 
+    @Nullable
     @Override
-    public final IPredicate ifBetweenLiteral(@Nullable Object firstOperand, @Nullable Object secondOperand) {
+    public final IPredicate ifBetween(Supplier<Object> firstOperand, Supplier<Object> secondOperand) {
+        final Object firstValue, secondValue;
+        firstValue = firstOperand.get();
+        secondValue = secondOperand.get();
         final IPredicate predicate;
-        if (firstOperand != null && secondOperand != null) {
-            predicate = this.betweenLiteral(firstOperand, secondOperand);
+        if (firstValue != null && secondValue != null) {
+            predicate = this.between(firstValue, secondValue);
         } else {
             predicate = null;
         }
         return predicate;
     }
 
+    @Override
+    public final IPredicate ifBetween(Function<String, Object> function, String firstKey, String secondKey) {
+        final Object firstValue, secondValue;
+        firstValue = function.apply(firstKey);
+        secondValue = function.apply(secondKey);
+        final IPredicate predicate;
+        if (firstValue != null && secondValue != null) {
+            predicate = this.between(firstValue, secondValue);
+        } else {
+            predicate = null;
+        }
+        return predicate;
+    }
+
+    @Override
+    public final IPredicate ifBetweenLiteral(Supplier<Object> firstOperand, Supplier<Object> secondOperand) {
+        final Object firstValue, secondValue;
+        firstValue = firstOperand.get();
+        secondValue = secondOperand.get();
+        final IPredicate predicate;
+        if (firstValue != null && secondValue != null) {
+            predicate = this.betweenLiteral(firstValue, secondValue);
+        } else {
+            predicate = null;
+        }
+        return predicate;
+    }
+
+    @Override
+    public final IPredicate ifBetweenLiteral(Function<String, Object> function, String firstKey, String secondKey) {
+        final Object firstValue, secondValue;
+        firstValue = function.apply(firstKey);
+        secondValue = function.apply(secondKey);
+        final IPredicate predicate;
+        if (firstValue != null && secondValue != null) {
+            predicate = this.betweenLiteral(firstValue, secondValue);
+        } else {
+            predicate = null;
+        }
+        return predicate;
+    }
+
+    @Nullable
+    @Override
+    public final <C> IPredicate ifBetween(Function<C, ExpressionPair> function) {
+        final ExpressionPair pair;
+        pair = function.apply(CriteriaContextStack.getCriteria());
+        return pair == null ? null : BetweenPredicate.between(this, pair.first(), pair.second());
+    }
 
     @Override
     public final IPredicate isNull() {
@@ -511,28 +733,43 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <O> IPredicate ifIn(@Nullable Collection<O> parameters) {
-        return (parameters == null || parameters.size() == 0) ? null : this.in(parameters);
+    public final <C> IPredicate in(Function<C, Expression> function) {
+        return DualPredicate.create(this, DualOperator.IN, function.apply(CriteriaContextStack.getCriteria()));
+    }
+
+
+    @Override
+    public final IPredicate in(Supplier<Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.IN, supplier.get());
     }
 
     @Override
-    public final <O> IPredicate ifInParam(@Nullable Collection<O> parameters) {
-        return (parameters == null || parameters.size() == 0) ? null : this.inParam(parameters);
+    public final <O> IPredicate ifIn(Supplier<Collection<O>> supplier) {
+        final Collection<O> values;
+        values = supplier.get();
+        return (values == null || values.size() == 0) ? null : this.in(values);
     }
 
     @Override
-    public final IPredicate in(Expression parameters) {
-        return DualPredicate.create(this, DualOperator.IN, parameters);
+    public final <O> IPredicate ifInParam(Supplier<Collection<O>> supplier) {
+        final Collection<O> values;
+        values = supplier.get();
+        return (values == null || values.size() == 0) ? null : this.inParam(values);
+    }
+
+    @Nullable
+    @Override
+    public final IPredicate ifInExp(Supplier<Expression> supplier) {
+        final Expression exp;
+        exp = supplier.get();
+        return exp == null ? null : DualPredicate.create(this, DualOperator.IN, exp);
     }
 
     @Override
-    public final <C> IPredicate in(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.IN, function);
-    }
-
-    @Override
-    public final IPredicate in(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.IN, supplier.get());
+    public final <C> IPredicate ifInExp(Function<C, Expression> function) {
+        final Expression exp;
+        exp = function.apply(CriteriaContextStack.getCriteria());
+        return exp == null ? null : DualPredicate.create(this, DualOperator.IN, exp);
     }
 
     @Override
@@ -551,39 +788,46 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <O> IPredicate ifNotIn(@Nullable Collection<O> parameters) {
-        return (parameters == null || parameters.size() == 0) ? null : this.notIn(parameters);
+    public final <C> IPredicate notInExp(Function<C, Expression> function) {
+        return DualPredicate.create(this, DualOperator.NOT_IN, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final <O> IPredicate ifNotInParam(@Nullable Collection<O> parameters) {
-        return (parameters == null || parameters.size() == 0) ? null : this.notInParam(parameters);
+    public final IPredicate notInExp(Supplier<Expression> supplier) {
+        return DualPredicate.create(this, DualOperator.NOT_IN, supplier.get());
     }
 
     @Override
-    public final IPredicate notIn(Expression values) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, values);
+    public final <O> IPredicate ifNotIn(Supplier<Collection<O>> supplier) {
+        final Collection<O> values;
+        values = supplier.get();
+        return (values == null || values.size() == 0) ? null : this.notIn(values);
     }
 
     @Override
-    public final <C> IPredicate notIn(Function<C, SubQuery> function) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.NOT_IN, function);
+    public final <O> IPredicate ifNotInParam(Supplier<Collection<O>> supplier) {
+        final Collection<O> values;
+        values = supplier.get();
+        return (values == null || values.size() == 0) ? null : this.notInParam(values);
     }
 
     @Override
-    public final IPredicate notIn(Supplier<SubQuery> supplier) {
-        return ColumnSubQueryPredicate.create(this, DualOperator.NOT_IN, supplier.get());
+    public final IPredicate ifNotInExp(Supplier<Expression> supplier) {
+        final Expression exp;
+        exp = supplier.get();
+        return exp == null ? null : DualPredicate.create(this, DualOperator.NOT_IN, exp);
+    }
+
+    @Override
+    public final <C> IPredicate ifNotInExp(Function<C, Expression> function) {
+        final Expression exp;
+        exp = function.apply(CriteriaContextStack.getCriteria());
+        return exp == null ? null : DualPredicate.create(this, DualOperator.NOT_IN, exp);
     }
 
     @Override
     public final IPredicate like(Object pattern) {
-        return patterPredicate(DualOperator.LIKE, pattern);
-    }
-
-    @Nullable
-    @Override
-    public final IPredicate ifLike(@Nullable Object pattern) {
-        return pattern == null ? null : this.like(pattern);
+        return this.pattern(DualOperator.LIKE, pattern);
     }
 
     @Override
@@ -592,24 +836,44 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate like(Function<C, Object> function) {
-        return patterPredicate(DualOperator.LIKE, function.apply(CriteriaContextStack.getCriteria()));
+    public final <C> IPredicate likeExp(Function<C, Expression> function) {
+        final Expression exp;
+        exp = function.apply(CriteriaContextStack.getCriteria());
+        return DualPredicate.create(this, DualOperator.LIKE, exp);
     }
 
+    @Override
+    public final IPredicate likeExp(Supplier<Expression> supplier) {
+        final Expression exp;
+        exp = supplier.get();
+        return DualPredicate.create(this, DualOperator.LIKE, exp);
+    }
+
+    @Nullable
+    @Override
+    public final IPredicate ifLike(Supplier<Object> pattern) {
+        final Object value;
+        value = pattern.get();
+        return value == null ? null : this.pattern(DualOperator.LIKE, value);
+    }
 
     @Override
-    public final IPredicate like(Supplier<Object> supplier) {
-        return patterPredicate(DualOperator.LIKE, supplier.get());
+    public final <C> IPredicate ifLike(Function<C, Object> pattern) {
+        final Object value;
+        value = pattern.apply(CriteriaContextStack.getCriteria());
+        return value == null ? null : this.pattern(DualOperator.LIKE, value);
+    }
+
+    @Override
+    public final IPredicate ifLike(Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        return value == null ? null : this.pattern(DualOperator.LIKE, value);
     }
 
     @Override
     public final IPredicate notLike(Object pattern) {
-        return patterPredicate(DualOperator.NOT_LIKE, pattern);
-    }
-
-    @Override
-    public final IPredicate ifNotLike(@Nullable Object pattern) {
-        return pattern == null ? null : this.notLike(pattern);
+        return pattern(DualOperator.NOT_LIKE, pattern);
     }
 
     @Override
@@ -617,25 +881,49 @@ abstract class OperationExpression implements ArmyExpression {
         return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.namedParam(paramName, this.paramMeta()));
     }
 
-
     @Override
-    public final <C> IPredicate notLike(Function<C, Object> function) {
-        return patterPredicate(DualOperator.NOT_LIKE, function.apply(CriteriaContextStack.getCriteria()));
+    public final <C> IPredicate notLikeExp(Function<C, Expression> function) {
+        final Expression exp;
+        exp = function.apply(CriteriaContextStack.getCriteria());
+        return DualPredicate.create(this, DualOperator.NOT_LIKE, exp);
     }
 
     @Override
-    public final IPredicate notLike(Supplier<Object> supplier) {
-        return patterPredicate(DualOperator.NOT_LIKE, supplier.get());
+    public final IPredicate notLikeExp(Supplier<Expression> supplier) {
+        final Expression exp;
+        exp = supplier.get();
+        return DualPredicate.create(this, DualOperator.NOT_LIKE, exp);
+    }
+
+    @Override
+    public final IPredicate ifNotLike(Supplier<Object> pattern) {
+        final Object value;
+        value = pattern.get();
+        return value == null ? null : this.pattern(DualOperator.NOT_LIKE, value);
+    }
+
+    @Override
+    public final <C> IPredicate ifNotLike(Function<C, Object> pattern) {
+        final Object value;
+        value = pattern.apply(CriteriaContextStack.getCriteria());
+        return value == null ? null : this.pattern(DualOperator.NOT_LIKE, value);
+    }
+
+    @Override
+    public final IPredicate ifNotLike(Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        return value == null ? null : this.pattern(DualOperator.NOT_LIKE, value);
     }
 
     @Override
     public final Expression mod(Object operand) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.paramWithNonNull(this, operand));
+        return DualExpression.create(this, DualOperator.MOD, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final Expression modLiteral(Object operand) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.literalWithNonNull(this, operand));
+        return DualExpression.create(this, DualOperator.MOD, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -644,23 +932,23 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression mod(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.MOD, function);
+    public final <C> Expression modExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.MOD, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression mod(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression modExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.MOD, supplier.get());
     }
 
     @Override
     public final Expression multiply(Object multiplicand) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.paramWithNonNull(this, multiplicand));
+        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.nonNullParam(this, multiplicand));
     }
 
     @Override
     public final Expression multiplyLiteral(Object multiplicand) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.literalWithNonNull(this, multiplicand));
+        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.nonNullLiteral(this, multiplicand));
     }
 
     @Override
@@ -669,23 +957,23 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression multiply(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.MULTIPLY, function);
+    public final <C> Expression multiplyExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.MULTIPLY, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression multiply(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression multiplyExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.MULTIPLY, supplier.get());
     }
 
     @Override
     public final Expression plus(Object augend) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.paramWithNonNull(this, augend));
+        return DualExpression.create(this, DualOperator.PLUS, SQLs.nonNullParam(this, augend));
     }
 
     @Override
     public final Expression plusLiteral(Object augend) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.literalWithNonNull(this, augend));
+        return DualExpression.create(this, DualOperator.PLUS, SQLs.nonNullLiteral(this, augend));
     }
 
     @Override
@@ -695,23 +983,23 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     @Override
-    public final <C> Expression plus(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.PLUS, function);
+    public final <C> Expression plusExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.PLUS, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression plus(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression plusExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.PLUS, supplier.get());
     }
 
     @Override
     public final Expression minus(Object minuend) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.paramWithNonNull(this, minuend));
+        return DualExpression.create(this, DualOperator.MINUS, SQLs.nonNullParam(this, minuend));
     }
 
     @Override
     public final Expression minusLiteral(Object minuend) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.literalWithNonNull(this, minuend));
+        return DualExpression.create(this, DualOperator.MINUS, SQLs.nonNullLiteral(this, minuend));
     }
 
     @Override
@@ -720,23 +1008,23 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression minus(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.MINUS, function);
+    public final <C> Expression minusExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.MINUS, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression minus(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression minusExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.MINUS, supplier.get());
     }
 
     @Override
     public final Expression divide(Object divisor) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.paramWithNonNull(this, divisor));
+        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.nonNullParam(this, divisor));
     }
 
     @Override
     public final Expression divideLiteral(Object divisor) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.literalWithNonNull(this, divisor));
+        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.nonNullLiteral(this, divisor));
     }
 
     @Override
@@ -745,13 +1033,13 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression divide(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.DIVIDE, function);
+    public final <C> Expression divideExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.DIVIDE, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression divide(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression divideExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.DIVIDE, supplier.get());
     }
 
     @Override
@@ -761,12 +1049,12 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression bitwiseAnd(Object operand) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.paramWithNonNull(this, operand));
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final Expression bitwiseAndLiteral(Object operand) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.literalWithNonNull(this, operand));
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -775,23 +1063,23 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression bitwiseAnd(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.BITWISE_AND, function);
+    public final <C> Expression bitwiseAndExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.BITWISE_AND, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression bitwiseAnd(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression bitwiseAndExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.BITWISE_AND, supplier.get());
     }
 
     @Override
     public final Expression bitwiseOr(Object operand) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.paramWithNonNull(this, operand));
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final Expression bitwiseOrLiteral(Object operand) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.literalWithNonNull(this, operand));
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -800,23 +1088,23 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression bitwiseOr(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.BITWISE_OR, function);
+    public final <C> Expression bitwiseOrExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.BITWISE_OR, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression bitwiseOr(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression bitwiseOrExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.BITWISE_OR, supplier.get());
     }
 
     @Override
     public final Expression xor(Object operand) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.paramWithNonNull(this, operand));
+        return DualExpression.create(this, DualOperator.XOR, SQLs.nonNullParam(this, operand));
     }
 
     @Override
     public final Expression xorLiteral(Object operand) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.literalWithNonNull(this, operand));
+        return DualExpression.create(this, DualOperator.XOR, SQLs.nonNullLiteral(this, operand));
     }
 
     @Override
@@ -825,13 +1113,13 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression xor(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.XOR, function);
+    public final <C> Expression xorExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.XOR, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression xor(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.literalWithNonNull(this, supplier.get()));
+    public final Expression xorExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.XOR, supplier.get());
     }
 
     @Override
@@ -841,12 +1129,12 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression rightShift(Object bitNumber) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.paramWithNonNull(this, bitNumber));
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.nonNullParam(this, bitNumber));
     }
 
     @Override
     public final Expression rightShiftLiteral(Object bitNumber) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.literalWithNonNull(this, bitNumber));
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.nonNullLiteral(this, bitNumber));
     }
 
     @Override
@@ -855,23 +1143,23 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression rightShift(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.RIGHT_SHIFT, function);
+    public final <C> Expression rightShiftExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression rightShift(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression rightShiftExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, supplier.get());
     }
 
     @Override
     public final Expression leftShift(Object bitNumber) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.paramWithNonNull(this, bitNumber));
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.nonNullParam(this, bitNumber));
     }
 
     @Override
     public final Expression leftShiftLiteral(Object bitNumber) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.literalWithNonNull(this, bitNumber));
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.nonNullLiteral(this, bitNumber));
     }
 
     @Override
@@ -880,13 +1168,13 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> Expression leftShift(Function<C, Object> function) {
-        return DualExpression.functionCreate(this, DualOperator.LEFT_SHIFT, function);
+    public final <C> Expression leftShiftExp(Function<C, Expression> function) {
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, function.apply(CriteriaContextStack.getCriteria()));
     }
 
     @Override
-    public final Expression leftShift(Supplier<Object> supplier) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.paramWithNonNull(this, supplier.get()));
+    public final Expression leftShiftExp(Supplier<Expression> supplier) {
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, supplier.get());
     }
 
     @Override
@@ -916,7 +1204,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     /*################################## blow protected template method ##################################*/
 
-    private IPredicate patterPredicate(final DualOperator operator, final Object pattern) {
+    private IPredicate pattern(final DualOperator operator, final Object pattern) {
         switch (operator) {
             case LIKE:
             case NOT_LIKE:
@@ -928,7 +1216,7 @@ abstract class OperationExpression implements ArmyExpression {
         if (pattern instanceof Expression) {
             valueExp = (Expression) pattern;
         } else if (pattern instanceof String) {
-            valueExp = SQLs.paramWithNonNull(this, pattern);
+            valueExp = SQLs.nonNullParam(this, pattern);
         } else {
             String m = String.format("%s support only %s and %s ."
                     , operator, Expression.class.getName(), String.class.getName());
