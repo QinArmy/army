@@ -7,6 +7,7 @@ import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
 
@@ -31,7 +32,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         if (query instanceof Select) {
             unionSpec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
-            unionSpec = new BracketScalarSubQuery<>((ScalarQueryExpression) query);
+            unionSpec = new BracketScalarSubQuery<>((ScalarExpression) query);
         } else if (query instanceof SubQuery) {
             unionSpec = new BracketSubQuery<>((SubQuery) query);
         } else {
@@ -48,7 +49,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         if (left instanceof Select) {
             unionSpec = new UnionSelect<>((Select) left, unionType, (Select) right);
         } else if (left instanceof ScalarSubQuery) {
-            unionSpec = new UnionScalarSubQuery<>((ScalarQueryExpression) left, unionType, (ScalarQueryExpression) right);
+            unionSpec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType, (ScalarExpression) right);
         } else if (left instanceof SubQuery) {
             unionSpec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
         } else {
@@ -71,8 +72,26 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    public final List<? extends SelectItem> selectPartList() {
-        return ((_PartQuery) this.left).selectPartList();
+    public final List<? extends SelectItem> selectItemList() {
+        return ((_PartQuery) this.left).selectItemList();
+    }
+
+
+    public final Selection selection() {
+        if (!(this instanceof ScalarSubQuery)) {
+            String m = String.format("this isn't %s instance.", ScalarSubQuery.class.getName());
+            throw new IllegalStateException(m);
+        }
+        return (Selection) ((ScalarSubQuery) this.left).selectItemList().get(0);
+    }
+
+    @Nullable
+    public final Selection selection(String derivedFieldName) {
+        if (!(this instanceof SubQuery)) {
+            String m = String.format("this isn't %s instance.", SubQuery.class.getName());
+            throw new IllegalStateException(m);
+        }
+        return ((SubQuery) this.left).selection(derivedFieldName);
     }
 
     @Override
@@ -148,9 +167,11 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
 
     private static class BracketSubQuery<C, Q extends SubQuery> extends StandardUnionQuery<C, Q> implements SubQuery {
 
+
         private BracketSubQuery(Q query) {
             super(query);
         }
+
 
         @Override
         public final void appendSql(final _SqlContext context) {
@@ -171,12 +192,13 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }
 
 
-    private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarQueryExpression>
+    private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private BracketScalarSubQuery(ScalarQueryExpression query) {
+        private BracketScalarSubQuery(ScalarExpression query) {
             super(query);
         }
+
 
         @Override
         public ParamMeta paramMeta() {
@@ -191,8 +213,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
      *     <ul>
      *         <li>{@link UnionSelect}</li>
      *         <li>{@link UnionSubQuery}</li>
-     *         <li>{@link UnionRowSubQuery}</li>
-     *         <li>{@link UnionColumnSubQuery}</li>
      *         <li>{@link UnionScalarSubQuery}</li>
      *     </ul>
      * </p>
@@ -239,6 +259,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
             super(left, unionType, right);
         }
 
+
         @Override
         public final void appendSql(_SqlContext context) {
             final _Dialect dialect = context.dialect();
@@ -255,33 +276,14 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }// UnionSubQuery
 
 
-    private static final class UnionRowSubQuery<C> extends UnionSubQuery<C, RowSubQuery> implements RowSubQuery {
-
-        private UnionRowSubQuery(RowSubQuery left, UnionType unionType, RowSubQuery right) {
-            super(left, unionType, right);
-        }
-
-
-    }//UnionRowSubQuery
-
-
-    private static final class UnionColumnSubQuery<C> extends UnionSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private UnionColumnSubQuery(ColumnSubQuery left, UnionType unionType, ColumnSubQuery right) {
-            super(left, unionType, right);
-        }
-
-    }//UnionColumnSubQuery
-
-
-    private static final class UnionScalarSubQuery<C> extends UnionSubQuery<C, ScalarQueryExpression>
+    private static final class UnionScalarSubQuery<C> extends UnionSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private UnionScalarSubQuery(ScalarQueryExpression left, UnionType unionType
-                , ScalarQueryExpression right) {
+        private UnionScalarSubQuery(ScalarExpression left, UnionType unionType
+                , ScalarExpression right) {
             super(left, unionType, right);
         }
+
 
         @Override
         public ParamMeta paramMeta() {

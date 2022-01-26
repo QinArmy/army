@@ -44,7 +44,7 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
         this.outerContext = null;
         this.aliasToTable = tableContext.aliasToTable;
         this.tableToSafeAlias = tableContext.tableToSafeAlias;
-        this.selectionList = _DqlUtils.flatSelectParts(((_Query) select).selectPartList());
+        this.selectionList = _DqlUtils.flatSelectParts(((_Query) select).selectItemList());
     }
 
     private SimpleSelectContext(TableContext tableContext, _SelectContext outerContext) {

@@ -134,12 +134,12 @@ public abstract class SQLs extends StandardFunctions {
     }
 
 
-    public static StandardQuery.StandardSelectSpec<Void, ScalarQueryExpression> scalarSubQuery() {
+    public static StandardQuery.StandardSelectSpec<Void, ScalarExpression> scalarSubQuery() {
         return StandardSimpleQuery.scalarSubQuery(null);
     }
 
 
-    public static <C> StandardQuery.StandardSelectSpec<C, ScalarQueryExpression> scalarSubQuery(C criteria) {
+    public static <C> StandardQuery.StandardSelectSpec<C, ScalarExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.scalarSubQuery(criteria);
     }
@@ -470,8 +470,8 @@ public abstract class SQLs extends StandardFunctions {
     /**
      * @return a group that no {@link ParentTableMeta#id()} column
      */
-    public static <T extends IDomain> SelectionGroup parentGroup(ParentTableMeta<T> parent, String alias) {
-        return SelectionGroups.parentGroup(parent, alias);
+    public static <T extends IDomain> SelectionGroup groupWithoutId(TableMeta<T> table, String alias) {
+        return SelectionGroups.groupWithoutId(table, alias);
     }
 
     public static <T extends IDomain> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias

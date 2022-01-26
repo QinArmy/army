@@ -14,16 +14,12 @@ import java.util.function.Supplier;
  *     <ul>
  *         <li>{@link Select}</li>
  *         <li>{@link SubQuery}</li>
- *         <li>{@link RowSubQuery}</li>
- *         <li>{@link ColumnSubQuery}</li>
  *         <li>{@link ScalarSubQuery}</li>
  *     </ul>
  * </p>
  *
  * @see Select
  * @see SubQuery
- * @see RowSubQuery
- * @see ColumnSubQuery
  * @see ScalarSubQuery
  * @since 1.0
  */

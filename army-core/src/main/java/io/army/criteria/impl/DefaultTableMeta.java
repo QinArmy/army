@@ -227,7 +227,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
 
-    private final Class<T> javaType;
+    final Class<T> javaType;
 
     private final String tableName;
 

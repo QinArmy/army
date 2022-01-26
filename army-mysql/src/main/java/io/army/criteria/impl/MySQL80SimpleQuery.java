@@ -51,7 +51,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
 
-    static <C> With80Spec<C, ScalarQueryExpression> scalarSubQuery(@Nullable C criteria) {
+    static <C> With80Spec<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarQuery<>(criteria);
     }
 
@@ -61,7 +61,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (left instanceof Select) {
             with80Spec = new UnionAndSelect<>((Select) left, unionType);
         } else if (left instanceof ScalarSubQuery) {
-            with80Spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression) left, unionType);
+            with80Spec = new UnionAndScalarSubQuery<>((ScalarExpression) left, unionType);
         } else if (left instanceof SubQuery) {
             with80Spec = new UnionAndSubQuery<>((SubQuery) left, unionType);
         } else {
@@ -507,24 +507,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }//SimpleSubQuery
 
-    private static final class SimpleRowSubQuery<C> extends SimpleSubQuery<C, RowSubQuery> implements RowSubQuery {
 
-        private SimpleRowSubQuery(@Nullable C criteria) {
-            super(criteria);
-        }
-
-    }//SimpleRowSubQuery
-
-    private static final class SimpleColumnSubQuery<C> extends SimpleSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private SimpleColumnSubQuery(@Nullable C criteria) {
-            super(criteria);
-        }
-
-    }//SimpleColumnSubQuery
-
-    private static final class SimpleScalarQuery<C> extends SimpleSubQuery<C, ScalarQueryExpression>
+    private static final class SimpleScalarQuery<C> extends SimpleSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
         private SimpleScalarQuery(@Nullable C criteria) {
@@ -533,7 +517,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         @Override
         public ParamMeta paramMeta() {
-            return ((Selection) this.selectPartList().get(0)).paramMeta();
+            return ((Selection) this.selectItemList().get(0)).paramMeta();
         }
 
     }//SimpleScalarQuery
@@ -571,32 +555,17 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }//UnionAndSubQuery
 
-    private static final class UnionAndRowSubQuery<C> extends UnionAndSubQuery<C, RowSubQuery> implements RowSubQuery {
 
-        private UnionAndRowSubQuery(RowSubQuery left, UnionType unionType) {
-            super(left, unionType);
-        }
-    }//UnionAndRowSubQuery
-
-    private static final class UnionAndColumnSubQuery<C> extends UnionAndSubQuery<C, ColumnSubQuery>
-            implements ColumnSubQuery {
-
-        private UnionAndColumnSubQuery(ColumnSubQuery left, UnionType unionType) {
-            super(left, unionType);
-        }
-
-    }//UnionAndColumnSubQuery
-
-    private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarQueryExpression>
+    private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private UnionAndScalarSubQuery(ScalarQueryExpression left, UnionType unionType) {
+        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType) {
             super(left, unionType);
         }
 
         @Override
         public ParamMeta paramMeta() {
-            return ((Selection) this.selectPartList().get(0)).paramMeta();
+            return ((Selection) this.selectItemList().get(0)).paramMeta();
         }
 
     }//UnionAndScalarSubQuery

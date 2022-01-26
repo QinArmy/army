@@ -6,10 +6,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 abstract class CriteriaUtils {
 
@@ -23,30 +20,20 @@ abstract class CriteriaUtils {
      *
      * @return a unmodifiable map
      */
-    static Map<String, Selection> createSelectionMap(List<SelectItem> selectItemList) {
-//
-//        Map<String, Selection> selectionMap = new HashMap<>();
-//        for (SelectPart selectPart : selectPartList) {
-//
-//            if (selectPart instanceof Selection) {
-//                Selection selection = (Selection) selectPart;
-//                if (selectionMap.putIfAbsent(selection.alias(), selection) != null) {
-//                    throw new CriteriaException(ErrorCode.SELECTION_DUPLICATION, "selection[%s] duplication"
-//                            , selection);
-//                }
-//            } else if (selectPart instanceof SelectionGroup) {
-//                SelectionGroup group = (SelectionGroup) selectPart;
-//                String tableAlias = group.tableAlias();
-//                for (Selection selection : group.selectionList()) {
-//                    if (selectionMap.putIfAbsent(tableAlias, selection) != null) {
-//                        throw new CriteriaException(ErrorCode.SELECTION_DUPLICATION, "selection[%s] duplication"
-//                                , selection);
-//                    }
-//                }
-//            }
-//
-//        }
-        return Collections.emptyMap();
+    static Map<String, Selection> createSelectionMap(List<? extends SelectItem> selectItemList) {
+
+        final Map<String, Selection> selectionMap = new HashMap<>();
+        for (SelectItem item : selectItemList) {
+
+            if (item instanceof Selection) {
+                selectionMap.put(((Selection) item).alias(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
+            } else if (item instanceof SelectionGroup) {
+                for (Selection selection : ((SelectionGroup) item).selectionList()) {
+                    selectionMap.put(selection.alias(), selection); // if alias duplication then override.Be consistent with  statement executor.
+                }
+            }
+        }
+        return Collections.unmodifiableMap(selectionMap);
     }
 
 

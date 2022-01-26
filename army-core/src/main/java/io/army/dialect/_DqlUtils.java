@@ -18,7 +18,7 @@ abstract class _DqlUtils extends _DialectUtils {
             } else if (selectItem instanceof SelectionGroup) {
                 selectionList.addAll(((SelectionGroup) selectItem).selectionList());
             } else {
-                throw _Exceptions.unknownSelectPart(selectItem);
+                throw _Exceptions.unknownSelectItem(selectItem);
             }
         }
         return selectionList;

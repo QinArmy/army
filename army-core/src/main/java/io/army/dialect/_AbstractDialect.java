@@ -714,7 +714,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SetLeftItem targetPart = targetPartList.get(i);
             final SetRightItem valuePart = valuePartList.get(i);
             if (targetPart instanceof Row) {
-                if (!(valuePart instanceof RowSubQuery)) {
+                if (!(valuePart instanceof SubQuery)) {
                     throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
                 }
                 this.appendRowTarget(clause, (Row) targetPart, conditionFields, context);
@@ -850,19 +850,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final FieldMeta<?, ?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
-        final boolean supportTableAlias = dialect.setClauseTableAlias();
-        sqlBuilder.append(Constant.SPACE_COMMA)
-                .append(Constant.SPACE);
-
-        if (supportTableAlias) {
-            sqlBuilder.append(safeTableAlias)
-                    .append(Constant.POINT);
-        }
-        sqlBuilder.append(dialect.safeColumnName(updateTime.columnName()))
-                .append(Constant.SPACE_EQUAL);
-
         final Class<?> javaType = updateTime.javaType();
-        sqlBuilder.append(Constant.SPACE);
         final Temporal updateTimeValue;
         if (javaType == LocalDateTime.class) {
             updateTimeValue = LocalDateTime.now();
@@ -874,27 +862,27 @@ public abstract class _AbstractDialect implements _Dialect {
             String m = String.format("%s don't support java type[%s]", updateTime, javaType);
             throw new MetaException(m);
         }
-        if (context.supportOptimizingParam()) {
-            sqlBuilder.append(Constant.SPACE)
-                    .append(this.literal(updateTime, updateTimeValue));
-        } else {
-            context.appendParam(ParamValue.build(updateTime, updateTimeValue));
+        final boolean supportTableAlias = dialect.setClauseTableAlias();
+        sqlBuilder.append(Constant.SPACE_COMMA_SPACE);
+        if (supportTableAlias) {
+            sqlBuilder.append(safeTableAlias)
+                    .append(Constant.POINT);
         }
+        sqlBuilder.append(dialect.safeColumnName(updateTime.columnName()))
+                .append(Constant.SPACE_EQUAL);
+
+        context.appendParam(ParamValue.build(updateTime.mappingType(), updateTimeValue));
 
         if (table.containField(_MetaBridge.VERSION)) {
-            final FieldMeta<?, ?> version = table.getField(_MetaBridge.VERSION);
-            final String versionColumnName = dialect.quoteIfNeed(version.columnName());
-            sqlBuilder.append(Constant.SPACE_COMMA)
-                    .append(Constant.SPACE);
-
+            sqlBuilder.append(Constant.SPACE_COMMA_SPACE);
             if (supportTableAlias) {
                 sqlBuilder.append(safeTableAlias)
                         .append(Constant.POINT);
             }
-
+            final FieldMeta<?, ?> version = table.getField(_MetaBridge.VERSION);
+            final String versionColumnName = dialect.quoteIfNeed(version.columnName());
             sqlBuilder.append(versionColumnName)
-                    .append(Constant.SPACE_EQUAL)
-                    .append(Constant.SPACE)
+                    .append(Constant.SPACE_EQUAL_SPACE)
                     .append(safeTableAlias)
                     .append(Constant.POINT)
                     .append(versionColumnName)
@@ -942,7 +930,7 @@ public abstract class _AbstractDialect implements _Dialect {
             } else if (selectItem instanceof SelectionGroup) {
                 ((_SelfDescribed) selectItem).appendSql(context);
             } else {
-                throw _Exceptions.unknownSelectPart(selectItem);
+                throw _Exceptions.unknownSelectItem(selectItem);
             }
 
         }
@@ -1104,7 +1092,7 @@ public abstract class _AbstractDialect implements _Dialect {
         //1. select clause
         this.standardSelectClause(query.modifierList(), context);
         //2. select list clause
-        this.selectListClause(query.selectPartList(), context);
+        this.selectListClause(query.selectItemList(), context);
         //3. from clause
         final List<? extends _TableBlock> blockList = query.tableBlockList();
         this.fromClause(blockList, context);

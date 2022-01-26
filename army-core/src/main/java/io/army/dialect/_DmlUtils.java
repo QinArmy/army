@@ -222,7 +222,7 @@ public abstract class _DmlUtils {
      */
     static List<Selection> selectionList(SubQuery subQuery) {
         List<Selection> selectionList = new ArrayList<>();
-        for (SelectItem selectItem : subQuery.selectPartList()) {
+        for (SelectItem selectItem : subQuery.selectItemList()) {
             if (selectItem instanceof SelectionGroup) {
                 selectionList.addAll(((SelectionGroup) selectItem).selectionList());
             } else {

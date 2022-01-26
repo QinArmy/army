@@ -77,10 +77,10 @@ public class StandardCriteriaUnitTests {
         update = SQLs.singleUpdate()
                 .update(ChinaProvince_.T, "p")
                 .set(ChinaProvince_.name, "武侠江湖")
-                .setPlus(ChinaProvince_.regionGdp, addGdp)
+                .setPlusLiteral(ChinaProvince_.regionGdp, addGdp)
                 .set(ChinaProvince_.provincialCapital, "光明顶")
                 .set(ChinaProvince_.governor, "张无忌")
-                .where(ChinaProvince_.id.equal(1))
+                .where(ChinaProvince_.id.equalLiteral(1))
                 .and(ChinaProvince_.name.equal("江湖"))
                 .and(ChinaProvince_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
                 .and(ChinaProvince_.governor.equal("阳顶天").or(list -> {
@@ -150,7 +150,7 @@ public class StandardCriteriaUnitTests {
 
         for (Dialect mode : Dialect.values()) {
             SimpleStmt stmt;
-            stmt = (SimpleStmt) delete.mockAsStmt(mode);
+            stmt = (SimpleStmt) delete.mockAsStmt(mode, Visible.ONLY_VISIBLE);
             assertTrue(stmt.hasOptimistic(), "optimistic lock");
             LOG.debug("deleteParent\n{}\n{}", mode.name(), stmt.sql());
         }
@@ -170,7 +170,7 @@ public class StandardCriteriaUnitTests {
 
         for (Dialect mode : Dialect.values()) {
             SimpleStmt stmt;
-            stmt = (SimpleStmt) delete.mockAsStmt(mode);
+            stmt = (SimpleStmt) delete.mockAsStmt(mode, Visible.ONLY_VISIBLE);
             assertTrue(stmt.hasOptimistic(), "optimistic lock");
             LOG.debug("deleteChild\n{}\n{}", mode.name(), stmt.sql());
         }
@@ -191,7 +191,7 @@ public class StandardCriteriaUnitTests {
 
         for (Dialect mode : Dialect.values()) {
             BatchStmt stmt;
-            stmt = (BatchStmt) delete.mockAsStmt(mode);
+            stmt = (BatchStmt) delete.mockAsStmt(mode, Visible.ONLY_VISIBLE);
             assertTrue(stmt.hasOptimistic(), "optimistic lock");
             LOG.debug("batchDeleteChild\n{}\n{}", mode.name(), stmt.sql());
         }

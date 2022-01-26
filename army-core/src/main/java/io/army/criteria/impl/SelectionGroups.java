@@ -8,7 +8,6 @@ import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.util.CollectionUtils;
-import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -28,7 +27,7 @@ abstract class SelectionGroups {
         return new TableFieldGroup<>(table, tableAlias);
     }
 
-    static <T extends IDomain> SelectionGroup parentGroup(ParentTableMeta<T> table, String tableAlias) {
+    static <T extends IDomain> SelectionGroup groupWithoutId(TableMeta<T> table, String tableAlias) {
         return new TableFieldGroup<>(tableAlias, table);
     }
 
@@ -65,10 +64,10 @@ abstract class SelectionGroups {
             this.fieldList = Collections.unmodifiableList(new ArrayList<>(table.fields()));
         }
 
-        private TableFieldGroup(String tableAlias, ParentTableMeta<T> parent) {
-            Collection<FieldMeta<T, ?>> parentFields = parent.fields();
-            final List<FieldMeta<T, ?>> fieldList = new ArrayList<>(parentFields.size());
-            for (FieldMeta<T, ?> field : parentFields) {
+        private TableFieldGroup(String tableAlias, TableMeta<T> parent) {
+            Collection<FieldMeta<T, ?>> fields = parent.fields();
+            final List<FieldMeta<T, ?>> fieldList = new ArrayList<>(fields.size());
+            for (FieldMeta<T, ?> field : fields) {
                 if (field instanceof PrimaryFieldMeta) {
                     continue;
                 }
@@ -84,10 +83,10 @@ abstract class SelectionGroups {
             return this.fieldList;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder = context.sqlBuilder();
-            final _Dialect dialect = context.dialect();
             final String tableAlias = this.tableAlias;
 
             final List<FieldMeta<T, ?>> fieldList = this.fieldList;
@@ -101,7 +100,7 @@ abstract class SelectionGroups {
                 context.appendField(tableAlias, field);
 
                 builder.append(Constant.SPACE_AS_SPACE)
-                        .append(dialect.quoteIfNeed(field.fieldName()));
+                        .append(((DefaultFieldMeta<T, ?>) field).fieldName);
             }
 
         }
@@ -165,10 +164,9 @@ abstract class SelectionGroups {
             return this.fieldList;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void appendSql(final _SqlContext context) {
-
-            final _Dialect dialect = context.dialect();
 
             final StringBuilder builder = context.sqlBuilder();
 
@@ -191,7 +189,7 @@ abstract class SelectionGroups {
                     context.appendField(childAlias, field);
                 }
                 builder.append(Constant.SPACE_AS_SPACE)
-                        .append(dialect.quoteIfNeed(field.fieldName()));
+                        .append(((DefaultFieldMeta<T, ?>) field).fieldName);
 
             }
 
@@ -254,13 +252,13 @@ abstract class SelectionGroups {
 
         List<Selection> createSelectionList(SubQuery subQuery) {
             final List<Selection> selectionList = new ArrayList<>();
-            for (SelectItem selectItem : subQuery.selectPartList()) {
+            for (SelectItem selectItem : subQuery.selectItemList()) {
                 if (selectItem instanceof Selection) {
                     selectionList.add((Selection) selectItem);
                 } else if (selectItem instanceof SelectionGroup) {
                     selectionList.addAll(((SelectionGroup) selectItem).selectionList());
                 } else {
-                    throw _Exceptions.unknownSelectPart(selectItem);
+                    throw _Exceptions.unknownSelectItem(selectItem);
                 }
             }
             return Collections.unmodifiableList(selectionList);
@@ -273,8 +271,9 @@ abstract class SelectionGroups {
 
         @Override
         public final List<Selection> selectionList() {
-            _Assert.state(this.selectionList != null, "selectPartList is null,SubQuerySelectGroup state error.");
-            return this.selectionList;
+            final List<Selection> selectionList = this.selectionList;
+            assert selectionList != null;
+            return selectionList;
         }
 
         @Override
@@ -288,19 +287,20 @@ abstract class SelectionGroups {
 
             final _Dialect dialect = context.dialect();
             final String safeAlias = dialect.quoteIfNeed(this.subQueryAlias);
-            int index = 0;
-            for (Selection selection : selectionList) {
-                if (index > 0) {
-                    builder.append(Constant.SPACE)
-                            .append(Constant.COMMA);
+            final int size = selectionList.size();
+            Selection selection;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append(Constant.SPACE_COMMA);
                 }
+                selection = selectionList.get(i);
 
                 builder.append(Constant.SPACE)
                         .append(safeAlias)
                         .append(Constant.POINT)
                         .append(dialect.quoteIfNeed(selection.alias()));
-                index++;
             }
+
 
         }
 
@@ -322,7 +322,7 @@ abstract class SelectionGroups {
         List<Selection> createSelectionList(SubQuery subQuery) {
             final Set<String> filedNameSet = new HashSet<>(this.derivedFieldNameList);
             final List<Selection> selectionList = new ArrayList<>(filedNameSet.size());
-            for (SelectItem selectItem : subQuery.selectPartList()) {
+            for (SelectItem selectItem : subQuery.selectItemList()) {
 
                 if (selectItem instanceof Selection) {
                     if (filedNameSet.contains(((Selection) selectItem).alias())) {
@@ -335,24 +335,31 @@ abstract class SelectionGroups {
                         }
                     }
                 } else {
-                    throw _Exceptions.unknownSelectPart(selectItem);
+                    throw _Exceptions.unknownSelectItem(selectItem);
                 }
             }
-            if (selectionList.size() != this.derivedFieldNameList.size()) {
-                Set<String> actualNameSet = new HashSet<>();
+            final int fieldSize, fieldNameSize;
+            fieldSize = selectionList.size();
+            fieldNameSize = filedNameSet.size();
+
+            if (fieldSize < fieldNameSize) {
+                final Set<String> actualNameSet = new HashSet<>();
                 for (Selection selection : selectionList) {
-                    actualNameSet.add(selection.alias());
+                    actualNameSet.
+                            add(selection.alias());
                 }
+                final String m;
                 filedNameSet.removeAll(actualNameSet);
-                String m = String.format("Not found derived fields[%s] in Derived table[%s]"
+                m = String.format("Not found derived fields[%s] in Derived table[%s]"
                         , filedNameSet, this.subQueryAlias);
                 throw new CriteriaException(m);
+
             }
             return Collections.unmodifiableList(selectionList);
         }
 
 
-    }
+    }//SubQueryListSelectionGroup
 
 
 }

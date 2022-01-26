@@ -3,19 +3,19 @@ package io.army.criteria;
 
 public interface ExpressionRow extends Row {
 
-    IPredicate eq(RowSubQuery rowSubQuery);
+    IPredicate eq(SubQuery rowSubQuery);
 
-    IPredicate notEq(RowSubQuery rowSubQuery);
+    IPredicate notEq(SubQuery rowSubQuery);
 
-    IPredicate lt(RowSubQuery rowSubQuery);
+    IPredicate lt(SubQuery rowSubQuery);
 
-    IPredicate le(RowSubQuery rowSubQuery);
+    IPredicate le(SubQuery rowSubQuery);
 
-    IPredicate gt(RowSubQuery rowSubQuery);
+    IPredicate gt(SubQuery rowSubQuery);
 
-    IPredicate ge(RowSubQuery rowSubQuery);
+    IPredicate ge(SubQuery rowSubQuery);
 
-    IPredicate in(RowSubQuery rowSubQuery);
+    IPredicate in(SubQuery rowSubQuery);
 
-    IPredicate notIn(RowSubQuery rowSubQuery);
+    IPredicate notIn(SubQuery rowSubQuery);
 }

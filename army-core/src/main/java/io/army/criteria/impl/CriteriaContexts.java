@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Query;
-import io.army.criteria.impl.inner._Selection;
-import io.army.criteria.impl.inner._TableBlock;
-import io.army.criteria.impl.inner._UnionQuery;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
@@ -51,7 +48,7 @@ abstract class CriteriaContexts {
         final AbstractContext leftContext = (AbstractContext) ((CriteriaContextSpec) leftQuery).getCriteriaContext();
         final CriteriaContext criteriaContext;
         if (leftQuery instanceof SimpleQuery) {
-            criteriaContext = new UnionQueryContext(leftContext, ((_Query) leftQuery).selectPartList());
+            criteriaContext = new UnionQueryContext(leftContext, ((_Query) leftQuery).selectItemList());
         } else if (leftQuery instanceof _UnionQuery) {
             criteriaContext = leftContext;
         } else {
@@ -63,6 +60,32 @@ abstract class CriteriaContexts {
     static CriteriaContext unionAndContext(final Query leftQuery) {
         final AbstractContext leftContext = (AbstractContext) ((CriteriaContextSpec) leftQuery).getCriteriaContext();
         return new SimpleQueryContext(leftContext);
+    }
+
+    /**
+     * @see OperationExpression#as(String)
+     */
+    static Selection createDerivedSelection(final DerivedField field, final String alias) {
+        final _Selection selection;
+        if (field instanceof RefSelection) {
+            final RefSelection ref = (RefSelection) field;
+            if (ref.fieldName.equals(alias)) {
+                selection = ref;
+            } else {
+                selection = new DerivedAliasSelection(field, alias);
+            }
+        } else if (field instanceof DerivedSelection) {
+            final DerivedSelection ref = (DerivedSelection) field;
+            if (ref.selection.alias().equals(alias)) {
+                selection = ref;
+            } else {
+                selection = new DerivedAliasSelection(field, alias);
+            }
+        } else {
+            String m = String.format("unknown %s type[%s]", DerivedField.class.getName(), field.getClass().getName());
+            throw new IllegalArgumentException(m);
+        }
+        return selection;
     }
 
 
@@ -139,9 +162,9 @@ abstract class CriteriaContexts {
 
         private Map<String, Map<FieldMeta<?, ?>, QualifiedField<?, ?>>> aliasToField;
 
-        Map<String, Map<String, RefSelection>> aliasToDerivedField;
+        Map<String, Map<String, RefSelection>> aliasToRefSelection;
 
-        private Map<String, Map<String, DerivedSelection>> aliasToSelection;
+        Map<String, Map<String, DerivedField>> aliasToSelection;
 
 
         private JoinableContext(@Nullable Object criteria) {
@@ -265,19 +288,19 @@ abstract class CriteriaContexts {
 
 
         @Nullable
-        private DerivedField getField(final String subQueryAlias, final String fieldName, final boolean create) {
-            Map<String, Map<String, RefSelection>> aliasToDerivedField = this.aliasToDerivedField;
-            if (aliasToDerivedField == null) {
-                aliasToDerivedField = new HashMap<>();
-                this.aliasToDerivedField = aliasToDerivedField;
+        private RefSelection getField(final String subQueryAlias, final String fieldName, final boolean create) {
+            Map<String, Map<String, RefSelection>> aliasToRefSelection = this.aliasToRefSelection;
+            if (aliasToRefSelection == null) {
+                aliasToRefSelection = new HashMap<>();
+                this.aliasToRefSelection = aliasToRefSelection;
             }
             final Map<String, RefSelection> fieldMap;
-            final DerivedField field;
+            final RefSelection field;
             if (create) {
-                fieldMap = aliasToDerivedField.computeIfAbsent(subQueryAlias, k -> new HashMap<>());
+                fieldMap = aliasToRefSelection.computeIfAbsent(subQueryAlias, k -> new HashMap<>());
                 field = fieldMap.computeIfAbsent(fieldName, k -> new RefSelection(subQueryAlias, fieldName));
             } else {
-                fieldMap = aliasToDerivedField.get(subQueryAlias);
+                fieldMap = aliasToRefSelection.get(subQueryAlias);
                 if (fieldMap == null) {
                     field = null;
                 } else {
@@ -287,17 +310,17 @@ abstract class CriteriaContexts {
             return field;
         }
 
-        private DerivedSelection getSelection(final SubQuery subQuery, final String subQueryAlias
+        private DerivedField getSelection(final SubQuery subQuery, final String subQueryAlias
                 , final String fieldName) {
-            Map<String, Map<String, DerivedSelection>> aliasToSelection = this.aliasToSelection;
+            Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToSelection;
             if (aliasToSelection == null) {
                 aliasToSelection = new HashMap<>();
                 this.aliasToSelection = aliasToSelection;
             }
-            final Map<String, DerivedSelection> fieldMap;
+            final Map<String, DerivedField> fieldMap;
             fieldMap = aliasToSelection.computeIfAbsent(subQueryAlias, k -> new HashMap<>());
 
-            final DerivedSelection field;
+            final DerivedField field;
             field = fieldMap.computeIfAbsent(fieldName
                     , k -> {
                         final Selection selection;
@@ -435,21 +458,16 @@ abstract class CriteriaContexts {
             final SubQuery subQuery = (SubQuery) tableItem;
             final String queryAlias = block.alias();
 
-            final Map<String, Map<String, RefSelection>> aliasToDerivedField = this.aliasToDerivedField;
+            final Map<String, Map<String, RefSelection>> aliasToDerivedField = this.aliasToRefSelection;
             if (aliasToDerivedField != null) {
                 final Map<String, RefSelection> fieldMap;
-                fieldMap = aliasToDerivedField.get(queryAlias);
+                fieldMap = aliasToDerivedField.remove(queryAlias);
                 if (fieldMap != null) {
-                    for (RefSelection field : fieldMap.values()) {
-                        Selection selection;
-                        selection = subQuery.selection(field.fieldName);
-                        if (selection == null) {
-                            throw invalidRef(queryAlias, field.fieldName);
-                        }
-                        field.paramMeta.actual = selection.paramMeta();
-                    }
+                    finishRefSelections(subQuery, queryAlias, fieldMap);
                 }
-
+                if (aliasToDerivedField.size() == 0) {
+                    this.aliasToRefSelection = null;
+                }
             }
 
             final List<DerivedGroup> groupList = this.groupList;
@@ -468,17 +486,43 @@ abstract class CriteriaContexts {
 
         }
 
+        /**
+         * @see #doOnAddBlock(_TableBlock)
+         */
+        private void finishRefSelections(SubQuery subQuery, String queryAlias, Map<String, RefSelection> fieldMap) {
+            Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToSelection;
+            if (aliasToSelection == null) {
+                aliasToSelection = new HashMap<>();
+                this.aliasToSelection = aliasToSelection;
+            }
+            final Map<String, DerivedField> derivedFieldMap;
+            derivedFieldMap = aliasToSelection.computeIfAbsent(queryAlias, k -> new HashMap<>());
+            for (RefSelection field : fieldMap.values()) {
+                Selection selection;
+                selection = subQuery.selection(field.fieldName);
+                if (selection == null) {
+                    throw invalidRef(queryAlias, field.fieldName);
+                }
+                field.paramMeta.actual = selection.paramMeta();
+                derivedFieldMap.putIfAbsent(field.fieldName, field);
+            }
+            fieldMap.clear();
+        }
+
         @Override
         void onClear() {
             final List<DerivedGroup> groupList = this.groupList;
-            if (CollectionUtils.isEmpty(groupList)) {
-                return;
+            if (!CollectionUtils.isEmpty(groupList)) {
+                for (DerivedGroup group : groupList) {
+                    String m = String.format("DerivedGroup[%s] is invalid.", group.tableAlias());
+                    throw new CriteriaException(m);
+                }
             }
-            for (DerivedGroup group : groupList) {
-                String m = String.format("DerivedGroup[%s] is invalid.", group.tableAlias());
+            final Map<String, Map<String, RefSelection>> aliasToRefSelection = this.aliasToRefSelection;
+            if (!CollectionUtils.isEmpty(aliasToRefSelection)) {
+                String m = String.format("Derived tables[%s] is invalid.", aliasToRefSelection.keySet());
                 throw new CriteriaException(m);
             }
-
         }
 
     }//SimpleQueryContext
@@ -536,7 +580,7 @@ abstract class CriteriaContexts {
                     selection = (Selection) selectItem;
                     break;
                 } else if (!(selectItem instanceof SelectionGroup)) {
-                    throw _Exceptions.unknownSelectPart(selectItem);
+                    throw _Exceptions.unknownSelectItem(selectItem);
                 }
 
                 for (Selection s : ((SelectionGroup) selectItem).selectionList()) {
@@ -609,6 +653,26 @@ abstract class CriteriaContexts {
                     .append(Constant.POINT)
                     .append(dialect.quoteIfNeed(this.selection.alias()));
 
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.tableName, this.selection);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof DerivedSelection) {
+                final DerivedSelection selection = (DerivedSelection) obj;
+                match = selection.tableName.equals(this.tableName)
+                        && selection.selection.equals(this.selection);
+            } else {
+                match = false;
+            }
+            return match;
         }
 
         @Override
@@ -723,6 +787,64 @@ abstract class CriteriaContexts {
         }
 
     }// SelectionExpression
+
+
+    /**
+     * @see #createDerivedSelection(DerivedField, String)
+     */
+    private static final class DerivedAliasSelection implements _Selection {
+
+        private final DerivedField field;
+
+        private final String alias;
+
+        private DerivedAliasSelection(DerivedField field, String alias) {
+            this.field = field;
+            this.alias = alias;
+        }
+
+        @Override
+        public String alias() {
+            return this.alias;
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            return this.field.paramMeta();
+        }
+
+        @Override
+        public void appendSelection(final _SqlContext context) {
+            ((_SelfDescribed) this.field).appendSql(context);
+            context.sqlBuilder()
+                    .append(Constant.SPACE_AS_SPACE)
+                    .append(context.dialect().quoteIfNeed(this.alias));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.field, this.alias);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof DerivedAliasSelection) {
+                final DerivedAliasSelection selection = (DerivedAliasSelection) obj;
+                match = selection.field.equals(this.field) && selection.alias.equals(this.alias);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s AS %s", this.field, this.alias);
+        }
+    }//DerivedAliasSelection
 
 
 }

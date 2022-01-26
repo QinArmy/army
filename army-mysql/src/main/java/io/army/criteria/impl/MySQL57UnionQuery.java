@@ -30,7 +30,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
         if (query instanceof Select) {
             spec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
-            spec = new BracketScalarSubQuery<>((ScalarQueryExpression) query);
+            spec = new BracketScalarSubQuery<>((ScalarExpression) query);
         } else if (query instanceof SubQuery) {
             spec = new BracketSubQuery<>((SubQuery) query);
         } else {
@@ -46,7 +46,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
         if (left instanceof Select) {
             spec = new UnionSelect<>((Select) left, unionType, (Select) right);
         } else if (left instanceof ScalarSubQuery) {
-            spec = new UnionScalarSubQuery<>((ScalarQueryExpression) left, unionType, (ScalarQueryExpression) right);
+            spec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType, (ScalarExpression) right);
         } else if (left instanceof SubQuery) {
             spec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
         } else {
@@ -64,8 +64,8 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    public final List<? extends SelectItem> selectPartList() {
-        return ((_PartQuery) this.left).selectPartList();
+    public final List<? extends SelectItem> selectItemList() {
+        return ((_PartQuery) this.left).selectItemList();
     }
 
     @Override
@@ -158,10 +158,10 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }//
 
 
-    private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarQueryExpression>
+    private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private BracketScalarSubQuery(ScalarQueryExpression left) {
+        private BracketScalarSubQuery(ScalarExpression left) {
             super(left);
         }
 
@@ -230,10 +230,10 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }//UnionSubQuery
 
 
-    private static final class UnionScalarSubQuery<C> extends UnionSubQuery<C, ScalarQueryExpression>
+    private static final class UnionScalarSubQuery<C> extends UnionSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private UnionScalarSubQuery(ScalarQueryExpression left, UnionType unionType, ScalarQueryExpression right) {
+        private UnionScalarSubQuery(ScalarExpression left, UnionType unionType, ScalarExpression right) {
             super(left, unionType, right);
         }
 

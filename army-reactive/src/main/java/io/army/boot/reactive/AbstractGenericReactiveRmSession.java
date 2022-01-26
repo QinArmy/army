@@ -65,7 +65,7 @@ abstract class AbstractGenericReactiveRmSession<S extends DatabaseSession, F ext
 
     @Override
     public final <R> Flux<Optional<R>> selectOptional(Select select, Class<R> columnClass, Visible visible) {
-        List<? extends SelectItem> selectPartList = ((_Select) select).selectPartList();
+        List<? extends SelectItem> selectPartList = ((_Select) select).selectItemList();
         if (selectPartList.size() != 1 || !(selectPartList.get(0) instanceof Selection)) {
             return Flux.error(new IllegalArgumentException(
                     "select isn't single column query,please use select method."));

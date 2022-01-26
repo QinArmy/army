@@ -18,7 +18,7 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
     private boolean prepared;
 
     SingleDelete(CriteriaContext criteriaContext) {
-        super(criteriaContext.criteria());
+        super(criteriaContext);
         this.criteriaContext = criteriaContext;
     }
 

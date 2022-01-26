@@ -49,7 +49,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C, E> Select57Spec<C, ScalarQueryExpression> scalarSubQuery(@Nullable C criteria) {
+    static <C, E> Select57Spec<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(criteria);
     }
 
@@ -60,7 +60,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (left instanceof Select) {
             select57Spec = new UnionAndSelect<>((Select) left, unionType, criteria);
         } else if (left instanceof ScalarSubQuery) {
-            select57Spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression) left, unionType, criteria);
+            select57Spec = new UnionAndScalarSubQuery<>((ScalarExpression) left, unionType, criteria);
         } else if (left instanceof SubQuery) {
             select57Spec = new UnionAndSubQuery<>((SubQuery) left, unionType, criteria);
         } else {
@@ -275,7 +275,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }// SimpleSubQuery
 
 
-    private static final class SimpleScalarSubQuery<C> extends SimpleSubQuery<C, ScalarQueryExpression>
+    private static final class SimpleScalarSubQuery<C> extends SimpleSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
         private SimpleScalarSubQuery(@Nullable C criteria) {
@@ -284,7 +284,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         @Override
         public ParamMeta paramMeta() {
-            return ((Selection) this.selectPartList().get(0)).paramMeta();
+            return ((Selection) this.selectItemList().get(0)).paramMeta();
         }
 
     }// SimpleScalarSubQuery
@@ -322,16 +322,16 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }// UnionAndSubQuery
 
 
-    private static final class UnionAndScalarSubQuery<C> extends AbstractUnionAndQuery<C, ScalarQueryExpression>
+    private static final class UnionAndScalarSubQuery<C> extends AbstractUnionAndQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private UnionAndScalarSubQuery(ScalarQueryExpression left, UnionType unionType, @Nullable C criteria) {
+        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType, @Nullable C criteria) {
             super(left, unionType, criteria);
         }
 
         @Override
         public ParamMeta paramMeta() {
-            return ((Selection) this.selectPartList().get(0)).paramMeta();
+            return ((Selection) this.selectItemList().get(0)).paramMeta();
         }
 
 

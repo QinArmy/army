@@ -10,17 +10,29 @@ import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 
+import java.util.Objects;
+
 /**
  * @see DefaultFieldMeta
  * @see QualifiedFieldImpl
  */
 final class FieldSelectionImpl implements FieldSelection, _Selection {
 
+    static FieldSelection create(GenericField<?, ?> field, String alias) {
+        final FieldSelection selection;
+        if (field.fieldName().equals(alias)) {
+            selection = field;
+        } else {
+            selection = new FieldSelectionImpl(field, alias);
+        }
+        return selection;
+    }
+
     private final GenericField<?, ?> field;
 
     private final String alias;
 
-    FieldSelectionImpl(GenericField<?, ?> field, String alias) {
+    private FieldSelectionImpl(GenericField<?, ?> field, String alias) {
         this.field = field;
         this.alias = alias;
     }
@@ -54,6 +66,26 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
     @Override
     public String alias() {
         return this.alias;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.field, this.alias);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof FieldSelectionImpl) {
+            final FieldSelectionImpl selection = (FieldSelectionImpl) obj;
+            match = selection.field.equals(this.field) && selection.alias.equals(this.alias);
+        } else {
+            match = false;
+        }
+        return match;
     }
 
     @Override

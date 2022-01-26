@@ -129,25 +129,25 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
     }
 
 
-    private final TableMeta<T> table;
+    final DefaultTableMeta<T> table;
 
-    private final String fieldName;
+    final String fieldName;
 
-    private final Class<F> javaType;
+    final Class<F> javaType;
 
-    private final String columnName;
+    final String columnName;
 
     private final String comment;
 
     private final String defaultValue;
 
-    private final MappingType mappingType;
+    final MappingType mappingType;
 
-    private final boolean nullable;
+    final boolean nullable;
 
     private final boolean insertable;
 
-    private final UpdateMode updateMode;
+    final UpdateMode updateMode;
 
     private final int precision;
 
@@ -164,7 +164,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
         _Assert.isAssignable(field.getDeclaringClass(), table.javaType());
 
-        this.table = table;
+        this.table = (DefaultTableMeta<T>) table;
         this.fieldName = field.getName();
         this.javaType = (Class<F>) field.getType();
         try {
@@ -311,7 +311,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
             match = true;
         } else if (obj instanceof DefaultFieldMeta) {
             final DefaultFieldMeta<?, ?> o = (DefaultFieldMeta<?, ?>) obj;
-            match = this.table.javaType() == o.table.javaType()
+            match = this.table.javaType == o.table.javaType
                     && this.fieldName.equals(o.fieldName);
         } else {
             match = false;
@@ -321,7 +321,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
     @Override
     public final int hashCode() {
-        return Objects.hash(this.table.javaType(), this.fieldName);
+        return Objects.hash(this.table.javaType, this.fieldName);
     }
 
     @Override
@@ -335,7 +335,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
             builder.append(FieldMeta.class.getSimpleName());
         }
         return builder.append('[')
-                .append(this.table.javaType().getName())
+                .append(this.table.javaType.getName())
                 .append('.')
                 .append(this.fieldName)
                 .append(']')
@@ -348,7 +348,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
         context.sqlBuilder()
                 .append(Constant.SPACE_AS_SPACE)
-                .append(context.dialect().quoteIfNeed(this.fieldName));
+                .append(this.fieldName);
     }
 
     @Override

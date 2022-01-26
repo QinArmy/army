@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ExpressionRow;
-import io.army.criteria.RowSubQuery;
+import io.army.criteria.SubQuery;
 import io.army.dialect._SqlContext;
 
 final class RowPredicate extends OperationPredicate {
@@ -10,9 +10,9 @@ final class RowPredicate extends OperationPredicate {
 
     private final DualOperator operator;
 
-    private final RowSubQuery rowSubQuery;
+    private final SubQuery rowSubQuery;
 
-    RowPredicate(ExpressionRow row, DualOperator operator, RowSubQuery rowSubQuery) {
+    RowPredicate(ExpressionRow row, DualOperator operator, SubQuery rowSubQuery) {
         this.row = row;
         this.operator = operator;
         this.rowSubQuery = rowSubQuery;

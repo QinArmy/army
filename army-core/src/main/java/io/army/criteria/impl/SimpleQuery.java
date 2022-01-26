@@ -630,7 +630,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     @Override
-    public final List<? extends SelectItem> selectPartList() {
+    public final List<? extends SelectItem> selectItemList() {
         final List<? extends SelectItem> selectItemList = this.selectPartList;
         assert selectItemList != null;
         return selectItemList;
@@ -685,9 +685,9 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
         if (CollectionUtils.isEmpty(selectPartList)) {
             throw _Exceptions.selectListIsEmpty();
         }
-        if (this instanceof ColumnSubQuery
+        if (this instanceof ScalarSubQuery
                 && (selectPartList.size() != 1 || !(selectPartList.get(0) instanceof Selection))) {
-            throw _Exceptions.columnSubQuerySelectionError();
+            throw _Exceptions.ScalarSubQuerySelectionError();
         }
 
         // group by and having

@@ -10,6 +10,7 @@ import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -49,7 +50,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C, E> StandardSelectSpec<C, ScalarQueryExpression> scalarSubQuery(@Nullable C criteria) {
+    static <C, E> StandardSelectSpec<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(criteria);
     }
 
@@ -59,7 +60,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         if (query instanceof Select) {
             spec = new UnionAndSelect<>((Select) query, unionType);
         } else if (query instanceof ScalarSubQuery) {
-            spec = new UnionAndScalarSubQuery<>((ScalarQueryExpression) query, unionType);
+            spec = new UnionAndScalarSubQuery<>((ScalarExpression) query, unionType);
         } else if (query instanceof SubQuery) {
             spec = new UnionAndSubQuery<>((SubQuery) query, unionType);
         } else {
@@ -159,6 +160,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         }
         return unionSpec;
     }
+
 
     @Override
     final StandardUnionSpec<C, Q> createUnionQuery(final Q left, final UnionType unionType, final Q right) {
@@ -299,14 +301,21 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private static class SimpleSubQuery<C, Q extends SubQuery> extends StandardSimpleQuery<C, Q>
             implements SubQuery, _SelfDescribed {
 
+        private Map<String, Selection> selectionMap;
+
         private SimpleSubQuery(@Nullable C criteria) {
             super(criteria);
         }
 
+
         @Override
         public final Selection selection(String derivedFieldName) {
-            //TODO
-            return SubQuery.super.selection(derivedFieldName);
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
+                this.selectionMap = selectionMap;
+            }
+            return selectionMap.get(derivedFieldName);
         }
 
         @Override
@@ -320,7 +329,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     /**
      * @see #scalarSubQuery(Object)
      */
-    private static final class SimpleScalarSubQuery<C> extends SimpleSubQuery<C, ScalarQueryExpression>
+    private static final class SimpleScalarSubQuery<C> extends SimpleSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
         private SimpleScalarSubQuery(@Nullable C criteria) {
@@ -328,8 +337,13 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         }
 
         @Override
+        public Selection selection() {
+            return (Selection) this.selectItemList().get(0);
+        }
+
+        @Override
         public ParamMeta paramMeta() {
-            return ((Selection) this.selectPartList().get(0)).paramMeta();
+            return this.selection().paramMeta();
         }
 
 
@@ -365,8 +379,20 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private static class UnionAndSubQuery<C, Q extends SubQuery> extends AbstractUnionAndQuery<C, Q>
             implements SubQuery, _SelfDescribed {
 
+        private Map<String, Selection> selectionMap;
+
         private UnionAndSubQuery(Q left, UnionType unionType) {
             super(left, unionType);
+        }
+
+        @Override
+        public final Selection selection(String derivedFieldName) {
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
+                this.selectionMap = selectionMap;
+            }
+            return selectionMap.get(derivedFieldName);
         }
 
         @Override
@@ -377,16 +403,21 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }// UnionAndSubQuery
 
 
-    private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarQueryExpression>
+    private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private UnionAndScalarSubQuery(ScalarQueryExpression left, UnionType unionType) {
+        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType) {
             super(left, unionType);
         }
 
         @Override
+        public Selection selection() {
+            return (Selection) this.selectItemList().get(0);
+        }
+
+        @Override
         public ParamMeta paramMeta() {
-            return ((Selection) this.selectPartList().get(0)).paramMeta();
+            return this.selection().paramMeta();
         }
 
 

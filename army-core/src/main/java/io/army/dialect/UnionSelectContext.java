@@ -29,13 +29,13 @@ final class UnionSelectContext extends _BaseSqlContext implements _UnionQueryCon
     private UnionSelectContext(Select select, _Dialect dialect, Visible visible) {
         super(dialect, visible);
         this.outerContext = null;
-        this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectPartList());
+        this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectItemList());
     }
 
 
     private UnionSelectContext(Select select, _SelectContext outerContext) {
         super((_BaseSqlContext) outerContext);
-        this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectPartList());
+        this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectItemList());
         this.outerContext = outerContext;
     }
 

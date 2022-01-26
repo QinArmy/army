@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.ExpressionRow;
 import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
-import io.army.criteria.RowSubQuery;
+import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._SqlContext;
 
@@ -60,42 +60,42 @@ final class ExpressionRowImpl implements ExpressionRow, _SelfDescribed {
     }
 
     @Override
-    public IPredicate eq(RowSubQuery rowSubQuery) {
+    public IPredicate eq(SubQuery rowSubQuery) {
         return new RowPredicate(this, DualOperator.EQ, rowSubQuery);
     }
 
     @Override
-    public IPredicate notEq(RowSubQuery rowSubQuery) {
+    public IPredicate notEq(SubQuery rowSubQuery) {
         return new RowPredicate(this, DualOperator.NOT_EQ, rowSubQuery);
     }
 
     @Override
-    public IPredicate lt(RowSubQuery rowSubQuery) {
+    public IPredicate lt(SubQuery rowSubQuery) {
         return new RowPredicate(this, DualOperator.LT, rowSubQuery);
     }
 
     @Override
-    public IPredicate le(RowSubQuery rowSubQuery) {
+    public IPredicate le(SubQuery rowSubQuery) {
         return new RowPredicate(this, DualOperator.LE, rowSubQuery);
     }
 
     @Override
-    public IPredicate gt(RowSubQuery rowSubQuery) {
+    public IPredicate gt(SubQuery rowSubQuery) {
         return new RowPredicate(this, DualOperator.GT, rowSubQuery);
     }
 
     @Override
-    public IPredicate ge(RowSubQuery rowSubQuery) {
+    public IPredicate ge(SubQuery rowSubQuery) {
         return new RowPredicate(this, DualOperator.GE, rowSubQuery);
     }
 
     @Override
-    public IPredicate in(RowSubQuery rowSubQuery) {
+    public IPredicate in(SubQuery rowSubQuery) {
         return new RowPredicate(this, DualOperator.IN, rowSubQuery);
     }
 
     @Override
-    public IPredicate notIn(RowSubQuery rowSubQuery) {
+    public IPredicate notIn(SubQuery rowSubQuery) {
         return new RowPredicate(this, DualOperator.NOT_IN, rowSubQuery);
     }
 }

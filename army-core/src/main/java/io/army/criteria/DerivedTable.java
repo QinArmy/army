@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface DerivedTable extends TableItem {
 
-    List<? extends SelectItem> selectPartList();
+    List<? extends SelectItem> selectItemList();
 
     @Nullable
     default Selection selection(String derivedFieldName) {

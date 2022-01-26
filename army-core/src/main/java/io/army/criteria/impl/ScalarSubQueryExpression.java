@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ScalarQueryExpression;
+import io.army.criteria.ScalarExpression;
 import io.army.criteria.ScalarSubQuery;
 import io.army.criteria.SelectItem;
 import io.army.criteria.Selection;
@@ -9,7 +9,7 @@ import io.army.meta.ParamMeta;
 
 import java.util.List;
 
-final class ScalarSubQueryExpression extends OperationExpression implements ScalarQueryExpression {
+final class ScalarSubQueryExpression extends OperationExpression implements ScalarExpression {
 
     static ScalarSubQueryExpression create(ScalarSubQuery subQuery) {
         return new ScalarSubQueryExpression(subQuery);
@@ -23,8 +23,8 @@ final class ScalarSubQueryExpression extends OperationExpression implements Scal
     }
 
     @Override
-    public List<? extends SelectItem> selectPartList() {
-        return this.subQuery.selectPartList();
+    public List<? extends SelectItem> selectItemList() {
+        return this.subQuery.selectItemList();
     }
 
     @Override

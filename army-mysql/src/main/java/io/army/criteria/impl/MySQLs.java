@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ScalarQueryExpression;
+import io.army.criteria.ScalarExpression;
 import io.army.criteria.Select;
 import io.army.criteria.SubQuery;
 import io.army.criteria.mysql.MySQL57Query;
@@ -34,11 +34,11 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQL57Query.Select57Spec<Void, ScalarQueryExpression> scalarSubQuery() {
+    public static MySQL57Query.Select57Spec<Void, ScalarExpression> scalarSubQuery() {
         return MySQL57SimpleQuery.scalarSubQuery(null);
     }
 
-    public static <C, E> MySQL57Query.Select57Spec<C, ScalarQueryExpression> scalarSubQuery(C criteria) {
+    public static <C, E> MySQL57Query.Select57Spec<C, ScalarExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL57SimpleQuery.scalarSubQuery(criteria);
     }

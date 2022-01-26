@@ -4,6 +4,8 @@ import io.army.criteria.Expression;
 import io.army.dialect._SqlContext;
 import io.army.util._Exceptions;
 
+import java.util.Objects;
+
 /**
  *
  */
@@ -60,6 +62,26 @@ final class DualPredicate extends OperationPredicate {
         this.right.appendSql(context);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.left, this.operator, this.right);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof DualPredicate) {
+            final DualPredicate p = (DualPredicate) obj;
+            match = p.operator == this.operator
+                    && p.left.equals(this.left)
+                    && p.right.equals(this.right);
+        } else {
+            match = false;
+        }
+        return match;
+    }
 
     @Override
     public String toString() {

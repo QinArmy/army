@@ -232,14 +232,12 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-
-
     public static CriteriaException selectListIsEmpty() {
         return new CriteriaException("select list must not empty");
     }
 
-    public static CriteriaException columnSubQuerySelectionError() {
-        String m = String.format("%s selection size must equals one.", ColumnSubQuery.class.getName());
+    public static CriteriaException ScalarSubQuerySelectionError() {
+        String m = String.format("%s selection size must equals one.", ScalarSubQuery.class.getName());
         return new CriteriaException(m);
     }
 
@@ -251,7 +249,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("You couldn't cast criteria api instance");
     }
 
-    public static CriteriaException unknownSelectPart(@Nullable SelectItem selectItem) {
+    public static CriteriaException unknownSelectItem(@Nullable SelectItem selectItem) {
         final String m;
         if (selectItem == null) {
             m = String.format("unknown %s type[null]", SelectItem.class.getName());
