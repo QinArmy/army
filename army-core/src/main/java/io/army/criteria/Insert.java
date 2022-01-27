@@ -5,17 +5,21 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * @since 1.0
+ */
 public interface Insert extends Statement {
 
 
     /*################################## blow interfaces  ##################################*/
 
-
+    /**
+     * @since 1.0
+     */
     interface InsertSpec {
 
         Insert asInsert();
@@ -24,35 +28,49 @@ public interface Insert extends Statement {
 
     /*################################## blow multiInsert interfaces ##################################*/
 
-    interface InsertOptionSpec<T extends IDomain, C> extends InsertIntoSpec<T, C> {
+    /**
+     * @since 1.0
+     */
+    interface OptionClause<OR> {
 
-        InsertIntoSpec<T, C> migration();
+        OR migration();
     }
 
-    interface InsertIntoSpec<T extends IDomain, C> {
+    /**
+     * @since 1.0
+     */
+    interface InsertIntoClause<T extends IDomain, C, IR> {
 
-        InsertValuesSpec<T, C> insertInto(Collection<FieldMeta<? super T, ?>> fields);
+        IR insertInto(List<FieldMeta<? super T, ?>> fields);
 
-        InsertValuesSpec<T, C> insertInto(Function<C, Collection<FieldMeta<? super T, ?>>> function);
+        IR insertInto(Function<C, List<FieldMeta<? super T, ?>>> function);
 
-        InsertValuesSpec<T, C> insertInto(Supplier<Collection<FieldMeta<? super T, ?>>> supplier);
+        IR insertInto(Supplier<List<FieldMeta<? super T, ?>>> supplier);
 
-        InsertValuesSpec<T, C> insertInto(TableMeta<T> table);
+        IR insertInto(TableMeta<T> table);
     }
 
-    interface InsertValuesSpec<T extends IDomain, C> {
+    /**
+     * @since 1.0
+     */
+    interface CommonExpClause<T extends IDomain, C, SR> {
 
-        InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, @Nullable Object value);
+        SR set(FieldMeta<? super T, ?> field, @Nullable Object paramOrExp);
 
-        InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Expression value);
+        SR set(FieldMeta<? super T, ?> field, Function<C, Object> paramOrExp);
 
-        InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Function<C, Expression> function);
+        SR set(FieldMeta<? super T, ?> field, Supplier<Object> paramOrExp);
 
-        <F> InsertValuesSpec<T, C> set(FieldMeta<? super T, ?> field, Supplier<Expression> supplier);
+        SR setDefault(FieldMeta<? super T, ?> field);
 
-        InsertValuesSpec<T, C> setDefault(FieldMeta<? super T, ?> field);
+        SR setNull(FieldMeta<? super T, ?> field);
 
-        InsertValuesSpec<T, C> setNull(FieldMeta<? super T, ?> field);
+    }
+
+    /**
+     * @since 1.0
+     */
+    interface ValueClause<T extends IDomain, C> {
 
         InsertSpec value(T domain);
 
@@ -60,11 +78,40 @@ public interface Insert extends Statement {
 
         InsertSpec value(Supplier<T> supplier);
 
+        InsertSpec value(Function<String, Object> function, String keyName);
+
         InsertSpec values(List<T> domainList);
 
         InsertSpec values(Function<C, List<T>> function);
 
         InsertSpec values(Supplier<List<T>> supplier);
+
+        InsertSpec values(Function<String, Object> function, String keyName);
+    }
+
+
+    /**
+     * @since 1.0
+     */
+    interface StandardValueInsertSpec<T extends IDomain, C>
+            extends Insert.ValueInsertIntoSpec<T, C>, Insert.OptionClause<Insert.ValueInsertIntoSpec<T, C>> {
+
+    }
+
+
+    /**
+     * @since 1.0
+     */
+    interface ValueInsertIntoSpec<T extends IDomain, C>
+            extends Insert.InsertIntoClause<T, C, Insert.ValueSpec<T, C>> {
+
+    }
+
+    /**
+     * @since 1.0
+     */
+    interface ValueSpec<T extends IDomain, C> extends Insert.CommonExpClause<T, C, ValueSpec<T, C>>
+            , Insert.ValueClause<T, C> {
 
     }
 

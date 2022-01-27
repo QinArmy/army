@@ -1,11 +1,9 @@
 package io.army.session;
 
 
-import io.army.beans.DomainReadonlyWrapper;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Update;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleUpdate;
@@ -13,10 +11,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public abstract class AbstractGenericSession implements GenericSession {
 
@@ -24,26 +20,11 @@ public abstract class AbstractGenericSession implements GenericSession {
         throw new CriteriaException("");
     }
 
-    protected static final class CacheDomainUpdate implements Update, _SingleUpdate {
+    protected static abstract class CacheDomainUpdate implements Update, _SingleUpdate {
 
         public static CacheDomainUpdate build(DomainUpdateAdvice advice) {
 
-            final Set<FieldMeta<?, ?>> set = advice.targetFieldSet();
-
-            List<FieldMeta<?, ?>> targetList = new ArrayList<>(set.size());
-            List<_Expression> valueList = new ArrayList<>(set.size());
-            DomainReadonlyWrapper readonlyWrapper = advice.readonlyWrapper();
-
-            for (FieldMeta<?, ?> field : set) {
-                targetList.add(field);
-                Object value = readonlyWrapper.get(field.fieldName());
-                if (value == null) {
-                    valueList.add((_Expression) SQLs.param(field, null));
-                } else {
-                    valueList.add((_Expression) SQLs.param(field, value));
-                }
-            }
-            return new CacheDomainUpdate(advice, targetList, valueList);
+            throw new UnsupportedOperationException();
         }
 
         private final TableMeta<?> tableMeta;

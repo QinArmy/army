@@ -3,22 +3,15 @@ package io.army.criteria.impl;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.Statement;
 import io.army.criteria.Update;
-import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.Dialect;
-import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
 import io.army.util.CollectionUtils;
-import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -81,6 +74,16 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
     }
 
     @Override
+    Dialect defaultDialect() {
+        return Dialect.MySQL57;
+    }
+
+    @Override
+    void validateDialect(Dialect dialect) {
+        //no-op
+    }
+
+    @Override
     public final TableMeta<?> table() {
         return this.table;
     }
@@ -90,45 +93,6 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         return this.tableAlias;
     }
 
-    @Override
-    public String toString() {
-        final String s;
-        if (this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL57);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
-
-    @Override
-    public final String mockAsString(Dialect dialect) {
-        final Stmt stmt;
-        stmt = this.mockAsStmt(dialect);
-        final StringBuilder builder = new StringBuilder();
-        if (stmt instanceof SimpleStmt) {
-            builder.append("update sql:\n")
-                    .append(((SimpleStmt) stmt).sql());
-
-        } else if (stmt instanceof BatchStmt) {
-            builder.append("batch update sql:\n")
-                    .append(((BatchStmt) stmt).sql());
-        } else {
-            throw new IllegalStateException("stmt error.");
-        }
-        return builder.toString();
-    }
-
-    @Override
-    public final Stmt mockAsStmt(Dialect dialect) {
-        final Stmt stmt;
-        stmt = _MockDialects.from(dialect).update(this, Visible.ONLY_VISIBLE);
-        if (stmt instanceof SimpleStmt) {
-            _Assert.noNamedParam(((SimpleStmt) stmt).paramGroup());
-        }
-        return stmt;
-    }
 
     private static final class SimpleUpdate<C> extends StandardUpdate<
             C,
@@ -162,35 +126,25 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         }
 
         @Override
-        public UpdateSpec paramMaps(List<Map<String, Object>> mapList) {
-            this.wrapperList = CriteriaUtils.paramMaps(mapList);
+        public UpdateSpec paramList(List<?> beanList) {
+            this.wrapperList = CriteriaUtils.paramList(beanList);
             return this;
         }
 
         @Override
-        public UpdateSpec paramMaps(Supplier<List<Map<String, Object>>> supplier) {
-            return this.paramMaps(supplier.get());
+        public UpdateSpec paramList(Supplier<List<?>> supplier) {
+            return this.paramList(supplier.get());
         }
 
         @Override
-        public UpdateSpec paramMaps(Function<C, List<Map<String, Object>>> function) {
-            return this.paramMaps(function.apply(this.criteria));
+        public UpdateSpec paramList(Function<C, List<?>> function) {
+            return this.paramList(function.apply(this.criteria));
         }
 
         @Override
-        public UpdateSpec paramBeans(List<?> beanList) {
-            this.wrapperList = CriteriaUtils.paramBeans(beanList);
+        public UpdateSpec paramList(Function<String, Object> function, String keyName) {
+            this.wrapperList = CriteriaUtils.paramList(function, keyName);
             return this;
-        }
-
-        @Override
-        public UpdateSpec paramBeans(Supplier<List<?>> supplier) {
-            return this.paramBeans(supplier.get());
-        }
-
-        @Override
-        public UpdateSpec paramBeans(Function<C, List<?>> function) {
-            return this.paramBeans(function.apply(this.criteria));
         }
 
         @Override

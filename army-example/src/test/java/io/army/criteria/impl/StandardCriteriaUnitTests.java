@@ -33,7 +33,7 @@ public class StandardCriteriaUnitTests {
                 .asInsert();
 
         for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), insert.mockAsString(mode));
+            LOG.debug("{} {}", mode.name(), insert.mockAsString(mode, Visible.ONLY_VISIBLE, true));
         }
 
     }
@@ -47,7 +47,7 @@ public class StandardCriteriaUnitTests {
                 .asInsert();
 
         for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), insert.mockAsString(mode));
+            LOG.debug("{} {}", mode.name(), insert.mockAsString(mode, Visible.ONLY_VISIBLE, true));
         }
     }
 
@@ -65,7 +65,7 @@ public class StandardCriteriaUnitTests {
                 .asUpdate();
 
         for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
+            LOG.debug("{} {}", mode.name(), update.mockAsString(mode, Visible.ONLY_VISIBLE, true));
         }
     }
 
@@ -90,7 +90,7 @@ public class StandardCriteriaUnitTests {
                 .asUpdate();
 
         for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
+            LOG.debug("{} {}", mode.name(), update.mockAsString(mode, Visible.ONLY_VISIBLE, true));
         }
     }
 
@@ -104,12 +104,12 @@ public class StandardCriteriaUnitTests {
                 .where(ChinaProvince_.id.equalNamed())
                 .and(ChinaProvince_.regionGdp.plusNamed().greatEqual(BigDecimal.ZERO))
                 .and(ChinaProvince_.version.equal(0))
-                .paramBeans(this::createProvinceList)
+                .paramList(this::createProvinceList)
                 .asUpdate();
 
         for (Dialect mode : Dialect.values()) {
             BatchStmt stmt;
-            stmt = (BatchStmt) update.mockAsStmt(mode);
+            stmt = (BatchStmt) update.mockAsStmt(mode, Visible.ONLY_VISIBLE);
             assertTrue(stmt.hasOptimistic(), "optimistic lock");
             LOG.debug("batchUpdateParent\n{}\n{}", mode.name(), stmt.sql());
         }
@@ -133,7 +133,7 @@ public class StandardCriteriaUnitTests {
                 .asUpdate();
 
         for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), update.mockAsString(mode));
+            LOG.debug("{} {}", mode.name(), update.mockAsString(mode, Visible.ONLY_VISIBLE, true));
         }
     }
 
@@ -185,7 +185,7 @@ public class StandardCriteriaUnitTests {
                 .and(ChinaProvince_.governor.equalNamed())
                 .and(ChinaProvince_.regionGdp.plusNamed().lessThan("6666.66"))
                 .and(ChinaProvince_.version.equal(2))
-                .paramBeans(this.createProvinceList())
+                .paramList(this.createProvinceList())
                 .asDelete();
 
         for (Dialect mode : Dialect.values()) {

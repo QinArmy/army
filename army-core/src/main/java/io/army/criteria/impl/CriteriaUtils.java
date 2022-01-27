@@ -9,6 +9,7 @@ import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 
 import java.util.*;
+import java.util.function.Function;
 
 abstract class CriteriaUtils {
 
@@ -134,12 +135,24 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableList(wrapperList);
     }
 
-    static List<ReadWrapper> paramBeans(List<?> beanList) {
+    static List<ReadWrapper> paramList(List<?> beanList) {
         final List<ReadWrapper> wrapperList = new ArrayList<>(beanList.size());
         for (Object bean : beanList) {
             wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
         }
         return Collections.unmodifiableList(wrapperList);
+    }
+
+
+    static List<ReadWrapper> paramList(Function<String, Object> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (!(value instanceof List)) {
+            String m = String.format("%s key[%s] return isn't %s."
+                    , Function.class.getName(), keyName, Long.class.getName());
+            throw new CriteriaException(m);
+        }
+        return paramList((List<?>) value);
     }
 
     @SuppressWarnings("unchecked")

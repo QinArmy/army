@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
@@ -16,7 +17,6 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -289,6 +289,15 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
         }
     }
 
+    @Override
+    final Dialect defaultDialect() {
+        return MySQLUtils.defaultDialect(this);
+    }
+
+    @Override
+    final void validateDialect(Dialect dialect) {
+        MySQLUtils.validateDialect(this, dialect);
+    }
 
     /*################################## blow inner class ##################################*/
 
@@ -326,37 +335,26 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
         }
 
         @Override
-        public final DeleteSpec paramMaps(List<Map<String, Object>> mapList) {
-            this.wrapperList = CriteriaUtils.paramMaps(mapList);
+        public final DeleteSpec paramList(List<?> beanList) {
+            this.wrapperList = CriteriaUtils.paramList(beanList);
             return this;
         }
 
         @Override
-        public final DeleteSpec paramMaps(Supplier<List<Map<String, Object>>> supplier) {
-            return this.paramMaps(supplier.get());
+        public final DeleteSpec paramList(Supplier<List<?>> supplier) {
+            return this.paramList(supplier.get());
         }
 
         @Override
-        public final DeleteSpec paramMaps(Function<C, List<Map<String, Object>>> function) {
-            return this.paramMaps(function.apply(this.criteria));
+        public final DeleteSpec paramList(Function<C, List<?>> function) {
+            return this.paramList(function.apply(this.criteria));
         }
 
         @Override
-        public final DeleteSpec paramBeans(List<?> beanList) {
-            this.wrapperList = CriteriaUtils.paramBeans(beanList);
+        public final DeleteSpec paramList(Function<String, Object> function, String keyName) {
+            this.wrapperList = CriteriaUtils.paramList(function, keyName);
             return this;
         }
-
-        @Override
-        public final DeleteSpec paramBeans(Supplier<List<?>> supplier) {
-            return this.paramBeans(supplier.get());
-        }
-
-        @Override
-        public final DeleteSpec paramBeans(Function<C, List<?>> function) {
-            return this.paramBeans(function.apply(this.criteria));
-        }
-
 
     }//BatchDelete
 

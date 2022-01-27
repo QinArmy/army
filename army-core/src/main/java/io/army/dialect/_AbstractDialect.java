@@ -947,7 +947,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
         final FieldValuesGenerator generator = this.environment.fieldValuesGenerator();
         final TableMeta<?> table = context.table;
-        final boolean migration = insert.migrationData();
+        final boolean migration = insert.isMigration();
         for (ObjectWrapper wrapper : insert.domainList()) {
             generator.generate(table, wrapper, migration);
         }

@@ -6,7 +6,6 @@ import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -27,27 +26,18 @@ public interface Statement {
      */
     void prepared();
 
-     boolean isPrepared();
+    boolean isPrepared();
 
 
-    @Deprecated
-    default String mockAsString(Dialect dialect) {
-        throw new UnsupportedOperationException();
-    }
+    /**
+     * @since 1.0
+     */
+    String mockAsString(Dialect dialect, Visible visible, boolean beautify);
 
-    @Deprecated
-    default Stmt mockAsStmt(Dialect dialect) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    default String mockAsString(Dialect dialect, Visible visible, boolean beautify) {
-        throw new UnsupportedOperationException();
-    }
-
-    default Stmt mockAsStmt(Dialect dialect, Visible visible) {
-        throw new UnsupportedOperationException();
-    }
+    /**
+     * @since 1.0
+     */
+    Stmt mockAsStmt(Dialect dialect, Visible visible);
 
 
     interface AsClause<AR> {
@@ -58,17 +48,13 @@ public interface Statement {
 
     interface BatchParamClause<C, BR> {
 
-        BR paramMaps(List<Map<String, Object>> mapList);
+        BR paramList(List<?> paramList);
 
-        BR paramMaps(Supplier<List<Map<String, Object>>> supplier);
+        BR paramList(Supplier<List<?>> supplier);
 
-        BR paramMaps(Function<C, List<Map<String, Object>>> function);
+        BR paramList(Function<C, List<?>> function);
 
-        BR paramBeans(List<?> beanList);
-
-        BR paramBeans(Supplier<List<?>> supplier);
-
-        BR paramBeans(Function<C, List<?>> function);
+        BR paramList(Function<String, Object> function, String keyName);
     }
 
 

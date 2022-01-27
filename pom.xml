@@ -26,7 +26,6 @@
         <module>army-jdbc</module>
         <module>army-jdbd</module>
         <module>army-annotation</module>
-        <module>army-example-domain</module>
         <module>army-example</module>
     </modules>
 

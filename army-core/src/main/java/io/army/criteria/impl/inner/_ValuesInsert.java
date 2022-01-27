@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface _ValuesInsert extends _Insert {
 
-    boolean migrationData();
+    boolean isMigration();
 
     Map<FieldMeta<?, ?>, _Expression> commonExpMap();
 

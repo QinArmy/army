@@ -11,13 +11,17 @@ import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -410,6 +414,17 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
     }
 
+    @Override
+    final Dialect defaultDialect() {
+        return MySQLUtils.defaultDialect(this);
+    }
+
+    @Override
+    final void validateDialect(Dialect dialect) {
+        MySQLUtils.validateDialect(this, dialect);
+    }
+
+
 
     /*################################## blow private method ##################################*/
 
@@ -612,37 +627,26 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
             super(criteria);
         }
 
-
         @Override
-        public final UpdateSpec paramMaps(List<Map<String, Object>> mapList) {
-            this.wrapperList = CriteriaUtils.paramMaps(mapList);
+        public final UpdateSpec paramList(List<?> beanList) {
+            this.wrapperList = CriteriaUtils.paramList(beanList);
             return this;
         }
 
         @Override
-        public final UpdateSpec paramMaps(Supplier<List<Map<String, Object>>> supplier) {
-            return this.paramMaps(supplier.get());
+        public final UpdateSpec paramList(Supplier<List<?>> supplier) {
+            return this.paramList(supplier.get());
         }
 
         @Override
-        public final UpdateSpec paramMaps(Function<C, List<Map<String, Object>>> function) {
-            return this.paramMaps(function.apply(this.criteria));
+        public final UpdateSpec paramList(Function<C, List<?>> function) {
+            return this.paramList(function.apply(this.criteria));
         }
 
         @Override
-        public final UpdateSpec paramBeans(List<?> beanList) {
-            this.wrapperList = CriteriaUtils.paramBeans(beanList);
+        public final UpdateSpec paramList(Function<String, Object> function, String keyName) {
+            this.wrapperList = CriteriaUtils.paramList(function, keyName);
             return this;
-        }
-
-        @Override
-        public final UpdateSpec paramBeans(Supplier<List<?>> supplier) {
-            return this.paramBeans(supplier.get());
-        }
-
-        @Override
-        public final UpdateSpec paramBeans(Function<C, List<?>> function) {
-            return this.paramBeans(function.apply(this.criteria));
         }
 
         @Override
