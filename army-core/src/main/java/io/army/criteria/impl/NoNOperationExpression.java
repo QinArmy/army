@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 
-import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -47,7 +46,7 @@ abstract class NoNOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate equal(Object operand) {
-         throw unsupportedOperation();
+        throw unsupportedOperation();
     }
 
     @Override
@@ -566,12 +565,12 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <O> IPredicate in(Collection<O> parameters) {
+    public final IPredicate in(Object collectionOrExp) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate inParam(Collection<O> parameters) {
+    public final IPredicate inParam(Object collectionOrExp) {
         throw unsupportedOperation();
     }
 
@@ -581,42 +580,52 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate in(Function<C, Expression> function) {
+    public final <C> IPredicate inExp(Function<C, Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate in(Supplier<Expression> supplier) {
+    public final IPredicate inExp(Supplier<Expression> supplier) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate ifIn(Supplier<Collection<O>> supplier) {
+    public final <C> IPredicate ifIn(Function<C, Object> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate ifInParam(Supplier<Collection<O>> supplier) {
+    public final IPredicate ifIn(Supplier<Object> collectionOrExp) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifInExp(Supplier<Expression> supplier) {
+    public final IPredicate ifInParam(Supplier<Object> collectionOrExp) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate ifInExp(Function<C, Expression> function) {
+    public final <C> IPredicate ifInParam(Function<C, Object> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate notIn(Collection<O> parameters) {
+    public final IPredicate ifIn(Function<String, Object> function, String keyName) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate notInParam(Collection<O> parameters) {
+    public final IPredicate ifInParam(Function<String, Object> function, String keyName) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate notIn(Object collectionOrExp) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate notInParam(Object collectionOrExp) {
         throw unsupportedOperation();
     }
 
@@ -636,22 +645,32 @@ abstract class NoNOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <O> IPredicate ifNotIn(Supplier<Collection<O>> supplier) {
+    public final IPredicate ifNotIn(Supplier<Object> collectionOrExp) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <O> IPredicate ifNotInParam(Supplier<Collection<O>> supplier) {
+    public final <C> IPredicate ifNotIn(Function<C, Object> collectionOrExp) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final IPredicate ifNotInExp(Supplier<Expression> supplier) {
+    public final IPredicate ifNotIn(Function<String, Object> function, String keyName) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> IPredicate ifNotInExp(Function<C, Expression> function) {
+    public final IPredicate ifNotInParam(Supplier<Object> collectionOrExp) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <C> IPredicate ifNotInParam(Function<C, Object> collectionOrExp) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate ifNotInParam(Function<String, Object> function, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -1009,7 +1028,6 @@ abstract class NoNOperationExpression implements ArmyExpression {
     public final SortItem desc() {
         throw unsupportedOperation();
     }
-
 
 
     static UnsupportedOperationException unsupportedOperation() {

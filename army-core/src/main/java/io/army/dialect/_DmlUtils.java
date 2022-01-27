@@ -185,7 +185,7 @@ public abstract class _DmlUtils {
         }
         final List<FieldMeta<?, ?>> mergeFieldList;
         if (fieldList.isEmpty()) {
-            final Collection<?> fieldCollection = table.fields();
+            final Collection<?> fieldCollection = table.fieldList();
             mergeFieldList = new ArrayList<>(fieldCollection.size());
             @SuppressWarnings("unchecked")
             Collection<FieldMeta<?, ?>> tableFields = (Collection<FieldMeta<?, ?>>) fieldCollection;

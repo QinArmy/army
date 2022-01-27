@@ -179,17 +179,25 @@ public interface Query extends Statement {
 
         LR limit(long offset, long rowCount);
 
-        LR limit(Supplier<Long> rowCount);
+        LR limit(Supplier<Object> rowCount);
 
-        LR limit(Supplier<Long> offset, Supplier<Long> rowCount);
+        LR limit(Function<String, Object> function, String rowCountKey);
+
+        LR limit(Supplier<Object> offset, Supplier<Object> rowCount);
+
+        LR limit(Function<String, Object> function, String offsetKey, String rowCountKey);
 
         LR limit(Function<C, LimitOption> function);
 
         LR ifLimit(Function<C, LimitOption> function);
 
-        LR ifLimit(Supplier<Long> rowCount);
+        LR ifLimit(Supplier<Object> rowCount);
 
-        LR ifLimit(Supplier<Long> offset, Supplier<Long> rowCount);
+        LR ifLimit(Supplier<Object> offset, Supplier<Object> rowCount);
+
+        LR ifLimit(Function<String, Object> function, String rowCountKey);
+
+        LR ifLimit(Function<String, Object> function, String offsetKey, String rowCountKey);
 
     }
 

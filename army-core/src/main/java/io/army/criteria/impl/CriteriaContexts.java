@@ -452,10 +452,10 @@ abstract class CriteriaContexts {
             //TODO handle MySQL TablePartGroup
             final TableItem tableItem;
             tableItem = block.tableItem();
-            if (!(tableItem instanceof SubQuery)) {
+            if (!(tableItem instanceof DerivedTable)) {
                 return;
             }
-            final SubQuery subQuery = (SubQuery) tableItem;
+            final DerivedTable derivedTable = (DerivedTable) tableItem;
             final String queryAlias = block.alias();
 
             final Map<String, Map<String, RefSelection>> aliasToDerivedField = this.aliasToRefSelection;
@@ -463,7 +463,7 @@ abstract class CriteriaContexts {
                 final Map<String, RefSelection> fieldMap;
                 fieldMap = aliasToDerivedField.remove(queryAlias);
                 if (fieldMap != null) {
-                    finishRefSelections(subQuery, queryAlias, fieldMap);
+                    finishRefSelections(derivedTable, queryAlias, fieldMap);
                 }
                 if (aliasToDerivedField.size() == 0) {
                     this.aliasToRefSelection = null;
@@ -479,7 +479,7 @@ abstract class CriteriaContexts {
             while (iterator.hasNext()) {
                 final DerivedGroup group = iterator.next();
                 if (queryAlias.equals(group.tableAlias())) {
-                    group.finish(subQuery, queryAlias);
+                    group.finish(derivedTable, queryAlias);
                     iterator.remove();
                 }
             }
@@ -489,7 +489,7 @@ abstract class CriteriaContexts {
         /**
          * @see #doOnAddBlock(_TableBlock)
          */
-        private void finishRefSelections(SubQuery subQuery, String queryAlias, Map<String, RefSelection> fieldMap) {
+        private void finishRefSelections(DerivedTable derivedTable, String queryAlias, Map<String, RefSelection> fieldMap) {
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToSelection;
             if (aliasToSelection == null) {
                 aliasToSelection = new HashMap<>();
@@ -499,7 +499,7 @@ abstract class CriteriaContexts {
             derivedFieldMap = aliasToSelection.computeIfAbsent(queryAlias, k -> new HashMap<>());
             for (RefSelection field : fieldMap.values()) {
                 Selection selection;
-                selection = subQuery.selection(field.fieldName);
+                selection = derivedTable.selection(field.fieldName);
                 if (selection == null) {
                     throw invalidRef(queryAlias, field.fieldName);
                 }
@@ -520,7 +520,7 @@ abstract class CriteriaContexts {
             }
             final Map<String, Map<String, RefSelection>> aliasToRefSelection = this.aliasToRefSelection;
             if (!CollectionUtils.isEmpty(aliasToRefSelection)) {
-                String m = String.format("Derived tables[%s] is invalid.", aliasToRefSelection.keySet());
+                String m = String.format("Derived tables%s is invalid.", aliasToRefSelection.keySet());
                 throw new CriteriaException(m);
             }
         }

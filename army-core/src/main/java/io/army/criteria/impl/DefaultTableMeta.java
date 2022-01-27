@@ -11,10 +11,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -241,7 +238,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     final Map<String, FieldMeta<T, ?>> fieldNameToFields;
 
-    private final Collection<FieldMeta<T, ?>> fields;
+    private final List<FieldMeta<T, ?>> fieldList;
 
     private final List<IndexMeta<T>> indexMetaList;
 
@@ -274,7 +271,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
             this.fieldNameToFields = pair.fieldMap;
             this.indexMetaList = pair.indexMetaList;
-            this.fields = this.fieldNameToFields.values();
+            this.fieldList = Collections.unmodifiableList(new ArrayList<>(this.fieldNameToFields.values()));
             this.generatorChain = TableMetaUtils.createGeneratorChain(this.fieldNameToFields);
 
             this.primaryField = (PrimaryFieldMeta<T, Object>) this.fieldNameToFields.get(_MetaBridge.ID);
@@ -340,8 +337,8 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final Collection<FieldMeta<T, ?>> fields() {
-        return this.fields;
+    public final List<FieldMeta<T, ?>> fieldList() {
+        return this.fieldList;
     }
 
     @Override

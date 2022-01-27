@@ -180,7 +180,6 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     @Override
     public final LR limit(long rowCount) {
-        this.offset = 0L;
         this.rowCount = rowCount;
         return (LR) this;
     }
@@ -203,15 +202,80 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR limit(Supplier<Long> rowCount) {
-        this.rowCount = rowCount.get();
+    public final LR limit(Supplier<Object> rowCount) {
+        final Object rowCountValue;
+        rowCountValue = rowCount.get();
+        if (rowCountValue instanceof Long) {
+            this.rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer) {
+            this.rowCount = (Integer) rowCountValue;
+        } else {
+            throw supplierReturnError(rowCountValue);
+        }
+        return (LR) this;
+    }
+
+
+    @Override
+    public final LR limit(Function<String, Object> function, String rowCountKey) {
+        final Object rowCountValue;
+        rowCountValue = function.apply(rowCountKey);
+        if (rowCountValue instanceof Long) {
+            this.rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer) {
+            this.rowCount = (Integer) rowCountValue;
+        } else {
+            throw supplierReturnError(rowCountValue);
+        }
+        return (LR) this;
+    }
+
+
+    @Override
+    public final LR limit(Supplier<Object> offset, Supplier<Object> rowCount) {
+        final Object offsetValue, rowCountValue;
+        offsetValue = offset.get();
+        rowCountValue = rowCount.get();
+
+        if (offsetValue instanceof Long) {
+            this.offset = (Long) offsetValue;
+        } else if (offsetValue instanceof Integer) {
+            this.offset = (Integer) offsetValue;
+        } else {
+            throw supplierReturnError(offsetValue);
+        }
+
+        if (rowCountValue instanceof Long) {
+            this.rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer) {
+            this.rowCount = (Integer) rowCountValue;
+        } else {
+            throw supplierReturnError(rowCountValue);
+        }
         return (LR) this;
     }
 
     @Override
-    public final LR limit(Supplier<Long> offset, Supplier<Long> rowCount) {
-        this.offset = offset.get();
-        this.rowCount = rowCount.get();
+    public final LR limit(Function<String, Object> function, String offsetKey, String rowCountKey) {
+        final Object offsetValue, rowCountValue;
+        offsetValue = function.apply(offsetKey);
+        rowCountValue = function.apply(rowCountKey);
+
+        if (offsetValue instanceof Long) {
+            this.offset = (Long) offsetValue;
+        } else if (offsetValue instanceof Integer) {
+            this.offset = (Integer) offsetValue;
+        } else {
+            throw functionReturnError(offsetValue);
+        }
+
+        if (rowCountValue instanceof Long) {
+            this.rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer) {
+            this.rowCount = (Integer) rowCountValue;
+        } else {
+            throw functionReturnError(rowCountValue);
+        }
         return (LR) this;
     }
 
@@ -227,23 +291,75 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR ifLimit(Supplier<Long> rowCountSupplier) {
-        final Long rowCount;
-        rowCount = rowCountSupplier.get();
-        if (rowCount != null) {
-            this.rowCount = rowCount;
+    public final LR ifLimit(Supplier<Object> rowCount) {
+        final Object rowCountValue;
+        rowCountValue = rowCount.get();
+
+        if (rowCountValue instanceof Long) {
+            this.rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer) {
+            this.rowCount = (Integer) rowCountValue;
         }
         return (LR) this;
     }
 
     @Override
-    public final LR ifLimit(Supplier<Long> offsetSupplier, Supplier<Long> rowCountSupplier) {
-        final Long offset, rowCount;
-        offset = offsetSupplier.get();
-        rowCount = rowCountSupplier.get();
-        if (offset != null && rowCount != null) {
-            this.offset = offset;
-            this.rowCount = rowCount;
+    public final LR ifLimit(Supplier<Object> offset, Supplier<Object> rowCount) {
+        final Object offsetValue, rowCountValue;
+        offsetValue = offset.get();
+        rowCountValue = rowCount.get();
+
+        if (offsetValue instanceof Long) {
+            this.offset = (Long) offsetValue;
+        } else if (offsetValue instanceof Integer) {
+            this.offset = (Integer) offsetValue;
+        } else {
+            return (LR) this;
+        }
+
+        if (rowCountValue instanceof Long) {
+            this.rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer) {
+            this.rowCount = (Integer) rowCountValue;
+        } else {
+            this.offset = -1L;
+        }
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Function<String, Object> function, String rowCountKey) {
+        final Object rowCountValue;
+        rowCountValue = function.apply(rowCountKey);
+
+        if (rowCountValue instanceof Long) {
+            this.rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer) {
+            this.rowCount = (Integer) rowCountValue;
+        }
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Function<String, Object> function, String offsetKey, String rowCountKey) {
+        final Object offsetValue, rowCountValue;
+        offsetValue = function.apply(offsetKey);
+        rowCountValue = function.apply(rowCountKey);
+
+        if (offsetValue instanceof Long) {
+            this.offset = (Long) offsetValue;
+        } else if (offsetValue instanceof Integer) {
+            this.offset = (Integer) offsetValue;
+        } else {
+            return (LR) this;
+        }
+
+        if (rowCountValue instanceof Long) {
+            this.rowCount = (Long) rowCountValue;
+        } else if (rowCountValue instanceof Integer) {
+            this.rowCount = (Integer) rowCountValue;
+        } else {
+            this.offset = -1L;
         }
         return (LR) this;
     }
@@ -377,6 +493,19 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         query = internalAsQuery(justAsQuery);
         this.prepared = true;
         return query;
+    }
+
+
+    private static CriteriaException supplierReturnError(Object value) {
+        String m = String.format("%s return %s ,but it isn't %s or %s ."
+                , Supplier.class.getName(), value, Long.class.getName(), Integer.class.getName());
+        return new CriteriaException(m);
+    }
+
+    private static CriteriaException functionReturnError(Object value) {
+        String m = String.format("%s return %s ,but it isn't %s or %s ."
+                , Function.class.getName(), value, Long.class.getName(), Integer.class.getName());
+        return new CriteriaException(m);
     }
 
 

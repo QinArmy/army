@@ -407,17 +407,15 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      * <p>
      * Parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
      * </p>
-     *
-     * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
      */
-    <O> IPredicate in(Collection<O> parameters);
+    IPredicate in(Object collectionOrExp);
 
     /**
      * <p>
      * Equivalence : this.in({@link SQLs#params(ParamMeta, Collection)})
      * </p>
      */
-    <O> IPredicate inParam(Collection<O> parameters);
+    IPredicate inParam(Object collectionOrExp);
 
     /**
      * <p>
@@ -426,9 +424,12 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      */
     IPredicate inNamed(String paramName);
 
-    <C> IPredicate in(Function<C, Expression> function);
+    <C> IPredicate inExp(Function<C, Expression> function);
 
-    IPredicate in(Supplier<Expression> supplier);
+    IPredicate inExp(Supplier<Expression> supplier);
+
+    @Nullable
+    <C> IPredicate ifIn(Function<C, Object> function);
 
     /**
      * <p>
@@ -438,32 +439,35 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
      */
     @Nullable
-    <O> IPredicate ifIn(Supplier<Collection<O>> supplier);
+    IPredicate ifIn(Supplier<Object> collectionOrExp);
 
     @Nullable
-    <O> IPredicate ifInParam(Supplier<Collection<O>> supplier);
+    IPredicate ifIn(Function<String, Object> function, String keyName);
 
     @Nullable
-    IPredicate ifInExp(Supplier<Expression> supplier);
+    <C> IPredicate ifInParam(Function<C, Object> collectionOrExp);
 
     @Nullable
-    <C> IPredicate ifInExp(Function<C, Expression> function);
+    IPredicate ifInParam(Supplier<Object> collectionOrExp);
+
+
+    @Nullable
+    IPredicate ifInParam(Function<String, Object> function, String keyName);
+
 
     /**
      * <p>
      * Parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
      * </p>
-     *
-     * @param <O> java type of element of right operand of {@code in},the element is weak weakly instance, because sql is weakly typed.
      */
-    <O> IPredicate notIn(Collection<O> parameters);
+    IPredicate notIn(Object collectionOrExp);
 
     /**
      * <p>
      * Equivalence : this.notIn({@link SQLs#params(ParamMeta, Collection)})
      * </p>
      */
-    <O> IPredicate notInParam(Collection<O> parameters);
+    IPredicate notInParam(Object collectionOrExp);
 
     /**
      * <p>
@@ -477,16 +481,22 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     IPredicate notInExp(Supplier<Expression> supplier);
 
     @Nullable
-    <O> IPredicate ifNotIn(Supplier<Collection<O>> supplier);
+    IPredicate ifNotIn(Supplier<Object> collectionOrExp);
 
     @Nullable
-    <O> IPredicate ifNotInParam(Supplier<Collection<O>> supplier);
+    <C> IPredicate ifNotIn(Function<C, Object> collectionOrExp);
 
     @Nullable
-    IPredicate ifNotInExp(Supplier<Expression> supplier);
+    IPredicate ifNotIn(Function<String, Object> function, String keyName);
 
     @Nullable
-    <C> IPredicate ifNotInExp(Function<C, Expression> function);
+    IPredicate ifNotInParam(Supplier<Object> collectionOrExp);
+
+    @Nullable
+    <C> IPredicate ifNotInParam(Function<C, Object> collectionOrExp);
+
+    @Nullable
+    IPredicate ifNotInParam(Function<String, Object> function, String keyName);
 
 
     IPredicate like(Object pattern);

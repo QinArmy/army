@@ -61,12 +61,12 @@ abstract class SelectionGroups {
 
         private TableFieldGroup(TableMeta<T> table, String tableAlias) {
             this.tableAlias = tableAlias;
-            this.fieldList = Collections.unmodifiableList(new ArrayList<>(table.fields()));
+            this.fieldList = table.fieldList();
         }
 
         private TableFieldGroup(String tableAlias, TableMeta<T> parent) {
-            Collection<FieldMeta<T, ?>> fields = parent.fields();
-            final List<FieldMeta<T, ?>> fieldList = new ArrayList<>(fields.size());
+            final List<FieldMeta<T, ?>> fields = parent.fieldList();
+            final List<FieldMeta<T, ?>> fieldList = new ArrayList<>(fields.size() - 1);
             for (FieldMeta<T, ?> field : fields) {
                 if (field instanceof PrimaryFieldMeta) {
                     continue;
@@ -144,8 +144,8 @@ abstract class SelectionGroups {
             this.parentAlias = parentAlias;
             this.childAlias = childAlias;
 
-            final Collection<FieldMeta<P, ?>> parentFields = parent.fields();
-            final Collection<FieldMeta<T, ?>> childFields = child.fields();
+            final Collection<FieldMeta<P, ?>> parentFields = parent.fieldList();
+            final Collection<FieldMeta<T, ?>> childFields = child.fieldList();
             this.parentSize = parentFields.size() - 1;
 
             final List<FieldMeta<?, ?>> fieldList = new ArrayList<>(this.parentSize + childFields.size());
@@ -240,19 +240,19 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public final void finish(SubQuery subQuery, String subQueryAlias) {
+        public final void finish(DerivedTable table, String alias) {
             if (this.selectionList != null) {
                 throw new IllegalStateException("duplication");
             }
-            if (!this.subQueryAlias.equals(subQueryAlias)) {
+            if (!this.subQueryAlias.equals(alias)) {
                 throw new IllegalArgumentException("subQueryAlias not match.");
             }
-            this.selectionList = createSelectionList(subQuery);
+            this.selectionList = createSelectionList(table);
         }
 
-        List<Selection> createSelectionList(SubQuery subQuery) {
+        List<Selection> createSelectionList(DerivedTable table) {
             final List<Selection> selectionList = new ArrayList<>();
-            for (SelectItem selectItem : subQuery.selectItemList()) {
+            for (SelectItem selectItem : table.selectItemList()) {
                 if (selectItem instanceof Selection) {
                     selectionList.add((Selection) selectItem);
                 } else if (selectItem instanceof SelectionGroup) {
@@ -289,16 +289,19 @@ abstract class SelectionGroups {
             final String safeAlias = dialect.quoteIfNeed(this.subQueryAlias);
             final int size = selectionList.size();
             Selection selection;
+            String safeFieldAlias;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
                     builder.append(Constant.SPACE_COMMA);
                 }
                 selection = selectionList.get(i);
-
+                safeFieldAlias = dialect.quoteIfNeed(selection.alias());
                 builder.append(Constant.SPACE)
                         .append(safeAlias)
                         .append(Constant.POINT)
-                        .append(dialect.quoteIfNeed(selection.alias()));
+                        .append(safeFieldAlias)
+                        .append(Constant.SPACE_AS_SPACE)
+                        .append(safeFieldAlias);
             }
 
 
@@ -319,10 +322,10 @@ abstract class SelectionGroups {
 
 
         @Override
-        List<Selection> createSelectionList(SubQuery subQuery) {
+        List<Selection> createSelectionList(DerivedTable table) {
             final Set<String> filedNameSet = new HashSet<>(this.derivedFieldNameList);
             final List<Selection> selectionList = new ArrayList<>(filedNameSet.size());
-            for (SelectItem selectItem : subQuery.selectItemList()) {
+            for (SelectItem selectItem : table.selectItemList()) {
 
                 if (selectItem instanceof Selection) {
                     if (filedNameSet.contains(((Selection) selectItem).alias())) {

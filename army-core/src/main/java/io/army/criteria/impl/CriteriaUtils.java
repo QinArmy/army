@@ -3,8 +3,10 @@ package io.army.criteria.impl;
 import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ReadWrapper;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
+import io.army.util._Exceptions;
 
 import java.util.*;
 
@@ -34,6 +36,42 @@ abstract class CriteriaUtils {
             }
         }
         return Collections.unmodifiableMap(selectionMap);
+    }
+
+    static void assertSelectItemSizeMatch(Query left, Query right) {
+        final List<? extends SelectItem> leftList, rightList;
+
+        leftList = ((_PartQuery) left).selectItemList();
+        rightList = ((_PartQuery) right).selectItemList();
+
+        int leftSize = 0, rightSize = 0;
+
+        for (SelectItem item : leftList) {
+            if (item instanceof Selection) {
+                leftSize++;
+            } else if (item instanceof SelectionGroup) {
+                leftSize += ((SelectionGroup) item).selectionList().size();
+            } else {
+                throw _Exceptions.unknownSelectItem(item);
+            }
+        }
+
+        for (SelectItem item : rightList) {
+            if (item instanceof Selection) {
+                rightSize++;
+            } else if (item instanceof SelectionGroup) {
+                rightSize += ((SelectionGroup) item).selectionList().size();
+            } else {
+                throw _Exceptions.unknownSelectItem(item);
+            }
+        }
+
+        if (leftSize != rightSize) {
+            String m = String.format("Left select list size[%s] and right select list size[%s] not match."
+                    , leftSize, rightSize);
+            throw new CriteriaException(m);
+        }
+
     }
 
 

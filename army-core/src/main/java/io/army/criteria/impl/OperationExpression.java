@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
+import io.army.util._Exceptions;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -720,13 +721,25 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <O> IPredicate in(Collection<O> parameters) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.optimizingParams(this.paramMeta(), parameters));
+    public final IPredicate in(final Object collectionOrExp) {
+        final Expression exp;
+        if (collectionOrExp instanceof Expression) {
+            exp = (Expression) collectionOrExp;
+        } else {
+            exp = SQLs.optimizingParams(this.paramMeta(), (Collection<?>) collectionOrExp);
+        }
+        return DualPredicate.create(this, DualOperator.IN, exp);
     }
 
     @Override
-    public final <O> IPredicate inParam(Collection<O> parameters) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.params(this.paramMeta(), parameters));
+    public final IPredicate inParam(final Object collectionOrExp) {
+        final Expression exp;
+        if (collectionOrExp instanceof Expression) {
+            exp = (Expression) collectionOrExp;
+        } else {
+            exp = SQLs.params(this.paramMeta(), (Collection<?>) collectionOrExp);
+        }
+        return DualPredicate.create(this, DualOperator.IN, exp);
     }
 
     @Override
@@ -735,53 +748,65 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <C> IPredicate in(Function<C, Expression> function) {
+    public final <C> IPredicate inExp(Function<C, Expression> function) {
         return DualPredicate.create(this, DualOperator.IN, function.apply(CriteriaContextStack.getCriteria()));
     }
 
-
     @Override
-    public final IPredicate in(Supplier<Expression> supplier) {
+    public final IPredicate inExp(Supplier<Expression> supplier) {
         return DualPredicate.create(this, DualOperator.IN, supplier.get());
     }
 
     @Override
-    public final <O> IPredicate ifIn(Supplier<Collection<O>> supplier) {
-        final Collection<O> values;
-        values = supplier.get();
-        return (values == null || values.size() == 0) ? null : this.in(values);
+    public final IPredicate ifIn(Supplier<Object> collectionOrExp) {
+        return this.ifInOrNotIn(DualOperator.IN, collectionOrExp.get(), true);
     }
 
     @Override
-    public final <O> IPredicate ifInParam(Supplier<Collection<O>> supplier) {
-        final Collection<O> values;
-        values = supplier.get();
-        return (values == null || values.size() == 0) ? null : this.inParam(values);
+    public final <C> IPredicate ifIn(Function<C, Object> collectionOrExp) {
+        return this.ifInOrNotIn(DualOperator.IN, collectionOrExp.apply(CriteriaContextStack.getCriteria()), true);
     }
 
-    @Nullable
     @Override
-    public final IPredicate ifInExp(Supplier<Expression> supplier) {
+    public final IPredicate ifIn(Function<String, Object> function, String keyName) {
+        return this.ifInOrNotIn(DualOperator.IN, function.apply(keyName), true);
+    }
+
+    @Override
+    public <C> IPredicate ifInParam(Function<C, Object> collectionOrExp) {
+        return this.ifInOrNotIn(DualOperator.IN, collectionOrExp.apply(CriteriaContextStack.getCriteria()), false);
+    }
+
+    @Override
+    public IPredicate ifInParam(Supplier<Object> collectionOrExp) {
+        return this.ifInOrNotIn(DualOperator.IN, collectionOrExp.get(), false);
+    }
+
+    @Override
+    public IPredicate ifInParam(Function<String, Object> function, String keyName) {
+        return this.ifInOrNotIn(DualOperator.IN, function.apply(keyName), false);
+    }
+
+    @Override
+    public final IPredicate notIn(Object collectionOrExp) {
         final Expression exp;
-        exp = supplier.get();
-        return exp == null ? null : DualPredicate.create(this, DualOperator.IN, exp);
+        if (collectionOrExp instanceof Expression) {
+            exp = (Expression) collectionOrExp;
+        } else {
+            exp = SQLs.optimizingParams(this.paramMeta(), (Collection<?>) collectionOrExp);
+        }
+        return DualPredicate.create(this, DualOperator.NOT_IN, exp);
     }
 
     @Override
-    public final <C> IPredicate ifInExp(Function<C, Expression> function) {
+    public final IPredicate notInParam(Object collectionOrExp) {
         final Expression exp;
-        exp = function.apply(CriteriaContextStack.getCriteria());
-        return exp == null ? null : DualPredicate.create(this, DualOperator.IN, exp);
-    }
-
-    @Override
-    public final <O> IPredicate notIn(Collection<O> parameters) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.optimizingParams(this.paramMeta(), parameters));
-    }
-
-    @Override
-    public final <O> IPredicate notInParam(Collection<O> parameters) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.params(this.paramMeta(), parameters));
+        if (collectionOrExp instanceof Expression) {
+            exp = (Expression) collectionOrExp;
+        } else {
+            exp = SQLs.params(this.paramMeta(), (Collection<?>) collectionOrExp);
+        }
+        return DualPredicate.create(this, DualOperator.NOT_IN, exp);
     }
 
     @Override
@@ -800,32 +825,35 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <O> IPredicate ifNotIn(Supplier<Collection<O>> supplier) {
-        final Collection<O> values;
-        values = supplier.get();
-        return (values == null || values.size() == 0) ? null : this.notIn(values);
+    public final <C> IPredicate ifNotIn(Function<C, Object> collectionOrExp) {
+        return this.ifInOrNotIn(DualOperator.NOT_IN, collectionOrExp.apply(CriteriaContextStack.getCriteria()), true);
     }
 
     @Override
-    public final <O> IPredicate ifNotInParam(Supplier<Collection<O>> supplier) {
-        final Collection<O> values;
-        values = supplier.get();
-        return (values == null || values.size() == 0) ? null : this.notInParam(values);
+    public final IPredicate ifNotIn(Supplier<Object> collectionOrExp) {
+        return this.ifInOrNotIn(DualOperator.NOT_IN, collectionOrExp.get(), true);
     }
 
     @Override
-    public final IPredicate ifNotInExp(Supplier<Expression> supplier) {
-        final Expression exp;
-        exp = supplier.get();
-        return exp == null ? null : DualPredicate.create(this, DualOperator.NOT_IN, exp);
+    public final IPredicate ifNotIn(Function<String, Object> function, String keyName) {
+        return this.ifInOrNotIn(DualOperator.NOT_IN, function.apply(keyName), true);
     }
 
     @Override
-    public final <C> IPredicate ifNotInExp(Function<C, Expression> function) {
-        final Expression exp;
-        exp = function.apply(CriteriaContextStack.getCriteria());
-        return exp == null ? null : DualPredicate.create(this, DualOperator.NOT_IN, exp);
+    public final <C> IPredicate ifNotInParam(Function<C, Object> collectionOrExp) {
+        return this.ifInOrNotIn(DualOperator.NOT_IN, collectionOrExp.apply(CriteriaContextStack.getCriteria()), false);
     }
+
+    @Override
+    public final IPredicate ifNotInParam(Supplier<Object> collectionOrExp) {
+        return this.ifInOrNotIn(DualOperator.NOT_IN, collectionOrExp.get(), false);
+    }
+
+    @Override
+    public final IPredicate ifNotInParam(Function<String, Object> function, String keyName) {
+        return this.ifInOrNotIn(DualOperator.NOT_IN, function.apply(keyName), false);
+    }
+
 
     @Override
     public final IPredicate like(Object pattern) {
@@ -1225,6 +1253,31 @@ abstract class OperationExpression implements ArmyExpression {
             throw new CriteriaException(m);
         }
         return DualPredicate.create(this, operator, valueExp);
+    }
+
+    @Nullable
+    private IPredicate ifInOrNotIn(final DualOperator operator, final @Nullable Object value, final boolean optimizing) {
+        switch (operator) {
+            case IN:
+            case NOT_IN:
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(operator);
+        }
+        final IPredicate predicate;
+        final Collection<?> collection;
+        if (value == null) {
+            predicate = null;
+        } else if (value instanceof Expression) {
+            predicate = DualPredicate.create(this, operator, (Expression) value);
+        } else if ((collection = (Collection<?>) value).size() == 0) {
+            predicate = null;
+        } else if (optimizing) {
+            predicate = DualPredicate.create(this, operator, SQLs.optimizingParams(this.paramMeta(), collection));
+        } else {
+            predicate = DualPredicate.create(this, operator, SQLs.params(this.paramMeta(), collection));
+        }
+        return predicate;
     }
 
 }

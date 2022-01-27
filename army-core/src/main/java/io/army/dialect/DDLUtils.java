@@ -55,7 +55,7 @@ public abstract class DDLUtils {
      * @return a unmodifiable list
      */
     static List<FieldMeta<?, ?>> sortFieldMetaCollection(TableMeta<?> tableMeta) {
-        Set<FieldMeta<?, ?>> fieldMetas = new HashSet<>(tableMeta.fields());
+        Set<FieldMeta<?, ?>> fieldMetas = new HashSet<>(tableMeta.fieldList());
 
         List<FieldMeta<?, ?>> fieldMetaList = new ArrayList<>(fieldMetas.size());
 

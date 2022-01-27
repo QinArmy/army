@@ -45,6 +45,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     static <C, Q extends Query> StandardUnionSpec<C, Q> unionQuery(Q left, UnionType unionType, Q right) {
         left.prepared();
         // never validate right,possibly union and select
+        CriteriaUtils.assertSelectItemSizeMatch(left, right);
         final StandardUnionSpec<C, ?> unionSpec;
         if (left instanceof Select) {
             unionSpec = new UnionSelect<>((Select) left, unionType, (Select) right);

@@ -130,10 +130,6 @@ abstract class CriteriaContextStack {
             if (list.size() == 0) {
                 throw new IllegalStateException("stack error");
             }
-            final CriteriaContext rootContext = list.get(0);
-            if (subContext.criteria() != rootContext.criteria()) {
-                throw criteriaInstanceNotMatch();
-            }
             list.push(subContext);
         }
 

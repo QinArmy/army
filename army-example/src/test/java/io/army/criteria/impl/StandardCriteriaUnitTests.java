@@ -12,9 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.testng.Assert.assertTrue;
 
@@ -313,6 +312,37 @@ public class StandardCriteriaUnitTests {
         for (Dialect dialect : Dialect.values()) {
             LOG.debug("union select:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
         }
+    }
+
+    @Test
+    public void simpleSubQuerySelectItem() {
+        final Map<String, Object> criteria = new HashMap<>();
+        criteria.put("offset", 0L);
+        criteria.put("rowCount", 100L);
+
+        final Select select;
+        select = SQLs.query(criteria)
+                .select(SQLs.ref("us", "one"), SQLs.derivedGroup("us"))
+                .from(this::userInfo, "us")
+                .where(SQLs.ref("us", "one").equalLiteral(1))
+                .asQuery();
+
+        for (Dialect dialect : Dialect.values()) {
+            LOG.debug("union select:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        }
+    }
+
+    /**
+     * @see #simpleSubQuerySelectItem()
+     */
+    private SubQuery userInfo(Map<String, Object> criteria) {
+        return SQLs.subQuery()
+                .select(SQLs.literal(1).as("one"), SQLs.group(User_.T, "u"))
+                .from(User_.T, "u")
+                .where(User_.createTime.lessEqualLiteral(LocalDateTime.now()))
+                //.limit((Long)criteria.get("offset"),(Long)criteria.get("rowCount")) //this style is ugly.
+                .limit(criteria::get, "offset", "rowCount")
+                .asQuery();
     }
 
 

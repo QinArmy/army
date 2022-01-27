@@ -194,7 +194,7 @@ abstract class SourceCreateUtils {
 
                 .append("if(")
                 .append(_MetaBridge.TABLE_META)
-                .append(".fields().size() != ")
+                .append(".fieldList().size() != ")
                 .append(_MetaBridge.FIELD_COUNT)
                 .append("){\n")
                 .append(MEMBER_PRE)

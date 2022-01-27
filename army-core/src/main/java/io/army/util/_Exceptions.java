@@ -223,8 +223,8 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static CriteriaException selfJoinNonQualifiedField(GenericField<?, ?> field) {
-        return new CriteriaException(String.format("%s self join but don't use %s."
-                , field.tableMeta(), QualifiedField.class.getName()));
+        return new CriteriaException(String.format("%s self join but %s don't use %s."
+                , field.tableMeta(), field, QualifiedField.class.getName()));
     }
 
     public static CriteriaException javaTypeUnsupportedByMapping(MappingType type, Object nonNull) {

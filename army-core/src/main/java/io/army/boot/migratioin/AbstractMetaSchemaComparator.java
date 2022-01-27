@@ -197,7 +197,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     private void migrateColumnIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationMemberImpl migration) {
         final Map<String, ColumnInfo> columnInfoMap = tableInfo.columnMap();
 
-        for (FieldMeta<?, ?> fieldMeta : tableMeta.fields()) {
+        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldList()) {
             // make key lower case
             ColumnInfo columnInfo = columnInfoMap.get(StringUtils.toLowerCase(fieldMeta.columnName()));
             if (columnInfo == null) {

@@ -40,7 +40,7 @@ public interface TableMeta<T extends IDomain> extends TableItem, Meta {
      */
     Collection<IndexMeta<T>> indexes();
 
-    Collection<FieldMeta<T, ?>> fields();
+    List<FieldMeta<T, ?>> fieldList();
 
     String charset();
 
