@@ -36,10 +36,8 @@ public abstract class _DialectUtils {
 
 
     public static String quoteIfNeed(MappingType mappingType, String textValue) {
-        if (TEXT_JDBC_TYPE.contains(mappingType.jdbcType())) {
-            return StringUtils.quote(textValue);
-        }
-        return textValue;
+
+        return "";
     }
 
 

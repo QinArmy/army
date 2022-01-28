@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.time.*;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -27,10 +28,10 @@ public abstract class _MetaBridge {
 
     public static final String VERSION = "version";
 
-    public static final Set<String> DOMAIN_PROPS = CollectionUtils.asUnmodifiableSet(ID, CREATE_TIME);
-    public static final Set<String> UPDATE_PROPS = CollectionUtils.asUnmodifiableSet(ID, CREATE_TIME, UPDATE_TIME);
-    public static final Set<String> RESERVED_PROPS = CollectionUtils.asUnmodifiableSet(
-            ID, CREATE_TIME, VISIBLE, UPDATE_TIME, VERSION);
+    public static final List<String> DOMAIN_PROPS = CollectionUtils.asUnmodifiableList(ID, CREATE_TIME);
+    public static final List<String> UPDATE_PROPS = CollectionUtils.asUnmodifiableList(ID, CREATE_TIME, UPDATE_TIME);
+    public static final List<String> RESERVED_PROPS = CollectionUtils.asUnmodifiableList(
+            ID, CREATE_TIME, UPDATE_TIME, VERSION, VISIBLE);
 
 
     public static final String TABLE_META = "T";

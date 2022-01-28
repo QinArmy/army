@@ -3,9 +3,12 @@ package io.army.dialect;
 import io.army.Database;
 import io.army.criteria.*;
 import io.army.meta.ParamMeta;
+import io.army.schema._SchemaResult;
 import io.army.session.DialectSessionFactory;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
+
+import java.util.List;
 
 /**
  * A common interface to all dialect of dialect.
@@ -27,23 +30,10 @@ public interface _Dialect {
     void subQuery(SubQuery subQuery, _SqlContext original);
 
 
-//    List<String> createTable(TableMeta<?> tableMeta, @Nullable String tableSuffix);
-//
-//    List<String> addColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
-//            , Collection<FieldMeta<?, ?>> addFieldMetas);
-//
-//    List<String> changeColumn(TableMeta<?> tableMeta, @Nullable String tableSuffix
-//            , Collection<FieldMeta<?, ?>> changeFieldMetas);
-//
-//    List<String> addIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
-//            , Collection<IndexMeta<?>> indexMetas);
-//
-//    List<String> dropIndex(TableMeta<?> tableMeta, @Nullable String tableSuffix
-//            , Collection<String> indexNames);
-//
-//    List<String> modifyTableComment(TableMeta<?> tableMeta, @Nullable String tableSuffix);
-//
-//    List<String> modifyColumnComment(FieldMeta<?, ?> fieldMeta, @Nullable String tableSuffix);
+    default List<String> schemaDdl(_SchemaResult schemaResult) {
+        throw new UnsupportedOperationException();
+    }
+
 
     /**
      * performance after {@link DialectSessionFactory}  initializing .

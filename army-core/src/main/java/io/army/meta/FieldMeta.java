@@ -51,6 +51,22 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F> {
 
     String defaultValue();
 
+    /**
+     * <p>
+     * If {@link #javaType()} is below type then return element java type,
+     * <ul>
+     *     <li>{@link java.util.Collection}</li>
+     *     <li>{@link java.util.Set }</li>
+     *     <li>{@link java.util.List }</li>
+     *     <li>{@link java.util.Map}</li>
+     * </ul>
+     * else return {@code void.class}.
+     * </p>
+     */
+    default Class<?> elementType() {
+        return void.class;
+    }
+
     @Override
     boolean equals(Object o);
 

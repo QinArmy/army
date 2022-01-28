@@ -18,7 +18,6 @@ import java.util.List;
 
 abstract class MySQLDialect extends _AbstractDialect {
 
-    protected static final String NO_BACKSLASH_ESCAPES = "NO_BACKSLASH_ESCAPES";
 
     MySQLDialect(_DialectEnvironment environment) {
         super(environment);
@@ -345,50 +344,53 @@ abstract class MySQLDialect extends _AbstractDialect {
 //    private static void re(){
 //        switch ((MySqlType) sqlType) {
 //            case INT:
-//            case BOOLEAN:
-//            case DATE:
-//            case BLOB:
-//            case TINYINT:
-//            case SMALLINT:
 //            case BIGINT:
 //            case DECIMAL:
-//            case FLOAT:
-//            case DOUBLE:
+//            case BOOLEAN:
+//            case DATETIME:
+//            case DATE:
+//            case TIME:
+//            case YEAR:
+//
 //            case CHAR:
 //            case VARCHAR:
-//            case VARBINARY:
-//            case BINARY:
-//            case TIMESTAMP:
-//            case BIT:
-//            case TIME:
 //            case ENUM:
-//            case LONGTEXT:
-//            case DATETIME:
-//            case YEAR:
 //            case JSON:
-//            case MEDIUMTEXT:
-//            case TEXT:
-//            case TINYTEXT:
 //            case SET:
+//            case TINYTEXT:
+//            case TEXT:
+//            case MEDIUMTEXT:
+//            case LONGTEXT:
+//
+//            case BINARY:
+//            case VARBINARY:
+//            case TINYBLOB:
+//            case BLOB:
+//            case MEDIUMBLOB:
+//            case LONGBLOB:
+//
+//            case BIT:
+//            case FLOAT:
+//            case DOUBLE:
+//
+//            case TINYINT:
+//            case TINYINT_UNSIGNED:
+//            case SMALLINT:
+//            case SMALLINT_UNSIGNED:
+//            case MEDIUMINT:
+//            case MEDIUMINT_UNSIGNED:
+//            case INT_UNSIGNED:
+//            case BIGINT_UNSIGNED:
 //            case DECIMAL_UNSIGNED:
 //
-//            case INT_UNSIGNED:
-//            case MEDIUMINT_UNSIGNED:
-//            case MEDIUMINT:
-//            case SMALLINT_UNSIGNED:
-//            case TINYINT_UNSIGNED:
 //            case POINT:
-//            case POLYGON:
-//            case LONGBLOB:
-//            case TINYBLOB:
 //            case LINESTRING:
-//            case MEDIUMBLOB:
+//            case POLYGON:
 //            case MULTIPOINT:
 //            case MULTIPOLYGON:
-//            case BIGINT_UNSIGNED:
 //            case MULTILINESTRING:
 //            case GEOMETRYCOLLECTION:
-//                break;
+//            break;
 //            default:
 //                throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
 //        }

@@ -5,7 +5,6 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-import java.sql.JDBCType;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
@@ -30,10 +29,6 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
         return ZonedDateTime.class;
     }
 
-    @Override
-    public JDBCType jdbcType() {
-        return JDBCType.TIMESTAMP_WITH_TIMEZONE;
-    }
 
     @Override
     public SqlType map(ServerMeta meta) throws NotSupportDialectException {

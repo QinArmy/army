@@ -3,10 +3,7 @@ package io.army.modelgen;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 abstract class CollectionUtils {
 
@@ -34,6 +31,23 @@ abstract class CollectionUtils {
             set = Collections.unmodifiableSet(temp);
         }
         return set;
+    }
+
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    @NonNull
+    public static <T> List<T> asUnmodifiableList(@Nullable T... e) {
+        final List<T> list;
+        if (e == null || e.length == 0) {
+            list = Collections.emptyList();
+        } else if (e.length == 1) {
+            list = Collections.singletonList(e[0]);
+        } else {
+            final List<T> temp = new ArrayList<>(e.length);
+            Collections.addAll(temp, e);
+            list = Collections.unmodifiableList(temp);
+        }
+        return list;
     }
 
 

@@ -162,8 +162,7 @@ abstract class TableMetaUtils {
         final String fieldName = inheritance.value();
         final FieldMeta<T, ?> discriminator = fieldMetaMap.get(fieldName);
         if (discriminator == null) {
-            String m = String.format("Not found discriminator[%s] in domain[%s].", fieldName, domainClass.getName());
-            throw new MetaException(m);
+            throw notFoundDiscriminator(fieldName, domainClass);
         }
         final Class<?> fieldJavaType = discriminator.javaType();
         if (!fieldJavaType.isEnum() || !CodeEnum.class.isAssignableFrom(fieldJavaType)) {
@@ -178,6 +177,11 @@ abstract class TableMetaUtils {
             throw new MetaException(m);
         }
         return discriminator;
+    }
+
+    static MetaException notFoundDiscriminator(String fieldName, Class<?> domainClass) {
+        String m = String.format("Not found discriminator[%s] in domain[%s].", fieldName, domainClass.getName());
+        return new MetaException(m);
     }
 
 

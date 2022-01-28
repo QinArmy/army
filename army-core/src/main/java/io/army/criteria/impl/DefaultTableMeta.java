@@ -223,6 +223,45 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return new IllegalArgumentException(m);
     }
 
+    private static <T extends IDomain> List<FieldMeta<T, ?>> createFieldList(final Class<T> domainClass
+            , final Map<String, FieldMeta<T, ?>> fieldNameToField) {
+
+        final List<FieldMeta<T, ?>> fieldList = new ArrayList<>(fieldNameToField.size());
+
+        for (String fieldName : _MetaBridge.RESERVED_PROPS) {
+            final FieldMeta<T, ?> reservedField;
+            reservedField = fieldNameToField.get(fieldName);
+            if (reservedField != null) {
+                fieldList.add(reservedField);
+            }
+        }
+
+        final Inheritance inheritance;
+        inheritance = domainClass.getAnnotation(Inheritance.class);
+        final FieldMeta<T, ?> discriminatorField;
+        if (inheritance != null) {
+            discriminatorField = fieldNameToField.get(inheritance.value());
+            if (discriminatorField == null) {
+                throw TableMetaUtils.notFoundDiscriminator(inheritance.value(), domainClass);
+            }
+            fieldList.add(discriminatorField);
+        } else {
+            discriminatorField = null;
+        }
+
+        for (FieldMeta<T, ?> field : fieldNameToField.values()) {
+            if (field == discriminatorField
+                    || _MetaBridge.RESERVED_PROPS.contains(field.fieldName())) {
+                continue;
+            }
+            fieldList.add(field);
+        }
+        if (fieldList.size() != fieldNameToField.size()) {
+            throw new IllegalStateException("field count not match.");
+        }
+        return Collections.unmodifiableList(fieldList);
+    }
+
 
     final Class<T> javaType;
 
@@ -271,7 +310,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
             this.fieldNameToFields = pair.fieldMap;
             this.indexMetaList = pair.indexMetaList;
-            this.fieldList = Collections.unmodifiableList(new ArrayList<>(this.fieldNameToFields.values()));
+            this.fieldList = createFieldList(domainClass, this.fieldNameToFields);
             this.generatorChain = TableMetaUtils.createGeneratorChain(this.fieldNameToFields);
 
             this.primaryField = (PrimaryFieldMeta<T, Object>) this.fieldNameToFields.get(_MetaBridge.ID);

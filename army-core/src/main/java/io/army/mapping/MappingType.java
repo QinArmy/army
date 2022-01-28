@@ -4,16 +4,13 @@ import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-import java.sql.JDBCType;
-
 
 public interface MappingType extends ParamMeta {
 
     Class<?> javaType();
 
-    @Deprecated
-    default JDBCType jdbcType() {
-        throw new UnsupportedOperationException();
+    default Class<?> elementType() {
+        return void.class;
     }
 
     SqlType map(ServerMeta meta);

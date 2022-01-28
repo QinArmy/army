@@ -23,15 +23,6 @@ public abstract class _Literals {
     }
 
 
-    protected static final char EMPTY_CHAR = '\0';
-
-    protected static final char BACK_SLASH = '\\';
-
-    protected static final char QUOTE_CHAR = '\'';
-
-    protected static final char DOUBLE_QUOTE = '"';
-
-
     public static String booleanLiteral(final SqlType sqlType, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
@@ -303,7 +294,7 @@ public abstract class _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return QUOTE_CHAR + text + QUOTE_CHAR;
+        return Constant.QUOTE + text + Constant.QUOTE;
     }
 
     public static String timeWithZone(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
@@ -320,7 +311,7 @@ public abstract class _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return QUOTE_CHAR + text + QUOTE_CHAR;
+        return Constant.QUOTE + text + Constant.QUOTE;
     }
 
     public static String date(final SqlType sqlType, final Object nonNull) {
@@ -336,7 +327,7 @@ public abstract class _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return QUOTE_CHAR + v.toString() + QUOTE_CHAR;
+        return Constant.QUOTE + v.toString() + Constant.QUOTE;
     }
 
     public static String datetime(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
@@ -354,7 +345,7 @@ public abstract class _Literals {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
 
-        return QUOTE_CHAR + text + QUOTE_CHAR;
+        return Constant.QUOTE + text + Constant.QUOTE;
     }
 
     public static String dateTimeWithZone(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
@@ -374,14 +365,14 @@ public abstract class _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return QUOTE_CHAR + text + QUOTE_CHAR;
+        return Constant.QUOTE + text + Constant.QUOTE;
     }
 
     public static String enumLiteral(final SqlType sqlType, final Object nonNull) {
         if (!(nonNull instanceof Enum)) {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return QUOTE_CHAR + ((Enum<?>) nonNull).name() + QUOTE_CHAR;
+        return Constant.QUOTE + ((Enum<?>) nonNull).name() + Constant.QUOTE;
     }
 
     private static String doUnsignedInteger(final SqlType sqlType, final long maxUnsigned, final Object nonNull) {

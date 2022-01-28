@@ -173,7 +173,7 @@ abstract class MetaUtils {
     /*################################## blow private method ##################################*/
 
     private static Set<String> createMissingPropNameSet(Set<String> entityPropNameSet,
-                                                        Set<String> requiredPropNameSet) {
+                                                        Collection<String> requiredPropNameSet) {
         final Set<String> missPropNameSet = new HashSet<>(8);
         for (String requiredPropName : requiredPropNameSet) {
             if (!entityPropNameSet.contains(requiredPropName)) {

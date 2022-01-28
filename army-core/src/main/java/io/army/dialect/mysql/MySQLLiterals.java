@@ -35,9 +35,9 @@ abstract class MySQLLiterals extends _Literals {
         final byte[] array = (byte[]) nonNull;
         final StringBuilder builder = new StringBuilder()
                 .append('X')
-                .append(QUOTE_CHAR)
+                .append(Constant.QUOTE)
                 .append(BufferUtils.hexEscapesText(true, array, array.length));
-        return builder.append(QUOTE_CHAR)
+        return builder.append(Constant.QUOTE)
                 .toString();
     }
 
@@ -66,7 +66,7 @@ abstract class MySQLLiterals extends _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return "B'" + value + QUOTE_CHAR;
+        return "B'" + value + Constant.QUOTE;
     }
 
 
@@ -95,7 +95,7 @@ abstract class MySQLLiterals extends _Literals {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         final StringBuilder builder = new StringBuilder()
-                .append(QUOTE_CHAR);
+                .append(Constant.QUOTE);
         Class<?> enumClass = null;
         int index = 0;
         for (Object e : (Set<?>) nonNull) {
@@ -116,7 +116,7 @@ abstract class MySQLLiterals extends _Literals {
             builder.append(((Enum<?>) e).name());
             index++;
         }
-        return builder.append(QUOTE_CHAR)
+        return builder.append(Constant.QUOTE)
                 .toString();
     }
 
@@ -124,7 +124,7 @@ abstract class MySQLLiterals extends _Literals {
     private static String textEscapes(final String value) {
         final char[] array = value.toCharArray();
         final StringBuilder builder = new StringBuilder(array.length + 5)
-                .append(QUOTE_CHAR);
+                .append(Constant.QUOTE);
         int lastWritten = 0;
         char ch;
         boolean hexEscapes = false;
@@ -132,16 +132,16 @@ abstract class MySQLLiterals extends _Literals {
         for (int i = 0; i < array.length; i++) {
             ch = array[i];
             switch (ch) {
-                case QUOTE_CHAR: {
+                case Constant.QUOTE: {
                     if (i > lastWritten) {
                         builder.append(array, lastWritten, i - lastWritten);
                     }
-                    builder.append(QUOTE_CHAR);
+                    builder.append(Constant.QUOTE);
                     lastWritten = i; // not i+1 as ch wasn't written.
                 }
                 break;
-                case BACK_SLASH:
-                case EMPTY_CHAR:
+                case Constant.BACK_SLASH:
+                case Constant.EMPTY_CHAR:
                 case '\b':
                 case '\n':
                 case '\r':
@@ -156,13 +156,13 @@ abstract class MySQLLiterals extends _Literals {
         if (hexEscapes) {
             final byte[] bytes;
             bytes = value.getBytes(StandardCharsets.UTF_8);
-            literal = "X'" + BufferUtils.hexEscapesText(true, bytes, bytes.length) + QUOTE_CHAR;
+            literal = "X'" + BufferUtils.hexEscapesText(true, bytes, bytes.length) + Constant.QUOTE;
         } else {
             if (lastWritten < array.length) {
                 builder.append(array, lastWritten, array.length - lastWritten);
             }
             literal = builder
-                    .append(QUOTE_CHAR)
+                    .append(Constant.QUOTE)
                     .toString();
         }
         return literal;

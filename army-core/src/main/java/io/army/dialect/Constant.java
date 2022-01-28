@@ -84,6 +84,10 @@ public interface Constant {
 
     String SPACE_LOCK_IN_SHARE_MODE = " LOCK IN SHARE MODE";
 
+    String SPACE_ASC = " ASC";
+
+    String SPACE_DESC = " DESC";
+
     char LEFT_BRACKET = '(';
 
     char RIGHT_BRACKET = ')';
@@ -96,6 +100,13 @@ public interface Constant {
 
     char PLACEHOLDER = '?';
 
+
+    char EMPTY_CHAR = '\0';
+    char BACK_SLASH = '\\';
+
+    char QUOTE = '\'';
+
+    char DOUBLE_QUOTE = '"';
 
 
 }
