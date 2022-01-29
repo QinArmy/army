@@ -17,6 +17,8 @@ import java.util.List;
 
 public abstract class _DdlDialect implements DdlDialect {
 
+    protected static final String SPACE_UNSIGNED = " UNSIGNED";
+
     protected final List<String> errorMsgList = new ArrayList<>();
 
     protected final _AbstractDialect dialect;
@@ -69,64 +71,7 @@ public abstract class _DdlDialect implements DdlDialect {
     protected abstract boolean isFunctionOrExp(FieldMeta<?, ?> field, SqlType type);
 
 
-    private <T extends IDomain> void index(final TableMeta<T> table, final StringBuilder builder) {
-        final _AbstractDialect dialect = this.dialect;
-        for (IndexMeta<T> index : table.indexes()) {
-
-            builder.append(" ,\n\tINDEX")
-                    .append(dialect.quoteIfNeed(index.name()));
-
-            final String type;
-            type = index.type();
-            if (StringUtils.hasText(type)) {
-                builder.append(" USING ")
-                        .append(dialect.quoteIfNeed(index.type()));
-            }
-            builder.append(Constant.SPACE_LEFT_BRACKET);// index left bracket
-
-            final List<IndexFieldMeta<T, ?>> indexFieldList = index.fieldList();
-            final int indexFieldSize = indexFieldList.size();
-            for (int i = 0; i < indexFieldSize; i++) {
-                if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA);
-                }
-                final IndexFieldMeta<T, ?> indexField;
-                indexField = indexFieldList.get(i);
-
-                builder.append(Constant.SPACE)
-                        .append(dialect.quoteIfNeed(indexField.columnName()));
-
-                final Boolean asc = indexField.fieldAsc();
-                if (asc != null) {
-                    if (asc) {
-                        builder.append(Constant.SPACE_ASC);
-                    } else {
-                        builder.append(Constant.SPACE_DESC);
-                    }
-                }
-            }
-            builder.append(Constant.SPACE_RIGHT_BRACKET); // index right bracket
-        }
-    }
-
-
-    protected static void decimalType(final FieldMeta<?, ?> field, final StringBuilder builder) {
-        final int precision = field.precision();
-        if (precision > 0) {
-            builder.append(Constant.LEFT_BRACKET)
-                    .append(field.precision());
-            final int scale = field.scale();
-            if (scale > -1) {
-                builder.append(Constant.COMMA)
-                        .append(scale);
-            }
-            builder.append(Constant.RIGHT_BRACKET);
-        }
-
-    }
-
-
-    protected void precision(final FieldMeta<?, ?> field, SqlType type
+    protected final void precision(final FieldMeta<?, ?> field, SqlType type
             , final int max, final StringBuilder builder) {
         final int precision = field.precision();
         if (precision > -1) {
@@ -143,7 +88,7 @@ public abstract class _DdlDialect implements DdlDialect {
         }
     }
 
-    protected void timeTypeScale(final FieldMeta<?, ?> field, SqlType type, final StringBuilder builder) {
+    protected final void timeTypeScale(final FieldMeta<?, ?> field, SqlType type, final StringBuilder builder) {
         final int scale = field.scale();
         if (scale > -1) {
             if (scale > 6) {
@@ -156,7 +101,7 @@ public abstract class _DdlDialect implements DdlDialect {
         }
     }
 
-    protected boolean checkQuoteValue(final FieldMeta<?, ?> field, String defaultValue) {
+    protected final boolean checkQuoteValue(final FieldMeta<?, ?> field, String defaultValue) {
         final char[] array = defaultValue.toCharArray();
         boolean match = false, hasText = false;
         for (char c : array) {
@@ -174,6 +119,16 @@ public abstract class _DdlDialect implements DdlDialect {
         }
         return match;
 
+    }
+
+    protected final String quoteContent(String defaultValue) {
+        final int leftIndex, rightIndex;
+        leftIndex = defaultValue.indexOf(Constant.QUOTE);
+        rightIndex = defaultValue.indexOf(Constant.QUOTE);
+        if (leftIndex < 0 || rightIndex <= leftIndex) {
+            throw new IllegalArgumentException("not quote literal");
+        }
+        return defaultValue.substring(leftIndex + 1, rightIndex - 1);
     }
 
     protected final void appendIntegerDefault(final FieldMeta<?, ?> field, final SqlType type, final long min
@@ -292,12 +247,53 @@ public abstract class _DdlDialect implements DdlDialect {
 
     }
 
-    protected void defaultValueOutOfNumberRange(FieldMeta<?, ?> field, SqlType type, Number min, @Nullable Number max) {
+    protected final void defaultValueOutOfNumberRange(FieldMeta<?, ?> field, SqlType type, Number min, @Nullable Number max) {
         String m;
         m = String.format("%s default value out of [%s,%s] of %s.%s"
                 , field, min, max == null ? "" : max, type.getClass().getSimpleName(), type.name());
         this.errorMsgList.add(m);
 
+    }
+
+
+    private <T extends IDomain> void index(final TableMeta<T> table, final StringBuilder builder) {
+        final _AbstractDialect dialect = this.dialect;
+        for (IndexMeta<T> index : table.indexes()) {
+
+            builder.append(" ,\n\tINDEX")
+                    .append(dialect.quoteIfNeed(index.name()));
+
+            final String type;
+            type = index.type();
+            if (StringUtils.hasText(type)) {
+                builder.append(" USING ")
+                        .append(dialect.quoteIfNeed(index.type()));
+            }
+            builder.append(Constant.SPACE_LEFT_BRACKET);// index left bracket
+
+            final List<IndexFieldMeta<T, ?>> indexFieldList = index.fieldList();
+            final int indexFieldSize = indexFieldList.size();
+            for (int i = 0; i < indexFieldSize; i++) {
+                if (i > 0) {
+                    builder.append(Constant.SPACE_COMMA);
+                }
+                final IndexFieldMeta<T, ?> indexField;
+                indexField = indexFieldList.get(i);
+
+                builder.append(Constant.SPACE)
+                        .append(dialect.quoteIfNeed(indexField.columnName()));
+
+                final Boolean asc = indexField.fieldAsc();
+                if (asc != null) {
+                    if (asc) {
+                        builder.append(Constant.SPACE_ASC);
+                    } else {
+                        builder.append(Constant.SPACE_DESC);
+                    }
+                }
+            }
+            builder.append(Constant.SPACE_RIGHT_BRACKET); // index right bracket
+        }
     }
 
 
@@ -340,6 +336,21 @@ public abstract class _DdlDialect implements DdlDialect {
         String m;
         m = String.format("%s default value[%s] quote not close.", field, defaultValue);
         this.errorMsgList.add(m);
+    }
+
+    protected static void decimalType(final FieldMeta<?, ?> field, final StringBuilder builder) {
+        final int precision = field.precision();
+        if (precision > 0) {
+            builder.append(Constant.LEFT_BRACKET)
+                    .append(field.precision());
+            final int scale = field.scale();
+            if (scale > -1) {
+                builder.append(Constant.COMMA)
+                        .append(scale);
+            }
+            builder.append(Constant.RIGHT_BRACKET);
+        }
+
     }
 
 }

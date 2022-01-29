@@ -3,19 +3,32 @@ package io.army.dialect.mysql;
 import io.army.dialect.Constant;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._DdlDialect;
+import io.army.mapping.CodeEnumType;
+import io.army.mapping.MappingType;
+import io.army.mapping.NameEnumType;
+import io.army.mapping.mysql.MySQLSetType;
 import io.army.meta.FieldMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
+import io.army.struct.CodeEnum;
+import io.army.struct.CodeEnumException;
 import io.army.util._Exceptions;
 
 import java.time.DateTimeException;
 
 abstract class MySQLDdl extends _DdlDialect {
 
+    private final boolean supportExpression;
+
     private MySQLDdl(_AbstractDialect dialect) {
         super(dialect);
+        this.supportExpression = dialect.environment.serverMeta().major() >= 8;
     }
 
+    @Override
+    protected final boolean isFunctionOrExp(FieldMeta<?, ?> field, SqlType type) {
+        return false;
+    }
 
     @Override
     protected final void dataType(final FieldMeta<?, ?> field, final SqlType type, final StringBuilder builder) {
@@ -40,9 +53,13 @@ abstract class MySQLDdl extends _DdlDialect {
             case GEOMETRYCOLLECTION:
                 builder.append(type.name());
                 break;
+            case DECIMAL_UNSIGNED:
             case DECIMAL: {
                 builder.append(type.name());
                 decimalType(field, builder);
+                if (type == MySqlType.DECIMAL_UNSIGNED) {
+                    builder.append(SPACE_UNSIGNED);
+                }
             }
             break;
             case TIME:
@@ -115,11 +132,6 @@ abstract class MySQLDdl extends _DdlDialect {
             case BIGINT_UNSIGNED:
                 builder.append("BIGINT UNSIGNED");
                 break;
-            case DECIMAL_UNSIGNED: {
-                builder.append("DECIMAL UNSIGNED");
-                decimalType(field, builder);
-            }
-            break;
             default:
                 throw _Exceptions.unexpectedEnum((MySqlType) type);
         }
@@ -164,14 +176,18 @@ abstract class MySQLDdl extends _DdlDialect {
                 appendTextDefault(field, type, builder);
                 break;
             case ENUM:
+                appendEnumDefault(field, builder);
+                break;
             case SET:
+                appendSetTypeDefault(field, builder);
+                break;
             case BINARY:
             case VARBINARY:
             case TINYBLOB:
             case BLOB:
             case MEDIUMBLOB:
             case LONGBLOB:
-
+                break;
             case BIT:
             case FLOAT:
             case DOUBLE:
@@ -243,6 +259,123 @@ abstract class MySQLDdl extends _DdlDialect {
             }
         }
         builder.append(defaultValue);
+    }
+
+    private void appendEnumDefault(final FieldMeta<?, ?> field, final StringBuilder builder) {
+        final String defaultValue;
+        defaultValue = field.defaultValue();
+
+        final MappingType mappingType;
+        if (checkQuoteValue(field, defaultValue) || (this.supportExpression && isExpression(defaultValue))) {
+            builder.append(defaultValue);
+        } else if ((mappingType = field.mappingType()) instanceof CodeEnumType) {
+            try {
+                if (CodeEnum.resolve(field.javaType(), Integer.parseInt(defaultValue)) == null) {
+                    String m = String.format("%s default value no appropriate instance of %s"
+                            , field, field.javaType().getName());
+                    this.errorMsgList.add(m);
+                } else {
+                    builder.append(defaultValue); // literal number
+                }
+            } catch (NumberFormatException e) {
+                String m = String.format("%s default value error,%s", field, e.getMessage());
+                this.errorMsgList.add(m);
+            } catch (CodeEnumException e) {
+                String m = String.format("%s code enum definition error,%s", field, e.getMessage());
+                this.errorMsgList.add(m);
+            }
+        } else if (mappingType instanceof NameEnumType) {
+            try {
+                NameEnumType.valueOf(field.javaType(), defaultValue); // literal string
+                builder.append(Constant.QUOTE)
+                        .append(defaultValue)
+                        .append(Constant.QUOTE);
+            } catch (IllegalArgumentException e) {
+                String m = String.format("%s default value error,%s", field, e.getMessage());
+                this.errorMsgList.add(m);
+            }
+        } else {
+            builder.append(Constant.QUOTE)
+                    .append(defaultValue)
+                    .append(Constant.QUOTE);
+        }
+
+    }//appendEnumDefault
+
+    private void appendSetTypeDefault(final FieldMeta<?, ?> field, final StringBuilder builder) {
+        final String defaultValue;
+        defaultValue = field.defaultValue();
+        if (checkQuoteValue(field, defaultValue) || (this.supportExpression && isExpression(defaultValue))) {
+            builder.append(defaultValue);
+        } else {
+            if (field.mappingType() instanceof MySQLSetType) {
+                try {
+                    MySQLSetType.parseToSet(field.elementType(), defaultValue);
+                } catch (IllegalArgumentException e) {
+                    String m = String.format("%s default value error,%s", field, e.getMessage());
+                    this.errorMsgList.add(m);
+                    return;
+                }
+            }
+            builder.append(Constant.QUOTE)
+                    .append(defaultValue)
+                    .append(Constant.QUOTE);
+        }
+
+    }
+
+    private void appendBinaryDefault(final FieldMeta<?, ?> field, final StringBuilder builder) {
+        final String defaultValue;
+        defaultValue = field.defaultValue();
+        if (checkQuoteValue(field, defaultValue) || (this.supportExpression && isExpression(defaultValue))) {
+            builder.append(defaultValue);
+        } else {
+            if (field.mappingType() instanceof MySQLSetType) {
+                try {
+                    MySQLSetType.parseToSet(field.elementType(), defaultValue);
+                } catch (IllegalArgumentException e) {
+                    String m = String.format("%s default value error,%s", field, e.getMessage());
+                    this.errorMsgList.add(m);
+                    return;
+                }
+            }
+            builder.append(Constant.QUOTE)
+                    .append(defaultValue)
+                    .append(Constant.QUOTE);
+        }
+    }
+
+    private static boolean isHexLiteral(final String defaultValue) {
+        final char[] array;
+        array = defaultValue.toCharArray();
+        for (int i = 0; i < array.length; i++) {
+
+        }
+
+    }
+
+    private static boolean isExpression(final String defaultValue) {
+        final char[] array;
+        array = defaultValue.toCharArray();
+        final int end;
+        if ((array.length & 1) == 0) {
+            end = array.length >> 1;
+        } else {
+            end = (array.length >> 1) + 1;
+        }
+        char head = Constant.SPACE, tail = Constant.SPACE;
+        for (int i = 0, p = array.length - 1; i < end; i++, p--) {
+            if (Character.isWhitespace(head)) {
+                head = array[i];
+            }
+            if (Character.isWhitespace(tail)) {
+                tail = array[p];
+            } else if (!Character.isWhitespace(head)) {
+                break;
+            }
+
+        }
+        return head == Constant.LEFT_BRACKET && tail == Constant.RIGHT_BRACKET;
     }
 
 

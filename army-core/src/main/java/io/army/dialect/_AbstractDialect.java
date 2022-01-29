@@ -34,7 +34,7 @@ public abstract class _AbstractDialect implements _Dialect {
     private static final Collection<String> FORBID_SET_FIELD = ArrayUtils.asUnmodifiableList(
             _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION);
 
-    protected final _DialectEnvironment environment;
+    public final _DialectEnvironment environment;
 
     protected final Set<String> keyWordSet;
 

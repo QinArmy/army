@@ -70,20 +70,20 @@ public final class MySQLSetType extends _ArmyNoInjectionMapping {
         if (!(nonNull instanceof String)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        return doAfterGet(sqlType, this.elementJavaType, (String) nonNull);
+        try {
+            return parseToSet(this.elementJavaType, (String) nonNull);
+        } catch (IllegalArgumentException e) {
+            throw errorValueForSqlType(sqlType, nonNull, e);
+        }
     }
 
 
     @SuppressWarnings("unchecked")
-    private static <E extends Enum<E>> Set<E> doAfterGet(SqlType sqlType, Class<?> javaType, String values) {
+    public static <E extends Enum<E>> Set<E> parseToSet(Class<?> javaType, String values) {
         final String[] array = values.split(",");
         final Set<E> set = new HashSet<>((int) (array.length / 0.75F));
-        try {
-            for (String e : array) {
-                set.add(Enum.valueOf((Class<E>) javaType, e));
-            }
-        } catch (IllegalArgumentException e) {
-            throw errorValueForSqlType(sqlType, values, e);
+        for (String e : array) {
+            set.add(Enum.valueOf((Class<E>) javaType, e));
         }
         return set;
     }

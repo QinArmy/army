@@ -65,16 +65,19 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
         if (!(nonNull instanceof String)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
-        return valueOf(sqlType, (String) nonNull);
+        try {
+            return valueOf(this.enumClass, (String) nonNull);
+        } catch (IllegalArgumentException e) {
+            throw errorValueForSqlType(sqlType, (String) nonNull, e);
+        }
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Enum<T>> T valueOf(SqlType sqlType, String name) {
-        try {
-            return Enum.valueOf((Class<T>) this.enumClass, name);
-        } catch (Exception e) {
-            throw errorValueForSqlType(sqlType, name, e);
+    public static <T extends Enum<T>> T valueOf(Class<?> javaType, String name) {
+        if (!javaType.isEnum()) {
+            throw new IllegalArgumentException("not enum type.");
         }
+        return Enum.valueOf((Class<T>) javaType, name);
     }
 
 
