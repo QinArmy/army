@@ -1,18 +1,12 @@
 package io.army.dialect;
 
 import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
 import io.army.util.StringUtils;
-import io.army.util.TimeUtils;
 
-import java.math.BigDecimal;
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public abstract class _DdlDialect implements DdlDialect {
@@ -23,16 +17,23 @@ public abstract class _DdlDialect implements DdlDialect {
 
     protected final _AbstractDialect dialect;
 
+
     protected _DdlDialect(_AbstractDialect dialect) {
         this.dialect = dialect;
     }
 
     @Override
-    public final <T extends IDomain> String createTable(final TableMeta<T> table) {
+    public final List<String> errorMsgList() {
+        return this.errorMsgList;
+    }
+
+    @Override
+    public final <T extends IDomain> void createTable(final TableMeta<T> table, List<String> sqlList) {
         final _AbstractDialect dialect = this.dialect;
         final StringBuilder builder = new StringBuilder(128)
-                .append("CREATE TABLE IF NOT EXISTS ")
-                .append(dialect.safeTableName(table.tableName()))
+                .append("CREATE TABLE IF NOT EXISTS ");
+
+        dialect.safeObjectName(table.tableName(), builder)
                 .append(Constant.SPACE_LEFT_BRACKET)
                 .append("\n\t");
 
@@ -40,36 +41,45 @@ public abstract class _DdlDialect implements DdlDialect {
 
         final List<FieldMeta<T, ?>> fieldList = table.fieldList();
         final int fieldSize = fieldList.size();
+        String defaultValue;
         for (int i = 0; i < fieldSize; i++) {
             if (i > 0) {
                 builder.append(" ,\n\t");
             }
             final FieldMeta<T, ?> field;
             field = fieldList.get(i);
-            builder.append(dialect.safeColumnName(field.columnName()))
+            dialect.safeObjectName(field.columnName(), builder)
                     .append(Constant.SPACE);
 
             final SqlType sqlType;
             sqlType = field.mappingType().map(serverMeta);
 
             this.dataType(field, sqlType, builder);
-            builder.append(Constant.SPACE);
-            this.defaultValue(field, sqlType, builder);
+            if (field.nullable()) {
+                builder.append(Constant.SPACE_NULL);
+            } else {
+                builder.append(Constant.SPACE_NOT_NULL);
+            }
+            defaultValue = field.defaultValue();
+            if (StringUtils.hasText(defaultValue) && checkDefaultComplete(field, defaultValue)) {
+                builder.append(" DEFAULT ")
+                        .append(defaultValue);
+            }
+            appendComment(field.comment(), builder);
+
         }
-
         this.index(table, builder);
+        builder.append('\n')
+                .append(Constant.SPACE_RIGHT_BRACKET);
 
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
-        return builder.toString();
+        appendTableOption(table, builder);
+        sqlList.add(builder.toString());
     }
 
 
     protected abstract void dataType(FieldMeta<?, ?> field, SqlType type, StringBuilder builder);
 
-    protected abstract void defaultValue(FieldMeta<?, ?> field, SqlType type, StringBuilder builder);
-
-    protected abstract boolean isFunctionOrExp(FieldMeta<?, ?> field, SqlType type);
-
+    protected abstract void appendTableOption(final TableMeta<?> table, final StringBuilder builder);
 
     protected final void precision(final FieldMeta<?, ?> field, SqlType type
             , final int max, final StringBuilder builder) {
@@ -101,158 +111,55 @@ public abstract class _DdlDialect implements DdlDialect {
         }
     }
 
-    protected final boolean checkQuoteValue(final FieldMeta<?, ?> field, String defaultValue) {
-        final char[] array = defaultValue.toCharArray();
-        boolean match = false, hasText = false;
-        for (char c : array) {
-            if (c == Constant.QUOTE) {
-                if (!hasText) {
-                    match = true;
+
+    protected final void appendComment(final String comment, final StringBuilder builder) {
+        final char[] array = comment.toCharArray();
+        builder.append(" COMMENT '");
+        int lastWritten = 0;
+        for (int i = 0; i < array.length; i++) {
+            switch (array[i]) {
+                case Constant.QUOTE: {
+                    if (i > lastWritten) {
+                        builder.append(array, lastWritten, i - lastWritten);
+                    }
+                    builder.append(Constant.QUOTE);
+                    lastWritten = i; // not i+1 as ch wasn't written.
                 }
-                checkQuoteClose(field, defaultValue, array);
                 break;
-            }
-            if (!Character.isWhitespace(c)) {
-                hasText = true;
-            }
-
-        }
-        return match;
-
-    }
-
-    protected final String quoteContent(String defaultValue) {
-        final int leftIndex, rightIndex;
-        leftIndex = defaultValue.indexOf(Constant.QUOTE);
-        rightIndex = defaultValue.indexOf(Constant.QUOTE);
-        if (leftIndex < 0 || rightIndex <= leftIndex) {
-            throw new IllegalArgumentException("not quote literal");
-        }
-        return defaultValue.substring(leftIndex + 1, rightIndex - 1);
-    }
-
-    protected final void appendIntegerDefault(final FieldMeta<?, ?> field, final SqlType type, final long min
-            , long max, final StringBuilder builder) {
-        final String defaultValue;
-        defaultValue = field.defaultValue();
-        if (!checkQuoteValue(field, defaultValue)) {
-            try {
-                final long value;
-                value = Long.parseLong(defaultValue);
-                if (value < min || value > max) {
-                    defaultValueOutOfNumberRange(field, type, min, max);
-                    return;
+                case Constant.BACK_SLASH: {
+                    if (i > lastWritten) {
+                        builder.append(array, lastWritten, i - lastWritten);
+                    }
+                    builder.append(Constant.BACK_SLASH);
+                    lastWritten = i; // not i+1 as ch wasn't written.
                 }
-            } catch (NumberFormatException e) {
-                //ignore, not number default value.
-            }
-        }
-        builder.append(defaultValue);
-    }
-
-    protected final void appendDecimalDefault(final FieldMeta<?, ?> field, final SqlType type, final boolean unsigned
-            , final StringBuilder builder) {
-        final String defaultValue;
-        defaultValue = field.defaultValue();
-        if (!checkQuoteValue(field, defaultValue)) {
-            try {
-                final BigDecimal value;
-                value = new BigDecimal(defaultValue);
-                if (unsigned && value.compareTo(BigDecimal.ZERO) < 0) {
-                    defaultValueOutOfNumberRange(field, type, BigDecimal.ZERO, null);
-                    return;
+                break;
+                case Constant.EMPTY_CHAR: {
+                    if (i > lastWritten) {
+                        builder.append(array, lastWritten, i - lastWritten);
+                    }
+                    builder.append(Constant.BACK_SLASH)
+                            .append('0');
+                    lastWritten = i + 1; //  i+1
                 }
-            } catch (NumberFormatException e) {
-                //ignore, not number default value.
-            }
-        }
-        builder.append(defaultValue);
-    }
-
-    protected final void appendBooleanDefault(final FieldMeta<?, ?> field, final StringBuilder builder) {
-        final String defaultValue;
-        defaultValue = field.defaultValue();
-        checkQuoteValue(field, defaultValue); // check
-        builder.append(defaultValue);
-    }
-
-    protected final void appendDatetimeDefault(final FieldMeta<?, ?> field, final StringBuilder builder) {
-        final String defaultValue;
-        defaultValue = field.defaultValue();
-        if (checkQuoteValue(field, defaultValue)) {
-            builder.append(defaultValue);
-        } else {
-            try {
-                LocalDateTime.parse(defaultValue, TimeUtils.getDatetimeFormatter(6));
-                //literal datetime
-                builder.append(Constant.QUOTE)
-                        .append(defaultValue)
-                        .append(Constant.QUOTE);
-            } catch (DateTimeException e) {
-                // not literal datetime
-                builder.append(defaultValue);
+                break;
+                case '\032': {
+                    if (i > lastWritten) {
+                        builder.append(array, lastWritten, i - lastWritten);
+                    }
+                    builder.append(Constant.BACK_SLASH)
+                            .append('Z');
+                    lastWritten = i + 1; //  i+1
+                }
+                break;
+                default://no-op
             }
         }
 
-    }
-
-    protected final void appendDateDefault(final FieldMeta<?, ?> field, final StringBuilder builder) {
-        final String defaultValue;
-        defaultValue = field.defaultValue();
-        if (checkQuoteValue(field, defaultValue)) {
-            builder.append(defaultValue);
-        } else {
-            try {
-                LocalDate.parse(defaultValue);
-                //literal date
-                builder.append(Constant.QUOTE)
-                        .append(defaultValue)
-                        .append(Constant.QUOTE);
-            } catch (DateTimeException e) {
-                // not literal date
-                builder.append(defaultValue);
-            }
+        if (lastWritten < array.length) {
+            builder.append(array, lastWritten, array.length - lastWritten);
         }
-    }
-
-    protected final void appendTimeDefault(final FieldMeta<?, ?> field, final StringBuilder builder) {
-        final String defaultValue;
-        defaultValue = field.defaultValue();
-        if (checkQuoteValue(field, defaultValue)) {
-            builder.append(defaultValue);
-        } else {
-            try {
-                LocalTime.parse(defaultValue, TimeUtils.getTimeFormatter(6));
-                //literal date
-                builder.append(Constant.QUOTE)
-                        .append(defaultValue)
-                        .append(Constant.QUOTE);
-            } catch (DateTimeException e) {
-                // not literal date
-                builder.append(defaultValue);
-            }
-        }
-    }
-
-    protected final void appendTextDefault(final FieldMeta<?, ?> field, SqlType sqlType, final StringBuilder builder) {
-        final String defaultValue;
-        defaultValue = field.defaultValue();
-        if (checkQuoteValue(field, defaultValue) || isFunctionOrExp(field, sqlType)) {
-            builder.append(defaultValue);
-        } else {
-            builder.append(Constant.QUOTE)
-                    .append(defaultValue)
-                    .append(Constant.QUOTE);
-        }
-
-    }
-
-    protected final void defaultValueOutOfNumberRange(FieldMeta<?, ?> field, SqlType type, Number min, @Nullable Number max) {
-        String m;
-        m = String.format("%s default value out of [%s,%s] of %s.%s"
-                , field, min, max == null ? "" : max, type.getClass().getSimpleName(), type.name());
-        this.errorMsgList.add(m);
-
+        builder.append(Constant.QUOTE);
     }
 
 
@@ -260,14 +167,27 @@ public abstract class _DdlDialect implements DdlDialect {
         final _AbstractDialect dialect = this.dialect;
         for (IndexMeta<T> index : table.indexes()) {
 
-            builder.append(" ,\n\tINDEX")
-                    .append(dialect.quoteIfNeed(index.name()));
 
+            if (index.isPrimaryKey()) {
+                final String indexName = index.name();
+                if (indexName.isEmpty()) {
+                    builder.append(" ,\n\tPRIMARY KEY");
+                } else {
+                    builder.append(" ,\n\tCONSTRAINT ");
+                    dialect.quoteIfNeed(indexName, builder);
+                }
+            } else if (index.unique()) {
+                builder.append(" ,\n\tUNIQUE ");
+                dialect.quoteIfNeed(index.name(), builder);
+            } else {
+                builder.append(" ,\n\tINDEX ");
+                dialect.quoteIfNeed(index.name(), builder);
+            }
             final String type;
             type = index.type();
             if (StringUtils.hasText(type)) {
-                builder.append(" USING ")
-                        .append(dialect.quoteIfNeed(index.type()));
+                builder.append(" USING ");
+                dialect.quoteIfNeed(index.type(), builder);
             }
             builder.append(Constant.SPACE_LEFT_BRACKET);// index left bracket
 
@@ -280,8 +200,8 @@ public abstract class _DdlDialect implements DdlDialect {
                 final IndexFieldMeta<T, ?> indexField;
                 indexField = indexFieldList.get(i);
 
-                builder.append(Constant.SPACE)
-                        .append(dialect.quoteIfNeed(indexField.columnName()));
+                builder.append(Constant.SPACE);
+                dialect.quoteIfNeed(indexField.columnName(), builder);
 
                 final Boolean asc = indexField.fieldAsc();
                 if (asc != null) {
@@ -294,32 +214,7 @@ public abstract class _DdlDialect implements DdlDialect {
             }
             builder.append(Constant.SPACE_RIGHT_BRACKET); // index right bracket
         }
-    }
 
-
-    private void checkQuoteClose(final FieldMeta<?, ?> field, String defaultValue, final char[] array) {
-        boolean quote = false;
-        for (int i = 0, index; i < array.length; i++) {
-            if (!quote) {
-                if (array[i] == Constant.QUOTE) {
-                    quote = true;
-                }
-                continue;
-            }
-            index = defaultValue.indexOf(Constant.QUOTE, i);
-            if (index < 0) {
-                defaultValueQuoteNotClose(field, defaultValue);
-                return;
-            }
-            if (array[i - 1] == Constant.BACK_SLASH) {
-                continue;
-            }
-            quote = false;
-        }
-
-        if (quote) {
-            defaultValueQuoteNotClose(field, defaultValue);
-        }
     }
 
 
@@ -352,5 +247,71 @@ public abstract class _DdlDialect implements DdlDialect {
         }
 
     }
+
+
+    /**
+     * @return true : complete
+     */
+    private boolean checkDefaultComplete(final FieldMeta<?, ?> field, final String value) {
+        final char[] array = value.toCharArray();
+        final char identifierQuote = this.dialect.identifierQuote;
+        boolean quote = false, idQuote = false;
+        LinkedList<Boolean> stack = null;
+        char ch;
+        for (int i = 0, last = array.length - 1; i < array.length; i++) {
+            ch = array[i];
+            if (quote) {
+                if (ch == Constant.BACK_SLASH) {
+                    i++;
+                    continue;
+                } else if (ch != Constant.QUOTE) {
+                    continue;
+                } else if (i < last && array[i + 1] == Constant.QUOTE) {
+                    i++;
+                    continue;
+                }
+                quote = false;
+            } else if (idQuote) {
+                idQuote = false;
+            } else if (ch == Constant.QUOTE) {
+                quote = true;
+            } else if (ch == identifierQuote) {
+                idQuote = true;
+            } else if (ch == Constant.LEFT_BRACKET) {
+                if (stack == null) {
+                    stack = new LinkedList<>();
+                }
+                stack.push(Boolean.TRUE);
+            } else if (ch == Constant.RIGHT_BRACKET) {
+                if (stack == null || stack.size() == 0) {
+                    // error
+                    this.errorMsgList.add(String.format("%s default value ')' not match.", field));
+                    break;
+                }
+                stack.pop();
+            }
+
+
+        }//for
+
+        final boolean complete;
+        if (quote) {
+            complete = false;
+            this.errorMsgList.add(String.format("%s default value ''' not close.", field));
+        } else if (idQuote) {
+            complete = false;
+            String m = String.format("%s default value '%s' not close.", field, this.dialect.identifierQuote);
+            this.errorMsgList.add(m);
+        } else if (stack != null && stack.size() > 0) {
+            complete = false;
+            String m = String.format("%s default value '%s' not close.", field, Constant.LEFT_BRACKET);
+            this.errorMsgList.add(m);
+        } else {
+            complete = true;
+        }
+
+        return complete;
+    }
+
 
 }

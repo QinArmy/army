@@ -102,7 +102,7 @@ public abstract class _DmlUtils {
                 builder.append(Constant.SPACE_COMMA);
             }
             builder.append(Constant.SPACE)
-                    .append(dialect.safeColumnName(field.columnName()));
+                    .append(dialect.safeObjectName(field.columnName()));
             index++;
         }
         builder.append(Constant.SPACE_RIGHT_BRACKET);

@@ -32,13 +32,13 @@ public class User extends VersionDomain {
     @Column
     private Boolean visible;
 
-    @Column(precision = 64, comment = "user nick name")
+    @Column(precision = 64, defaultValue = "''", comment = "user nick name")
     private String nickName;
 
     @Column(comment = "user identity type", updateMode = UpdateMode.ONLY_NULL)
     private IdentityType identityType;
 
-    @Column(comment = "user identity id", updateMode = UpdateMode.ONLY_NULL)
+    @Column(defaultValue = "0", comment = "user identity id", updateMode = UpdateMode.ONLY_NULL)
     private Long identityId;
 
 

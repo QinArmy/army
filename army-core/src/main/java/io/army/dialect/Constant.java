@@ -8,6 +8,8 @@ public interface Constant {
 
     String SPACE_NULL = " NULL";
 
+    String SPACE_NOT_NULL = " NOT NULL";
+
     String FORBID_ALIAS = "_army_";
 
     String SELECT = "SELECT";
@@ -87,6 +89,8 @@ public interface Constant {
     String SPACE_ASC = " ASC";
 
     String SPACE_DESC = " DESC";
+
+    String SPACE_QUOTE = " '";
 
     char LEFT_BRACKET = '(';
 

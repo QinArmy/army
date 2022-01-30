@@ -810,7 +810,7 @@ abstract class TableMetaUtils {
             this.table = table;
 
             if (index == null) {
-                this.name = "PRIMARY";
+                this.name = "";
                 this.unique = true;
                 this.type = "";
                 primaryKey = true;

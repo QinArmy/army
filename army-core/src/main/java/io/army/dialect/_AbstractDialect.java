@@ -38,8 +38,14 @@ public abstract class _AbstractDialect implements _Dialect {
 
     protected final Set<String> keyWordSet;
 
+    protected final char identifierQuote;
+
+    protected final boolean identifierCaseSensitivity;
+
     protected _AbstractDialect(_DialectEnvironment environment) {
         this.environment = environment;
+        this.identifierQuote = identifierQuote();
+        this.identifierCaseSensitivity = this.identifierCaseSensitivity();
         this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet());
     }
 
@@ -248,7 +254,25 @@ public abstract class _AbstractDialect implements _Dialect {
 
     @Override
     public final String quoteIfNeed(final String identifier) {
-        return this.keyWordSet.contains(identifier) ? this.quoteIdentifier(identifier) : identifier;
+        final String safeIdentifier;
+        if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
+            safeIdentifier = this.identifierQuote + identifier + this.identifierQuote;
+        } else {
+            safeIdentifier = identifier;
+        }
+        return safeIdentifier;
+    }
+
+    @Override
+    public final StringBuilder quoteIfNeed(final String identifier, final StringBuilder builder) {
+        if (this.keyWordSet.contains(identifier)) {
+            builder.append(this.identifierQuote)
+                    .append(identifier)
+                    .append(this.identifierQuote);
+        } else {
+            builder.append(identifier);
+        }
+        return builder;
     }
 
 
@@ -265,9 +289,12 @@ public abstract class _AbstractDialect implements _Dialect {
 
     protected abstract Set<String> createKeyWordSet();
 
-    protected abstract String quoteIdentifier(String identifier);
 
     protected abstract boolean supportTableOnly();
+
+    protected abstract char identifierQuote();
+
+    protected abstract boolean identifierCaseSensitivity();
 
 
     /*################################## blow update template method ##################################*/
@@ -386,14 +413,15 @@ public abstract class _AbstractDialect implements _Dialect {
                 if (supportTableOnly) {
                     builder.append(Constant.SPACE_ONLY);
                 }
-                builder.append(Constant.SPACE)
-                        .append(dialect.quoteIfNeed(((TableMeta<?>) tableItem).tableName()))
-                        .append(Constant.SPACE_AS_SPACE)
-                        .append(dialect.quoteIfNeed(block.alias()));
+                builder.append(Constant.SPACE);
+
+                dialect.quoteIfNeed(((TableMeta<?>) tableItem).tableName(), builder)
+                        .append(Constant.SPACE_AS_SPACE);
+                dialect.quoteIfNeed(block.alias(), builder);
             } else if (tableItem instanceof SubQuery) {
                 this.subQuery((SubQuery) tableItem, context);
-                builder.append(Constant.SPACE_AS_SPACE)
-                        .append(dialect.quoteIfNeed(block.alias()));
+                builder.append(Constant.SPACE_AS_SPACE);
+                dialect.quoteIfNeed(block.alias(), builder);
             } else {
                 this.handleDialectTablePart(tableItem, context);
             }
@@ -471,10 +499,12 @@ public abstract class _AbstractDialect implements _Dialect {
 
             visibleField = ((SingleTableMeta<?>) tableItem).getField(_MetaBridge.VISIBLE);
 
-            builder.append(Constant.SPACE)
-                    .append(dialect.quoteIfNeed(block.alias()))
-                    .append(Constant.POINT)
-                    .append(dialect.quoteIfNeed(visibleField.columnName()))
+            builder.append(Constant.SPACE);
+
+            dialect.quoteIfNeed(block.alias(), builder)
+                    .append(Constant.POINT);
+
+            dialect.quoteIfNeed(visibleField.columnName(), builder)
                     .append(Constant.SPACE_EQUAL_SPACE)
                     .append(dialect.literal(visibleField, visibleValue));
 
@@ -492,15 +522,15 @@ public abstract class _AbstractDialect implements _Dialect {
         final _Dialect dialect = parentBlock.dialect();
 
         // 1. child table name
-        builder.append(Constant.SPACE)
-                .append(dialect.quoteIfNeed(childBlock.table().tableName()))
+        builder.append(Constant.SPACE);
+        dialect.quoteIfNeed(childBlock.table().tableName(), builder)
                 .append(Constant.SPACE_AS_SPACE)
                 .append(safeChildTableAlias);
 
         //2. join clause
-        builder.append(Constant.SPACE_JOIN_SPACE)
-                // append parent table name
-                .append(dialect.quoteIfNeed(parentBlock.table().tableName()))
+        builder.append(Constant.SPACE_JOIN_SPACE);
+        // append parent table name
+        dialect.quoteIfNeed(parentBlock.table().tableName(), builder)
                 .append(Constant.SPACE_AS_SPACE)
                 .append(safeParentTableAlias);
 
@@ -587,11 +617,13 @@ public abstract class _AbstractDialect implements _Dialect {
             throw new IllegalArgumentException("table error");
         }
         final _Dialect dialect = context.dialect();
-        context.sqlBuilder()
+        final StringBuilder builder;
+        builder = context.sqlBuilder()
                 .append(Constant.SPACE_AND_SPACE)
                 .append(safeTableAlias)
-                .append(Constant.POINT)
-                .append(dialect.quoteIfNeed(field.columnName()))
+                .append(Constant.POINT);
+
+        dialect.quoteIfNeed(field.columnName(), builder)
                 .append(Constant.SPACE_EQUAL_SPACE)
                 .append(table.discriminatorValue());
     }
@@ -616,12 +648,13 @@ public abstract class _AbstractDialect implements _Dialect {
         }
         if (visibleValue != null) {
             final _Dialect dialect = context.dialect();
-            final StringBuilder sqlBuilder = context.sqlBuilder();
-
-            sqlBuilder.append(Constant.SPACE_AND_SPACE)
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(Constant.SPACE_AND_SPACE)
                     .append(safeTableAlias)
-                    .append(Constant.POINT)
-                    .append(dialect.quoteIfNeed(field.columnName()))
+                    .append(Constant.POINT);
+
+            dialect.quoteIfNeed(field.columnName(), sqlBuilder)
                     .append(Constant.SPACE_EQUAL_SPACE)
                     .append(dialect.literal(field, visibleValue));
         }
@@ -636,7 +669,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
         for (GenericField<?, ?> field : conditionFields) {
-            final char[] safeColumnAlias = dialect.safeColumnName(field.columnName()).toCharArray();
+            final char[] safeColumnAlias = dialect.safeObjectName(field.columnName()).toCharArray();
             sqlBuilder
                     .append(Constant.SPACE_AND_SPACE)
                     .append(Constant.SPACE)
@@ -760,7 +793,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 sqlBuilder.append(safeTableAlias)
                         .append(Constant.POINT);
             }
-            sqlBuilder.append(dialect.safeColumnName(field.columnName()))
+            sqlBuilder.append(dialect.safeObjectName(field.columnName()))
                     .append(Constant.SPACE_EQUAL);
 
             if (!field.nullable() && ((_Expression) valuePart).isNullableValue()) {
@@ -868,7 +901,7 @@ public abstract class _AbstractDialect implements _Dialect {
             sqlBuilder.append(safeTableAlias)
                     .append(Constant.POINT);
         }
-        sqlBuilder.append(dialect.safeColumnName(updateTime.columnName()))
+        sqlBuilder.append(dialect.safeObjectName(updateTime.columnName()))
                 .append(Constant.SPACE_EQUAL);
 
         context.appendParam(ParamValue.build(updateTime.mappingType(), updateTimeValue));

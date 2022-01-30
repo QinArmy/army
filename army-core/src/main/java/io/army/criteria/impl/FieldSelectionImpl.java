@@ -58,9 +58,12 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         } else {
             ((_Expression) field).appendSql(context);
         }
-        context.sqlBuilder()
-                .append(Constant.SPACE_AS_SPACE)
-                .append(context.dialect().quoteIfNeed(this.alias));
+        final StringBuilder builder;
+        builder = context.sqlBuilder()
+                .append(Constant.SPACE_AS_SPACE);
+
+        context.dialect()
+                .quoteIfNeed(this.alias, builder);
     }
 
     @Override

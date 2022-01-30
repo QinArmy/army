@@ -39,9 +39,12 @@ final class ExpressionSelection implements _Selection {
     @Override
     public void appendSelection(final _SqlContext context) {
         this.expression.appendSql(context);
-        context.sqlBuilder()
-                .append(Constant.SPACE_AS_SPACE)
-                .append(context.dialect().quoteIfNeed(this.alias));
+        final StringBuilder builder;
+        builder = context.sqlBuilder()
+                .append(Constant.SPACE_AS_SPACE);
+
+        context.dialect()
+                .quoteIfNeed(this.alias, builder);
     }
 
 

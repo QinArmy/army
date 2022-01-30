@@ -18,6 +18,8 @@ import java.util.List;
 
 abstract class MySQLDialect extends _AbstractDialect {
 
+    protected static final char IDENTIFIER_QUOTE = '`';
+
 
     MySQLDialect(_DialectEnvironment environment) {
         super(environment);
@@ -30,9 +32,22 @@ abstract class MySQLDialect extends _AbstractDialect {
     }
 
     @Override
-    public final String safeColumnName(String columnName) {
+    public final String safeObjectName(String columnName) {
         return this.quoteIfNeed(columnName);
     }
+
+    @Override
+    public final StringBuilder safeObjectName(final String objectName, final StringBuilder builder) {
+        if (this.keyWordSet.contains(objectName)) {
+            builder.append(IDENTIFIER_QUOTE)
+                    .append(objectName)
+                    .append(IDENTIFIER_QUOTE);
+        } else {
+            builder.append(objectName);
+        }
+        return builder;
+    }
+
 
     @Override
     protected final boolean supportTableOnly() {
@@ -116,8 +131,14 @@ abstract class MySQLDialect extends _AbstractDialect {
 
 
     @Override
-    protected final String quoteIdentifier(String identifier) {
-        return '`' + identifier + '`';
+    protected final boolean identifierCaseSensitivity() {
+        //MySQL Identifier Case Sensitivity
+        return true;
+    }
+
+    @Override
+    protected final char identifierQuote() {
+        return IDENTIFIER_QUOTE;
     }
 
     @Override

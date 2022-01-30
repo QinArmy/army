@@ -43,16 +43,24 @@ public interface _Dialect {
     boolean supportInsertReturning();
 
 
+    @Deprecated
     default String safeTableName(String tableName) {
         throw new UnsupportedOperationException();
+    }
+
+
+    default StringBuilder safeObjectName(String tableName, StringBuilder builder) {
+        return builder;
     }
 
     /**
      * design for standard statement.
      */
-    default String safeColumnName(String columnName) {
+    @Deprecated
+    default String safeObjectName(String columnName) {
         throw new UnsupportedOperationException();
     }
+
 
     boolean isKeyWord(String identifier);
 
@@ -73,6 +81,10 @@ public interface _Dialect {
 
 
     String quoteIfNeed(String identifier);
+
+    default StringBuilder quoteIfNeed(String identifier, StringBuilder builder) {
+        return builder;
+    }
 
 
     String showSQL(Stmt stmt);
