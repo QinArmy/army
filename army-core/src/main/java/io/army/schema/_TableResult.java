@@ -4,6 +4,9 @@ import io.army.meta.FieldMeta;
 
 import java.util.List;
 
+/**
+ * @see _SchemaResult
+ */
 public interface _TableResult {
 
     boolean comment();

@@ -87,7 +87,7 @@ public abstract class DDLUtils {
      * @return a unmodifiable list without primary key
      */
     static List<IndexMeta<?>> sortIndexMetaCollection(TableMeta<?> tableMeta) {
-        Set<IndexMeta<?>> indexMetas = new HashSet<>(tableMeta.indexes());
+        Set<IndexMeta<?>> indexMetas = new HashSet<>(tableMeta.indexList());
 
         List<IndexMeta<?>> indexMetaList = new ArrayList<>(indexMetas.size());
         for (IndexMeta<?> indexMeta : indexMetas) {

@@ -371,7 +371,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
 
     @Override
-    public final List<IndexMeta<T>> indexes() {
+    public final List<IndexMeta<T>> indexList() {
         return this.indexMetaList;
     }
 

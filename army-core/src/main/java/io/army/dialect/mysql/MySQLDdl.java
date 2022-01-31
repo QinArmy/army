@@ -3,16 +3,157 @@ package io.army.dialect.mysql;
 import io.army.dialect.Constant;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._DdlDialect;
+import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
+import io.army.meta.IndexFieldMeta;
+import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.schema._FieldResult;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
+import io.army.util.StringUtils;
 import io.army.util._Exceptions;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 final class MySQLDdl extends _DdlDialect {
 
     MySQLDdl(_AbstractDialect dialect) {
         super(dialect);
+    }
+
+    @Override
+    public void modifyTableComment(final TableMeta<?> table, final List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder()
+                .append("ALTER TABLE ");
+        this.dialect.safeObjectName(table.tableName(), builder);
+        appendComment(table.comment(), builder);
+
+    }
+
+    @Override
+    public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder(128)
+                .append("ALTER TABLE ");
+        final _AbstractDialect dialect = this.dialect;
+        TableMeta<?> table = null;
+        FieldMeta<?, ?> field;
+        _FieldResult result;
+        final int size = resultList.size();
+        for (int i = 0; i < size; i++) {
+            result = resultList.get(i);
+            field = result.field();
+            if (i > 0) {
+                if (field.tableMeta() != table) {
+                    throw new IllegalArgumentException("resultList error.");
+                }
+                builder.append(" ,\n\t");
+            } else {
+                table = field.tableMeta();
+                dialect.quoteIfNeed(table.tableName(), builder)
+                        .append("\n\t");
+            }
+
+            if (result.comment() || result.sqlType() || result.nullable()) {
+                builder.append("CHANGE COLUMN ");
+                dialect.quoteIfNeed(field.columnName(), builder)
+                        .append(Constant.SPACE);
+                columnDefinition(field, builder);
+                continue;
+            } else if (!result.defaultValue()) {
+                continue;
+            }
+            final String defaultValue;
+            defaultValue = field.defaultValue();
+            builder.append("ALTER COLUMN ");
+            dialect.quoteIfNeed(field.columnName(), builder);
+            if (defaultValue.length() == 0) {
+                builder.append(" DROP DEFAULT");
+            } else if (Character.isWhitespace(defaultValue.charAt(0))) {
+                defaultStartWithWhiteSpace(field);
+                return;
+            } else if (checkDefaultComplete(field, defaultValue)) {
+                builder.append(" SET DEFAULT ")
+                        .append(defaultValue);
+            }//no else,checkDefaultComplete method have handled.
+
+        }//for
+
+        sqlList.add(builder.toString());
+    }
+
+
+    @Override
+    public <T extends IDomain> void createIndex(final TableMeta<T> table, final List<String> indexNameList
+            , final List<String> sqlList) {
+        final int indexNameSize = indexNameList.size();
+        if (indexNameSize == 0) {
+            throw new IllegalArgumentException("indexNameList must not empty.");
+        }
+        final StringBuilder builder = new StringBuilder(128)
+                .append("ALTER TABLE ");
+
+        final _AbstractDialect dialect = this.dialect;
+
+        dialect.quoteIfNeed(table.tableName(), builder)
+                .append("\n\t");
+
+        final List<IndexMeta<T>> indexMetaList = table.indexList();
+
+        final Set<String> indexNameSet = new HashSet<>();
+        for (int i = 0; i < indexNameSize; i++) {
+            final String indexName = indexNameList.get(i);
+            IndexMeta<T> indexMeta = null;
+            for (IndexMeta<T> index : indexMetaList) {
+                if (!index.name().equals(indexName)) {
+                    continue;
+                }
+                if (indexNameSet.contains(indexName)) {
+                    String m = String.format("Index[%s] duplication for %s", indexName, table);
+                    throw new IllegalArgumentException(m);
+                }
+                indexMeta = index;
+                indexNameSet.add(indexName);
+                break;
+            }
+            if (indexMeta == null) {
+                String m = String.format("Index[%s] not found in %s", indexName, table);
+                throw new IllegalArgumentException(m);
+            }
+            if (i > 0) {
+                builder.append(" ,\n\t");
+            }
+            if (indexMeta.unique()) {
+                builder.append("ADD UNIQUE INDEX ");
+            } else {
+                builder.append("ADD INDEX ");
+            }
+            dialect.quoteIfNeed(indexMeta.name(), builder);
+
+            final String indexType = indexMeta.type();
+            if (StringUtils.hasText(indexType)) {
+                builder.append(" USING ");
+                dialect.quoteIfNeed(indexType, builder);
+            }
+            builder.append(Constant.SPACE_LEFT_BRACKET);
+            final List<IndexFieldMeta<T, ?>> indexFieldList = indexMeta.fieldList();
+            final int fieldSize = indexFieldList.size();
+            for (int j = 0; j < fieldSize; j++) {
+                if (j > 0) {
+                    builder.append(Constant.SPACE_COMMA);
+                }
+                builder.append(Constant.SPACE);
+                dialect.quoteIfNeed(indexFieldList.get(j).columnName(), builder);
+            }
+            builder.append(Constant.SPACE_RIGHT_BRACKET);
+
+
+        }
+
+        sqlList.add(builder.toString());
+
     }
 
     @Override

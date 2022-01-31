@@ -227,7 +227,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
         // index migration
         Set<String> indexNameSet = new HashSet<>();
 
-        for (IndexMeta<?> indexMeta : tableMeta.indexes()) {
+        for (IndexMeta<?> indexMeta : tableMeta.indexList()) {
             String indexName = StringUtils.toLowerCase(indexMeta.name());
             IndexInfo indexInfo = indexInfoMap.get(indexName);
             if (indexInfo == null) {

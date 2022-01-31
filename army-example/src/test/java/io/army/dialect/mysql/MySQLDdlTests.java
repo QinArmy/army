@@ -4,8 +4,12 @@ package io.army.dialect.mysql;
 import io.army.dialect.Dialect;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._MockDialects;
+import io.army.domain.IDomain;
 import io.army.example.domain.User_;
+import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
+import io.army.meta.TableMeta;
+import io.army.schema._FieldResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -43,5 +47,114 @@ public class MySQLDdlTests {
         }
 
     }
+
+    @Test
+    public void addColumn() {
+        final List<String> sqlList = new ArrayList<>();
+        MySQLDdl ddl;
+        final TableMeta<? extends IDomain> table = User_.T;
+        for (Dialect dialect : Dialect.values()) {
+            ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
+            ddl.addColumn(table.fieldList(), sqlList);
+            List<String> errorList;
+            errorList = ddl.errorMsgList();
+            if (errorList.size() > 0) {
+                for (String msg : errorList) {
+                    LOG.error(msg);
+                }
+                throw new MetaException("error");
+            }
+
+        }
+        for (String sql : sqlList) {
+            LOG.debug(sql);
+        }
+
+    }
+
+    @Test
+    public void modifyColumn() {
+        final List<String> sqlList = new ArrayList<>();
+        MySQLDdl ddl;
+        for (Dialect dialect : Dialect.values()) {
+            ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
+
+            List<_FieldResult> resultList = new ArrayList<>();
+            resultList.add(new MockFieldResult(User_.nickName, false, true, false, false));
+
+            resultList.add(new MockFieldResult(User_.identityId, true, true, false, true));
+            resultList.add(new MockFieldResult(User_.identityType, false, true, false, false));
+
+            ddl.modifyColumn(resultList, sqlList);
+
+            List<String> errorList;
+            errorList = ddl.errorMsgList();
+            if (errorList.size() > 0) {
+                for (String msg : errorList) {
+                    LOG.error(msg);
+                }
+                throw new MetaException("error");
+            }
+
+        }
+        for (String sql : sqlList) {
+            LOG.debug(sql);
+        }
+
+    }
+
+    @Test
+    public void simple() {
+
+    }
+
+
+    private static final class MockFieldResult implements _FieldResult {
+
+        private final FieldMeta<?, ?> field;
+
+        private final boolean sqlType;
+
+        private final boolean defaultValue;
+
+        private final boolean nullable;
+
+        private final boolean comment;
+
+        private MockFieldResult(FieldMeta<?, ?> field, boolean sqlType, boolean defaultValue, boolean nullable, boolean comment) {
+            this.field = field;
+            this.sqlType = sqlType;
+            this.defaultValue = defaultValue;
+            this.nullable = nullable;
+            this.comment = comment;
+        }
+
+        @Override
+        public FieldMeta<?, ?> field() {
+            return this.field;
+        }
+
+        @Override
+        public boolean sqlType() {
+            return this.sqlType;
+        }
+
+        @Override
+        public boolean defaultValue() {
+            return this.defaultValue;
+        }
+
+        @Override
+        public boolean nullable() {
+            return this.nullable;
+        }
+
+        @Override
+        public boolean comment() {
+            return this.comment;
+        }
+
+    }// MockFieldResult
+
 
 }

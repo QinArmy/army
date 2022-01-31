@@ -17,9 +17,11 @@ public abstract class _DdlDialect implements DdlDialect {
 
     protected final _AbstractDialect dialect;
 
+    protected final ServerMeta serverMeta;
 
     protected _DdlDialect(_AbstractDialect dialect) {
         this.dialect = dialect;
+        this.serverMeta = dialect.environment.serverMeta();
     }
 
     @Override
@@ -37,36 +39,13 @@ public abstract class _DdlDialect implements DdlDialect {
                 .append(Constant.SPACE_LEFT_BRACKET)
                 .append("\n\t");
 
-        final ServerMeta serverMeta = dialect.environment.serverMeta();
-
         final List<FieldMeta<T, ?>> fieldList = table.fieldList();
         final int fieldSize = fieldList.size();
-        String defaultValue;
         for (int i = 0; i < fieldSize; i++) {
             if (i > 0) {
                 builder.append(" ,\n\t");
             }
-            final FieldMeta<T, ?> field;
-            field = fieldList.get(i);
-            dialect.safeObjectName(field.columnName(), builder)
-                    .append(Constant.SPACE);
-
-            final SqlType sqlType;
-            sqlType = field.mappingType().map(serverMeta);
-
-            this.dataType(field, sqlType, builder);
-            if (field.nullable()) {
-                builder.append(Constant.SPACE_NULL);
-            } else {
-                builder.append(Constant.SPACE_NOT_NULL);
-            }
-            defaultValue = field.defaultValue();
-            if (StringUtils.hasText(defaultValue) && checkDefaultComplete(field, defaultValue)) {
-                builder.append(" DEFAULT ")
-                        .append(defaultValue);
-            }
-            appendComment(field.comment(), builder);
-
+            this.columnDefinition(fieldList.get(i), builder);
         }
         this.index(table, builder);
         builder.append('\n')
@@ -76,6 +55,65 @@ public abstract class _DdlDialect implements DdlDialect {
         sqlList.add(builder.toString());
     }
 
+    @Override
+    public final <T extends IDomain> void addColumn(final List<FieldMeta<T, ?>> fieldList, final List<String> sqlList) {
+        final int fieldSize = fieldList.size();
+        if (fieldSize == 0) {
+            return;
+        }
+        final StringBuilder builder = new StringBuilder(128)
+                .append("ALTER TABLE ");
+        final _AbstractDialect dialect = this.dialect;
+
+        TableMeta<?> table = null;
+        for (int i = 0; i < fieldSize; i++) {
+            final FieldMeta<?, ?> field;
+            field = fieldList.get(i);
+            if (i > 0) {
+                if (field.tableMeta() != table) {
+                    throw new IllegalArgumentException("fieldList error");
+                }
+                builder.append(" ,\n\t");
+            } else {
+                table = field.tableMeta();
+                dialect.safeObjectName(table.tableName(), builder)
+                        .append(" ADD COLUMN (\n\t");
+            }
+
+            this.columnDefinition(field, builder);
+        }
+        builder.append("\n)");
+        sqlList.add(builder.toString());
+    }
+
+
+    protected final void columnDefinition(final FieldMeta<?, ?> field, final StringBuilder builder) {
+        this.dialect.safeObjectName(field.columnName(), builder)
+                .append(Constant.SPACE);
+        final SqlType sqlType;
+        sqlType = field.mappingType().map(this.serverMeta);
+
+        this.dataType(field, sqlType, builder);
+
+        if (field.nullable()) {
+            builder.append(Constant.SPACE_NULL);
+        } else {
+            builder.append(Constant.SPACE_NOT_NULL);
+        }
+
+        final String defaultValue = field.defaultValue();
+        if (StringUtils.hasText(defaultValue) && checkDefaultComplete(field, defaultValue)) {
+            builder.append(" DEFAULT ")
+                    .append(defaultValue);
+        }
+
+        appendComment(field.comment(), builder);
+
+    }
+
+    protected final void defaultStartWithWhiteSpace(FieldMeta<?, ?> field) {
+        this.errorMsgList.add(String.format("%s start with white space.", field));
+    }
 
     protected abstract void dataType(FieldMeta<?, ?> field, SqlType type, StringBuilder builder);
 
@@ -162,10 +200,74 @@ public abstract class _DdlDialect implements DdlDialect {
         builder.append(Constant.QUOTE);
     }
 
+    /**
+     * @return true : complete
+     */
+    protected final boolean checkDefaultComplete(final FieldMeta<?, ?> field, final String value) {
+        final char[] array = value.toCharArray();
+        final char identifierQuote = this.dialect.identifierQuote;
+        boolean quote = false, idQuote = false;
+        LinkedList<Boolean> stack = null;
+        char ch;
+        for (int i = 0, last = array.length - 1; i < array.length; i++) {
+            ch = array[i];
+            if (quote) {
+                if (ch == Constant.BACK_SLASH) {
+                    i++;
+                    continue;
+                } else if (ch != Constant.QUOTE) {
+                    continue;
+                } else if (i < last && array[i + 1] == Constant.QUOTE) {
+                    i++;
+                    continue;
+                }
+                quote = false;
+            } else if (idQuote) {
+                idQuote = false;
+            } else if (ch == Constant.QUOTE) {
+                quote = true;
+            } else if (ch == identifierQuote) {
+                idQuote = true;
+            } else if (ch == Constant.LEFT_BRACKET) {
+                if (stack == null) {
+                    stack = new LinkedList<>();
+                }
+                stack.push(Boolean.TRUE);
+            } else if (ch == Constant.RIGHT_BRACKET) {
+                if (stack == null || stack.size() == 0) {
+                    // error
+                    this.errorMsgList.add(String.format("%s default value ')' not match.", field));
+                    break;
+                }
+                stack.pop();
+            }
+
+
+        }//for
+
+        final boolean complete;
+        if (quote) {
+            complete = false;
+            this.errorMsgList.add(String.format("%s default value ''' not close.", field));
+        } else if (idQuote) {
+            complete = false;
+            String m = String.format("%s default value '%s' not close.", field, this.dialect.identifierQuote);
+            this.errorMsgList.add(m);
+        } else if (stack != null && stack.size() > 0) {
+            complete = false;
+            String m = String.format("%s default value '%s' not close.", field, Constant.LEFT_BRACKET);
+            this.errorMsgList.add(m);
+        } else {
+            complete = true;
+        }
+
+        return complete;
+    }
+
 
     private <T extends IDomain> void index(final TableMeta<T> table, final StringBuilder builder) {
         final _AbstractDialect dialect = this.dialect;
-        for (IndexMeta<T> index : table.indexes()) {
+        for (IndexMeta<T> index : table.indexList()) {
 
 
             if (index.isPrimaryKey()) {
@@ -227,12 +329,6 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
 
-    private void defaultValueQuoteNotClose(FieldMeta<?, ?> field, String defaultValue) {
-        String m;
-        m = String.format("%s default value[%s] quote not close.", field, defaultValue);
-        this.errorMsgList.add(m);
-    }
-
     protected static void decimalType(final FieldMeta<?, ?> field, final StringBuilder builder) {
         final int precision = field.precision();
         if (precision > 0) {
@@ -246,71 +342,6 @@ public abstract class _DdlDialect implements DdlDialect {
             builder.append(Constant.RIGHT_BRACKET);
         }
 
-    }
-
-
-    /**
-     * @return true : complete
-     */
-    private boolean checkDefaultComplete(final FieldMeta<?, ?> field, final String value) {
-        final char[] array = value.toCharArray();
-        final char identifierQuote = this.dialect.identifierQuote;
-        boolean quote = false, idQuote = false;
-        LinkedList<Boolean> stack = null;
-        char ch;
-        for (int i = 0, last = array.length - 1; i < array.length; i++) {
-            ch = array[i];
-            if (quote) {
-                if (ch == Constant.BACK_SLASH) {
-                    i++;
-                    continue;
-                } else if (ch != Constant.QUOTE) {
-                    continue;
-                } else if (i < last && array[i + 1] == Constant.QUOTE) {
-                    i++;
-                    continue;
-                }
-                quote = false;
-            } else if (idQuote) {
-                idQuote = false;
-            } else if (ch == Constant.QUOTE) {
-                quote = true;
-            } else if (ch == identifierQuote) {
-                idQuote = true;
-            } else if (ch == Constant.LEFT_BRACKET) {
-                if (stack == null) {
-                    stack = new LinkedList<>();
-                }
-                stack.push(Boolean.TRUE);
-            } else if (ch == Constant.RIGHT_BRACKET) {
-                if (stack == null || stack.size() == 0) {
-                    // error
-                    this.errorMsgList.add(String.format("%s default value ')' not match.", field));
-                    break;
-                }
-                stack.pop();
-            }
-
-
-        }//for
-
-        final boolean complete;
-        if (quote) {
-            complete = false;
-            this.errorMsgList.add(String.format("%s default value ''' not close.", field));
-        } else if (idQuote) {
-            complete = false;
-            String m = String.format("%s default value '%s' not close.", field, this.dialect.identifierQuote);
-            this.errorMsgList.add(m);
-        } else if (stack != null && stack.size() > 0) {
-            complete = false;
-            String m = String.format("%s default value '%s' not close.", field, Constant.LEFT_BRACKET);
-            this.errorMsgList.add(m);
-        } else {
-            complete = true;
-        }
-
-        return complete;
     }
 
 

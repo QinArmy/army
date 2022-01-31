@@ -5,7 +5,6 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.struct.CodeEnum;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,7 +37,7 @@ public interface TableMeta<T extends IDomain> extends TableItem, Meta {
     /**
      * contain primary key
      */
-    Collection<IndexMeta<T>> indexes();
+    List<IndexMeta<T>> indexList();
 
     List<FieldMeta<T, ?>> fieldList();
 
