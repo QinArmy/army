@@ -1,12 +1,13 @@
 package io.army.sync.executor;
 
 
-import io.army.meta.ServerMeta;
+import io.army.schema._SchemaInfo;
+import io.army.session.DataAccessException;
 
 public interface MetaExecutor extends Executor {
 
-    ServerMeta serverMeta();
 
+    _SchemaInfo extractInfo() throws DataAccessException;
 
 
 }

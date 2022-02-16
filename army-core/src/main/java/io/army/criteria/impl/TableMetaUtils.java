@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ErrorCode;
 import io.army.annotation.*;
+import io.army.dialect.Constant;
 import io.army.domain.IDomain;
 import io.army.generator.PreFieldGenerator;
 import io.army.lang.NonNull;
@@ -9,7 +10,6 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sharding.Route;
-import io.army.sharding.TableRoute;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;
 import io.army.util.StringUtils;
@@ -229,11 +229,25 @@ abstract class TableMetaUtils {
         // 1. create columnNameSet
         final Table table = domainClass.getAnnotation(Table.class);
         final Index[] indices = table.indexes();
-        final Set<String> indexColumnNameSet = new HashSet<>();
+        final Set<String> indexFieldNameSet = new HashSet<>();
+
         for (Index index : indices) {
-            for (String columnName : index.columnList()) {
-                // use lower case column name
-                indexColumnNameSet.add(StringUtils.toLowerCase(columnName));
+            for (String fieldName : index.fieldList()) {
+                if (fieldName.length() < 1) {
+                    String m = String.format("%s index[%s] must not empty.", table, index.name());
+                    throw new MetaException(m);
+                }
+                if (Character.isWhitespace(fieldName.charAt(0))) {
+                    String m = String.format("%s index[%s] couldn't start with white space.", table, index.name());
+                    throw new MetaException(m);
+                }
+                if (fieldName.indexOf(Constant.SPACE) < 0) {
+                    indexFieldNameSet.add(fieldName);
+                } else {
+                    final StringTokenizer tokenizer;
+                    tokenizer = new StringTokenizer(fieldName.trim(), " ", false);
+                    indexFieldNameSet.add(tokenizer.nextToken());
+                }
             }
         }
         // 2. create mapped super class pair for domain class
@@ -254,7 +268,7 @@ abstract class TableMetaUtils {
             parentIdField = parentFieldPair.getSecond();
         }
         // 4. create non-index filed meta and get index filed map
-        final Map<String, Field> indexColumnToFieldMap = new HashMap<>();
+        final Map<String, Field> indexFieldToFieldMap = new HashMap<>();
         final Set<String> columnNameSet = new HashSet<>(); // for check column name duplication
         final Map<String, FieldMeta<T, ?>> fieldMetaMap = new HashMap<>();
         for (Class<?> mappedClass : mappedClassList) {
@@ -273,8 +287,8 @@ abstract class TableMetaUtils {
                 fieldNameSet.add(fieldName);
 
                 final String columnName = columnName(column, field);
-                if (_MetaBridge.ID.equals(fieldName) || indexColumnNameSet.contains(columnName)) {
-                    if (indexColumnToFieldMap.putIfAbsent(columnName, field) != null) {
+                if (_MetaBridge.ID.equals(fieldName) || indexFieldNameSet.contains(fieldName)) {
+                    if (indexFieldToFieldMap.putIfAbsent(fieldName, field) != null) {
                         throw columnNameDuplication(mappedClass, columnName);
                     }
                 } else if (columnNameSet.contains(columnName)) {// check column name duplication
@@ -287,7 +301,7 @@ abstract class TableMetaUtils {
             }
         }
         if (parentIdField != null
-                && indexColumnToFieldMap.putIfAbsent(parentIdField.getName(), parentIdField) != null) {
+                && indexFieldToFieldMap.putIfAbsent(parentIdField.getName(), parentIdField) != null) {
             throw fieldOverride(domainClass, parentIdField);
         }
 
@@ -296,7 +310,7 @@ abstract class TableMetaUtils {
         boolean createdPrimaryIndex = false;
         for (Index index : indices) {
             final IndexMeta<T> indexMeta;
-            indexMeta = new DefaultIndexMeta<>(tableMeta, index, indexColumnToFieldMap, columnNameSet);
+            indexMeta = new DefaultIndexMeta<>(tableMeta, index, indexFieldToFieldMap, columnNameSet);
             indexMetaList.add(indexMeta);
             if (indexMeta.isPrimaryKey()) {
                 createdPrimaryIndex = true;
@@ -309,7 +323,7 @@ abstract class TableMetaUtils {
         }
         if (!createdPrimaryIndex) {
             final IndexMeta<T> indexMeta;
-            indexMeta = new DefaultIndexMeta<>(tableMeta, null, indexColumnToFieldMap, columnNameSet);
+            indexMeta = new DefaultIndexMeta<>(tableMeta, null, indexFieldToFieldMap, columnNameSet);
             final IndexFieldMeta<T, ?> fieldMeta = indexMeta.fieldList().get(0);
             if (fieldMetaMap.putIfAbsent(fieldMeta.fieldName(), fieldMeta) != null) {
                 throw fieldMetaDuplication(fieldMeta);
@@ -341,40 +355,6 @@ abstract class TableMetaUtils {
             columnName = customColumnName;
         }
         return columnName;
-    }
-
-    static <T extends IDomain> RouteMeta routeMeta(final TableMeta<T> tableMeta
-            , final Map<String, FieldMeta<T, ?>> fieldMetaMap) {
-        ShardingRoute shardingRoute = AnnotationUtils.getAnnotation(tableMeta.javaType(), ShardingRoute.class);
-        if (shardingRoute == null) {
-            return new RouteMeta(Collections.emptyList(), Collections.emptyList(), null);
-        }
-        Class<? extends Route> routeClass = loadShardingRouteClass(tableMeta, shardingRoute.value());
-        List<FieldMeta<?, ?>> databaseRouteFieldList, tableRouteFieldList;
-        if (io.army.sharding.ShardingRoute.class.isAssignableFrom(routeClass)) {
-            String[] routeFields = shardingRoute.routeFields();
-            if (routeFields.length == 0) {
-                String[] databaseRouteFields = shardingRoute.databaseRouteFields();
-                String[] tableRouteFields = shardingRoute.tableRouteFields();
-                databaseRouteFieldList = getRouteFieldList(tableMeta, fieldMetaMap, databaseRouteFields);
-                tableRouteFieldList = getRouteFieldList(tableMeta, fieldMetaMap, tableRouteFields);
-            } else {
-                databaseRouteFieldList = getRouteFieldList(tableMeta, fieldMetaMap, routeFields);
-                tableRouteFieldList = databaseRouteFieldList;
-            }
-        } else if (TableRoute.class.isAssignableFrom(routeClass)) {
-            String[] tableRouteFields = shardingRoute.routeFields();
-            if (tableRouteFields.length == 0) {
-                tableRouteFields = shardingRoute.tableRouteFields();
-            }
-            databaseRouteFieldList = Collections.emptyList();
-            tableRouteFieldList = getRouteFieldList(tableMeta, fieldMetaMap, tableRouteFields);
-        } else {
-            throw new MetaException("TableMeta[%s] route class isn't %s or %s implementation."
-                    , io.army.sharding.ShardingRoute.class.getName()
-                    , TableRoute.class.getName());
-        }
-        return new RouteMeta(databaseRouteFieldList, tableRouteFieldList, routeClass);
     }
 
     /*################################ private method ####################################*/
@@ -648,7 +628,7 @@ abstract class TableMetaUtils {
     private static <T extends IDomain> List<IndexFieldMeta<T, ?>> createIndexFieldMetaList(
             final String[] indexColumns,
             final IndexMeta<T> indexMeta,
-            final Map<String, Field> columnToFieldMap,
+            final Map<String, Field> nameToFieldMap,
             final Set<String> createdColumnSet) {
 
         final TableMeta<T> tableMeta = indexMeta.table();
@@ -660,9 +640,9 @@ abstract class TableMetaUtils {
         for (String indexColumnDefinition : indexColumns) {
             tokenizer = new StringTokenizer(indexColumnDefinition.trim(), " ", false);
             final int tokenCount = tokenizer.countTokens();
-            final String columnName = StringUtils.toLowerCase(tokenizer.nextToken());
-            if (createdColumnSet.contains(columnName)) {
-                throw indexColumnCreatedError(tableMeta, columnName);
+            final String fieldName = tokenizer.nextToken();
+            if (createdColumnSet.contains(fieldName)) {
+                throw indexColumnCreatedError(tableMeta, fieldName);
             }
             if (tokenCount == 1) {
                 columnAsc = null;
@@ -672,18 +652,18 @@ abstract class TableMetaUtils {
                 throw indexColumnDefinitionError(indexMeta, indexColumnDefinition);
             }
 
-            if (PRIMARY_FIELD.equals(columnName) && (!indexMeta.unique() || indexColumns.length != 1)) {
+            if (PRIMARY_FIELD.equals(fieldName) && (!indexMeta.unique() || indexColumns.length != 1)) {
                 throw indexColumnDefinitionError(indexMeta, indexColumnDefinition);
             }
-            final Field field = columnToFieldMap.get(columnName);
+            final Field field = nameToFieldMap.get(fieldName);
             if (field == null) {
-                throw notFoundIndexColumn(indexMeta, columnName);
+                throw notFoundIndexColumn(indexMeta, fieldName);
             }
             indexFieldMeta = DefaultFieldMeta.createIndexFieldMeta(tableMeta, field, indexMeta, indexColumns.length
                     , columnAsc);
 
             list.add(indexFieldMeta);
-            createdColumnSet.add(columnName);
+            createdColumnSet.add(fieldName);
         }
 
         if (list.size() == 1) {
@@ -820,7 +800,7 @@ abstract class TableMetaUtils {
                 this.fieldList = Collections.singletonList(idFieldMeta);
             } else {
                 this.name = index.name();
-                final String[] columnArray = index.columnList();
+                final String[] columnArray = index.fieldList();
                 this.primaryKey = columnArray.length == 1 && _MetaBridge.ID.equals(columnArray[0].split(" ")[0]);
                 this.unique = this.primaryKey || index.unique();
                 this.type = index.type();

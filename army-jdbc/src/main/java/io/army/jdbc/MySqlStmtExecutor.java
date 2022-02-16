@@ -3,7 +3,7 @@ package io.army.jdbc;
 
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
-import io.army.sync.utils.SyncExceptions;
+import io.army.sync.utils._SyncExceptions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -155,7 +155,7 @@ final class MySqlStmtExecutor extends AbstractStmtExecutor {
                 }
             }
             default:
-                throw SyncExceptions.unexpectedEnum((MySqlType) sqlDataType);
+                throw _SyncExceptions.unexpectedEnum((MySqlType) sqlDataType);
 
         }
 

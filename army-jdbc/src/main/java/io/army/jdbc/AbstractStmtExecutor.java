@@ -15,7 +15,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
-import io.army.sync.utils.SyncExceptions;
+import io.army.sync.utils._SyncExceptions;
 import io.army.util._Exceptions;
 
 import java.io.IOException;
@@ -71,7 +71,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
             }
             return insertRows;
         } catch (SQLException e) {
-            throw SyncExceptions.wrapDataAccess(e);
+            throw _SyncExceptions.wrapDataAccess(e);
         }
     }
 
@@ -96,7 +96,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
         try {
             this.conn.close();
         } catch (SQLException e) {
-            throw SyncExceptions.wrapDataAccess(e);
+            throw _SyncExceptions.wrapDataAccess(e);
         }
     }
 
@@ -148,7 +148,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
         long currentMills = System.currentTimeMillis();
         long restMills = (timeout * 1000L - (currentMills - startMills));
         if (restMills <= 0) {
-            throw SyncExceptions.timeout(timeout, restMills);
+            throw _SyncExceptions.timeout(timeout, restMills);
         }
         int restSeconds = (int) (restMills / 1000L);
         if (restSeconds == 0) {

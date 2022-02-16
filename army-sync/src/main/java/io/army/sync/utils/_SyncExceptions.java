@@ -6,7 +6,7 @@ import io.army.util._Exceptions;
 
 import java.sql.SQLException;
 
-public abstract class SyncExceptions extends _Exceptions {
+public abstract class _SyncExceptions extends _Exceptions {
 
 
     public static DataAccessException wrapDataAccess(SQLException e) {

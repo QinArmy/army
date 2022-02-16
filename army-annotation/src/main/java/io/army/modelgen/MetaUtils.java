@@ -112,17 +112,20 @@ abstract class MetaUtils {
     }
 
 
-    static void assertIndexColumnNameSet(TypeElement entityElement, Set<String> columnNameSet,
-                                         Set<String> indexColumnNameSet)
+    static void assertIndexFieldNameSet(TypeElement entityElement, Set<String> fieldNameSet,
+                                        Set<String> indexFieldNameSet)
             throws AnnotationMetaException {
 
-        Set<String> missingColumnNameSet = new HashSet<>();
-        for (String columnName : indexColumnNameSet) {
-            if (!columnNameSet.contains(columnName)) {
-                missingColumnNameSet.add(columnName);
+        Set<String> missingColumnNameSet = null;
+        for (String fieldName : indexFieldNameSet) {
+            if (!fieldNameSet.contains(fieldName)) {
+                if (missingColumnNameSet == null) {
+                    missingColumnNameSet = new HashSet<>();
+                }
+                missingColumnNameSet.add(fieldName);
             }
         }
-        if (!missingColumnNameSet.isEmpty()) {
+        if (missingColumnNameSet != null) {
             String m = String.format("Domain[%s] index map %s not exits.",
                     entityElement.getQualifiedName(),
                     missingColumnNameSet);
@@ -269,7 +272,7 @@ abstract class MetaUtils {
     }
 
 
-    static Map<String, IndexMode> createIndexColumnNameSet(final TypeElement domainElement, final boolean noParent) {
+    static Map<String, IndexMode> createIndexFieldNameSet(final TypeElement domainElement, final boolean noParent) {
         final Table table = domainElement.getAnnotation(Table.class);
         final Index[] indexArray = table.indexes();
         final Map<String, IndexMode> indexMetaMap = new HashMap<>();
@@ -287,10 +290,10 @@ abstract class MetaUtils {
             }
             final IndexMode indexMode = IndexMode.resolve(index);
             indexNameSet.add(indexName);
-            for (String columnName : index.columnList()) {
-                tokenizer = new StringTokenizer(columnName.trim(), " ", false);
+            for (String fieldName : index.fieldList()) {
+                tokenizer = new StringTokenizer(fieldName.trim(), " ", false);
                 // make index field name lower case
-                indexMetaMap.put(Strings.toLowerCase(tokenizer.nextToken()), indexMode);
+                indexMetaMap.put(tokenizer.nextToken(), indexMode);
             }
         }
         if (noParent || domainElement.getAnnotation(Inheritance.class) != null) {

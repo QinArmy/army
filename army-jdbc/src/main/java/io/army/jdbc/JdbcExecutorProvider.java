@@ -7,7 +7,7 @@ import io.army.session.UnsupportedDataSourceTypeException;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.FactoryInfo;
-import io.army.sync.utils.SyncExceptions;
+import io.army.sync.utils._SyncExceptions;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
@@ -50,7 +50,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         } catch (UnsupportedDataSourceTypeException e) {
             throw e;
         } catch (SQLException e) {
-            throw SyncExceptions.wrapDataAccess(e);
+            throw _SyncExceptions.wrapDataAccess(e);
         } catch (Exception e) {
             String m = String.format("get server metadata occur error:%s", e.getMessage());
             throw new DataAccessException(m, e);
@@ -75,7 +75,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         } catch (UnsupportedDataSourceTypeException e) {
             throw e;
         } catch (SQLException e) {
-            throw SyncExceptions.wrapDataAccess(e);
+            throw _SyncExceptions.wrapDataAccess(e);
         } catch (Exception e) {
             String m = String.format("get server metadata occur error:%s", e.getMessage());
             throw new DataAccessException(m, e);

@@ -434,7 +434,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     final Dialect defaultDialect() {
-        return Dialect.MYSQL80;
+        return Dialect.MySQL80;
     }
 
     @Override

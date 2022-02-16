@@ -89,7 +89,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
 
     @Override
     final Dialect defaultDialect() {
-        return Dialect.MYSQL80;
+        return Dialect.MySQL80;
     }
 
     @Override

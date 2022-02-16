@@ -7,7 +7,6 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
-import io.army.tx.Isolation;
 
 import java.util.Collection;
 import java.util.List;
@@ -37,14 +36,6 @@ public abstract class SQLs extends StandardFunctions {
 
     /**
      * create a standard insert api object.
-     * <p>
-     * a standard insert api support blow {@link io.army.meta.MappingMode}:
-     *     <ul>
-     *         <li>{@link io.army.meta.SimpleTableMeta}</li>
-     *         <li>{@link io.army.meta.ParentTableMeta},auto append {@link IPredicate} {@code discriminatorValue = 0}</li>
-     *        <li>{@link io.army.meta.ChildTableMeta},but must in {@link Isolation#READ_COMMITTED }+ level environment.</li>
-     *     </ul>
-     * </p>
      * <p>
      *     <ul>
      *         <li>see {@code io.army.sync.GenericSyncApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>

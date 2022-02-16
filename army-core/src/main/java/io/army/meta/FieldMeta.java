@@ -24,7 +24,6 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F> {
     /**
      * <p>
      * if this field representing {@link _MetaBridge#ID}
-     * then field's tableMeta is {@link MappingMode#CHILD},always return null.
      * </p>
      */
     @Nullable

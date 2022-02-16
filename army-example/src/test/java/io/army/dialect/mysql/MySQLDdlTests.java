@@ -1,6 +1,7 @@
 package io.army.dialect.mysql;
 
 
+import io.army.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._MockDialects;
@@ -14,8 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MySQLDdlTests {
 
@@ -26,7 +26,9 @@ public class MySQLDdlTests {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
         for (Dialect dialect : Dialect.values()) {
-
+            if (dialect.database() != Database.MySQL) {
+                continue;
+            }
             ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
             ddl.createTable(User_.T, sqlList);
 
@@ -54,6 +56,9 @@ public class MySQLDdlTests {
         MySQLDdl ddl;
         final TableMeta<? extends IDomain> table = User_.T;
         for (Dialect dialect : Dialect.values()) {
+            if (dialect.database() != Database.MySQL) {
+                continue;
+            }
             ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
             ddl.addColumn(table.fieldList(), sqlList);
             List<String> errorList;
@@ -77,6 +82,9 @@ public class MySQLDdlTests {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
         for (Dialect dialect : Dialect.values()) {
+            if (dialect.database() != Database.MySQL) {
+                continue;
+            }
             ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
 
             List<_FieldResult> resultList = new ArrayList<>();
@@ -104,7 +112,101 @@ public class MySQLDdlTests {
     }
 
     @Test
-    public void simple() {
+    public void createIndex() {
+        final List<String> sqlList = new ArrayList<>();
+        MySQLDdl ddl;
+        final TableMeta<? extends IDomain> table = User_.T;
+        for (Dialect dialect : Dialect.values()) {
+            if (dialect.database() != Database.MySQL) {
+                continue;
+            }
+            ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
+            ddl.createIndex(table, Collections.singletonList("idx_identity_id"), sqlList);
+            List<String> errorList;
+            errorList = ddl.errorMsgList();
+            if (errorList.size() > 0) {
+                for (String msg : errorList) {
+                    LOG.error(msg);
+                }
+                throw new MetaException("error");
+            }
+
+        }
+        for (String sql : sqlList) {
+            LOG.debug(sql);
+        }
+
+    }
+
+    @Test
+    public void changeIndex() {
+        final EnumMap<Dialect, List<String>> sqlMap = new EnumMap<>(Dialect.class);
+        MySQLDdl ddl;
+        final TableMeta<? extends IDomain> table = User_.T;
+        for (Dialect dialect : Dialect.values()) {
+            if (dialect.database() != Database.MySQL) {
+                continue;
+            }
+            ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
+
+            final List<String> sqlList = new ArrayList<>();
+            sqlMap.put(dialect, sqlList);
+            ddl.changeIndex(table, Collections.singletonList("idx_identity_id"), sqlList);
+
+            List<String> errorList;
+            errorList = ddl.errorMsgList();
+            if (errorList.size() > 0) {
+                for (String msg : errorList) {
+                    LOG.error(msg);
+                }
+                throw new MetaException("error");
+            }
+
+        }
+
+        for (Map.Entry<Dialect, List<String>> e : sqlMap.entrySet()) {
+            LOG.debug("dialect : {}", e.getKey());
+            for (String sql : e.getValue()) {
+                LOG.debug(sql);
+            }
+        }
+
+
+    }
+
+    @Test
+    public void dropIndex() {
+        final EnumMap<Dialect, List<String>> sqlMap = new EnumMap<>(Dialect.class);
+        MySQLDdl ddl;
+        final TableMeta<? extends IDomain> table = User_.T;
+        for (Dialect dialect : Dialect.values()) {
+            if (dialect.database() != Database.MySQL) {
+                continue;
+            }
+            ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
+
+            final List<String> sqlList = new ArrayList<>();
+            sqlMap.put(dialect, sqlList);
+            ddl.dropIndex(table, Collections.singletonList("idx_identity_id"), sqlList);
+
+            List<String> errorList;
+            errorList = ddl.errorMsgList();
+            if (errorList.size() > 0) {
+                for (String msg : errorList) {
+                    LOG.error(msg);
+                }
+                throw new MetaException("error");
+            }
+
+        }
+
+        for (Map.Entry<Dialect, List<String>> e : sqlMap.entrySet()) {
+            LOG.debug("dialect : {}", e.getKey());
+            for (String sql : e.getValue()) {
+                LOG.debug(sql);
+            }
+        }
+
 
     }
 

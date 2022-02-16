@@ -11,7 +11,7 @@ public enum Dialect {
             return Database.MySQL;
         }
     },
-    MYSQL80((byte) 80) {
+    MySQL80((byte) 80) {
         @Override
         public Database database() {
             return Database.MySQL;

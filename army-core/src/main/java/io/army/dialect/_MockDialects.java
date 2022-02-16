@@ -29,7 +29,7 @@ public abstract class _MockDialects {
             case MySQL57:
                 meta = new MockServerMeta("MySQL", Database.MySQL, "5.7.36", 5, 7);
                 break;
-            case MYSQL80:
+            case MySQL80:
                 meta = new MockServerMeta("MySQL", Database.MySQL, "8.0.27", 8, 0);
                 break;
             default:

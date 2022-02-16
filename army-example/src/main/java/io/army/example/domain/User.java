@@ -1,16 +1,13 @@
 package io.army.example.domain;
 
-import io.army.annotation.Column;
-import io.army.annotation.Inheritance;
-import io.army.annotation.Table;
-import io.army.annotation.UpdateMode;
+import io.army.annotation.*;
 import io.army.example.VersionDomain;
 import io.army.example.struct.IdentityType;
 import io.army.example.struct.UserType;
 
 import java.time.LocalDateTime;
 
-@Table(name = "u_user", comment = "user")
+@Table(name = "u_user", comment = "user", indexes = @Index(name = "idx_identity_id", fieldList = {"identityId"}, unique = true))
 @Inheritance("userType")
 public class User extends VersionDomain {
 

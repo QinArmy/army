@@ -13,14 +13,14 @@ abstract class MySQLUtils {
     }
 
     static Dialect defaultDialect(Statement statement) {
-        return statement instanceof _MySQLWithClause ? Dialect.MYSQL80 : Dialect.MySQL57;
+        return statement instanceof _MySQLWithClause ? Dialect.MySQL80 : Dialect.MySQL57;
     }
 
     static void validateDialect(Statement statement, Dialect dialect) {
         if (dialect.database() != Database.MySQL) {
             throw _Exceptions.stmtDontSupportDialect(dialect);
         }
-        if (statement instanceof _MySQLWithClause && dialect.version() < Dialect.MYSQL80.version()) {
+        if (statement instanceof _MySQLWithClause && dialect.version() < Dialect.MySQL80.version()) {
             throw _Exceptions.stmtDontSupportDialect(dialect);
         }
     }

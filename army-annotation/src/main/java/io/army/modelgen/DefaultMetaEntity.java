@@ -20,7 +20,7 @@ class DefaultMetaEntity implements MetaEntity {
         assert domainElement != null;
         // indexColumnNameSet help then step
         final Map<String, IndexMode> indexMetaMap;
-        indexMetaMap = MetaUtils.createIndexColumnNameSet(domainElement
+        indexMetaMap = MetaUtils.createIndexFieldNameSet(domainElement
                 , parentMappedElementList.isEmpty());
 
         final Collection<VariableElement> mappingProps;

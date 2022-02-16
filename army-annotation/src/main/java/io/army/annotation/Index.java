@@ -21,7 +21,7 @@ public @interface Index {
      * (Required) The names of the columnMap to be included in the indexMap,
      * in asSort.
      */
-    String[] columnList();
+    String[] fieldList();
 
     /**
      * (Optional) Whether the indexMap is unique.

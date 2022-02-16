@@ -21,5 +21,7 @@ interface DdlDialect {
 
     <T extends IDomain> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
 
+      <T extends IDomain> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
 
+    <T extends IDomain> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
 }

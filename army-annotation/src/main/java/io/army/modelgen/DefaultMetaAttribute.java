@@ -28,14 +28,11 @@ class DefaultMetaAttribute implements MetaAttribute {
         final List<MetaAttribute> list = new ArrayList<>(mappingPropSet.size());
         Column column;
         MetaAttribute attribute;
-        String columnName, propName;
+        String propName;
         for (VariableElement mappingProp : mappingPropSet) {
             propName = mappingProp.getSimpleName().toString();
             column = mappingProp.getAnnotation(Column.class);
-            columnName = MetaUtils.columnName(domainElement, propName, column);
-            // make column name lower case
-            columnName = Strings.toLowerCase(columnName);
-            IndexMode indexMode = indexMetaMa.get(columnName);
+            IndexMode indexMode = indexMetaMa.get(propName);
             if (indexMode == null && propName.equals(_MetaBridge.ID)) {
                 indexMode = IndexMode.PRIMARY;
             }

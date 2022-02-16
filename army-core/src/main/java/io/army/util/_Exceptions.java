@@ -23,6 +23,7 @@ import io.army.stmt.Stmt;
 import io.qinarmy.util.ExceptionUtils;
 import io.qinarmy.util.UnexpectedEnumException;
 
+
 public abstract class _Exceptions extends ExceptionUtils {
 
     protected _Exceptions() {

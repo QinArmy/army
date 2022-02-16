@@ -156,6 +156,51 @@ final class MySQLDdl extends _DdlDialect {
 
     }
 
+
+    @Override
+    public <T extends IDomain> void changeIndex(final TableMeta<T> table, final List<String> indexNameList
+            , final List<String> sqlList) {
+        dropIndex(table, indexNameList, sqlList);
+        createIndex(table, indexNameList, sqlList);
+    }
+
+    @Override
+    public <T extends IDomain> void dropIndex(TableMeta<T> table, List<String> indexNameList
+            , List<String> sqlList) {
+        final int indexNameSize = indexNameList.size();
+        if (indexNameSize == 0) {
+            throw new IllegalArgumentException("indexNameList must not empty.");
+        }
+        final StringBuilder builder = new StringBuilder(128)
+                .append("ALTER TABLE ");
+        final _AbstractDialect dialect = this.dialect;
+        dialect.quoteIfNeed(table.tableName(), builder)
+                .append("\n\t");
+        for (int i = 0; i < indexNameSize; i++) {
+            if (i > 0) {
+                builder.append(" ,\n\t");
+            }
+            final String indexName = indexNameList.get(i);
+
+            IndexMeta<T> index = null;
+            for (IndexMeta<T> indexMeta : table.indexList()) {
+                if (indexMeta.name().equals(indexName)) {
+                    index = indexMeta;
+                    break;
+                }
+            }
+            if (index == null) {
+                String m = String.format("Not found index[%s] in %s.", indexName, index);
+                throw new IllegalArgumentException(m);
+            }
+            builder.append("DROP INDEX ");
+            dialect.quoteIfNeed(indexName, builder);
+
+        }
+        sqlList.add(builder.toString());
+
+    }
+
     @Override
     protected void dataType(final FieldMeta<?, ?> field, final SqlType type, final StringBuilder builder) {
         switch ((MySqlType) type) {

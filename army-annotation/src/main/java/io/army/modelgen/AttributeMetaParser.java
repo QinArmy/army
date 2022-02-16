@@ -59,7 +59,7 @@ final class AttributeMetaParser {
                 Map<String, VariableElement> temp;
                 temp = this.domainPropMap.get(parentClassName);
                 if (temp == null) {
-                    final Set<String> parentIndexNameSet = MetaUtils.createIndexColumnNameSet(parentElement, true).keySet();
+                    final Set<String> parentIndexNameSet = MetaUtils.createIndexFieldNameSet(parentElement, true).keySet();
                     temp = generateEntityAttributes(parentMappedElementList, entityPropNameSet, parentIndexNameSet);
                     this.domainPropMap.put(parentClassName, Collections.unmodifiableMap(temp));
                 } else {
@@ -162,7 +162,7 @@ final class AttributeMetaParser {
         if (discriminatorField != null && !foundDiscriminatorColumn) {
             throw Exceptions.noDiscriminatorColumn(domainElement, discriminatorField);
         }
-        MetaUtils.assertIndexColumnNameSet(domainElement, columnNameSet, indexColumnNameSet);
+        MetaUtils.assertIndexFieldNameSet(domainElement, entityPropNameSet, indexColumnNameSet);
         MetaUtils.assertRequiredProps(domainElement, entityPropNameSet, table.immutable());
         return mappedPropMap;
     }
