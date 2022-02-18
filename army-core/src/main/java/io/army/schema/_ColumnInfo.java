@@ -1,6 +1,6 @@
 package io.army.schema;
 
-public interface _FieldInfo {
+public interface _ColumnInfo {
 
     static Builder builder() {
         throw new UnsupportedOperationException();
@@ -25,7 +25,7 @@ public interface _FieldInfo {
 
         Builder autoincrement(boolean autoincrement);
 
-        _FieldInfo buildAndClear();
+        _ColumnInfo buildAndClear();
 
     }
 

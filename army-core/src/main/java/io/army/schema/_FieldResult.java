@@ -16,4 +16,5 @@ public interface _FieldResult {
     boolean nullable();
 
     boolean comment();
+
 }

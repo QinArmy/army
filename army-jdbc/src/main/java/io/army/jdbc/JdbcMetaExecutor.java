@@ -7,8 +7,8 @@ import io.army.sync.executor.MetaExecutor;
 import io.army.sync.utils._SyncExceptions;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 final class JdbcMetaExecutor implements MetaExecutor {
 
@@ -26,20 +26,23 @@ final class JdbcMetaExecutor implements MetaExecutor {
     @Override
     public _SchemaInfo extractInfo() throws DataAccessException {
         final Connection conn = this.conn;
-        final DatabaseMetaData metaData;
+
         try {
+            final DatabaseMetaData metaData;
             metaData = conn.getMetaData();
             final String catalog, schema;
             catalog = conn.getCatalog();
             schema = conn.getSchema();
 
-            final List<_TableInfo.Builder> tableBuilderList;
-            tableBuilderList = getTableBuilder(catalog, schema, metaData);
-            for (_TableInfo.Builder builder : tableBuilderList) {
-                appendColumn(catalog, schema, metaData, builder);
-            }
+            final Map<String, _TableInfo.Builder> tableBuilderMap;
+            tableBuilderMap = getTableBuilder(catalog, schema, metaData);
 
-            return null;
+            appendColumn(catalog, schema, metaData, tableBuilderMap);
+
+            appendIndex(catalog, schema, metaData, true, tableBuilderMap);
+            appendIndex(catalog, schema, metaData, false, tableBuilderMap);
+
+            return _SchemaInfo.create(catalog, schema, tableBuilderMap);
         } catch (SQLException e) {
             throw _SyncExceptions.wrapDataAccess(e);
         }
@@ -55,11 +58,11 @@ final class JdbcMetaExecutor implements MetaExecutor {
     }
 
 
-    private List<_TableInfo.Builder> getTableBuilder(final String catalog, final String schema
+    private Map<String, _TableInfo.Builder> getTableBuilder(final String catalog, final String schema
             , final DatabaseMetaData metaData) throws SQLException {
 
         try (ResultSet resultSet = metaData.getTables(catalog, schema, "%", new String[]{"TABLE", "VIEW"})) {
-            final List<_TableInfo.Builder> builderList = new ArrayList<>();
+            final Map<String, _TableInfo.Builder> builderMap = new HashMap<>();
             for (String tableName, type; resultSet.next(); ) {
                 tableName = resultSet.getString("TABLE_NAME");
                 type = resultSet.getString("TABLE_TYPE");
@@ -79,20 +82,31 @@ final class JdbcMetaExecutor implements MetaExecutor {
                         throw new DataAccessException(m);
                     }
                 }
-                builderList.add(builder);
+                builderMap.putIfAbsent(tableName, builder);
 
             }// for
-            return builderList;
+            return builderMap;
         }//try
 
     }
 
     private void appendColumn(final @Nullable String catalog, final @Nullable String schema
-            , final DatabaseMetaData metaData, final _TableInfo.Builder tableBuilder) throws SQLException {
+            , final DatabaseMetaData metaData, final Map<String, _TableInfo.Builder> tableBuilderMap)
+            throws SQLException {
 
-        try (ResultSet resultSet = metaData.getColumns(catalog, schema, tableBuilder.name(), "%")) {
+        try (ResultSet resultSet = metaData.getColumns(catalog, schema, "%", "%")) {
+            _TableInfo.Builder tableBuilder = null;
+            final _ColumnInfo.Builder builder = _ColumnInfo.builder();
+            for (String tableName, currentTableName = null; resultSet.next(); ) {
 
-            for (_FieldInfo.Builder builder = _FieldInfo.builder(); resultSet.next(); ) {
+                tableName = resultSet.getString("TABLE_NAME");
+                if (!tableName.equals(currentTableName)) {
+                    currentTableName = tableName;
+                    tableBuilder = tableBuilderMap.get(tableName);
+                }
+                if (tableBuilder == null) {
+                    continue;
+                }
 
                 builder.name(resultSet.getString("COLUMN_NAME"))
                         .type(resultSet.getString("TYPE_NAME"))
@@ -118,7 +132,8 @@ final class JdbcMetaExecutor implements MetaExecutor {
                         builder.scale(-1);
                 }
 
-                tableBuilder.appendField(builder.buildAndClear());
+                tableBuilder.appendColumn(builder.buildAndClear());
+
             }
 
 
@@ -128,20 +143,53 @@ final class JdbcMetaExecutor implements MetaExecutor {
 
     private void appendIndex(final @Nullable String catalog, final @Nullable String schema
             , final DatabaseMetaData metaData, final boolean unique
-            , final _TableInfo.Builder tableBuilder) throws SQLException {
+            , final Map<String, _TableInfo.Builder> tableBuilderMap) throws SQLException {
 
-        try (ResultSet resultSet = metaData.getIndexInfo(catalog, schema, tableBuilder.name(), unique, false)) {
+        try (ResultSet resultSet = metaData.getIndexInfo(catalog, schema, "%", unique, false)) {
+
+            _TableInfo.Builder tableBuilder = null;
             final _IndexInfo.Builder builder = _IndexInfo.builder();
-            for (String asc; resultSet.next(); ) {
-                builder.name(resultSet.getString("INDEX_NAME"))
-                        .type("");
-                asc = resultSet.getString("ASC_OR_DESC");
-                if (asc == null) {
+            Boolean asc;
+            for (String ascStr, indexName, lastIndexName = null, tableName, lastTableName = null; resultSet.next(); ) {
+                tableName = resultSet.getString("TABLE_NAME");
 
-                } else {
-
+                if (lastTableName == null) {
+                    lastTableName = tableName;
+                    tableBuilder = tableBuilderMap.get(tableName);
+                    if (tableBuilder == null) {
+                        lastTableName = null;
+                        continue;
+                    }
                 }
-            }
+                indexName = resultSet.getString("INDEX_NAME");
+                if (lastIndexName == null) {
+                    lastIndexName = indexName;
+                }
+                ascStr = resultSet.getString("ASC_OR_DESC");
+                if (ascStr == null) {
+                    asc = null;
+                } else if (ascStr.equals("A")) {
+                    asc = Boolean.TRUE;
+                } else if (ascStr.equals("D")) {
+                    asc = Boolean.FALSE;
+                } else {
+                    String m = String.format("Index ASC_OR_DESC[%s] error, for table[%s] index[%s]"
+                            , ascStr, tableName, indexName);
+                    throw new DataAccessException(m);
+                }
+
+                if (!tableName.equals(lastTableName)) {
+                    lastTableName = null;
+                }
+                if (lastTableName != null && indexName.equals(lastIndexName)) {
+                    builder.appendColumn(resultSet.getString("COLUMN_NAME"), asc);
+                } else {
+                    builder.unique(!resultSet.getBoolean("NON_UNIQUE"));
+                    tableBuilder.appendIndex(builder.buildAndClear());
+                    lastIndexName = null;
+                }
+
+            }//for
 
         }
 

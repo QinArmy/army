@@ -10,6 +10,8 @@ public interface _IndexInfo {
 
     interface Builder {
 
+        boolean isNotEmpty();
+
         Builder name(String name);
 
         Builder type(String type);

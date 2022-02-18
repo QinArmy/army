@@ -2,7 +2,15 @@ package io.army.schema;
 
 import io.army.lang.Nullable;
 
+import java.util.Map;
+
 public interface _TableInfo {
+
+
+    @Nullable
+    String comment();
+
+    Map<String, _ColumnInfo> columnMap();
 
 
     static Builder builder(String tableName) {
@@ -18,8 +26,11 @@ public interface _TableInfo {
 
         Builder comment(@Nullable String comment);
 
-        Builder appendField(_FieldInfo fieldInfo);
+        Builder appendColumn(_ColumnInfo fieldInfo);
 
+        Builder appendIndex(_IndexInfo indexInfo);
+
+        _TableInfo build();
 
     }
 
