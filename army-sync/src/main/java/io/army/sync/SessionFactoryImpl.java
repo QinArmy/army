@@ -8,7 +8,6 @@ import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
-import io.army.criteria.NotFoundRouteException;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
 import io.army.lang.Nullable;
@@ -77,17 +76,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
     }
 
     @Override
-    public byte databaseIndex() {
-        // always 0
-        return 0;
-    }
-
-    @Override
-    public byte tableCountPerDatabase() {
-        return super.tableCountPerDatabase;
-    }
-
-    @Override
     public ServerMeta serverMeta() {
         return this.executorFactory.serverMeta();
     }
@@ -134,14 +122,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         return this.closed;
     }
 
-    @Override
-    public TableRoute route(TableMeta<?> tableMeta) throws NotFoundRouteException {
-        TableRoute tableRoute = this.tableRouteMap.get(tableMeta);
-        if (tableRoute == null) {
-            throw new NotFoundRouteException("TableMeta[%s] not found table route.", tableMeta);
-        }
-        return tableRoute;
-    }
 
     @Override
     public String toString() {

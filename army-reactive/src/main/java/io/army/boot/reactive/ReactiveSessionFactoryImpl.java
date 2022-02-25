@@ -7,7 +7,6 @@ import io.army.SessionFactoryException;
 import io.army.boot.DomainValuesGenerator;
 import io.army.boot.migratioin.ReactiveMigrator;
 import io.army.cache.SessionCacheFactory;
-import io.army.criteria.NotFoundRouteException;
 import io.army.dialect._Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
@@ -22,7 +21,6 @@ import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
 import io.army.session.AbstractSessionFactory;
 import io.army.session.FactoryMode;
 import io.army.session.GenericTmSessionFactory;
-import io.army.sharding.TableRoute;
 import io.jdbd.meta.DatabaseSchemaMetaData;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.DatabaseSessionFactory;
@@ -113,16 +111,6 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
         return null;
     }
 
-    @Override
-    public byte databaseIndex() {
-        // always 0,because of single database
-        return 0;
-    }
-
-    @Override
-    public byte tableCountPerDatabase() {
-        return 0;
-    }
 
     // @Override
     public Database actualDatabase() {
@@ -188,10 +176,6 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
         return this.factoryClosed.get();
     }
 
-    @Override
-    public TableRoute route(TableMeta<?> tableMeta) throws NotFoundRouteException {
-        return null;
-    }
 
     @Override
     public ProxyReactiveSession proxySession() {

@@ -35,10 +35,7 @@ public interface FactoryBuilder {
 
     FactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
 
-
     FactoryBuilder environment(ArmyEnvironment environment);
-
-    FactoryBuilder tableCountPerDatabase(int tableCountPerDatabase);
 
     FactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices);
 

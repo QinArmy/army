@@ -18,7 +18,7 @@ final class DomainProxyFactoryImpl implements DomainProxyFactory {
 
     static DomainProxyFactoryImpl build(GenericSessionFactory sessionFactory) {
         Map<TableMeta<?>, DomainSetterPointcut> tableSetterPointcutMap = new HashMap<>();
-        for (TableMeta<?> tableMeta : sessionFactory.tableMetaMap().values()) {
+        for (TableMeta<?> tableMeta : sessionFactory.tableMap().values()) {
             if (!tableMeta.immutable()) {
                 tableSetterPointcutMap.put(tableMeta, SetterMethodMatcherPointcut.build(tableMeta));
             }

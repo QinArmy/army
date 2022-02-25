@@ -1,7 +1,6 @@
 package io.army.session;
 
 import io.army.ArmyException;
-import io.army.criteria.NotFoundRouteException;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
@@ -10,7 +9,6 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.sharding.Route;
 
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -28,7 +26,7 @@ public interface GenericSessionFactory {
 
     ServerMeta serverMeta();
 
-    Map<Class<?>, TableMeta<?>> tableMetaMap();
+    Map<Class<?>, TableMeta<?>> tableMap();
 
     @Nullable
     <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
@@ -51,10 +49,7 @@ public interface GenericSessionFactory {
 
     boolean formatSQL();
 
-    boolean allowSpanSharding();
 
     Function<ArmyException, RuntimeException> exceptionFunction();
-
-    Route route(TableMeta<?> tableMeta) throws NotFoundRouteException;
 
 }

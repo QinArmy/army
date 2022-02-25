@@ -64,14 +64,6 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
         return this;
     }
 
-    @Override
-    public FactoryBuilder tableCountPerDatabase(final int tableCountPerDatabase) {
-        if (tableCountPerDatabase < 1) {
-            throw new IllegalArgumentException("tableCountPerDatabase must be great than 0 .");
-        }
-        this.tableCountPerDatabase = tableCountPerDatabase;
-        return this;
-    }
 
     @Override
     public FactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices) {

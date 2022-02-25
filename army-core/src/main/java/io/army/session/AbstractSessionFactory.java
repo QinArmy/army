@@ -93,7 +93,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
     }
 
     @Override
-    public Map<Class<?>, TableMeta<?>> tableMetaMap() {
+    public Map<Class<?>, TableMeta<?>> tableMap() {
         return this.tableMetaMap;
     }
 
@@ -132,10 +132,6 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
         return env.get(String.format(ArmyKey.FORMAT_SQL, this.name), Boolean.class, Boolean.FALSE);
     }
 
-    @Override
-    public boolean allowSpanSharding() {
-        return this.allowSpanSharding;
-    }
 
     @Override
     public final Function<ArmyException, RuntimeException> exceptionFunction() {
