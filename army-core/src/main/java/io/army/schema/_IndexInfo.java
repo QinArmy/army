@@ -2,7 +2,15 @@ package io.army.schema;
 
 import io.army.lang.Nullable;
 
+import java.util.List;
+
 public interface _IndexInfo {
+
+    boolean unique();
+
+    List<Boolean> ascList();
+
+    List<String> columnList();
 
     static Builder builder() {
         throw new UnsupportedOperationException();

@@ -8,6 +8,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 
+import java.lang.reflect.Field;
+
 /**
  * This interface is base interface of below interface:
  * <ul>
@@ -31,8 +33,14 @@ public interface GenericField<T extends IDomain, F> extends Expression, FieldSel
 
     MappingType mappingType();
 
+    /**
+     * @return mapping  field name,see {@link Field#getName()}.
+     */
     String fieldName();
 
+    /**
+     * @return column name(lower case).
+     */
     String columnName();
 
     UpdateMode updateMode();
@@ -84,7 +92,6 @@ public interface GenericField<T extends IDomain, F> extends Expression, FieldSel
     Expression rightShiftNamed();
 
     Expression leftShiftNamed();
-
 
 
 }

@@ -8,6 +8,9 @@ public interface IndexMeta<T extends IDomain> extends Meta {
 
     TableMeta<T> table();
 
+    /**
+     * @return index name(lower case)
+     */
     String name();
 
     List<IndexFieldMeta<T, ?>> fieldList();

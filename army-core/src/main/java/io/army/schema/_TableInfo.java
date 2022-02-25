@@ -10,7 +10,12 @@ public interface _TableInfo {
     @Nullable
     String comment();
 
+    /**
+     * @return map, key : column name (lower case),value: {@link _ColumnInfo}.
+     */
     Map<String, _ColumnInfo> columnMap();
+
+    Map<String, _IndexInfo> indexMap();
 
 
     static Builder builder(String tableName) {

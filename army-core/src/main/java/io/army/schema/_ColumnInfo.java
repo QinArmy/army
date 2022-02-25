@@ -1,6 +1,18 @@
 package io.army.schema;
 
+import io.army.lang.Nullable;
+
 public interface _ColumnInfo {
+
+    /**
+     * @return upper case type name.
+     */
+    String typeName();
+
+    boolean nullable();
+
+    @Nullable
+    String comment();
 
     static Builder builder() {
         throw new UnsupportedOperationException();
