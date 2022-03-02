@@ -7,7 +7,7 @@ public class ArmyRuntimeException extends RuntimeException implements IArmyExpre
 
     private static final long serialVersionUID = -3428509683218688609L;
 
-    private final ErrorCode errorCode;
+    private ErrorCode errorCode;
 
     @Deprecated
     public ArmyRuntimeException(ErrorCode errorCode) {
@@ -27,9 +27,13 @@ public class ArmyRuntimeException extends RuntimeException implements IArmyExpre
         this.errorCode = errorCode;
     }
 
-    public ArmyRuntimeException(String format, Object... args) {
-        super(IArmyExpression.createMessage(format, args));
+    public ArmyRuntimeException(String message) {
+        super(message);
         this.errorCode = ErrorCode.NONE;
+    }
+
+    public ArmyRuntimeException(String message, Throwable cause) {
+        super(message, cause);
     }
 
     public ArmyRuntimeException(Throwable cause, String format, Object... args) {

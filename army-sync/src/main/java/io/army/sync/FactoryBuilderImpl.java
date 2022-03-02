@@ -2,6 +2,7 @@ package io.army.sync;
 
 import io.army.ArmyException;
 import io.army.ArmyKeys;
+import io.army.DdlMode;
 import io.army.SessionFactoryException;
 import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
@@ -14,11 +15,16 @@ import io.army.generator.FieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
+import io.army.schema.*;
+import io.army.session.DataAccessException;
 import io.army.session.FactoryBuilderSupport;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.FactoryInfo;
+import io.army.sync.executor.MetaExecutor;
+import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
+import io.army.util._Exceptions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -38,7 +44,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
 
 
     @Override
-    public FactoryBuilder factoryName(String sessionFactoryName) {
+    public FactoryBuilder name(String sessionFactoryName) {
         if (!StringUtils.hasText(sessionFactoryName)) {
             throw new IllegalArgumentException("sessionFactoryName must have text.");
         }
@@ -95,6 +101,12 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
     @Override
+    public FactoryBuilder packagesToScan(List<String> packageList) {
+        this.packagesToScan = CollectionUtils.asUnmodifiableList(packageList);
+        return this;
+    }
+
+    @Override
     public FactoryBuilder currentSessionContext(CurrentSessionContext context) {
         this.currentSessionContext = context;
         return this;
@@ -104,31 +116,35 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     public SessionFactory build() throws SessionFactoryException {
 
         try {
+            //1. scan table meta
+            this.scanSchema();
+
             final ArmyEnvironment env = Objects.requireNonNull(this.environment);
-            //1. create ExecutorFactory
-            final ExecutorProvider provider;
-            provider = getExecutorProvider(env);
+            //2. create ExecutorFactory
             final ExecutorFactory executorFactory;
-            executorFactory = provider.createTxFactory(Objects.requireNonNull(this.dataSource), createFactoryInfo());
+            executorFactory = getExecutorProvider(env)
+                    .createFactory(Objects.requireNonNull(this.dataSource), createFactoryInfo(env));
 
             final FactoryAdvice factoryAdvice;
             factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
-            //2. invoke beforeInstance
+            //3. invoke beforeInstance
             if (factoryAdvice != null) {
                 factoryAdvice.beforeInstance(executorFactory.serverMeta(), env);
             }
-            //3. create SessionFactoryImpl instance
+            //4. create SessionFactoryImpl instance
             this.executorFactory = executorFactory;
             final SessionFactoryImpl sessionFactory;
             sessionFactory = new SessionFactoryImpl(this);
 
-            //4. invoke beforeInitialize
+            //5. invoke beforeInitialize
             if (factoryAdvice != null) {
                 factoryAdvice.beforeInitialize(sessionFactory);
             }
-            //5. invoke initializingFactory
+
+            //6. invoke initializingFactory
             initializingFactory(sessionFactory);
-            //6. invoke afterInitialize
+
+            //7. invoke afterInitialize
             if (factoryAdvice != null) {
                 factoryAdvice.afterInitialize(sessionFactory);
             }
@@ -142,16 +158,16 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
 
-    private FactoryInfo createFactoryInfo() {
+    private FactoryInfo createFactoryInfo(ArmyEnvironment env) {
         final Map<FieldMeta<?, ?>, FieldCodec> codecMap;
         codecMap = createCodecMap();
-        return new FactoryInfoImpl(codecMap, Objects.requireNonNull(this.environment));
+        return new FactoryInfoImpl(codecMap, env);
     }
 
 
     /**
      * @return a modified map
-     * @see #createFactoryInfo()
+     * @see #createFactoryInfo(ArmyEnvironment)
      */
     private Map<FieldMeta<?, ?>, FieldCodec> createCodecMap() {
         final Collection<FieldCodec> codecs = this.fieldCodecs;
@@ -184,7 +200,159 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
 
-    private static void initializingFactory(SessionFactoryImpl factory) throws SessionFactoryException {
+    /**
+     * @see #build()
+     */
+    private static void initializingFactory(SessionFactoryImpl sessionFactory) throws SessionFactoryException {
+
+        final ArmyEnvironment env = sessionFactory.environment();
+        // initializing schema
+        final DdlMode ddlMode;
+        ddlMode = env.get(ArmyKeys.DDL_MODE, DdlMode.class, DdlMode.VALIDATE);
+        switch (ddlMode) {
+            case NONE:
+                // no-op
+                break;
+            case VALIDATE:
+            case UPDATE:
+            case DROP_CREATE:
+                initializingSchema(sessionFactory, ddlMode);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(ddlMode);
+        }
+
+    }
+
+    /**
+     * @see #initializingFactory(SessionFactoryImpl)
+     */
+    private static void initializingSchema(final SessionFactoryImpl sessionFactory, final DdlMode ddlMode) {
+        final ExecutorFactory executorFactory;
+        executorFactory = sessionFactory.executorFactory;
+
+        try (MetaExecutor metaExecutor = executorFactory.createMetaExecutor()) {
+
+            //1.extract schema info.
+            final _SchemaInfo schemaInfo;
+            schemaInfo = metaExecutor.extractInfo();
+
+            //2.compare schema meta and schema info.
+            final _SchemaResult schemaResult;
+            switch (ddlMode) {
+                case VALIDATE:
+                case UPDATE: {
+                    final _SchemaComparer schemaComparer;
+                    schemaComparer = _SchemaComparer.create(sessionFactory.serverMeta());
+                    final Collection<TableMeta<?>> tableCollection;
+                    tableCollection = sessionFactory.tableMap().values();
+                    schemaResult = schemaComparer.compare(schemaInfo, sessionFactory.schemaMeta(), tableCollection);
+                }
+                break;
+                case DROP_CREATE: {
+                    final Collection<TableMeta<?>> tableCollection;
+                    tableCollection = sessionFactory.tableMap().values();
+                    schemaResult = _SchemaResult.dropCreate(schemaInfo.catalog(), schemaInfo.schema(), tableCollection);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(ddlMode);
+            }
+
+            //3.validate or execute ddl
+            switch (ddlMode) {
+                case VALIDATE: {
+                    if (schemaResult.newTableList().size() > 0 || schemaResult.changeTableList().size() > 0) {
+                        validateSchema(sessionFactory, schemaResult);
+                    }
+                }
+                break;
+                case UPDATE:
+                case DROP_CREATE: {
+                    //create ddl
+                    final List<String> ddlList;
+                    ddlList = sessionFactory.dialect.schemaDdl(schemaResult);
+
+                    // execute ddl
+                    metaExecutor.executeDdl(ddlList);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(ddlMode);
+            }
+
+        } catch (DataAccessException e) {
+            String m = String.format("%s[%s] schema initializing failure."
+                    , SessionFactory.class.getName(), sessionFactory.name());
+            throw new SessionFactoryException(m, e);
+        }
+    }
+
+    /**
+     * @see #initializingSchema(SessionFactoryImpl, DdlMode)
+     */
+    private static void validateSchema(SessionFactoryImpl sessionFactory, _SchemaResult schemaResult) {
+
+        final StringBuilder builder = new StringBuilder()
+                .append(SessionFactory.class.getName())
+                .append('[')
+                .append(sessionFactory.name())
+                .append("] validate failure.\n");
+
+        int differentCount;
+        final List<TableMeta<?>> newTableList;
+        newTableList = schemaResult.newTableList();
+        differentCount = newTableList.size();
+        if (differentCount > 0) {
+            for (TableMeta<?> table : newTableList) {
+                builder.append('\n')
+                        .append(table.tableName())
+                        .append(" not exists.");
+            }
+            builder.append('\n');
+        }
+
+        final List<_TableResult> tableResultList;
+        tableResultList = schemaResult.changeTableList();
+        if (tableResultList.size() > 0) {
+            for (_TableResult tableResult : tableResultList) {
+                builder.append('\n')
+                        .append(tableResult.table())
+                        .append(" not match:");
+                differentCount += tableResult.newFieldList().size();
+                for (FieldMeta<?, ?> field : tableResult.newFieldList()) {
+                    builder.append("\n\t")
+                            .append(field)
+                            .append(" not exists.");
+                }
+                for (_FieldResult field : tableResult.changeFieldList()) {
+                    if (field.sqlType() || field.defaultValue() || field.nullable()) {
+                        builder.append("\n\t")
+                                .append(field)
+                                .append(" not match.");
+                        differentCount++;
+                    }
+                }
+                differentCount += tableResult.newIndexList().size();
+                for (String index : tableResult.newIndexList()) {
+                    builder.append("\n\tindex[")
+                            .append(index)
+                            .append("] not exists.");
+                }
+                differentCount += tableResult.changeIndexList().size();
+                for (String index : tableResult.changeIndexList()) {
+                    builder.append("\n\tindex[")
+                            .append(index)
+                            .append("] not match.");
+                }
+
+            }
+            builder.append('\n');
+        }
+
+        if (differentCount > 0) {
+            throw new SessionFactoryException(builder.toString());
+        }
 
     }
 
@@ -197,7 +365,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
             providerClass = Class.forName(className);
         } catch (Exception e) {
             String m = String.format("Load class %s occur error.", ExecutorProvider.class.getName());
-            throw new SessionFactoryException(e, m);
+            throw new SessionFactoryException(m, e);
         }
 
         if (!ExecutorProvider.class.isAssignableFrom(providerClass)) {

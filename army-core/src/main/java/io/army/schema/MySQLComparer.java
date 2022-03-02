@@ -9,6 +9,10 @@ import io.army.sqltype.SqlType;
 
 final class MySQLComparer extends AbstractSchemaComparer {
 
+    static MySQLComparer create(ServerMeta serverMeta) {
+        return new MySQLComparer(serverMeta);
+    }
+
 
     private MySQLComparer(ServerMeta serverMeta) {
         super(serverMeta);

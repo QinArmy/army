@@ -29,7 +29,6 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
-            <version>${ali.druid.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

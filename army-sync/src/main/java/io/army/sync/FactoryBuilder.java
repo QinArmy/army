@@ -12,40 +12,87 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-
-/**
- * <p>
- * This interface is base interface of below:
- *     <ul>
- *         <li>{@code io.army.boot.sync.SessionFactoryBuilder}</li>
- *         <li>{@code io.army.boot.sync.TmSessionFactionBuilder}</li>
- *         <li>{@code io.army.boot.reactive.ReactiveSessionFactoryBuilder}</li>
- *         <li>{@code io.army.boot.reactive.ReactiveTmSessionFactoryBuilder}</li>
- *     </ul>
- * </p>
- */
 public interface FactoryBuilder {
 
-    FactoryBuilder factoryName(String sessionFactoryName);
+    /**
+     * <p>
+     * Session factory name,required.
+     * </p>
+     *
+     * @param sessionFactoryName non-empty
+     */
+    FactoryBuilder name(String sessionFactoryName);
 
-    FactoryBuilder schema(String catalog, String schema);
-
-    FactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
-
+    /**
+     * <p>
+     * Required.
+     * </p>
+     */
     FactoryBuilder environment(ArmyEnvironment environment);
 
+    /**
+     * <p>
+     * Required.
+     * </p>
+     */
+    FactoryBuilder datasource(Object dataSource);
+
+    /**
+     * <p>
+     * Required.
+     * </p>
+     */
+    FactoryBuilder packagesToScan(List<String> packageList);
+
+    /**
+     * <p>
+     * Optional.
+     * </p>
+     *
+     * @param catalog catalog or empty
+     * @param schema  schema or empty
+     */
+    FactoryBuilder schema(String catalog, String schema);
+
+    /**
+     * <p>
+     * Optional.
+     * </p>
+     */
+    FactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
+
+    /**
+     * <p>
+     * Optional.
+     * </p>
+     */
     FactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices);
 
+    /**
+     * <p>
+     * Optional.
+     * </p>
+     */
     FactoryBuilder exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction);
 
+    /**
+     * <p>
+     * Optional.
+     * </p>
+     */
     FactoryBuilder domainAdvice(Map<TableMeta<?>, DomainAdvice> domainAdviceMap);
 
+    /**
+     * <p>
+     * Optional.
+     * </p>
+     */
     FactoryBuilder fieldGenerator(Map<FieldMeta<?, ?>, FieldGenerator> generatorMap);
 
-    FactoryBuilder datasource(Object dataSource);
 
     /**
      * (optional)

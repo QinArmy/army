@@ -14,7 +14,7 @@ public class DataAccessException_0 extends ArmyRuntimeException {
     }
 
     public DataAccessException_0(String format, Object... args) {
-        super(format, args);
+        super(format);
     }
 
 

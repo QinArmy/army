@@ -12,7 +12,7 @@ public interface ExecutorFactory {
 
     MetaExecutor createMetaExecutor();
 
-    StmtExecutor createSqlExecutor();
+    StmtExecutor createStmtExecutor();
 
 
 }

@@ -1,7 +1,6 @@
 package io.army.session;
 
 import io.army.boot.DomainValuesGenerator;
-import io.army.dialect._Dialect;
 import io.army.meta.ServerMeta;
 
 /**
@@ -20,10 +19,7 @@ import io.army.meta.ServerMeta;
  */
 public interface DialectSessionFactory extends GenericSessionFactory {
 
-
     ServerMeta serverMeta();
-
-    _Dialect dialect();
 
     DomainValuesGenerator domainValuesGenerator();
 

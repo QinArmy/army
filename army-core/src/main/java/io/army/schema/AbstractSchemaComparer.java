@@ -6,10 +6,7 @@ import io.army.meta.*;
 import io.army.sqltype.SqlType;
 import io.army.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 abstract class AbstractSchemaComparer implements _SchemaComparer {
 
@@ -186,6 +183,11 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
         @Override
         public String schema() {
             return this.schema;
+        }
+
+        @Override
+        public List<TableMeta<?>> dropTableList() {
+            return Collections.emptyList();
         }
 
         @Override

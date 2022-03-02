@@ -8,6 +8,7 @@ import io.army.sync.utils._SyncExceptions;
 
 import java.sql.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 final class JdbcMetaExecutor implements MetaExecutor {
@@ -46,6 +47,11 @@ final class JdbcMetaExecutor implements MetaExecutor {
         } catch (SQLException e) {
             throw _SyncExceptions.wrapDataAccess(e);
         }
+    }
+
+    @Override
+    public void executeDdl(List<String> ddlList) throws DataAccessException {
+
     }
 
     @Override

@@ -21,6 +21,8 @@
             <groupId>io.army</groupId>
             <artifactId>army-sync</artifactId>
         </dependency>
+
+        <!-- blow test dependencies -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>

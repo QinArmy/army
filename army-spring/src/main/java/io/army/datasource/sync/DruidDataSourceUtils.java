@@ -1,13 +1,15 @@
 package io.army.datasource.sync;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.druid.pool.xa.DruidXADataSource;
 import io.army.datasource.DataSourceRole;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 public abstract class DruidDataSourceUtils {
 
+    protected DruidDataSourceUtils() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * create {@link DruidDataSource}
@@ -18,12 +20,6 @@ public abstract class DruidDataSourceUtils {
         return ds;
     }
 
-
-    public static DruidXADataSource createXADataSource(Environment env, final String tag, DataSourceRole role) {
-        DruidXADataSource ds = new DruidXADataSource();
-        setDataSourceProperties(ds, env, tag, role);
-        return ds;
-    }
 
     public static void setDataSourceProperties(DruidDataSource ds, Environment env, final String tag, DataSourceRole role) {
         ds.setUrl(env.getRequiredProperty(String.format("spring.datasource.%s.%s.url", tag, role)));

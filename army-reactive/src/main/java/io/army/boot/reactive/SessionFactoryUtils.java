@@ -75,7 +75,7 @@ abstract class SessionFactoryUtils {
                         && contextClass.isAssignableFrom(method.getReturnType())) {
                     sessionContext = (CurrentSessionContext) method.invoke(null, sessionFactory);
                 } else {
-                    throw new SessionFactoryException("%s definition error.", className);
+                    throw new SessionFactoryException(String.format("%s definition error.", className));
                 }
             } else {
                 sessionContext = DefaultCurrentSessionContext.build(sessionFactory);

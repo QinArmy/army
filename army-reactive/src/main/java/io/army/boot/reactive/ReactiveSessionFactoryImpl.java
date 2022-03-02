@@ -3,7 +3,6 @@ package io.army.boot.reactive;
 import io.army.CreateSessionException;
 import io.army.Database;
 import io.army.SessionException;
-import io.army.SessionFactoryException;
 import io.army.boot.DomainValuesGenerator;
 import io.army.boot.migratioin.ReactiveMigrator;
 import io.army.cache.SessionCacheFactory;
@@ -268,10 +267,11 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
                 && Objects.equals(databaseSchema.getSchema(), this.schemaMeta.schema())) {
             return Mono.empty();
         }
-        return Mono.error(new SessionFactoryException("config schema[%s.%s] but database schema[%s.%s]."
-                , this.schemaMeta.catalog(), this.schemaMeta.schema()
-                , databaseSchema.getCatalog(), databaseSchema.getSchema()
-        ));
+//        return Mono.error(new SessionFactoryException("config schema[%s.%s] but database schema[%s.%s]."
+//                , this.schemaMeta.catalog(), this.schemaMeta.schema()
+//                , databaseSchema.getCatalog(), databaseSchema.getSchema()
+//        ));
+        return Mono.empty();
     }
 
     /*################################## blow private static inner class ##################################*/

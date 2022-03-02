@@ -29,7 +29,7 @@ final class SessionImpl extends AbstractRmSession implements Session {
     private boolean closed;
 
     SessionImpl(SessionFactoryImpl sessionFactory, SessionFactoryImpl.SessionBuilderImpl builder) {
-        super(sessionFactory, sessionFactory.executorFactory.createSqlExecutor());
+        super(sessionFactory, sessionFactory.executorFactory.createStmtExecutor());
 
         this.sessionFactory = sessionFactory;
         this.currentSession = builder.currentSession();

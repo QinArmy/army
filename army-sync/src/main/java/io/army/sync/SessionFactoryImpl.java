@@ -29,7 +29,7 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     final ExecutorFactory executorFactory;
 
-    private final _Dialect dialect;
+     final _Dialect dialect;
 
     private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
@@ -106,10 +106,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         return this.currentSessionContext.hasCurrentSession();
     }
 
-    @Override
-    public _Dialect dialect() {
-        return this.dialect;
-    }
 
 
     @Override

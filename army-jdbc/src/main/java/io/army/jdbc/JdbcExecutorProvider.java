@@ -30,7 +30,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
 
 
     @Override
-    public ExecutorFactory createTxFactory(final Object dataSource, final FactoryInfo info) {
+    public ExecutorFactory createFactory(final Object dataSource, final FactoryInfo info) {
 
         try {
             final ExecutorFactory factory;

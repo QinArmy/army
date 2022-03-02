@@ -1,25 +1,17 @@
 package io.army;
 
-import io.army.dialect.Dialect;
-import io.army.lang.Nullable;
+public interface ArmyKeys {
 
-public enum ArmyKeys {
+    String readOnly = "";
 
-    readOnly(Boolean.class, "false"),
-    sessionCache(Boolean.class, "true"),
-    allowSpanSharding(Boolean.class, "false"),
-    ddlMode(DdlMode.class, "UPDATE"),
-    dialectMode(Dialect.class, null),
-    executorProvider(String.class, null);
+    String sessionCache = "";
+    String allowSpanSharding = "";
 
-    public final Class<?> javaType;
+    String DDL_MODE = "ddl.mode";
 
-    public final String defaultValue;
+    String dialectMode = "";
 
-    ArmyKeys(Class<?> javaType, @Nullable String defaultValue) {
-        this.javaType = javaType;
-        this.defaultValue = defaultValue;
-    }
+    String executorProvider = "";
 
 
 }

@@ -29,7 +29,7 @@ abstract class AbstractRmSession extends AbstractGenericSyncSession
 
     AbstractRmSession(DialectSessionFactory sessionFactory, StmtExecutor stmtExecutor) {
         this.stmtExecutor = stmtExecutor;
-        this.dialect = sessionFactory.dialect();
+        this.dialect = null;
         this.exceptionFunction = sessionFactory.exceptionFunction();
     }
 

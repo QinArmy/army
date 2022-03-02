@@ -1,15 +1,18 @@
 package io.army.session;
 
 import io.army.ArmyException;
+import io.army.SessionFactoryException;
 import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
+import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
+import io.army.meta.TableMeta;
 
 import java.util.*;
 import java.util.function.Function;
@@ -34,6 +37,36 @@ public abstract class FactoryBuilderSupport {
     protected Collection<FactoryAdvice> factoryAdvices;
 
     protected List<String> packagesToScan;
+
+
+    /*################################## blow non-setter fields ##################################*/
+
+    Map<Class<?>, TableMeta<?>> tableMap;
+
+
+    protected final void scanSchema() {
+
+        final List<String> packagesToScan = this.packagesToScan;
+        if (packagesToScan == null || packagesToScan.isEmpty()) {
+            throw new SessionFactoryException("No specified package to scan.");
+        }
+        SchemaMeta schemaMeta = this.schemaMeta;
+        if (schemaMeta == null) {
+            schemaMeta = _SchemaMetaFactory.getSchema("", "");
+        }
+        final Map<Class<?>, TableMeta<?>> tableMetaMap;
+        tableMetaMap = _TableMetaFactory.getTableMetaMap(schemaMeta, packagesToScan);
+        if (tableMetaMap.isEmpty()) {
+            String m;
+            if (schemaMeta.defaultSchema()) {
+                m = String.format("Not found any %s for default schema.", TableMeta.class.getName());
+            } else {
+                m = String.format("Not found any %s for %s.", TableMeta.class.getName(), schemaMeta);
+            }
+            throw new SessionFactoryException(m);
+        }
+        this.tableMap = tableMetaMap;
+    }
 
 
     @Nullable

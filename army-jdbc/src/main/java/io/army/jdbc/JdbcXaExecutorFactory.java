@@ -37,7 +37,7 @@ final class JdbcXaExecutorFactory implements ExecutorFactory {
     }
 
     @Override
-    public StmtExecutor createSqlExecutor() {
+    public StmtExecutor createStmtExecutor() {
         return null;
     }
 

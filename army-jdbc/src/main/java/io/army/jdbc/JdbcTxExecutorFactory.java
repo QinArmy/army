@@ -44,7 +44,7 @@ final class JdbcTxExecutorFactory implements ExecutorFactory {
     }
 
     @Override
-    public StmtExecutor createSqlExecutor() {
+    public StmtExecutor createStmtExecutor() {
         return null;
     }
 

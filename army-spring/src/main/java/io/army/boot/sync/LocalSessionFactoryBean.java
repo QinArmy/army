@@ -6,7 +6,7 @@ import io.army.env.ArmyConfigurableArmyEnvironment;
 import io.army.env.ArmyEnvironment;
 import io.army.env.SpringEnvironmentAdaptor;
 import io.army.lang.Nullable;
-import io.army.session.FactoryMode;
+import io.army.sync.FactoryBuilder;
 import io.army.sync.SessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
@@ -16,6 +16,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 /**
  * {@link FactoryBean} that creates a Army {@link SessionFactory}. This is the usual
@@ -35,9 +36,8 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     private ArmyConfigurableArmyEnvironment environment;
 
-    private int tableCountPerDatabase = 1;
+    private List<String> packageList;
 
-    private FactoryMode factoryMode = FactoryMode.NO_SHARDING;
 
     private SessionFactory sessionFactory;
 
@@ -57,6 +57,20 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     @Override
     public void afterPropertiesSet() {
+        DataSource dataSource;
+        dataSource = this.dataSource;
+        if (dataSource == null) {
+            if (this.dataSourceBeanName == null) {
+                String m = String.format("Not specified %s bean.", DataSource.class.getName());
+                throw new IllegalStateException(m);
+            }
+            dataSource = applicationContext.getBean(DataSource.class, this.dataSourceBeanName);
+        }
+        this.sessionFactory = FactoryBuilder.builder()
+                .name(this.beanName)
+                .datasource(dataSource)
+                .packagesToScan(this.packageList)
+                .build();
 
     }
 
@@ -83,6 +97,12 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
         return this;
     }
 
+
+    public LocalSessionFactoryBean packagesToScan(List<String> packageList) {
+        this.packageList = packageList;
+        return this;
+    }
+
     /**
      * If {@link #setDataSource(DataSource) } invoked by developer ,this will ignore.
      */
@@ -96,15 +116,6 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
         return this;
     }
 
-    public LocalSessionFactoryBean setTableCountPerDatabase(int tableCountPerDatabase) {
-        this.tableCountPerDatabase = tableCountPerDatabase;
-        return this;
-    }
-
-    public LocalSessionFactoryBean setShardingMode(FactoryMode factoryMode) {
-        this.factoryMode = factoryMode;
-        return this;
-    }
 
     /*################################## blow private method ##################################*/
 
