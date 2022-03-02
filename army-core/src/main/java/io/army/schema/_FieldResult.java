@@ -17,4 +17,25 @@ public interface _FieldResult {
 
     boolean comment();
 
+    static Builder builder() {
+        return FieldResultImpl.builder();
+    }
+
+    interface Builder {
+
+        Builder field(FieldMeta<?, ?> field);
+
+        Builder sqlType(boolean sqlType);
+
+        Builder defaultExp(boolean defaultExp);
+
+        Builder nullable(boolean nullable);
+
+        void comment(boolean comment);
+
+        _FieldResult buildAndClear();
+
+    }
+
+
 }

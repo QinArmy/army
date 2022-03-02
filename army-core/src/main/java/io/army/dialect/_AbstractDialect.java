@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.ArmyException;
 import io.army.Database;
 import io.army.beans.ObjectWrapper;
 import io.army.criteria.*;
@@ -7,6 +8,8 @@ import io.army.criteria.impl._SQLCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.schema._SchemaResult;
+import io.army.schema._TableResult;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
@@ -247,6 +250,47 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
     @Override
+    public final List<String> schemaDdl(final _SchemaResult schemaResult) {
+        final DdlDialect ddlDialect;
+        ddlDialect = createDdlDialect();
+
+        final List<String> ddlList = new ArrayList<>();
+        for (TableMeta<?> table : schemaResult.newTableList()) {
+            ddlDialect.createTable(table, ddlList);
+        }
+
+        for (_TableResult tableResult : schemaResult.changeTableList()) {
+            TableMeta<?> table = tableResult.table();
+            if (tableResult.comment()) {
+                ddlDialect.modifyTableComment(table, ddlList);
+            }
+            ddlDialect.addColumn(tableResult.newFieldList(), ddlList);
+            ddlDialect.modifyColumn(tableResult.changeFieldList(), ddlList);
+
+            ddlDialect.createIndex(table, tableResult.newIndexList(), ddlList);
+            final List<String> changeIndexList;
+            changeIndexList = tableResult.changeIndexList();
+            if (changeIndexList.size() > 0) {
+                ddlDialect.dropIndex(table, changeIndexList, ddlList);
+                ddlDialect.createIndex(table, changeIndexList, ddlList);
+            }
+        }
+
+        final List<String> errorList;
+        errorList = ddlDialect.errorMsgList();
+        if (errorList.size() > 0) {
+            final StringBuilder builder = new StringBuilder(errorList.size() * 10)
+                    .append("create ddl occur error:");
+            for (String msg : errorList) {
+                builder.append('\n')
+                        .append(msg);
+            }
+            throw new ArmyException(builder.toString());
+        }
+        return Collections.unmodifiableList(ddlList);
+    }
+
+    @Override
     public final boolean isKeyWord(final String identifier) {
         return this.keyWordSet.contains(identifier);
     }
@@ -295,6 +339,8 @@ public abstract class _AbstractDialect implements _Dialect {
     protected abstract char identifierQuote();
 
     protected abstract boolean identifierCaseSensitivity();
+
+    protected abstract DdlDialect createDdlDialect();
 
 
     /*################################## blow update template method ##################################*/

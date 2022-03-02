@@ -137,6 +137,11 @@ abstract class MySQLDialect extends _AbstractDialect {
     }
 
     @Override
+    protected final MySQLDdl createDdlDialect() {
+        return MySQLDdl.create(this);
+    }
+
+    @Override
     protected final char identifierQuote() {
         return IDENTIFIER_QUOTE;
     }

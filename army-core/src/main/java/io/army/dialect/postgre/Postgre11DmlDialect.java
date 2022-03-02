@@ -43,6 +43,11 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
+    protected final PostgreDdl createDdlDialect() {
+        return PostgreDdl.create(this);
+    }
+
+    @Override
     public String literal(ParamMeta paramMeta, Object nonNull) {
         return null;
     }

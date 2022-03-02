@@ -20,6 +20,10 @@ import java.util.Set;
 
 final class MySQLDdl extends _DdlDialect {
 
+    static MySQLDdl create(_AbstractDialect dialect) {
+        return new MySQLDdl(dialect);
+    }
+
     MySQLDdl(_AbstractDialect dialect) {
         super(dialect);
     }

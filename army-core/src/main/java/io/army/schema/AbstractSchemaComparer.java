@@ -77,7 +77,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
     private void compareColumns(_TableInfo tableInfo, TableMeta<?> table, _TableResult.Builder tableBuilder) {
 
         final Map<String, _ColumnInfo> columnMap = tableInfo.columnMap();
-        final FieldResultBuilder builder = new FieldResultBuilder();
+        final _FieldResult.Builder builder = _FieldResult.builder();
         final ServerMeta serverMeta = this.serverMeta;
         final boolean supportColumnComment = this.supportColumnComment();
 

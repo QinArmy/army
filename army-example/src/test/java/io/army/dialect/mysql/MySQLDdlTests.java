@@ -50,6 +50,7 @@ public class MySQLDdlTests {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void addColumn() {
         final List<String> sqlList = new ArrayList<>();
@@ -60,7 +61,8 @@ public class MySQLDdlTests {
                 continue;
             }
             ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
-            ddl.addColumn(table.fieldList(), sqlList);
+            List<?> fieldList = table.fieldList();
+            ddl.addColumn((List<FieldMeta<?, ?>>) fieldList, sqlList);
             List<String> errorList;
             errorList = ddl.errorMsgList();
             if (errorList.size() > 0) {

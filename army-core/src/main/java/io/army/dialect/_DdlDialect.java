@@ -56,7 +56,7 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
     @Override
-    public final <T extends IDomain> void addColumn(final List<FieldMeta<T, ?>> fieldList, final List<String> sqlList) {
+    public final void addColumn(final List<FieldMeta<?, ?>> fieldList, final List<String> sqlList) {
         final int fieldSize = fieldList.size();
         if (fieldSize == 0) {
             return;

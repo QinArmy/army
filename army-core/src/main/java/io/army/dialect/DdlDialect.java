@@ -13,7 +13,7 @@ interface DdlDialect {
 
     <T extends IDomain> void createTable(TableMeta<T> table, List<String> sqlList);
 
-    <T extends IDomain> void addColumn(List<FieldMeta<T, ?>> fieldList, List<String> sqlList);
+   void addColumn(List<FieldMeta<?, ?>> fieldList, List<String> sqlList);
 
     void modifyTableComment(TableMeta<?> table, List<String> sqlList);
 
