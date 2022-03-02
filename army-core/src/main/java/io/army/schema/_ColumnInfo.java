@@ -4,24 +4,35 @@ import io.army.lang.Nullable;
 
 public interface _ColumnInfo {
 
+    String columnName();
+
     /**
      * @return upper case type name.
      */
     String typeName();
 
+    @Nullable
+    String defaultExp();
+
     boolean nullable();
+
+    int precision();
+
+    int scale();
 
     @Nullable
     String comment();
 
+    boolean autoincrement();
+
     static Builder builder() {
-        throw new UnsupportedOperationException();
+        return ColumnInfoImpl.createBuilder();
     }
 
 
     interface Builder {
 
-        Builder name(String fieldName);
+        Builder name(String columnName);
 
         Builder type(String sqlType);
 

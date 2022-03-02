@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
 
 import java.util.Map;
 
-public interface FactoryInfo {
+public interface ExecutorEnvironment {
 
     Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap();
 

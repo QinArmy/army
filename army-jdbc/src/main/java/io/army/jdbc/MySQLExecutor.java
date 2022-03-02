@@ -18,14 +18,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Set;
 
-final class MySqlStmtExecutor extends AbstractStmtExecutor {
+final class MySQLExecutor extends AbstractStmtExecutor {
 
-    static MySqlStmtExecutor create(Connection conn) {
-        return new MySqlStmtExecutor(conn);
+    static MySQLExecutor create(JdbcExecutorFactory factory, Connection conn) {
+        return new MySQLExecutor(factory, conn);
     }
 
-    private MySqlStmtExecutor(Connection conn) {
-        super(conn);
+    private MySQLExecutor(JdbcExecutorFactory factory, Connection conn) {
+        super(factory, conn);
     }
 
 

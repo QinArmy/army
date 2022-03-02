@@ -2,6 +2,7 @@ package io.army.sync.executor;
 
 
 import io.army.meta.ServerMeta;
+import io.army.session.DataAccessException;
 
 public interface ExecutorFactory {
 
@@ -10,9 +11,9 @@ public interface ExecutorFactory {
      */
     ServerMeta serverMeta();
 
-    MetaExecutor createMetaExecutor();
+    MetaExecutor createMetaExecutor() throws DataAccessException;
 
-    StmtExecutor createStmtExecutor();
+    StmtExecutor createStmtExecutor() throws DataAccessException;
 
 
 }

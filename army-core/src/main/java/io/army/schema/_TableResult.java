@@ -22,7 +22,29 @@ public interface _TableResult {
 
     List<String> changeIndexList();
 
-    List<String> droopIndexList();
+    static Builder builder() {
+        return TableResultImpl.createBuilder();
+    }
+
+
+    interface Builder {
+
+        void table(TableMeta<?> table);
+
+        void appendNewColumn(FieldMeta<?, ?> field);
+
+        void comment(boolean comment);
+
+        void appendFieldResult(_FieldResult fieldResult);
+
+        void appendNewIndex(String indexName);
+
+        void appendChangeIndex(String indexName);
+
+
+        _TableResult buildAndClear();
+
+    }
 
 
 }

@@ -35,6 +35,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
         return OffsetDateTimeType.INSTANCE.map(meta);
     }
 
+
     @Override
     public Object beforeBind_(SqlType sqlType, Object nonNull) {
         return OffsetDateTimeType.INSTANCE.beforeBind_(sqlType, nonNull);

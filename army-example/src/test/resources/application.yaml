@@ -15,4 +15,9 @@ spring:
         url: jdbc:mysql://localhost:3306
         username: army_w
         password: army123
+army:
+  example:
+    ddl:
+      mode: UPDATE
+
 

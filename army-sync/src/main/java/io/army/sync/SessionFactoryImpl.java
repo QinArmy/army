@@ -2,7 +2,6 @@ package io.army.sync;
 
 import io.army.SessionException;
 import io.army.SessionFactoryException;
-import io.army.advice.sync.DomainAdvice;
 import io.army.beans.ArmyBean;
 import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCache;
@@ -10,16 +9,11 @@ import io.army.cache.SessionCacheFactory;
 import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
-import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
-import io.army.meta.TableMeta;
 import io.army.session.AbstractSessionFactory;
 import io.army.session.FactoryMode;
-import io.army.sharding.TableRoute;
 import io.army.sync.executor.ExecutorFactory;
-import io.army.util.CollectionUtils;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -29,9 +23,8 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     final ExecutorFactory executorFactory;
 
-     final _Dialect dialect;
+    final _Dialect dialect;
 
-    private final Map<TableMeta<?>, DomainAdvice> domainAdviceMap;
 
     private final SessionCacheFactory sessionCacheFactory;
 
@@ -41,8 +34,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     private final CurrentSessionContext currentSessionContext;
 
-    private final Map<TableMeta<?>, TableRoute> tableRouteMap;
-
 
     private boolean closed;
 
@@ -51,16 +42,12 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         super(builder);
 
         this.executorFactory = Objects.requireNonNull(builder.executorFactory);
-        this.dialect = _DialectFactory.createDialect(null);//must after  this.executorFactory
-        this.domainAdviceMap = CollectionUtils.unmodifiableMap(builder.domainAdviceMap);
+        this.dialect = _DialectFactory.createDialect(this);
         this.currentSessionContext = builder.currentSessionContext;
 
         this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
-        this.tableRouteMap = SyncSessionFactoryUtils.routeMap(this, TableRoute.class
-                , 1, this.tableCountPerDatabase);
         this.sessionCacheFactory = SessionCacheFactory.build(this);
         this.domainValuesGenerator = DomainValuesGenerator.build(this);
-
     }
 
 
@@ -90,16 +77,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         return null;
     }
 
-    @Override
-    public Map<TableMeta<?>, DomainAdvice> domainInterceptorMap() {
-        return this.domainAdviceMap;
-    }
-
-    @Nullable
-    @Override
-    public DomainAdvice domainInterceptorList(TableMeta<?> tableMeta) {
-        return this.domainAdviceMap.get(tableMeta);
-    }
 
     @Override
     public boolean hasCurrentSession() {
@@ -107,11 +84,11 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
     }
 
 
-
     @Override
     public DomainValuesGenerator domainValuesGenerator() {
         return this.domainValuesGenerator;
     }
+
 
     @Override
     public boolean factoryClosed() {

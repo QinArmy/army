@@ -4,6 +4,9 @@ import io.army.ArmyException;
 import io.army.ArmyKey;
 import io.army.ArmyKeys;
 import io.army.SessionFactoryException;
+import io.army.codec.JsonCodec;
+import io.army.dialect.FieldValuesGenerator;
+import io.army.dialect._DialectEnvironment;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
@@ -23,7 +26,7 @@ import java.util.function.Function;
 /**
  * a abstract GenericSessionFactoryAdvice
  */
-public abstract class AbstractSessionFactory implements GenericSessionFactory {
+public abstract class AbstractSessionFactory implements GenericSessionFactory, _DialectEnvironment {
 
     private static final ConcurrentMap<String, Boolean> FACTORY_MAP = new ConcurrentHashMap<>(3);
 
@@ -33,12 +36,12 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
 
     protected final SchemaMeta schemaMeta;
 
-    protected final Map<Class<?>, TableMeta<?>> tableMetaMap;
+    protected final Map<Class<?>, TableMeta<?>> tableMap;
 
     protected final Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap;
+
     protected final Function<ArmyException, RuntimeException> exceptionFunction;
 
-    protected final byte tableCountPerDatabase;
 
     protected final boolean readOnly;
 
@@ -55,12 +58,10 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
         this.name = name;
         this.env = env;
         this.schemaMeta = Objects.requireNonNull(support.schemaMeta);
-        this.tableMetaMap = Objects.requireNonNull(support.tableMap);
-
-        this.tableCountPerDatabase = tableCountPerDatabase(support.tableCountPerDatabase);
+        this.tableMap = Objects.requireNonNull(support.tableMap);
         this.exceptionFunction = exceptionFunction(support.exceptionFunction);
         this.fieldGeneratorMap = Objects.requireNonNull(support.generatorMap);
-        this.readOnly = env.get(ArmyKeys.readOnly, Boolean.class, Boolean.FALSE);
+        this.readOnly = env.get(ArmyKeys.READ_ONLY, Boolean.class, Boolean.FALSE);
 
         this.supportSessionCache = env.get(ArmyKeys.sessionCache, Boolean.class, Boolean.TRUE);
     }
@@ -88,14 +89,14 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
 
     @Override
     public Map<Class<?>, TableMeta<?>> tableMap() {
-        return this.tableMetaMap;
+        return this.tableMap;
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
-        return (TableMeta<T>) tableMetaMap.get(domainClass);
+        return (TableMeta<T>) tableMap.get(domainClass);
     }
 
     @Nullable
@@ -130,6 +131,22 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory {
     @Override
     public final Function<ArmyException, RuntimeException> exceptionFunction() {
         return this.exceptionFunction;
+    }
+
+    @Override
+    public FieldValuesGenerator fieldValuesGenerator() {
+        return null;
+    }
+
+    @Override
+    public final JsonCodec jsonCodec() {
+        return _DialectEnvironment.super.jsonCodec();
+    }
+
+
+    @Override
+    public boolean factoryClosed() {
+        return false;
     }
 
     /*################################## blow protected method ##################################*/

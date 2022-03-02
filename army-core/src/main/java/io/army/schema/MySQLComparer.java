@@ -7,6 +7,8 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 
+import java.util.Locale;
+
 final class MySQLComparer extends AbstractSchemaComparer {
 
     static MySQLComparer create(ServerMeta serverMeta) {
@@ -67,7 +69,7 @@ final class MySQLComparer extends AbstractSchemaComparer {
             case TINYINT:
             case SMALLINT:
             case MEDIUMINT:
-                match = sqlType.name().equals(columnInfo.typeName());
+                match = sqlType.name().equals(columnInfo.typeName().toUpperCase(Locale.ROOT));
                 break;
             case SMALLINT_UNSIGNED:
             case TINYINT_UNSIGNED:

@@ -6,6 +6,11 @@ import java.util.Map;
 
 public interface _TableInfo {
 
+    /**
+     * @return lower case table name
+     */
+    String name();
+
 
     @Nullable
     String comment();
@@ -19,7 +24,7 @@ public interface _TableInfo {
 
 
     static Builder builder(String tableName) {
-        throw new UnsupportedOperationException();
+        return TableInfoImpl.createBuilder(tableName);
     }
 
 
@@ -31,7 +36,7 @@ public interface _TableInfo {
 
         Builder comment(@Nullable String comment);
 
-        Builder appendColumn(_ColumnInfo fieldInfo);
+        Builder appendColumn(_ColumnInfo column);
 
         Builder appendIndex(_IndexInfo indexInfo);
 

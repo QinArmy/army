@@ -18,9 +18,9 @@ import io.army.meta.TableMeta;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.session.FactoryBuilderSupport;
+import io.army.sync.executor.ExecutorEnvironment;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.ExecutorProvider;
-import io.army.sync.executor.FactoryInfo;
 import io.army.sync.executor.MetaExecutor;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
@@ -158,7 +158,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
 
-    private FactoryInfo createFactoryInfo(ArmyEnvironment env) {
+    private ExecutorEnvironment createFactoryInfo(ArmyEnvironment env) {
         final Map<FieldMeta<?, ?>, FieldCodec> codecMap;
         codecMap = createCodecMap();
         return new FactoryInfoImpl(codecMap, env);
@@ -401,7 +401,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
 
-    private static final class FactoryInfoImpl implements FactoryInfo {
+    private static final class FactoryInfoImpl implements ExecutorEnvironment {
 
         private final Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap;
 

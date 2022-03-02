@@ -17,6 +17,7 @@ import io.army.meta.ServerMeta;
  *     </ul>
  * </p>
  */
+@Deprecated
 public interface DialectSessionFactory extends GenericSessionFactory {
 
     ServerMeta serverMeta();

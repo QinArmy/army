@@ -4,13 +4,12 @@ import io.army.Database;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.UnsupportedDataSourceTypeException;
+import io.army.sync.executor.ExecutorEnvironment;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.ExecutorProvider;
-import io.army.sync.executor.FactoryInfo;
 import io.army.sync.utils._SyncExceptions;
 
 import javax.sql.DataSource;
-import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -19,10 +18,8 @@ import java.util.Objects;
 
 public final class JdbcExecutorProvider implements ExecutorProvider {
 
-    private static final JdbcExecutorProvider INSTANCE = new JdbcExecutorProvider();
-
     public static JdbcExecutorProvider getInstance() {
-        return INSTANCE;
+        return new JdbcExecutorProvider();
     }
 
     private JdbcExecutorProvider() {
@@ -30,17 +27,16 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
 
 
     @Override
-    public ExecutorFactory createFactory(final Object dataSource, final FactoryInfo info) {
+    public ExecutorFactory createFactory(final Object dataSource, final ExecutorEnvironment env) {
 
         try {
             final ExecutorFactory factory;
-            final ServerMeta serverMeta;
+
             if (dataSource instanceof DataSource) {
                 final DataSource ds = (DataSource) dataSource;
-                try (Connection conn = ds.getConnection()) {
-                    serverMeta = getServerMeta(conn);
-                }
-                factory = JdbcTxExecutorFactory.create(ds, serverMeta, info);
+                final ServerMeta serverMeta;
+                serverMeta = getServerMeta(getPrimaryDataSource(ds));
+                factory = JdbcExecutorFactory.create(ds, serverMeta, env);
             } else {
                 String m = String.format("dataSource isn't %s or %s instance."
                         , DataSource.class.getName(), XADataSource.class.getName());
@@ -57,33 +53,9 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         }
     }
 
-    @Override
-    public ExecutorFactory createXaFactory(Object dataSource, FactoryInfo info) {
-        try {
-            final ExecutorFactory factory;
-            final ServerMeta serverMeta;
-            if (dataSource instanceof XADataSource) {
-                final XADataSource ds = (XADataSource) dataSource;
-                serverMeta = getXaServerMeta(ds);
-                factory = JdbcXaExecutorFactory.create(ds, serverMeta, info);
-            } else {
-                String m = String.format("dataSource isn't %s or %s instance."
-                        , DataSource.class.getName(), XADataSource.class.getName());
-                throw new UnsupportedDataSourceTypeException(m);
-            }
-            return factory;
-        } catch (UnsupportedDataSourceTypeException e) {
-            throw e;
-        } catch (SQLException e) {
-            throw _SyncExceptions.wrapDataAccess(e);
-        } catch (Exception e) {
-            String m = String.format("get server metadata occur error:%s", e.getMessage());
-            throw new DataAccessException(m, e);
-        }
-    }
 
-    private static ServerMeta getServerMeta(final Connection connection) throws SQLException {
-        try (Connection conn = connection) {
+    private static ServerMeta getServerMeta(final DataSource dataSource) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
             final DatabaseMetaData metaData;
             metaData = conn.getMetaData();
 
@@ -98,9 +70,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
             major = metaData.getDatabaseMajorVersion();
             minor = metaData.getDatabaseMinorVersion();
 
-            return new JdbcServerMeta(name, database
-                    , version, major
-                    , minor, metaData.supportsSavepoints());
+            return new JdbcServerMeta(name, database, version, major, minor);
         }
 
     }
@@ -119,20 +89,8 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         return database;
     }
 
-
-    private static ServerMeta getXaServerMeta(final XADataSource dataSource) throws SQLException {
-        XAConnection xaConn = null;
-        try {
-            xaConn = dataSource.getXAConnection();
-            try (Connection con = xaConn.getConnection()) {
-                return getServerMeta(con);
-            }
-        } finally {
-            if (xaConn != null) {
-                xaConn.close();
-            }
-        }
-
+    static DataSource getPrimaryDataSource(DataSource dataSource) {
+        return dataSource;
     }
 
 
@@ -148,18 +106,14 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
 
         private final int minor;
 
-        private final boolean supportSavePoint;
-
         private JdbcServerMeta(String name, Database database
-                , String version, int major
-                , int minor, boolean supportSavePoint) {
+                , String version, int major, int minor) {
             this.name = name;
             this.database = database;
             this.version = version;
             this.major = major;
 
             this.minor = minor;
-            this.supportSavePoint = supportSavePoint;
         }
 
         @Override
@@ -190,11 +144,6 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         @Override
         public boolean meetsMinimum(final int major, final int minor) {
             return false;
-        }
-
-        @Override
-        public boolean supportSavePoint() {
-            return this.supportSavePoint;
         }
 
         @Override
@@ -229,8 +178,6 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
                     .append(this.major)
                     .append("\nminor=")
                     .append(this.minor)
-                    .append("\nsupportSavePoint=")
-                    .append(this.supportSavePoint)
                     .toString();
         }
 

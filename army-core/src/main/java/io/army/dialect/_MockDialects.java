@@ -121,20 +121,6 @@ public abstract class _MockDialects {
             return this.major > major || (this.major == major && this.minor >= minor);
         }
 
-        @Override
-        public String sessionVar(final String name) {
-            final String value;
-            switch (name) {
-                case "ANSI_QUOTES":
-                case "NO_BACKSLASH_ESCAPES":
-                    value = null;
-                    break;
-                default:
-                    throw new UnsupportedOperationException();
-
-            }
-            return value;
-        }
 
         @Override
         public String toString() {

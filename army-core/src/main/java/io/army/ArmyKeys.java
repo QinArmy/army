@@ -2,7 +2,7 @@ package io.army;
 
 public interface ArmyKeys {
 
-    String readOnly = "";
+    String READ_ONLY = "readonly";
 
     String sessionCache = "";
     String allowSpanSharding = "";

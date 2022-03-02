@@ -1,6 +1,5 @@
 package io.army.env;
 
-import io.army.ArmyKeys;
 import io.army.beans.ArmyBean;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
@@ -53,29 +52,15 @@ public class StandardEnvironment extends AbstractArmyEnvironment {
     }
 
     @Override
-    public <T> T getOrDefault(ArmyKeys key, Class<T> resultClass) {
-        return null;
-    }
-
-    @Override
-    public <T> T get(ArmyKeys key, Class<T> resultClass, T defaultValue) {
-        return null;
-    }
-
-    @Override
     public final <T> T get(String key, Class<T> targetType, T defaultValue) {
         return env.getProperty(key, targetType, defaultValue);
     }
 
     @Override
-    public final String getRequiredProperty(String key) throws IllegalStateException {
+    public final String getNonNull(String key) throws IllegalStateException {
         return env.getRequiredProperty(key);
     }
 
-    @Override
-    public final <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
-        return env.getRequiredProperty(key, targetType);
-    }
 
     @SuppressWarnings("unchecked")
     @Override

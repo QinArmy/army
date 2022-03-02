@@ -25,8 +25,6 @@ public interface ExecutorProvider {
      * @throws DataAccessException
      * @throws UnsupportedDataSourceTypeException
      */
-    ExecutorFactory createFactory(Object dataSource, FactoryInfo info);
-
-    ExecutorFactory createXaFactory(Object dataSource, FactoryInfo info);
+    ExecutorFactory createFactory(Object dataSource, ExecutorEnvironment info);
 
 }

@@ -33,8 +33,8 @@ public final class SingleApplicationSnowflakeClient extends AbstractSnowflakeCli
         InetAddress address = NetUtils.getPrivateIp4();
         _Assert.state(address != null, "no ipv4");
         Worker worker = new Worker(
-                env.getRequiredProperty(String.format(DATA_CENTER_FORMAT, address.getHostAddress()), Long.class)
-                , env.getRequiredProperty(String.format(WORKER_FORMAT, address.getHostAddress()), Long.class)
+                env.getNonNull(String.format(DATA_CENTER_FORMAT, address.getHostAddress()), Long.class)
+                , env.getNonNull(String.format(WORKER_FORMAT, address.getHostAddress()), Long.class)
         );
 
         if (workerHolder.compareAndSet(null, worker)) {

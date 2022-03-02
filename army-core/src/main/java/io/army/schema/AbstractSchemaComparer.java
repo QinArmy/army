@@ -28,7 +28,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
 
         final Map<String, _TableInfo> tableInfoMap = schemaInfo.tableMap();
 
-        final _TableResultBuilder builder = new _TableResultBuilder();
+        final _TableResult.Builder builder = _TableResult.builder();
         final List<TableMeta<?>> newTableList = new ArrayList<>();
         final List<_TableResult> tableResultList = new ArrayList<>();
         final boolean supportTableComment = this.supportTableComment();
@@ -74,7 +74,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
     abstract boolean supportTableComment();
 
 
-    private void compareColumns(_TableInfo tableInfo, TableMeta<?> table, _TableResultBuilder tableBuilder) {
+    private void compareColumns(_TableInfo tableInfo, TableMeta<?> table, _TableResult.Builder tableBuilder) {
 
         final Map<String, _ColumnInfo> columnMap = tableInfo.columnMap();
         final FieldResultBuilder builder = new FieldResultBuilder();
@@ -105,7 +105,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
 
     }
 
-    private <T extends IDomain> void compareIndex(_TableInfo tableInfo, TableMeta<T> table, _TableResultBuilder tableBuilder) {
+    private <T extends IDomain> void compareIndex(_TableInfo tableInfo, TableMeta<T> table, _TableResult.Builder tableBuilder) {
 
         final Map<String, _IndexInfo> indexMap = tableInfo.indexMap();
         _IndexInfo indexInfo;

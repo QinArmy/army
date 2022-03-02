@@ -38,7 +38,7 @@ abstract class AbstractStmtExecutor implements StmtExecutor {
 
     Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap;
 
-    AbstractStmtExecutor(Connection conn) {
+    AbstractStmtExecutor(JdbcExecutorFactory factory, Connection conn) {
         this.conn = conn;
     }
 

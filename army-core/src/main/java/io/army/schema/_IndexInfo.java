@@ -6,6 +6,11 @@ import java.util.List;
 
 public interface _IndexInfo {
 
+    String indexName();
+
+    @Nullable
+    String indexType();
+
     boolean unique();
 
     List<Boolean> ascList();
@@ -13,12 +18,10 @@ public interface _IndexInfo {
     List<String> columnList();
 
     static Builder builder() {
-        throw new UnsupportedOperationException();
+        return IndexInfoImpl.createBuilder();
     }
 
     interface Builder {
-
-        boolean isNotEmpty();
 
         Builder name(String name);
 
@@ -29,6 +32,7 @@ public interface _IndexInfo {
         Builder appendColumn(String columnName, @Nullable Boolean asc);
 
         _IndexInfo buildAndClear();
+
     }
 
 

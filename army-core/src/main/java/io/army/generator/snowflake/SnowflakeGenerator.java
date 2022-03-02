@@ -244,7 +244,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
             return client;
         }
         ArmyEnvironment env = sessionFactory.environment();
-        String beanName = env.getRequiredProperty(ArmyKey.SNOWFLAKE_CLIENT_NAME);
+        String beanName = env.getNonNull(ArmyKey.SNOWFLAKE_CLIENT_NAME);
         client = env.getBean(beanName, SnowflakeClient.class);
         final boolean noSharding;
         if (sessionFactory instanceof GenericTmSessionFactory) {
