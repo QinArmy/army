@@ -3,7 +3,7 @@ package io.army.sync;
 import io.army.dialect._Dialect;
 import io.army.session.DialectSessionFactory;
 
-interface InnerGenericRmSessionFactory extends DialectSessionFactory, GenericSyncSessionFactory {
+interface InnerGenericRmSessionFactory extends DialectSessionFactory, SyncSessionFactory {
 
     _Dialect dialect();
 

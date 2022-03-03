@@ -41,7 +41,6 @@ final class MySQLComparer extends AbstractSchemaComparer {
             case INT:
             case BIGINT:
             case DECIMAL:
-            case BOOLEAN:
             case DATETIME:
             case DATE:
             case TIME:
@@ -69,6 +68,17 @@ final class MySQLComparer extends AbstractSchemaComparer {
             case MEDIUMINT:
                 match = sqlType.name().equals(columnInfo.typeName());
                 break;
+            case BOOLEAN: {
+                final String typeName = columnInfo.typeName();
+                if (sqlType.name().equals(typeName)) {
+                    match = true;
+                } else if (MySqlType.TINYINT.name().equals(typeName) || MySqlType.BIT.name().equals(typeName)) {
+                    match = columnInfo.precision() == 1;
+                } else {
+                    match = false;
+                }
+            }
+            break;
             case SMALLINT_UNSIGNED:
             case TINYINT_UNSIGNED:
             case MEDIUMINT_UNSIGNED:

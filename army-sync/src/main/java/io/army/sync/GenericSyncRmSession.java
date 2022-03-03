@@ -7,17 +7,14 @@ import io.army.tx.NoSessionTransactionException;
 import java.io.Flushable;
 import java.sql.Connection;
 
-public interface GenericSyncRmSession extends GenericSyncSession, AutoCloseable, Flushable {
+public interface GenericSyncRmSession extends SyncSession, AutoCloseable, Flushable {
 
-
-    @Override
-    GenericSyncSessionFactory sessionFactory();
 
     GenericTransaction sessionTransaction() throws NoSessionTransactionException;
 
     /**
      * <o>
-     * <li>invoke {@link io.army.context.spi.CurrentSessionContext#removeCurrentSession(GenericSyncSession)},if need</li>
+     * <li>invoke {@link io.army.context.spi.CurrentSessionContext#removeCurrentSession(SyncSession)},if need</li>
      * <li>invoke {@link Connection#close()}</li>
      * </o>
      *

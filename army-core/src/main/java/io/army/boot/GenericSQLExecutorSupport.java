@@ -2,7 +2,6 @@ package io.army.boot;
 
 import io.army.*;
 import io.army.beans.MapWrapper;
-import io.army.beans.ObjectAccessorFactory;
 import io.army.beans.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
@@ -23,7 +22,6 @@ import io.army.stmt.Stmt;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 public abstract class GenericSQLExecutorSupport {
 
@@ -159,17 +157,18 @@ public abstract class GenericSQLExecutorSupport {
     }
 
     protected static ObjectWrapper createObjectWrapper(Class<?> resultClass, GenericSession session) {
-        ObjectWrapper beanWrapper;
-        if (Map.class.isAssignableFrom(resultClass)) {
-            if (!session.hasTransaction() || !session.sessionTransaction().readOnly()) {
-                throw new UnSupportedResultClassException(resultClass
-                        , "not support java.util.Map result type in non-readonly transaction.");
-            }
-            beanWrapper = ObjectAccessorFactory.forMapAccess(resultClass);
-        } else {
-            beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
-        }
-        return beanWrapper;
+//        ObjectWrapper beanWrapper;
+//        if (Map.class.isAssignableFrom(resultClass)) {
+//            if (!session.hasTransaction() || !session.sessionTransaction().readOnly()) {
+//                throw new UnSupportedResultClassException(resultClass
+//                        , "not support java.util.Map result type in non-readonly transaction.");
+//            }
+//            beanWrapper = ObjectAccessorFactory.forMapAccess(resultClass);
+//        } else {
+//            beanWrapper = ObjectAccessorFactory.forBeanPropertyAccess(resultClass);
+//        }
+//        return beanWrapper;
+        throw new UnsupportedOperationException();
     }
 
     @SuppressWarnings("unchecked")

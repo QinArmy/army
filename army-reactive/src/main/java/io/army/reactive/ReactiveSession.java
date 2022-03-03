@@ -13,7 +13,7 @@ public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericR
     @Override
     ReactiveSessionFactory sessionFactory();
 
-    @Override
+   // @Override
     ReactiveTransaction sessionTransaction() throws NoSessionTransactionException;
 
     Mono<Void> close() throws SessionException;

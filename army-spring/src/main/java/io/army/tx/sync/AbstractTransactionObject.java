@@ -1,12 +1,11 @@
 package io.army.tx.sync;
 
 
-import io.army.DataAccessException_0;
-import io.army.sync.GenericSyncApiSession;
+import io.army.sync.SyncSession;
 import org.springframework.transaction.support.SmartTransactionObject;
 import org.springframework.util.Assert;
 
-abstract class AbstractTransactionObject<S extends GenericSyncApiSession>
+abstract class AbstractTransactionObject<S extends SyncSession>
         implements SmartTransactionObject {
 
     S session;
@@ -19,11 +18,11 @@ abstract class AbstractTransactionObject<S extends GenericSyncApiSession>
 
     @Override
     public final void flush() {
-        try {
-            this.session.flush();
-        } catch (DataAccessException_0 e) {
-            throw SpringUtils.convertArmyAccessException(e);
-        }
+//        try {
+//         //   this.session.flush();
+//        } catch (DataAccessException_0 e) {
+//            throw SpringUtils.convertArmyAccessException(e);
+//        }
     }
 
 

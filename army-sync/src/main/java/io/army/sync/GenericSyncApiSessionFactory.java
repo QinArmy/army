@@ -10,7 +10,7 @@ import io.army.session.GenericProxySession;
  *     <li>{@code io.army.TmSessionFactory}</li>
  * </ul>
  */
-public interface GenericSyncApiSessionFactory extends GenericSyncSessionFactory {
+public interface GenericSyncApiSessionFactory extends SyncSessionFactory {
 
     GenericProxySession proxySession();
 

@@ -1,12 +1,12 @@
 package io.army.tx;
 
-import io.army.sync.GenericSyncSession;
+import io.army.sync.SyncSession;
 
 import java.io.Flushable;
 
 public interface GenericSyncTransaction extends GenericTransaction, Flushable, AutoCloseable {
 
-    GenericSyncSession session();
+    SyncSession session();
 
 
     void start() throws TransactionException;

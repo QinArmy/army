@@ -44,8 +44,8 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
     }
 
     @Override
-    public <T extends IDomain> T get(TableMeta<T> tableMeta, Object id, Visible visible) {
-        return this.sessionContext.currentSession().get(tableMeta, id, visible);
+    public <T extends IDomain> T get(TableMeta<T> table, Object id, Visible visible) {
+        return this.sessionContext.currentSession().get(table, id, visible);
     }
 
     //@Override
@@ -82,13 +82,15 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
 
 
     @Override
-    public void valueInsert(Insert insert) {
-        this.sessionContext.currentSession().valueInsert(insert);
+    public long insert(Insert insert) {
+        this.sessionContext.currentSession().insert(insert);
+        return 0;
     }
 
     @Override
-    public void valueInsert(Insert insert, Visible visible) {
-        this.sessionContext.currentSession().valueInsert(insert, visible);
+    public long insert(Insert insert, Visible visible) {
+        this.sessionContext.currentSession().insert(insert, visible);
+        return 0;
     }
 
     //@Override
@@ -125,15 +127,6 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
         return this.sessionContext.currentSession().returningInsert(insert, resultClass, visible);
     }
 
-    @Override
-    public int update(Update update) {
-        return this.sessionContext.currentSession().update(update);
-    }
-
-    @Override
-    public int update(Update update, Visible visible) {
-        return this.sessionContext.currentSession().update(update, visible);
-    }
 
     @Override
     public <T> List<T> returningUpdate(Update update, Class<T> resultClass) {
@@ -146,24 +139,15 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
     }
 
     @Override
-    public long largeUpdate(Update update) {
-        return this.sessionContext.currentSession().largeUpdate(update);
+    public long update(Update update) {
+        return this.sessionContext.currentSession().update(update);
     }
 
     @Override
-    public long largeUpdate(Update update, Visible visible) {
-        return this.sessionContext.currentSession().largeUpdate(update, visible);
+    public long update(Update update, Visible visible) {
+        return this.sessionContext.currentSession().update(update, visible);
     }
 
-    @Override
-    public int delete(Delete delete) {
-        return this.sessionContext.currentSession().delete(delete);
-    }
-
-    @Override
-    public int delete(Delete delete, Visible visible) {
-        return this.sessionContext.currentSession().delete(delete, visible);
-    }
 
     @Override
     public <T> List<T> returningDelete(Delete delete, Class<T> resultClass) {
@@ -176,13 +160,13 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
     }
 
     @Override
-    public long largeDelete(Delete delete) {
-        return this.sessionContext.currentSession().largeDelete(delete);
+    public long delete(Delete delete) {
+        return this.sessionContext.currentSession().delete(delete);
     }
 
     @Override
-    public long largeDelete(Delete delete, Visible visible) {
-        return this.sessionContext.currentSession().largeDelete(delete, visible);
+    public long delete(Delete delete, Visible visible) {
+        return this.sessionContext.currentSession().delete(delete, visible);
     }
 
     @Override

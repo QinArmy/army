@@ -4,8 +4,6 @@ import io.army.SessionFactoryException;
 import io.army.session.GenericSession;
 import io.army.session.GenericSessionFactory;
 
-import java.io.Closeable;
-
 
 /**
  * This interface representing a sync session factory.
@@ -16,7 +14,7 @@ import java.io.Closeable;
  *     <li>{@code io.army.TmSessionFactory}</li>
  * </ul>
  */
-public interface GenericSyncSessionFactory extends GenericSessionFactory, Closeable {
+public interface SyncSessionFactory extends GenericSessionFactory, AutoCloseable {
 
 
     /**

@@ -39,10 +39,11 @@ final class JdbcMetaExecutor implements MetaExecutor {
             tableBuilderMap = getTableBuilder(catalog, schema, metaData);
 
             appendColumn(catalog, schema, metaData, tableBuilderMap);
-
-            appendIndex(catalog, schema, metaData, true, tableBuilderMap);
-            appendIndex(catalog, schema, metaData, false, tableBuilderMap);
-
+            final _IndexInfo.Builder indexBuilder = _IndexInfo.builder();
+            for (_TableInfo.Builder tableBuilder : tableBuilderMap.values()) {
+                appendIndex(catalog, schema, metaData, true, tableBuilder, indexBuilder);
+                appendIndex(catalog, schema, metaData, false, tableBuilder, indexBuilder);
+            }
             return _SchemaInfo.create(catalog, schema, tableBuilderMap);
         } catch (SQLException e) {
             throw _SyncExceptions.wrapDataAccess(e);
@@ -172,26 +173,17 @@ final class JdbcMetaExecutor implements MetaExecutor {
 
     private void appendIndex(final @Nullable String catalog, final @Nullable String schema
             , final DatabaseMetaData metaData, final boolean unique
-            , final Map<String, _TableInfo.Builder> tableBuilderMap) throws SQLException {
-
-        try (ResultSet resultSet = metaData.getIndexInfo(catalog, schema, "%", unique, false)) {
-
-            _TableInfo.Builder tableBuilder = null;
-            final _IndexInfo.Builder builder = _IndexInfo.builder();
+            , final _TableInfo.Builder tableBuilder, _IndexInfo.Builder builder) throws SQLException {
+        final String tableName = tableBuilder.name();
+        try (ResultSet resultSet = metaData.getIndexInfo(catalog, schema, tableName, unique, false)) {
             Boolean asc;
-            for (String ascStr, indexName, lastIndexName = null, tableName, lastTableName = null; resultSet.next(); ) {
-                tableName = resultSet.getString("TABLE_NAME");
-
-                if (lastTableName == null) {
-                    lastTableName = tableName;
-                    tableBuilder = tableBuilderMap.get(tableName);
-                    if (tableBuilder == null) {
-                        lastTableName = null;
-                        continue;
-                    }
+            for (String ascStr, indexName, lastIndexName = null; resultSet.next(); ) {
+                if (!tableName.equals(resultSet.getString("TABLE_NAME"))) {
+                    throw new DataAccessException(String.format("Table[%s] not match.", tableName));
                 }
                 indexName = resultSet.getString("INDEX_NAME");
                 if (lastIndexName == null) {
+                    builder.name(indexName);
                     lastIndexName = indexName;
                 }
                 ascStr = resultSet.getString("ASC_OR_DESC");
@@ -207,10 +199,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
                     throw new DataAccessException(m);
                 }
 
-                if (!tableName.equals(lastTableName)) {
-                    lastTableName = null;
-                }
-                if (lastTableName != null && indexName.equals(lastIndexName)) {
+                if (indexName.equals(lastIndexName)) {
                     builder.appendColumn(resultSet.getString("COLUMN_NAME"), asc);
                 } else {
                     builder.unique(!resultSet.getBoolean("NON_UNIQUE"));

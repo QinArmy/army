@@ -1,5 +1,6 @@
 package io.army.sync;
 
+import io.army.SessionException;
 import io.army.lang.Nullable;
 import io.army.tx.Isolation;
 import io.army.tx.NoSessionTransactionException;
@@ -7,15 +8,17 @@ import io.army.tx.Transaction;
 import io.army.tx.TransactionException;
 
 
-public interface Session extends GenericSyncRmSession, GenericSyncApiSession {
+public interface Session extends SyncSession, AutoCloseable {
 
-    @Override
-    SessionFactory sessionFactory();
 
     Transaction sessionTransaction() throws NoSessionTransactionException;
 
 
     TransactionBuilder builder();
+
+
+    @Override
+    void close() throws SessionException;
 
     interface TransactionBuilder {
 

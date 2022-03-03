@@ -132,7 +132,6 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
                 tableBuilder.appendNewIndex(indexName);
                 continue;
             }
-
             if (indexInfo.unique() != index.unique()) {
                 tableBuilder.appendChangeIndex(indexName);
                 continue;

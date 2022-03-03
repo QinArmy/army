@@ -1,8 +1,6 @@
 package io.army.boot.reactive;
 
 import io.army.NonUniqueException;
-import io.army.ReadOnlySessionException;
-import io.army.SessionUsageException;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.cache.UniqueKey;
@@ -215,20 +213,20 @@ abstract class AbstractGenericReactiveSession extends AbstractGenericSession imp
     }
 
     final Mono<Void> assertSessionActive(final boolean write) {
-        Mono<Void> mono = null;
-        GenericTransaction tx = obtainTransaction();
-        if (this.closed() || (tx != null && tx.nonActive())) {
-            String txName = this.sessionTransaction().name();
-            mono = Mono.error(new SessionUsageException("TmSession[%s] closed or Transaction[%s] not active."
-                    , txName, txName));
-        }
-        if (write && this.readonly()) {
-            mono = Mono.error(new ReadOnlySessionException("%s read only"));
-        }
-        if (mono == null) {
-            mono = Mono.empty();
-        }
-        return mono;
+//        Mono<Void> mono = null;
+//        GenericTransaction tx = obtainTransaction();
+//        if (this.closed() || (tx != null && tx.nonActive())) {
+//            String txName = this.sessionTransaction().name();
+//            mono = Mono.error(new SessionUsageException("TmSession[%s] closed or Transaction[%s] not active."
+//                    , txName, txName));
+//        }
+//        if (write && this.readonly()) {
+//            mono = Mono.error(new ReadOnlySessionException("%s read only"));
+//        }
+//        if (mono == null) {
+//            mono = Mono.empty();
+//        }
+        return Mono.empty();
     }
 
     final Mono<Void> internalFlush() {

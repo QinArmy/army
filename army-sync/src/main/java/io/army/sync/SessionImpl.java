@@ -1,6 +1,9 @@
 package io.army.sync;
 
-import io.army.*;
+import io.army.DuplicationSessionTransaction;
+import io.army.ReadOnlySessionException;
+import io.army.SessionCloseFailureException;
+import io.army.SessionException;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
@@ -11,8 +14,10 @@ import io.army.meta.UniqueFieldMeta;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 final class SessionImpl extends AbstractRmSession implements Session {
 
@@ -55,24 +60,24 @@ final class SessionImpl extends AbstractRmSession implements Session {
 
     @Nullable
     @Override
-    public <T extends IDomain> T get(TableMeta<T> tableMeta, final Object id, Visible visible) {
+    public <T extends IDomain> T get(TableMeta<T> table, final Object id, Visible visible) {
         T actualReturn;
         if (this.sessionCache != null) {
             // try obtain cache
-            actualReturn = this.sessionCache.getDomain(tableMeta, id);
+            actualReturn = this.sessionCache.getDomain(table, id);
             if (actualReturn != null) {
                 return actualReturn;
             }
         }
 
         // 1. create sql
-        Select select = CriteriaUtils.createSelectDomainById(tableMeta, id);
+        Select select = CriteriaUtils.createSelectDomainById(table, id);
         // 2. execute sql
-        T domain = this.selectOne(select, tableMeta.javaType(), visible);
+        T domain = this.selectOne(select, table.javaType(), visible);
 
         if (domain != null && this.sessionCache != null) {
             // 3. cache
-            actualReturn = this.sessionCache.cacheDomainById(tableMeta, domain);
+            actualReturn = this.sessionCache.cacheDomainById(table, domain);
         } else {
             actualReturn = domain;
         }
@@ -81,39 +86,31 @@ final class SessionImpl extends AbstractRmSession implements Session {
 
 
     @Override
-    public <R extends IDomain, F> R getByUnique(TableMeta<R> tableMeta, UniqueFieldMeta<R, F> fieldMeta, F fieldValue
+    public <R extends IDomain, F> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R, F> field, F value
             , final Visible visible) {
         return null;
     }
 
-
     @Override
-    public Map<String, Object> selectOneAsMap(Select select) {
-        return null;
+    public Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+            , Visible visible) {
+        return Collections.emptyMap();
     }
 
     @Override
-    public Map<String, Object> selectOneAsMap(Select select, Visible visible) {
-        return null;
+    public <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
+        return Collections.emptyList();
     }
 
     @Override
-    public List<Map<String, Object>> selectAsMap(Select select) {
-        return null;
+    public List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+        return Collections.emptyList();
     }
 
-    @Override
-    public List<Map<String, Object>> selectAsMap(Select select, Visible visible) {
-        return null;
-    }
 
     @Override
-    public void valueInsert(Insert insert) {
-        this.valueInsert(insert, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public void valueInsert(final Insert insert, final Visible visible) {
+    public long insert(final Insert insert, final Visible visible) {
 //        try {
 //            assertSessionActive(insert);
 //            final Stmt stmt;
@@ -126,45 +123,28 @@ final class SessionImpl extends AbstractRmSession implements Session {
 //        } finally {
 //            ((_Statement) insert).clear();
 //        }
+        return 0;
     }
 
-    // @Override
-    public List<Integer> batchUpdate(Update update) {
-        return null;
+    @Override
+    public <R> List<R> returningUpdate(Update update, Class<R> resultClass
+            , Supplier<List<R>> listConstructor, Visible visible) {
+        return Collections.emptyList();
     }
 
-    //@Override
-    public List<Integer> batchUpdate(Update update, Visible visible) {
+    @Override
+    public <R> List<R> returningDelete(Delete delete, Class<R> resultClass
+            , Supplier<List<R>> listConstructor, Visible visible) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Long> batchUpdate(Update update, Visible visible) {
         return null;
     }
 
     @Override
-    public List<Long> batchLargeUpdate(Update update) {
-        return null;
-    }
-
-    @Override
-    public List<Long> batchLargeUpdate(Update update, Visible visible) {
-        return null;
-    }
-
-    //@Override
-    public List<Integer> batchDelete(Delete delete) {
-        return null;
-    }
-
-    // @Override
-    public List<Integer> batchDelete(Delete delete, Visible visible) {
-        return null;
-    }
-
-    @Override
-    public List<Long> batchLargeDelete(Delete delete) {
-        return null;
-    }
-
-    @Override
-    public List<Long> batchLargeDelete(Delete delete, Visible visible) {
+    public List<Long> batchDelete(Delete delete, Visible visible) {
         return null;
     }
 
@@ -227,12 +207,12 @@ final class SessionImpl extends AbstractRmSession implements Session {
             if (readOnly) {
                 throw new ReadOnlySessionException("Session is read only,can't update Domain cache.");
             }
-            int updateRows;
-            updateRows = update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
-            if (updateRows != 1) {
-                throw new OptimisticLockException("TableMeta[%s] maybe updated by other transaction."
-                        , advice.readonlyWrapper().tableMeta());
-            }
+//            int updateRows;
+//           // updateRows = update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
+//            if (updateRows != 1) {
+//                throw new OptimisticLockException("TableMeta[%s] maybe updated by other transaction."
+//                        , advice.readonlyWrapper().tableMeta());
+//            }
             advice.updateFinish();
         }
     }
@@ -362,7 +342,6 @@ final class SessionImpl extends AbstractRmSession implements Session {
     }
 
     /*################################## blow static inner class ##################################*/
-
 
 
 }
