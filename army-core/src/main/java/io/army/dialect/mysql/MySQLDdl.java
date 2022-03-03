@@ -39,13 +39,17 @@ final class MySQLDdl extends _DdlDialect {
 
     @Override
     public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
+        final int size = resultList.size();
+        if (size == 0) {
+            return;
+        }
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
         final _AbstractDialect dialect = this.dialect;
         TableMeta<?> table = null;
         FieldMeta<?, ?> field;
         _FieldResult result;
-        final int size = resultList.size();
+
         for (int i = 0; i < size; i++) {
             result = resultList.get(i);
             field = result.field();
@@ -65,8 +69,6 @@ final class MySQLDdl extends _DdlDialect {
                 dialect.quoteIfNeed(field.columnName(), builder)
                         .append(Constant.SPACE);
                 columnDefinition(field, builder);
-                continue;
-            } else if (!result.defaultValue()) {
                 continue;
             }
             final String defaultValue;
@@ -95,6 +97,11 @@ final class MySQLDdl extends _DdlDialect {
         final int indexNameSize = indexNameList.size();
         if (indexNameSize == 0) {
             throw new IllegalArgumentException("indexNameList must not empty.");
+        }
+        if (table.javaType().getName().equals("io.army.example.domain.ChinaProvince")) {
+            for (String s : indexNameList) {
+                System.out.println(s);
+            }
         }
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
@@ -164,6 +171,7 @@ final class MySQLDdl extends _DdlDialect {
     @Override
     public <T extends IDomain> void changeIndex(final TableMeta<T> table, final List<String> indexNameList
             , final List<String> sqlList) {
+
         dropIndex(table, indexNameList, sqlList);
         createIndex(table, indexNameList, sqlList);
     }
@@ -246,14 +254,22 @@ final class MySQLDdl extends _DdlDialect {
             case TINYTEXT:
             case TINYBLOB:
             case CHAR: {
-                builder.append(type.name());
-                precision(field, type, (1 << 8) - 1, builder);
+                if (field.precision() < 0) {
+                    this.noSpecifiedPrecision(field);
+                } else {
+                    builder.append(type.name());
+                    precision(field, type, 0xFF, builder);
+                }
             }
             break;
             case VARBINARY:
             case VARCHAR: {
-                builder.append(type.name());
-                precision(field, type, 21844, builder);
+                if (field.precision() < 0) {
+                    this.noSpecifiedPrecision(field);
+                } else {
+                    builder.append(type.name());
+                    precision(field, type, 0xFFFF, builder);
+                }
             }
             break;
             case SET:

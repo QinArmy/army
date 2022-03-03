@@ -15,7 +15,7 @@ public class Person extends User {
     @Column(comment = "user's birthday")
     private LocalDate birthday;
 
-    @Column(comment = "user's phone")
+    @Column(precision = 20, comment = "user's phone")
     private String phone;
 
     public LocalDate getBirthday() {

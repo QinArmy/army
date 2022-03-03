@@ -1,15 +1,14 @@
 package io.army.schema;
 
-import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
+import io.army.ArmyException;
 
-public class SchemaInfoException extends ArmyRuntimeException {
+public class SchemaInfoException extends ArmyException {
 
-    public SchemaInfoException(ErrorCode errorCode, String format, Object... args) {
-        super(errorCode, format, args);
+    public SchemaInfoException(String message) {
+        super(message);
     }
 
-    public SchemaInfoException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    public SchemaInfoException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

@@ -33,7 +33,11 @@ public interface _FieldResult {
 
         void comment(boolean comment);
 
-        _FieldResult buildAndClear();
+        boolean hasDifference();
+
+        void clear();
+
+        _FieldResult build();
 
     }
 

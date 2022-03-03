@@ -8,6 +8,7 @@ import io.army.criteria.impl._SQLCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
 import io.army.stmt.ParamValue;
@@ -255,24 +256,38 @@ public abstract class _AbstractDialect implements _Dialect {
         ddlDialect = createDdlDialect();
 
         final List<String> ddlList = new ArrayList<>();
+        final List<TableMeta<?>> dropTableList = schemaResult.dropTableList();
+        if (dropTableList.size() > 0) {
+            ddlDialect.dropTable(dropTableList, ddlList);
+        }
         for (TableMeta<?> table : schemaResult.newTableList()) {
             ddlDialect.createTable(table, ddlList);
         }
 
+        List<FieldMeta<?, ?>> newFieldList;
+        List<_FieldResult> fieldResultList;
+        List<String> indexList;
         for (_TableResult tableResult : schemaResult.changeTableList()) {
             TableMeta<?> table = tableResult.table();
             if (tableResult.comment()) {
                 ddlDialect.modifyTableComment(table, ddlList);
             }
-            ddlDialect.addColumn(tableResult.newFieldList(), ddlList);
-            ddlDialect.modifyColumn(tableResult.changeFieldList(), ddlList);
-
-            ddlDialect.createIndex(table, tableResult.newIndexList(), ddlList);
-            final List<String> changeIndexList;
-            changeIndexList = tableResult.changeIndexList();
-            if (changeIndexList.size() > 0) {
-                ddlDialect.dropIndex(table, changeIndexList, ddlList);
-                ddlDialect.createIndex(table, changeIndexList, ddlList);
+            newFieldList = tableResult.newFieldList();
+            if (newFieldList.size() > 0) {
+                ddlDialect.addColumn(newFieldList, ddlList);
+            }
+            fieldResultList = tableResult.changeFieldList();
+            if (fieldResultList.size() > 0) {
+                ddlDialect.modifyColumn(fieldResultList, ddlList);
+            }
+            indexList = tableResult.newIndexList();
+            if (indexList.size() > 0) {
+                ddlDialect.createIndex(table, indexList, ddlList);
+            }
+            indexList = tableResult.changeIndexList();
+            if (indexList.size() > 0) {
+                ddlDialect.dropIndex(table, indexList, ddlList);
+                ddlDialect.createIndex(table, indexList, ddlList);
             }
         }
 

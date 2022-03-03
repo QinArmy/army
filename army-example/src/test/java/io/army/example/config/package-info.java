@@ -1,2 +1,2 @@
 @org.springframework.lang.NonNullApi
-package io.army.dialect.mysql.config;
+package io.army.example.config;

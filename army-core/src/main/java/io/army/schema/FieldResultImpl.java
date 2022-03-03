@@ -14,7 +14,7 @@ final class FieldResultImpl implements _FieldResult {
 
     private final boolean defaultExp;
 
-    private final boolean nullable;
+    private final Boolean nullable;
 
     private final boolean comment;
 
@@ -73,7 +73,7 @@ final class FieldResultImpl implements _FieldResult {
 
         private boolean defaultExp;
 
-        private boolean nullable;
+        private Boolean nullable;
 
         private boolean comment;
 
@@ -81,7 +81,7 @@ final class FieldResultImpl implements _FieldResult {
         @Override
         public Builder field(FieldMeta<?, ?> field) {
             this.field = field;
-            return null;
+            return this;
         }
 
         @Override
@@ -108,13 +108,19 @@ final class FieldResultImpl implements _FieldResult {
         }
 
         @Override
-        public _FieldResult buildAndClear() {
-            final _FieldResult fieldResult;
-            fieldResult = new FieldResultImpl(this);
+        public boolean hasDifference() {
+            return this.sqlType || this.defaultExp || this.nullable || this.comment;
+        }
 
+        @Override
+        public void clear() {
             this.field = null;
             this.sqlType = this.defaultExp = this.nullable = this.comment = false;
-            return fieldResult;
+        }
+
+        @Override
+        public _FieldResult build() {
+            return new FieldResultImpl(this);
         }
 
 

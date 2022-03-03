@@ -50,8 +50,15 @@ final class JdbcMetaExecutor implements MetaExecutor {
     }
 
     @Override
-    public void executeDdl(List<String> ddlList) throws DataAccessException {
-
+    public void executeDdl(final List<String> ddlList) throws DataAccessException {
+        try (Statement stmt = this.conn.createStatement()) {
+            for (String ddl : ddlList) {
+                stmt.addBatch(ddl);
+            }
+            stmt.executeBatch();
+        } catch (SQLException e) {
+            throw _SyncExceptions.wrapDataAccess(e);
+        }
     }
 
     @Override
@@ -103,7 +110,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
         try (ResultSet resultSet = metaData.getColumns(catalog, schema, "%", "%")) {
             _TableInfo.Builder tableBuilder = null;
             final _ColumnInfo.Builder builder = _ColumnInfo.builder();
-            for (String tableName, currentTableName = null; resultSet.next(); ) {
+            for (String tableName, currentTableName = null, nullable; resultSet.next(); ) {
 
                 tableName = resultSet.getString("TABLE_NAME");
                 if (!tableName.equals(currentTableName)) {
@@ -116,15 +123,31 @@ final class JdbcMetaExecutor implements MetaExecutor {
 
                 builder.name(resultSet.getString("COLUMN_NAME"))
                         .type(resultSet.getString("TYPE_NAME"))
-                        .defaultExp(resultSet.getString(""))
-                        .nullable(!"NO".equals(resultSet.getString("IS_NULLABLE")))
-
                         .defaultExp(resultSet.getString("COLUMN_DEF"))
+                        .defaultExp(resultSet.getString("COLUMN_DEF"))
+
                         .comment(resultSet.getString("REMARKS"))
                         .autoincrement("YES".equals(resultSet.getString("IS_AUTOINCREMENT")))
                         .precision(resultSet.getInt("COLUMN_SIZE"));
+                nullable = resultSet.getString("IS_NULLABLE");
+                switch (nullable) {
+                    case "YES":
+                        builder.nullable(Boolean.TRUE);
+                        break;
+                    case "NO":
+                        builder.nullable(Boolean.FALSE);
+                        break;
+                    case "":
+                        builder.nullable(null);
+                    default: {
+                        String m = String.format("IS_NULLABLE is excepted value[%s]", nullable);
+                        throw new DataAccessException(m);
+                    }
 
-                switch (JDBCType.valueOf(resultSet.getString("DATA_TYPE"))) {
+
+                }
+
+                switch (JDBCType.valueOf(resultSet.getInt("DATA_TYPE"))) {
                     case DECIMAL:
                         builder.scale(resultSet.getInt("DECIMAL_DIGITS"));
                         break;

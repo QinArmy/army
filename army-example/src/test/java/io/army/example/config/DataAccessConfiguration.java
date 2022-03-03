@@ -1,4 +1,4 @@
-package io.army.dialect.mysql.config;
+package io.army.example.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import io.army.boot.sync.LocalSessionFactoryBean;
@@ -25,18 +25,18 @@ public class DataAccessConfiguration implements EnvironmentAware {
     }
 
     @Bean(destroyMethod = "close")
-    public DruidDataSource armyExampleDataSource() {
-        return DruidDataSourceUtils.createDataSource(this.env, "army", DataSourceRole.PRIMARY);
+    public DruidDataSource exampleDataSource() {
+        return DruidDataSourceUtils.createDataSource(this.env, "example", DataSourceRole.PRIMARY);
     }
 
     @Bean
-    public LocalSessionFactoryBean armySessionFactory(@Qualifier("armyExampleDataSource") DataSource dataSource) {
+    public LocalSessionFactoryBean armyExampleSessionFactory(@Qualifier("exampleDataSource") DataSource dataSource) {
         final List<String> packageList = new ArrayList<>();
         packageList.add("io.army.example.domain");
         packageList.add("io.army.dialect.mysql");
 
         return new LocalSessionFactoryBean()
-                .setFactoryName("army.example")
+                .setFactoryName("example")
                 .setDataSource(dataSource)
                 .setPackagesToScan(packageList);
     }

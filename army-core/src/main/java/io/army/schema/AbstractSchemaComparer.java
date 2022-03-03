@@ -40,6 +40,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
                 newTableList.add(table);
                 continue;
             }
+            builder.table(table);
             if (supportTableComment) {
                 builder.comment(!table.comment().equals(tableInfo.comment()));
             }
@@ -73,6 +74,8 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
 
     abstract boolean supportTableComment();
 
+    abstract String primaryKeyName();
+
 
     private void compareColumns(_TableInfo tableInfo, TableMeta<?> table, _TableResult.Builder tableBuilder) {
 
@@ -83,6 +86,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
 
         _ColumnInfo column;
         SqlType sqlType;
+        Boolean nullable;
         for (FieldMeta<?, ?> field : table.fieldList()) {
             column = columnMap.get(field.columnName());
             if (column == null) {
@@ -92,13 +96,18 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
             sqlType = field.mappingType().map(serverMeta);
             builder.field(field)
                     .sqlType(this.compareSqlType(column, field, sqlType))
-                    .defaultExp(this.compareDefault(column, field, sqlType))
-                    .nullable(column.nullable() != field.nullable());
-
+                    .defaultExp(this.compareDefault(column, field, sqlType));
+            nullable = column.nullable();
+            if (nullable != null) {
+                builder.nullable(nullable != field.nullable());
+            }
             if (supportColumnComment) {
                 builder.comment(!field.comment().equals(column.comment()));
             }
-            tableBuilder.appendFieldResult(builder.buildAndClear());
+            if (builder.hasDifference()) {
+                tableBuilder.appendFieldResult(builder.build());
+            }
+            builder.clear();
 
         }// for
 
@@ -114,6 +123,9 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
         List<String> columnList;
         List<Boolean> ascList;
         for (IndexMeta<T> index : table.indexList()) {
+            if (index.isPrimaryKey()) {
+                continue;
+            }
             indexName = index.name();
             indexInfo = indexMap.get(indexName);
             if (indexInfo == null) {

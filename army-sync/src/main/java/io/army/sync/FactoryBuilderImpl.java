@@ -25,6 +25,8 @@ import io.army.sync.executor.MetaExecutor;
 import io.army.util.CollectionUtils;
 import io.army.util.StringUtils;
 import io.army.util._Exceptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,6 +35,8 @@ import java.util.*;
 import java.util.function.Function;
 
 final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FactoryBuilderImpl.class);
 
     Map<TableMeta<?>, DomainAdvice> domainAdviceMap = Collections.emptyMap();
 
@@ -135,7 +139,9 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
             this.executorFactory = executorFactory;
             final SessionFactoryImpl sessionFactory;
             sessionFactory = new SessionFactoryImpl(this);
-
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Created {}[{}]", SessionFactory.class.getName(), sessionFactory.name());
+            }
             //5. invoke beforeInitialize
             if (factoryAdvice != null) {
                 factoryAdvice.beforeInitialize(sessionFactory);
@@ -204,6 +210,9 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
      * @see #build()
      */
     private static void initializingFactory(SessionFactoryImpl sessionFactory) throws SessionFactoryException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Initializing {}[{}]", SessionFactory.class.getName(), sessionFactory.name());
+        }
 
         final ArmyEnvironment env = sessionFactory.environment();
         // initializing schema
@@ -228,6 +237,14 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
      * @see #initializingFactory(SessionFactoryImpl)
      */
     private static void initializingSchema(final SessionFactoryImpl sessionFactory, final DdlMode ddlMode) {
+
+        final String msgPrefix;
+        msgPrefix = String.format("Initializing schema of %s[%s],%s[%s]"
+                , SessionFactory.class.getName(), sessionFactory.name()
+                , DdlMode.class.getName(), ddlMode);
+        LOG.info(msgPrefix);
+        final long startTime;
+        startTime = System.currentTimeMillis();
         final ExecutorFactory executorFactory;
         executorFactory = sessionFactory.executorFactory;
 
@@ -272,20 +289,30 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
                     //create ddl
                     final List<String> ddlList;
                     ddlList = sessionFactory.dialect.schemaDdl(schemaResult);
-
                     // execute ddl
+                    final int size = ddlList.size();
+                    final StringBuilder builder = new StringBuilder(size * 40);
+                    for (int i = 0; i < size; i++) {
+                        if (i > 0) {
+                            builder.append("\n\n");
+                        }
+                        builder.append(ddlList.get(i));
+                    }
+                    LOG.info(builder.toString());
                     metaExecutor.executeDdl(ddlList);
                 }
                 break;
                 default:
                     throw _Exceptions.unexpectedEnum(ddlMode);
             }
-
+            LOG.info("{},cost {} ms.", msgPrefix, System.currentTimeMillis() - startTime);
         } catch (DataAccessException e) {
             String m = String.format("%s[%s] schema initializing failure."
                     , SessionFactory.class.getName(), sessionFactory.name());
             throw new SessionFactoryException(m, e);
         }
+
+
     }
 
     /**

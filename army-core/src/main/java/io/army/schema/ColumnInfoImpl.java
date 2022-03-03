@@ -1,5 +1,9 @@
 package io.army.schema;
 
+import io.army.lang.Nullable;
+
+import java.util.Locale;
+
 final class ColumnInfoImpl implements _ColumnInfo {
 
     static ColumnInfoBuilder createBuilder() {
@@ -16,7 +20,7 @@ final class ColumnInfoImpl implements _ColumnInfo {
 
     private final String defaultExp;
 
-    private final boolean nullable;
+    private final Boolean nullable;
 
     private final String comment;
 
@@ -24,7 +28,7 @@ final class ColumnInfoImpl implements _ColumnInfo {
 
     private ColumnInfoImpl(ColumnInfoBuilder builder) {
         this.columnName = builder.columnName;
-        this.typeName = builder.typeName;
+        this.typeName = builder.typeName.toUpperCase(Locale.ROOT);
         this.precision = builder.precision;
         this.scale = builder.scale;
 
@@ -46,7 +50,7 @@ final class ColumnInfoImpl implements _ColumnInfo {
     }
 
     @Override
-    public boolean nullable() {
+    public Boolean nullable() {
         return this.nullable;
     }
 
@@ -103,7 +107,7 @@ final class ColumnInfoImpl implements _ColumnInfo {
 
         private String defaultExp;
 
-        private boolean nullable;
+        private Boolean nullable;
 
         private String comment;
 
@@ -141,7 +145,7 @@ final class ColumnInfoImpl implements _ColumnInfo {
         }
 
         @Override
-        public Builder nullable(boolean nullable) {
+        public Builder nullable(@Nullable Boolean nullable) {
             this.nullable = nullable;
             return this;
         }

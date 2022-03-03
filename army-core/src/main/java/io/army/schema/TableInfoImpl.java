@@ -115,7 +115,7 @@ final class TableInfoImpl implements _TableInfo {
                 indexMap = new HashMap<>();
                 this.indexMap = indexMap;
             }
-            indexMap.put(indexInfo.indexName().toLowerCase(), indexInfo);
+            indexMap.put(indexInfo.indexName().toLowerCase(Locale.ROOT), indexInfo);
             return this;
         }
 

@@ -30,6 +30,24 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
     @Override
+    public final void dropTable(List<TableMeta<?>> tableList, List<String> sqlList) {
+        final int size = tableList.size();
+        if (size == 0) {
+            return;
+        }
+        final _AbstractDialect dialect = this.dialect;
+        final StringBuilder builder = new StringBuilder(size * 10);
+        builder.append("DROP TABLE IF EXISTS ");
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(Constant.SPACE_COMMA_SPACE);
+            }
+            dialect.quoteIfNeed(tableList.get(i).tableName(), builder);
+        }
+        sqlList.add(builder.toString());
+    }
+
+    @Override
     public final <T extends IDomain> void createTable(final TableMeta<T> table, List<String> sqlList) {
         final _AbstractDialect dialect = this.dialect;
         final StringBuilder builder = new StringBuilder(128)
@@ -134,6 +152,10 @@ public abstract class _DdlDialect implements DdlDialect {
                     .append(precision)
                     .append(Constant.RIGHT_BRACKET);
         }
+    }
+
+    protected final void noSpecifiedPrecision(FieldMeta<?, ?> field) {
+        this.errorMsgList.add(String.format("%s no precision.", field));
     }
 
     protected final void timeTypeScale(final FieldMeta<?, ?> field, SqlType type, final StringBuilder builder) {

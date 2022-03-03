@@ -12,12 +12,12 @@ public class SessionFactoryException extends ArmyRuntimeException {
         super(errorCode, cause, format, args);
     }
 
-    public SessionFactoryException(String format) {
-        super(format);
+    public SessionFactoryException(String message) {
+        super(message);
     }
 
-    public SessionFactoryException(String format, Throwable cause) {
-        super(format);
+    public SessionFactoryException(String message, Throwable cause) {
+        super(message, cause);
     }
 
     public SessionFactoryException(Throwable cause, String format, Object... args) {

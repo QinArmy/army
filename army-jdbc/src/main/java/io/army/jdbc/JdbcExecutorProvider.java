@@ -10,7 +10,6 @@ import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.utils._SyncExceptions;
 
 import javax.sql.DataSource;
-import javax.sql.XADataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -38,8 +37,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
                 serverMeta = getServerMeta(getPrimaryDataSource(ds));
                 factory = JdbcExecutorFactory.create(ds, serverMeta, env);
             } else {
-                String m = String.format("dataSource isn't %s or %s instance."
-                        , DataSource.class.getName(), XADataSource.class.getName());
+                String m = String.format("dataSource isn't %s instance.", DataSource.class.getName());
                 throw new UnsupportedDataSourceTypeException(m);
             }
             return factory;

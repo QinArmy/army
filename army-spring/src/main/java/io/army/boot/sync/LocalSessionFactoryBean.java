@@ -60,11 +60,8 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     @Override
     public void afterPropertiesSet() {
-        final String factoryName;
-        factoryName = this.getSessionFactoryName();
-
         this.sessionFactory = FactoryBuilder.builder()
-                .name(factoryName)
+                .name(this.factoryName)
                 .datasource(this.getDataSource())
                 .packagesToScan(this.packageList)
                 .environment(this.getArmyEnvironment(factoryName))
@@ -136,19 +133,6 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     /*################################## blow private method ##################################*/
 
-    private String getSessionFactoryName() {
-        String factoryName = this.factoryName;
-        if (factoryName == null) {
-            int index = this.beanName.lastIndexOf(SessionFactory.class.getSimpleName());
-            if (index > 0) {
-                // drop SessionFactory suffix.
-                factoryName = this.beanName.substring(0, index);
-            } else {
-                factoryName = this.beanName;
-            }
-        }
-        return factoryName;
-    }
 
     private Object getDataSource() {
         Object dataSource;
