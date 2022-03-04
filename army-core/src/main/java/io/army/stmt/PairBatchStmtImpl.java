@@ -22,9 +22,5 @@ final class PairBatchStmtImpl implements PairBatchStmt {
     }
 
 
-    @Override
-    public int getTimeout() {
-        return 0;
-    }
 
 }

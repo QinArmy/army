@@ -1,5 +1,6 @@
 package io.army.stmt;
 
+@Deprecated
 public interface PairBatchStmt extends Stmt {
 
     BatchStmt parentStmt();

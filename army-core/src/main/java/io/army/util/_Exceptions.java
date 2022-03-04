@@ -11,6 +11,7 @@ import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
+import io.army.generator.PostFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -19,6 +20,8 @@ import io.army.sharding.RouteContext;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
+import io.army.tx.TransactionException;
+import io.army.tx.TransactionTimeOutException;
 import io.qinarmy.util.ExceptionUtils;
 import io.qinarmy.util.UnexpectedEnumException;
 
@@ -380,6 +383,25 @@ public abstract class _Exceptions extends ExceptionUtils {
         m = String.format("%s of %s don't support %s[%s]."
                 , session.sessionFactory(), session, Visible.class.getName(), visible);
         return new NotSupportNonVisibleException(m);
+    }
+
+    public static SessionException dontSupportSubQueryInsert(GenericSession session) {
+        String m;
+        m = String.format("%s of %s don't support sub query insert."
+                , session.sessionFactory(), session);
+        return new NotSupportNonVisibleException(m);
+    }
+
+
+    public static MetaException autoIdErrorJavaType(PrimaryFieldMeta<?, ?> field) {
+        String m;
+        m = String.format("%s don't support java type[%s],%s", PostFieldGenerator.class.getName()
+                , field.javaType().getName(), field);
+        throw new MetaException(m);
+    }
+
+    public static TransactionException transactionTimeout(long resetMillis) {
+        return new TransactionTimeOutException(String.format("transaction timeout,reset %s", resetMillis));
     }
 
 

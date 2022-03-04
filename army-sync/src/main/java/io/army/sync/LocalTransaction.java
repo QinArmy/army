@@ -183,7 +183,7 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
         try {
             this.session.flush();
         } catch (SessionException e) {
-            throw new TransactionUsageException(e.getErrorCode(), e, "transaction flush error.");
+            throw new RuntimeException();
         }
     }
 

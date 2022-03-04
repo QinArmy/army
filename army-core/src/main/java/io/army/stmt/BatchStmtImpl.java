@@ -25,10 +25,6 @@ final class BatchStmtImpl implements BatchStmt {
         this.hasVersion = hasVersion;
     }
 
-    @Override
-    public int getTimeout() {
-        return 0;
-    }
 
     @Override
     public final String sql() {

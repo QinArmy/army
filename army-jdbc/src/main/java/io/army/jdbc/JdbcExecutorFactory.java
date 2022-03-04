@@ -7,7 +7,6 @@ import io.army.sync.executor.ExecutorEnvironment;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.StmtExecutor;
-import io.army.sync.utils._SyncExceptions;
 import io.army.util._Exceptions;
 
 import javax.sql.DataSource;
@@ -46,7 +45,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
         try {
             return JdbcMetaExecutor.create(this.dataSource.getConnection());
         } catch (SQLException e) {
-            throw _SyncExceptions.wrapDataAccess(e);
+            throw JdbcExceptions.wrap(e);
         }
     }
 
@@ -56,7 +55,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
         try {
             connection = this.dataSource.getConnection();
         } catch (SQLException e) {
-            throw _SyncExceptions.wrapDataAccess(e);
+            throw JdbcExceptions.wrap(e);
         }
         final StmtExecutor executor;
         switch (this.database) {

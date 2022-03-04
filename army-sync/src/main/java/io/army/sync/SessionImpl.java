@@ -4,13 +4,17 @@ import io.army.*;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._SubQueryInsert;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
+import io.army.stmt.Stmt;
+import io.army.sync.executor.StmtExecutor;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
 import io.army.util._Exceptions;
@@ -26,6 +30,8 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
     private final SessionFactoryImpl sessionFactory;
 
+    private final StmtExecutor stmtExecutor;
+
     private final boolean currentSession;
 
     private final SessionCache sessionCache;
@@ -34,13 +40,16 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
     private boolean onlySupportVisible;
 
+    private boolean dontSupportSubQueryInsert;
+
     private Transaction transaction;
 
     private boolean closed;
 
-    SessionImpl(SessionFactoryImpl sessionFactory, SessionFactoryImpl.SessionBuilderImpl builder) {
-        this.name = "";
+    SessionImpl(final SessionFactoryImpl sessionFactory, final SessionFactoryImpl.SessionBuilderImpl builder) {
+        this.name = "unnamed";
         this.sessionFactory = sessionFactory;
+        this.stmtExecutor = sessionFactory.executorFactory.createStmtExecutor();
         this.currentSession = builder.currentSession();
         this.readonly = builder.readOnly();
         if (sessionFactory.supportSessionCache()) {
@@ -58,7 +67,8 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
     @Override
     public boolean readonly() {
-        return this.readonly || (this.transaction != null && this.transaction.readOnly());
+        final Transaction tx = this.transaction;
+        return this.readonly || (tx != null && tx.readOnly());
     }
 
 
@@ -118,15 +128,20 @@ final class SessionImpl extends AbstractSyncSession implements Session {
     public long insert(final Insert insert, final Visible visible) {
         try {
             assertSessionForDml(visible);
-
+            assertSessionForChildInsert((_Insert) insert);
+            final Stmt stmt;
             if (insert instanceof _ValuesInsert) {
-
+                stmt = this.sessionFactory.dialect.insert(insert, visible);
             } else if (insert instanceof _SubQueryInsert) {
-
+                if (this.dontSupportSubQueryInsert) {
+                    throw _Exceptions.dontSupportSubQueryInsert(this);
+                }
+                stmt = this.sessionFactory.dialect.insert(insert, visible);
             } else {
                 throw _Exceptions.unexpectedStatement(insert);
             }
-            return 0;
+            final Transaction tx = this.transaction;
+            return stmtExecutor.insert(stmt, tx == null ? 0L : tx.timeToLiveInMillis());
         } catch (ArmyException e) {
             throw this.sessionFactory.exceptionFunction().apply(e);
         } catch (RuntimeException e) {
@@ -288,6 +303,19 @@ final class SessionImpl extends AbstractSyncSession implements Session {
         }
 
     }
+
+    /**
+     * @see #insert(Insert, Visible)
+     * @see #returningInsert(Insert, Class, Supplier, Visible)
+     */
+    private void assertSessionForChildInsert(final _Insert insert) {
+        final TableMeta<?> table;
+        table = insert.table();
+        if (table instanceof ChildTableMeta && this.transaction == null) {
+            throw _Exceptions.childDmlNoTransaction(this, (ChildTableMeta<?>) table);
+        }
+    }
+
 
     /*################################## blow private multiInsert method ##################################*/
 

@@ -1,10 +1,8 @@
 package io.army.tx.reactive;
 
 
-import io.army.SessionException;
 import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
-import io.army.tx.sync.SpringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.NoTransactionException;
@@ -42,28 +40,30 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     @Override
     protected Mono<Void> doCommit(TransactionSynchronizationManager synchronizationManager
             , GenericReactiveTransaction status) throws TransactionException {
-        ArmyTransactionObject txObject = (ArmyTransactionObject) status.getTransaction();
-        if (txObject.session == null || !txObject.session.hasTransaction()) {
-            return Mono.error(new NoTransactionException("cannot commit,no transaction"));
-        }
-        return txObject.session
-                .flush()
-                .then(Mono.defer(() -> txObject.session.sessionTransaction().commit()))
-                .onErrorMap((e) -> SpringUtils.convertArmyAccessException((io.army.tx.TransactionException) e))
-                ;
+//        ArmyTransactionObject txObject = (ArmyTransactionObject) status.getTransaction();
+//        if (txObject.session == null || !txObject.session.hasTransaction()) {
+//            return Mono.error(new NoTransactionException("cannot commit,no transaction"));
+//        }
+//        return txObject.session
+//                .flush()
+//                .then(Mono.defer(() -> txObject.session.sessionTransaction().commit()))
+//                .onErrorMap((e) -> SpringUtils.convertArmyAccessException((io.army.tx.TransactionException) e))
+//                ;
+        return Mono.empty();
     }
 
     @Override
     protected Mono<Void> doRollback(TransactionSynchronizationManager synchronizationManager
             , GenericReactiveTransaction status) throws TransactionException {
-        ArmyTransactionObject txObject = (ArmyTransactionObject) status.getTransaction();
-        if (txObject.session == null || !txObject.session.hasTransaction()) {
-            return Mono.error(new NoTransactionException("cannot rollback,no transaction"));
-        }
-        return txObject.session.sessionTransaction()
-                .rollback()
-                .onErrorMap((e) -> SpringUtils.convertArmyAccessException((io.army.tx.TransactionException) e))
-                ;
+//        ArmyTransactionObject txObject = (ArmyTransactionObject) status.getTransaction();
+//        if (txObject.session == null || !txObject.session.hasTransaction()) {
+//            return Mono.error(new NoTransactionException("cannot rollback,no transaction"));
+//        }
+//        return txObject.session.sessionTransaction()
+//                .rollback()
+//                .onErrorMap((e) -> SpringUtils.convertArmyAccessException((io.army.tx.TransactionException) e))
+//                ;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -110,15 +110,15 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     protected Mono<Void> doCleanupAfterCompletion(TransactionSynchronizationManager synchronizationManager
             , Object transaction) {
         ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
-        ReactiveSessionFactory sessionFactory = this.sessionFactory;
-        if (synchronizationManager.hasResource(sessionFactory)) {
-            synchronizationManager.unbindResource(sessionFactory);
-        }
-        return txObject.session
-                .close()
-                .onErrorMap(e -> SpringUtils.convertArmyAccessException((SessionException) e))
-                ;
-
+//        ReactiveSessionFactory sessionFactory = this.sessionFactory;
+//        if (synchronizationManager.hasResource(sessionFactory)) {
+//            synchronizationManager.unbindResource(sessionFactory);
+//        }
+//        return txObject.session
+//                .close()
+//                .onErrorMap(e -> SpringUtils.convertArmyAccessException((SessionException) e))
+//                ;
+        throw new UnsupportedOperationException();
     }
 
     @Override

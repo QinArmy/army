@@ -225,7 +225,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             try {
                 return this.session.sessionTransaction().createSavepoint();
             } catch (io.army.tx.TransactionException e) {
-                throw SpringUtils.convertArmyAccessException(e);
+                throw new RuntimeException();
             }
         }
 
@@ -234,7 +234,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             try {
                 this.session.sessionTransaction().rollbackToSavepoint((Savepoint) savepoint);
             } catch (io.army.tx.TransactionException e) {
-                throw SpringUtils.convertArmyAccessException(e);
+                throw new RuntimeException();
             }
         }
 
@@ -243,7 +243,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             try {
                 this.session.sessionTransaction().releaseSavepoint((Savepoint) savepoint);
             } catch (io.army.tx.TransactionException e) {
-                throw SpringUtils.convertArmyAccessException(e);
+                throw new RuntimeException();
             }
         }
 

@@ -33,10 +33,6 @@ final class SimpleStmtImpl implements SimpleStmt {
         this.statementType = statementType;
     }
 
-    @Override
-    public int getTimeout() {
-        return 0;
-    }
 
     @Override
     public final String sql() {

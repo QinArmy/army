@@ -2,9 +2,7 @@ package io.army.tx;
 
 import io.army.sync.SyncSession;
 
-import java.io.Flushable;
-
-public interface GenericSyncTransaction extends GenericTransaction, Flushable, AutoCloseable {
+public interface GenericSyncTransaction extends GenericTransaction, AutoCloseable {
 
     SyncSession session();
 
@@ -15,9 +13,6 @@ public interface GenericSyncTransaction extends GenericTransaction, Flushable, A
 
     void rollback() throws TransactionException;
 
-
-
-    @Override
     void flush() throws TransactionException;
 
     @Override

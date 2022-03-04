@@ -8,8 +8,5 @@ package io.army.stmt;
  */
 public interface Stmt {
 
-    default int getTimeout() {
-        throw new UnsupportedOperationException();
-    }
 
 }

@@ -42,6 +42,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     protected final Function<ArmyException, RuntimeException> exceptionFunction;
 
+    protected final SubQueryInsertMode subQueryInsertMode;
 
     protected final boolean readOnly;
 
@@ -61,6 +62,8 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
         this.tableMap = Objects.requireNonNull(support.tableMap);
         this.exceptionFunction = exceptionFunction(support.exceptionFunction);
         this.fieldGeneratorMap = Objects.requireNonNull(support.generatorMap);
+
+        this.subQueryInsertMode = env.get(ArmyKeys.SUBQUERY_INSERT_MODE, SubQueryInsertMode.class, SubQueryInsertMode.ONLY_MIGRATION);
         this.readOnly = env.get(ArmyKeys.READ_ONLY, Boolean.class, Boolean.FALSE);
 
         this.supportSessionCache = env.get(ArmyKeys.sessionCache, Boolean.class, Boolean.TRUE);

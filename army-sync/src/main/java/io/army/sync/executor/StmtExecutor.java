@@ -10,7 +10,7 @@ public interface StmtExecutor extends Executor {
     /**
      * @throws io.army.session.DataAccessException when access database occur error.
      */
-    int valueInsert(Stmt stmt, int txTimeout);
+    long insert(Stmt stmt, long txTimeout);
 
     /**
      * @throws io.army.session.DataAccessException when access database occur error.

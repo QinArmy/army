@@ -11,7 +11,7 @@ public final class MetaException extends ArmyRuntimeException {
 
     private static final long serialVersionUID = -1570931082845046499L;
 
-    @Deprecated
+
     public MetaException(String format, Object... args) {
         super(format);
     }

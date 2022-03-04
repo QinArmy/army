@@ -25,7 +25,6 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     final _Dialect dialect;
 
-
     private final SessionCacheFactory sessionCacheFactory;
 
     private final DomainValuesGenerator domainValuesGenerator;

@@ -3,7 +3,7 @@ package io.army.jdbc;
 
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
-import io.army.sync.utils._SyncExceptions;
+import io.army.util._Exceptions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Set;
 
-final class MySQLExecutor extends AbstractStmtExecutor {
+final class MySQLExecutor extends JdbcStmtExecutor {
 
     static MySQLExecutor create(JdbcExecutorFactory factory, Connection conn) {
         return new MySQLExecutor(factory, conn);
@@ -155,7 +155,7 @@ final class MySQLExecutor extends AbstractStmtExecutor {
                 }
             }
             default:
-                throw _SyncExceptions.unexpectedEnum((MySqlType) sqlDataType);
+                throw _Exceptions.unexpectedEnum((MySqlType) sqlDataType);
 
         }
 

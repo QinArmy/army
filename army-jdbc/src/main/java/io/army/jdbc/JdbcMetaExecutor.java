@@ -4,7 +4,6 @@ import io.army.lang.Nullable;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;
-import io.army.sync.utils._SyncExceptions;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -46,7 +45,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
             }
             return _SchemaInfo.create(catalog, schema, tableBuilderMap);
         } catch (SQLException e) {
-            throw _SyncExceptions.wrapDataAccess(e);
+            throw JdbcExceptions.wrap(e);
         }
     }
 
@@ -58,7 +57,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
             }
             stmt.executeBatch();
         } catch (SQLException e) {
-            throw _SyncExceptions.wrapDataAccess(e);
+            throw JdbcExceptions.wrap(e);
         }
     }
 
@@ -67,7 +66,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
         try {
             this.conn.close();
         } catch (SQLException e) {
-            throw _SyncExceptions.wrapDataAccess(e);
+            throw JdbcExceptions.wrap(e);
         }
     }
 
