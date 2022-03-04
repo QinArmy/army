@@ -1,6 +1,6 @@
 package io.army.criteria.impl.inner;
 
-import io.army.beans.ReadWrapper;
+import io.army.bean.ReadWrapper;
 
 import java.util.List;
 

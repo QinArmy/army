@@ -1,7 +1,7 @@
 package io.army.generator.snowflake;
 
 
-import io.army.beans.ArmyBean;
+import io.army.bean.ArmyBean;
 
 /**
  *

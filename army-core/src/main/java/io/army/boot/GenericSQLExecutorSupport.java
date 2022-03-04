@@ -1,8 +1,8 @@
 package io.army.boot;
 
 import io.army.*;
-import io.army.beans.MapWrapper;
-import io.army.beans.ObjectWrapper;
+import io.army.bean.MapWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.codec.StatementType;

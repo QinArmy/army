@@ -96,6 +96,10 @@ public interface SyncSession extends GenericSession {
 
     List<Map<String, Object>> selectAsMap(Select select, Visible visible);
 
+
+    List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor);
+
     List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 

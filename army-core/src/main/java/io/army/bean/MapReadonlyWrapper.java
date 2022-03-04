@@ -1,4 +1,4 @@
-package io.army.beans;
+package io.army.bean;
 
 import io.army.ErrorCode;
 import io.army.util.BeanUtils;

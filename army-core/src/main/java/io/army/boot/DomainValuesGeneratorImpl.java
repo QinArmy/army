@@ -1,9 +1,9 @@
 package io.army.boot;
 
 import io.army.ErrorCode;
-import io.army.beans.DomainWrapper;
-import io.army.beans.ObjectAccessorFactory;
-import io.army.beans.ObjectWrapper;
+import io.army.bean.DomainWrapper;
+import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.ObjectWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;

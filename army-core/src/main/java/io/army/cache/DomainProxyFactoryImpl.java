@@ -1,7 +1,7 @@
 package io.army.cache;
 
-import io.army.beans.DomainReadonlyWrapper;
-import io.army.beans.ObjectAccessorFactory;
+import io.army.bean.DomainReadonlyWrapper;
+import io.army.bean.ObjectAccessorFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.session.GenericSessionFactory;

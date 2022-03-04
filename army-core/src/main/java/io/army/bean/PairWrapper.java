@@ -1,4 +1,4 @@
-package io.army.beans;
+package io.army.bean;
 
 interface PairWrapper extends ObjectWrapper {
 

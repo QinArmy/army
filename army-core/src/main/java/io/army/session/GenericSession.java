@@ -11,6 +11,10 @@ public interface GenericSession {
 
     boolean hasTransaction();
 
+    default String name() {
+        throw new UnsupportedOperationException();
+    }
+
     GenericSessionFactory sessionFactory();
 
 }

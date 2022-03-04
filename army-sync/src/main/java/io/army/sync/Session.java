@@ -3,7 +3,6 @@ package io.army.sync;
 import io.army.SessionException;
 import io.army.lang.Nullable;
 import io.army.tx.Isolation;
-import io.army.tx.NoSessionTransactionException;
 import io.army.tx.Transaction;
 import io.army.tx.TransactionException;
 
@@ -11,11 +10,10 @@ import io.army.tx.TransactionException;
 public interface Session extends SyncSession, AutoCloseable {
 
 
-    Transaction sessionTransaction() throws NoSessionTransactionException;
+    Transaction sessionTransaction() throws SessionException;
 
 
     TransactionBuilder builder();
-
 
     @Override
     void close() throws SessionException;
@@ -33,4 +31,5 @@ public interface Session extends SyncSession, AutoCloseable {
         Transaction build() throws TransactionException;
 
     }
+
 }

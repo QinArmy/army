@@ -1,6 +1,6 @@
 package io.army.generator;
 
-import io.army.beans.ReadWrapper;
+import io.army.bean.ReadWrapper;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 

@@ -2,7 +2,7 @@ package io.army.dialect;
 
 
 import io.army.Database;
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;

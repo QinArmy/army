@@ -34,7 +34,7 @@ abstract class AbstractProxyReactiveSession<F extends GenericReactiveSessionFact
 
     @Nullable
     @Override
-    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+    public <T extends IDomain> TableMeta<T> table(Class<T> domainClass) {
         return this.sessionFactory.tableMeta(domainClass);
     }
 

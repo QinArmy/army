@@ -1,12 +1,15 @@
 package io.army;
 
-public abstract class SessionException extends DataAccessException_0 {
+import io.army.session.DataAccessException;
 
-    public SessionException(ErrorCode errorCode, String format, Object... args) {
-        super(errorCode, format, args);
+public abstract class SessionException extends DataAccessException {
+
+    public SessionException(String message) {
+        super(message);
     }
 
-    public SessionException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    @Deprecated
+    public SessionException(Throwable cause, String format, Object... args) {
+        super(format, cause);
     }
 }

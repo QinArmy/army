@@ -1,6 +1,8 @@
 package io.army.util;
 
 import io.army.ArmyException;
+import io.army.ReadOnlySessionException;
+import io.army.SessionException;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
@@ -11,15 +13,12 @@ import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.meta.FieldMeta;
-import io.army.meta.MetaException;
-import io.army.meta.ServerMeta;
-import io.army.meta.TableMeta;
-import io.army.session.DialectSessionFactory;
-import io.army.session.TimeoutException;
+import io.army.meta.*;
+import io.army.session.*;
 import io.army.sharding.RouteContext;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
+import io.army.tx.ReadOnlyTransactionException;
 import io.qinarmy.util.ExceptionUtils;
 import io.qinarmy.util.UnexpectedEnumException;
 
@@ -36,6 +35,10 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static ArmyException unexpectedStmt(Stmt stmt) {
         return new ArmyException(String.format("Unexpected Stmt type[%s]", stmt));
+    }
+
+    public static ArmyException unexpectedStatement(Statement statement) {
+        return new ArmyException(String.format("Unexpected %S type[%s]", Statement.class.getName(), statement));
     }
 
 
@@ -344,6 +347,39 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static IllegalArgumentException stmtDontSupportDialect(Dialect mode) {
         return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
+    }
+
+
+    public static SessionException readOnlySession(GenericSession session) {
+        String m;
+        m = String.format("%s of %s is read only,don't support DML.", session.sessionFactory(), session);
+        return new ReadOnlySessionException(m);
+    }
+
+    public static SessionException readOnlyTransaction(GenericSession session) {
+        String m;
+        m = String.format("%s of %s in read only transaction,don't support DML.", session.sessionFactory(), session);
+        return new ReadOnlyTransactionException(m);
+    }
+
+    public static SessionException sessionClosed(GenericSession session) {
+        String m;
+        m = String.format("%s of %s have closed.", session.sessionFactory(), session);
+        return new SessionClosedException(m);
+    }
+
+    public static SessionException childDmlNoTransaction(GenericSession session, ChildTableMeta<?> table) {
+        String m;
+        m = String.format("%s of %s no transaction,so you don't execute dml about child table %s."
+                , session.sessionFactory(), session, table);
+        return new ChildDmlNoTractionException(m);
+    }
+
+    public static SessionException dontSupportNonVisible(GenericSession session, Visible visible) {
+        String m;
+        m = String.format("%s of %s don't support %s[%s]."
+                , session.sessionFactory(), session, Visible.class.getName(), visible);
+        return new NotSupportNonVisibleException(m);
     }
 
 

@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.beans.ReadWrapper;
+import io.army.bean.ReadWrapper;
 import io.army.criteria.Statement;
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner._BatchDml;

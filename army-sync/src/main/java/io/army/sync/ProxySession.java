@@ -8,7 +8,5 @@ import io.army.session.GenericProxySession;
  */
 public interface ProxySession extends GenericProxySession, SyncSession {
 
-    @Override
-    SessionFactory sessionFactory();
 
 }

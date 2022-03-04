@@ -2,7 +2,7 @@ package io.army.sync;
 
 import io.army.SessionException;
 import io.army.SessionFactoryException;
-import io.army.beans.ArmyBean;
+import io.army.bean.ArmyBean;
 import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheFactory;

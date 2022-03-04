@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.ArmyException;
 import io.army.Database;
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl._SQLCounselor;
 import io.army.criteria.impl.inner.*;

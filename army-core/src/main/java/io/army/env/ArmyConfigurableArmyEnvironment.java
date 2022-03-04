@@ -1,6 +1,6 @@
 package io.army.env;
 
-import io.army.beans.ArmyBean;
+import io.army.bean.ArmyBean;
 
 import java.util.Map;
 

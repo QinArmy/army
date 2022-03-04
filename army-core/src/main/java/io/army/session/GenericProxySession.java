@@ -17,7 +17,7 @@ public interface GenericProxySession {
     ArmyEnvironment environment();
 
     @Nullable
-    <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
+    <T extends IDomain> TableMeta<T> table(Class<T> domainClass);
 
 
 }

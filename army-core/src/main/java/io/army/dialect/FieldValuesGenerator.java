@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.meta.TableMeta;
 
 public interface FieldValuesGenerator {

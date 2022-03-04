@@ -1,6 +1,6 @@
 package io.army.stmt;
 
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.codec.StatementType;
 import io.army.lang.Nullable;
 

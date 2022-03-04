@@ -1,6 +1,6 @@
 package io.army.stmt;
 
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.criteria.Selection;
 import io.army.meta.FieldMeta;
 

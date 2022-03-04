@@ -2,7 +2,7 @@ package io.army.cache;
 
 import io.army.ErrorCode;
 import io.army.annotation.UpdateMode;
-import io.army.beans.DomainReadonlyWrapper;
+import io.army.bean.DomainReadonlyWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.meta.*;

@@ -1,7 +1,7 @@
 package io.army.jdbc;
 
 import io.army.ArmyException;
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.generator.PostFieldGenerator;

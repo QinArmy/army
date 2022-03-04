@@ -1,4 +1,5 @@
-package io.army.beans;
+package io.army.bean;
+
 
 import io.army.ErrorCode;
 import io.army.util.BeanUtils;
@@ -6,41 +7,25 @@ import io.qinarmy.util.Pair;
 
 import java.lang.reflect.Constructor;
 
-final class TripeWrapperImpl implements TripeWrapper {
+final class PairBeanWrapperImpl implements PairWrapper {
 
-    private static final String FIRST = PairBeanWrapperImpl.FIRST;
+    static final String FIRST = "first";
 
-    private static final String SECOND = PairBeanWrapperImpl.SECOND;
+    static final String SECOND = "second";
 
-    private static final String THIRD = "third";
-
-    private final Class<?> tripeClass;
+    private final Class<?> pairClass;
 
     private Object first;
 
     private Object second;
 
-    private Object third;
-
-    public TripeWrapperImpl(Class<?> tripeClass) {
-        this.tripeClass = tripeClass;
-    }
-
-    @Override
-    public Object getWrappedInstance() throws BeansException {
-        try {
-            Constructor<?> constructor = tripeClass.getConstructor(Object.class, Object.class, Object.class);
-            constructor.newInstance(this.first, this.second, this.third);
-
-            return BeanUtils.instantiateClass(constructor, this.first, this.second, this.third);
-        } catch (Exception e) {
-            throw new BeansException(ErrorCode.BEAN_ACCESS_ERROR, e, "can't create instance of %s", tripeClass.getName());
-        }
+    PairBeanWrapperImpl(Class<?> pairClass) {
+        this.pairClass = pairClass;
     }
 
     @Override
     public boolean isWritableProperty(String propertyName) {
-        return FIRST.equals(propertyName) || SECOND.equals(propertyName) || THIRD.equals(propertyName);
+        return FIRST.equals(propertyName) || SECOND.equals(propertyName);
     }
 
     @Override
@@ -49,11 +34,21 @@ final class TripeWrapperImpl implements TripeWrapper {
             this.first = value;
         } else if (SECOND.equals(propertyName)) {
             this.second = value;
-        } else if (THIRD.equals(propertyName)) {
-            this.third = value;
         } else {
             throw new InvalidPropertyException(ErrorCode.BEAN_ACCESS_ERROR, propertyName
                     , Pair.class, "not found property[%s]", propertyName);
+        }
+    }
+
+    @Override
+    public Object getWrappedInstance() throws BeansException {
+        try {
+            Constructor<?> constructor = pairClass.getConstructor(Object.class, Object.class);
+            constructor.newInstance(this.first, this.second);
+
+            return BeanUtils.instantiateClass(constructor, this.first, this.second);
+        } catch (Exception e) {
+            throw new BeansException(ErrorCode.BEAN_ACCESS_ERROR, e, "can't create instance of %s", pairClass.getName());
         }
     }
 
@@ -64,7 +59,7 @@ final class TripeWrapperImpl implements TripeWrapper {
 
     @Override
     public boolean isReadable(String propertyName) {
-        return FIRST.equals(propertyName) || SECOND.equals(propertyName) || THIRD.equals(propertyName);
+        return FIRST.equals(propertyName) || SECOND.equals(propertyName);
     }
 
     @Override
@@ -77,10 +72,6 @@ final class TripeWrapperImpl implements TripeWrapper {
         } else if (SECOND.equals(propertyName)) {
             if (this.second != null) {
                 clazz = this.second.getClass();
-            }
-        } else if (THIRD.equals(propertyName)) {
-            if (this.third != null) {
-                clazz = this.third.getClass();
             }
         } else {
             throw new InvalidPropertyException(ErrorCode.BEAN_ACCESS_ERROR, propertyName
@@ -96,8 +87,6 @@ final class TripeWrapperImpl implements TripeWrapper {
             value = this.first;
         } else if (SECOND.equals(propertyName)) {
             value = this.second;
-        } else if (THIRD.equals(propertyName)) {
-            value = this.third;
         } else {
             throw new InvalidPropertyException(ErrorCode.BEAN_ACCESS_ERROR, propertyName
                     , Pair.class, "not found property[%s]", propertyName);
@@ -107,6 +96,6 @@ final class TripeWrapperImpl implements TripeWrapper {
 
     @Override
     public Class<?> getWrappedClass() {
-        return tripeClass;
+        return pairClass;
     }
 }

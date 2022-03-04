@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;

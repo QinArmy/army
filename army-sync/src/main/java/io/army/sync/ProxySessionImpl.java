@@ -54,7 +54,7 @@ class ProxySessionImpl extends AbstractSyncSession implements ProxySession {
 
     @Nullable
     @Override
-    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+    public <T extends IDomain> TableMeta<T> table(Class<T> domainClass) {
         return this.sessionFactory.tableMeta(domainClass);
     }
 

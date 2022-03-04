@@ -1,6 +1,6 @@
 package io.army.env;
 
-import io.army.beans.ArmyBean;
+import io.army.bean.ArmyBean;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;

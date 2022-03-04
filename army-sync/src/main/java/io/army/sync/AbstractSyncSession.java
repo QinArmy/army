@@ -93,6 +93,12 @@ abstract class AbstractSyncSession extends AbstractGenericSession implements Syn
     }
 
     @Override
+    public final List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor) {
+        return this.selectAsMap(select, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
     public final long insert(Insert insert) {
         return this.insert(insert, Visible.ONLY_VISIBLE);
     }

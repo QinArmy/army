@@ -1,6 +1,6 @@
 package io.army.stmt;
 
-import io.army.beans.ReadWrapper;
+import io.army.bean.ReadWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NamedParam;
 import io.army.criteria.NonNullNamedParam;

@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.beans.ObjectAccessorFactory;
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.ObjectWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.Insert;

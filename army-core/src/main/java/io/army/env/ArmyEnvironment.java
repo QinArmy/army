@@ -1,7 +1,7 @@
 package io.army.env;
 
 
-import io.army.beans.ArmyBean;
+import io.army.bean.ArmyBean;
 import io.army.lang.Nullable;
 import io.army.session.GenericSessionFactory;
 

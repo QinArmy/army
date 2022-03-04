@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.beans.ObjectAccessorFactory;
-import io.army.beans.ReadWrapper;
+import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._Predicate;

@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.beans.ReadWrapper;
+import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;

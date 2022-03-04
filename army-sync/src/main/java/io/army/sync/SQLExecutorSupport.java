@@ -1,6 +1,6 @@
 package io.army.sync;
 
-import io.army.beans.ObjectWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.boot.GenericSQLExecutorSupport;
 import io.army.codec.StatementType;
 import io.army.criteria.Selection;

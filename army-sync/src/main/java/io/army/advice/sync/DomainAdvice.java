@@ -1,6 +1,6 @@
 package io.army.advice.sync;
 
-import io.army.beans.ReadWrapper;
+import io.army.bean.ReadWrapper;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.sync.ProxySession;

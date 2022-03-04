@@ -1,25 +1,28 @@
 package io.army.sync;
 
-import io.army.DuplicationSessionTransaction;
-import io.army.ReadOnlySessionException;
-import io.army.SessionCloseFailureException;
-import io.army.SessionException;
+import io.army.*;
 import io.army.cache.DomainUpdateAdvice;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner._SubQueryInsert;
+import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 import io.army.tx.*;
 import io.army.util.CriteriaUtils;
+import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-final class SessionImpl extends AbstractRmSession implements Session {
+final class SessionImpl extends AbstractSyncSession implements Session {
+
+    private final String name;
 
     private final SessionFactoryImpl sessionFactory;
 
@@ -29,13 +32,14 @@ final class SessionImpl extends AbstractRmSession implements Session {
 
     private final boolean readonly;
 
+    private boolean onlySupportVisible;
+
     private Transaction transaction;
 
     private boolean closed;
 
     SessionImpl(SessionFactoryImpl sessionFactory, SessionFactoryImpl.SessionBuilderImpl builder) {
-        super(sessionFactory, sessionFactory.executorFactory.createStmtExecutor());
-
+        this.name = "";
         this.sessionFactory = sessionFactory;
         this.currentSession = builder.currentSession();
         this.readonly = builder.readOnly();
@@ -91,6 +95,7 @@ final class SessionImpl extends AbstractRmSession implements Session {
         return null;
     }
 
+
     @Override
     public Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
             , Visible visible) {
@@ -111,19 +116,31 @@ final class SessionImpl extends AbstractRmSession implements Session {
 
     @Override
     public long insert(final Insert insert, final Visible visible) {
-//        try {
-//            assertSessionActive(insert);
-//            final Stmt stmt;
-//            stmt = this.dialect.valueInsert(insert, null, visible);
-//            this.stmtExecutor.valueInsert(stmt, timeToLiveInSeconds());
-//        } catch (ArmyException e) {
-//            throw this.exceptionFunction.apply(e);
-//        } catch (RuntimeException e) {
-//            throw this.exceptionFunction.apply(new ArmyUnknownException(e));
-//        } finally {
-//            ((_Statement) insert).clear();
-//        }
-        return 0;
+        try {
+            assertSessionForDml(visible);
+
+            if (insert instanceof _ValuesInsert) {
+
+            } else if (insert instanceof _SubQueryInsert) {
+
+            } else {
+                throw _Exceptions.unexpectedStatement(insert);
+            }
+            return 0;
+        } catch (ArmyException e) {
+            throw this.sessionFactory.exceptionFunction().apply(e);
+        } catch (RuntimeException e) {
+            throw this.sessionFactory.exceptionFunction().apply(new ArmyException(e));
+        } finally {
+            ((_Statement) insert).clear();
+        }
+    }
+
+
+    @Override
+    public <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor
+            , Visible visible) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -136,6 +153,16 @@ final class SessionImpl extends AbstractRmSession implements Session {
     public <R> List<R> returningDelete(Delete delete, Class<R> resultClass
             , Supplier<List<R>> listConstructor, Visible visible) {
         return Collections.emptyList();
+    }
+
+    @Override
+    public long delete(Delete delete, Visible visible) {
+        return 0;
+    }
+
+    @Override
+    public long update(Update update, Visible visible) {
+        return 0;
     }
 
     @Override
@@ -218,20 +245,14 @@ final class SessionImpl extends AbstractRmSession implements Session {
     }
 
     @Override
-    public final String toString() {
-        String text = "SessionFactory[" + this.sessionFactory.name() + "]'s Session";
-        if (this.transaction != null) {
-            String txName = this.transaction.name();
-            if (txName != null) {
-                text += ("[" + txName + "]");
-            }
-        }
-        return text;
+    public String toString() {
+        return String.format("%s[%s] readonly[%s] %s.", Session.class.getName()
+                , this.name, this.readonly, this.transaction);
     }
 
     /*################################## blow package method ##################################*/
 
-    @Override
+    // @Override
     GenericTransaction obtainTransaction() {
         return null;
     }
@@ -248,7 +269,25 @@ final class SessionImpl extends AbstractRmSession implements Session {
         }
     }
 
+    /**
+     * @see #insert(Insert, Visible)
+     */
+    private void assertSessionForDml(final Visible visible) throws SessionException {
+        if (this.closed) {
+            throw _Exceptions.sessionClosed(this);
+        }
+        if (this.readonly) {
+            throw _Exceptions.readOnlySession(this);
+        }
+        final Transaction tx = this.transaction;
+        if (tx != null && tx.readOnly()) {
+            throw _Exceptions.readOnlyTransaction(this);
+        }
+        if (visible != Visible.ONLY_VISIBLE && this.onlySupportVisible) {
+            throw _Exceptions.dontSupportNonVisible(this, visible);
+        }
 
+    }
 
     /*################################## blow private multiInsert method ##################################*/
 
