@@ -11,7 +11,6 @@ import io.army.criteria.FieldSelection;
 import io.army.criteria.Selection;
 import io.army.dialect.InsertException;
 import io.army.meta.FieldMeta;
-import io.army.meta.MetaException;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.session.GenericSession;
 import io.army.session.GenericSessionFactory;
@@ -198,10 +197,6 @@ public abstract class GenericSQLExecutorSupport {
 
     protected static DataAccessException_0 convertSQLException(SQLException e, String sql) {
         return new DataAccessException_0(ErrorCode.ACCESS_ERROR, e, "army execute sql occur error ,sql[%s]", sql);
-    }
-
-    protected static MetaException createNoFieldCodecException(FieldMeta<?, ?> fieldMeta) {
-        return new MetaException("FieldMeta[%s] not found FieldCodec.", fieldMeta);
     }
 
 

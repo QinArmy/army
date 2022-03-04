@@ -29,20 +29,21 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     }
 
+
     static final class GeneratorMetaImpl implements GeneratorMeta {
 
         private final FieldMeta<?, ?> fieldMeta;
 
-        private final Class<?> type;
+        private final Class<?> javaType;
 
         private final Map<String, String> params;
 
         private final String dependPropName;
 
 
-        private GeneratorMetaImpl(FieldMeta<?, ?> fieldMeta, Class<?> type, Map<String, String> params) {
+        private GeneratorMetaImpl(FieldMeta<?, ?> fieldMeta, Class<?> javaType, Map<String, String> params) {
 
-            this.type = type;
+            this.javaType = javaType;
             this.fieldMeta = fieldMeta;
 
             final Map<String, String> emptyMap = Collections.emptyMap();
@@ -52,7 +53,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 this.params = Collections.unmodifiableMap(params);
             }
 
-            if (PreFieldGenerator.class.isAssignableFrom(type)) {
+            if (PreFieldGenerator.class.isAssignableFrom(javaType)) {
                 this.dependPropName = this.params.getOrDefault(PreFieldGenerator.DEPEND_FIELD_NAME, "");
             } else {
                 this.dependPropName = "";
@@ -60,13 +61,13 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         }
 
         @Override
-        public FieldMeta<?, ?> fieldMeta() {
+        public FieldMeta<?, ?> field() {
             return fieldMeta;
         }
 
         @Override
-        public Class<?> type() {
-            return type;
+        public Class<?> javaType() {
+            return this.javaType;
         }
 
         @Override
@@ -90,6 +91,18 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         return column;
     }
 
+    static void validatePostGenerator(FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
+        if (isDiscriminator) {
+            String m = String.format("%s is discriminator,so don't support %s.", fieldMeta, Generator.class.getName());
+            throw new MetaException(m);
+        }
+        if (!_MetaBridge.ID.equals(fieldMeta.fieldName())) {
+            String m = String.format("%s %s type support only %s field."
+                    , Generator.class.getName(), GeneratorType.POST, _MetaBridge.ID);
+            throw new MetaException(m);
+        }
+
+    }
 
     @Nullable
     static GeneratorMeta columnGeneratorMeta(Field field, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
@@ -216,7 +229,9 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 && !isDiscriminator
                 && !_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName())
                 && !_MetaBridge.MAYBE_NO_DEFAULT_TYPES.contains(fieldMeta.javaType())) {
-            throw new MetaException("%s non-null ,please specified defaultValue() for it.", fieldMeta);
+            //TODO 重构
+            String m = String.format("%s non-null ,please specified defaultValue() for it.", fieldMeta);
+            throw new MetaException(m);
         }
         return defaultValue;
     }

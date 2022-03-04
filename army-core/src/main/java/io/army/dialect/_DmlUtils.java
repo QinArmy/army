@@ -1,13 +1,12 @@
 package io.army.dialect;
 
+import io.army.annotation.GeneratorType;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
-import io.army.generator.PostFieldGenerator;
-import io.army.generator.PreFieldGenerator;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
@@ -92,7 +91,7 @@ public abstract class _DmlUtils {
         builder.append(Constant.INSERT_INTO)
                 .append(Constant.SPACE);
         //append table name
-        builder.append(dialect.safeTableName(table.tableName()));
+        dialect.safeObjectName(table.tableName(), builder);
         final List<FieldMeta<?, ?>> fieldList = block.fieldLis();
         // 1.1 append table fields
         builder.append(Constant.SPACE_LEFT_BRACKET);
@@ -101,8 +100,8 @@ public abstract class _DmlUtils {
             if (index > 0) {
                 builder.append(Constant.SPACE_COMMA);
             }
-            builder.append(Constant.SPACE)
-                    .append(dialect.safeObjectName(field.columnName()));
+            builder.append(Constant.SPACE);
+            dialect.safeObjectName(field.columnName(), builder);
             index++;
         }
         builder.append(Constant.SPACE_RIGHT_BRACKET);
@@ -118,7 +117,7 @@ public abstract class _DmlUtils {
         final Map<FieldMeta<?, ?>, _Expression> expMap = context.commonExpMap();
         final boolean mockEnvironment = dialect instanceof _MockDialects;
         _Expression expression;
-        GeneratorMeta generatorMeta;
+        GeneratorType generatorType;
         Object value;
         //2.2 append values
         for (ReadWrapper domain : domainList) {
@@ -147,16 +146,20 @@ public abstract class _DmlUtils {
                     }
                 } else if (field.nullable()) {
                     builder.append(Constant.SPACE_NULL);
-                } else if ((generatorMeta = field.generator()) == null) {
+                } else if ((generatorType = field.generatorType()) == null) {
                     throw _Exceptions.nonNullField(field);
-                } else if (PreFieldGenerator.class.isAssignableFrom(generatorMeta.type())) {
+                } else if (generatorType == GeneratorType.PRECEDE) {
                     if (mockEnvironment) {
                         builder.append(Constant.SPACE_NULL);
                     } else {
                         throw _Exceptions.nonNullField(field);
                     }
-                } else if (!PostFieldGenerator.class.isAssignableFrom(generatorMeta.type())) {
-                    throw _Exceptions.nonNullField(field);
+                } else if (generatorType != GeneratorType.POST) {
+                    throw _Exceptions.unexpectedEnum(generatorType);
+                } else if (childBlock && field instanceof PrimaryFieldMeta) {
+                    blockContext.appendParam(new DelayIdParamValue(field, domain)); // parameter append block context
+                } else {
+                    throw new IllegalArgumentException("childBlock or context error.");
                 }
                 index++;
             }
@@ -273,6 +276,34 @@ public abstract class _DmlUtils {
             }
         }
 
+
+    }
+
+    private static final class DelayIdParamValue implements ParamValue {
+
+        private final ParamMeta paramMeta;
+
+        private final ReadWrapper wrapper;
+
+        private DelayIdParamValue(ParamMeta paramMeta, ReadWrapper wrapper) {
+            this.paramMeta = paramMeta;
+            this.wrapper = wrapper;
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            return this.paramMeta;
+        }
+
+        @Override
+        public Object value() {
+            final Object value;
+            value = this.wrapper.get(_MetaBridge.ID);
+            if (value == null) {
+                throw new IllegalStateException("parent insert statement don't execute.");
+            }
+            return value;
+        }
 
     }
 

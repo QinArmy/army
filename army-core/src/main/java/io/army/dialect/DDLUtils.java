@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
-import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
@@ -43,13 +42,6 @@ public abstract class DDLUtils {
     }
 
 
-    protected static void throwScaleException(FieldMeta<?, ?> fieldMeta) {
-        throw new MetaException("Entity[%s].prop[%s]'s scale[%s] error."
-                , fieldMeta.tableMeta().javaType()
-                , fieldMeta.fieldName()
-                , fieldMeta.scale()
-        );
-    }
 
     /**
      * @return a unmodifiable list

@@ -94,4 +94,14 @@ public interface GenericField<T extends IDomain, F> extends Expression, FieldSel
     Expression leftShiftNamed();
 
 
+    @Override
+    boolean equals(Object o);
+
+    @Override
+    int hashCode();
+
+    @Override
+    String toString();
+
+
 }

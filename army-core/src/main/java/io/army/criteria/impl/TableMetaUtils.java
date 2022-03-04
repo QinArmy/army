@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.ErrorCode;
 import io.army.annotation.*;
 import io.army.dialect.Constant;
 import io.army.domain.IDomain;
@@ -413,64 +412,7 @@ abstract class TableMetaUtils {
         return fieldPair;
     }
 
-    @SuppressWarnings("unchecked")
-    private static Class<? extends Route> loadShardingRouteClass(TableMeta<?> tableMeta, String className) {
-        try {
-            Class<?> routeClass = Class.forName(className);
-            if (!Route.class.isAssignableFrom(routeClass)) {
-                throw new MetaException("TableMeta[%s] route class isn't %s type.", tableMeta, Route.class.getName());
-            }
-            return (Class<? extends Route>) routeClass;
-        } catch (ClassNotFoundException e) {
-            String m = String.format("TableMeta[%s] not found route implementation class[%s]", tableMeta, className);
-            throw new MetaException(m, e);
-        }
-    }
 
-    /**
-     * @return a unmodifiable list
-     */
-    private static <T extends IDomain> List<FieldMeta<?, ?>> getRouteFieldList(TableMeta<?> tableMeta
-            , Map<String, FieldMeta<T, ?>> fieldMetaMap, String[] routeFields) {
-        if (routeFields.length == 0) {
-            throw new MetaException("TableMeta[%s] not specified route fields", tableMeta);
-        }
-        List<FieldMeta<?, ?>> fieldMetaList = new ArrayList<>(routeFields.length);
-        for (String propName : routeFields) {
-            FieldMeta<T, ?> fieldMeta = fieldMetaMap.get(propName);
-            if (fieldMeta == null) {
-                throw new MetaException("TableMeta[%s] sharding field[%s] not found.", tableMeta, propName);
-            }
-            fieldMetaList.add(fieldMeta);
-        }
-        return Collections.unmodifiableList(fieldMetaList);
-    }
-
-
-    /**
-     * @return mapping class list(unmodifiable) ,asSort by extends relation,entityClass is the last one.
-     */
-    private static List<Class<?>> mappedClassList(final Class<?> domainClass) throws MetaException {
-        final List<Class<?>> list = new ArrayList<>(6);
-        // add entity class firstly
-        list.add(domainClass);
-
-        for (Class<?> superClass = domainClass.getSuperclass(); superClass != null;
-             superClass = superClass.getSuperclass()) {
-            if (superClass.getAnnotation(Inheritance.class) != null) {
-                break;
-            }
-            if (superClass.getAnnotation(MappedSuperclass.class) != null
-                    || superClass.getAnnotation(Table.class) != null) {
-                list.add(superClass);
-            } else {
-                break;
-            }
-        }
-        // reverse class list
-        Collections.reverse(list);
-        return Collections.unmodifiableList(list);
-    }
 
 
     private static Stack<Class<?>> superMappingClassStack(Class<?> topMappedClass) throws MetaException {
@@ -544,13 +486,13 @@ abstract class TableMetaUtils {
             }
             Column column = AnnotationUtils.getAnnotation(field, Column.class);
             if (column == null) {
-                throw new MetaException(ErrorCode.META_ERROR, "tableMeta[%s] not found primary column definition",
-                        tableMeta.tableName());
+                String m = String.format("tableMeta[%s] not found primary column definition", tableMeta.tableName());
+                throw new MetaException(m);
             }
             return field;
         }
-        throw new MetaException(ErrorCode.META_ERROR, "domain[%s] not found primary key column definition",
-                tableMeta.javaType());
+        String m = String.format("domain[%s] not found primary key column definition", tableMeta.javaType());
+        throw new MetaException(m);
     }
 
 

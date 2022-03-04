@@ -29,25 +29,25 @@ public abstract class GeneratorFactory {
             return generator;
         } catch (Throwable e) {
             throw new GeneratorException(ErrorCode.GENERATOR_ERROR, e, "MultiGenerator[%s]  build method error"
-                    , generatorMeta.type().getName());
+                    , generatorMeta.javaType().getName());
         }
     }
 
     private static Method getBuilder(GeneratorMeta generatorMeta) {
-        Method method = ReflectionUtils.findMethod(generatorMeta.type()
+        Method method = ReflectionUtils.findMethod(generatorMeta.javaType()
                 , "build", FieldMeta.class, GenericSessionFactory.class);
 
         if (method == null
                 || !Modifier.isStatic(method.getModifiers())
                 || !Modifier.isPublic(method.getModifiers())) {
             throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "FieldGenerator[%s] no build method"
-                    , generatorMeta.type().getName());
+                    , generatorMeta.javaType().getName());
         }
-        if (!ClassUtils.isAssignable(generatorMeta.type(), method.getReturnType())) {
+        if (!ClassUtils.isAssignable(generatorMeta.javaType(), method.getReturnType())) {
             throw new GeneratorException(ErrorCode.GENERATOR_ERROR
                     , "FieldGenerator[%s] return type must be a %s instance"
-                    , generatorMeta.type().getName()
-                    , generatorMeta.type().getName()
+                    , generatorMeta.javaType().getName()
+                    , generatorMeta.javaType().getName()
             );
         }
         return method;

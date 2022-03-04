@@ -346,7 +346,8 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     }
 
     private static MetaException createNoFieldCodecException(FieldMeta<?, ?> fieldMeta) {
-        return new MetaException("FieldMeta[%s] not found FieldCodec.", fieldMeta);
+        String m = String.format("FieldMeta[%s] not found FieldCodec.", fieldMeta);
+        return new MetaException(m);
     }
 
     private static ArmyException valueInsertDomainWrapperSizeError(int insertedRows, int domainWrapperSize) {

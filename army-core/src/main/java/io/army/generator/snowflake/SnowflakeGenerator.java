@@ -203,7 +203,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
         if (generatorMeta == null) {
-            throw new MetaException(ErrorCode.META_ERROR, "FieldMeta[%s] GeneratorMeta is null,meta error.");
+            throw new MetaException("FieldMeta[%s] GeneratorMeta is null,meta error.");
         }
 
         long startTime = -1;

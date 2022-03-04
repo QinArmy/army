@@ -36,7 +36,8 @@ public interface SqlType {
     @Deprecated
     default void nowValue(FieldMeta<?, ?> fieldMeta, StringBuilder builder, Database database)
             throws MetaException {
-        throw new MetaException("%s,SQLDataType[%s] not support IDomain.NOW.", fieldMeta, name());
+        String m = String.format("%s,SQLDataType[%s] not support IDomain.NOW.", fieldMeta, name());
+        throw new MetaException(m);
     }
 
     @Deprecated

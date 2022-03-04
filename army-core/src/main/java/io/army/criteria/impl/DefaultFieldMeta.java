@@ -1,9 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.ArmyException;
-import io.army.annotation.Codec;
-import io.army.annotation.Column;
-import io.army.annotation.UpdateMode;
+import io.army.annotation.*;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect.Constant;
@@ -155,6 +153,8 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
     private final GeneratorMeta generatorMeta;
 
+    private final GeneratorType generatorType;
+
     private final boolean codec;
 
     @SuppressWarnings("unchecked")
@@ -186,7 +186,23 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
                     && !isDiscriminator
                     && column.nullable();
             this.defaultValue = FieldMetaUtils.columnDefault(column, this, isDiscriminator);
-            this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(field, this, isDiscriminator);
+
+            final Generator generator;
+            generator = this.javaType.getAnnotation(Generator.class);
+            this.generatorType = generator.type();
+            switch (this.generatorType) {
+                case POST: {
+                    this.generatorMeta = null;
+                    FieldMetaUtils.validatePostGenerator(this, isDiscriminator);
+                }
+                break;
+                case PRECEDE:
+                    this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(field, this, isDiscriminator);
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(this.generatorType);
+            }
+
             this.codec = field.getAnnotation(Codec.class) != null;
         } catch (ArmyException e) {
             throw e;
@@ -264,6 +280,11 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
     @Override
     public final String defaultValue() {
         return this.defaultValue;
+    }
+
+    @Override
+    public final GeneratorType generatorType() {
+        return this.generatorType;
     }
 
     @Override
@@ -405,7 +426,8 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
                 , @Nullable Boolean fieldAsc) throws MetaException {
             super(table, field, indexMeta, fieldAsc);
             if (!indexMeta.unique()) {
-                throw new MetaException("indexMeta[%s] not unique.", indexMeta);
+                String m = String.format("indexMeta[%s] non-unique.", indexMeta);
+                throw new MetaException(m);
             }
         }
     }
@@ -417,7 +439,8 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
                 , @Nullable Boolean fieldAsc) throws MetaException {
             super(table, field, indexMeta, fieldAsc);
             if (!_MetaBridge.ID.equals(field.getName())) {
-                throw new MetaException("indexMeta[%s] not primary.", indexMeta);
+                String m = String.format("indexMeta[%s] not primary.", indexMeta);
+                throw new MetaException(m);
             }
         }
     }

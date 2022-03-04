@@ -1,5 +1,6 @@
 package io.army.meta;
 
+import io.army.annotation.GeneratorType;
 import io.army.criteria.GenericField;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -50,6 +51,9 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F> {
 
     String defaultValue();
 
+    @Nullable
+    GeneratorType generatorType();
+
     /**
      * <p>
      * If {@link #javaType()} is below type then return element java type,
@@ -65,12 +69,6 @@ public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F> {
     default Class<?> elementType() {
         return void.class;
     }
-
-    @Override
-    boolean equals(Object o);
-
-    @Override
-    int hashCode();
 
 
 }

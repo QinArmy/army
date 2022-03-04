@@ -535,7 +535,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     private static final class DefaultChildTable<P extends IDomain, T extends P> extends DefaultTableMeta<T>
-            implements ChildDomain<P, T> {
+            implements ChildTableMeta<T> {
 
         private final ParentTableMeta<P> parentTableMeta;
 

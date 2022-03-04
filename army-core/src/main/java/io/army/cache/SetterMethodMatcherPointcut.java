@@ -32,7 +32,8 @@ final class SetterMethodMatcherPointcut extends StaticMethodMatcherPointcut
             if (fieldMeta == idMeta) {
                 setterFieldMap.putIfAbsent(method, fieldMeta);
             } else if (setterFieldMap.put(method, fieldMeta) != null) {
-                throw new MetaException("FieldMeta[%s] duplication.", fieldMeta);
+                String m = String.format("FieldMeta[%s] duplication.", fieldMeta);
+                throw new MetaException(m);
             }
         }
 

@@ -41,8 +41,9 @@ import static java.lang.annotation.ElementType.FIELD;
  * </pre>
  * </p>
  * <p>
- *     see {@code io.army.generator.PreFieldGenerator} and {@code io.army.generator.FieldGenerator}
+ * see {@code io.army.generator.PreFieldGenerator} and {@code io.army.generator.FieldGenerator}
  * </p>
+ *
  * @see Column
  * @since 1.0
  */
@@ -51,10 +52,12 @@ import static java.lang.annotation.ElementType.FIELD;
 @Documented
 public @interface Generator {
 
+    GeneratorType type() default GeneratorType.PRECEDE;
+
     /**
      * Specifies the class name of {@code io.army.generator.PreFieldGenerator}.
      */
-    String value() ;
+    String value() default "";
 
     /**
      * Specifies the creation value(s) of {@code io.army.generator.FieldGenerator}.
