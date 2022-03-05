@@ -1,6 +1,7 @@
 package io.army.sqltype;
 
 import io.army.Database;
+import io.army.mapping.MappingEnvironment;
 import io.army.mapping.MappingType;
 
 /**
@@ -12,8 +13,8 @@ public enum PostgreType implements SqlType {
     /**
      * <p>
      *     <ul>
-     *         <li>{@link MappingType#beforeBind_(SqlType, Object)} must return {@link Boolean}</li>
-     *         <li>{@link MappingType#afterGet_(SqlType, Object)} nonNull parameter must be {@link Boolean}</li>
+     *         <li>{@link MappingType#beforeBind(SqlType, MappingEnvironment, Object)} must return {@link Boolean}</li>
+     *         <li>{@link MappingType#afterGet(SqlType, MappingEnvironment, Object)} nonNull parameter must be {@link Boolean}</li>
      *     </ul>
      * </p>
      */

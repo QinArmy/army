@@ -89,6 +89,7 @@ final class AttributeMetaParser {
                 entityPropMap.put(_MetaBridge.ID, idProp);
                 entityPropMap = Collections.unmodifiableMap(entityPropMap);
             }
+            //TODO validate isn't primitive
             return entityPropMap.values();
         } catch (AnnotationMetaException e) {
             LOG.error("entityMappedElementList:{}\nparentMappedElementList:{}",

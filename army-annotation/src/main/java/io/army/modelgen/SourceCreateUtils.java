@@ -8,7 +8,6 @@ import io.army.lang.Nullable;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -25,7 +24,7 @@ abstract class SourceCreateUtils {
         throw new UnsupportedOperationException();
     }
 
-    private static final String JAVA_LANG = "java.lang";
+    private static final String JAVA_LANG = "java.lang.";
 
     private static final String MEMBER_PRE = "    ";
 
@@ -336,7 +335,6 @@ abstract class SourceCreateUtils {
                 .append("import io.army.meta.UniqueFieldMeta;\n")
 
                 .append("import io.army.meta.PrimaryFieldMeta;\n\n")
-        // .append("import io.army.util.Assert;\n\n")
         ;
     }
 
@@ -347,18 +345,36 @@ abstract class SourceCreateUtils {
                                                       Collection<VariableElement> mappingPropElements) {
         // set to avoid field type duplicate
         final Set<String> fieldTypeNameSet = new HashSet<>();
-        String fieldTypeName;
-        for (VariableElement mappingProp : mappingPropElements) {
-            fieldTypeName = mappingProp.asType().toString();
-            if (fieldTypeNameSet.contains(fieldTypeName)
-                    || isJavaLang(mappingProp.asType())) {
+        String typeName;
+        for (VariableElement field : mappingPropElements) {
+            typeName = field.asType().toString();
+            if (typeName.charAt(typeName.length() - 1) == ']') {
+                typeName = typeName.substring(0, typeName.indexOf('['));
+                switch (typeName) {
+                    case "boolean":
+                    case "byte":
+                    case "char":
+                    case "double":
+                    case "float":
+                    case "int":
+                    case "long":
+                    case "short":
+                    case "void":
+                        continue;
+                    default:
+                        // no-op
+                }
+            }
+
+            if (typeName.startsWith(JAVA_LANG) || fieldTypeNameSet.contains(typeName)) {
                 continue;
             }
+
             builder.append("import ")
-                    .append(fieldTypeName)
-                    .append(";\n")
-            ;
-            fieldTypeNameSet.add(fieldTypeName);
+                    .append(typeName)
+                    .append(";\n");
+
+            fieldTypeNameSet.add(typeName);
         }
     }
 
@@ -396,19 +412,6 @@ abstract class SourceCreateUtils {
             parentRef = parentElement.getSimpleName().toString();
         }
         return parentRef;
-    }
-
-    /**
-     * @see #appendMappingPropsClassImport(StringBuilder, Collection)
-     */
-    private static boolean isJavaLang(TypeMirror typeMirror) {
-        String name = typeMirror.toString();
-        final int index = name.lastIndexOf('.');
-        boolean match = false;
-        if (index > 0) {
-            match = JAVA_LANG.equals(name.substring(0, index));
-        }
-        return match;
     }
 
 

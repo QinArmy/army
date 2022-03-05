@@ -242,7 +242,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
                 }
             }
             sqlDataType = mappingType.map(serverMeta);
-            value = mappingType.beforeBind_(sqlDataType, value);
+            value = mappingType.beforeBind(sqlDataType, null, value);
             bind(statement, i + 1, sqlDataType, value);
 
         }
@@ -302,11 +302,11 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
             for (; resultSet.next(); index++) {
                 wrapper = domainList.get(index);
                 if (idJavaType == Long.class) {
-                    wrapper.set(primaryKeyName, resultSet.getLong(0));
+                    wrapper.set(primaryKeyName, resultSet.getLong(1));
                 } else if (idJavaType == Integer.class) {
-                    wrapper.set(primaryKeyName, resultSet.getInt(0));
+                    wrapper.set(primaryKeyName, resultSet.getInt(1));
                 } else if (idJavaType == BigInteger.class) {
-                    wrapper.set(primaryKeyName, resultSet.getObject(0, BigInteger.class));
+                    wrapper.set(primaryKeyName, resultSet.getObject(1, BigInteger.class));
                 } else {
                     throw _Exceptions.autoIdErrorJavaType(idField);
                 }

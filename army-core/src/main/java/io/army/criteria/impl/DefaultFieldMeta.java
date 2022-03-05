@@ -176,32 +176,32 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
             final boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
 
             this.mappingType = FieldMetaUtils.columnMappingMeta(table, field, isDiscriminator);
-            this.insertable = _MetaBridge.RESERVED_PROPS.contains(this.fieldName)
-                    || isDiscriminator
-                    || column.insertable();
+            this.insertable = FieldMetaUtils.columnInsertable(this, column, isDiscriminator);
             this.updateMode = FieldMetaUtils.columnUpdatable(this, column, isDiscriminator);
-
             this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);
+
             this.nullable = !_MetaBridge.RESERVED_PROPS.contains(this.fieldName)
                     && !isDiscriminator
                     && column.nullable();
-            this.defaultValue = FieldMetaUtils.columnDefault(column, this, isDiscriminator);
+            this.defaultValue = column.defaultValue();
 
             final Generator generator;
             generator = this.javaType.getAnnotation(Generator.class);
-            this.generatorType = generator.type();
-            switch (this.generatorType) {
-                case POST: {
-                    this.generatorMeta = null;
-                    FieldMetaUtils.validatePostGenerator(this, isDiscriminator);
-                }
-                break;
-                case PRECEDE:
-                    this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(field, this, isDiscriminator);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(this.generatorType);
+            final GeneratorType generatorType;
+            if (generator == null) {
+                this.generatorType = null;
+                this.generatorMeta = null;
+            } else if ((generatorType = generator.type()) == GeneratorType.PRECEDE) {
+                this.generatorType = generatorType;
+                this.generatorMeta = FieldMetaUtils.columnGeneratorMeta(generator, this, isDiscriminator);
+            } else if (generatorType == GeneratorType.POST) {
+                this.generatorType = generatorType;
+                this.generatorMeta = null;
+                FieldMetaUtils.validatePostGenerator(this, generator, isDiscriminator);
+            } else {
+                throw _Exceptions.unexpectedEnum(generatorType);
             }
+
 
             this.codec = field.getAnnotation(Codec.class) != null;
         } catch (ArmyException e) {

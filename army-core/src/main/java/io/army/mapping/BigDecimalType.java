@@ -53,6 +53,18 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
 
     @Override
     public BigDecimal beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        return beforeBind(sqlType, nonNull);
+    }
+
+    @Override
+    public BigDecimal afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+        if (!(nonNull instanceof BigDecimal)) {
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
+        }
+        return (BigDecimal) nonNull;
+    }
+
+    public static BigDecimal beforeBind(final SqlType sqlType, final Object nonNull) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;
@@ -69,20 +81,12 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
             try {
                 value = new BigDecimal((String) nonNull);
             } catch (NumberFormatException e) {
-                throw valueOutRange(sqlType, nonNull,e);
+                throw valueOutRange(sqlType, nonNull, e);
             }
         } else {
             throw outRangeOfSqlType(sqlType, nonNull);
         }
         return value;
-    }
-
-    @Override
-    public BigDecimal afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
-        if (!(nonNull instanceof BigDecimal)) {
-            throw errorJavaTypeForSqlType(sqlType, nonNull);
-        }
-        return (BigDecimal) nonNull;
     }
 
 

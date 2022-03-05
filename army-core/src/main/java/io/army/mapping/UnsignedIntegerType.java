@@ -31,7 +31,7 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public SqlType map(ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:

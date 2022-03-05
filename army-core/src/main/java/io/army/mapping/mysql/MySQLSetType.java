@@ -3,8 +3,8 @@ package io.army.mapping.mysql;
 import io.army.Database;
 import io.army.dialect.Constant;
 import io.army.dialect.NotSupportDialectException;
+import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnvironment;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class MySQLSetType extends _ArmyNoInjectionMapping {
+public final class MySQLSetType extends AbstractMappingType {
 
     private static final ConcurrentMap<Class<?>, MySQLSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 

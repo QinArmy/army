@@ -81,15 +81,16 @@ abstract class MetaUtils {
         if (mapping == null) {
             return;
         }
-        final String mappingValue = mapping.value();
-        if (mappingValue.isEmpty() && !Strings.hasText(mappingValue)) {
-            String m = String.format("Domain[%s] mapping property[%s] Mapping no value",
+        final String mappingType = mapping.value();
+        if (!Strings.hasText(mappingType)) {
+            String m = String.format("Domain[%s] mapping property[%s] %s no value",
                     entityElement.getQualifiedName(),
-                    mappedProp.getSimpleName());
+                    mappedProp.getSimpleName(),
+                    Mapping.class.getName());
             throw new AnnotationMetaException(m);
         }
         if (getEnumElement(mappedProp) != null) {
-            if (isCodeEnum(mappedProp) && !mappingValue.equals(CODE_ENUM)) {
+            if (isCodeEnum(mappedProp) && !mappingType.equals(CODE_ENUM)) {
                 String m = String.format("Domain[%s] mapping property[%s] is %s ,so only mapping %s"
                         , entityElement.getQualifiedName()
                         , mappedProp.getSimpleName()
@@ -97,7 +98,7 @@ abstract class MetaUtils {
                         , CODE_ENUM_TYPE);
                 throw new AnnotationMetaException(m);
             }
-            if (!mappingValue.equals(NAME_ENUM_TYPE)) {
+            if (!mappingType.equals(NAME_ENUM_TYPE)) {
                 String m = String.format("Domain[%s] mapping property[%s] isn't %s ,so only mapping %s"
                         , entityElement.getQualifiedName()
                         , mappedProp.getSimpleName()

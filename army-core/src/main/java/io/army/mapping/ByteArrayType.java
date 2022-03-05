@@ -23,26 +23,26 @@ public final class ByteArrayType extends AbstractMappingType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
-        final SqlType sqlDataType;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.VARBINARY;
+                sqlType = MySqlType.VARBINARY;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreType.BYTEA;
+                sqlType = PostgreType.BYTEA;
                 break;
             case Oracle:
-                sqlDataType = OracleDataType.BLOB;
+                sqlType = OracleDataType.BLOB;
                 break;
             case H2:
-                sqlDataType = H2DataType.VARBINARY;
+                sqlType = H2DataType.VARBINARY;
                 break;
             default:
                 throw noMappingError(meta);
 
         }
-        return sqlDataType;
+        return sqlType;
     }
 
     @Override

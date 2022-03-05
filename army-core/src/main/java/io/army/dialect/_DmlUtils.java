@@ -173,11 +173,9 @@ public abstract class _DmlUtils {
     static List<FieldMeta<?, ?>> mergeInsertFields(final boolean parent, final _ValuesInsert insert) {
         final TableMeta<?> table, relativeTable;
         final List<FieldMeta<?, ?>> fieldList = insert.fieldList();
-        final ParentTableMeta<?> parentTable;
         if (parent) {
             relativeTable = insert.table();
-            parentTable = ((ChildTableMeta<?>) relativeTable).parentMeta();
-            table = parentTable;
+            table = ((ChildTableMeta<?>) relativeTable).parentMeta();
         } else {
             table = insert.table();
             if (table instanceof ChildTableMeta) {
@@ -187,14 +185,14 @@ public abstract class _DmlUtils {
             }
         }
         final List<FieldMeta<?, ?>> mergeFieldList;
-        if (fieldList.isEmpty()) {
+        if (fieldList.size() == 0) {
             final Collection<?> fieldCollection = table.fieldList();
             mergeFieldList = new ArrayList<>(fieldCollection.size());
             @SuppressWarnings("unchecked")
             Collection<FieldMeta<?, ?>> tableFields = (Collection<FieldMeta<?, ?>>) fieldCollection;
-            for (FieldMeta<?, ?> fieldMeta : tableFields) {
-                if (fieldMeta.insertable()) {
-                    mergeFieldList.add(fieldMeta);
+            for (FieldMeta<?, ?> field : tableFields) {
+                if (field.insertable()) {
+                    mergeFieldList.add(field);
                 }
             }
         } else {

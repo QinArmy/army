@@ -99,5 +99,11 @@ public abstract class AbstractMappingType implements MappingType {
                 String.format("%s not support java type[%s].", mappingMetaClass.getName(), javaType.getName()));
     }
 
+    protected static IllegalArgumentException valueOutOfMapping(final Object nonNull
+            , Class<? extends MappingType> typeClass) {
+        String m = String.format("value[%s] out of range of %s .", nonNull, typeClass.getName());
+        return new IllegalArgumentException(m);
+    }
+
 
 }
