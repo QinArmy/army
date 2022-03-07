@@ -133,6 +133,14 @@ public class MySQLTypes extends VersionDomain {
     @Column(comment = "text type")
     private String myText;
 
+    @Mapping("io.army.mapping.mysql.MySQLMediumTextType")
+    @Column(comment = "medium text type")
+    private String myMediumText;
+
+    @Mapping("io.army.mapping.mysql.MySQLLongTextType")
+    @Column(comment = "long text type")
+    private String myLongText;
+
 
     @Override
     public Long getId() {

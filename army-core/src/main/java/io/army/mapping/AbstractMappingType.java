@@ -1,13 +1,17 @@
 package io.army.mapping;
 
+import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
+import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.ParamException;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
+
+import java.nio.charset.Charset;
 
 public abstract class AbstractMappingType implements MappingType {
 
@@ -45,6 +49,7 @@ public abstract class AbstractMappingType implements MappingType {
         String m = String.format("Not support convert from %s to %s.", nonNull, javaType().getName());
         return new ParamException(m);
     }
+
 
 
     @Deprecated
@@ -103,6 +108,15 @@ public abstract class AbstractMappingType implements MappingType {
             , Class<? extends MappingType> typeClass) {
         String m = String.format("value[%s] out of range of %s .", nonNull, typeClass.getName());
         return new IllegalArgumentException(m);
+    }
+
+    protected static Charset getCharset(Class<?> javaType, Mapping mapping) throws MetaException {
+        try {
+            return Charset.forName(mapping.charset());
+        } catch (Exception e) {
+            String m = String.format("%s don't specify error charset[%s]", javaType.getName(), mapping.charset());
+            throw new MetaException(m, e);
+        }
     }
 
 

@@ -11,7 +11,7 @@ import java.util.Optional;
  * <p>
  * This interface is base interface of below:
  *     <ul>
- *         <li>{@link ReactiveSession}</li>
+ *         <li>{@link Session}</li>
  *         <li>{@code io.army.boot.reactive.ReactiveTmSession}</li>
  *         <li>{@code io.army.boot.reactive.ReactiveRmSession}</li>
  *         <li>{@code io.army.reactive.ProxyReactiveSession}</li>

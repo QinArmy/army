@@ -4,9 +4,9 @@ import io.army.ErrorCode;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.session.GenericSessionFactory;
-import io.army.util.ClassUtils;
 import io.army.util.ReflectionUtils;
 import io.army.util._Assert;
+import io.army.util._ClassUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -43,7 +43,7 @@ public abstract class GeneratorFactory {
             throw new GeneratorException(ErrorCode.GENERATOR_ERROR, "FieldGenerator[%s] no build method"
                     , generatorMeta.javaType().getName());
         }
-        if (!ClassUtils.isAssignable(generatorMeta.javaType(), method.getReturnType())) {
+        if (!_ClassUtils.isAssignable(generatorMeta.javaType(), method.getReturnType())) {
             throw new GeneratorException(ErrorCode.GENERATOR_ERROR
                     , "FieldGenerator[%s] return type must be a %s instance"
                     , generatorMeta.javaType().getName()

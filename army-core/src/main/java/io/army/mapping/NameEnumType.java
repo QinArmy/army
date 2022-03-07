@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.H2DataType;
 import io.army.sqltype.MySqlType;
@@ -33,20 +34,11 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         final SqlType sqlType;
-        switch (meta.database()) {
-            case MySQL:
-                sqlType = MySqlType.ENUM;
-                break;
-            case PostgreSQL:
-                sqlType = PostgreType.VARCHAR;
-                break;
-            case H2:
-                sqlType = H2DataType.ENUM;
-                break;
-            default:
-                throw noMappingError(meta);
+        sqlType = mapToSqlType(meta);
+        if (sqlType == null) {
+            throw noMappingError(meta);
         }
         return sqlType;
     }
@@ -68,7 +60,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
         try {
             return valueOf(this.enumClass, (String) nonNull);
         } catch (IllegalArgumentException e) {
-            throw errorValueForSqlType(sqlType, (String) nonNull, e);
+            throw errorValueForSqlType(sqlType, nonNull, e);
         }
     }
 
@@ -78,6 +70,27 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
             throw new IllegalArgumentException("not enum type.");
         }
         return Enum.valueOf((Class<T>) javaType, name);
+    }
+
+
+    @Nullable
+    public static SqlType mapToSqlType(final ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.database()) {
+            case MySQL:
+                sqlType = MySqlType.ENUM;
+                break;
+            case PostgreSQL:
+                sqlType = PostgreType.VARCHAR;
+                break;
+            case H2:
+                sqlType = H2DataType.ENUM;
+                break;
+            default:
+                sqlType = null;
+
+        }
+        return sqlType;
     }
 
 

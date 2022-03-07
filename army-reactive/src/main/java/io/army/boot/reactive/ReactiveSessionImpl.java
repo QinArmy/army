@@ -12,8 +12,8 @@ import io.army.criteria.impl.inner._Statement;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
+import io.army.reactive.Session;
 import io.army.stmt.Stmt;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * This class is a implementation of {@link ReactiveSession}.
+ * This class is a implementation of {@link Session}.
  */
 final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<DatabaseSession, InnerReactiveSessionFactory>
         implements InnerReactiveSession {
@@ -314,7 +314,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
     /*################################## blow private instance inner class ##################################*/
 
-    private static final class SessionTransactionBuilder implements ReactiveSession.SessionTransactionBuilder {
+    private static final class SessionTransactionBuilder implements Session.SessionTransactionBuilder {
 
         private final ReactiveSessionImpl session;
 
@@ -331,25 +331,25 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
         }
 
         @Override
-        public ReactiveSession.SessionTransactionBuilder readOnly(boolean readOnly) {
+        public Session.SessionTransactionBuilder readOnly(boolean readOnly) {
             this.readOnly = readOnly;
             return this;
         }
 
         @Override
-        public ReactiveSession.SessionTransactionBuilder isolation(Isolation isolation) {
+        public Session.SessionTransactionBuilder isolation(Isolation isolation) {
             this.isolation = isolation;
             return this;
         }
 
         @Override
-        public ReactiveSession.SessionTransactionBuilder timeout(int seconds) {
+        public Session.SessionTransactionBuilder timeout(int seconds) {
             this.timeout = seconds;
             return this;
         }
 
         @Override
-        public ReactiveSession.SessionTransactionBuilder name(@Nullable String txName) {
+        public Session.SessionTransactionBuilder name(@Nullable String txName) {
             this.name = txName;
             return this;
         }

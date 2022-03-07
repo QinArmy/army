@@ -12,8 +12,8 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.reactive.GenericReactiveApiSession;
 import io.army.reactive.ProxyReactiveSession;
-import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
+import io.army.reactive.Session;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
@@ -301,7 +301,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
         }
 
         @Override
-        public Mono<ReactiveSession> build() throws SessionException {
+        public Mono<Session> build() throws SessionException {
 //            if (this.sessionFactory.readOnly && !this.readOnly) {
 //                throw new CreateSessionException("%s is read only,cannot create read-write session."
 //                        , this.sessionFactory);
@@ -312,7 +312,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
             return Mono.empty();
         }
 
-        private Mono<ReactiveSession> createSession(DatabaseSession databaseSession) {
+        private Mono<Session> createSession(DatabaseSession databaseSession) {
             final CurrentSessionContext sessionContext = this.sessionFactory.currentSessionContext;
             if (this.current && !(sessionContext instanceof UpdatableCurrentSessionContext)) {
                 return Mono.error(new CreateSessionException("%s not support set current session."
@@ -321,7 +321,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
             ReactiveSessionImpl session;
             session = new ReactiveSessionImpl(this.sessionFactory, databaseSession, this.readOnly, this.current);
 
-            Mono<ReactiveSession> mono;
+            Mono<Session> mono;
             if (sessionContext instanceof UpdatableCurrentSessionContext) {
                 UpdatableCurrentSessionContext currentSessionContext = (UpdatableCurrentSessionContext) sessionContext;
                 mono = currentSessionContext.currentSession(session)

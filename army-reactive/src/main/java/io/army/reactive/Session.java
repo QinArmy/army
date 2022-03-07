@@ -8,12 +8,12 @@ import io.army.tx.NoSessionTransactionException;
 import io.army.tx.reactive.ReactiveTransaction;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericReactiveApiSession {
+public interface Session extends SingleDatabaseReactiveSession, GenericReactiveApiSession {
 
     @Override
     ReactiveSessionFactory sessionFactory();
 
-   // @Override
+    // @Override
     ReactiveTransaction sessionTransaction() throws NoSessionTransactionException;
 
     Mono<Void> close() throws SessionException;
@@ -37,7 +37,7 @@ public interface ReactiveSession extends SingleDatabaseReactiveSession, GenericR
          * @throws CannotCreateTransactionException throw when
          *                                          <ul>
          *                                              <li>not specified {@link Isolation}</li>
-         *                                              <li>{@link ReactiveSession#readonly()} equals {@code true} but,specified transaction readOnly</li>
+         *                                              <li>{@link Session#readonly()} equals {@code true} but,specified transaction readOnly</li>
          *                                              <li>session already have {@link ReactiveTransaction}</li>
          *                                          </ul>
          */

@@ -1,6 +1,6 @@
 package io.army.boot.reactive;
 
-import io.army.reactive.ReactiveSession;
+import io.army.reactive.Session;
 import io.army.tx.IllegalTransactionStateException;
 import io.army.tx.TransactionException;
 import io.army.tx.TransactionOption;
@@ -30,7 +30,7 @@ final class ReactiveLocalTransaction extends AbstractReactiveTransaction impleme
     }
 
     @Override
-    public ReactiveSession session() {
+    public Session session() {
         return this.session;
     }
 

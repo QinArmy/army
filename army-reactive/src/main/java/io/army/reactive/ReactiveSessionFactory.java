@@ -18,7 +18,7 @@ public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory
 
         ReactiveSessionBuilder readOnly(boolean readOnly);
 
-        Mono<ReactiveSession> build() throws SessionException;
+        Mono<Session> build() throws SessionException;
     }
 
 }

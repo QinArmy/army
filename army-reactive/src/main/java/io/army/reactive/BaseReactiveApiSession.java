@@ -13,14 +13,14 @@ import java.util.List;
  * <p>
  * This interface is base interface of below:
  *     <ul>
- *         <li>{@link ReactiveSession}</li>
+ *         <li>{@link Session}</li>
  *         <li>{@code io.army.boot.reactive.ReactiveTmSession}</li>
  *         <li>{@code io.army.reactive.ProxyReactiveSession}</li>
  *         <li>{@code io.army.boot.reactive.ProxyReactiveTmSession}</li>
  *     </ul>
  * </p>
  *
- * @see ReactiveSession
+ * @see Session
  */
 interface BaseReactiveApiSession extends BaseReactiveSession {
 

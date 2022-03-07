@@ -4,8 +4,8 @@ import io.army.criteria.Delete;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.reactive.ProxyReactiveSession;
-import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
+import io.army.reactive.Session;
 import reactor.core.publisher.Flux;
 
 class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSessionFactory>
@@ -29,7 +29,7 @@ class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSess
     @Override
     public Flux<Integer> batchUpdate(Update update) {
         return this.currentSessionContext.currentSession()
-                .cast(ReactiveSession.class)
+                .cast(Session.class)
                 .flatMapMany(session -> session.batchUpdate(update))
                 ;
     }
@@ -37,7 +37,7 @@ class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSess
     @Override
     public Flux<Integer> batchUpdate(Update update, final Visible visible) {
         return this.currentSessionContext.currentSession()
-                .cast(ReactiveSession.class)
+                .cast(Session.class)
                 .flatMapMany(session -> session.batchUpdate(update, visible))
                 ;
     }
@@ -45,7 +45,7 @@ class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSess
     @Override
     public Flux<Long> batchLargeUpdate(Update update) {
         return this.currentSessionContext.currentSession()
-                .cast(ReactiveSession.class)
+                .cast(Session.class)
                 .flatMapMany(session -> session.batchLargeUpdate(update))
                 ;
     }
@@ -53,7 +53,7 @@ class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSess
     @Override
     public Flux<Long> batchLargeUpdate(Update update, final Visible visible) {
         return this.currentSessionContext.currentSession()
-                .cast(ReactiveSession.class)
+                .cast(Session.class)
                 .flatMapMany(session -> session.batchLargeUpdate(update, visible))
                 ;
     }
@@ -61,7 +61,7 @@ class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSess
     @Override
     public Flux<Integer> batchDelete(Delete delete) {
         return this.currentSessionContext.currentSession()
-                .cast(ReactiveSession.class)
+                .cast(Session.class)
                 .flatMapMany(session -> session.batchDelete(delete))
                 ;
     }
@@ -69,7 +69,7 @@ class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSess
     @Override
     public Flux<Integer> batchDelete(Delete delete, final Visible visible) {
         return this.currentSessionContext.currentSession()
-                .cast(ReactiveSession.class)
+                .cast(Session.class)
                 .flatMapMany(session -> session.batchDelete(delete, visible))
                 ;
     }
@@ -77,7 +77,7 @@ class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSess
     @Override
     public Flux<Long> batchLargeDelete(Delete delete) {
         return this.currentSessionContext.currentSession()
-                .cast(ReactiveSession.class)
+                .cast(Session.class)
                 .flatMapMany(session -> session.batchLargeDelete(delete))
                 ;
     }
@@ -85,7 +85,7 @@ class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSess
     @Override
     public Flux<Long> batchLargeDelete(Delete delete, Visible visible) {
         return this.currentSessionContext.currentSession()
-                .cast(ReactiveSession.class)
+                .cast(Session.class)
                 .flatMapMany(session -> session.batchLargeDelete(delete, visible))
                 ;
     }

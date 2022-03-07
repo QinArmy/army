@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
  * <p>
  * This interface is base interface of below:
  *     <ul>
- *         <li>{@link ReactiveSession}</li>
+ *         <li>{@link Session}</li>
  *         <li>{@code io.army.reactive.ProxyReactiveSession}</li>
  *     </ul>
  * </p>

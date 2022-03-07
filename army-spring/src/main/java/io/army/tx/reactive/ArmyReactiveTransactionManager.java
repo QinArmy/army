@@ -1,8 +1,8 @@
 package io.army.tx.reactive;
 
 
-import io.army.reactive.ReactiveSession;
 import io.army.reactive.ReactiveSessionFactory;
+import io.army.reactive.Session;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.NoTransactionException;
@@ -22,7 +22,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     protected Object doGetTransaction(TransactionSynchronizationManager synchronizationManager)
             throws TransactionException {
         ArmyTransactionObject txObject = new ArmyTransactionObject();
-        ReactiveSession session = (ReactiveSession) synchronizationManager.getResource(this.sessionFactory);
+        Session session = (Session) synchronizationManager.getResource(this.sessionFactory);
         if (session != null) {
             txObject.reset(session);
         }
@@ -89,7 +89,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
         if (synchronizationManager.hasResource(sessionFactory)) {
             synchronizationManager.unbindResource(sessionFactory);
         }
-        ReactiveSession session = (ReactiveSession) suspendedResources;
+        Session session = (Session) suspendedResources;
         synchronizationManager.bindResource(session, session);
         return Mono.empty();
     }
@@ -136,8 +136,8 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
         this.sessionFactory = sessionFactory;
     }
 
-    protected Mono<ReactiveSession> obtainSession(TransactionSynchronizationManager synchronizationManager) {
-        ReactiveSession session = (ReactiveSession) synchronizationManager.getResource(this.sessionFactory);
+    protected Mono<Session> obtainSession(TransactionSynchronizationManager synchronizationManager) {
+        Session session = (Session) synchronizationManager.getResource(this.sessionFactory);
         if (session != null) {
             return Mono.just(session);
         }
@@ -152,7 +152,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
                 "create transaction occur error,session haven transaction,suspend transaction not unbind.");
     }
 
-    private Mono<Void> startSessionTransaction(ReactiveSession session, Object transaction
+    private Mono<Void> startSessionTransaction(Session session, Object transaction
             , TransactionDefinition definition) {
         if (session.hasTransaction()) {
             return Mono.error(this::existsTransactionException);
@@ -165,7 +165,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
 
     }
 
-    private Mono<ReactiveTransaction> createSessionTransaction(ReactiveSession session
+    private Mono<ReactiveTransaction> createSessionTransaction(Session session
             , TransactionDefinition definition) {
 //        return session.builder()
 //                .isolation(SpringUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
@@ -181,11 +181,11 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
 
     private static final class ArmyTransactionObject {
 
-        private ReactiveSession session;
+        private Session session;
 
 
         private Mono<Object> suspend() {
-            ReactiveSession reactiveSession = session;
+            Session reactiveSession = session;
             if (reactiveSession == null) {
                 return Mono.error(new IllegalStateException("ArmyTransactionObject no session."));
             }
@@ -193,7 +193,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
             return Mono.just(reactiveSession);
         }
 
-        private Mono<ReactiveSession> reset(ReactiveSession newSession) {
+        private Mono<Session> reset(Session newSession) {
             if (this.session != null) {
                 return Mono.error(new IllegalStateException("ArmyTransactionObject session not null,couldn't reset"));
             }

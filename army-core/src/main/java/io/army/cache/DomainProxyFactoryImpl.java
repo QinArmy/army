@@ -5,8 +5,8 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.session.GenericSessionFactory;
-import io.army.util.ClassUtils;
 import io.army.util._Assert;
+import io.army.util._ClassUtils;
 import io.qinarmy.util.Pair;
 import org.springframework.aop.framework.ProxyCreatorSupport;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
@@ -67,7 +67,7 @@ final class DomainProxyFactoryImpl implements DomainProxyFactory {
 
         // 4. create proxy object
         final IDomain proxy = (IDomain) config.getAopProxyFactory().createAopProxy(config)
-                .getProxy(ClassUtils.getDefaultClassLoader());
+                .getProxy(_ClassUtils.getDefaultClassLoader());
 
         return new Pair<>(proxy, advice);
     }

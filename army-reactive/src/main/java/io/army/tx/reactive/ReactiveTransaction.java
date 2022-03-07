@@ -1,6 +1,6 @@
 package io.army.tx.reactive;
 
-import io.army.reactive.ReactiveSession;
+import io.army.reactive.Session;
 import io.army.tx.TransactionException;
 import reactor.core.publisher.Mono;
 
@@ -9,7 +9,7 @@ import java.sql.Savepoint;
 public interface ReactiveTransaction extends GenericReactiveTransaction {
 
     @Override
-    ReactiveSession session();
+    Session session();
 
 
     Mono<Void> commit() throws TransactionException;
