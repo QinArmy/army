@@ -3,35 +3,37 @@ package io.army.mapping.mysql;
 import io.army.Database;
 import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnvironment;
-import io.army.mapping.StringType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
+
+import java.io.Reader;
 
 public final class MySQLLongTextType extends AbstractMappingType {
 
     public static final MySQLLongTextType STRING_INSTANCE = new MySQLLongTextType(String.class);
 
+    public static final MySQLLongTextType READER_INSTANCE = new MySQLLongTextType(Reader.class);
+
     public static final long MAX_LENGTH = 0xFFFF_FFFFL;
 
-    public static MySQLLongTextType create(Class<?> javaType) {
-        if (javaType != String.class) {
+    public static MySQLLongTextType create(final Class<?> javaType) {
+        final MySQLLongTextType instance;
+        if (javaType == String.class) {
+            instance = STRING_INSTANCE;
+        } else if (javaType == Reader.class) {
+            instance = READER_INSTANCE;
+        } else {
             throw errorJavaType(MySQLLongTextType.class, javaType);
         }
-        return STRING_INSTANCE;
+        return instance;
     }
 
 
     private final Class<?> javaType;
 
-//    private final Class<?> elementType;
-//
-//    private final Charset charset;
-
     private MySQLLongTextType(Class<?> javaType) {
         this.javaType = javaType;
-//        this.elementType = elementType;
-//        this.charset = charset;
     }
 
     @Override
@@ -49,25 +51,19 @@ public final class MySQLLongTextType extends AbstractMappingType {
 
     @Override
     public Object beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
-        return StringType.beforeBind(sqlType, nonNull);
+        if (!(nonNull instanceof String || nonNull instanceof Reader)) {
+            throw outRangeOfSqlType(sqlType, nonNull);
+        }
+        return nonNull;
     }
 
     @Override
-    public Object afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
-        return StringType.INSTANCE.afterGet(sqlType, env, nonNull);
+    public String afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+        if (!(nonNull instanceof String)) {
+            throw errorJavaTypeForSqlType(sqlType, nonNull);
+        }
+        return (String) nonNull;
     }
-//
-//    private static final class PathUTF8Holder {
-//
-//        private static final MySQLLongTextType INSTANCE = new MySQLLongTextType(Path.class, void.class, StandardCharsets.UTF_8);
-//
-//    }
-//
-//    private static final class PathInstanceHolder {
-//
-//        private static final ConcurrentMap<Charset, MySQLLongTextType> INSTANCE_MAP = new ConcurrentHashMap<>();
-//
-//    }
 
 
 }

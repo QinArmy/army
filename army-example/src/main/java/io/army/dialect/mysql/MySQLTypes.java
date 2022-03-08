@@ -4,12 +4,13 @@ import io.army.annotation.Column;
 import io.army.annotation.Mapping;
 import io.army.annotation.Table;
 import io.army.example.VersionDomain;
-import io.army.example.struct.QinArmy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.*;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
 
 @Table(name = "mysql_types", comment = "mysql types")
 public class MySQLTypes extends VersionDomain {
@@ -140,13 +141,13 @@ public class MySQLTypes extends VersionDomain {
     @Column(comment = "long text type")
     private String myLongText;
 
-    @Mapping("io.army.mapping.mysql.MySQLNameEnumSetType")
-    @Column(comment = "set of name enum")
-    private Set<Month> myNameEnumSet;
-
-    @Mapping("io.army.mapping.mysql.MySQLTextEnumSetType")
-    @Column(comment = "set of text enum")
-    private Set<QinArmy> myTextEnumSet;
+//    @Mapping("io.army.mapping.mysql.MySQLNameEnumSetType")
+//    @Column(comment = "set of name enum")
+//    private Set<Month> myNameEnumSet;
+//
+//    @Mapping("io.army.mapping.mysql.MySQLTextEnumSetType")
+//    @Column(comment = "set of text enum")
+//    private Set<QinArmy> myTextEnumSet;
 
     @Mapping("io.army.mapping.mysql.JsonStringType")
     @Column(comment = "json type")
@@ -385,6 +386,111 @@ public class MySQLTypes extends VersionDomain {
 
     public void setMyBigintUnsigned(BigInteger myBigintUnsigned) {
         this.myBigintUnsigned = myBigintUnsigned;
+    }
+
+    public BigDecimal getMyDecimal() {
+        return myDecimal;
+    }
+
+    public void setMyDecimal(BigDecimal myDecimal) {
+        this.myDecimal = myDecimal;
+    }
+
+    public BigDecimal getMyDecimalUnsigned() {
+        return myDecimalUnsigned;
+    }
+
+    public void setMyDecimalUnsigned(BigDecimal myDecimalUnsigned) {
+        this.myDecimalUnsigned = myDecimalUnsigned;
+    }
+
+    public Float getMyFloat() {
+        return myFloat;
+    }
+
+    public void setMyFloat(Float myFloat) {
+        this.myFloat = myFloat;
+    }
+
+    public Double getMyDouble() {
+        return myDouble;
+    }
+
+    public void setMyDouble(Double myDouble) {
+        this.myDouble = myDouble;
+    }
+
+    public String getMyTinyText() {
+        return myTinyText;
+    }
+
+    public void setMyTinyText(String myTinyText) {
+        this.myTinyText = myTinyText;
+    }
+
+    public String getMyText() {
+        return myText;
+    }
+
+    public void setMyText(String myText) {
+        this.myText = myText;
+    }
+
+    public String getMyMediumText() {
+        return myMediumText;
+    }
+
+    public void setMyMediumText(String myMediumText) {
+        this.myMediumText = myMediumText;
+    }
+
+    public String getMyLongText() {
+        return myLongText;
+    }
+
+    public void setMyLongText(String myLongText) {
+        this.myLongText = myLongText;
+    }
+
+
+    public String getMyJson() {
+        return myJson;
+    }
+
+    public void setMyJson(String myJson) {
+        this.myJson = myJson;
+    }
+
+    public String getMyTinyBlob() {
+        return myTinyBlob;
+    }
+
+    public void setMyTinyBlob(String myTinyBlob) {
+        this.myTinyBlob = myTinyBlob;
+    }
+
+    public String getMyBlob() {
+        return myBlob;
+    }
+
+    public void setMyBlob(String myBlob) {
+        this.myBlob = myBlob;
+    }
+
+    public String getMyMediumBlob() {
+        return myMediumBlob;
+    }
+
+    public void setMyMediumBlob(String myMediumBlob) {
+        this.myMediumBlob = myMediumBlob;
+    }
+
+    public String getMyLongBlob() {
+        return myLongBlob;
+    }
+
+    public void setMyLongBlob(String myLongBlob) {
+        this.myLongBlob = myLongBlob;
     }
 
 

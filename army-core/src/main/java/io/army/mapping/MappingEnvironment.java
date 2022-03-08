@@ -7,6 +7,8 @@ import java.time.ZoneOffset;
 
 public interface MappingEnvironment {
 
+    boolean isReactive();
+
     ServerMeta serverMeta();
 
     ZoneOffset zoneOffset();

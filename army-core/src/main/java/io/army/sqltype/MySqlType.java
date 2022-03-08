@@ -54,6 +54,7 @@ public enum MySqlType implements SqlType {
     MULTIPOINT,
     MULTILINESTRING,
     MULTIPOLYGON,
+    GEOMETRY,
     GEOMETRYCOLLECTION;
 
     @Override
