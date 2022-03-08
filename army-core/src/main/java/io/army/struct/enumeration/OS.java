@@ -17,7 +17,7 @@ public enum OS implements CodeEnum {
 
     SOLARIS(300, "solaris");
 
-    private static final Map<Integer, OS> CODE_MAP = CodeEnum.getCodeMap(OS.class);
+    private static final Map<Integer, OS> CODE_MAP = CodeEnum.getInstanceMap(OS.class);
 
     public static OS resolve(int code) {
         return CODE_MAP.get(code);

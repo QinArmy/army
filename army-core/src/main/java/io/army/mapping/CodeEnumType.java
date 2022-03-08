@@ -6,8 +6,8 @@ import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
-import io.army.struct.CodeEnumException;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -29,9 +29,11 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     private final Class<?> enumClass;
 
+    private final Map<Integer, ? extends CodeEnum> codeMap;
+
     private CodeEnumType(Class<?> enumClass) {
         this.enumClass = enumClass;
-        checkCodeEnum(enumClass);
+        this.codeMap = getCodeMap(enumClass);
     }
 
     @Override
@@ -58,7 +60,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     @Override
     public Integer beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
-        if (!(nonNull instanceof Enum && nonNull instanceof CodeEnum)) {
+        if (!this.enumClass.isInstance(nonNull)) {
             throw outRangeOfSqlType(sqlType, nonNull);
         }
         return ((CodeEnum) nonNull).code();
@@ -70,7 +72,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
         final CodeEnum value;
-        value = CodeEnum.resolve(this.enumClass, (Integer) nonNull);
+        value = this.codeMap.get(nonNull);
         if (value == null) {
             String m = String.format("Not found enum instance for code[%s] in enum[%s]."
                     , nonNull, this.enumClass.getName());
@@ -83,12 +85,8 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     /*################################## blow private method ##################################*/
 
     @SuppressWarnings("unchecked")
-    public static <T extends Enum<T> & CodeEnum> void checkCodeEnum(Class<?> enumClass) {
-        try {
-            CodeEnum.getCodeMap((Class<T>) enumClass);
-        } catch (CodeEnumException e) {
-            throw new MetaException(e.getMessage(), e);
-        }
+    public static <T extends Enum<T> & CodeEnum> Map<Integer, T> getCodeMap(Class<?> enumClass) {
+        return CodeEnum.getInstanceMap((Class<T>) enumClass);
     }
 
 

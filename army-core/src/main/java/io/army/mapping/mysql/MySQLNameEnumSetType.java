@@ -2,9 +2,9 @@ package io.army.mapping.mysql;
 
 import io.army.Database;
 import io.army.dialect.Constant;
-import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.AbstractMappingType;
+import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingEnvironment;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
@@ -14,21 +14,24 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class MySQLSetType extends AbstractMappingType {
 
-    private static final ConcurrentMap<Class<?>, MySQLSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
+public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implements ElementMappingType {
 
-    public static MySQLSetType create(Class<?> elementJavaType) {
-        if (!elementJavaType.isEnum()) {
-            throw errorJavaType(MySQLSetType.class, elementJavaType);
+    private static final ConcurrentMap<Class<?>, MySQLNameEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
+
+    public static MySQLNameEnumSetType create(Class<?> javaType, Class<?> elementJavaType) {
+        if (javaType != Set.class) {
+            throw errorJavaType(MySQLNameEnumSetType.class, javaType);
+        } else if (!elementJavaType.isEnum()) {
+            throw errorJavaType(MySQLNameEnumSetType.class, elementJavaType);
         }
-        return INSTANCE_MAP.computeIfAbsent(elementJavaType, MySQLSetType::new);
+        return INSTANCE_MAP.computeIfAbsent(elementJavaType, MySQLNameEnumSetType::new);
     }
 
 
     private final Class<?> elementJavaType;
 
-    private MySQLSetType(Class<?> elementJavaType) {
+    private MySQLNameEnumSetType(Class<?> elementJavaType) {
         this.elementJavaType = elementJavaType;
     }
 
@@ -38,7 +41,12 @@ public final class MySQLSetType extends AbstractMappingType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
+    public Class<?> elementType() {
+        return this.elementJavaType;
+    }
+
+    @Override
+    public SqlType map(final ServerMeta meta) {
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }
@@ -51,9 +59,10 @@ public final class MySQLSetType extends AbstractMappingType {
             throw outRangeOfSqlType(sqlType, nonNull);
         }
         final StringBuilder builder = new StringBuilder();
+        final Class<?> elementJavaType = this.elementJavaType;
         int index = 0;
         for (Object e : (Set<?>) nonNull) {
-            if (!this.elementJavaType.isInstance(e)) {
+            if (!elementJavaType.isInstance(e)) {
                 throw valueOutRange(sqlType, nonNull, null);
             }
             if (index > 0) {

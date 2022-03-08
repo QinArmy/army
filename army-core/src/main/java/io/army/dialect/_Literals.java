@@ -45,7 +45,7 @@ public abstract class _Literals {
     public static String integer(final SqlType sqlType, final Object nonNull) {
         final String literal;
         if (nonNull instanceof CodeEnum) {
-            CodeEnumType.checkCodeEnum(nonNull.getClass());
+            CodeEnumType.getCodeMap(nonNull.getClass());
             literal = Integer.toString(((CodeEnum) nonNull).code());
         } else {
             literal = doInteger(sqlType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);

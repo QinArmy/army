@@ -20,7 +20,7 @@ public enum Currency implements CodeEnum {
 
     private final String symbol;
 
-    private static final Map<Integer, Currency> CODE_MAP = CodeEnum.getCodeMap(Currency.class);
+    private static final Map<Integer, Currency> CODE_MAP = CodeEnum.getInstanceMap(Currency.class);
 
 
     public static Currency resolve(int code) {

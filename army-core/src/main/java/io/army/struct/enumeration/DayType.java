@@ -18,7 +18,7 @@ public enum DayType implements CodeEnum {
     MEMORIAL_DAY(300, "纪念日");
 
 
-    private static final Map<Integer, DayType> CODE_MAP = CodeEnum.getCodeMap(DayType.class);
+    private static final Map<Integer, DayType> CODE_MAP = CodeEnum.getInstanceMap(DayType.class);
 
 
     public static DayType resolve(int code) {

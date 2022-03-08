@@ -28,7 +28,7 @@ public enum DayPhase implements CodeEnum {
     AFTER(200, "节日后");
 
 
-    private static final Map<Integer, DayPhase> CODE_MAP = CodeEnum.getCodeMap(DayPhase.class);
+    private static final Map<Integer, DayPhase> CODE_MAP = CodeEnum.getInstanceMap(DayPhase.class);
 
 
     public static DayPhase resolve(int code) {

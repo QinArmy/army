@@ -1,7 +1,6 @@
 package io.army.struct;
 
 
-import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 
 import java.util.Map;
@@ -15,7 +14,7 @@ import java.util.Map;
  *
  * @since 1.0
  */
-public interface CodeEnum extends Compare<CodeEnum> {
+public interface CodeEnum {
 
     /**
      * @return 用于持久化到数据库中的 code
@@ -41,27 +40,15 @@ public interface CodeEnum extends Compare<CodeEnum> {
 
     /*################# static method ############################*/
 
-    @Deprecated
-    @NonNull
-    @Override
-    default CompareResult compare(@NonNull CodeEnum o) {
-        return compare(this, o);
-    }
-
-    @Deprecated
-    static CompareResult compare(CodeEnum codeEnum1, CodeEnum codeEnum2) {
-        return CompareResult.resolve(codeEnum1.code() - codeEnum2.code());
-    }
-
 
     @SuppressWarnings("unchecked")
     @Nullable
-    static <T extends Enum<T> & CodeEnum> CodeEnum resolve(Class<?> enumClass, int code) {
-        return getCodeMap((Class<T>) enumClass).get(code);
+    static <T extends Enum<T> & CodeEnum> T resolve(Class<?> enumClass, int code) {
+        return CodeEnumHelper.getMap((Class<T>) enumClass).get(code);
     }
 
 
-    static <T extends Enum<T> & CodeEnum> Map<Integer, T> getCodeMap(Class<T> clazz) throws CodeEnumException {
+    static <T extends Enum<T> & CodeEnum> Map<Integer, T> getInstanceMap(Class<T> clazz) throws CodeEnumException {
         return CodeEnumHelper.getMap(clazz);
     }
 

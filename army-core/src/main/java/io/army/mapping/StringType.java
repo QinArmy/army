@@ -40,7 +40,7 @@ public final class StringType extends AbstractMappingType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         final SqlType sqlDataType;
         switch (meta.database()) {
             case MySQL:

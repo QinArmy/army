@@ -4,13 +4,12 @@ import io.army.annotation.Column;
 import io.army.annotation.Mapping;
 import io.army.annotation.Table;
 import io.army.example.VersionDomain;
+import io.army.example.struct.QinArmy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
+import java.time.*;
+import java.util.Set;
 
 @Table(name = "mysql_types", comment = "mysql types")
 public class MySQLTypes extends VersionDomain {
@@ -140,6 +139,34 @@ public class MySQLTypes extends VersionDomain {
     @Mapping("io.army.mapping.mysql.MySQLLongTextType")
     @Column(comment = "long text type")
     private String myLongText;
+
+    @Mapping("io.army.mapping.mysql.MySQLNameEnumSetType")
+    @Column(comment = "set of name enum")
+    private Set<Month> myNameEnumSet;
+
+    @Mapping("io.army.mapping.mysql.MySQLTextEnumSetType")
+    @Column(comment = "set of text enum")
+    private Set<QinArmy> myTextEnumSet;
+
+    @Mapping("io.army.mapping.mysql.JsonStringType")
+    @Column(comment = "json type")
+    private String myJson;
+
+    @Mapping("io.army.mapping.mysql.MySQLTinyTextType")
+    @Column(comment = "tiny blob type")
+    private String myTinyBlob;
+
+    @Mapping("io.army.mapping.mysql.MySQLTextType")
+    @Column(comment = "blob type")
+    private String myBlob;
+
+    @Mapping("io.army.mapping.mysql.MySQLMediumTextType")
+    @Column(comment = "medium blob type")
+    private String myMediumBlob;
+
+    @Mapping("io.army.mapping.mysql.MySQLLongTextType")
+    @Column(comment = "long blob type")
+    private String myLongBlob;
 
 
     @Override

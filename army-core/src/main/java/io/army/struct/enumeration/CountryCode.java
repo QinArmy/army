@@ -15,7 +15,7 @@ public enum CountryCode implements CodeEnum {
     CN(0, "中国", "CHINA");
 
 
-    private static final Map<Integer, CountryCode> CODE_MAP = CodeEnum.getCodeMap(CountryCode.class);
+    private static final Map<Integer, CountryCode> CODE_MAP = CodeEnum.getInstanceMap(CountryCode.class);
 
 
     public static CountryCode resolve(int code) {

@@ -23,7 +23,7 @@ public enum Gender implements CodeEnum {
     private final String display;
 
 
-    private static final Map<Integer, Gender> CODE_MAP = CodeEnum.getCodeMap(Gender.class);
+    private static final Map<Integer, Gender> CODE_MAP = CodeEnum.getInstanceMap(Gender.class);
 
 
     public static Gender resolve(int code) {

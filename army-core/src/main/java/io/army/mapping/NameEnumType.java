@@ -7,17 +7,33 @@ import io.army.sqltype.H2DataType;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
+import io.army.struct.CodeEnum;
+import io.army.struct.TextEnum;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * @see Enum
+ * @see TextEnumType
+ */
 public final class NameEnumType extends _ArmyNoInjectionMapping {
 
     private static final ConcurrentMap<Class<?>, NameEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static NameEnumType create(Class<?> javaType) {
+    public static NameEnumType create(final Class<?> javaType) {
         if (!javaType.isEnum()) {
             throw errorJavaType(NameEnumType.class, javaType);
+        }
+        if (CodeEnum.class.isAssignableFrom(javaType)) {
+            String m = String.format("enum %s implements %s,please use %s."
+                    , javaType.getName(), CodeEnum.class.getName(), CodeEnumType.class.getName());
+            throw new IllegalArgumentException(m);
+        }
+        if (TextEnum.class.isAssignableFrom(javaType)) {
+            String m = String.format("enum %s implements %s,please use %s."
+                    , javaType.getName(), TextEnum.class.getName(), TextEnumType.class.getName());
+            throw new IllegalArgumentException(m);
         }
         return INSTANCE_MAP.computeIfAbsent(javaType, NameEnumType::new);
     }
