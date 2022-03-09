@@ -44,6 +44,7 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
         final long startTime = System.currentTimeMillis();
         // 1. crate MetaEntity
         final List<MetaEntity> entityList;
@@ -60,9 +61,11 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
 
     private List<MetaEntity> createEntityList(final RoundEnvironment roundEnv) {
 
-        final Map<String, TypeElement> mappedSuperMap = createClassNameToElementMap(roundEnv, MappedSuperclass.class);
-        final Map<String, TypeElement> inheritanceMap = createClassNameToElementMap(roundEnv, Inheritance.class);
-        final Map<String, TypeElement> domainElementMap = createClassNameToElementMap(roundEnv, Table.class);
+        final Map<String, TypeElement> mappedMap, inheritanceMap, tableMap;
+        mappedMap = createClassNameToElementMap(roundEnv, MappedSuperclass.class);
+        inheritanceMap = createClassNameToElementMap(roundEnv, Inheritance.class);
+        tableMap = createClassNameToElementMap(roundEnv, Table.class);
+
 
         final List<MetaEntity> domainList = new ArrayList<>();
         final AttributeMetaParser metaParser = new AttributeMetaParser();
@@ -72,11 +75,11 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
 
         final Set<String> tableNameSet = new HashSet<>();
         final Map<String, List<TypeElement>> parentMappedElementsCache = new HashMap<>();
-        for (TypeElement domainElement : domainElementMap.values()) {
+        for (TypeElement domainElement : tableMap.values()) {
             assertDomainTable(domainElement, tableNameSet);
             assertDomainInheritance(domainElement);
 
-            pair = createDomainMappedElementList(domainElement, mappedSuperMap, inheritanceMap, domainElementMap);
+            pair = createDomainMappedElementList(domainElement, mappedMap, inheritanceMap, tableMap);
 
             domainMappedElementList = pair.mappedElementList;
             parentElement = pair.parentElement;
@@ -93,8 +96,8 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
                 parentMappedElementList = parentMappedElementsCache.get(parentClassName);
                 if (parentMappedElementList == null) {
                     Pair parentPair;
-                    parentPair = createDomainMappedElementList(parentElement, mappedSuperMap, inheritanceMap,
-                            domainElementMap);
+                    parentPair = createDomainMappedElementList(parentElement, mappedMap, inheritanceMap,
+                            tableMap);
                     parentMappedElementList = parentPair.mappedElementList;
                     MetaUtils.assertMappingParent(parentElement);
                     // cache parent domainMappedElementList
@@ -255,6 +258,78 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
         }
         return Collections.unmodifiableMap(mappedSuperMap);
     }
+//
+//    private static AnnotationHandler crateAnnotationHandler(final RoundEnvironment roundEnv) {
+//        final Map<String, TypeElement> mappedMap = new HashMap<>();
+//        final Map<String, TypeElement> tableMap = new HashMap<>();
+//        final Map<String, TypeElement> inheritanceMap = new HashMap<>();
+//
+//        TypeElement typeElement;
+//        String className;
+//        final List<String> errorMsgList = new ArrayList<>();
+//        final Set<String> tableNameSet = new HashSet<>();
+//        boolean match;
+//        Table table;
+//        for (Element element : roundEnv.getRootElements()) {
+//            if (!(element instanceof TypeElement)) {
+//                continue;
+//            }
+//            typeElement = (TypeElement) element;
+//            className = typeElement.getQualifiedName().toString();
+//            if (className.lastIndexOf('>') > 0) {
+//                className = className.substring(0, className.indexOf('<'));
+//            }
+//            match = false;
+//            if ((table = typeElement.getAnnotation(Table.class)) != null) {
+//
+//                validateTable(className, table, tableNameSet, errorMsgList);//validate
+//
+//                tableMap.put(className, typeElement);
+//                mappedMap.put(className, typeElement);
+//                if (typeElement.getAnnotation(Inheritance.class) != null) {
+//                    inheritanceMap.put(className, typeElement);
+//                }
+//                match = true;
+//            } else if (typeElement.getAnnotation(Inheritance.class) != null) {
+//                String m = String.format("%s annotated by %s but no %s."
+//                        , className, Inheritance.class.getName(), Table.class.getName());
+//                errorMsgList.add(m);
+//            } else if (typeElement.getAnnotation(MappedSuperclass.class) != null) {
+//                mappedMap.put(className, typeElement);
+//                match = true;
+//            }
+//
+//            if (match && (typeElement.getNestingKind() != NestingKind.TOP_LEVEL
+//                    || typeElement.getKind() != ElementKind.CLASS)) {
+//                errorMsgList.add(String.format("%s isn't top level class.", className));
+//            }
+//
+//        }
+//        if (errorMsgList.size() > 0) {
+//            throw createException(errorMsgList);
+//        }
+//        return new AnnotationHandler(tableMap, inheritanceMap, mappedMap);
+//    }
+
+    private static void validateTable(final String className, final Table table, final Set<String> tableNameSet
+            , final List<String> errorMsgList) {
+        final String tableName;
+        tableName = table.name();
+        if (!Strings.hasText(tableName)) {
+            errorMsgList.add(String.format("%s %s.name() no text.", className, Table.class.getName()));
+        }
+        if (!Strings.hasText(table.comment())) {
+            errorMsgList.add(String.format("%s table comment no text.", className));
+        }
+        // make qualifiedTableName lower case
+        final String qualifiedTableName;
+        qualifiedTableName = (table.catalog() + "." + table.schema() + "." + tableName).toLowerCase(Locale.ROOT);
+
+        if (!tableNameSet.add(qualifiedTableName)) {
+            errorMsgList.add(String.format("%s table name[%s] duplication.", className, tableName));
+        }
+
+    }
 
 
     private void writeSources(List<MetaEntity> entityList) {
@@ -287,6 +362,18 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
             this.parentElement = parentElement;
         }
 
+    }
+
+    private static AnnotationMetaException createException(final List<String> errorMsgList) {
+        final StringBuilder builder = new StringBuilder(errorMsgList.size() * 20)
+                .append("handle army annotation occur error,detail:");
+        final int size = errorMsgList.size();
+        for (int i = 0; i < size; i++) {
+            builder.append('\n')
+                    .append(String.format("%d: ", i))
+                    .append(errorMsgList.get(i));
+        }
+        return new AnnotationMetaException(builder.toString());
     }
 
 

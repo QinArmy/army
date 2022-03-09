@@ -1,8 +1,6 @@
 package io.army.modelgen;
 
-import io.army.ArmyException;
-
-final class AnnotationMetaException extends ArmyException {
+final class AnnotationMetaException extends RuntimeException {
 
     public AnnotationMetaException(String message) {
         super(message);
