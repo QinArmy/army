@@ -3,16 +3,14 @@ package io.army.modelgen;
 import io.army.annotation.*;
 import io.army.struct.CodeEnum;
 
-import javax.annotation.processing.Filer;
+import javax.annotation.Nullable;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import javax.tools.FileObject;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -27,6 +25,10 @@ final class AnnotationHandler {
 
     private final List<String> errorMsgList = new ArrayList<>();
 
+    private final Map<String, TypeElement> parentElementMap = new HashMap<>();
+
+    private final Map<String, Map<String, VariableElement>> parentFieldCache = new HashMap<>();
+
     AnnotationHandler(ProcessingEnvironment env) {
         this.env = env;
         this.types = env.getTypeUtils();
@@ -34,131 +36,282 @@ final class AnnotationHandler {
 
 
     void createSourceFiles(Set<? extends Element> tableSet) throws IOException {
-        final ProcessingEnvironment env = this.env;
-        StringBuilder builder;
-        final Filer filer = env.getFiler();
-        FileObject fileObject;
-        String className;
-        TypeElement tableElement;
+        final SourceCodeBuilder builder = new SourceCodeBuilder(this.env.getFiler());
+        final List<String> errorMsgList = this.errorMsgList;
+        final TypeElement[] outParent = new TypeElement[1];
+
+        TypeElement tableElement, parentElement;
+        Map<String, VariableElement> fieldMap;
+        List<TypeElement> mappedList;
 
         for (Element element : tableSet) {
             tableElement = (TypeElement) element;
-            className = tableElement.getQualifiedName().toString();
-            if (className.lastIndexOf('>') > 0) {
-                className = className.substring(0, className.indexOf('<'));
+            outParent[0] = null;
+
+            if (tableElement.getAnnotation(Inheritance.class) != null) {
+                parentElement = null;
+                fieldMap = getParentFieldMap(tableElement);
+            } else {
+                mappedList = getMappedList(tableElement, outParent);
+                parentElement = outParent[0];
+                if (parentElement == null) {
+                    fieldMap = getFieldSet(mappedList, null);
+                } else {
+                    fieldMap = getFieldSet(mappedList, getParentFieldMap(parentElement));
+                }
             }
-            builder = new StringBuilder(1024);
-            fileObject = filer.createSourceFile(className + _MetaBridge.META_CLASS_NAME_SUFFIX);
-            try (PrintWriter pw = new PrintWriter(fileObject.openOutputStream())) {
-                pw.println(builder);
+
+            if (errorMsgList.size() > 0) {
+                // occur error
+                continue;
             }
+            builder.reset(tableElement, fieldMap, parentElement)
+                    .build();
+
 
         }
 
     }
 
-    private Map<String, VariableElement> getFieldSet(final TypeElement tableElement) {
-        final DiscriminatorValue discriminatorValue;
-        discriminatorValue = tableElement.getAnnotation(DiscriminatorValue.class);
+
+    private void addErrorInheritance(final TypeElement tableElement, final TypeElement superElement) {
+        String m = String.format("Domain %s couldn't be annotated by %s,because %s is annotated by %s."
+                , tableElement.getQualifiedName(), Inheritance.class.getName()
+                , superElement.getQualifiedName(), Inheritance.class.getName());
+        this.errorMsgList.add(m);
+    }
+
+    private List<TypeElement> getMappedList(final TypeElement tableElement, final TypeElement[] outParent) {
+        TypeElement superElement = tableElement, parentElement = null;
+        List<TypeElement> mappedList = null;
+        final Types types = this.types;
+        for (TypeMirror superMirror = superElement.getSuperclass(); ; ) {
+            if (superMirror instanceof NoType) {
+                break;
+            }
+            superElement = (TypeElement) types.asElement(superMirror);
+            if (superElement.getAnnotation(Inheritance.class) != null) {
+                if (tableElement.getAnnotation(Inheritance.class) != null) {
+                    addErrorInheritance(tableElement, superElement);
+                }
+                parentElement = superElement;
+                break;
+            }
+            if (superElement.getAnnotation(MappedSuperclass.class) == null
+                    && superElement.getAnnotation(Table.class) == null) {
+                break;
+            }
+            if (mappedList == null) {
+                mappedList = new ArrayList<>();
+                mappedList.add(tableElement);
+            }
+            mappedList.add(superElement);
+        }
+
+        if (mappedList == null) {
+            mappedList = Collections.singletonList(tableElement);
+        } else {
+            mappedList = Collections.unmodifiableList(mappedList);
+        }
+        outParent[0] = parentElement;
+
+        if (parentElement == null) {
+            Inheritance inheritance;
+            if ((inheritance = tableElement.getAnnotation(Inheritance.class)) == null) {
+
+            }
+        } else {
+
+        }
+        return mappedList;
+
+    }
+
+    private Map<String, VariableElement> getFieldSet(final List<TypeElement> mappedList
+            , final @Nullable Map<String, VariableElement> parentFieldMap) {
+
+        final TypeElement tableElement;
+        tableElement = mappedList.get(0);
         final Inheritance inheritance;
         inheritance = tableElement.getAnnotation(Inheritance.class);
         final String discriminatorField = inheritance == null ? null : inheritance.value();
-        final int discriminatorNum = discriminatorValue == null ? 0 : discriminatorValue.value();
+        final Table table;
+        table = tableElement.getAnnotation(Table.class);
 
-        final Types types = this.env.getTypeUtils();
         VariableElement field;
-        TypeMirror superMirror;
         Column column;
         boolean foundDiscriminatorColumn = false;
-        String className, fieldName, columnName, customColumnName;
+        String className, fieldName, columnName;
         final Map<String, VariableElement> fieldMap = new HashMap<>();
         final Map<String, Boolean> columnNameMap = new HashMap<>();
 
-        for (TypeElement current = tableElement; ; ) {
+        for (TypeElement current : mappedList) {
             className = current.getQualifiedName().toString();
             if (className.lastIndexOf('>') > 0) {
                 className = className.substring(0, className.indexOf('<'));
             }
+
             for (Element element : current.getEnclosedElements()) {
                 if (element.getKind() != ElementKind.FIELD
+                        || element.getModifiers().contains(Modifier.STATIC)
                         || (column = element.getAnnotation(Column.class)) == null) {
-                    continue;
-                }
-                if (element.getModifiers().contains(Modifier.STATIC)) {
-                    String m = String.format("%s.%s couldn't is static.", className, element.getSimpleName());
-                    this.errorMsgList.add(m);
                     continue;
                 }
                 field = (VariableElement) element;
                 fieldName = field.getSimpleName().toString();
-                if (fieldName.lastIndexOf('>') > 0) {
-                    fieldName = fieldName.substring(0, fieldName.indexOf('<'));
-                }
-                if (fieldMap.putIfAbsent(fieldName, field) != null) {
+
+                if ((parentFieldMap != null && parentFieldMap.containsKey(fieldName))
+                        || fieldMap.putIfAbsent(fieldName, field) != null) {
                     this.errorMsgList.add(String.format("Field %s.%s is overridden.", className, fieldName));
                 }
                 // get column name
-                customColumnName = column.name();
-                if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
-                    columnName = _MetaBridge.camelToLowerCase(fieldName);
-                    if (!customColumnName.equals(columnName)) {
-                        String m = String.format("Field %s.%s is reserved field,so must use column name[%s]."
-                                , className, fieldName, columnName);
-                        this.errorMsgList.add(m);
-                    }
-                } else if (customColumnName.isEmpty()) {
-                    columnName = _MetaBridge.camelToLowerCase(fieldName);
-                } else {
-                    columnName = customColumnName.toLowerCase(Locale.ROOT);
-                }
+                columnName = getColumnName(className, fieldName, column);
                 if (columnNameMap.putIfAbsent(columnName, Boolean.TRUE) != null) {
-                    String m;
-                    m = String.format("Field %s.%s column[%s] duplication.", className, fieldName, customColumnName);
+                    String m = String.format("Field %s.%s column[%s] duplication.", className, fieldName, columnName);
                     this.errorMsgList.add(m);
                 }
-                switch (fieldName) {
-                    case _MetaBridge.ID:
-                        //no-op
-                        break;
-                    case _MetaBridge.CREATE_TIME:
-                    case _MetaBridge.UPDATE_TIME:
-                        assertDateTime(className, field);
-                        break;
-                    case _MetaBridge.VERSION:
-                        assertVersionField(className, field);
-                        break;
-                    case _MetaBridge.VISIBLE:
-                        assertVisibleField(className, field);
-                        break;
-                    default: {
-                        if (discriminatorField != null && discriminatorField.equals(fieldName)) {
-                            foundDiscriminatorColumn = true;
-                            assertCodeEnum(className, field);
-                        } else if (!Strings.hasText(column.comment())) {
-                            noCommentError(className, field);
-                        }
-                    }
+                if (discriminatorField != null && discriminatorField.equals(fieldName)) {
+                    foundDiscriminatorColumn = true;
+                    assertCodeEnum(className, field);
                 }
+                validateField(className, fieldName, field, column);
 
             }// for getEnclosedElements
 
-            superMirror = current.getSuperclass();
-            if (superMirror instanceof NoType) {
-                break;
-            }
-            current = (TypeElement) types.asElement(superMirror);
-            if (current.getAnnotation(MappedSuperclass.class) == null
-                    && current.getAnnotation(Table.class) == null) {
-                break;
-            }
-
         }
+
         if (inheritance != null && !foundDiscriminatorColumn) {
             this.errorMsgList.add(String.format("Domain %s discriminator field[%s] not found."
-                    , className, discriminatorField));
+                    , mappedList.get(0).getQualifiedName(), discriminatorField));
+        }
+        columnNameMap.clear();
+
+        if (parentFieldMap == null) {
+            String m;
+            if (!fieldMap.containsKey(_MetaBridge.ID)) {
+                m = String.format("Domain %s don't definite field %s."
+                        , tableElement.getQualifiedName(), _MetaBridge.ID);
+                this.errorMsgList.add(m);
+            }
+            if (!fieldMap.containsKey(_MetaBridge.CREATE_TIME)) {
+                m = String.format("Domain %s don't definite field %s."
+                        , tableElement.getQualifiedName(), _MetaBridge.CREATE_TIME);
+                this.errorMsgList.add(m);
+            }
+            if (!table.immutable() && !fieldMap.containsKey(_MetaBridge.UPDATE_TIME)) {
+                m = String.format("Domain %s don't definite field %s."
+                        , tableElement.getQualifiedName(), _MetaBridge.UPDATE_TIME);
+                this.errorMsgList.add(m);
+            }
+        } else {
+            field = parentFieldMap.get(_MetaBridge.ID);
+            assert field != null;
+            fieldMap.put(_MetaBridge.ID, field);
         }
         return Collections.unmodifiableMap(fieldMap);
     }
+
+
+    private Map<String, VariableElement> getParentFieldMap(final TypeElement parent) {
+        final String className;
+        className = MetaUtils.getClassName(parent);
+
+        Map<String, VariableElement> fieldMap;
+        fieldMap = this.parentFieldCache.get(className);
+        if (fieldMap == null) {
+            final TypeElement[] outParent = new TypeElement[1];
+            List<TypeElement> mappedList;
+            mappedList = getMappedList(parent, outParent);
+            if (outParent[0] != null) {
+                addErrorInheritance(parent, outParent[0]);
+            }
+            fieldMap = getFieldSet(mappedList, null);
+            this.parentFieldCache.put(className, fieldMap);
+        }
+        return fieldMap;
+    }
+
+
+    private Map<String, IndexMode> getFieldToIndexModeMap(final TypeElement tableElement) {
+        final Table table = tableElement.getAnnotation(Table.class);
+        final Index[] indexArray = table.indexes();
+        final Map<String, IndexMode> indexMetaMap = new HashMap<>();
+
+        final Map<String, Boolean> indexNameMap = new HashMap<>(indexArray.length + 3);
+        String[] fieldArray;
+        for (Index index : indexArray) {
+            // make index name lower case
+            final String indexName = index.name().toLowerCase(Locale.ROOT);
+            if (indexNameMap.putIfAbsent(indexName, Boolean.TRUE) != null) {
+                String m = String.format("Domain %s index name[%s] duplication",
+                        tableElement.getQualifiedName(), indexName);
+                this.errorMsgList.add(m);
+            }
+            final IndexMode indexMode = IndexMode.resolve(index);
+            for (String fieldName : index.fieldList()) {
+                fieldArray = fieldName.split(" ");
+                indexMetaMap.put(fieldArray[0], indexMode);
+            }
+        }
+        indexMetaMap.put(_MetaBridge.ID, IndexMode.PRIMARY);
+        return Collections.unmodifiableMap(indexMetaMap);
+    }
+
+
+    private void validateField(final String className, final String fieldName, final VariableElement field
+            , final Column column) {
+        switch (fieldName) {
+            case _MetaBridge.ID: {
+                if (field.asType().getKind().isPrimitive()) {
+                    this.errorMsgList.add(String.format("Field %s.%s couldn't be primitive."
+                            , className, fieldName));
+                }
+            }
+            break;
+            case _MetaBridge.CREATE_TIME:
+            case _MetaBridge.UPDATE_TIME:
+                assertDateTime(className, field);
+                break;
+            case _MetaBridge.VERSION:
+                assertVersionField(className, field);
+                break;
+            case _MetaBridge.VISIBLE:
+                assertVisibleField(className, field);
+                break;
+            default: {
+                if (!Strings.hasText(column.comment())) {
+                    noCommentError(className, field);
+                }
+                if (field.asType().getKind().isPrimitive()) {
+                    this.errorMsgList.add(String.format("Field %s.%s couldn't be primitive."
+                            , className, fieldName));
+                }
+            }
+        }
+    }
+
+
+    /**
+     * @return lower case column
+     */
+    private String getColumnName(final String className, final String fieldName, final Column column) {
+        final String customColumnName, columnName;
+        customColumnName = column.name();
+        if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
+            columnName = _MetaBridge.camelToLowerCase(fieldName);
+            if (!customColumnName.equals(columnName)) {
+                String m = String.format("Field %s.%s is reserved field,so must use column name[%s]."
+                        , className, fieldName, columnName);
+                this.errorMsgList.add(m);
+            }
+        } else if (customColumnName.isEmpty()) {
+            columnName = _MetaBridge.camelToLowerCase(fieldName);
+        } else {
+            columnName = customColumnName.toLowerCase(Locale.ROOT);
+        }
+        return columnName;
+    }
+
 
     private void assertDateTime(final String className, final VariableElement field) {
         final String fieldJavaClassName;

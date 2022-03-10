@@ -303,5 +303,14 @@ abstract class MetaUtils {
         return Collections.unmodifiableMap(indexMetaMap);
     }
 
+    static String getClassName(final TypeElement tableElement) {
+        String className;
+        className = tableElement.getQualifiedName().toString();
+        if (className.lastIndexOf('>') > 0) {
+            className = className.substring(0, className.indexOf('<'));
+        }
+        return className;
+    }
+
 
 }
