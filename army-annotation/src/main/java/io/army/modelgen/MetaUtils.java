@@ -4,10 +4,7 @@ import io.army.annotation.*;
 import io.army.lang.Nullable;
 import io.army.struct.CodeEnum;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -310,6 +307,25 @@ abstract class MetaUtils {
             className = className.substring(0, className.indexOf('<'));
         }
         return className;
+    }
+
+    static String getSimpleClassName(final TypeElement tableElement) {
+        String className;
+        className = tableElement.getSimpleName().toString();
+        if (className.lastIndexOf('>') > 0) {
+            className = className.substring(0, className.indexOf('<'));
+        }
+        return className;
+    }
+
+
+    static String getPackageName(final TypeElement domainElement) {
+        /*
+         * not doc
+         * entityElement must be a top-level
+         * @see ArmyMetaModelEntityProcessor#assertEntity(TypeElement, Set)
+         */
+        return ((PackageElement) domainElement.getEnclosingElement()).getQualifiedName().toString();
     }
 
 

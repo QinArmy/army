@@ -19,15 +19,15 @@ import java.util.*;
 
 final class AnnotationHandler {
 
-    final ProcessingEnvironment env;
+    private final ProcessingEnvironment env;
 
-    final Types types;
+    private final Types types;
 
-    private final List<String> errorMsgList = new ArrayList<>();
-
-    private final Map<String, TypeElement> parentElementMap = new HashMap<>();
+    final List<String> errorMsgList = new ArrayList<>();
 
     private final Map<String, Map<String, VariableElement>> parentFieldCache = new HashMap<>();
+
+    private final Map<String, Map<Integer, TypeElement>> codeMap = new HashMap<>();
 
     AnnotationHandler(ProcessingEnvironment env) {
         this.env = env;
@@ -36,7 +36,7 @@ final class AnnotationHandler {
 
 
     void createSourceFiles(Set<? extends Element> tableSet) throws IOException {
-        final SourceCodeBuilder builder = new SourceCodeBuilder(this.env.getFiler());
+        final SourceCodeBuilder builder = new SourceCodeBuilder(this.types, this.env.getFiler());
         final List<String> errorMsgList = this.errorMsgList;
         final TypeElement[] outParent = new TypeElement[1];
 
@@ -44,6 +44,7 @@ final class AnnotationHandler {
         Map<String, VariableElement> fieldMap;
         List<TypeElement> mappedList;
 
+        MappingMode mappingMode;
         for (Element element : tableSet) {
             tableElement = (TypeElement) element;
             outParent[0] = null;
@@ -61,11 +62,12 @@ final class AnnotationHandler {
                 }
             }
 
-            if (errorMsgList.size() > 0) {
+            mappingMode = validateTableElement(tableElement, parentElement);
+            if (mappingMode == null || errorMsgList.size() > 0) {
                 // occur error
                 continue;
             }
-            builder.reset(tableElement, fieldMap, parentElement)
+            builder.reset(tableElement, fieldMap, parentElement, mappingMode)
                     .build();
 
 
@@ -114,17 +116,59 @@ final class AnnotationHandler {
             mappedList = Collections.unmodifiableList(mappedList);
         }
         outParent[0] = parentElement;
-
-        if (parentElement == null) {
-            Inheritance inheritance;
-            if ((inheritance = tableElement.getAnnotation(Inheritance.class)) == null) {
-
-            }
-        } else {
-
-        }
         return mappedList;
 
+    }
+
+    @Nullable
+    private MappingMode validateTableElement(final TypeElement tableElement, final @Nullable TypeElement parentElement) {
+
+        final Inheritance inheritance;
+        inheritance = tableElement.getAnnotation(Inheritance.class);
+        final DiscriminatorValue discriminatorValue;
+        discriminatorValue = tableElement.getAnnotation(DiscriminatorValue.class);
+
+        final MappingMode mappingMode;
+        if (parentElement == null && inheritance == null) {
+            mappingMode = MappingMode.SIMPLE;
+            if (discriminatorValue != null) {
+                String m = String.format("Domain %s no parent,couldn't be annotated by %s."
+                        , tableElement.getQualifiedName(), DiscriminatorValue.class.getName());
+                this.errorMsgList.add(m);
+            }
+        } else if (parentElement == null) {
+            mappingMode = MappingMode.PARENT;
+            if (discriminatorValue != null && discriminatorValue.value() != 0) {
+                String m;
+                m = String.format("Domain %s discriminator value must be zero.", tableElement.getQualifiedName());
+                this.errorMsgList.add(m);
+            }
+        } else if (discriminatorValue != null) {
+            mappingMode = MappingMode.CHILD;
+            final int value;
+            value = discriminatorValue.value();
+            if (value == 0) {
+                String m;
+                m = String.format("Domain %s discriminator value couldn't be zero.", tableElement.getQualifiedName());
+                this.errorMsgList.add(m);
+            } else {
+                final TypeElement element;
+                element = this.codeMap.computeIfAbsent(MetaUtils.getClassName(parentElement), key -> new HashMap<>())
+                        .putIfAbsent(value, tableElement);
+                if (element != null && element != tableElement) {
+                    String m = String.format("Domain %s discriminator value[%s] duplication."
+                            , tableElement.getQualifiedName(), value);
+                    this.errorMsgList.add(m);
+                }
+            }
+        } else {
+            mappingMode = null;
+            String m;
+            m = String.format("Domain %s isn' annotated by %s."
+                    , tableElement.getQualifiedName(), DiscriminatorValue.class.getName());
+            this.errorMsgList.add(m);
+        }
+        return mappingMode;
     }
 
     private Map<String, VariableElement> getFieldSet(final List<TypeElement> mappedList
@@ -229,32 +273,6 @@ final class AnnotationHandler {
             this.parentFieldCache.put(className, fieldMap);
         }
         return fieldMap;
-    }
-
-
-    private Map<String, IndexMode> getFieldToIndexModeMap(final TypeElement tableElement) {
-        final Table table = tableElement.getAnnotation(Table.class);
-        final Index[] indexArray = table.indexes();
-        final Map<String, IndexMode> indexMetaMap = new HashMap<>();
-
-        final Map<String, Boolean> indexNameMap = new HashMap<>(indexArray.length + 3);
-        String[] fieldArray;
-        for (Index index : indexArray) {
-            // make index name lower case
-            final String indexName = index.name().toLowerCase(Locale.ROOT);
-            if (indexNameMap.putIfAbsent(indexName, Boolean.TRUE) != null) {
-                String m = String.format("Domain %s index name[%s] duplication",
-                        tableElement.getQualifiedName(), indexName);
-                this.errorMsgList.add(m);
-            }
-            final IndexMode indexMode = IndexMode.resolve(index);
-            for (String fieldName : index.fieldList()) {
-                fieldArray = fieldName.split(" ");
-                indexMetaMap.put(fieldArray[0], indexMode);
-            }
-        }
-        indexMetaMap.put(_MetaBridge.ID, IndexMode.PRIMARY);
-        return Collections.unmodifiableMap(indexMetaMap);
     }
 
 
@@ -377,7 +395,7 @@ final class AnnotationHandler {
     private boolean isCodeEnumType(final TypeElement typeElement) {
         final String codeEnum = CodeEnum.class.getName();
         boolean match = false;
-        final Types types = this.env.getTypeUtils();
+        final Types types = this.types;
         Element element;
         for (TypeMirror mirror : typeElement.getInterfaces()) {
             if (codeEnum.equals(mirror.toString())) {

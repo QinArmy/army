@@ -5,7 +5,6 @@ import io.army.annotation.Table;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import java.time.OffsetDateTime;
@@ -66,16 +65,16 @@ abstract class SourceCreateUtils {
             , Collection<VariableElement> mappingPropElements) {
         final StringBuilder builder = new StringBuilder("package ");
         // 1. source package part
-        builder.append(getPackageName(domainElement))
+        builder.append(MetaUtils.getPackageName(domainElement))
                 .append(";\n\n");
 
         // 2. source army import part
-        appendArmyClassImport(builder);
+        //SourceCodeBuilder.appendArmyClassImport(builder);
 
         // 3. source parentMeta class import part
-        if (parentElement != null) {
-            appendParentClassImport(builder, domainElement, parentElement);
-        }
+//        if (parentElement != null) {
+//            appendParentClassImport(builder, domainElement, parentElement);
+//        }
 
         // 4. source mapping props class import part
         appendMappingPropsClassImport(builder, mappingPropElements);
@@ -308,35 +307,6 @@ abstract class SourceCreateUtils {
     }
 
 
-    private static void appendParentClassImport(StringBuilder builder, TypeElement domainElement,
-                                                TypeElement parentElement) {
-        if (!sameClassName(domainElement, parentElement) && !samePackage(domainElement, parentElement)) {
-            builder.append("import ");
-
-            builder.append(parentElement.getQualifiedName());
-
-            builder.append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-                    .append(";\n")
-            ;
-        }
-
-    }
-
-    private static void appendArmyClassImport(StringBuilder builder) {
-        builder
-                .append("import io.army.meta.FieldMeta;\n")
-                .append("import io.army.meta.IndexFieldMeta;\n")
-                .append("import javax.annotation.Generated;\n")
-                .append("import io.army.criteria.impl._TableMetaFactory;\n")
-
-                .append("import io.army.meta.SimpleTableMeta;\n")
-                .append("import io.army.meta.ParentTableMeta;\n")
-                .append("import io.army.meta.ChildTableMeta;\n")
-                .append("import io.army.meta.UniqueFieldMeta;\n")
-
-                .append("import io.army.meta.PrimaryFieldMeta;\n\n")
-        ;
-    }
 
     /**
      * @see #generateImport(TypeElement, TypeElement, Collection)
@@ -376,15 +346,6 @@ abstract class SourceCreateUtils {
 
             fieldTypeNameSet.add(typeName);
         }
-    }
-
-    private static String getPackageName(TypeElement domainElement) {
-        /*
-         * not doc
-         * entityElement must be a top-level
-         * @see ArmyMetaModelEntityProcessor#assertEntity(TypeElement, Set)
-         */
-        return ((PackageElement) domainElement.getEnclosingElement()).getQualifiedName().toString();
     }
 
     private static boolean samePackage(TypeElement entityElement, TypeElement parentEntityElement) {

@@ -6,7 +6,8 @@ enum IndexMode {
 
     GENERIC,
     UNIQUE,
-    PRIMARY;
+    PRIMARY,
+    NONE;
 
     static IndexMode resolve(final Index index) {
         final IndexMode mode;

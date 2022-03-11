@@ -14,6 +14,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -21,11 +22,7 @@ import java.util.*;
 /**
  * Main annotation processor.
  */
-@SupportedAnnotationTypes({
-        "io.army.annotation.Table",
-        "io.army.annotation.MappedSuperclass",
-        "io.army.annotation.Inheritance"
-})
+@SupportedAnnotationTypes("io.army.annotation.Table")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
 
@@ -46,14 +43,17 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
         final long startTime = System.currentTimeMillis();
-        // 1. crate MetaEntity
-        final List<MetaEntity> entityList;
-        entityList = createEntityList(roundEnv);
-
-        //2. create source code file
-        writeSources(entityList);
-        LOG.info("{} cost {} ms", ArmyMetaModelDomainProcessor.class.getSimpleName(),
-                System.currentTimeMillis() - startTime);
+        try {
+            final AnnotationHandler handler = new AnnotationHandler(this.processingEnv);
+            handler.createSourceFiles(roundEnv.getElementsAnnotatedWith(Table.class));
+            if (handler.errorMsgList.size() > 0) {
+                throw createException(handler.errorMsgList);
+            }
+        } catch (IOException e) {
+            throw new AnnotationMetaException("Army create source file occur.", e);
+        }
+        System.out.printf("[INFO] %s cost %s ms.%n", ArmyMetaModelDomainProcessor.class.getName()
+                , System.currentTimeMillis() - startTime);
         return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
     }
 
