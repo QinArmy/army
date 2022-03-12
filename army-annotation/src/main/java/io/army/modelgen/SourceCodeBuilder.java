@@ -9,15 +9,22 @@ import javax.annotation.processing.Filer;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.FileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.*;
 import java.util.*;
 
 final class SourceCodeBuilder {
+
+    private static final Map<String, TypeWrapper> jdkTypeWrapperMap = createJdkTypeWrapperMap();
 
     private final Types types;
 
@@ -40,6 +47,10 @@ final class SourceCodeBuilder {
     private List<String> errorMsgList;
 
     private MappingMode mappingMode;
+
+    private Set<String> fieldTypeNameSet;
+
+    private Set<String> fieldTypeSimpleSet;
 
     SourceCodeBuilder(Types types, Filer filer) {
         this.types = types;
@@ -88,7 +99,7 @@ final class SourceCodeBuilder {
         final Map<String, IndexMode> fieldIndexModeMap = this.fieldToIndexMode;
         final String domainName = MetaUtils.getSimpleClassName(tableElement);
         StringBuilder commentBuilder;
-        final Map<String, Boolean> fieldTypeNameMap = new HashMap<>();
+        final String[] parameters = new String[2];
         int count = 0;
         boolean primary;
         for (Map.Entry<String, VariableElement> e : this.fieldMap.entrySet()) {
@@ -97,17 +108,17 @@ final class SourceCodeBuilder {
 
             typeMirror = field.asType();
             fieldTypeName = types.asElement(typeMirror).getSimpleName().toString();
-            qualifiedName = typeMirror.toString();
 
             switch (typeMirror.getKind()) {
                 case ARRAY:
-                    addImport(qualifiedName, fieldTypeNameMap, builder);
+                    addImport(typeMirror.toString(), parameters);
                     break;
                 case DECLARED: {
                     if (!isSamePackage(tableElement, (TypeElement) types.asElement(typeMirror))) {
-                        addImport(qualifiedName, fieldTypeNameMap, builder);
+                        addImport(typeMirror.toString(), parameters);
                     }
                 }
+                break;
                 default://no-op
             }
             commentBuilder = new StringBuilder()
@@ -140,6 +151,10 @@ final class SourceCodeBuilder {
                     .append(SourceCreateUtils.PROP_PRE);
             primary = false;
             switch (fieldIndexModeMap.getOrDefault(fieldName, IndexMode.NONE)) {
+                case NONE:
+                    methodName = "getField";
+                    metaTypeName = "FieldMeta";
+                    break;
                 case GENERIC:
                     metaTypeName = "FieldMeta";
                     methodName = "getField";
@@ -152,10 +167,6 @@ final class SourceCodeBuilder {
                     methodName = "id";
                     metaTypeName = "PrimaryFieldMeta";
                     primary = true;
-                    break;
-                case NONE:
-                    methodName = "getField";
-                    metaTypeName = "FieldMeta";
                     break;
                 default: {
                     IndexMode mode = fieldIndexModeMap.getOrDefault(fieldName, IndexMode.NONE);
@@ -200,8 +211,7 @@ final class SourceCodeBuilder {
 
     }
 
-    private void addImport(final String qualifiedName, final Map<String, Boolean> fieldTypeNameMap
-            , final StringBuilder builder) {
+    private String addImport(final String qualifiedName, final String[] parameters) {
 
         String typeName;
         switch (qualifiedName.charAt(qualifiedName.length() - 1)) {
@@ -217,27 +227,41 @@ final class SourceCodeBuilder {
                     case "long":
                     case "short":
                     case "void":
-                        typeName = null;
-                        break;
-                    default:
+                        return qualifiedName;
+                    default: {
                         // no-op
+                        if (typeName.lastIndexOf('>') > 0) {
+                            String m = String.format("%s exists array of Generics.", this.className);
+                            throw new AnnotationMetaException(m);
+                        }
+                    }
+
                 }
             }
             break;
-            case '>':
+            case '>': {
                 typeName = qualifiedName.substring(0, qualifiedName.indexOf('<'));
-                break;
+            }
+            break;
             default:
                 typeName = qualifiedName;
         }
 
-        if (typeName != null && !typeName.startsWith("java.lang.")
-                && fieldTypeNameMap.putIfAbsent(typeName, Boolean.TRUE) == null) {
+        final String simpleTypeName;
+        int index;
+        index = typeName.lastIndexOf('.');
+        if (index > 0) {
+            simpleTypeName = typeName.substring(0, index);
+        } else {
+            simpleTypeName = typeName;
+        }
+        if (!typeName.startsWith("java.lang.") && fieldTypeNameSet.contains(typeName)) {
             builder.append("import ")
                     .append(typeName)
                     .append(";\n");
+            fieldTypeNameSet.add(typeName);
         }
-
+        return "";
     }
 
     private Map<String, IndexMode> getFieldToIndexModeMap(final TypeElement tableElement) {
@@ -374,6 +398,129 @@ final class SourceCodeBuilder {
     private boolean isEnum(final TypeMirror fieldType) {
         return fieldType.getKind() == TypeKind.DECLARED
                 && this.types.asElement(fieldType).getKind() == ElementKind.ENUM;
+    }
+
+    private TypeWrapper getTypeWrapper(final String fieldName, final TypeMirror qualifiedFieldMirror) {
+
+
+        final TypeMirror fieldMirror;
+        TypeWrapper wrapper;
+        if (qualifiedFieldMirror instanceof ArrayType) {
+            TypeMirror tempMirror = qualifiedFieldMirror;
+            while (tempMirror instanceof ArrayType) {
+                tempMirror = ((ArrayType) tempMirror).getComponentType();
+            }
+            fieldMirror = tempMirror;
+        } else if (qualifiedFieldMirror instanceof DeclaredType) {
+            final DeclaredType declaredType = (DeclaredType) qualifiedFieldMirror;
+            final List<? extends TypeMirror> argumentTypeList;
+            argumentTypeList = declaredType.getTypeArguments();
+            fieldMirror = qualifiedFieldMirror;
+            switch (argumentTypeList.size()) {
+                case 0: {
+                    final String qualifiedName;
+                    qualifiedName = qualifiedFieldMirror.toString();
+                    final TypeWrapper tempWrapper;
+                    tempWrapper = jdkTypeWrapperMap.get(qualifiedName);
+                    if (tempWrapper == null) {
+                        wrapper = createSimpleTypeWrapper(qualifiedFieldMirror);
+                    } else {
+                        wrapper = tempWrapper;
+                    }
+                }
+                break;
+                case 1: {
+                    final TypeWrapper oneWrapper;
+                    oneWrapper = getTypeWrapper(fieldName, argumentTypeList.get(0));
+                    final TypeElement fieldTypeElement;
+                    fieldTypeElement = (TypeElement) ((DeclaredType) qualifiedFieldMirror).asElement();
+                    if (isSamePackage(fieldTypeElement, this.parentElement)) {
+
+                    } else {
+
+                    }
+                }
+                break;
+                case 2:
+                    break;
+                default: {
+                    String m = String.format("%s %s have %s type arguments, that isn't supported by army."
+                            , this.className, fieldName, argumentTypeList.size());
+                    throw new AnnotationMetaException(m);
+                }
+            }
+
+        } else {
+            String m;
+            m = String.format("%s exists %s that isn't supported by army.", this.className, qualifiedFieldMirror);
+            throw new AnnotationMetaException(m);
+        }
+
+        String qualifiedName;
+        qualifiedName = fieldMirror.toString();
+
+        wrapper = jdkTypeWrapperMap.get(qualifiedName);
+        return null;
+    }
+
+    private TypeWrapper createSimpleTypeWrapper(final TypeMirror fieldMirror) {
+        final TypeElement fieldElement;
+        fieldElement = (TypeElement) ((DeclaredType) fieldMirror).asElement();
+        final TypeWrapper wrapper;
+        if (isSamePackage(fieldElement, this.tableElement)) {
+            wrapper = new TypeWrapper("", fieldElement.getSimpleName().toString());
+        } else {
+            wrapper = new TypeWrapper(fieldElement.getQualifiedName().toString()
+                    , fieldElement.getSimpleName().toString());
+        }
+        return wrapper;
+    }
+
+
+    private static Map<String, TypeWrapper> createJdkTypeWrapperMap() {
+        final Map<String, TypeWrapper> map = new HashMap<>((int) (17 / 0.75F));
+
+        map.put(Integer.class.getName(), new TypeWrapper("", Integer.class.getSimpleName()));
+        map.put(Long.class.getName(), new TypeWrapper("", Long.class.getSimpleName()));
+        map.put(Byte.class.getName(), new TypeWrapper("", Byte.class.getSimpleName()));
+        map.put(Short.class.getName(), new TypeWrapper("", Short.class.getSimpleName()));
+
+        map.put(Float.class.getName(), new TypeWrapper("", Float.class.getSimpleName()));
+        map.put(Double.class.getName(), new TypeWrapper("", Double.class.getSimpleName()));
+        map.put(String.class.getName(), new TypeWrapper("", String.class.getSimpleName()));
+        map.put(Boolean.class.getName(), new TypeWrapper("", Boolean.class.getSimpleName()));
+
+        map.put(BigDecimal.class.getName(), new TypeWrapper(BigDecimal.class.getName(), BigDecimal.class.getSimpleName()));
+        map.put(BigInteger.class.getName(), new TypeWrapper(BigInteger.class.getName(), BigInteger.class.getSimpleName()));
+        map.put(LocalDate.class.getName(), new TypeWrapper(LocalDate.class.getName(), LocalDate.class.getSimpleName()));
+        map.put(LocalDateTime.class.getName(), new TypeWrapper(LocalDateTime.class.getName(), LocalDateTime.class.getSimpleName()));
+
+        map.put(LocalTime.class.getName(), new TypeWrapper(LocalTime.class.getName(), LocalTime.class.getSimpleName()));
+        map.put(OffsetDateTime.class.getName(), new TypeWrapper(OffsetDateTime.class.getName(), OffsetDateTime.class.getSimpleName()));
+        map.put(ZonedDateTime.class.getName(), new TypeWrapper(ZonedDateTime.class.getName(), ZonedDateTime.class.getSimpleName()));
+        map.put(OffsetTime.class.getName(), new TypeWrapper(OffsetTime.class.getName(), OffsetTime.class.getSimpleName()));
+
+        map.put(Year.class.getName(), new TypeWrapper(Year.class.getName(), Year.class.getSimpleName()));
+        map.put(YearMonth.class.getName(), new TypeWrapper(YearMonth.class.getName(), YearMonth.class.getSimpleName()));
+        map.put(MonthDay.class.getName(), new TypeWrapper(MonthDay.class.getName(), MonthDay.class.getSimpleName()));
+        map.put(UUID.class.getName(), new TypeWrapper(UUID.class.getName(), UUID.class.getSimpleName()));
+
+        map.put("byte[]", new TypeWrapper("", "byte[]"));
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    private static final class TypeWrapper {
+
+        private final String qualifiedName;
+
+        private final String simpleName;
+
+        private TypeWrapper(String qualifiedName, String simpleName) {
+            this.qualifiedName = qualifiedName;
+            this.simpleName = simpleName;
+        }
+
     }
 
 

@@ -258,58 +258,7 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
         }
         return Collections.unmodifiableMap(mappedSuperMap);
     }
-//
-//    private static AnnotationHandler crateAnnotationHandler(final RoundEnvironment roundEnv) {
-//        final Map<String, TypeElement> mappedMap = new HashMap<>();
-//        final Map<String, TypeElement> tableMap = new HashMap<>();
-//        final Map<String, TypeElement> inheritanceMap = new HashMap<>();
-//
-//        TypeElement typeElement;
-//        String className;
-//        final List<String> errorMsgList = new ArrayList<>();
-//        final Set<String> tableNameSet = new HashSet<>();
-//        boolean match;
-//        Table table;
-//        for (Element element : roundEnv.getRootElements()) {
-//            if (!(element instanceof TypeElement)) {
-//                continue;
-//            }
-//            typeElement = (TypeElement) element;
-//            className = typeElement.getQualifiedName().toString();
-//            if (className.lastIndexOf('>') > 0) {
-//                className = className.substring(0, className.indexOf('<'));
-//            }
-//            match = false;
-//            if ((table = typeElement.getAnnotation(Table.class)) != null) {
-//
-//                validateTable(className, table, tableNameSet, errorMsgList);//validate
-//
-//                tableMap.put(className, typeElement);
-//                mappedMap.put(className, typeElement);
-//                if (typeElement.getAnnotation(Inheritance.class) != null) {
-//                    inheritanceMap.put(className, typeElement);
-//                }
-//                match = true;
-//            } else if (typeElement.getAnnotation(Inheritance.class) != null) {
-//                String m = String.format("%s annotated by %s but no %s."
-//                        , className, Inheritance.class.getName(), Table.class.getName());
-//                errorMsgList.add(m);
-//            } else if (typeElement.getAnnotation(MappedSuperclass.class) != null) {
-//                mappedMap.put(className, typeElement);
-//                match = true;
-//            }
-//
-//            if (match && (typeElement.getNestingKind() != NestingKind.TOP_LEVEL
-//                    || typeElement.getKind() != ElementKind.CLASS)) {
-//                errorMsgList.add(String.format("%s isn't top level class.", className));
-//            }
-//
-//        }
-//        if (errorMsgList.size() > 0) {
-//            throw createException(errorMsgList);
-//        }
-//        return new AnnotationHandler(tableMap, inheritanceMap, mappedMap);
-//    }
+
 
     private static void validateTable(final String className, final Table table, final Set<String> tableNameSet
             , final List<String> errorMsgList) {

@@ -47,8 +47,10 @@ final class AnnotationHandler {
         MappingMode mappingMode;
         for (Element element : tableSet) {
             tableElement = (TypeElement) element;
+            if (tableElement.getNestingKind() != NestingKind.TOP_LEVEL) {
+                continue;
+            }
             outParent[0] = null;
-
             if (tableElement.getAnnotation(Inheritance.class) != null) {
                 parentElement = null;
                 fieldMap = getParentFieldMap(tableElement);
@@ -92,6 +94,9 @@ final class AnnotationHandler {
                 break;
             }
             superElement = (TypeElement) types.asElement(superMirror);
+            if (superElement.getNestingKind() != NestingKind.TOP_LEVEL) {
+                break;
+            }
             if (superElement.getAnnotation(Inheritance.class) != null) {
                 if (tableElement.getAnnotation(Inheritance.class) != null) {
                     addErrorInheritance(tableElement, superElement);
