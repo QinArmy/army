@@ -222,8 +222,11 @@ final class AnnotationHandler {
                 if (discriminatorField != null && discriminatorField.equals(fieldName)) {
                     foundDiscriminatorColumn = true;
                     assertCodeEnum(className, field);
+                    validateField(className, fieldName, field, column, true);
+                } else {
+                    validateField(className, fieldName, field, column, false);
                 }
-                validateField(className, fieldName, field, column);
+
 
             }// for getEnclosedElements
 
@@ -282,7 +285,7 @@ final class AnnotationHandler {
 
 
     private void validateField(final String className, final String fieldName, final VariableElement field
-            , final Column column) {
+            , final Column column, final boolean discriminatorField) {
         switch (fieldName) {
             case _MetaBridge.ID: {
                 if (field.asType().getKind().isPrimitive()) {
@@ -302,7 +305,7 @@ final class AnnotationHandler {
                 assertVisibleField(className, field);
                 break;
             default: {
-                if (!Strings.hasText(column.comment())) {
+                if (!discriminatorField && !Strings.hasText(column.comment())) {
                     noCommentError(className, field);
                 }
                 if (field.asType().getKind().isPrimitive()) {
@@ -320,15 +323,15 @@ final class AnnotationHandler {
     private String getColumnName(final String className, final String fieldName, final Column column) {
         final String customColumnName, columnName;
         customColumnName = column.name();
-        if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
+        if (customColumnName.isEmpty()) {
+            columnName = _MetaBridge.camelToLowerCase(fieldName);
+        } else if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
             if (!customColumnName.equals(columnName)) {
                 String m = String.format("Field %s.%s is reserved field,so must use column name[%s]."
                         , className, fieldName, columnName);
                 this.errorMsgList.add(m);
             }
-        } else if (customColumnName.isEmpty()) {
-            columnName = _MetaBridge.camelToLowerCase(fieldName);
         } else {
             columnName = customColumnName.toLowerCase(Locale.ROOT);
         }

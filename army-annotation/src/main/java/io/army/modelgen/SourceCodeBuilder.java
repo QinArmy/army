@@ -9,10 +9,7 @@ import javax.annotation.processing.Filer;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
 import javax.tools.FileObject;
 import java.io.IOException;
@@ -24,7 +21,32 @@ import java.util.*;
 
 final class SourceCodeBuilder {
 
-    private static final Map<String, TypeWrapper> jdkTypeWrapperMap = createJdkTypeWrapperMap();
+    private static final String JAVA_LANG = "java.lang.";
+
+    private static final Map<String, TypeWrapper> JDK_TYPE_MAP;
+
+    private static final Map<String, String> JDK_SIMPLE_MAP;
+
+    static {
+
+        final Map<String, TypeWrapper> jdkTypeMap;
+        jdkTypeMap = createJdkTypeWrapperMap();
+        JDK_TYPE_MAP = jdkTypeMap;
+
+        final Map<String, String> jdkSimpleMap = new HashMap<>();
+        for (TypeWrapper wrapper : jdkTypeMap.values()) {
+            if (wrapper.qualifiedName == null) {
+                if (jdkSimpleMap.putIfAbsent(wrapper.simpleName, JAVA_LANG + wrapper.simpleName) != null) {
+                    throw new IllegalStateException("JDK_TYPE_MAP create error.");
+                }
+            } else if (jdkSimpleMap.putIfAbsent(wrapper.simpleName, wrapper.qualifiedName) != null) {
+                throw new IllegalStateException("JDK_TYPE_MAP create error.");
+            }
+        }
+        JDK_SIMPLE_MAP = Collections.unmodifiableMap(jdkSimpleMap);
+
+
+    }
 
     private final Types types;
 
@@ -50,7 +72,7 @@ final class SourceCodeBuilder {
 
     private Set<String> fieldTypeNameSet;
 
-    private Set<String> fieldTypeSimpleSet;
+    private Map<String, String> fieldTypeMap;
 
     SourceCodeBuilder(Types types, Filer filer) {
         this.types = types;
@@ -75,6 +97,32 @@ final class SourceCodeBuilder {
     }
 
     void build() throws IOException {
+        for (VariableElement field : fieldMap.values()) {
+            TypeMirror mirror = field.asType();
+
+
+            if (!(mirror instanceof ArrayType)) {
+                continue;
+            }
+            System.out.printf("mirror:%s%n", mirror);
+            System.out.printf("%s%n", mirror.getClass().getName());
+            ArrayType arrayType = (ArrayType) mirror;
+            TypeMirror m = arrayType.getComponentType();
+            System.out.printf("component:%s%n", m);
+            System.out.printf("class:%s%n", m.getClass().getName());
+//            DeclaredType declaredType = (DeclaredType) mirror;
+//            System.out.printf("declaredType:%s%n", declaredType);
+//
+//            Element element = declaredType.asElement();
+//            System.out.printf("element:%s%n", element);
+//
+//            TypeElement typeElement = (TypeElement) element;
+//            System.out.printf("typeElement:%s%n", typeElement);
+
+        }
+    }
+
+    void build0() throws IOException {
         final StringBuilder builder = this.builder;
         // 1. source package part
         builder.append("package ")
@@ -421,7 +469,7 @@ final class SourceCodeBuilder {
                     final String qualifiedName;
                     qualifiedName = qualifiedFieldMirror.toString();
                     final TypeWrapper tempWrapper;
-                    tempWrapper = jdkTypeWrapperMap.get(qualifiedName);
+                    tempWrapper = JDK_TYPE_MAP.get(qualifiedName);
                     if (tempWrapper == null) {
                         wrapper = createSimpleTypeWrapper(qualifiedFieldMirror);
                     } else {
@@ -459,9 +507,132 @@ final class SourceCodeBuilder {
         String qualifiedName;
         qualifiedName = fieldMirror.toString();
 
-        wrapper = jdkTypeWrapperMap.get(qualifiedName);
+        wrapper = JDK_TYPE_MAP.get(qualifiedName);
         return null;
     }
+
+    private TypeWrapper getNoArgumentWrapper(final DeclaredType fieldType) {
+        final TypeElement element;
+        element = (TypeElement) fieldType.asElement();
+        String qualifiedName;
+        qualifiedName = element.getQualifiedName().toString();
+
+        TypeWrapper wrapper;
+        wrapper = JDK_TYPE_MAP.get(qualifiedName);
+        if (wrapper != null) {
+            return wrapper;
+        }
+
+        String simpleName, oldQualifiedName;
+        simpleName = element.getSimpleName().toString();
+
+        if ((oldQualifiedName = JDK_SIMPLE_MAP.putIfAbsent(simpleName, qualifiedName)) != null
+                && !oldQualifiedName.equals(qualifiedName)) {
+            simpleName = qualifiedName;
+            qualifiedName = null;
+        }
+
+        if (qualifiedName != null && (isSamePackage(this.tableElement, element) || isJavaLange(qualifiedName))) {
+            qualifiedName = null;
+        }
+        return new TypeWrapper(qualifiedName, simpleName);
+    }
+
+    private TypeWrapper getArrayComponentWrapper(final ArrayType arrayType) {
+        TypeMirror mirror = arrayType;
+        int dimension = 0;
+        while (mirror instanceof ArrayType) {
+            mirror = ((ArrayType) mirror).getComponentType();
+            dimension++;
+        }
+
+        String qualifiedName, simpleName;
+        if (mirror instanceof PrimitiveType) {
+            simpleName = mirror.toString();
+            qualifiedName = null;
+        } else if (!(mirror instanceof DeclaredType)) {
+            String m = String.format("unexpected array component type[%s] in %s.", arrayType, this.className);
+            throw new AnnotationMetaException(m);
+        } else if (((DeclaredType) mirror).getTypeArguments().size() == 0) {
+            final TypeElement element = (TypeElement) ((DeclaredType) mirror).asElement();
+            qualifiedName = element.getQualifiedName().toString();
+            simpleName = element.getSimpleName().toString();
+
+            final String oldQualifiedName;
+            if (!JDK_TYPE_MAP.containsKey(qualifiedName)
+                    && (oldQualifiedName = JDK_SIMPLE_MAP.putIfAbsent(simpleName, qualifiedName)) != null
+                    && !oldQualifiedName.equals(qualifiedName)) {
+                simpleName = qualifiedName;
+                qualifiedName = null;
+            }
+            if (qualifiedName != null && (isJavaLange(qualifiedName) || isSamePackage(this.tableElement, element))) {
+                qualifiedName = null;
+            }
+        } else {
+            String m = String.format("Generics array[%s] isn't supported by army,%s.", arrayType, this.className);
+            throw new AnnotationMetaException(m);
+        }
+        final StringBuilder builder = new StringBuilder(simpleName.length() + (dimension << 1));
+        builder.append(simpleName);
+        for (int i = 0; i < dimension; i++) {
+            builder.append("[]");
+        }
+        return new TypeWrapper(qualifiedName, builder.toString());
+    }
+
+    private TypeWrapper getWrapper(TypeMirror mirror) {
+        throw new UnsupportedOperationException();
+    }
+
+    private TypeWrapper getArgumentWrapper(final DeclaredType fieldType) {
+        final TypeElement element = (TypeElement) fieldType.asElement();
+
+        String qualifiedName, simpleName;
+        qualifiedName = element.getQualifiedName().toString();
+        simpleName = element.getSimpleName().toString();
+
+        final List<? extends TypeMirror> argumentList = fieldType.getTypeArguments();
+        final int argumentSize = argumentList.size();
+        final StringBuilder builder = new StringBuilder(simpleName.length() + argumentSize * 7)
+                .append(simpleName)
+                .append('<');
+
+        final List<String> qualifiedNameList = new ArrayList<>();
+        TypeWrapper w;
+        int count = 0;
+        for (int i = 0; i < argumentSize; i++) {
+            TypeMirror mirror;
+            mirror = argumentList.get(i);
+            String argSimple;
+            if (mirror instanceof DeclaredType) {
+                w = getNoArgumentWrapper((DeclaredType) mirror);
+                qualifiedNameList.add(w.qualifiedName);
+                argSimple = w.simpleName;
+            } else if (mirror instanceof ArrayType) {
+                w = getArrayComponentWrapper((ArrayType) mirror);
+                qualifiedNameList.add(w.qualifiedName);
+                argSimple = w.simpleName;
+            } else if (mirror instanceof TypeVariable) {
+                qualifiedNameList.add(null);
+
+            } else if (mirror instanceof WildcardType) {
+
+            } else {
+                String m = String.format("unexpected %s type[%s]"
+                        , TypeMirror.class.getName(), mirror.getClass().getName());
+                throw new AnnotationMetaException(m);
+            }
+            if (i > 0) {
+                builder.append(',');
+            }
+            //builder.append(w.simpleName);
+            count++;
+        }
+        builder.append('>');
+
+        return null;
+    }
+
 
     private TypeWrapper createSimpleTypeWrapper(final TypeMirror fieldMirror) {
         final TypeElement fieldElement;
@@ -477,18 +648,25 @@ final class SourceCodeBuilder {
     }
 
 
+    private static boolean isJavaLange(final String qualifiedName) {
+        final int index;
+        index = qualifiedName.lastIndexOf('.');
+        return index > 0 && qualifiedName.substring(0, index).equals("java.lange");
+    }
+
+
     private static Map<String, TypeWrapper> createJdkTypeWrapperMap() {
         final Map<String, TypeWrapper> map = new HashMap<>((int) (17 / 0.75F));
 
-        map.put(Integer.class.getName(), new TypeWrapper("", Integer.class.getSimpleName()));
-        map.put(Long.class.getName(), new TypeWrapper("", Long.class.getSimpleName()));
-        map.put(Byte.class.getName(), new TypeWrapper("", Byte.class.getSimpleName()));
-        map.put(Short.class.getName(), new TypeWrapper("", Short.class.getSimpleName()));
+        map.put(Integer.class.getName(), new TypeWrapper(null, Integer.class.getSimpleName()));
+        map.put(Long.class.getName(), new TypeWrapper(null, Long.class.getSimpleName()));
+        map.put(Byte.class.getName(), new TypeWrapper(null, Byte.class.getSimpleName()));
+        map.put(Short.class.getName(), new TypeWrapper(null, Short.class.getSimpleName()));
 
-        map.put(Float.class.getName(), new TypeWrapper("", Float.class.getSimpleName()));
-        map.put(Double.class.getName(), new TypeWrapper("", Double.class.getSimpleName()));
-        map.put(String.class.getName(), new TypeWrapper("", String.class.getSimpleName()));
-        map.put(Boolean.class.getName(), new TypeWrapper("", Boolean.class.getSimpleName()));
+        map.put(Float.class.getName(), new TypeWrapper(null, Float.class.getSimpleName()));
+        map.put(Double.class.getName(), new TypeWrapper(null, Double.class.getSimpleName()));
+        map.put(String.class.getName(), new TypeWrapper(null, String.class.getSimpleName()));
+        map.put(Boolean.class.getName(), new TypeWrapper(null, Boolean.class.getSimpleName()));
 
         map.put(BigDecimal.class.getName(), new TypeWrapper(BigDecimal.class.getName(), BigDecimal.class.getSimpleName()));
         map.put(BigInteger.class.getName(), new TypeWrapper(BigInteger.class.getName(), BigInteger.class.getSimpleName()));
@@ -505,7 +683,6 @@ final class SourceCodeBuilder {
         map.put(MonthDay.class.getName(), new TypeWrapper(MonthDay.class.getName(), MonthDay.class.getSimpleName()));
         map.put(UUID.class.getName(), new TypeWrapper(UUID.class.getName(), UUID.class.getSimpleName()));
 
-        map.put("byte[]", new TypeWrapper("", "byte[]"));
 
         return Collections.unmodifiableMap(map);
     }
@@ -516,7 +693,7 @@ final class SourceCodeBuilder {
 
         private final String simpleName;
 
-        private TypeWrapper(String qualifiedName, String simpleName) {
+        private TypeWrapper(@Nullable String qualifiedName, String simpleName) {
             this.qualifiedName = qualifiedName;
             this.simpleName = simpleName;
         }

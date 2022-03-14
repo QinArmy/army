@@ -319,7 +319,7 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
         final int size = errorMsgList.size();
         for (int i = 0; i < size; i++) {
             builder.append('\n')
-                    .append(String.format("%d: ", i))
+                    .append(String.format("%d: ", i + 1))
                     .append(errorMsgList.get(i));
         }
         return new AnnotationMetaException(builder.toString());
