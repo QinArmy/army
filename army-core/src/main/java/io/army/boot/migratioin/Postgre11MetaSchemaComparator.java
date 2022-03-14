@@ -28,19 +28,19 @@ class Postgre11MetaSchemaComparator extends AbstractMetaSchemaComparator {
     }
 
     @Override
-    protected boolean needModifyPrecisionOrScale(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
+    protected boolean needModifyPrecisionOrScale(FieldMeta<?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
         return false;
     }
 
     @Override
-    protected boolean needModifyDefault(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
+    protected boolean needModifyDefault(FieldMeta<?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
         return false;
     }
 
     @Override
-    protected boolean synonyms(FieldMeta<?, ?> fieldMeta, String sqlTypeName) {
+    protected boolean synonyms(FieldMeta<?> fieldMeta, String sqlTypeName) {
 //        String upperCaseTypName = sqlTypeName.toUpperCase();
 //        SqlDataType fieldDataType = fieldMeta.mappingMeta().sqlDataType(database());
 //        boolean match = fieldDataType.typeName().equals(upperCaseTypName);

@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface ExecutorEnvironment {
 
-    Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap();
+    Map<FieldMeta<?>, FieldCodec> fieldCodecMap();
 
     ArmyEnvironment environment();
 

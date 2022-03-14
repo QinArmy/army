@@ -160,7 +160,7 @@ abstract class CriteriaContexts {
 
         Map<String, _TableBlock> aliasToBlock = new HashMap<>();
 
-        private Map<String, Map<FieldMeta<?, ?>, QualifiedField<?, ?>>> aliasToField;
+        private Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasToField;
 
         Map<String, Map<String, RefSelection>> aliasToRefSelection;
 
@@ -213,18 +213,18 @@ abstract class CriteriaContexts {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field) {
-            Map<String, Map<FieldMeta<?, ?>, QualifiedField<?, ?>>> aliasToField = this.aliasToField;
+        public final <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
+            Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasToField = this.aliasToField;
             if (aliasToField == null) {
                 aliasToField = new HashMap<>();
                 this.aliasToField = aliasToField;
             }
-            final Map<FieldMeta<?, ?>, QualifiedField<?, ?>> fieldMap;
+            final Map<FieldMeta<?>, QualifiedField<?>> fieldMap;
             fieldMap = aliasToField.computeIfAbsent(tableAlias, k -> new HashMap<>());
 
-            final QualifiedField<?, ?> qualifiedField;
+            final QualifiedField<?> qualifiedField;
             qualifiedField = fieldMap.computeIfAbsent(field, k -> new QualifiedFieldImpl<>(tableAlias, k));
-            return (QualifiedField<T, F>) qualifiedField;
+            return (QualifiedField<T>) qualifiedField;
         }
 
 
@@ -270,9 +270,9 @@ abstract class CriteriaContexts {
             this.aliasToBlock = null;
             aliasToBlock.clear();
 
-            final Map<String, Map<FieldMeta<?, ?>, QualifiedField<?, ?>>> aliasToField = this.aliasToField;
+            final Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasToField = this.aliasToField;
             if (aliasToField != null) {
-                for (Map<FieldMeta<?, ?>, QualifiedField<?, ?>> map : aliasToField.values()) {
+                for (Map<FieldMeta<?>, QualifiedField<?>> map : aliasToField.values()) {
                     map.clear();
                 }
                 this.aliasToField = null;
@@ -352,7 +352,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field) {
+        public <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
             throw valueInsertDontSupport();
         }
 
@@ -393,7 +393,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field) {
+        public <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
             throw singleDmlDontSupport();
         }
 
@@ -545,7 +545,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field) {
+        public <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
             throw unionQueryDontSupport();
         }
 

@@ -24,11 +24,11 @@ interface Migration {
 
         boolean modifyTableComment();
 
-        List<FieldMeta<?, ?>> columnsToAdd();
+        List<FieldMeta<?>> columnsToAdd();
 
-        List<FieldMeta<?, ?>> columnsToChange();
+        List<FieldMeta<?>> columnsToChange();
 
-        List<FieldMeta<?, ?>> columnToModifyComment();
+        List<FieldMeta<?>> columnToModifyComment();
 
         List<IndexMeta<?>> indexesToAdd();
 

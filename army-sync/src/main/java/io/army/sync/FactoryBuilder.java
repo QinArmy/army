@@ -91,7 +91,7 @@ public interface FactoryBuilder {
      * Optional.
      * </p>
      */
-    FactoryBuilder fieldGenerator(Map<FieldMeta<?, ?>, FieldGenerator> generatorMap);
+    FactoryBuilder fieldGenerator(Map<FieldMeta<?>, FieldGenerator> generatorMap);
 
 
     /**

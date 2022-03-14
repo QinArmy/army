@@ -13,7 +13,7 @@ import java.lang.reflect.Modifier;
 
 public abstract class GeneratorFactory {
 
-    public static FieldGenerator getGenerator(FieldMeta<?, ?> fieldMeta, GenericSessionFactory sessionFactory) {
+    public static FieldGenerator getGenerator(FieldMeta<?> fieldMeta, GenericSessionFactory sessionFactory) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
         _Assert.notNull(generatorMeta, "generatorMeta required");
 

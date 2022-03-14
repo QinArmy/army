@@ -8,7 +8,6 @@ import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.sharding.Route;
 import io.army.struct.CodeEnum;
 import io.army.util.AnnotationUtils;
 import io.army.util.StringUtils;
@@ -154,12 +153,12 @@ abstract class TableMetaUtils {
         return value;
     }
 
-    static <T extends IDomain> FieldMeta<T, ?> discriminator(final Map<String, FieldMeta<T, ?>> fieldMetaMap
+    static <T extends IDomain> FieldMeta<T> discriminator(final Map<String, FieldMeta<T>> fieldMetaMap
             , final Class<T> domainClass) {
         final Inheritance inheritance = domainClass.getAnnotation(Inheritance.class);
         assert inheritance != null;
         final String fieldName = inheritance.value();
-        final FieldMeta<T, ?> discriminator = fieldMetaMap.get(fieldName);
+        final FieldMeta<T> discriminator = fieldMetaMap.get(fieldName);
         if (discriminator == null) {
             throw notFoundDiscriminator(fieldName, domainClass);
         }
@@ -269,7 +268,7 @@ abstract class TableMetaUtils {
         // 4. create non-index filed meta and get index filed map
         final Map<String, Field> indexFieldToFieldMap = new HashMap<>();
         final Set<String> columnNameSet = new HashSet<>(); // for check column name duplication
-        final Map<String, FieldMeta<T, ?>> fieldMetaMap = new HashMap<>();
+        final Map<String, FieldMeta<T>> fieldMetaMap = new HashMap<>();
         for (Class<?> mappedClass : mappedClassList) {
             for (Field field : mappedClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers())) {
@@ -314,7 +313,7 @@ abstract class TableMetaUtils {
             if (indexMeta.isPrimaryKey()) {
                 createdPrimaryIndex = true;
             }
-            for (IndexFieldMeta<T, ?> fieldMeta : indexMeta.fieldList()) {
+            for (IndexFieldMeta<T> fieldMeta : indexMeta.fieldList()) {
                 if (fieldMetaMap.putIfAbsent(fieldMeta.fieldName(), fieldMeta) != null) {
                     throw fieldMetaDuplication(fieldMeta);
                 }
@@ -323,7 +322,7 @@ abstract class TableMetaUtils {
         if (!createdPrimaryIndex) {
             final IndexMeta<T> indexMeta;
             indexMeta = new DefaultIndexMeta<>(tableMeta, null, indexFieldToFieldMap, columnNameSet);
-            final IndexFieldMeta<T, ?> fieldMeta = indexMeta.fieldList().get(0);
+            final IndexFieldMeta<T> fieldMeta = indexMeta.fieldList().get(0);
             if (fieldMetaMap.putIfAbsent(fieldMeta.fieldName(), fieldMeta) != null) {
                 throw fieldMetaDuplication(fieldMeta);
             }
@@ -505,11 +504,11 @@ abstract class TableMetaUtils {
     }
 
 
-    static <T extends IDomain> List<FieldMeta<T, ?>> createGeneratorChain(
-            final Map<String, FieldMeta<T, ?>> propNameToFieldMeta) throws MetaException {
+    static <T extends IDomain> List<FieldMeta<T>> createGeneratorChain(
+            final Map<String, FieldMeta<T>> propNameToFieldMeta) throws MetaException {
 
-        final List<Pair<FieldMeta<T, ?>, Integer>> levelList = new ArrayList<>(4);
-        for (FieldMeta<T, ?> fieldMeta : propNameToFieldMeta.values()) {
+        final List<Pair<FieldMeta<T>, Integer>> levelList = new ArrayList<>(4);
+        for (FieldMeta<T> fieldMeta : propNameToFieldMeta.values()) {
             GeneratorMeta generatorMeta = fieldMeta.generator();
             if (generatorMeta == null) {
                 continue;
@@ -517,7 +516,7 @@ abstract class TableMetaUtils {
             String depend;
             depend = generatorMeta.params().get(PreFieldGenerator.DEPEND_FIELD_NAME);
             int level = 0;
-            for (FieldMeta<?, ?> dependField; StringUtils.hasText(depend); ) {
+            for (FieldMeta<?> dependField; StringUtils.hasText(depend); ) {
                 dependField = propNameToFieldMeta.get(depend);
                 if (dependField == null) {
                     String m = String.format("Not found dependent field[%s] in domain[%s]"
@@ -534,7 +533,7 @@ abstract class TableMetaUtils {
             levelList.add(new Pair<>(fieldMeta, level));
         }
 
-        final List<FieldMeta<T, ?>> generatorChain;
+        final List<FieldMeta<T>> generatorChain;
         switch (levelList.size()) {
             case 0:
                 generatorChain = Collections.emptyList();
@@ -544,8 +543,8 @@ abstract class TableMetaUtils {
                 break;
             default: {
                 levelList.sort(Comparator.comparingInt(Pair::getSecond));
-                final List<FieldMeta<T, ?>> list = new ArrayList<>(levelList.size());
-                for (Pair<FieldMeta<T, ?>, Integer> f : levelList) {
+                final List<FieldMeta<T>> list = new ArrayList<>(levelList.size());
+                for (Pair<FieldMeta<T>, Integer> f : levelList) {
                     list.add(f.getFirst());
                 }
                 generatorChain = Collections.unmodifiableList(list);
@@ -567,17 +566,17 @@ abstract class TableMetaUtils {
      * @param <T>              entity java class
      * @return value indexMap's {@link IndexFieldMeta}
      */
-    private static <T extends IDomain> List<IndexFieldMeta<T, ?>> createIndexFieldMetaList(
+    private static <T extends IDomain> List<IndexFieldMeta<T>> createIndexFieldMetaList(
             final String[] indexColumns,
             final IndexMeta<T> indexMeta,
             final Map<String, Field> nameToFieldMap,
             final Set<String> createdColumnSet) {
 
         final TableMeta<T> tableMeta = indexMeta.table();
-        List<IndexFieldMeta<T, ?>> list = new ArrayList<>(indexColumns.length);
+        List<IndexFieldMeta<T>> list = new ArrayList<>(indexColumns.length);
 
         StringTokenizer tokenizer;
-        IndexFieldMeta<T, ?> indexFieldMeta;
+        IndexFieldMeta<T> indexFieldMeta;
         Boolean columnAsc;
         for (String indexColumnDefinition : indexColumns) {
             tokenizer = new StringTokenizer(indexColumnDefinition.trim(), " ", false);
@@ -698,7 +697,7 @@ abstract class TableMetaUtils {
     /**
      * @see #createFieldMetaPair(TableMeta)
      */
-    private static IllegalStateException fieldMetaDuplication(IndexFieldMeta<?, ?> fieldMeta) {
+    private static IllegalStateException fieldMetaDuplication(IndexFieldMeta<?> fieldMeta) {
         String m = String.format("Domain[%s] filed meta[%s] duplication.",
                 fieldMeta.tableMeta().javaType().getName(), fieldMeta.fieldName());
         throw new MetaException(m);
@@ -719,7 +718,7 @@ abstract class TableMetaUtils {
 
         private final String type;
 
-        private final List<IndexFieldMeta<T, ?>> fieldList;
+        private final List<IndexFieldMeta<T>> fieldList;
 
         private final boolean primaryKey;
 
@@ -737,7 +736,7 @@ abstract class TableMetaUtils {
                 this.type = "";
                 primaryKey = true;
                 final Field field = Objects.requireNonNull(columnToFieldMap.get(_MetaBridge.ID));
-                final IndexFieldMeta<T, ?> idFieldMeta;
+                final IndexFieldMeta<T> idFieldMeta;
                 idFieldMeta = DefaultFieldMeta.createIndexFieldMeta(table, field, this, 1, null);
                 this.fieldList = Collections.singletonList(idFieldMeta);
             } else {
@@ -761,7 +760,7 @@ abstract class TableMetaUtils {
                     .append(this.table.javaType().getName())
                     .append("](");
             int index = 0;
-            for (IndexFieldMeta<T, ?> fieldMeta : fieldList) {
+            for (IndexFieldMeta<T> fieldMeta : fieldList) {
                 if (index > 0) {
                     builder.append(',');
                 }
@@ -784,7 +783,7 @@ abstract class TableMetaUtils {
         }
 
         @Override
-        public List<IndexFieldMeta<T, ?>> fieldList() {
+        public List<IndexFieldMeta<T>> fieldList() {
             return this.fieldList;
         }
 
@@ -822,9 +821,9 @@ abstract class TableMetaUtils {
 
         final List<IndexMeta<T>> indexMetaList;
 
-        final Map<String, FieldMeta<T, ?>> fieldMap;
+        final Map<String, FieldMeta<T>> fieldMap;
 
-        private FieldMetaPair(List<IndexMeta<T>> indexMetaList, Map<String, FieldMeta<T, ?>> fieldMap) {
+        private FieldMetaPair(List<IndexMeta<T>> indexMetaList, Map<String, FieldMeta<T>> fieldMap) {
             if (indexMetaList.size() == 1) {
                 this.indexMetaList = Collections.singletonList(indexMetaList.get(0));
             } else {
@@ -836,51 +835,7 @@ abstract class TableMetaUtils {
     }
 
 
-    @Deprecated
-    static class FieldBean<T extends IDomain> {
 
 
-        private final Map<String, FieldMeta<T, ?>> propNameToFieldMeta;
-
-        private final List<IndexMeta<T>> indexMetaList;
-
-        private final FieldMeta<? super T, ?> discriminator;
-
-        private FieldBean(Map<String, FieldMeta<T, ?>> propNameToFieldMeta, List<IndexMeta<T>> indexMetaList,
-                          @Nullable FieldMeta<? super T, ?> discriminator) {
-            this.propNameToFieldMeta = propNameToFieldMeta;
-            this.indexMetaList = indexMetaList;
-            this.discriminator = discriminator;
-        }
-
-        Map<String, FieldMeta<T, ?>> getPropNameToFieldMeta() {
-            return propNameToFieldMeta;
-        }
-
-        List<IndexMeta<T>> getIndexMetaList() {
-            return indexMetaList;
-        }
-
-        @Nullable
-        FieldMeta<? super T, ?> getDiscriminator() {
-            return discriminator;
-        }
-    }
-
-    static final class RouteMeta {
-
-        final List<FieldMeta<?, ?>> databaseRouteFieldList;
-
-        final List<FieldMeta<?, ?>> tableRouteFieldList;
-
-        final Class<? extends Route> routeClass;
-
-        RouteMeta(List<FieldMeta<?, ?>> databaseRouteFieldList, List<FieldMeta<?, ?>> tableRouteFieldList
-                , @Nullable Class<? extends Route> routeClass) {
-            this.databaseRouteFieldList = databaseRouteFieldList;
-            this.tableRouteFieldList = tableRouteFieldList;
-            this.routeClass = routeClass;
-        }
-    }
 
 }

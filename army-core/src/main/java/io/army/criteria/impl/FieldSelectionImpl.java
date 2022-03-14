@@ -18,7 +18,7 @@ import java.util.Objects;
  */
 final class FieldSelectionImpl implements FieldSelection, _Selection {
 
-    static FieldSelection create(GenericField<?, ?> field, String alias) {
+    static FieldSelection create(GenericField<?> field, String alias) {
         final FieldSelection selection;
         if (field.fieldName().equals(alias)) {
             selection = field;
@@ -28,33 +28,33 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         return selection;
     }
 
-    private final GenericField<?, ?> field;
+    private final GenericField<?> field;
 
     private final String alias;
 
-    private FieldSelectionImpl(GenericField<?, ?> field, String alias) {
+    private FieldSelectionImpl(GenericField<?> field, String alias) {
         this.field = field;
         this.alias = alias;
     }
 
     @Override
     public ParamMeta paramMeta() {
-        final GenericField<?, ?> field = this.field;
-        return field instanceof FieldMeta ? (FieldMeta<?, ?>) field : field.paramMeta();
+        final GenericField<?> field = this.field;
+        return field instanceof FieldMeta ? (FieldMeta<?>) field : field.paramMeta();
     }
 
 
     @Override
-    public FieldMeta<?, ?> fieldMeta() {
-        final GenericField<?, ?> field = this.field;
-        return field instanceof FieldMeta ? (FieldMeta<?, ?>) field : field.fieldMeta();
+    public FieldMeta<?> fieldMeta() {
+        final GenericField<?> field = this.field;
+        return field instanceof FieldMeta ? (FieldMeta<?>) field : field.fieldMeta();
     }
 
     @Override
     public void appendSelection(final _SqlContext context) {
-        final GenericField<?, ?> field = this.field;
+        final GenericField<?> field = this.field;
         if (field instanceof FieldMeta) {
-            context.appendField((FieldMeta<?, ?>) field);
+            context.appendField((FieldMeta<?>) field);
         } else {
             ((_Expression) field).appendSql(context);
         }
@@ -96,12 +96,12 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         final StringBuilder builder = new StringBuilder()
                 .append(Constant.SPACE);
 
-        final GenericField<?, ?> field = this.field;
+        final GenericField<?> field = this.field;
 
         if (field instanceof FieldMeta) {
             builder.append(field.columnName());
         } else if (field instanceof QualifiedField) {
-            final QualifiedField<?, ?> qualifiedField = (QualifiedField<?, ?>) field;
+            final QualifiedField<?> qualifiedField = (QualifiedField<?>) field;
             builder.append(qualifiedField.tableAlias())
                     .append(Constant.POINT)
                     .append(field.columnName());

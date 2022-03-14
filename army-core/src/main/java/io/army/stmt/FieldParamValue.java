@@ -9,7 +9,7 @@ import io.army.meta.FieldMeta;
 public interface FieldParamValue extends ParamValue {
 
     @Override
-    FieldMeta<?, ?> paramMeta();
+    FieldMeta<?> paramMeta();
 
     /**
      * @throws UnsupportedOperationException always throw.

@@ -65,7 +65,7 @@ class ProxySessionImpl extends AbstractSyncSession implements ProxySession {
     }
 
     @Override
-    public <R extends IDomain, F> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R, F> field, F value
+    public <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
             , Visible visible) {
         return this.currentSession().getByUnique(table, field, value, visible);
     }

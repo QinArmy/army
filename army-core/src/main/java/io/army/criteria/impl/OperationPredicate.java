@@ -75,11 +75,11 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
             match = false;
         } else if (predicate.left instanceof GenericField
-                && _MetaBridge.VERSION.equals(((GenericField<?, ?>) predicate.left).fieldName())) {
+                && _MetaBridge.VERSION.equals(((GenericField<?>) predicate.left).fieldName())) {
             match = predicate.right instanceof ValueExpression
                     || predicate.right instanceof NamedParam;
         } else if (predicate.right instanceof GenericField
-                && _MetaBridge.VERSION.equals(((GenericField<?, ?>) predicate.right).fieldName())) {
+                && _MetaBridge.VERSION.equals(((GenericField<?>) predicate.right).fieldName())) {
             match = predicate.left instanceof ValueExpression
                     || predicate.left instanceof NamedParam;
 
@@ -97,11 +97,11 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
             match = false;
         } else if (!(predicate.left instanceof GenericField && predicate.right instanceof GenericField)) {
             match = false;
-        } else if (_MetaBridge.ID.equals(((GenericField<?, ?>) predicate.left).fieldName())
-                && _MetaBridge.ID.equals(((GenericField<?, ?>) predicate.right).fieldName())) {
+        } else if (_MetaBridge.ID.equals(((GenericField<?>) predicate.left).fieldName())
+                && _MetaBridge.ID.equals(((GenericField<?>) predicate.right).fieldName())) {
             final TableMeta<?> leftTable, rightTable;
-            leftTable = ((GenericField<?, ?>) predicate.left).tableMeta();
-            rightTable = ((GenericField<?, ?>) predicate.right).tableMeta();
+            leftTable = ((GenericField<?>) predicate.left).tableMeta();
+            rightTable = ((GenericField<?>) predicate.right).tableMeta();
             if (leftTable instanceof ChildTableMeta) {
                 match = ((ChildTableMeta<?>) leftTable).parentMeta() == rightTable;
             } else if (rightTable instanceof ChildTableMeta) {

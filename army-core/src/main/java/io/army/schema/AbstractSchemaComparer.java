@@ -60,12 +60,12 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
     /**
      * @return true : sql type definition is different.
      */
-    abstract boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?, ?> field, SqlType sqlType);
+    abstract boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
 
     /**
      * @return true : default expression definition is different.
      */
-    abstract boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?, ?> field, SqlType sqlType);
+    abstract boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
 
     /**
      * @return true : support column comment.
@@ -87,7 +87,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
         _ColumnInfo column;
         SqlType sqlType;
         Boolean nullable;
-        for (FieldMeta<?, ?> field : table.fieldList()) {
+        for (FieldMeta<?> field : table.fieldList()) {
             column = columnMap.get(field.columnName());
             if (column == null) {
                 tableBuilder.appendNewColumn(field);
@@ -119,7 +119,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
         final Map<String, _IndexInfo> indexMap = tableInfo.indexMap();
         _IndexInfo indexInfo;
         String indexName;
-        List<IndexFieldMeta<T, ?>> indexFieldList;
+        List<IndexFieldMeta<T>> indexFieldList;
         List<String> columnList;
         List<Boolean> ascList;
         for (IndexMeta<T> index : table.indexList()) {
@@ -146,7 +146,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
             }
             ascList = indexInfo.ascList();
             for (int i = 0; i < fieldSize; i++) {
-                IndexFieldMeta<T, ?> field = indexFieldList.get(i);
+                IndexFieldMeta<T> field = indexFieldList.get(i);
                 if (!columnList.contains(field.columnName())) {
                     tableBuilder.appendChangeIndex(indexName);
                     break;

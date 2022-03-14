@@ -14,9 +14,9 @@ public interface DomainAdvice {
 
     void afterInsert(TableMeta<?> tableMeta, ReadWrapper wrapper, ProxySession session);
 
-    void beforeUpdate(TableMeta<?> tableMeta, List<FieldMeta<?, ?>> targetFieldList, ProxySession session);
+    void beforeUpdate(TableMeta<?> tableMeta, List<FieldMeta<?>> targetFieldList, ProxySession session);
 
-    void afterUpdate(TableMeta<?> tableMeta, List<FieldMeta<?, ?>> targetFieldList, ProxySession session);
+    void afterUpdate(TableMeta<?> tableMeta, List<FieldMeta<?>> targetFieldList, ProxySession session);
 
     void beforeDelete(TableMeta<?> tableMeta, ProxySession session);
 

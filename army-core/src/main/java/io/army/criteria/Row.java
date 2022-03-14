@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface Row extends SetLeftItem {
 
-    List<GenericField<?, ?>> field();
+    List<GenericField<?>> field();
 
 }

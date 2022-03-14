@@ -46,10 +46,10 @@ public interface SyncSession extends GenericSession {
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R extends IDomain, F> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R, F> field, F value);
+    <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value);
 
     @Nullable
-    <R extends IDomain, F> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R, F> field, F value, Visible visible);
+    <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.

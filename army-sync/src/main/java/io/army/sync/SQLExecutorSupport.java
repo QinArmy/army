@@ -409,7 +409,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 //                    , mappingType.javaType().getName());
 //        }
 //        if (selection instanceof FieldSelection) {
-//            FieldMeta<?, ?> fieldMeta = ((FieldSelection) selection).fieldMeta();
+//            FieldMeta<?> fieldMeta = ((FieldSelection) selection).fieldMeta();
 //            if (fieldMeta.codec()) {
 //                columnResult = doDecodeResult(statementType, fieldMeta, columnResult);
 //            }
@@ -433,7 +433,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
 //                st.setNull(i + 1, paramMeta.mappingMeta().jdbcType().getVendorTypeNumber());
 //            } else {
 //                if (paramMeta instanceof FieldMeta) {
-//                    FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
+//                    FieldMeta<?> fieldMeta = (FieldMeta<?>) paramMeta;
 //                    if (fieldMeta.codec()) {
 //                        value = doEncodeParam(statementType, fieldMeta, value);
 //                    }

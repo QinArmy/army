@@ -32,7 +32,7 @@ public interface GenericSessionFactory {
     <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
 
     @Nullable
-    FieldGenerator fieldGenerator(FieldMeta<?, ?> fieldMeta);
+    FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta);
 
     boolean supportSessionCache();
 

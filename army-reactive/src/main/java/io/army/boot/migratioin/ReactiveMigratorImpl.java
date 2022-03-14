@@ -113,11 +113,11 @@ final class ReactiveMigratorImpl implements ReactiveMigrator {
 //
 //    private static void appendAddColumns(Migration.MemberMigration migration, String actualTableName
 //            , StringBuilder builder) {
-//        List<FieldMeta<?, ?>> fieldMetaList = migration.columnsToAdd();
+//        List<FieldMeta<?>> fieldMetaList = migration.columnsToAdd();
 //        builder.append("\nmiss table[")
 //                .append(actualTableName)
 //                .append("] column(s):");
-//        for (FieldMeta<?, ?> fieldMeta : fieldMetaList) {
+//        for (FieldMeta<?> fieldMeta : fieldMetaList) {
 //            builder.append("\n  ")
 //                    .append(fieldMeta.fieldName());
 //
@@ -126,11 +126,11 @@ final class ReactiveMigratorImpl implements ReactiveMigrator {
 //
 //    private static void appendChangeColumns(Migration.MemberMigration migration, String actualTableName
 //            , StringBuilder builder) {
-//        List<FieldMeta<?, ?>> fieldMetaList = migration.columnsToChange();
+//        List<FieldMeta<?>> fieldMetaList = migration.columnsToChange();
 //        builder.append("\nneed change table[")
 //                .append(actualTableName)
 //                .append("] column(s):");
-//        for (FieldMeta<?, ?> fieldMeta : fieldMetaList) {
+//        for (FieldMeta<?> fieldMeta : fieldMetaList) {
 //            builder.append("\n  ")
 //                    .append(fieldMeta.fieldName());
 //

@@ -8,7 +8,7 @@ final class FieldResultImpl implements _FieldResult {
         return new FieldResultBuilder();
     }
 
-    private final FieldMeta<?, ?> field;
+    private final FieldMeta<?> field;
 
     private final boolean sqlType;
 
@@ -28,7 +28,7 @@ final class FieldResultImpl implements _FieldResult {
     }
 
     @Override
-    public FieldMeta<?, ?> field() {
+    public FieldMeta<?> field() {
         return this.field;
     }
 
@@ -67,7 +67,7 @@ final class FieldResultImpl implements _FieldResult {
 
     private static final class FieldResultBuilder implements _FieldResult.Builder {
 
-        private FieldMeta<?, ?> field;
+        private FieldMeta<?> field;
 
         private boolean sqlType;
 
@@ -79,7 +79,7 @@ final class FieldResultImpl implements _FieldResult {
 
 
         @Override
-        public Builder field(FieldMeta<?, ?> field) {
+        public Builder field(FieldMeta<?> field) {
             this.field = field;
             return this;
         }

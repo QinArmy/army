@@ -8,7 +8,7 @@ public interface DatabaseRoute extends Route {
     boolean containsDatabase(int databaseIndex);
 
     @Deprecated
-    byte database(FieldMeta<?, ?> fieldMeta, Object fieldValue);
+    byte database(FieldMeta<?> fieldMeta, Object fieldValue);
 
     byte database(Object fieldValue);
 

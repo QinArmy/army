@@ -15,7 +15,7 @@ public interface DomainUpdateAdvice {
 
     boolean hasUpdate();
 
-    Set<FieldMeta<?, ?>> targetFieldSet();
+    Set<FieldMeta<?>> targetFieldSet();
 
     List<_Predicate> predicateList();
 

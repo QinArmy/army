@@ -14,7 +14,7 @@ public abstract class Validates {
     }
 
 
-    public static String standardInsert(TableMeta<?> table, List<FieldMeta<?, ?>> fieldList) {
+    public static String standardInsert(TableMeta<?> table, List<FieldMeta<?>> fieldList) {
         final StringBuilder builder = new StringBuilder();
         builder.append(Constant.INSERT_INTO)
                 .append(Constant.SPACE)
@@ -26,7 +26,7 @@ public abstract class Validates {
             if (i > 0) {
                 builder.append(Constant.SPACE_COMMA);
             }
-            final FieldMeta<?, ?> field = fieldList.get(i);
+            final FieldMeta<?> field = fieldList.get(i);
             builder.append(Constant.SPACE)
                     .append(field.columnName());
         }

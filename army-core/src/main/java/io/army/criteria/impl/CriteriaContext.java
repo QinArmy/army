@@ -13,7 +13,7 @@ interface CriteriaContext {
 
     void selectList(List<? extends SelectItem> selectPartList);
 
-    <T extends IDomain, F> QualifiedField<T, F> qualifiedField(String tableAlias, FieldMeta<T, F> field);
+    <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field);
 
      DerivedField ref(String subQueryAlias, String derivedFieldName);
 

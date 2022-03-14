@@ -100,7 +100,7 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
 
     @Override
-    public <R extends IDomain, F> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R, F> field, F value
+    public <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
             , final Visible visible) {
         return null;
     }

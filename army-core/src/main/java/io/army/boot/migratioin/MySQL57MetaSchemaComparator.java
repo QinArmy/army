@@ -145,7 +145,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     }
 
     @Override
-    protected boolean needModifyPrecisionOrScale(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
+    protected boolean needModifyPrecisionOrScale(FieldMeta<?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
         // MySQLDataType sqlDataType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
 //        boolean alter = false;
@@ -167,7 +167,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     }
 
     @Override
-    protected boolean needModifyDefault(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
+    protected boolean needModifyDefault(FieldMeta<?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException {
         //MySQLDataType mysqlType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
 //        if (MYSQL57_NO_DEFAULT_TYPE_SET.contains(mysqlType)) {
@@ -200,7 +200,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
     }
 
     @Override
-    protected boolean synonyms(FieldMeta<?, ?> fieldMeta, String sqlTypeName) {
+    protected boolean synonyms(FieldMeta<?> fieldMeta, String sqlTypeName) {
 //        String upperCaseTypName = sqlTypeName.toUpperCase();
 //        SqlDataType fieldDataType = fieldMeta.mappingMeta().sqlDataType(database());
 //        boolean match = fieldDataType.typeName().equals(upperCaseTypName);
@@ -232,7 +232,7 @@ class MySQL57MetaSchemaComparator extends AbstractMetaSchemaComparator {
         return match ? defaultValue.substring(1, defaultValue.length() - 1) : null;
     }
 
-    final boolean equalsCurrentTimestamp(FieldMeta<?, ?> fieldMeta, String defaultValue) {
+    final boolean equalsCurrentTimestamp(FieldMeta<?> fieldMeta, String defaultValue) {
         String upperCaseDefault = defaultValue.toUpperCase();
         boolean match = false;
         if (fieldMeta.precision() < 1) {

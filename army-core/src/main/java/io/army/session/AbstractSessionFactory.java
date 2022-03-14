@@ -38,7 +38,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     protected final Map<Class<?>, TableMeta<?>> tableMap;
 
-    protected final Map<FieldMeta<?, ?>, FieldGenerator> fieldGeneratorMap;
+    protected final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
 
     protected final Function<ArmyException, RuntimeException> exceptionFunction;
 
@@ -104,7 +104,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     @Nullable
     @Override
-    public FieldGenerator fieldGenerator(FieldMeta<?, ?> fieldMeta) {
+    public FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta) {
         return this.fieldGeneratorMap.get(fieldMeta);
     }
 

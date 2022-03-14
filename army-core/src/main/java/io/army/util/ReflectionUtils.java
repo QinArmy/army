@@ -9,7 +9,7 @@ public abstract class ReflectionUtils extends org.springframework.util.Reflectio
 
 
     @Nullable
-    public static Method findSetterMethod(FieldMeta<?, ?> fieldMeta) {
+    public static Method findSetterMethod(FieldMeta<?> fieldMeta) {
         return findMethod(fieldMeta.tableMeta().javaType()
                 , setterMethodName(fieldMeta.fieldName())
                 , fieldMeta.javaType());

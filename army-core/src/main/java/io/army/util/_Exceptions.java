@@ -68,7 +68,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownColumn(@Nullable String tableAlias, FieldMeta<?, ?> fieldMeta) {
+    public static CriteriaException unknownColumn(@Nullable String tableAlias, FieldMeta<?> fieldMeta) {
         final String m;
         if (tableAlias == null) {
             m = String.format("Unknown column %s,%s", fieldMeta.columnName(), fieldMeta);
@@ -78,15 +78,15 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownColumn(QualifiedField<?, ?> field) {
+    public static CriteriaException unknownColumn(QualifiedField<?> field) {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
-    public static CriteriaException unknownField(FieldMeta<?, ?> fieldMeta) {
+    public static CriteriaException unknownField(FieldMeta<?> fieldMeta) {
         return new CriteriaException(String.format("Unknown %s", fieldMeta));
     }
 
-    public static CriteriaException notMatchInsertField(_ValuesInsert insert, FieldMeta<?, ?> fieldMeta) {
+    public static CriteriaException notMatchInsertField(_ValuesInsert insert, FieldMeta<?> fieldMeta) {
         String m = String.format("Not match %s for %s in Statement %s", fieldMeta, insert.table(), insert);
         return new CriteriaException(m);
     }
@@ -129,7 +129,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new IllegalStateException("Field and value expression count not match.");
     }
 
-    public static CriteriaException immutableField(FieldMeta<?, ?> field) {
+    public static CriteriaException immutableField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s is immutable.", field));
     }
 
@@ -137,26 +137,26 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is immutable.", table));
     }
 
-    public static CriteriaException armyManageField(FieldMeta<?, ?> field) {
+    public static CriteriaException armyManageField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s is managed by Army.", field));
     }
 
-    public static CriteriaException visibleField(Visible visible, GenericField<?, ?> field) {
+    public static CriteriaException visibleField(Visible visible, GenericField<?> field) {
         String m = String.format("%s mode is %s,%s couldn't present in non-selection expression."
                 , Visible.class.getSimpleName(), visible, field);
         return new CriteriaException(m);
     }
 
-    public static CriteriaException insertExpDontSupportField(FieldMeta<?, ?> field) {
+    public static CriteriaException insertExpDontSupportField(FieldMeta<?> field) {
         String m = String.format("%s isn't supported by insert statement common expression.", field);
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonNullField(FieldMeta<?, ?> field) {
+    public static CriteriaException nonNullField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
 
-    public static CriteriaException nonNullExpression(FieldMeta<?, ?> field) {
+    public static CriteriaException nonNullExpression(FieldMeta<?> field) {
         return new CriteriaException(String.format("Value expression must be non-null for %s", field));
     }
 
@@ -166,7 +166,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonInsertableField(FieldMeta<?, ?> field) {
+    public static CriteriaException nonInsertableField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 
@@ -229,7 +229,7 @@ public abstract class _Exceptions extends ExceptionUtils {
                 , SetRightItem.class.getName(), value));
     }
 
-    public static CriteriaException selfJoinNonQualifiedField(GenericField<?, ?> field) {
+    public static CriteriaException selfJoinNonQualifiedField(GenericField<?> field) {
         return new CriteriaException(String.format("%s self join but %s don't use %s."
                 , field.tableMeta(), field, QualifiedField.class.getName()));
     }
@@ -393,7 +393,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static MetaException autoIdErrorJavaType(PrimaryFieldMeta<?, ?> field) {
+    public static MetaException autoIdErrorJavaType(PrimaryFieldMeta<?> field) {
         String m;
         m = String.format("%s don't support java type[%s],%s", PostFieldGenerator.class.getName()
                 , field.javaType().getName(), field);

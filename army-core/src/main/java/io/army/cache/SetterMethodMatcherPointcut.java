@@ -17,17 +17,17 @@ final class SetterMethodMatcherPointcut extends StaticMethodMatcherPointcut
         implements ClassFilter, DomainSetterPointcut {
 
     static SetterMethodMatcherPointcut build(TableMeta<?> tableMeta) {
-        Map<Method, FieldMeta<?, ?>> setterFieldMap = new HashMap<>();
+        Map<Method, FieldMeta<?>> setterFieldMap = new HashMap<>();
 
         if (tableMeta instanceof ChildTableMeta) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
-            for (FieldMeta<?, ?> fieldMeta : childMeta.parentMeta().fieldList()) {
+            for (FieldMeta<?> fieldMeta : childMeta.parentMeta().fieldList()) {
                 setterFieldMap.put(ReflectionUtils.findSetterMethod(fieldMeta), fieldMeta);
             }
         }
 
-        final FieldMeta<?, ?> idMeta = tableMeta.id();
-        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldList()) {
+        final FieldMeta<?> idMeta = tableMeta.id();
+        for (FieldMeta<?> fieldMeta : tableMeta.fieldList()) {
             Method method = ReflectionUtils.findSetterMethod(fieldMeta);
             if (fieldMeta == idMeta) {
                 setterFieldMap.putIfAbsent(method, fieldMeta);
@@ -42,15 +42,15 @@ final class SetterMethodMatcherPointcut extends StaticMethodMatcherPointcut
 
     private final TableMeta<?> tableMeta;
 
-    private final Map<Method, FieldMeta<?, ?>> setterFieldMap;
+    private final Map<Method, FieldMeta<?>> setterFieldMap;
 
-    SetterMethodMatcherPointcut(TableMeta<?> tableMeta, Map<Method, FieldMeta<?, ?>> setterFieldMap) {
+    SetterMethodMatcherPointcut(TableMeta<?> tableMeta, Map<Method, FieldMeta<?>> setterFieldMap) {
         this.tableMeta = tableMeta;
         this.setterFieldMap = Collections.unmodifiableMap(setterFieldMap);
     }
 
     @Override
-    public Map<Method, FieldMeta<?, ?>> setterFieldMap() {
+    public Map<Method, FieldMeta<?>> setterFieldMap() {
         return this.setterFieldMap;
     }
 

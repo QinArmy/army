@@ -279,7 +279,7 @@ abstract class SQLExecutorSupport extends GenericSQLExecutorSupport {
                 //  st.bindNull(i + 1, sqlDataType.typeName());
             } else {
                 if (paramMeta instanceof FieldMeta) {
-                    FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
+                    FieldMeta<?> fieldMeta = (FieldMeta<?>) paramMeta;
                     if (fieldMeta.codec()) {
                         value = doEncodeParam(statementType, fieldMeta, value);
                     }

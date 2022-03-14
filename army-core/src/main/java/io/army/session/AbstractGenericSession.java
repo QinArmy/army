@@ -31,7 +31,7 @@ public abstract class AbstractGenericSession implements GenericSession {
 
         private final String tableAlias;
 
-        private List<FieldMeta<?, ?>> targetFieldList;
+        private List<FieldMeta<?>> targetFieldList;
 
         private List<_Expression> valueExpList;
 
@@ -39,7 +39,7 @@ public abstract class AbstractGenericSession implements GenericSession {
 
         private boolean prepared;
 
-        private CacheDomainUpdate(DomainUpdateAdvice advice, List<FieldMeta<?, ?>> targetFieldList
+        private CacheDomainUpdate(DomainUpdateAdvice advice, List<FieldMeta<?>> targetFieldList
                 , List<_Expression> valueExpList) {
 
             this.tableMeta = advice.readonlyWrapper().tableMeta();
@@ -69,7 +69,7 @@ public abstract class AbstractGenericSession implements GenericSession {
         }
 
         @Override
-        public List<FieldMeta<?, ?>> fieldList() {
+        public List<FieldMeta<?>> fieldList() {
             return this.targetFieldList;
         }
 

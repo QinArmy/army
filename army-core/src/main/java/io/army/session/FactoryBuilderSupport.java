@@ -32,7 +32,7 @@ public abstract class FactoryBuilderSupport {
     protected SchemaMeta schemaMeta = _SchemaMetaFactory.getSchema("", "");
     protected Function<ArmyException, RuntimeException> exceptionFunction;
 
-    protected Map<FieldMeta<?, ?>, FieldGenerator> generatorMap = Collections.emptyMap();
+    protected Map<FieldMeta<?>, FieldGenerator> generatorMap = Collections.emptyMap();
 
     protected Collection<FactoryAdvice> factoryAdvices;
 

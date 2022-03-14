@@ -25,7 +25,7 @@ abstract class AbstractSyncSession extends AbstractGenericSession implements Syn
 
     @Nullable
     @Override
-    public final <R extends IDomain, F> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R, F> field, F value) {
+    public final <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value) {
         return this.getByUnique(table, field, value, Visible.ONLY_VISIBLE);
     }
 

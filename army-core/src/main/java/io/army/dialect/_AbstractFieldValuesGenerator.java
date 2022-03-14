@@ -47,7 +47,7 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenera
             createDateTimeValue(domain.getField(_MetaBridge.UPDATE_TIME), now, wrapper);
         }
 
-        FieldMeta<?, ?> field;
+        FieldMeta<?> field;
         if (domain.containField(_MetaBridge.VERSION)) {
             field = domain.getField(_MetaBridge.VERSION);
             Class<?> javaType = field.javaType();
@@ -68,7 +68,7 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenera
     }
 
 
-    private void createDateTimeValue(FieldMeta<?, ?> field, OffsetDateTime now, ObjectWrapper wrapper) {
+    private void createDateTimeValue(FieldMeta<?> field, OffsetDateTime now, ObjectWrapper wrapper) {
         final Class<?> javaType = field.javaType();
         if (javaType == LocalDateTime.class) {
             wrapper.set(field.fieldName(), now.withOffsetSameInstant(TimeUtils.systemZoneOffset()).toLocalDateTime());
@@ -92,7 +92,7 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenera
         } else {
             throw new IllegalArgumentException("table error");
         }
-        final FieldMeta<?, E> discriminator;
+        final FieldMeta<?> discriminator;
         discriminator = domain.discriminator();
         final CodeEnum codeEnum;
         codeEnum = CodeEnum.resolve(discriminator.javaType(), table.discriminatorValue());
@@ -128,13 +128,13 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenera
             throw nullValueErrorForMigration(domain.getField(_MetaBridge.VISIBLE));
         }
 
-        for (FieldMeta<?, ?> field : table.generatorChain()) {
+        for (FieldMeta<?> field : table.generatorChain()) {
             if (wrapper.get(field.fieldName()) == null) {
                 throw nullValueErrorForMigration(field);
             }
         }
         if (table != domain) {
-            for (FieldMeta<?, ?> field : domain.generatorChain()) {
+            for (FieldMeta<?> field : domain.generatorChain()) {
                 if (wrapper.get(field.fieldName()) == null) {
                     throw nullValueErrorForMigration(field);
                 }
@@ -145,7 +145,7 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenera
     }// checkArmyManagerFields
 
 
-    private static CriteriaException nullValueErrorForMigration(FieldMeta<?, ?> field) {
+    private static CriteriaException nullValueErrorForMigration(FieldMeta<?> field) {
         String m = String.format("%s couldn't be null in migration mode.", field);
         return new CriteriaException(m);
     }

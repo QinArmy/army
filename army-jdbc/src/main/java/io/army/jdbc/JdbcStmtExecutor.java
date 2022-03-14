@@ -32,7 +32,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
     ServerMeta serverMeta;
 
-    Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap;
+    Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
     JdbcStmtExecutor(JdbcExecutorFactory factory, Connection conn) {
         this.conn = conn;
@@ -232,7 +232,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
             }
             paramMeta = paramValue.paramMeta();
             if (paramMeta instanceof FieldMeta) {
-                final FieldMeta<?, ?> fieldMeta = (FieldMeta<?, ?>) paramMeta;
+                final FieldMeta<?> fieldMeta = (FieldMeta<?>) paramMeta;
                 if (stmt instanceof ChildInsertStmt && fieldMeta.primary()
                         && !(paramMeta instanceof AutoIdParamValue)) {
                     throw childInsertStmtIdParamError();
@@ -250,7 +250,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     }
 
 
-    private Object encodeField(final FieldMeta<?, ?> fieldMeta, Object nonNull) {
+    private Object encodeField(final FieldMeta<?> fieldMeta, Object nonNull) {
         final FieldCodec fieldCodec;
         fieldCodec = this.fieldCodecMap.get(fieldMeta);
         if (fieldCodec == null) {
@@ -296,7 +296,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         int index = 0;
         try (ResultSet resultSet = idResultSet) {
             final String primaryKeyName = stmt.primaryKeyName();
-            final PrimaryFieldMeta<?, ?> idField = stmt.idMeta();
+            final PrimaryFieldMeta<?> idField = stmt.idMeta();
             final Class<?> idJavaType = idField.javaType();
             ObjectWrapper wrapper;
             for (; resultSet.next(); index++) {
@@ -340,12 +340,12 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     }
 
     private static FieldCodecReturnException createCodecReturnTypeException(FieldCodec fieldCodec
-            , FieldMeta<?, ?> fieldMeta) {
+            , FieldMeta<?> fieldMeta) {
         return new FieldCodecReturnException("FieldCodec[%s] return  error,FieldMeta[%s],"
                 , fieldCodec, fieldMeta);
     }
 
-    private static MetaException createNoFieldCodecException(FieldMeta<?, ?> fieldMeta) {
+    private static MetaException createNoFieldCodecException(FieldMeta<?> fieldMeta) {
         String m = String.format("FieldMeta[%s] not found FieldCodec.", fieldMeta);
         return new MetaException(m);
     }

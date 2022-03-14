@@ -102,7 +102,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
     /**
      * @see FieldGenerator
      */
-    public static SnowflakeGenerator build(FieldMeta<?, ?> fieldMeta, GenericSessionFactory sessionFactory) {
+    public static SnowflakeGenerator build(FieldMeta<?> fieldMeta, GenericSessionFactory sessionFactory) {
         SnowflakeGenerator generator = INSTANCE_HOLDER.computeIfAbsent(
                 doGetStartTime(sessionFactory.environment(), fieldMeta)
                 , key -> new SnowflakeGenerator(createSnowflake(sessionFactory, fieldMeta)));
@@ -186,7 +186,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
 
     /*################################## blow private static method ##################################*/
 
-    private static Snowflake createSnowflake(GenericSessionFactory sessionFactory, FieldMeta<?, ?> fieldMeta) {
+    private static Snowflake createSnowflake(GenericSessionFactory sessionFactory, FieldMeta<?> fieldMeta) {
 
         SnowflakeClient client = getSnowflakeClient(sessionFactory);
         final long startTime = doGetStartTime(sessionFactory.environment(), fieldMeta);
@@ -199,7 +199,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         return snowflake;
     }
 
-    private static long doGetStartTime(ArmyEnvironment env, FieldMeta<?, ?> fieldMeta) {
+    private static long doGetStartTime(ArmyEnvironment env, FieldMeta<?> fieldMeta) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
         if (generatorMeta == null) {
@@ -348,7 +348,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
     /*################################## blow interface method ##################################*/
 
     @Override
-    public Object next(FieldMeta<?, ?> fieldMeta, ReadWrapper domain) {
+    public Object next(FieldMeta<?> fieldMeta, ReadWrapper domain) {
         Object identifier;
 
         if (fieldMeta.javaType() == Long.class) {
@@ -372,7 +372,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         return this.snowflake;
     }
 
-    private String nextAsStringWithDepend(FieldMeta<?, ?> fieldMeta, ReadWrapper entityWrapper) {
+    private String nextAsStringWithDepend(FieldMeta<?> fieldMeta, ReadWrapper entityWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
         _Assert.notNull(generatorMeta, "paramMeta must have generator");
 

@@ -19,7 +19,7 @@ class MySQL80MetaSchemaComparator extends MySQL57MetaSchemaComparator {
     }
 
     @Override
-    protected boolean needModifyDefault(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo) throws SchemaInfoException, MetaException {
+    protected boolean needModifyDefault(FieldMeta<?> fieldMeta, ColumnInfo columnInfo) throws SchemaInfoException, MetaException {
 //        MySQLDataType mysqlType = (MySQLDataType) fieldMeta.mappingMeta().sqlDataType(database());
 //        //TODO zoro support MYSQL57_NO_DEFAULT_TYPE_SET eLiteral value
 //        boolean need;
@@ -39,7 +39,7 @@ class MySQL80MetaSchemaComparator extends MySQL57MetaSchemaComparator {
 
 
     private boolean needModifyTimeTypeDefault(String defaultExp, MySqlType mysqlType
-            , FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo) {
+            , FieldMeta<?> fieldMeta, ColumnInfo columnInfo) {
         final String defaultValue = defaultExp.substring(1, defaultExp.length() - 2);
 
         switch (mysqlType) {

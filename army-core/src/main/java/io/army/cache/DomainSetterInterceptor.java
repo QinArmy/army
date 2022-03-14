@@ -31,12 +31,12 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
         List<_Predicate> predicateList = new ArrayList<>(2);
 
         // 1. id predicate
-        final PrimaryFieldMeta<?, Object> idMeta = tableMeta.id();
+        final PrimaryFieldMeta<?> idMeta = tableMeta.id();
         final Object idValue = readonlyWrapper.get(idMeta.fieldName());
         _Assert.notNull(idValue, "Domain Id is null");
        // predicateList.add(Predicates.primaryValueEquals(idMeta, idValue));
 
-        FieldMeta<?, Object> versionMeta = null;
+        FieldMeta<?> versionMeta = null;
         if (tableMeta instanceof ChildTableMeta) {
             ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
             ParentTableMeta<?> parentMeta = childMeta.parentMeta();
@@ -61,12 +61,12 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
 
     private final List<_Predicate> predicateList;
 
-    private final Map<Method, FieldMeta<?, ?>> setterFieldMap;
+    private final Map<Method, FieldMeta<?>> setterFieldMap;
 
-    private Set<FieldMeta<?, ?>> targetFieldSet;
+    private Set<FieldMeta<?>> targetFieldSet;
 
     private DomainSetterInterceptor(DomainReadonlyWrapper readonlyWrapper, List<_Predicate> predicateList
-            , Map<Method, FieldMeta<?, ?>> setterFieldMap) {
+            , Map<Method, FieldMeta<?>> setterFieldMap) {
         this.readonlyWrapper = readonlyWrapper;
         this.predicateList = Collections.unmodifiableList(predicateList);
         this.setterFieldMap = setterFieldMap;
@@ -82,7 +82,7 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
                     , this.readonlyWrapper.tableMeta().javaType());
         }
         // 1. obtain target field meta
-        final FieldMeta<?, ?> fieldMeta = this.setterFieldMap.get(invocation.getMethod());
+        final FieldMeta<?> fieldMeta = this.setterFieldMap.get(invocation.getMethod());
         if (fieldMeta == null) {
             throw new DomainProxyException("method[%s] not found FieldMeta.", invocation.getMethod());
         }
@@ -126,8 +126,8 @@ final class DomainSetterInterceptor implements MethodInterceptor, DomainUpdateAd
     }
 
     @Override
-    public Set<FieldMeta<?, ?>> targetFieldSet() {
-        Set<FieldMeta<?, ?>> set;
+    public Set<FieldMeta<?>> targetFieldSet() {
+        Set<FieldMeta<?>> set;
         if (this.targetFieldSet == null) {
             set = Collections.emptySet();
         } else {

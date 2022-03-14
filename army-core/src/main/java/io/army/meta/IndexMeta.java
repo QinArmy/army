@@ -13,7 +13,7 @@ public interface IndexMeta<T extends IDomain> extends Meta {
      */
     String name();
 
-    List<IndexFieldMeta<T, ?>> fieldList();
+    List<IndexFieldMeta<T>> fieldList();
 
     boolean isPrimaryKey();
 

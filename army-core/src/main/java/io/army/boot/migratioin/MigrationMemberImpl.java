@@ -20,15 +20,15 @@ final class MigrationMemberImpl implements MigrationMember {
 
     private boolean modifyTableComment;
 
-    private List<FieldMeta<?, ?>> columnsToAdd;
+    private List<FieldMeta<?>> columnsToAdd;
 
-    private List<FieldMeta<?, ?>> columnsToModify;
+    private List<FieldMeta<?>> columnsToModify;
 
     private List<IndexMeta<?>> indexesToAdd;
 
     private List<IndexMeta<?>> indexesToModify;
 
-    private List<FieldMeta<?, ?>> commentsToModify;
+    private List<FieldMeta<?>> commentsToModify;
 
     private List<String> indexesToDrop;
 
@@ -74,11 +74,11 @@ final class MigrationMemberImpl implements MigrationMember {
     }
 
     @Override
-    public List<FieldMeta<?, ?>> columnsToAdd() {
+    public List<FieldMeta<?>> columnsToAdd() {
         return columnsToAdd;
     }
 
-    void addColumnToAdd(FieldMeta<?, ?> columnToAdd) {
+    void addColumnToAdd(FieldMeta<?> columnToAdd) {
         assertNotFinal();
         if (this.columnsToAdd == null) {
             this.columnsToAdd = new ArrayList<>();
@@ -87,12 +87,12 @@ final class MigrationMemberImpl implements MigrationMember {
     }
 
     @Override
-    public List<FieldMeta<?, ?>> columnsToChange() {
+    public List<FieldMeta<?>> columnsToChange() {
         return columnsToModify;
     }
 
     @Override
-    public List<FieldMeta<?, ?>> commentToModify() {
+    public List<FieldMeta<?>> commentToModify() {
         return this.commentsToModify;
     }
 
@@ -100,7 +100,7 @@ final class MigrationMemberImpl implements MigrationMember {
         this.modifyTableComment = modify;
     }
 
-    void addColumnToModify(FieldMeta<?, ?> columnToModify) {
+    void addColumnToModify(FieldMeta<?> columnToModify) {
         assertNotFinal();
         if (this.columnsToModify == null) {
             this.columnsToModify = new ArrayList<>();
@@ -108,7 +108,7 @@ final class MigrationMemberImpl implements MigrationMember {
         this.columnsToModify.add(columnToModify);
     }
 
-    void addCommentToModify(FieldMeta<?, ?> commentToModify) {
+    void addCommentToModify(FieldMeta<?> commentToModify) {
         assertNotFinal();
         if (this.commentsToModify == null) {
             this.commentsToModify = new ArrayList<>();

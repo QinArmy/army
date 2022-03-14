@@ -61,12 +61,12 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     /*################################## blow private method ##################################*/
 
     private <T extends IDomain> void createValuesWithGenerator(TableMeta<T> tableMeta, ObjectWrapper domainWrapper) {
-        List<FieldMeta<T, ?>> chain = tableMeta.generatorChain();
+        List<FieldMeta<T>> chain = tableMeta.generatorChain();
         if (CollectionUtils.isEmpty(chain)) {
             return;
         }
         int index = 0;
-        for (FieldMeta<?, ?> fieldMeta : chain) {
+        for (FieldMeta<?> fieldMeta : chain) {
             if (index == 0) {
                 assertFirstDependency(fieldMeta, domainWrapper);
             }
@@ -79,7 +79,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         }
     }
 
-    private void assertFirstDependency(FieldMeta<?, ?> fieldMeta, ObjectWrapper domainWrapper) {
+    private void assertFirstDependency(FieldMeta<?> fieldMeta, ObjectWrapper domainWrapper) {
         GeneratorMeta generatorMeta = fieldMeta.generator();
 
         _Assert.state(generatorMeta != null
@@ -95,7 +95,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         }
     }
 
-    private void doCreateValueWithGenerator(FieldMeta<?, ?> fieldMeta, PreFieldGenerator generator
+    private void doCreateValueWithGenerator(FieldMeta<?> fieldMeta, PreFieldGenerator generator
             , ObjectWrapper entityWrapper) {
         // invoke generator
         Object value = generator.next(fieldMeta, entityWrapper);
@@ -142,14 +142,14 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
         }
         ChildTableMeta<T> child = ((ChildTableMeta<T>) tableMeta);
         ParentTableMeta<?> parent = child.parentMeta();
-        final FieldMeta<?, E> discriminator;
+        final FieldMeta<?> discriminator;
         discriminator = parent.discriminator();
         CodeEnum codeEnum = CodeEnum.resolve(discriminator.javaType(), child.discriminatorValue());
         entityWrapper.set(discriminator.fieldName(), codeEnum);
 
     }
 
-    private void createCreateOrUpdateTime(FieldMeta<?, ?> fieldMeta, ZonedDateTime now, ObjectWrapper entityWrapper) {
+    private void createCreateOrUpdateTime(FieldMeta<?> fieldMeta, ZonedDateTime now, ObjectWrapper entityWrapper) {
         if (fieldMeta.javaType() == LocalDateTime.class) {
             entityWrapper.set(fieldMeta.fieldName(), now.toLocalDateTime());
         } else if (fieldMeta.javaType() == ZonedDateTime.class) {

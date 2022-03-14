@@ -20,11 +20,11 @@ interface MigrationMember {
 
     boolean modifyTableComment();
 
-    List<FieldMeta<?, ?>> columnsToAdd();
+    List<FieldMeta<?>> columnsToAdd();
 
-    List<FieldMeta<?, ?>> columnsToChange();
+    List<FieldMeta<?>> columnsToChange();
 
-    List<FieldMeta<?, ?>> commentToModify();
+    List<FieldMeta<?>> commentToModify();
 
     List<IndexMeta<?>> indexesToAdd();
 

@@ -9,7 +9,7 @@ import java.util.Map;
 
 interface DomainSetterPointcut extends Pointcut {
 
-    Map<Method, FieldMeta<?, ?>> setterFieldMap();
+    Map<Method, FieldMeta<?>> setterFieldMap();
 
     TableMeta<?> tableMeta();
 }

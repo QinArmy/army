@@ -7,7 +7,7 @@ import io.army.meta.FieldMeta;
  */
 public interface _FieldResult {
 
-    FieldMeta<?, ?> field();
+    FieldMeta<?> field();
 
     boolean sqlType();
 
@@ -23,7 +23,7 @@ public interface _FieldResult {
 
     interface Builder {
 
-        Builder field(FieldMeta<?, ?> field);
+        Builder field(FieldMeta<?> field);
 
         Builder sqlType(boolean sqlType);
 

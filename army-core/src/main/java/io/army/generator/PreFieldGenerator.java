@@ -55,7 +55,7 @@ public interface PreFieldGenerator extends FieldGenerator {
     String DEPEND_FIELD_NAME = "dependFieldName";
 
 
-    Object next(FieldMeta<?, ?> fieldMeta, ReadWrapper domain) throws GeneratorException;
+    Object next(FieldMeta<?> fieldMeta, ReadWrapper domain) throws GeneratorException;
 
 
 }

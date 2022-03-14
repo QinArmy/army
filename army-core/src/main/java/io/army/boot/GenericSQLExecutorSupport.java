@@ -31,7 +31,7 @@ public abstract class GenericSQLExecutorSupport {
     }
 
 
-    protected final Object doEncodeParam(StatementType statementType, FieldMeta<?, ?> fieldMeta, final Object value) {
+    protected final Object doEncodeParam(StatementType statementType, FieldMeta<?> fieldMeta, final Object value) {
 //        FieldCodec fieldCodec = this.genericSessionFactory.fieldCodec(fieldMeta);
 //        Object paramValue;
 //        if (fieldCodec == null) {
@@ -47,7 +47,7 @@ public abstract class GenericSQLExecutorSupport {
         return null;
     }
 
-    protected final Object doDecodeResult(StatementType statementType, FieldMeta<?, ?> fieldMeta
+    protected final Object doDecodeResult(StatementType statementType, FieldMeta<?> fieldMeta
             , final Object resultFromDB) {
 //        FieldCodec fieldCodec = this.genericSessionFactory.fieldCodec(fieldMeta);
 //        Object result;
@@ -120,8 +120,8 @@ public abstract class GenericSQLExecutorSupport {
             Selection parentSelect = parentSelectionList.get(0);
             Selection childSelect = childSelectionList.get(0);
             if (parentSelect instanceof FieldSelection && childSelect instanceof FieldSelection) {
-                FieldMeta<?, ?> parentFieldMeta = ((FieldSelection) parentSelect).fieldMeta();
-                FieldMeta<?, ?> childFieldMeta = ((FieldSelection) childSelect).fieldMeta();
+                FieldMeta<?> parentFieldMeta = ((FieldSelection) parentSelect).fieldMeta();
+                FieldMeta<?> childFieldMeta = ((FieldSelection) childSelect).fieldMeta();
                 yes = parentFieldMeta instanceof PrimaryFieldMeta && childFieldMeta instanceof PrimaryFieldMeta;
             }
         }
@@ -190,7 +190,7 @@ public abstract class GenericSQLExecutorSupport {
     }
 
     protected static FieldCodecReturnException createCodecReturnTypeException(FieldCodec fieldCodec
-            , FieldMeta<?, ?> fieldMeta) {
+            , FieldMeta<?> fieldMeta) {
         return new FieldCodecReturnException("FieldCodec[%s] return  error,FieldMeta[%s],"
                 , fieldCodec, fieldMeta);
     }

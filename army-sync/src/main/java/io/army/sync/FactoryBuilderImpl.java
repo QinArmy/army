@@ -94,7 +94,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
     @Override
-    public FactoryBuilder fieldGenerator(Map<FieldMeta<?, ?>, FieldGenerator> generatorMap) {
+    public FactoryBuilder fieldGenerator(Map<FieldMeta<?>, FieldGenerator> generatorMap) {
         return this;
     }
 
@@ -165,7 +165,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
 
 
     private ExecutorEnvironment createFactoryInfo(ArmyEnvironment env) {
-        final Map<FieldMeta<?, ?>, FieldCodec> codecMap;
+        final Map<FieldMeta<?>, FieldCodec> codecMap;
         codecMap = createCodecMap();
         return new FactoryInfoImpl(codecMap, env);
     }
@@ -175,15 +175,15 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
      * @return a modified map
      * @see #createFactoryInfo(ArmyEnvironment)
      */
-    private Map<FieldMeta<?, ?>, FieldCodec> createCodecMap() {
+    private Map<FieldMeta<?>, FieldCodec> createCodecMap() {
         final Collection<FieldCodec> codecs = this.fieldCodecs;
-        final Map<FieldMeta<?, ?>, FieldCodec> map;
+        final Map<FieldMeta<?>, FieldCodec> map;
         if (codecs == null) {
             map = Collections.emptyMap();
         } else {
             map = new HashMap<>((int) (codecs.size() / 0.75F));
             for (FieldCodec codec : codecs) {
-                for (FieldMeta<?, ?> fieldMeta : codec.fieldMetaSet()) {
+                for (FieldMeta<?> fieldMeta : codec.fieldMetaSet()) {
                     if (map.putIfAbsent(fieldMeta, codec) == null) {
                         continue;
                     }
@@ -193,7 +193,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
             }
         }
         final SchemaMeta schemaMeta = Objects.requireNonNull(this.schemaMeta);
-        for (FieldMeta<?, ?> fieldMeta : _TableMetaFactory.codecFieldMetaSet()) {
+        for (FieldMeta<?> fieldMeta : _TableMetaFactory.codecFieldMetaSet()) {
             if (!fieldMeta.tableMeta().schema().equals(schemaMeta)) {
                 continue;
             }
@@ -347,7 +347,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
                         .append(tableResult.table())
                         .append(" not match:");
                 differentCount += tableResult.newFieldList().size();
-                for (FieldMeta<?, ?> field : tableResult.newFieldList()) {
+                for (FieldMeta<?> field : tableResult.newFieldList()) {
                     builder.append("\n\t")
                             .append(field)
                             .append(" not exists.");
@@ -430,12 +430,12 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
 
     private static final class FactoryInfoImpl implements ExecutorEnvironment {
 
-        private final Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap;
+        private final Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
         private final ArmyEnvironment environment;
 
-        private FactoryInfoImpl(Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap, ArmyEnvironment environment) {
-            final Map<FieldMeta<?, ?>, FieldCodec> emptyMap = Collections.emptyMap();
+        private FactoryInfoImpl(Map<FieldMeta<?>, FieldCodec> fieldCodecMap, ArmyEnvironment environment) {
+            final Map<FieldMeta<?>, FieldCodec> emptyMap = Collections.emptyMap();
             if (fieldCodecMap == emptyMap) {
                 this.fieldCodecMap = emptyMap;
             } else {
@@ -445,7 +445,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
         }
 
         @Override
-        public Map<FieldMeta<?, ?>, FieldCodec> fieldCodecMap() {
+        public Map<FieldMeta<?>, FieldCodec> fieldCodecMap() {
             return this.fieldCodecMap;
         }
 

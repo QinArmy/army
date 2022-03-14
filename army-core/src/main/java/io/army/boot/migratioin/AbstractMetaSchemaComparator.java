@@ -134,22 +134,22 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
 
     /*################################## blow abstract method ##################################*/
 
-    protected abstract boolean needModifyPrecisionOrScale(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
+    protected abstract boolean needModifyPrecisionOrScale(FieldMeta<?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException;
 
-    protected abstract boolean needModifyDefault(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo)
+    protected abstract boolean needModifyDefault(FieldMeta<?> fieldMeta, ColumnInfo columnInfo)
             throws SchemaInfoException, MetaException;
 
     /**
      * @return tue: sqlTypeName is synonym of  fieldMeta's SQLDataType
      */
-    protected abstract boolean synonyms(FieldMeta<?, ?> fieldMeta, String sqlTypeName);
+    protected abstract boolean synonyms(FieldMeta<?> fieldMeta, String sqlTypeName);
 
     protected abstract Database database();
 
     /*################################## blow protected final method ##################################*/
 
-    protected final String obtainDefaultValue(FieldMeta<?, ?> fieldMeta) {
+    protected final String obtainDefaultValue(FieldMeta<?> fieldMeta) {
 //        String defaultValue = fieldMeta.defaultValue();
 //        Database database = database();
 //        SqlDataType dataType;// = fieldMeta.mappingMeta().sqlDataType(database);
@@ -197,7 +197,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     private void migrateColumnIfNeed(TableMeta<?> tableMeta, TableInfo tableInfo, MigrationMemberImpl migration) {
         final Map<String, ColumnInfo> columnInfoMap = tableInfo.columnMap();
 
-        for (FieldMeta<?, ?> fieldMeta : tableMeta.fieldList()) {
+        for (FieldMeta<?> fieldMeta : tableMeta.fieldList()) {
             // make key lower case
             ColumnInfo columnInfo = columnInfoMap.get(StringUtils.toLowerCase(fieldMeta.columnName()));
             if (columnInfo == null) {
@@ -284,7 +284,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     private boolean needAlterIndexColumn(IndexMeta<?> indexMeta, IndexInfo indexInfo) {
         Map<String, IndexColumnInfo> columnInfoMap = indexInfo.columnMap();
         boolean need = false;
-        for (IndexFieldMeta<?, ?> indexFieldMeta : indexMeta.fieldList()) {
+        for (IndexFieldMeta<?> indexFieldMeta : indexMeta.fieldList()) {
             IndexColumnInfo info = columnInfoMap.get(StringUtils.toLowerCase(indexFieldMeta.columnName()));
 
             if (info == null) {
@@ -305,7 +305,7 @@ abstract class AbstractMetaSchemaComparator implements MetaSchemaComparator {
     }
 
 
-    private boolean needAlterColumn(FieldMeta<?, ?> fieldMeta, ColumnInfo columnInfo) throws SchemaInfoException {
+    private boolean needAlterColumn(FieldMeta<?> fieldMeta, ColumnInfo columnInfo) throws SchemaInfoException {
         return needModifyPrecisionOrScale(fieldMeta, columnInfo)
                 || (this.compareDefaultOnMigrating && needModifyDefault(fieldMeta, columnInfo))
                 || columnInfo.nullable() != fieldMeta.nullable();

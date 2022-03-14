@@ -35,7 +35,7 @@ final class MySQLComparer extends AbstractSchemaComparer {
     }
 
     @Override
-    boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?, ?> field, SqlType sqlType) {
+    boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
         final boolean match;
         switch ((MySqlType) sqlType) {
             case INT:
@@ -107,7 +107,7 @@ final class MySQLComparer extends AbstractSchemaComparer {
     }
 
     @Override
-    boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?, ?> field, SqlType sqlType) {
+    boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
 //        switch ((MySqlType) sqlType) {
 //            case INT:
 //            case BIGINT:
