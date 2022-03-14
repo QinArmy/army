@@ -33,7 +33,7 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
     private boolean prepared;
 
-    private Map<FieldMeta<?, ?>, _Expression> commonExpMap;
+    private Map<FieldMeta<?>, _Expression> commonExpMap;
 
     private List<ObjectWrapper> wrapperList;
 
@@ -60,8 +60,8 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
 
     @Override
-    public final SR set(final FieldMeta<? super T, ?> field, final @Nullable Object paramOrExp) {
-        Map<FieldMeta<?, ?>, _Expression> commonExpMap = this.commonExpMap;
+    public final SR set(final FieldMeta<? super T> field, final @Nullable Object paramOrExp) {
+        Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
         if (commonExpMap == null) {
             commonExpMap = new HashMap<>();
             this.commonExpMap = commonExpMap;
@@ -84,22 +84,22 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
     }
 
     @Override
-    public final SR set(FieldMeta<? super T, ?> field, Function<C, Object> function) {
+    public final SR set(FieldMeta<? super T> field, Function<C, Object> function) {
         return this.set(field, function.apply(this.criteria));
     }
 
     @Override
-    public final SR set(FieldMeta<? super T, ?> field, Supplier<Object> supplier) {
+    public final SR set(FieldMeta<? super T> field, Supplier<Object> supplier) {
         return this.set(field, supplier.get());
     }
 
     @Override
-    public final SR setDefault(FieldMeta<? super T, ?> field) {
+    public final SR setDefault(FieldMeta<? super T> field) {
         return this.set(field, SQLs.defaultWord());
     }
 
     @Override
-    public final SR setNull(FieldMeta<? super T, ?> field) {
+    public final SR setNull(FieldMeta<? super T> field) {
         return this.set(field, SQLs.nullWord());
     }
 
@@ -184,7 +184,7 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
         if (CollectionUtils.isEmpty(this.wrapperList)) {
             throw _Exceptions.castCriteriaApi();
         }
-        final Map<FieldMeta<?, ?>, _Expression> commonExpMap = this.commonExpMap;
+        final Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
         if (CollectionUtils.isEmpty(commonExpMap)) {
             this.commonExpMap = Collections.emptyMap();
         } else {
@@ -201,7 +201,7 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
     }
 
     @Override
-    public final Map<FieldMeta<?, ?>, _Expression> commonExpMap() {
+    public final Map<FieldMeta<?>, _Expression> commonExpMap() {
         prepared();
         return this.commonExpMap;
     }

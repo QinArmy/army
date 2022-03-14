@@ -41,11 +41,11 @@ public interface Insert extends Statement {
      */
     interface InsertIntoClause<T extends IDomain, C, IR> {
 
-        IR insertInto(List<FieldMeta<? super T, ?>> fields);
+        IR insertInto(List<FieldMeta<? super T>> fields);
 
-        IR insertInto(Function<C, List<FieldMeta<? super T, ?>>> function);
+        IR insertInto(Function<C, List<FieldMeta<? super T>>> function);
 
-        IR insertInto(Supplier<List<FieldMeta<? super T, ?>>> supplier);
+        IR insertInto(Supplier<List<FieldMeta<? super T>>> supplier);
 
         IR insertInto(TableMeta<T> table);
     }
@@ -55,15 +55,15 @@ public interface Insert extends Statement {
      */
     interface CommonExpClause<T extends IDomain, C, SR> {
 
-        SR set(FieldMeta<? super T, ?> field, @Nullable Object paramOrExp);
+        SR set(FieldMeta<? super T> field, @Nullable Object paramOrExp);
 
-        SR set(FieldMeta<? super T, ?> field, Function<C, Object> paramOrExp);
+        SR set(FieldMeta<? super T> field, Function<C, Object> paramOrExp);
 
-        SR set(FieldMeta<? super T, ?> field, Supplier<Object> paramOrExp);
+        SR set(FieldMeta<? super T> field, Supplier<Object> paramOrExp);
 
-        SR setDefault(FieldMeta<? super T, ?> field);
+        SR setDefault(FieldMeta<? super T> field);
 
-        SR setNull(FieldMeta<? super T, ?> field);
+        SR setNull(FieldMeta<? super T> field);
 
     }
 

@@ -9,7 +9,6 @@ import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.struct.CodeEnum;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -223,13 +222,13 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return new IllegalArgumentException(m);
     }
 
-    private static <T extends IDomain> List<FieldMeta<T, ?>> createFieldList(final Class<T> domainClass
-            , final Map<String, FieldMeta<T, ?>> fieldNameToField) {
+    private static <T extends IDomain> List<FieldMeta<T>> createFieldList(final Class<T> domainClass
+            , final Map<String, FieldMeta<T>> fieldNameToField) {
 
-        final List<FieldMeta<T, ?>> fieldList = new ArrayList<>(fieldNameToField.size());
+        final List<FieldMeta<T>> fieldList = new ArrayList<>(fieldNameToField.size());
 
         for (String fieldName : _MetaBridge.RESERVED_PROPS) {
-            final FieldMeta<T, ?> reservedField;
+            final FieldMeta<T> reservedField;
             reservedField = fieldNameToField.get(fieldName);
             if (reservedField != null) {
                 fieldList.add(reservedField);
@@ -238,7 +237,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
         final Inheritance inheritance;
         inheritance = domainClass.getAnnotation(Inheritance.class);
-        final FieldMeta<T, ?> discriminatorField;
+        final FieldMeta<T> discriminatorField;
         if (inheritance != null) {
             discriminatorField = fieldNameToField.get(inheritance.value());
             if (discriminatorField == null) {
@@ -249,7 +248,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             discriminatorField = null;
         }
 
-        for (FieldMeta<T, ?> field : fieldNameToField.values()) {
+        for (FieldMeta<T> field : fieldNameToField.values()) {
             if (field == discriminatorField
                     || _MetaBridge.RESERVED_PROPS.contains(field.fieldName())) {
                 continue;
@@ -275,18 +274,17 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final SchemaMeta schemaMeta;
 
-    final Map<String, FieldMeta<T, ?>> fieldNameToFields;
+    final Map<String, FieldMeta<T>> fieldNameToFields;
 
-    private final List<FieldMeta<T, ?>> fieldList;
+    private final List<FieldMeta<T>> fieldList;
 
     private final List<IndexMeta<T>> indexMetaList;
 
-    private final PrimaryFieldMeta<T, Object> primaryField;
+    private final PrimaryFieldMeta<T> primaryField;
 
 
-    private final List<FieldMeta<T, ?>> generatorChain;
+    private final List<FieldMeta<T>> generatorChain;
 
-    @SuppressWarnings("unchecked")
     private DefaultTableMeta(final Class<T> domainClass) {
         Objects.requireNonNull(domainClass, "javaType required");
         if (!IDomain.class.isAssignableFrom(domainClass)) {
@@ -313,7 +311,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             this.fieldList = createFieldList(domainClass, this.fieldNameToFields);
             this.generatorChain = TableMetaUtils.createGeneratorChain(this.fieldNameToFields);
 
-            this.primaryField = (PrimaryFieldMeta<T, Object>) this.fieldNameToFields.get(_MetaBridge.ID);
+            this.primaryField = (PrimaryFieldMeta<T>) this.fieldNameToFields.get(_MetaBridge.ID);
             if (this.primaryField == null) {
                 String m = String.format("Not found primary field meta in domain[%s]", domainClass.getName());
                 throw new NullPointerException(m);
@@ -353,20 +351,8 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final PrimaryFieldMeta<T, Object> id() {
+    public final PrimaryFieldMeta<T> id() {
         return this.primaryField;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public final <F> PrimaryFieldMeta<T, F> id(final Class<F> idClass) {
-        final PrimaryFieldMeta<T, ?> idFieldMeta = this.primaryField;
-        if (idClass != idFieldMeta.javaType()) {
-            String m = String.format("%s's %s[%s] java type not match", this
-                    , UniqueFieldMeta.class.getName(), idFieldMeta.fieldName());
-            throw new IllegalArgumentException(m);
-        }
-        return (PrimaryFieldMeta<T, F>) idFieldMeta;
     }
 
 
@@ -376,7 +362,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
-    public final List<FieldMeta<T, ?>> fieldList() {
+    public final List<FieldMeta<T>> fieldList() {
         return this.fieldList;
     }
 
@@ -396,57 +382,45 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
-    public final FieldMeta<T, Object> getField(final String fieldName) throws MetaException {
-        final FieldMeta<T, ?> fieldMeta;
+    public final FieldMeta<T> getField(final String fieldName) throws IllegalArgumentException {
+        final FieldMeta<T> fieldMeta;
         fieldMeta = this.fieldNameToFields.get(fieldName);
         if (fieldMeta == null) {
             String m = String.format("%s's %s[%s] not found", this, FieldMeta.class.getName(), fieldName);
             throw new IllegalArgumentException(m);
         }
-        return (FieldMeta<T, Object>) fieldMeta;
+        return fieldMeta;
     }
 
-    @SuppressWarnings("unchecked")
+
     @Override
-    public final <F> FieldMeta<T, F> getField(final String fieldName, final Class<F> fieldClass) {
-        final FieldMeta<T, ?> fieldMeta;
+    public final IndexFieldMeta<T> getIndexField(final String fieldName) {
+        final FieldMeta<T> fieldMeta;
         fieldMeta = getField(fieldName);
-        if (fieldClass != fieldMeta.javaType()) {
-            String m = String.format("%s's %s[%s] java type not match", this, FieldMeta.class.getName(), fieldName);
-            throw new IllegalArgumentException(m);
-        }
-        return (FieldMeta<T, F>) fieldMeta;
-    }
-
-    @Override
-    public final <F> IndexFieldMeta<T, F> getIndexField(final String fieldName, final Class<F> fieldClass) {
-        final FieldMeta<T, F> fieldMeta;
-        fieldMeta = getField(fieldName, fieldClass);
         if (!(fieldMeta instanceof IndexFieldMeta)) {
             String m = String.format("%s's %s[%s] java type not match", this
                     , IndexFieldMeta.class.getName(), fieldName);
             throw new IllegalArgumentException(m);
         }
-        return (IndexFieldMeta<T, F>) fieldMeta;
+        return (IndexFieldMeta<T>) fieldMeta;
     }
 
     @Override
-    public final <F> UniqueFieldMeta<T, F> getUniqueField(final String fieldName, final Class<F> fieldClass) {
-        final IndexFieldMeta<T, F> fieldMeta;
-        fieldMeta = getIndexField(fieldName, fieldClass);
+    public final UniqueFieldMeta<T> getUniqueField(final String fieldName) {
+        final IndexFieldMeta<T> fieldMeta;
+        fieldMeta = getIndexField(fieldName);
         if (!(fieldMeta instanceof UniqueFieldMeta)) {
             String m = String.format("%s's %s[%s] java type not match", this
                     , UniqueFieldMeta.class.getName(), fieldName);
             throw new IllegalArgumentException(m);
         }
-        return (UniqueFieldMeta<T, F>) fieldMeta;
+        return (UniqueFieldMeta<T>) fieldMeta;
     }
 
 
     @Override
-    public final List<FieldMeta<T, ?>> generatorChain() {
+    public final List<FieldMeta<T>> generatorChain() {
         return this.generatorChain;
     }
 
@@ -495,7 +469,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
-        public <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator() {
+        public FieldMeta<? super T> discriminator() {
             // always null
             return null;
         }
@@ -512,17 +486,16 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     private static final class DefaultParentTable<T extends IDomain> extends DefaultTableMeta<T>
             implements ParentTableMeta<T> {
 
-        private final FieldMeta<T, ?> discriminator;
+        private final FieldMeta<T> discriminator;
 
         private DefaultParentTable(final Class<T> domainClass) {
             super(domainClass);
             this.discriminator = TableMetaUtils.discriminator(this.fieldNameToFields, domainClass);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
-        public <E extends Enum<E> & CodeEnum> FieldMeta<T, E> discriminator() {
-            return (FieldMeta<T, E>) this.discriminator;
+        public FieldMeta<T> discriminator() {
+            return this.discriminator;
         }
 
         @Override
@@ -550,7 +523,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
         @NonNull
         @Override
-        public <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator() {
+        public FieldMeta<? super T> discriminator() {
             return this.parentTableMeta.discriminator();
         }
 

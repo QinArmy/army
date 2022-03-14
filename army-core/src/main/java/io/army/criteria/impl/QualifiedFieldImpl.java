@@ -17,16 +17,16 @@ import io.army.util._Exceptions;
 import java.util.Objects;
 
 
-final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F>
-        implements QualifiedField<T, F>, _Selection {
+final class QualifiedFieldImpl<T extends IDomain> extends OperationField<T>
+        implements QualifiedField<T>, _Selection {
 
 
     private final String tableAlias;
 
-    private final DefaultFieldMeta<T, F> field;
+    private final DefaultFieldMeta<T> field;
 
-    QualifiedFieldImpl(final String tableAlias, final FieldMeta<T, F> field) {
-        this.field = (DefaultFieldMeta<T, F>) field;
+    QualifiedFieldImpl(final String tableAlias, final FieldMeta<T> field) {
+        this.field = (DefaultFieldMeta<T>) field;
         this.tableAlias = tableAlias;
     }
 
@@ -83,7 +83,7 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F
         if (obj == this) {
             match = true;
         } else if (obj instanceof QualifiedFieldImpl) {
-            final QualifiedFieldImpl<?, ?> o = (QualifiedFieldImpl<?, ?>) obj;
+            final QualifiedFieldImpl<?> o = (QualifiedFieldImpl<?>) obj;
             match = o.field == this.field && o.tableAlias.equals(this.tableAlias);
         } else {
             match = false;
@@ -102,7 +102,7 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F
     }
 
     @Override
-    public FieldMeta<T, F> fieldMeta() {
+    public FieldMeta<T> fieldMeta() {
         return this.field;
     }
 
@@ -112,7 +112,7 @@ final class QualifiedFieldImpl<T extends IDomain, F> extends OperationField<T, F
     }
 
     @Override
-    public Class<F> javaType() {
+    public Class<?> javaType() {
         return this.field.javaType;
     }
 

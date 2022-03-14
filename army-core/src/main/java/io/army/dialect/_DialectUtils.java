@@ -8,9 +8,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.util.StringUtils;
 import io.army.util._Exceptions;
 
-import java.sql.JDBCType;
 import java.util.Collection;
-import java.util.EnumSet;
 
 public abstract class _DialectUtils {
 
@@ -18,21 +16,6 @@ public abstract class _DialectUtils {
         throw new UnsupportedOperationException();
     }
 
-    protected static final EnumSet<JDBCType> TEXT_JDBC_TYPE = EnumSet.of(
-            JDBCType.VARCHAR,
-            JDBCType.CHAR,
-            JDBCType.BLOB,
-            JDBCType.NCHAR,
-
-            JDBCType.NVARCHAR,
-            JDBCType.LONGVARCHAR,
-            JDBCType.DATE,
-            JDBCType.TIME,
-
-            JDBCType.TIMESTAMP,
-            JDBCType.TIME_WITH_TIMEZONE,
-            JDBCType.TIMESTAMP_WITH_TIMEZONE
-    );
 
 
     public static String quoteIfNeed(MappingType mappingType, String textValue) {
@@ -42,17 +25,17 @@ public abstract class _DialectUtils {
 
 
     public static CriteriaException createTableFiledNoMatchException(TableMeta<?> tableMeta
-            , FieldMeta<?, ?> fieldMeta) {
+            , FieldMeta<?> fieldMeta) {
         throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                 , "TableMeta[%s] and FieldMeta[%s] not match.", tableMeta, fieldMeta);
     }
 
-    public static void divideFields(ChildTableMeta<?> childMeta, Collection<FieldMeta<?, ?>> mergedFields
-            , Collection<FieldMeta<?, ?>> parentFields, Collection<FieldMeta<?, ?>> childFields) {
+    public static void divideFields(ChildTableMeta<?> childMeta, Collection<FieldMeta<?>> mergedFields
+            , Collection<FieldMeta<?>> parentFields, Collection<FieldMeta<?>> childFields) {
 
         final ParentTableMeta<?> parentMeta = childMeta.parentMeta();
 
-        for (FieldMeta<?, ?> fieldMeta : mergedFields) {
+        for (FieldMeta<?> fieldMeta : mergedFields) {
             if (fieldMeta instanceof PrimaryFieldMeta && _MetaBridge.ID.equals(fieldMeta.fieldName())) {
                 childFields.add(childMeta.id());
                 parentFields.add(parentMeta.id());
@@ -67,7 +50,7 @@ public abstract class _DialectUtils {
     }
 
 
-    public static CriteriaException createUnKnownFieldException(FieldMeta<?, ?> fieldMeta) {
+    public static CriteriaException createUnKnownFieldException(FieldMeta<?> fieldMeta) {
         throw new CriteriaException(ErrorCode.CRITERIA_ERROR
                 , "unknown logical table for FieldMeta[%s] in current context,please check criteria code.", fieldMeta);
     }

@@ -46,7 +46,7 @@ final class PostgreDdl extends _DdlDialect {
     }
 
     @Override
-    protected void dataType(FieldMeta<?, ?> field, SqlType type, StringBuilder builder) {
+    protected void dataType(FieldMeta<?> field, SqlType type, StringBuilder builder) {
 
     }
 

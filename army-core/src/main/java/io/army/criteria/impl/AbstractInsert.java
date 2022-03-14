@@ -36,7 +36,7 @@ abstract class AbstractInsert<T extends IDomain, C, IR>
 
     final CriteriaContext criteriaContext;
 
-    private List<FieldMeta<?, ?>> fieldList;
+    private List<FieldMeta<?>> fieldList;
 
 
     AbstractInsert(TableMeta<T> table, CriteriaContext criteriaContext) {
@@ -47,7 +47,7 @@ abstract class AbstractInsert<T extends IDomain, C, IR>
 
 
     @Override
-    public final IR insertInto(List<FieldMeta<? super T, ?>> fields) {
+    public final IR insertInto(List<FieldMeta<? super T>> fields) {
         if (fields.size() == 0) {
             throw new CriteriaException("fields must be not empty.");
         }
@@ -56,12 +56,12 @@ abstract class AbstractInsert<T extends IDomain, C, IR>
     }
 
     @Override
-    public final IR insertInto(Function<C, List<FieldMeta<? super T, ?>>> function) {
+    public final IR insertInto(Function<C, List<FieldMeta<? super T>>> function) {
         return this.insertInto(function.apply(this.criteriaContext.criteria()));
     }
 
     @Override
-    public final IR insertInto(Supplier<List<FieldMeta<? super T, ?>>> supplier) {
+    public final IR insertInto(Supplier<List<FieldMeta<? super T>>> supplier) {
         return this.insertInto(supplier.get());
     }
 
@@ -81,9 +81,9 @@ abstract class AbstractInsert<T extends IDomain, C, IR>
     }
 
     @Override
-    public final List<FieldMeta<?, ?>> fieldList() {
+    public final List<FieldMeta<?>> fieldList() {
         prepared();
-        final List<FieldMeta<?, ?>> fieldList = this.fieldList;
+        final List<FieldMeta<?>> fieldList = this.fieldList;
         if (fieldList == null) {
             throw _Exceptions.castCriteriaApi();
         }

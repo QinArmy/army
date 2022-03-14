@@ -6,8 +6,8 @@ import io.army.struct.CodeEnum;
 import javax.annotation.Nullable;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.NoType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.io.IOException;
@@ -35,43 +35,47 @@ final class AnnotationHandler {
     }
 
 
-    void createSourceFiles(Set<? extends Element> tableSet) throws IOException {
-        final SourceCodeBuilder builder = new SourceCodeBuilder(this.types, this.env.getFiler());
+    void createSourceFiles(Set<? extends Element> domainElementSet) throws IOException {
+        final SourceCodeCreator codeCreator = new SourceCodeCreator(this.env.getFiler());
         final List<String> errorMsgList = this.errorMsgList;
         final TypeElement[] outParent = new TypeElement[1];
 
-        TypeElement tableElement, parentElement;
+        TypeElement domain, parentDomain;
         Map<String, VariableElement> fieldMap;
         List<TypeElement> mappedList;
-
-        MappingMode mappingMode;
-        for (Element element : tableSet) {
-            tableElement = (TypeElement) element;
-            if (tableElement.getNestingKind() != NestingKind.TOP_LEVEL) {
+        Map<String, IndexMode> indexModeMap;
+        MappingMode mode;
+        for (Element element : domainElementSet) {
+            domain = (TypeElement) element;
+            if (domain.getNestingKind() != NestingKind.TOP_LEVEL) {
                 continue;
             }
-            outParent[0] = null;
-            if (tableElement.getAnnotation(Inheritance.class) != null) {
-                parentElement = null;
-                fieldMap = getParentFieldMap(tableElement);
+
+            if (domain.getAnnotation(Inheritance.class) != null) {
+                parentDomain = null;
+                fieldMap = getParentFieldMap(domain);
             } else {
-                mappedList = getMappedList(tableElement, outParent);
-                parentElement = outParent[0];
-                if (parentElement == null) {
+                outParent[0] = null;
+                mappedList = getMappedList(domain, outParent);
+                parentDomain = outParent[0];
+                if (parentDomain == null) {
                     fieldMap = getFieldSet(mappedList, null);
                 } else {
-                    fieldMap = getFieldSet(mappedList, getParentFieldMap(parentElement));
+                    fieldMap = getFieldSet(mappedList, getParentFieldMap(parentDomain));
                 }
             }
 
-            mappingMode = validateTableElement(tableElement, parentElement);
-            if (mappingMode == null || errorMsgList.size() > 0) {
+            mode = validateMode(domain, parentDomain);
+            if (mode == null || errorMsgList.size() > 0) {
                 // occur error
                 continue;
             }
-            builder.reset(tableElement, fieldMap, parentElement, mappingMode)
-                    .build();
+            indexModeMap = createFieldToIndexModeMap(domain);
+            if (errorMsgList.size() > 0) {
+                continue;
+            }
 
+            codeCreator.create(domain, fieldMap.values(), parentDomain, mode, indexModeMap);
 
         }
 
@@ -120,60 +124,60 @@ final class AnnotationHandler {
         } else {
             mappedList = Collections.unmodifiableList(mappedList);
         }
+
         outParent[0] = parentElement;
         return mappedList;
 
     }
 
     @Nullable
-    private MappingMode validateTableElement(final TypeElement tableElement, final @Nullable TypeElement parentElement) {
+    private MappingMode validateMode(final TypeElement domain, final @Nullable TypeElement parent) {
 
         final Inheritance inheritance;
-        inheritance = tableElement.getAnnotation(Inheritance.class);
+        inheritance = domain.getAnnotation(Inheritance.class);
         final DiscriminatorValue discriminatorValue;
-        discriminatorValue = tableElement.getAnnotation(DiscriminatorValue.class);
+        discriminatorValue = domain.getAnnotation(DiscriminatorValue.class);
 
-        final MappingMode mappingMode;
-        if (parentElement == null && inheritance == null) {
-            mappingMode = MappingMode.SIMPLE;
+        final MappingMode mode;
+        if (parent == null && inheritance == null) {
+            mode = MappingMode.SIMPLE;
             if (discriminatorValue != null) {
                 String m = String.format("Domain %s no parent,couldn't be annotated by %s."
-                        , tableElement.getQualifiedName(), DiscriminatorValue.class.getName());
+                        , MetaUtils.getClassName(domain), DiscriminatorValue.class.getName());
                 this.errorMsgList.add(m);
             }
-        } else if (parentElement == null) {
-            mappingMode = MappingMode.PARENT;
+        } else if (parent == null) {
+            mode = MappingMode.PARENT;
             if (discriminatorValue != null && discriminatorValue.value() != 0) {
                 String m;
-                m = String.format("Domain %s discriminator value must be zero.", tableElement.getQualifiedName());
+                m = String.format("Domain %s discriminator value must be zero.", MetaUtils.getClassName(domain));
                 this.errorMsgList.add(m);
             }
         } else if (discriminatorValue != null) {
-            mappingMode = MappingMode.CHILD;
+            mode = MappingMode.CHILD;
             final int value;
             value = discriminatorValue.value();
             if (value == 0) {
                 String m;
-                m = String.format("Domain %s discriminator value couldn't be zero.", tableElement.getQualifiedName());
+                m = String.format("Domain %s discriminator value couldn't be zero.", MetaUtils.getClassName(domain));
                 this.errorMsgList.add(m);
             } else {
                 final TypeElement element;
-                element = this.codeMap.computeIfAbsent(MetaUtils.getClassName(parentElement), key -> new HashMap<>())
-                        .putIfAbsent(value, tableElement);
-                if (element != null && element != tableElement) {
+                element = this.codeMap.computeIfAbsent(MetaUtils.getClassName(parent), key -> new HashMap<>())
+                        .putIfAbsent(value, domain);
+                if (element != null && element != domain) {
                     String m = String.format("Domain %s discriminator value[%s] duplication."
-                            , tableElement.getQualifiedName(), value);
+                            , MetaUtils.getClassName(domain), value);
                     this.errorMsgList.add(m);
                 }
             }
         } else {
-            mappingMode = null;
-            String m;
-            m = String.format("Domain %s isn' annotated by %s."
-                    , tableElement.getQualifiedName(), DiscriminatorValue.class.getName());
+            mode = null;
+            String m = String.format("Domain %s no parent,couldn't be annotated by %s."
+                    , MetaUtils.getClassName(domain), DiscriminatorValue.class.getName());
             this.errorMsgList.add(m);
         }
-        return mappingMode;
+        return mode;
     }
 
     private Map<String, VariableElement> getFieldSet(final List<TypeElement> mappedList
@@ -194,13 +198,10 @@ final class AnnotationHandler {
         final Map<String, VariableElement> fieldMap = new HashMap<>();
         final Map<String, Boolean> columnNameMap = new HashMap<>();
 
-        for (TypeElement current : mappedList) {
-            className = current.getQualifiedName().toString();
-            if (className.lastIndexOf('>') > 0) {
-                className = className.substring(0, className.indexOf('<'));
-            }
+        for (TypeElement mapped : mappedList) {
+            className = MetaUtils.getClassName(mapped);
 
-            for (Element element : current.getEnclosedElements()) {
+            for (Element element : mapped.getEnclosedElements()) {
                 if (element.getKind() != ElementKind.FIELD
                         || element.getModifiers().contains(Modifier.STATIC)
                         || (column = element.getAnnotation(Column.class)) == null) {
@@ -234,7 +235,7 @@ final class AnnotationHandler {
 
         if (inheritance != null && !foundDiscriminatorColumn) {
             this.errorMsgList.add(String.format("Domain %s discriminator field[%s] not found."
-                    , mappedList.get(0).getQualifiedName(), discriminatorField));
+                    , MetaUtils.getClassName(mappedList.get(0)), discriminatorField));
         }
         columnNameMap.clear();
 
@@ -305,7 +306,7 @@ final class AnnotationHandler {
                 assertVisibleField(className, field);
                 break;
             default: {
-                if (!discriminatorField && !Strings.hasText(column.comment())) {
+                if (!discriminatorField && !MetaUtils.hasText(column.comment())) {
                     noCommentError(className, field);
                 }
                 if (field.asType().getKind().isPrimitive()) {
@@ -387,43 +388,18 @@ final class AnnotationHandler {
 
     private void assertCodeEnum(final String className, final VariableElement field) {
         final TypeMirror typeMirror = field.asType();
-        if (typeMirror.getKind() != TypeKind.DECLARED) {
-            discriminatorNonCodeNum(className, field);
-        } else {
-            final Element element = this.types.asElement(typeMirror);
+        if (typeMirror instanceof DeclaredType) {
+            final Element element = ((DeclaredType) typeMirror).asElement();
             if (element.getKind() != ElementKind.ENUM
-                    || !isCodeEnumType((TypeElement) element)) {
+                    || !MetaUtils.isCodeEnumType((TypeElement) element)) {
                 discriminatorNonCodeNum(className, field);
             }
+        } else {
+            discriminatorNonCodeNum(className, field);
         }
 
     }
 
-
-    private boolean isCodeEnumType(final TypeElement typeElement) {
-        final String codeEnum = CodeEnum.class.getName();
-        boolean match = false;
-        final Types types = this.types;
-        Element element;
-        for (TypeMirror mirror : typeElement.getInterfaces()) {
-            if (codeEnum.equals(mirror.toString())) {
-                match = true;
-                break;
-            }
-            if (mirror.getKind() != TypeKind.DECLARED) {
-                continue;
-            }
-            element = types.asElement(mirror);
-            if (element.getKind() != ElementKind.INTERFACE) {
-                continue;
-            }
-            if (isCodeEnumType((TypeElement) element)) {
-                match = true;
-                break;
-            }
-        }
-        return match;
-    }
 
     private void discriminatorNonCodeNum(final String className, final VariableElement field) {
         String m = String.format("Discriminator field %s.%s don't implements %s."
@@ -435,6 +411,34 @@ final class AnnotationHandler {
         String m = String.format("Field %s.%s isn't reserved field or discriminator field,so comment must have text."
                 , className, field.getSimpleName());
         this.errorMsgList.add(m);
+    }
+
+
+    private Map<String, IndexMode> createFieldToIndexModeMap(final TypeElement domain) {
+        final Table table = domain.getAnnotation(Table.class);
+        final Index[] indexArray = table.indexes();
+        final Map<String, IndexMode> indexMetaMap = new HashMap<>();
+
+        final Map<String, Boolean> indexNameMap = new HashMap<>(indexArray.length + 3);
+        String[] fieldArray;
+        String indexName;
+        IndexMode indexMode;
+        for (Index index : indexArray) {
+            // make index name lower case
+            indexName = index.name().toLowerCase(Locale.ROOT);
+            if (indexNameMap.putIfAbsent(indexName, Boolean.TRUE) != null) {
+                String m = String.format("Domain %s index name[%s] duplication",
+                        domain.getQualifiedName(), indexName);
+                this.errorMsgList.add(m);
+            }
+            indexMode = IndexMode.resolve(index);
+            for (String fieldName : index.fieldList()) {
+                fieldArray = fieldName.split(" ");
+                indexMetaMap.put(fieldArray[0], indexMode);
+            }
+        }
+        indexMetaMap.put(_MetaBridge.ID, IndexMode.PRIMARY);
+        return Collections.unmodifiableMap(indexMetaMap);
     }
 
 

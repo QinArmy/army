@@ -303,7 +303,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @see io.army.criteria.Update.BatchSetClause
      */
-    public static Expression nullableNamedParam(GenericField<?, ?> field) {
+    public static Expression nullableNamedParam(GenericField<?> field) {
         return NamedParamImpl.nullable(field.fieldName(), field);
     }
 
@@ -332,7 +332,7 @@ public abstract class SQLs extends StandardFunctions {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static Expression namedParam(GenericField<?, ?> field) {
+    public static Expression namedParam(GenericField<?> field) {
         return NamedParamImpl.nonNull(field.fieldName(), field);
     }
 
@@ -349,7 +349,7 @@ public abstract class SQLs extends StandardFunctions {
      * @param value {@link Expression} or parameter.
      * @see Update.SimpleSetClause#setPairs(List)
      */
-    public static ItemPair itemPair(FieldMeta<?, ?> field, @Nullable Object value) {
+    public static ItemPair itemPair(FieldMeta<?> field, @Nullable Object value) {
         final Expression valueExp;
         if (value instanceof Expression) {
             valueExp = (Expression) value;
@@ -412,7 +412,7 @@ public abstract class SQLs extends StandardFunctions {
      * Get a {@link QualifiedField}. You don't need a {@link QualifiedField},if no self-join in statement.
      * </p>
      */
-    public static <T extends IDomain, F> QualifiedField<T, F> field(String tableAlias, FieldMeta<T, F> field) {
+    public static <T extends IDomain> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
         return CriteriaContextStack.peek().qualifiedField(tableAlias, field);
     }
 
@@ -454,7 +454,7 @@ public abstract class SQLs extends StandardFunctions {
         return SelectionGroups.singleGroup(table, alias);
     }
 
-    public static <T extends IDomain> SelectionGroup group(String tableAlias, List<FieldMeta<T, ?>> fieldList) {
+    public static <T extends IDomain> SelectionGroup group(String tableAlias, List<FieldMeta<T>> fieldList) {
         return SelectionGroups.singleGroup(tableAlias, fieldList);
     }
 
@@ -585,7 +585,7 @@ public abstract class SQLs extends StandardFunctions {
 
         final SetRightItem right;
 
-        private ItemPairImpl(FieldMeta<?, ?> left, Expression right) {
+        private ItemPairImpl(FieldMeta<?> left, Expression right) {
             this.left = left;
             this.right = right;
         }

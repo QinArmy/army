@@ -57,7 +57,7 @@ public abstract class _DdlDialect implements DdlDialect {
                 .append(Constant.SPACE_LEFT_BRACKET)
                 .append("\n\t");
 
-        final List<FieldMeta<T, ?>> fieldList = table.fieldList();
+        final List<FieldMeta<T>> fieldList = table.fieldList();
         final int fieldSize = fieldList.size();
         for (int i = 0; i < fieldSize; i++) {
             if (i > 0) {
@@ -74,7 +74,7 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
     @Override
-    public final void addColumn(final List<FieldMeta<?, ?>> fieldList, final List<String> sqlList) {
+    public final void addColumn(final List<FieldMeta<?>> fieldList, final List<String> sqlList) {
         final int fieldSize = fieldList.size();
         if (fieldSize == 0) {
             return;
@@ -85,7 +85,7 @@ public abstract class _DdlDialect implements DdlDialect {
 
         TableMeta<?> table = null;
         for (int i = 0; i < fieldSize; i++) {
-            final FieldMeta<?, ?> field;
+            final FieldMeta<?> field;
             field = fieldList.get(i);
             if (i > 0) {
                 if (field.tableMeta() != table) {
@@ -105,7 +105,7 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
 
-    protected final void columnDefinition(final FieldMeta<?, ?> field, final StringBuilder builder) {
+    protected final void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
         this.dialect.safeObjectName(field.columnName(), builder)
                 .append(Constant.SPACE);
         final SqlType sqlType;
@@ -129,15 +129,15 @@ public abstract class _DdlDialect implements DdlDialect {
 
     }
 
-    protected final void defaultStartWithWhiteSpace(FieldMeta<?, ?> field) {
+    protected final void defaultStartWithWhiteSpace(FieldMeta<?> field) {
         this.errorMsgList.add(String.format("%s start with white space.", field));
     }
 
-    protected abstract void dataType(FieldMeta<?, ?> field, SqlType type, StringBuilder builder);
+    protected abstract void dataType(FieldMeta<?> field, SqlType type, StringBuilder builder);
 
     protected abstract void appendTableOption(final TableMeta<?> table, final StringBuilder builder);
 
-    protected final void precision(final FieldMeta<?, ?> field, SqlType type
+    protected final void precision(final FieldMeta<?> field, SqlType type
             , final int max, final StringBuilder builder) {
         final int precision = field.precision();
         if (precision > -1) {
@@ -154,11 +154,11 @@ public abstract class _DdlDialect implements DdlDialect {
         }
     }
 
-    protected final void noSpecifiedPrecision(FieldMeta<?, ?> field) {
+    protected final void noSpecifiedPrecision(FieldMeta<?> field) {
         this.errorMsgList.add(String.format("%s no precision.", field));
     }
 
-    protected final void timeTypeScale(final FieldMeta<?, ?> field, SqlType type, final StringBuilder builder) {
+    protected final void timeTypeScale(final FieldMeta<?> field, SqlType type, final StringBuilder builder) {
         final int scale = field.scale();
         if (scale > -1) {
             if (scale > 6) {
@@ -225,7 +225,7 @@ public abstract class _DdlDialect implements DdlDialect {
     /**
      * @return true : complete
      */
-    protected final boolean checkDefaultComplete(final FieldMeta<?, ?> field, final String value) {
+    protected final boolean checkDefaultComplete(final FieldMeta<?> field, final String value) {
         final char[] array = value.toCharArray();
         final char identifierQuote = this.dialect.identifierQuote;
         boolean quote = false, idQuote = false;
@@ -315,13 +315,13 @@ public abstract class _DdlDialect implements DdlDialect {
             }
             builder.append(Constant.SPACE_LEFT_BRACKET);// index left bracket
 
-            final List<IndexFieldMeta<T, ?>> indexFieldList = index.fieldList();
+            final List<IndexFieldMeta<T>> indexFieldList = index.fieldList();
             final int indexFieldSize = indexFieldList.size();
             for (int i = 0; i < indexFieldSize; i++) {
                 if (i > 0) {
                     builder.append(Constant.SPACE_COMMA);
                 }
-                final IndexFieldMeta<T, ?> indexField;
+                final IndexFieldMeta<T> indexField;
                 indexField = indexFieldList.get(i);
 
                 builder.append(Constant.SPACE);
@@ -342,7 +342,7 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
 
-    private void timeScaleError(FieldMeta<?, ?> field, SqlType sqlType) {
+    private void timeScaleError(FieldMeta<?> field, SqlType sqlType) {
         String m;
         m = String.format("%s scale[%s] error for %s.%s"
                 , field, field.scale(), sqlType.getClass().getSimpleName(), sqlType.name());
@@ -351,7 +351,7 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
 
-    protected static void decimalType(final FieldMeta<?, ?> field, final StringBuilder builder) {
+    protected static void decimalType(final FieldMeta<?> field, final StringBuilder builder) {
         final int precision = field.precision();
         if (precision > 0) {
             builder.append(Constant.LEFT_BRACKET)

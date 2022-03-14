@@ -11,7 +11,7 @@ public interface _InsertBlock {
 
     TableMeta<?> table();
 
-    List<FieldMeta<?, ?>> fieldLis();
+    List<FieldMeta<?>> fieldLis();
 
 
 }

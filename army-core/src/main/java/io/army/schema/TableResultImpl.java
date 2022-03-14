@@ -16,7 +16,7 @@ final class TableResultImpl implements _TableResult {
 
     private final TableMeta<?> table;
 
-    private final List<FieldMeta<?, ?>> newFieldList;
+    private final List<FieldMeta<?>> newFieldList;
 
     private final boolean comment;
 
@@ -28,7 +28,7 @@ final class TableResultImpl implements _TableResult {
 
     private TableResultImpl(TableResultBuilder builder) {
         this.table = builder.table;
-        final List<FieldMeta<?, ?>> newFieldList = builder.newFieldList;
+        final List<FieldMeta<?>> newFieldList = builder.newFieldList;
         if (newFieldList == null) {
             this.newFieldList = Collections.emptyList();
         } else {
@@ -70,7 +70,7 @@ final class TableResultImpl implements _TableResult {
     }
 
     @Override
-    public List<FieldMeta<?, ?>> newFieldList() {
+    public List<FieldMeta<?>> newFieldList() {
         return this.newFieldList;
     }
 
@@ -94,7 +94,7 @@ final class TableResultImpl implements _TableResult {
 
         private TableMeta<?> table;
 
-        private List<FieldMeta<?, ?>> newFieldList;
+        private List<FieldMeta<?>> newFieldList;
 
         private boolean comment;
 
@@ -110,8 +110,8 @@ final class TableResultImpl implements _TableResult {
         }
 
         @Override
-        public void appendNewColumn(FieldMeta<?, ?> field) {
-            List<FieldMeta<?, ?>> fieldList = this.newFieldList;
+        public void appendNewColumn(FieldMeta<?> field) {
+            List<FieldMeta<?>> fieldList = this.newFieldList;
             if (fieldList == null) {
                 fieldList = new ArrayList<>();
                 this.newFieldList = fieldList;

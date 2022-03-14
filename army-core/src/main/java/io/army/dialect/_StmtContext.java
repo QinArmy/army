@@ -5,8 +5,6 @@ import io.army.stmt.Stmt;
 
 public interface _StmtContext extends _SqlContext {
 
-    boolean supportOptimizingParam();
-
     Stmt build();
 
     Visible visible();

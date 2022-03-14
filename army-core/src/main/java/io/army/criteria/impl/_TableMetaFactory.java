@@ -121,7 +121,7 @@ public abstract class _TableMetaFactory {
     }
 
 
-    public static Set<FieldMeta<?, ?>> codecFieldMetaSet() {
+    public static Set<FieldMeta<?>> codecFieldMetaSet() {
         return DefaultFieldMeta.codecFieldMetaSet();
     }
 

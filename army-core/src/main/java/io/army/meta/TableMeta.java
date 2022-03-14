@@ -3,7 +3,6 @@ package io.army.meta;
 import io.army.criteria.TableItem;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.struct.CodeEnum;
 
 import java.util.List;
 
@@ -24,12 +23,10 @@ public interface TableMeta<T extends IDomain> extends TableItem, Meta {
 
     String comment();
 
-    PrimaryFieldMeta<T, Object> id();
-
-    <F> PrimaryFieldMeta<T, F> id(Class<F> idClass) throws MetaException;
+    PrimaryFieldMeta<T> id();
 
     @Nullable
-    <E extends Enum<E> & CodeEnum> FieldMeta<? super T, E> discriminator();
+    FieldMeta<? super T> discriminator();
 
     int discriminatorValue();
 
@@ -39,7 +36,7 @@ public interface TableMeta<T extends IDomain> extends TableItem, Meta {
      */
     List<IndexMeta<T>> indexList();
 
-    List<FieldMeta<T, ?>> fieldList();
+    List<FieldMeta<T>> fieldList();
 
     String charset();
 
@@ -50,24 +47,19 @@ public interface TableMeta<T extends IDomain> extends TableItem, Meta {
     /**
      * @throws IllegalArgumentException when not found matched {@link FieldMeta} for fieldName
      */
-    FieldMeta<T, Object> getField(String fieldName);
-
-    /**
-     * @throws IllegalArgumentException when not found matched {@link FieldMeta} for fieldName
-     */
-    <F> FieldMeta<T, F> getField(String fieldName, Class<F> fieldClass);
+    FieldMeta<T> getField(String fieldName);
 
     /**
      * @throws IllegalArgumentException when not found matched {@link IndexFieldMeta} for fieldName
      */
-    <F> IndexFieldMeta<T, F> getIndexField(String fieldName, Class<F> fieldClass);
+    IndexFieldMeta<T> getIndexField(String fieldName);
 
     /**
      * @throws IllegalArgumentException when not found matched {@link UniqueFieldMeta} for fieldName
      */
-    <F> UniqueFieldMeta<T, F> getUniqueField(String fieldName, Class<F> fieldClass);
+    UniqueFieldMeta<T> getUniqueField(String fieldName);
 
-    List<FieldMeta<T, ?>> generatorChain();
+    List<FieldMeta<T>> generatorChain();
 
     @Override
     boolean equals(Object o);

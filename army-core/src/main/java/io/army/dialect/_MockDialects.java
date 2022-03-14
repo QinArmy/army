@@ -147,11 +147,11 @@ public abstract class _MockDialects {
 
         @Override
         protected void generatorChan(TableMeta<?> table, ObjectWrapper wrapper) {
-            for (FieldMeta<?, ?> field : table.generatorChain()) {
+            for (FieldMeta<?> field : table.generatorChain()) {
                 wrapper.set(field.fieldName(), null);
             }
             if (table instanceof ChildTableMeta) {
-                for (FieldMeta<?, ?> field : ((ChildTableMeta<?>) table).parentMeta().generatorChain()) {
+                for (FieldMeta<?> field : ((ChildTableMeta<?>) table).parentMeta().generatorChain()) {
                     wrapper.set(field.fieldName(), null);
                 }
             }

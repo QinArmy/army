@@ -49,7 +49,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
             if (!(part instanceof FieldMeta)) {
                 continue;
             }
-            FieldMeta<?, ?> field = (FieldMeta<?, ?>) part;
+            FieldMeta<?> field = (FieldMeta<?>) part;
             if (field.tableMeta() != table) {
                 throw _Exceptions.unknownColumn(update.tableAlias(), field);
             }
@@ -72,7 +72,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
         final List<SetLeftItem> parenFields = new ArrayList<>(), fields = new ArrayList<>();
         final List<SetRightItem> parentValues = new ArrayList<>(), values = new ArrayList<>();
 
-        FieldMeta<?, ?> field;
+        FieldMeta<?> field;
         TableMeta<?> belongOf;
         SetLeftItem part;
         for (int i = 0; i < fieldCount; i++) {
@@ -80,7 +80,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
             if (!(part instanceof FieldMeta)) {
                 throw new CriteriaException("Standard update don't support Row.");
             }
-            field = (FieldMeta<?, ?>) part;
+            field = (FieldMeta<?>) part;
             belongOf = field.tableMeta();
             if (belongOf == parentTable) {
                 parenFields.add(field);

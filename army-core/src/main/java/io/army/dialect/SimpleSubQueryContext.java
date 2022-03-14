@@ -39,7 +39,7 @@ final class SimpleSubQueryContext extends _BaseSqlContext implements _SimpleQuer
 
 
     @Override
-    public void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
+    public void appendField(final String tableAlias, final FieldMeta<?> field) {
         final TableItem tableItem;
         tableItem = this.aliasToTable.get(tableAlias);
         final _SqlContext outerContext;
@@ -65,7 +65,7 @@ final class SimpleSubQueryContext extends _BaseSqlContext implements _SimpleQuer
     }
 
     @Override
-    public void appendField(final FieldMeta<?, ?> field) {
+    public void appendField(final FieldMeta<?> field) {
         final String safeAlias;
         safeAlias = this.tableToSafeAlias.get(field.tableMeta());
         final _SqlContext outerContext;
@@ -86,7 +86,7 @@ final class SimpleSubQueryContext extends _BaseSqlContext implements _SimpleQuer
     }
 
     @Override
-    public void appendOuterField(final String tableAlias, final FieldMeta<?, ?> field) {
+    public void appendOuterField(final String tableAlias, final FieldMeta<?> field) {
         final TableItem tableItem;
         tableItem = this.aliasToTable.get(tableAlias);
         if (!(tableItem instanceof TableMeta && field.tableMeta() == tableItem)) {
@@ -101,7 +101,7 @@ final class SimpleSubQueryContext extends _BaseSqlContext implements _SimpleQuer
     }
 
     @Override
-    public void appendOuterField(final FieldMeta<?, ?> field) {
+    public void appendOuterField(final FieldMeta<?> field) {
         final TableMeta<?> fieldTable = field.tableMeta();
         final String safeAlias = this.tableToSafeAlias.get(fieldTable);
         if (safeAlias == null) {

@@ -5,7 +5,7 @@ import io.army.criteria.GenericField;
 public interface _MultiUpdateContext extends _UpdateContext {
 
 
-    String safeTableAliasFor(GenericField<?, ?> field);
+    String safeTableAliasFor(GenericField<?> field);
 
 
 }

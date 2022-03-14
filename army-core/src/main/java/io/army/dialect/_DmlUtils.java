@@ -42,7 +42,7 @@ public abstract class _DmlUtils {
     }
 
 
-    public static void checkInsertExpField(final TableMeta<?> table, final FieldMeta<?, ?> field
+    public static void checkInsertExpField(final TableMeta<?> table, final FieldMeta<?> field
             , final _Expression value) {
 
         if (table instanceof ChildTableMeta) {
@@ -92,11 +92,11 @@ public abstract class _DmlUtils {
                 .append(Constant.SPACE);
         //append table name
         dialect.safeObjectName(table.tableName(), builder);
-        final List<FieldMeta<?, ?>> fieldList = block.fieldLis();
+        final List<FieldMeta<?>> fieldList = block.fieldLis();
         // 1.1 append table fields
         builder.append(Constant.SPACE_LEFT_BRACKET);
         int index = 0;
-        for (FieldMeta<?, ?> field : fieldList) {
+        for (FieldMeta<?> field : fieldList) {
             if (index > 0) {
                 builder.append(Constant.SPACE_COMMA);
             }
@@ -111,10 +111,10 @@ public abstract class _DmlUtils {
 
         final List<? extends ReadWrapper> domainList = context.domainList();
         //2.1 get domainTable and discriminator
-        final FieldMeta<?, ?> discriminator = context.table().discriminator();
+        final FieldMeta<?> discriminator = context.table().discriminator();
 
         int batch = 0;
-        final Map<FieldMeta<?, ?>, _Expression> expMap = context.commonExpMap();
+        final Map<FieldMeta<?>, _Expression> expMap = context.commonExpMap();
         final boolean mockEnvironment = dialect instanceof _MockDialects;
         _Expression expression;
         GeneratorType generatorType;
@@ -126,7 +126,7 @@ public abstract class _DmlUtils {
             }
             builder.append(Constant.SPACE_LEFT_BRACKET);
             index = 0;
-            for (FieldMeta<?, ?> field : fieldList) {
+            for (FieldMeta<?> field : fieldList) {
                 if (index > 0) {
                     builder.append(Constant.SPACE_COMMA);
                 }
@@ -170,9 +170,9 @@ public abstract class _DmlUtils {
     }
 
 
-    static List<FieldMeta<?, ?>> mergeInsertFields(final boolean parent, final _ValuesInsert insert) {
+    static List<FieldMeta<?>> mergeInsertFields(final boolean parent, final _ValuesInsert insert) {
         final TableMeta<?> table, relativeTable;
-        final List<FieldMeta<?, ?>> fieldList = insert.fieldList();
+        final List<FieldMeta<?>> fieldList = insert.fieldList();
         if (parent) {
             relativeTable = insert.table();
             table = ((ChildTableMeta<?>) relativeTable).parentMeta();
@@ -184,21 +184,21 @@ public abstract class _DmlUtils {
                 relativeTable = null;
             }
         }
-        final List<FieldMeta<?, ?>> mergeFieldList;
+        final List<FieldMeta<?>> mergeFieldList;
         if (fieldList.size() == 0) {
             final Collection<?> fieldCollection = table.fieldList();
             mergeFieldList = new ArrayList<>(fieldCollection.size());
             @SuppressWarnings("unchecked")
-            Collection<FieldMeta<?, ?>> tableFields = (Collection<FieldMeta<?, ?>>) fieldCollection;
-            for (FieldMeta<?, ?> field : tableFields) {
+            Collection<FieldMeta<?>> tableFields = (Collection<FieldMeta<?>>) fieldCollection;
+            for (FieldMeta<?> field : tableFields) {
                 if (field.insertable()) {
                     mergeFieldList.add(field);
                 }
             }
         } else {
-            final Set<FieldMeta<?, ?>> fieldSet = new HashSet<>();
+            final Set<FieldMeta<?>> fieldSet = new HashSet<>();
             TableMeta<?> belongOf;
-            for (FieldMeta<?, ?> field : fieldList) {
+            for (FieldMeta<?> field : fieldList) {
                 belongOf = field.tableMeta();
                 if (belongOf == relativeTable) {
                     continue;
@@ -252,7 +252,7 @@ public abstract class _DmlUtils {
     }
 
 
-    static void appendInsertFields(final TableMeta<?> domainTable, final Set<FieldMeta<?, ?>> fieldSet) {
+    static void appendInsertFields(final TableMeta<?> domainTable, final Set<FieldMeta<?>> fieldSet) {
 
         fieldSet.addAll(domainTable.generatorChain());
 

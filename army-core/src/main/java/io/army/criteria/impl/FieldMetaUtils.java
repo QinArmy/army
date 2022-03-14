@@ -36,7 +36,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     static final class PreGeneratorMetaImpl implements GeneratorMeta {
 
-        private final FieldMeta<?, ?> fieldMeta;
+        private final FieldMeta<?> fieldMeta;
 
         private final Class<?> javaType;
 
@@ -45,7 +45,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         private final String dependPropName;
 
 
-        private PreGeneratorMetaImpl(FieldMeta<?, ?> fieldMeta, Class<?> javaType, Map<String, String> params) {
+        private PreGeneratorMetaImpl(FieldMeta<?> fieldMeta, Class<?> javaType, Map<String, String> params) {
             this.javaType = javaType;
             this.fieldMeta = fieldMeta;
             this.params = CollectionUtils.unmodifiableMap(params);
@@ -54,7 +54,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         }
 
         @Override
-        public FieldMeta<?, ?> field() {
+        public FieldMeta<?> field() {
             return fieldMeta;
         }
 
@@ -84,7 +84,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         return column;
     }
 
-    static void validatePostGenerator(FieldMeta<?, ?> field, Generator generator, boolean isDiscriminator) {
+    static void validatePostGenerator(FieldMeta<?> field, Generator generator, boolean isDiscriminator) {
         if (!generator.value().isEmpty() || generator.params().length != 0) {
             String m = String.format("%s config error on %s.", Generator.class.getName(), field);
             throw new MetaException(m);
@@ -102,7 +102,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     }
 
-    static GeneratorMeta columnGeneratorMeta(Generator generator, FieldMeta<?, ?> fieldMeta, boolean isDiscriminator) {
+    static GeneratorMeta columnGeneratorMeta(Generator generator, FieldMeta<?> fieldMeta, boolean isDiscriminator) {
         final String fieldName = fieldMeta.fieldName();
         if (isDiscriminator || (!_MetaBridge.ID.equals(fieldName) && _MetaBridge.RESERVED_PROPS.contains(fieldName))) {
             String m = String.format("%s is managed by army ,so must no %s", fieldMeta, Generator.class.getName());
@@ -154,12 +154,12 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     }
 
-    static boolean isDiscriminator(final FieldMeta<?, ?> fieldMeta) {
+    static boolean isDiscriminator(final FieldMeta<?> fieldMeta) {
         final Inheritance inheritance = fieldMeta.tableMeta().javaType().getAnnotation(Inheritance.class);
         return inheritance != null && fieldMeta.fieldName().equals(inheritance.value());
     }
 
-    static boolean columnInsertable(FieldMeta<?, ?> field, final Column column, boolean isDiscriminator) {
+    static boolean columnInsertable(FieldMeta<?> field, final Column column, boolean isDiscriminator) {
         final boolean insertable;
         final Generator generator;
         generator = field.javaType().getAnnotation(Generator.class);
@@ -183,7 +183,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         return insertable;
     }
 
-    static UpdateMode columnUpdatable(FieldMeta<?, ?> field, final Column column, boolean isDiscriminator) {
+    static UpdateMode columnUpdatable(FieldMeta<?> field, final Column column, boolean isDiscriminator) {
         final String fieldName = field.fieldName();
         final UpdateMode mode;
         if (isDiscriminator
@@ -203,7 +203,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
 
-    static String columnComment(final Column column, FieldMeta<?, ?> fieldMeta, final boolean isDiscriminator) {
+    static String columnComment(final Column column, FieldMeta<?> fieldMeta, final boolean isDiscriminator) {
         String comment = column.comment();
         if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName()) || isDiscriminator) {
             if (!StringUtils.hasText(comment)) {
@@ -245,7 +245,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
 
-    private static String commentManagedByArmy(FieldMeta<?, ?> fieldMeta) {
+    private static String commentManagedByArmy(FieldMeta<?> fieldMeta) {
         String comment = "";
         switch (fieldMeta.fieldName()) {
             case _MetaBridge.ID:
@@ -275,7 +275,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     /**
      * @see #columnGeneratorMeta(Generator, FieldMeta, boolean)
      */
-    private static Class<?> loadPreGeneratorClass(FieldMeta<?, ?> fieldMeta, final String className) {
+    private static Class<?> loadPreGeneratorClass(FieldMeta<?> fieldMeta, final String className) {
         if (!StringUtils.hasText(className)) {
             String m = String.format("%s generator no class name", fieldMeta);
             throw new MetaException(m);

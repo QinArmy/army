@@ -23,35 +23,34 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, F>
-        implements FieldMeta<T, F>, _Selection {
+abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> implements FieldMeta<T>, _Selection {
 
     private static final String ID = _MetaBridge.ID;
 
-    private static final ConcurrentMap<DefaultFieldMeta<?, ?>, DefaultFieldMeta<?, ?>> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<DefaultFieldMeta<?>, DefaultFieldMeta<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    private static final ConcurrentMap<FieldMeta<?, ?>, Boolean> CODEC_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<FieldMeta<?>, Boolean> CODEC_MAP = new ConcurrentHashMap<>();
 
     /**
      * @see DefaultTableMeta#getTableMeta(Class)
      */
     @SuppressWarnings("unchecked")
-    static <T extends IDomain, F> FieldMeta<T, F> createFieldMeta(final TableMeta<T> table, final Field field) {
+    static <T extends IDomain> FieldMeta<T> createFieldMeta(final TableMeta<T> table, final Field field) {
         if (_MetaBridge.ID.equals(field.getName())) {
             throw new IllegalArgumentException("id can't invoke this method.");
         }
-        final DefaultSimpleFieldMeta<T, F> fieldMeta;
+        final DefaultSimpleFieldMeta<T> fieldMeta;
         fieldMeta = new DefaultSimpleFieldMeta<>(table, field);
 
-        final DefaultFieldMeta<?, ?> cache;
+        final DefaultFieldMeta<?> cache;
         cache = INSTANCE_MAP.putIfAbsent(fieldMeta, fieldMeta);
 
-        final DefaultSimpleFieldMeta<T, F> simple;
+        final DefaultSimpleFieldMeta<T> simple;
         if (cache == null) {
             simple = fieldMeta;
         } else if (cache instanceof DefaultSimpleFieldMeta) {
             // drop fieldMeta ,return cache.
-            simple = (DefaultSimpleFieldMeta<T, F>) cache;
+            simple = (DefaultSimpleFieldMeta<T>) cache;
         } else {
             String m = String.format("%s.%s can't mapping to simple %s.", table.javaType().getName()
                     , field.getName(), FieldMeta.class.getName());
@@ -65,9 +64,9 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
      * @see DefaultTableMeta#getTableMeta(Class)
      */
     @SuppressWarnings("unchecked")
-    static <T extends IDomain, F> IndexFieldMeta<T, F> createIndexFieldMeta(final TableMeta<T> table, final Field field
+    static <T extends IDomain> IndexFieldMeta<T> createIndexFieldMeta(final TableMeta<T> table, final Field field
             , final IndexMeta<T> indexMeta, final int columnCount, final @Nullable Boolean fieldAsc) {
-        final DefaultIndexFieldMeta<T, F> newFieldMeta;
+        final DefaultIndexFieldMeta<T> newFieldMeta;
         // create new IndexFieldMeta
         if (indexMeta.unique() && columnCount == 1) {
             if (ID.equals(field.getName())) {
@@ -79,10 +78,10 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
             newFieldMeta = new DefaultIndexFieldMeta<>(table, field, indexMeta, fieldAsc);
         }
 
-        final DefaultFieldMeta<?, ?> cache;
+        final DefaultFieldMeta<?> cache;
         cache = INSTANCE_MAP.putIfAbsent(newFieldMeta, newFieldMeta);
 
-        final DefaultIndexFieldMeta<T, F> indexField;
+        final DefaultIndexFieldMeta<T> indexField;
         if (cache == null) {
             indexField = newFieldMeta;
         } else if (!(cache instanceof DefaultIndexFieldMeta)) {
@@ -97,21 +96,21 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
             }
             if (!_MetaBridge.ID.equals(field.getName())) {
                 // drop newFieldMeta ,return cache
-                indexField = (DefaultUniqueFieldMeta<T, F>) cache;
+                indexField = (DefaultUniqueFieldMeta<T>) cache;
             } else if (cache instanceof DefaultPrimaryFieldMeta) {
                 // drop newFieldMeta ,return cache
-                indexField = (DefaultPrimaryFieldMeta<T, F>) cache;
+                indexField = (DefaultPrimaryFieldMeta<T>) cache;
             } else {
                 throw new IllegalStateException("INSTANCE_MAP error");
             }
         } else {
             // drop newFieldMeta ,return cache
-            indexField = (DefaultIndexFieldMeta<T, F>) cache;
+            indexField = (DefaultIndexFieldMeta<T>) cache;
         }
         return indexField;
     }
 
-    static Set<FieldMeta<?, ?>> codecFieldMetaSet() {
+    static Set<FieldMeta<?>> codecFieldMetaSet() {
         return CODEC_MAP.keySet();
     }
 
@@ -131,7 +130,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
     final String fieldName;
 
-    final Class<F> javaType;
+    final Class<?> javaType;
 
     final String columnName;
 
@@ -157,7 +156,6 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
     private final boolean codec;
 
-    @SuppressWarnings("unchecked")
     private DefaultFieldMeta(final TableMeta<T> table, final Field field) throws MetaException {
         Objects.requireNonNull(table);
         Objects.requireNonNull(field);
@@ -166,7 +164,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
         this.table = (DefaultTableMeta<T>) table;
         this.fieldName = field.getName();
-        this.javaType = (Class<F>) field.getType();
+        this.javaType = field.getType();
         try {
             final Column column = FieldMetaUtils.columnMeta(table.javaType(), field);
 
@@ -221,7 +219,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
     }
 
     @Override
-    public final FieldMeta<?, ?> fieldMeta() {
+    public final FieldMeta<?> fieldMeta() {
         return this;
     }
 
@@ -252,7 +250,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
     }
 
     @Override
-    public final Class<F> javaType() {
+    public final Class<?> javaType() {
         return this.javaType;
     }
 
@@ -331,7 +329,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
         if (obj == this) {
             match = true;
         } else if (obj instanceof DefaultFieldMeta) {
-            final DefaultFieldMeta<?, ?> o = (DefaultFieldMeta<?, ?>) obj;
+            final DefaultFieldMeta<?> o = (DefaultFieldMeta<?>) obj;
             match = this.table.javaType == o.table.javaType
                     && this.fieldName.equals(o.fieldName);
         } else {
@@ -383,7 +381,7 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
     /*################################## blow private method ##################################*/
 
-    private static class DefaultSimpleFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F> {
+    private static class DefaultSimpleFieldMeta<T extends IDomain> extends DefaultFieldMeta<T> {
 
         private DefaultSimpleFieldMeta(TableMeta<T> table, Field field) throws MetaException {
             super(table, field);
@@ -391,8 +389,8 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
 
     }
 
-    private static class DefaultIndexFieldMeta<T extends IDomain, F> extends DefaultFieldMeta<T, F>
-            implements IndexFieldMeta<T, F> {
+    private static class DefaultIndexFieldMeta<T extends IDomain> extends DefaultFieldMeta<T>
+            implements IndexFieldMeta<T> {
 
         private final IndexMeta<T> indexMeta;
 
@@ -419,8 +417,8 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
         }
     }
 
-    private static class DefaultUniqueFieldMeta<T extends IDomain, F> extends DefaultIndexFieldMeta<T, F>
-            implements UniqueFieldMeta<T, F> {
+    private static class DefaultUniqueFieldMeta<T extends IDomain> extends DefaultIndexFieldMeta<T>
+            implements UniqueFieldMeta<T> {
 
         private DefaultUniqueFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
                 , @Nullable Boolean fieldAsc) throws MetaException {
@@ -432,8 +430,8 @@ abstract class DefaultFieldMeta<T extends IDomain, F> extends OperationField<T, 
         }
     }
 
-    private static final class DefaultPrimaryFieldMeta<T extends IDomain, F> extends DefaultUniqueFieldMeta<T, F>
-            implements PrimaryFieldMeta<T, F> {
+    private static final class DefaultPrimaryFieldMeta<T extends IDomain> extends DefaultUniqueFieldMeta<T>
+            implements PrimaryFieldMeta<T> {
 
         private DefaultPrimaryFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
                 , @Nullable Boolean fieldAsc) throws MetaException {

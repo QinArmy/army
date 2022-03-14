@@ -20,7 +20,7 @@ public interface _SqlContext {
      *     </ol>
      * </p>
      */
-    void appendField(String tableAlias, FieldMeta<?, ?> field);
+    void appendField(String tableAlias, FieldMeta<?> field);
 
     /**
      * <p>
@@ -34,7 +34,7 @@ public interface _SqlContext {
      *     </ol>
      * </p>
      */
-    void appendField(FieldMeta<?, ?> field);
+    void appendField(FieldMeta<?> field);
 
     _Dialect dialect();
 

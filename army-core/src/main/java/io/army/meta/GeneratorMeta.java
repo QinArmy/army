@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface GeneratorMeta extends Meta {
 
-    FieldMeta<?, ?> field();
+    FieldMeta<?> field();
 
     Class<?> javaType();
 

@@ -12,7 +12,7 @@ import io.army.modelgen._MetaBridge;
  * @param <T> representing Domain Java Type
  * @param <F> representing Domain property Java Type
  */
-public interface FieldMeta<T extends IDomain, F> extends GenericField<T, F> {
+public interface FieldMeta<T extends IDomain> extends GenericField<T> {
 
 
     boolean primary();

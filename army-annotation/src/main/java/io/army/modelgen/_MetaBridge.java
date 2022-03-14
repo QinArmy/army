@@ -1,15 +1,13 @@
 package io.army.modelgen;
 
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.nio.file.Path;
-import java.time.*;
+import io.army.lang.NonNull;
+import io.army.lang.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * Meta Constant set
@@ -28,9 +26,7 @@ public abstract class _MetaBridge {
 
     public static final String VERSION = "version";
 
-    public static final List<String> DOMAIN_PROPS = CollectionUtils.asUnmodifiableList(ID, CREATE_TIME);
-    public static final List<String> UPDATE_PROPS = CollectionUtils.asUnmodifiableList(ID, CREATE_TIME, UPDATE_TIME);
-    public static final List<String> RESERVED_PROPS = CollectionUtils.asUnmodifiableList(
+    public static final List<String> RESERVED_PROPS = asUnmodifiableList(
             ID, CREATE_TIME, UPDATE_TIME, VERSION, VISIBLE);
 
 
@@ -40,44 +36,7 @@ public abstract class _MetaBridge {
 
     public static final String FIELD_COUNT = "FIELD_COUNT";
 
-    public static final String FIELD_TOTAL = "FIELD_TOTAL";
-
     public static final String META_CLASS_NAME_SUFFIX = "_";
-
-    public static final Set<Class<?>> SIMPLE_JAVA_TYPE_SET = CollectionUtils.asUnmodifiableSet(
-            String.class,
-            Long.class,
-            Integer.class,
-            BigDecimal.class,
-
-            BigInteger.class,
-            Byte.class,
-            Double.class,
-            Float.class,
-
-            LocalTime.class,
-            Short.class,
-            LocalDateTime.class,
-            LocalDate.class,
-
-            ZonedDateTime.class,
-            OffsetDateTime.class,
-            OffsetTime.class,
-            Year.class,
-
-            YearMonth.class,
-            MonthDay.class
-    );
-
-    public static final Set<Class<?>> MAYBE_NO_DEFAULT_TYPES = SIMPLE_JAVA_TYPE_SET;
-
-    public static final Set<Class<?>> WITHOUT_DEFAULT_TYPES = CollectionUtils.asUnmodifiableSet(
-            MAYBE_NO_DEFAULT_TYPES,
-            InputStream.class,
-            Reader.class,
-            Path.class,
-            byte[].class
-    );
 
 
     public static String camelToUpperCase(String camel) {
@@ -103,6 +62,24 @@ public abstract class _MetaBridge {
         }
         builder.append(camel, preIndex, len);
         return builder.toString();
+    }
+
+
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    @NonNull
+    public static <T> List<T> asUnmodifiableList(@Nullable T... e) {
+        final List<T> list;
+        if (e == null || e.length == 0) {
+            list = Collections.emptyList();
+        } else if (e.length == 1) {
+            list = Collections.singletonList(e[0]);
+        } else {
+            final List<T> temp = new ArrayList<>(e.length);
+            Collections.addAll(temp, e);
+            list = Collections.unmodifiableList(temp);
+        }
+        return list;
     }
 
 

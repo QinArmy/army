@@ -40,12 +40,12 @@ final class UnionSelectContext extends _BaseSqlContext implements _UnionQueryCon
     }
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+    public void appendField(String tableAlias, FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(tableAlias, field);
     }
 
     @Override
-    public void appendField(FieldMeta<?, ?> field) {
+    public void appendField(FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(null, field);
     }
 

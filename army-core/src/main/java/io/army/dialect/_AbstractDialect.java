@@ -264,7 +264,7 @@ public abstract class _AbstractDialect implements _Dialect {
             ddlDialect.createTable(table, ddlList);
         }
 
-        List<FieldMeta<?, ?>> newFieldList;
+        List<FieldMeta<?>> newFieldList;
         List<_FieldResult> fieldResultList;
         List<String> indexList;
         for (_TableResult tableResult : schemaResult.changeTableList()) {
@@ -541,7 +541,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final int blockSize = blockList.size();
 
         TableItem tableItem;
-        FieldMeta<?, ?> visibleField;
+        FieldMeta<?> visibleField;
         _TableBlock block;
         //3. append visible
         for (int i = 0, outputCount = 0; i < blockSize; i++) {
@@ -669,7 +669,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
 
     protected final void discriminator(TableMeta<?> table, String safeTableAlias, _StmtContext context) {
-        final FieldMeta<?, ?> field;
+        final FieldMeta<?> field;
         if (table instanceof ChildTableMeta) {
             field = ((ChildTableMeta<?>) table).discriminator();
         } else if (table instanceof ParentTableMeta) {
@@ -692,7 +692,7 @@ public abstract class _AbstractDialect implements _Dialect {
     protected final void visiblePredicate(SingleTableMeta<?> table, final String safeTableAlias
             , final _StmtContext context) {
 
-        final FieldMeta<?, ?> field = table.getField(_MetaBridge.VISIBLE);
+        final FieldMeta<?> field = table.getField(_MetaBridge.VISIBLE);
         final Boolean visibleValue;
         switch (context.visible()) {
             case ONLY_VISIBLE:
@@ -723,13 +723,13 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
 
-    protected final void conditionUpdate(String safeTableAlias, List<GenericField<?, ?>> conditionFields
+    protected final void conditionUpdate(String safeTableAlias, List<GenericField<?>> conditionFields
             , _StmtContext context) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
-        for (GenericField<?, ?> field : conditionFields) {
+        for (GenericField<?> field : conditionFields) {
             final char[] safeColumnAlias = dialect.safeObjectName(field.columnName()).toCharArray();
             sqlBuilder
                     .append(Constant.SPACE_AND_SPACE)
@@ -782,7 +782,7 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
 
-    protected final List<GenericField<?, ?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
+    protected final List<GenericField<?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
 
         final List<? extends SetLeftItem> targetPartList = clause.targetParts();
         final List<? extends SetRightItem> valuePartList = clause.valueParts();
@@ -800,7 +800,7 @@ public abstract class _AbstractDialect implements _Dialect {
         }
         final boolean supportTableAlias = dialect.setClauseTableAlias();
         final boolean hasSelfJoin = clause.hasSelfJoint();
-        final List<GenericField<?, ?>> conditionFields = new ArrayList<>();
+        final List<GenericField<?>> conditionFields = new ArrayList<>();
         for (int i = 0; i < targetCount; i++) {
             if (i > 0) {
                 sqlBuilder.append(Constant.SPACE_COMMA);
@@ -820,7 +820,7 @@ public abstract class _AbstractDialect implements _Dialect {
             } else if (!(valuePart instanceof _Expression)) {
                 throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
             }
-            final GenericField<?, ?> field = (GenericField<?, ?>) targetPart;
+            final GenericField<?> field = (GenericField<?>) targetPart;
             switch (field.updateMode()) {
                 case UPDATABLE:
                     // no-op
@@ -846,8 +846,8 @@ public abstract class _AbstractDialect implements _Dialect {
             if (hasSelfJoin && !(field instanceof QualifiedField)) {
                 throw _Exceptions.selfJoinNonQualifiedField(field);
             }
-            if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?, ?>) field).tableAlias())) {
-                throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);
+            if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {
+                throw _Exceptions.unknownColumn((QualifiedField<?>) field);
             }
             sqlBuilder.append(Constant.SPACE);
             if (supportTableAlias) {
@@ -873,7 +873,7 @@ public abstract class _AbstractDialect implements _Dialect {
      * @see #setClause(boolean, _SetBlock, _UpdateContext)
      */
     private void appendRowTarget(final _SetBlock clause, final Row row
-            , List<GenericField<?, ?>> conditionFields, final _UpdateContext context) {
+            , List<GenericField<?>> conditionFields, final _UpdateContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
@@ -883,7 +883,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final boolean hasSelfJoin = clause.hasSelfJoint(), supportTableAlias = dialect.setClauseTableAlias();
         sqlBuilder.append(Constant.SPACE_LEFT_BRACKET);
         int index = 0;
-        for (GenericField<?, ?> field : row.field()) {
+        for (GenericField<?> field : row.field()) {
             if (index > 0) {
                 sqlBuilder.append(Constant.SPACE_COMMA);
             }
@@ -909,7 +909,7 @@ public abstract class _AbstractDialect implements _Dialect {
             }
             if (field.tableMeta() != table) {
                 if (field instanceof QualifiedField) {
-                    throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);
+                    throw _Exceptions.unknownColumn((QualifiedField<?>) field);
                 } else {
                     throw _Exceptions.unknownColumn(tableAlias, field.fieldMeta());
                 }
@@ -920,8 +920,8 @@ public abstract class _AbstractDialect implements _Dialect {
             if (hasSelfJoin && !(field instanceof QualifiedField)) {
                 throw _Exceptions.selfJoinNonQualifiedField(field);
             }
-            if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?, ?>) field).tableAlias())) {
-                throw _Exceptions.unknownColumn((QualifiedField<?, ?>) field);
+            if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {
+                throw _Exceptions.unknownColumn((QualifiedField<?>) field);
             }
             sqlBuilder.append(Constant.SPACE);
             if (supportTableAlias) {
@@ -943,7 +943,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
-        final FieldMeta<?, ?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
+        final FieldMeta<?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
         final Class<?> javaType = updateTime.javaType();
         final Temporal updateTimeValue;
         if (javaType == LocalDateTime.class) {
@@ -973,7 +973,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 sqlBuilder.append(safeTableAlias)
                         .append(Constant.POINT);
             }
-            final FieldMeta<?, ?> version = table.getField(_MetaBridge.VERSION);
+            final FieldMeta<?> version = table.getField(_MetaBridge.VERSION);
             final String versionColumnName = dialect.quoteIfNeed(version.columnName());
             sqlBuilder.append(versionColumnName)
                     .append(Constant.SPACE_EQUAL_SPACE)
@@ -1114,7 +1114,7 @@ public abstract class _AbstractDialect implements _Dialect {
         sqlBuilder.append(Constant.SPACE)
                 .append(context.safeTableAlias);
 
-        final List<GenericField<?, ?>> conditionFields;
+        final List<GenericField<?>> conditionFields;
         //2. set clause
         conditionFields = this.setClause(true, context, context);
         //3. where clause

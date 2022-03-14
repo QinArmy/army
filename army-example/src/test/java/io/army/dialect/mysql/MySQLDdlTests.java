@@ -62,7 +62,7 @@ public class MySQLDdlTests {
             }
             ddl = new MySQLDdl((_AbstractDialect) _MockDialects.from(dialect));
             List<?> fieldList = table.fieldList();
-            ddl.addColumn((List<FieldMeta<?, ?>>) fieldList, sqlList);
+            ddl.addColumn((List<FieldMeta<?>>) fieldList, sqlList);
             List<String> errorList;
             errorList = ddl.errorMsgList();
             if (errorList.size() > 0) {
@@ -215,7 +215,7 @@ public class MySQLDdlTests {
 
     private static final class MockFieldResult implements _FieldResult {
 
-        private final FieldMeta<?, ?> field;
+        private final FieldMeta<?> field;
 
         private final boolean sqlType;
 
@@ -225,7 +225,7 @@ public class MySQLDdlTests {
 
         private final boolean comment;
 
-        private MockFieldResult(FieldMeta<?, ?> field, boolean sqlType, boolean defaultValue, boolean nullable, boolean comment) {
+        private MockFieldResult(FieldMeta<?> field, boolean sqlType, boolean defaultValue, boolean nullable, boolean comment) {
             this.field = field;
             this.sqlType = sqlType;
             this.defaultValue = defaultValue;
@@ -234,7 +234,7 @@ public class MySQLDdlTests {
         }
 
         @Override
-        public FieldMeta<?, ?> field() {
+        public FieldMeta<?> field() {
             return this.field;
         }
 

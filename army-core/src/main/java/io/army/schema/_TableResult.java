@@ -15,7 +15,7 @@ public interface _TableResult {
 
     boolean comment();
 
-    List<FieldMeta<? extends IDomain, ?>> newFieldList();
+    List<FieldMeta<? extends IDomain>> newFieldList();
 
     List<_FieldResult> changeFieldList();
 
@@ -32,7 +32,7 @@ public interface _TableResult {
 
         void table(TableMeta<?> table);
 
-        void appendNewColumn(FieldMeta<?, ?> field);
+        void appendNewColumn(FieldMeta<?> field);
 
         void comment(boolean comment);
 

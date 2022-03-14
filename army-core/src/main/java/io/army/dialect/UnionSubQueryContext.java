@@ -16,23 +16,23 @@ final class UnionSubQueryContext extends _BaseSqlContext implements _UnionQueryC
     }
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+    public void appendField(String tableAlias, FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(tableAlias, field);
     }
 
     @Override
-    public void appendField(FieldMeta<?, ?> field) {
+    public void appendField(FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(null, field);
     }
 
 
     @Override
-    public void appendOuterField(String tableAlias, FieldMeta<?, ?> field) {
+    public void appendOuterField(String tableAlias, FieldMeta<?> field) {
         this.appendOuterField(field);
     }
 
     @Override
-    public void appendOuterField(FieldMeta<?, ?> field) {
+    public void appendOuterField(FieldMeta<?> field) {
         throw new UnsupportedOperationException("Union sub query context don't support this operation.");
     }
 

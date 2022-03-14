@@ -14,7 +14,7 @@ import io.army.domain.IDomain;
  *     </ul>
  * </p>
  */
-abstract class OperationField<T extends IDomain, F> extends OperationExpression implements GenericField<T, F> {
+abstract class OperationField<T extends IDomain> extends OperationExpression implements GenericField<T> {
 
 
     @Override

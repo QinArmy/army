@@ -30,20 +30,20 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     private static void checkCommonExpMap(_ValuesInsert insert) {
         final TableMeta<?> table = insert.table();
-        for (Map.Entry<FieldMeta<?, ?>, _Expression> e : insert.commonExpMap().entrySet()) {
+        for (Map.Entry<FieldMeta<?>, _Expression> e : insert.commonExpMap().entrySet()) {
             _DmlUtils.checkInsertExpField(table, e.getKey(), e.getValue());
         }
     }
 
     final SingleTableMeta<?> table;
 
-    final List<FieldMeta<?, ?>> fieldList;
+    final List<FieldMeta<?>> fieldList;
 
-    final Map<FieldMeta<?, ?>, _Expression> commonExpMap;
+    final Map<FieldMeta<?>, _Expression> commonExpMap;
 
     final List<? extends ReadWrapper> domainList;
 
-    private final PrimaryFieldMeta<?, ?> returnId;
+    private final PrimaryFieldMeta<?> returnId;
 
     private final ChildBlock childBlock;
 
@@ -79,7 +79,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
     @Override
-    public List<FieldMeta<?, ?>> fieldLis() {
+    public List<FieldMeta<?>> fieldLis() {
         return this.fieldList;
     }
 
@@ -95,13 +95,13 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+    public void appendField(String tableAlias, FieldMeta<?> field) {
         // value insert don't support insert any field in expression
         throw _Exceptions.unknownColumn(tableAlias, field);
     }
 
     @Override
-    public void appendField(FieldMeta<?, ?> field) {
+    public void appendField(FieldMeta<?> field) {
         // value insert don't support insert any field in expression
         throw _Exceptions.unknownColumn(null, field);
     }
@@ -109,7 +109,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     @Override
     public Stmt build() {
 
-        final PrimaryFieldMeta<?, ?> returnId = this.returnId;
+        final PrimaryFieldMeta<?> returnId = this.returnId;
         final SimpleStmt parentStmt;
         if (returnId == null) {
             parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
@@ -134,12 +134,12 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
     @Override
-    public Map<FieldMeta<?, ?>, _Expression> commonExpMap() {
+    public Map<FieldMeta<?>, _Expression> commonExpMap() {
         return this.commonExpMap;
     }
 
     void onParentEnd() {
-        final PrimaryFieldMeta<?, ?> returnId = this.returnId;
+        final PrimaryFieldMeta<?> returnId = this.returnId;
         if (returnId != null) {
             this.sqlBuilder
                     .append(Constant.SPACE)
@@ -163,7 +163,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
         private final ChildTableMeta<?> table;
 
-        private final List<FieldMeta<?, ?>> fieldList;
+        private final List<FieldMeta<?>> fieldList;
 
         private final StandardValueInsertContext parentContext;
 
@@ -171,7 +171,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
         private final List<ParamValue> paramList = new ArrayList<>();
 
-        private ChildBlock(ChildTableMeta<?> table, List<FieldMeta<?, ?>> fieldList, StandardValueInsertContext parentContext) {
+        private ChildBlock(ChildTableMeta<?> table, List<FieldMeta<?>> fieldList, StandardValueInsertContext parentContext) {
             this.table = table;
             this.fieldList = fieldList;
             this.parentContext = parentContext;
@@ -188,18 +188,18 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
         }
 
         @Override
-        public List<FieldMeta<?, ?>> fieldLis() {
+        public List<FieldMeta<?>> fieldLis() {
             return this.fieldList;
         }
 
         @Override
-        public void appendField(String tableAlias, FieldMeta<?, ?> field) {
+        public void appendField(String tableAlias, FieldMeta<?> field) {
             // value insert don't support insert any field in expression
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
 
         @Override
-        public void appendField(FieldMeta<?, ?> field) {
+        public void appendField(FieldMeta<?> field) {
             // value insert don't support insert any field in expression
             throw _Exceptions.unknownColumn(null, field);
         }

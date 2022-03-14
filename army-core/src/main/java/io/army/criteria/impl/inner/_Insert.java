@@ -12,6 +12,6 @@ public interface _Insert extends _Statement {
     /**
      * @return a unmodifiable list , maybe empty.
      */
-    List<FieldMeta<?, ?>> fieldList();
+    List<FieldMeta<?>> fieldList();
 
 }

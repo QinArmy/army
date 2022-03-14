@@ -22,14 +22,14 @@ import java.lang.reflect.Field;
  * @see FieldMeta
  * @see QualifiedField
  */
-public interface GenericField<T extends IDomain, F> extends Expression, FieldSelection, ParamMeta, SetLeftItem {
+public interface GenericField<T extends IDomain> extends Expression, FieldSelection, ParamMeta, SetLeftItem {
 
     TableMeta<T> tableMeta();
 
     /**
      * @return domain mapping property java type.
      */
-    Class<F> javaType();
+    Class<?> javaType();
 
     MappingType mappingType();
 

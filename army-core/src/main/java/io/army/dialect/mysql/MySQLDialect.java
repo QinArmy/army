@@ -281,7 +281,7 @@ abstract class MySQLDialect extends _AbstractDialect {
         //2. child join parent
         this.appendChildJoinParent(childBlock, context);
 
-        final List<GenericField<?, ?>> childConditionFields, parentConditionFields;
+        final List<GenericField<?>> childConditionFields, parentConditionFields;
         //3. set clause
         parentConditionFields = this.setClause(true, context, context);
         childConditionFields = this.setClause(false, childBlock, context);

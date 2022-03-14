@@ -440,7 +440,7 @@ public abstract class _Literals {
     private static int getTimeTypeScale(ParamMeta paramMeta) {
         int scale;
         if (paramMeta instanceof FieldMeta) {
-            scale = ((FieldMeta<?, ?>) paramMeta).scale();
+            scale = ((FieldMeta<?>) paramMeta).scale();
             if (scale < 0) {
                 scale = 6;
             }

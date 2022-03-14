@@ -19,7 +19,7 @@ abstract class SelectionGroups {
     }
 
     static <T extends IDomain> SelectionGroup singleGroup(
-            String tableAlias, List<FieldMeta<T, ?>> fieldList) {
+            String tableAlias, List<FieldMeta<T>> fieldList) {
         return new TableFieldGroup<>(tableAlias, fieldList);
     }
 
@@ -52,9 +52,9 @@ abstract class SelectionGroups {
 
         private final String tableAlias;
 
-        private final List<FieldMeta<T, ?>> fieldList;
+        private final List<FieldMeta<T>> fieldList;
 
-        private TableFieldGroup(String tableAlias, List<FieldMeta<T, ?>> fieldList) {
+        private TableFieldGroup(String tableAlias, List<FieldMeta<T>> fieldList) {
             this.tableAlias = tableAlias;
             this.fieldList = CollectionUtils.asUnmodifiableList(fieldList);
         }
@@ -65,9 +65,9 @@ abstract class SelectionGroups {
         }
 
         private TableFieldGroup(String tableAlias, TableMeta<T> parent) {
-            final List<FieldMeta<T, ?>> fields = parent.fieldList();
-            final List<FieldMeta<T, ?>> fieldList = new ArrayList<>(fields.size() - 1);
-            for (FieldMeta<T, ?> field : fields) {
+            final List<FieldMeta<T>> fields = parent.fieldList();
+            final List<FieldMeta<T>> fieldList = new ArrayList<>(fields.size() - 1);
+            for (FieldMeta<T> field : fields) {
                 if (field instanceof PrimaryFieldMeta) {
                     continue;
                 }
@@ -83,15 +83,14 @@ abstract class SelectionGroups {
             return this.fieldList;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder = context.sqlBuilder();
             final String tableAlias = this.tableAlias;
 
-            final List<FieldMeta<T, ?>> fieldList = this.fieldList;
+            final List<FieldMeta<T>> fieldList = this.fieldList;
             final int size = fieldList.size();
-            FieldMeta<T, ?> field;
+            FieldMeta<T> field;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
                     builder.append(Constant.SPACE_COMMA);
@@ -100,7 +99,7 @@ abstract class SelectionGroups {
                 context.appendField(tableAlias, field);
 
                 builder.append(Constant.SPACE_AS_SPACE)
-                        .append(((DefaultFieldMeta<T, ?>) field).fieldName);
+                        .append(((DefaultFieldMeta<T>) field).fieldName);
             }
 
         }
@@ -110,7 +109,7 @@ abstract class SelectionGroups {
             final StringBuilder builder = new StringBuilder();
 
             int index = 0;
-            for (FieldMeta<T, ?> field : this.fieldList) {
+            for (FieldMeta<T> field : this.fieldList) {
                 if (index > 0) {
                     builder.append(Constant.SPACE_COMMA);
                 }
@@ -135,7 +134,7 @@ abstract class SelectionGroups {
 
         private final String parentAlias;
 
-        private final List<FieldMeta<?, ?>> fieldList;
+        private final List<FieldMeta<?>> fieldList;
 
         private final int parentSize;
 
@@ -144,12 +143,12 @@ abstract class SelectionGroups {
             this.parentAlias = parentAlias;
             this.childAlias = childAlias;
 
-            final Collection<FieldMeta<P, ?>> parentFields = parent.fieldList();
-            final Collection<FieldMeta<T, ?>> childFields = child.fieldList();
+            final Collection<FieldMeta<P>> parentFields = parent.fieldList();
+            final Collection<FieldMeta<T>> childFields = child.fieldList();
             this.parentSize = parentFields.size() - 1;
 
-            final List<FieldMeta<?, ?>> fieldList = new ArrayList<>(this.parentSize + childFields.size());
-            for (FieldMeta<P, ?> field : parentFields) {
+            final List<FieldMeta<?>> fieldList = new ArrayList<>(this.parentSize + childFields.size());
+            for (FieldMeta<P> field : parentFields) {
                 if (field instanceof PrimaryFieldMeta) {
                     continue;
                 }
@@ -170,14 +169,14 @@ abstract class SelectionGroups {
 
             final StringBuilder builder = context.sqlBuilder();
 
-            final List<FieldMeta<?, ?>> fieldList = this.fieldList;
+            final List<FieldMeta<?>> fieldList = this.fieldList;
             final int parentSize = this.parentSize;
             final String parentAlias = this.parentAlias;
             final String childAlias = this.childAlias;
 
 
             final int size = fieldList.size();
-            FieldMeta<?, ?> field;
+            FieldMeta<?> field;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
                     builder.append(Constant.SPACE_COMMA);
@@ -189,7 +188,7 @@ abstract class SelectionGroups {
                     context.appendField(childAlias, field);
                 }
                 builder.append(Constant.SPACE_AS_SPACE)
-                        .append(((DefaultFieldMeta<T, ?>) field).fieldName);
+                        .append(((DefaultFieldMeta<T>) field).fieldName);
 
             }
 
@@ -199,13 +198,13 @@ abstract class SelectionGroups {
         public String toString() {
             final StringBuilder builder = new StringBuilder();
 
-            final List<FieldMeta<?, ?>> fieldList = this.fieldList;
+            final List<FieldMeta<?>> fieldList = this.fieldList;
             final int parentSize = this.parentSize;
             final String parentAlias = this.parentAlias;
             final String childAlias = this.childAlias;
 
             final int size = fieldList.size();
-            FieldMeta<?, ?> field;
+            FieldMeta<?> field;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
                     builder.append(Constant.SPACE_COMMA);

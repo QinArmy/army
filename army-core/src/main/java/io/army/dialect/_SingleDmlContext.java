@@ -64,7 +64,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
     }
 
     @Override
-    public final void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
+    public final void appendField(final String tableAlias, final FieldMeta<?> field) {
         final ChildBlock childBlock = childBlock();
         if (childBlock == null) {
             if (!this.tableAlias.equals(tableAlias)) {
@@ -77,7 +77,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
     }
 
     @Override
-    public final void appendField(final FieldMeta<?, ?> field) {
+    public final void appendField(final FieldMeta<?> field) {
         final TableMeta<?> belongOf = field.tableMeta();
         if (belongOf == this.table) {// field is parent table column.
             this.sqlBuilder
@@ -150,7 +150,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
 
         @Override
-        public final void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
+        public final void appendField(final String tableAlias, final FieldMeta<?> field) {
             if (!this.tableAlias.equals(tableAlias)) {
                 throw _Exceptions.unknownColumn(tableAlias, field);
             }
@@ -158,7 +158,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
         }
 
         @Override
-        public final void appendField(final FieldMeta<?, ?> field) {
+        public final void appendField(final FieldMeta<?> field) {
             final TableMeta<?> belongOf = field.tableMeta();
             final StringBuilder sqlBuilder = this.parentContext.sqlBuilder;
             final _Dialect dialect = this.parentContext.dialect;
@@ -220,7 +220,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
 
     private static void childColumnFromSubQuery(final _Block parentContext, final _Block childBlock
-            , final FieldMeta<?, ?> childField) {
+            , final FieldMeta<?> childField) {
 
         if (!(parentContext.table() instanceof ParentTableMeta)) {
             throw new IllegalArgumentException("parentContext error");
@@ -277,7 +277,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
     }
 
 
-    private static void parentColumnFromSubQuery(final _Block childContext, final FieldMeta<?, ?> parentField) {
+    private static void parentColumnFromSubQuery(final _Block childContext, final FieldMeta<?> parentField) {
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childContext.table();
         final String parentSafeTable = Constant.FORBID_ALIAS + "temp_p_of_" + childContext.tableAlias();
 
@@ -312,7 +312,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
         sqlBuilder.append(Constant.SPACE)
                 .append(parentSafeTable);
 
-        final FieldMeta<?, ?> discriminator = parentTable.discriminator();
+        final FieldMeta<?> discriminator = parentTable.discriminator();
 
         sqlBuilder.append(Constant.SPACE)
                 //below where clause

@@ -56,7 +56,7 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
     }
 
     @Override
-    public void appendField(final String tableAlias, final FieldMeta<?, ?> field) {
+    public void appendField(final String tableAlias, final FieldMeta<?> field) {
         final TableItem tableItem = this.aliasToTable.get(tableAlias);
         if (!(tableItem instanceof TableMeta) || field.tableMeta() != tableItem) {
             throw _Exceptions.unknownColumn(tableAlias, field);
@@ -70,7 +70,7 @@ final class SimpleSelectContext extends _BaseSqlContext implements _SimpleQueryC
     }
 
     @Override
-    public void appendField(final FieldMeta<?, ?> field) {
+    public void appendField(final FieldMeta<?> field) {
         final String safeAlias = this.tableToSafeAlias.get(field.tableMeta());
         if (safeAlias == null) {
             throw _Exceptions.selfJoinNonQualifiedField(field);

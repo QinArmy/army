@@ -47,7 +47,7 @@ final class MySQLDdl extends _DdlDialect {
                 .append("ALTER TABLE ");
         final _AbstractDialect dialect = this.dialect;
         TableMeta<?> table = null;
-        FieldMeta<?, ?> field;
+        FieldMeta<?> field;
         _FieldResult result;
 
         for (int i = 0; i < size; i++) {
@@ -149,7 +149,7 @@ final class MySQLDdl extends _DdlDialect {
                 dialect.quoteIfNeed(indexType, builder);
             }
             builder.append(Constant.SPACE_LEFT_BRACKET);
-            final List<IndexFieldMeta<T, ?>> indexFieldList = indexMeta.fieldList();
+            final List<IndexFieldMeta<T>> indexFieldList = indexMeta.fieldList();
             final int fieldSize = indexFieldList.size();
             for (int j = 0; j < fieldSize; j++) {
                 if (j > 0) {
@@ -214,7 +214,7 @@ final class MySQLDdl extends _DdlDialect {
     }
 
     @Override
-    protected void dataType(final FieldMeta<?, ?> field, final SqlType type, final StringBuilder builder) {
+    protected void dataType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
         switch ((MySqlType) type) {
             case TINYINT:
             case SMALLINT:
@@ -336,7 +336,7 @@ final class MySQLDdl extends _DdlDialect {
         appendComment(table.comment(), builder);
     }
 
-    private static void enumType(final FieldMeta<?, ?> field, final StringBuilder builder) {
+    private static void enumType(final FieldMeta<?> field, final StringBuilder builder) {
         builder.append("ENUM(");
         int index = 0;
         for (Object e : field.javaType().getEnumConstants()) {
@@ -349,7 +349,7 @@ final class MySQLDdl extends _DdlDialect {
         builder.append(Constant.SPACE_RIGHT_BRACKET);
     }
 
-    private static void setType(final FieldMeta<?, ?> field, final StringBuilder builder) {
+    private static void setType(final FieldMeta<?> field, final StringBuilder builder) {
         builder.append("SET(");
         int index = 0;
         for (Object e : field.elementType().getEnumConstants()) {
