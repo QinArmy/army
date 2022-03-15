@@ -19,9 +19,9 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
 
     public static final TrueFalseType INSTANCE = new TrueFalseType();
 
-    public static TrueFalseType create(Class<?> javaType) {
-        if (javaType != Boolean.class) {
-            throw errorJavaType(TrueFalseType.class, javaType);
+    public static TrueFalseType from(final Class<?> fieldType) {
+        if (fieldType != Boolean.class) {
+            throw errorJavaType(TrueFalseType.class, fieldType);
         }
         return INSTANCE;
     }

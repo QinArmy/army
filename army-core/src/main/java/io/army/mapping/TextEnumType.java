@@ -18,11 +18,11 @@ public final class TextEnumType extends AbstractMappingType {
 
     private static final ConcurrentMap<Class<?>, TextEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static TextEnumType create(Class<?> javaType) {
-        if (!javaType.isEnum() || !TextEnum.class.isAssignableFrom(javaType)) {
-            throw errorJavaType(TextEnumType.class, javaType);
+    public static TextEnumType from(final Class<?> fieldType) {
+        if (!fieldType.isEnum() || !TextEnum.class.isAssignableFrom(fieldType)) {
+            throw errorJavaType(TextEnumType.class, fieldType);
         }
-        return INSTANCE_MAP.computeIfAbsent(javaType, TextEnumType::new);
+        return INSTANCE_MAP.computeIfAbsent(fieldType, TextEnumType::new);
     }
 
 

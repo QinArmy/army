@@ -12,9 +12,9 @@ public final class ShortType extends _ArmyNoInjectionMapping {
 
     public static final ShortType INSTANCE = new ShortType();
 
-    public static ShortType create(Class<?> javaType) {
-        if (javaType != Short.class) {
-            throw errorJavaType(ShortType.class, javaType);
+    public static ShortType from(final Class<?> fieldType) {
+        if (fieldType != Short.class) {
+            throw errorJavaType(ShortType.class, fieldType);
         }
         return INSTANCE;
     }

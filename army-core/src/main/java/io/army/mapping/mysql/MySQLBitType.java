@@ -16,7 +16,7 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
 
     public static final MySQLBitType INSTANCE = new MySQLBitType();
 
-    public static MySQLBitType create(Class<?> javaType) {
+    public static MySQLBitType from(Class<?> javaType) {
         if (javaType != Long.class) {
             throw errorJavaType(MySQLBitType.class, javaType);
         }

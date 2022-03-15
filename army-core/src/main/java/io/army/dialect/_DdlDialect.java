@@ -138,7 +138,7 @@ public abstract class _DdlDialect implements DdlDialect {
     protected abstract void appendTableOption(final TableMeta<?> table, final StringBuilder builder);
 
     protected final void precision(final FieldMeta<?> field, SqlType type
-            , final int max, final StringBuilder builder) {
+            , final long max, final long defaultValue, final StringBuilder builder) {
         final int precision = field.precision();
         if (precision > -1) {
             if (precision > max) {
@@ -151,7 +151,12 @@ public abstract class _DdlDialect implements DdlDialect {
             builder.append(Constant.LEFT_BRACKET)
                     .append(precision)
                     .append(Constant.RIGHT_BRACKET);
+        } else {
+            builder.append(Constant.LEFT_BRACKET)
+                    .append(defaultValue)
+                    .append(Constant.RIGHT_BRACKET);
         }
+
     }
 
     protected final void noSpecifiedPrecision(FieldMeta<?> field) {

@@ -17,9 +17,9 @@ public final class MySQLTinyTextType extends AbstractMappingType {
 
     public static final int MAX_LENGTH = 0x7F;
 
-    public static MySQLTinyTextType create(Class<?> javaType) {
-        if (javaType != String.class) {
-            throw errorJavaType(MySQLTinyTextType.class, javaType);
+    public static MySQLTinyTextType from(Class<?> fieldType) {
+        if (fieldType != String.class) {
+            throw errorJavaType(MySQLTinyTextType.class, fieldType);
         }
         return INSTANCE;
     }

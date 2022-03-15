@@ -8,10 +8,13 @@ import io.army.tx.NoSessionTransactionException;
 import io.army.tx.reactive.ReactiveTransaction;
 import reactor.core.publisher.Mono;
 
+/**
+ * @see SessionFactory
+ */
 public interface Session extends SingleDatabaseReactiveSession, GenericReactiveApiSession {
 
     @Override
-    ReactiveSessionFactory sessionFactory();
+    SessionFactory sessionFactory();
 
     // @Override
     ReactiveTransaction sessionTransaction() throws NoSessionTransactionException;

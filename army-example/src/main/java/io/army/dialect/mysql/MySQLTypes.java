@@ -11,7 +11,7 @@ import java.math.BigInteger;
 import java.time.*;
 import java.util.Set;
 
-@Table(name = "mysql_types", comment = "mysql types")
+@Table(name = "mysql_army_types", comment = "mysql types for army example")
 public class MySQLTypes extends VersionDomain {
 
     private static final String CHAR_TYPE = "io.army.mapping.optional.SQLCharType";
@@ -124,6 +124,18 @@ public class MySQLTypes extends VersionDomain {
     @Column(comment = "double unsigned type")
     private Double myDouble;
 
+    @Mapping(value = "io.army.mapping.mysql.MySQLNameEnumSetType", elements = Month.class)
+    @Column(comment = "set of name enum")
+    private Set<Month> myNameEnumSet;
+
+    @Mapping(value = "io.army.mapping.mysql.MySQLTextEnumSetType", elements = QinArmy.class)
+    @Column(comment = "set of text enum")
+    private Set<QinArmy> myTextEnumSet;
+
+    @Mapping("io.army.mapping.optional.JsonStringType")
+    @Column(comment = "json type")
+    private String myJson;
+
     @Mapping("io.army.mapping.mysql.MySQLTinyTextType")
     @Column(comment = "tiny text type")
     private String myTinyText;
@@ -140,33 +152,21 @@ public class MySQLTypes extends VersionDomain {
     @Column(comment = "long text type")
     private String myLongText;
 
-    @Mapping("io.army.mapping.mysql.MySQLNameEnumSetType")
-    @Column(comment = "set of name enum")
-    private Set<Month> myNameEnumSet;
-
-    @Mapping("io.army.mapping.mysql.MySQLTextEnumSetType")
-    @Column(comment = "set of text enum")
-    private Set<QinArmy> myTextEnumSet;
-
-    @Mapping("io.army.mapping.mysql.JsonStringType")
-    @Column(comment = "json type")
-    private String myJson;
-
-    @Mapping("io.army.mapping.mysql.MySQLTinyTextType")
+    @Mapping("io.army.mapping.mysql.MySQLTinyBlobType")
     @Column(comment = "tiny blob type")
-    private String myTinyBlob;
+    private byte[] myTinyBlob;
 
-    @Mapping("io.army.mapping.mysql.MySQLTextType")
+    @Mapping("io.army.mapping.mysql.MySQLTinyBlobType")
     @Column(comment = "blob type")
-    private String myBlob;
+    private byte[] myBlob;
 
-    @Mapping("io.army.mapping.mysql.MySQLMediumTextType")
+    @Mapping("io.army.mapping.mysql.MySQLMediumBlobType")
     @Column(comment = "medium blob type")
-    private String myMediumBlob;
+    private byte[] myMediumBlob;
 
-    @Mapping("io.army.mapping.mysql.MySQLLongTextType")
+    @Mapping("io.army.mapping.mysql.MySQLLongBlobType")
     @Column(comment = "long blob type")
-    private String myLongBlob;
+    private byte[] myLongBlob;
 
 
     public Long getId() {
@@ -459,37 +459,6 @@ public class MySQLTypes extends VersionDomain {
         this.myJson = myJson;
     }
 
-    public String getMyTinyBlob() {
-        return myTinyBlob;
-    }
-
-    public void setMyTinyBlob(String myTinyBlob) {
-        this.myTinyBlob = myTinyBlob;
-    }
-
-    public String getMyBlob() {
-        return myBlob;
-    }
-
-    public void setMyBlob(String myBlob) {
-        this.myBlob = myBlob;
-    }
-
-    public String getMyMediumBlob() {
-        return myMediumBlob;
-    }
-
-    public void setMyMediumBlob(String myMediumBlob) {
-        this.myMediumBlob = myMediumBlob;
-    }
-
-    public String getMyLongBlob() {
-        return myLongBlob;
-    }
-
-    public void setMyLongBlob(String myLongBlob) {
-        this.myLongBlob = myLongBlob;
-    }
 
     public Set<Month> getMyNameEnumSet() {
         return myNameEnumSet;
@@ -506,4 +475,39 @@ public class MySQLTypes extends VersionDomain {
     public void setMyTextEnumSet(Set<QinArmy> myTextEnumSet) {
         this.myTextEnumSet = myTextEnumSet;
     }
+
+
+    public byte[] getMyTinyBlob() {
+        return myTinyBlob;
+    }
+
+    public void setMyTinyBlob(byte[] myTinyBlob) {
+        this.myTinyBlob = myTinyBlob;
+    }
+
+    public byte[] getMyBlob() {
+        return myBlob;
+    }
+
+    public void setMyBlob(byte[] myBlob) {
+        this.myBlob = myBlob;
+    }
+
+    public byte[] getMyMediumBlob() {
+        return myMediumBlob;
+    }
+
+    public void setMyMediumBlob(byte[] myMediumBlob) {
+        this.myMediumBlob = myMediumBlob;
+    }
+
+    public byte[] getMyLongBlob() {
+        return myLongBlob;
+    }
+
+    public void setMyLongBlob(byte[] myLongBlob) {
+        this.myLongBlob = myLongBlob;
+    }
+
+
 }

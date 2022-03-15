@@ -16,9 +16,9 @@ public final class LocalDateType extends _ArmyNoInjectionMapping {
 
     public static final LocalDateType INSTANCE = new LocalDateType();
 
-    public static LocalDateType create(Class<?> javaType) {
-        if (javaType != LocalDate.class) {
-            throw errorJavaType(LocalDateType.class, javaType);
+    public static LocalDateType from(final Class<?> fieldType) {
+        if (fieldType != LocalDate.class) {
+            throw errorJavaType(LocalDateType.class, fieldType);
         }
         return INSTANCE;
     }

@@ -12,8 +12,8 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.reactive.GenericReactiveApiSession;
 import io.army.reactive.ProxyReactiveSession;
-import io.army.reactive.ReactiveSessionFactory;
 import io.army.reactive.Session;
+import io.army.reactive.SessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 /**
- * This class is a implementation of {@link io.army.reactive.ReactiveSessionFactory}
+ * This class is a implementation of {@link SessionFactory}
  */
 class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements InnerReactiveSessionFactory {
 
@@ -100,10 +100,6 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
         this.updateSQLExecutor = UpdateSQLExecutor.build(this);
     }
 
-    @Override
-    public FactoryMode factoryMode() {
-        return null;
-    }
 
     @Override
     public ServerMeta serverMeta() {
@@ -276,7 +272,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
 
     /*################################## blow private static inner class ##################################*/
 
-    private static final class SessionBuilder implements ReactiveSessionFactory.ReactiveSessionBuilder {
+    private static final class SessionBuilder implements SessionFactory.ReactiveSessionBuilder {
 
         private final ReactiveSessionFactoryImpl sessionFactory;
 

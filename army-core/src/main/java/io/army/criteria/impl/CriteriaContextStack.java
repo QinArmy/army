@@ -23,7 +23,7 @@ abstract class CriteriaContextStack {
     static CriteriaContext peek() {
         final Stack stack = HOLDER.get();
         if (stack == null) {
-            throw notContextStack();
+            throw noContextStack();
         }
         return stack.peek();
 
@@ -32,7 +32,7 @@ abstract class CriteriaContextStack {
     static void pop(final CriteriaContext subContext) {
         final Stack stack = HOLDER.get();
         if (stack == null) {
-            throw notContextStack();
+            throw noContextStack();
         }
         final CriteriaContext context = stack.peek();
         if (subContext != context) {
@@ -46,7 +46,7 @@ abstract class CriteriaContextStack {
     static void push(final CriteriaContext subContext) {
         final Stack stack = HOLDER.get();
         if (stack == null) {
-            throw notContextStack();
+            throw noContextStack();
         }
         stack.push(subContext);
     }
@@ -54,7 +54,7 @@ abstract class CriteriaContextStack {
     static CriteriaContext root() {
         final Stack stack = HOLDER.get();
         if (stack == null) {
-            throw notContextStack();
+            throw noContextStack();
         }
         return stack.rootContext();
     }
@@ -63,7 +63,7 @@ abstract class CriteriaContextStack {
     static <C> C getCriteria() {
         final Stack stack = HOLDER.get();
         if (stack == null) {
-            throw notContextStack();
+            throw noContextStack();
         }
         return stack.rootContext().criteria();
     }
@@ -71,13 +71,13 @@ abstract class CriteriaContextStack {
     static void clearContextStack(final CriteriaContext rootContext) {
         final Stack stack = HOLDER.get();
         if (stack == null) {
-            throw notContextStack();
+            throw noContextStack();
         }
         stack.clear(rootContext);
         HOLDER.remove();
     }
 
-    private static CriteriaException notContextStack() {
+    private static CriteriaException noContextStack() {
         String m;
         m = "Not found any primary query context, so context stack of sub query ( or with clause ) have cleared.";
         return new CriteriaException(m);

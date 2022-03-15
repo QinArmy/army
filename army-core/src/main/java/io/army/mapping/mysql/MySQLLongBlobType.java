@@ -24,14 +24,14 @@ public final class MySQLLongBlobType extends AbstractMappingType {
 
     public static final long MAX_LENGTH = 0xFFFF_FFFFL;
 
-    public static MySQLLongBlobType create(final Class<?> javaType) {
+    public static MySQLLongBlobType from(final Class<?> fieldType) {
         final MySQLLongBlobType instance;
-        if (javaType == byte[].class) {
+        if (fieldType == byte[].class) {
             instance = BYTE_ARRAY_INSTANCE;
-        } else if (javaType == Path.class) {
+        } else if (fieldType == Path.class) {
             instance = PATH_INSTANCE;
         } else {
-            throw errorJavaType(MySQLLongBlobType.class, javaType);
+            throw errorJavaType(MySQLLongBlobType.class, fieldType);
         }
         return instance;
     }

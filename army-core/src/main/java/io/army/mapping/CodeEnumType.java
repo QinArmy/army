@@ -20,11 +20,11 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 
-    public static CodeEnumType create(Class<?> javaType) {
-        if (!javaType.isEnum() || !CodeEnum.class.isAssignableFrom(javaType)) {
-            throw errorJavaType(CodeEnumType.class, javaType);
+    public static CodeEnumType from(final Class<?> fieldType) {
+        if (!fieldType.isEnum() || !CodeEnum.class.isAssignableFrom(fieldType)) {
+            throw errorJavaType(CodeEnumType.class, fieldType);
         }
-        return INSTANCE_MAP.computeIfAbsent(javaType, CodeEnumType::new);
+        return INSTANCE_MAP.computeIfAbsent(fieldType, CodeEnumType::new);
     }
 
     private final Class<?> enumClass;

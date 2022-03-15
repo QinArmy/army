@@ -14,9 +14,9 @@ public final class UnsignedLongType extends _ArmyNoInjectionMapping {
 
     public static final UnsignedLongType INSTANCE = new UnsignedLongType();
 
-    public static UnsignedLongType create(Class<?> javaType) {
-        if (javaType != BigDecimal.class) {
-            throw errorJavaType(UnsignedLongType.class, javaType);
+    public static UnsignedLongType from(final Class<?> fieldType) {
+        if (fieldType != BigInteger.class) {
+            throw errorJavaType(UnsignedLongType.class, fieldType);
         }
         return INSTANCE;
     }

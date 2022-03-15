@@ -12,8 +12,8 @@ import io.army.criteria.impl.inner._Statement;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.reactive.ReactiveSessionFactory;
 import io.army.reactive.Session;
+import io.army.reactive.SessionFactory;
 import io.army.stmt.Stmt;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
@@ -194,7 +194,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
     }
 
     @Override
-    public ReactiveSessionFactory sessionFactory() {
+    public SessionFactory sessionFactory() {
         return this.sessionFactory;
     }
 

@@ -8,13 +8,17 @@ import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -154,6 +158,8 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
 
     private final GeneratorType generatorType;
 
+    private final List<Class<?>> elementTypeList;
+
     private final boolean codec;
 
     private DefaultFieldMeta(final TableMeta<T> table, final Field field) throws MetaException {
@@ -173,11 +179,16 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
             this.columnName = FieldMetaUtils.columnName(column, field);
             final boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
 
-            this.mappingType = FieldMetaUtils.columnMappingMeta(table, field, isDiscriminator);
+            this.mappingType = FieldMetaUtils.fieldMappingType(field, isDiscriminator);
+            if (this.mappingType instanceof ElementMappingType) {
+                this.elementTypeList = ArrayUtils.asUnmodifiableList(field.getAnnotation(Mapping.class).elements());
+            } else {
+                this.elementTypeList = Collections.emptyList();
+            }
+
             this.insertable = FieldMetaUtils.columnInsertable(this, column, isDiscriminator);
             this.updateMode = FieldMetaUtils.columnUpdatable(this, column, isDiscriminator);
             this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);
-
             this.nullable = !_MetaBridge.RESERVED_PROPS.contains(this.fieldName)
                     && !isDiscriminator
                     && column.nullable();
@@ -321,6 +332,11 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
     @Override
     public final GeneratorMeta generator() {
         return this.generatorMeta;
+    }
+
+    @Override
+    public final List<Class<?>> elementTypes() {
+        return this.elementTypeList;
     }
 
     @Override

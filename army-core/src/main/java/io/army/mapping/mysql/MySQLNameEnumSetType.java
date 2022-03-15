@@ -9,7 +9,9 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -19,20 +21,20 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
 
     private static final ConcurrentMap<Class<?>, MySQLNameEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static MySQLNameEnumSetType create(Class<?> javaType, Class<?> elementJavaType) {
-        if (javaType != Set.class) {
-            throw errorJavaType(MySQLNameEnumSetType.class, javaType);
-        } else if (!elementJavaType.isEnum()) {
-            throw errorJavaType(MySQLNameEnumSetType.class, elementJavaType);
+    public static MySQLNameEnumSetType forElements(Class<?> fieldType, Class<?>[] elementTypes) {
+        if (fieldType != Set.class) {
+            throw errorJavaType(MySQLNameEnumSetType.class, fieldType);
+        } else if (elementTypes.length != 1 || !elementTypes[0].isEnum()) {
+            throw errorJavaType(MySQLNameEnumSetType.class, elementTypes[0]);
         }
-        return INSTANCE_MAP.computeIfAbsent(elementJavaType, MySQLNameEnumSetType::new);
+        return INSTANCE_MAP.computeIfAbsent(elementTypes[0], MySQLNameEnumSetType::new);
     }
 
 
-    private final Class<?> elementJavaType;
+    private final List<Class<?>> elementTypes;
 
     private MySQLNameEnumSetType(Class<?> elementJavaType) {
-        this.elementJavaType = elementJavaType;
+        this.elementTypes = Collections.singletonList(elementJavaType);
     }
 
     @Override
@@ -41,8 +43,8 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public Class<?> elementType() {
-        return this.elementJavaType;
+    public List<Class<?>> elementTypes() {
+        return this.elementTypes;
     }
 
     @Override
@@ -59,7 +61,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
             throw outRangeOfSqlType(sqlType, nonNull);
         }
         final StringBuilder builder = new StringBuilder();
-        final Class<?> elementJavaType = this.elementJavaType;
+        final Class<?> elementJavaType = this.elementTypes.get(0);
         int index = 0;
         for (Object e : (Set<?>) nonNull) {
             if (!elementJavaType.isInstance(e)) {
@@ -80,7 +82,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
         try {
-            return parseToSet(this.elementJavaType, (String) nonNull);
+            return parseToSet(this.elementTypes.get(0), (String) nonNull);
         } catch (IllegalArgumentException e) {
             throw errorValueForSqlType(sqlType, nonNull, e);
         }

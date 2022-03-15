@@ -24,9 +24,9 @@ public final class StringType extends AbstractMappingType {
 
     public static final StringType INSTANCE = new StringType();
 
-    public static StringType create(Class<?> javaType) {
-        if (javaType != String.class) {
-            throw errorJavaType(StringType.class, javaType);
+    public static StringType from(final Class<?> fieldType) {
+        if (fieldType != String.class) {
+            throw errorJavaType(StringType.class, fieldType);
         }
         return INSTANCE;
     }

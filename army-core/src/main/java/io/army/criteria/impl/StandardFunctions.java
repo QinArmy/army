@@ -40,28 +40,28 @@ abstract class StandardFunctions {
     }
 
     public static Expression acos(Expression x) {
-        return SQLFunctions.oneArgumentFunc("ACOS", _MappingFactory.getMapping(Double.class), x);
+        return SQLFunctions.oneArgumentFunc("ACOS", _MappingFactory.getDefault(Double.class), x);
     }
 
 
     public static Expression asin(Expression x) {
-        return SQLFunctions.oneArgumentFunc("ASIN", _MappingFactory.getMapping(Double.class), x);
+        return SQLFunctions.oneArgumentFunc("ASIN", _MappingFactory.getDefault(Double.class), x);
     }
 
     public static Expression atan(Expression x) {
-        return SQLFunctions.oneArgumentFunc("ATAN", _MappingFactory.getMapping(Double.class), x);
+        return SQLFunctions.oneArgumentFunc("ATAN", _MappingFactory.getDefault(Double.class), x);
     }
 
     public static Expression atan(Expression one, Expression two) {
-        return SQLFunctions.twoArgumentFunc("ATAN", _MappingFactory.getMapping(Double.class), one, two);
+        return SQLFunctions.twoArgumentFunc("ATAN", _MappingFactory.getDefault(Double.class), one, two);
     }
 
     public static Expression cell(Expression x) {
-        return SQLFunctions.oneArgumentFunc("CELL", _MappingFactory.getMapping(Integer.class), x);
+        return SQLFunctions.oneArgumentFunc("CELL", _MappingFactory.getDefault(Integer.class), x);
     }
 
     public static Expression cellAsLong(Expression x) {
-        return SQLFunctions.oneArgumentFunc("CELL", _MappingFactory.getMapping(Long.class), x);
+        return SQLFunctions.oneArgumentFunc("CELL", _MappingFactory.getDefault(Long.class), x);
     }
 
     public static Expression conv(Expression number, int fromBase, int toBase) {
@@ -71,78 +71,78 @@ abstract class StandardFunctions {
     }
 
     public static Expression cos(Expression x) {
-        return SQLFunctions.oneArgumentFunc("COS", _MappingFactory.getMapping(Double.class), x);
+        return SQLFunctions.oneArgumentFunc("COS", _MappingFactory.getDefault(Double.class), x);
     }
 
     public static Expression cot(Expression x) {
-        return SQLFunctions.oneArgumentFunc("COT", _MappingFactory.getMapping(Double.class), x);
+        return SQLFunctions.oneArgumentFunc("COT", _MappingFactory.getDefault(Double.class), x);
     }
 
     public static Expression crc32(Expression expression) {
-        return SQLFunctions.oneArgumentFunc("CRC32", _MappingFactory.getMapping(Long.class), expression);
+        return SQLFunctions.oneArgumentFunc("CRC32", _MappingFactory.getDefault(Long.class), expression);
     }
 
     public static Expression degrees(Expression radian) {
-        return SQLFunctions.oneArgumentFunc("DEGREES", _MappingFactory.getMapping(Double.class), radian);
+        return SQLFunctions.oneArgumentFunc("DEGREES", _MappingFactory.getDefault(Double.class), radian);
     }
 
     /**
      * @see #ln(Expression)
      */
     public static Expression exp(Expression index) {
-        return SQLFunctions.oneArgumentFunc("EXP", _MappingFactory.getMapping(Double.class), index);
+        return SQLFunctions.oneArgumentFunc("EXP", _MappingFactory.getDefault(Double.class), index);
     }
 
     public static Expression floor(Expression number) {
-        return SQLFunctions.oneArgumentFunc("FLOOR", _MappingFactory.getMapping(Integer.class), number);
+        return SQLFunctions.oneArgumentFunc("FLOOR", _MappingFactory.getDefault(Integer.class), number);
     }
 
     public static Expression floorAsLong(Expression number) {
-        return SQLFunctions.oneArgumentFunc("FLOOR", _MappingFactory.getMapping(Long.class), number);
+        return SQLFunctions.oneArgumentFunc("FLOOR", _MappingFactory.getDefault(Long.class), number);
     }
 
     public static Expression format(Expression number, Expression decimal) {
-        return SQLFunctions.twoArgumentFunc("FORMAT", _MappingFactory.getMapping(String.class), number, decimal);
+        return SQLFunctions.twoArgumentFunc("FORMAT", _MappingFactory.getDefault(String.class), number, decimal);
     }
 
     public static Expression format(Expression number, int decimal) {
-        return SQLFunctions.twoArgumentFunc("FORMAT", _MappingFactory.getMapping(String.class)
+        return SQLFunctions.twoArgumentFunc("FORMAT", _MappingFactory.getDefault(String.class)
                 , number, SQLs.literal(decimal));
     }
 
     public static Expression hex(Expression number) {
-        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), number);
+        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getDefault(String.class), number);
     }
 
     public static Expression hex(Number number) {
-        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), SQLs.literal(number));
+        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getDefault(String.class), SQLs.literal(number));
     }
 
     public static Expression hex(String numberText) {
-        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), SQLs.literal(numberText));
+        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getDefault(String.class), SQLs.literal(numberText));
     }
 
     public static Expression hexForText(Expression numberText) {
-        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getMapping(String.class), numberText);
+        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getDefault(String.class), numberText);
     }
 
     /**
      * @see #exp(Expression)
      */
     public static Expression ln(Expression power) {
-        return SQLFunctions.oneArgumentFunc("LN", _MappingFactory.getMapping(Double.class), power);
+        return SQLFunctions.oneArgumentFunc("LN", _MappingFactory.getDefault(Double.class), power);
     }
 
     /**
      * @see #ln(Expression)
      */
     public static Expression log(Expression power) {
-        return SQLFunctions.oneArgumentFunc("LOG", _MappingFactory.getMapping(Double.class), power);
+        return SQLFunctions.oneArgumentFunc("LOG", _MappingFactory.getDefault(Double.class), power);
     }
 
     public static Expression log(Expression bottomNumber
             , Expression power) {
-        return SQLFunctions.twoArgumentFunc("LOG", _MappingFactory.getMapping(Double.class), bottomNumber, power);
+        return SQLFunctions.twoArgumentFunc("LOG", _MappingFactory.getDefault(Double.class), bottomNumber, power);
     }
 
     /**
@@ -166,18 +166,18 @@ abstract class StandardFunctions {
 
 
     public static Expression pi() {
-        return SQLFunctions.noArgumentFunc("PI", _MappingFactory.getMapping(Double.class));
+        return SQLFunctions.noArgumentFunc("PI", _MappingFactory.getDefault(Double.class));
     }
 
 
     /*################################## blow date time function method ##################################*/
 
     public static Expression now() {
-        return SQLFunctions.noArgumentFunc("NOW", _MappingFactory.getMapping(LocalDateTime.class));
+        return SQLFunctions.noArgumentFunc("NOW", _MappingFactory.getDefault(LocalDateTime.class));
     }
 
     public static Expression currentDate() {
-        return SQLFunctions.noArgumentFunc("CURRENT_DATE", _MappingFactory.getMapping(LocalDate.class));
+        return SQLFunctions.noArgumentFunc("CURRENT_DATE", _MappingFactory.getDefault(LocalDate.class));
     }
 
     /*################################## blow static inner class  ##################################*/

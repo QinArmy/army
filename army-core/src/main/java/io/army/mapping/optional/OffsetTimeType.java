@@ -18,7 +18,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping {
 
     public static final OffsetTimeType INSTANCE = new OffsetTimeType();
 
-    public static OffsetTimeType create(Class<?> javaType) {
+    public static OffsetTimeType from(Class<?> javaType) {
         if (javaType != OffsetTime.class) {
             throw errorJavaType(OffsetTimeType.class, javaType);
         }

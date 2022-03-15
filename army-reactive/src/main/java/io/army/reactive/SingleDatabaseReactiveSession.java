@@ -17,7 +17,7 @@ import reactor.core.publisher.Flux;
 interface SingleDatabaseReactiveSession extends BaseReactiveApiSession {
 
     @Override
-    ReactiveSessionFactory sessionFactory();
+    SessionFactory sessionFactory();
 
     Flux<Integer> batchUpdate(Update update);
 

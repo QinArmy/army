@@ -5,8 +5,6 @@ import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-import java.math.BigDecimal;
-
 /**
  * @see Long
  */
@@ -14,9 +12,9 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
 
     public static final UnsignedIntegerType INSTANCE = new UnsignedIntegerType();
 
-    public static UnsignedIntegerType create(Class<?> javaType) {
-        if (javaType != BigDecimal.class) {
-            throw errorJavaType(UnsignedIntegerType.class, javaType);
+    public static UnsignedIntegerType from(final Class<?> fieldType) {
+        if (fieldType != Long.class) {
+            throw errorJavaType(UnsignedIntegerType.class, fieldType);
         }
         return INSTANCE;
     }

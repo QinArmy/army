@@ -13,9 +13,9 @@ public final class MySQLMediumBlobType extends AbstractMappingType {
 
     public static final int MAX_LENGTH = 0x7FFF_FF;
 
-    public static MySQLMediumBlobType create(Class<?> javaType) {
-        if (javaType != byte[].class) {
-            throw errorJavaType(MySQLMediumBlobType.class, javaType);
+    public static MySQLMediumBlobType from(Class<?> fieldType) {
+        if (fieldType != byte[].class) {
+            throw errorJavaType(MySQLMediumBlobType.class, fieldType);
         }
         return INSTANCE;
     }

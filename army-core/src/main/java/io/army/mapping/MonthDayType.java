@@ -27,9 +27,9 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
             .toFormatter(Locale.ENGLISH);
 
 
-    public static MonthDayType create(Class<?> javaType) {
-        if (javaType != MonthDay.class) {
-            throw errorJavaType(MonthDayType.class, javaType);
+    public static MonthDayType from(final Class<?> fieldType) {
+        if (fieldType != MonthDay.class) {
+            throw errorJavaType(MonthDayType.class, fieldType);
         }
         return INSTANCE;
     }

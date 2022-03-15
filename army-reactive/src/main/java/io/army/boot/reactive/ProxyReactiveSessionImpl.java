@@ -4,25 +4,25 @@ import io.army.criteria.Delete;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.reactive.ProxyReactiveSession;
-import io.army.reactive.ReactiveSessionFactory;
 import io.army.reactive.Session;
+import io.army.reactive.SessionFactory;
 import reactor.core.publisher.Flux;
 
-class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<ReactiveSessionFactory>
+class ProxyReactiveSessionImpl extends AbstractProxyReactiveSession<SessionFactory>
         implements ProxyReactiveSession {
 
-    static ProxyReactiveSessionImpl build(ReactiveSessionFactory sessionFactory
+    static ProxyReactiveSessionImpl build(SessionFactory sessionFactory
             , CurrentSessionContext currentSessionContext) {
         return new ProxyReactiveSessionImpl(sessionFactory, currentSessionContext);
     }
 
-    private ProxyReactiveSessionImpl(ReactiveSessionFactory sessionFactory
+    private ProxyReactiveSessionImpl(SessionFactory sessionFactory
             , CurrentSessionContext currentSessionContext) {
         super(sessionFactory, currentSessionContext);
     }
 
     @Override
-    public ReactiveSessionFactory sessionFactory() {
+    public SessionFactory sessionFactory() {
         return this.sessionFactory;
     }
 

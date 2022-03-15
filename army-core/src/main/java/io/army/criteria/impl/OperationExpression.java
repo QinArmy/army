@@ -1209,7 +1209,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression asType(Class<?> convertType) {
-        return CastExpression.cast(this, _MappingFactory.getMapping(convertType));
+        return CastExpression.cast(this, _MappingFactory.getDefault(convertType));
     }
 
     @Override

@@ -14,9 +14,9 @@ public final class YearType extends _ArmyNoInjectionMapping {
 
     public static final YearType INSTANCE = new YearType();
 
-    public static YearType create(Class<?> javaType) {
-        if (javaType != Year.class) {
-            throw errorJavaType(YearType.class, javaType);
+    public static YearType from(final Class<?> fieldType) {
+        if (fieldType != Year.class) {
+            throw errorJavaType(YearType.class, fieldType);
         }
         return INSTANCE;
     }

@@ -10,9 +10,9 @@ public final class DoubleType extends _ArmyNoInjectionMapping {
 
     public static final DoubleType INSTANCE = new DoubleType();
 
-    public static DoubleType create(Class<?> javaType) {
-        if (javaType != Double.class) {
-            throw errorJavaType(DoubleType.class, javaType);
+    public static DoubleType from(final Class<?> fieldType) {
+        if (fieldType != Double.class) {
+            throw errorJavaType(DoubleType.class, fieldType);
         }
         return INSTANCE;
     }

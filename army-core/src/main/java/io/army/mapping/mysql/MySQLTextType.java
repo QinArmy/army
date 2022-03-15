@@ -17,9 +17,9 @@ public final class MySQLTextType extends AbstractMappingType {
 
     public static final int MAX_LENGTH = 0x7FFF;
 
-    public static MySQLTextType create(Class<?> javaType) {
-        if (javaType != String.class) {
-            throw errorJavaType(MySQLTextType.class, javaType);
+    public static MySQLTextType from(Class<?> fieldType) {
+        if (fieldType != String.class) {
+            throw errorJavaType(MySQLTextType.class, fieldType);
         }
         return INSTANCE;
     }

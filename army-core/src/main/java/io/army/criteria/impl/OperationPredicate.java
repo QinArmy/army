@@ -23,7 +23,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
 
     @Override
     public final ParamMeta paramMeta() {
-        return _MappingFactory.getMapping(Boolean.class);
+        return _MappingFactory.getDefault(Boolean.class);
     }
 
     @Override

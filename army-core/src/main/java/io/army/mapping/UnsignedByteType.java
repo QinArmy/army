@@ -12,9 +12,9 @@ public final class UnsignedByteType extends _ArmyNoInjectionMapping {
 
     public static final UnsignedByteType INSTANCE = new UnsignedByteType();
 
-    public static UnsignedByteType create(Class<?> javaType) {
-        if (javaType != Short.class) {
-            throw errorJavaType(UnsignedByteType.class, javaType);
+    public static UnsignedByteType from(final Class<?> fieldType) {
+        if (fieldType != Short.class) {
+            throw errorJavaType(UnsignedByteType.class, fieldType);
         }
         return INSTANCE;
     }

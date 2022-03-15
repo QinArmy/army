@@ -14,9 +14,9 @@ public final class IntegerType extends _ArmyNoInjectionMapping {
     public static final IntegerType INSTANCE = new IntegerType();
 
 
-    public static IntegerType create(Class<?> javaType) {
-        if (javaType != Integer.class) {
-            throw errorJavaType(IntegerType.class, javaType);
+    public static IntegerType from(final Class<?> fieldType) {
+        if (fieldType != Integer.class) {
+            throw errorJavaType(IntegerType.class, fieldType);
         }
         return INSTANCE;
     }

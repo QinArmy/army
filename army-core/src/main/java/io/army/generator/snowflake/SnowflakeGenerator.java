@@ -13,10 +13,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
-import io.army.session.DialectSessionFactory;
-import io.army.session.FactoryMode;
 import io.army.session.GenericSessionFactory;
-import io.army.session.GenericTmSessionFactory;
 import io.army.util.ReflectionUtils;
 import io.army.util.StringUtils;
 import io.army.util._Assert;
@@ -246,13 +243,8 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
         ArmyEnvironment env = sessionFactory.environment();
         String beanName = env.getNonNull(ArmyKey.SNOWFLAKE_CLIENT_NAME);
         client = env.getBean(beanName, SnowflakeClient.class);
-        final boolean noSharding;
-        if (sessionFactory instanceof GenericTmSessionFactory) {
-            noSharding = false;
-        } else {
-            noSharding = ((DialectSessionFactory) sessionFactory).factoryMode() == FactoryMode.NO_SHARDING;
-        }
-        if (client == null && noSharding) {
+
+        if (client == null) {
             boolean singleApplication = env.get(
                     String.format(ArmyKey.SINGLE_APPLICATION, sessionFactory.name())
                     , Boolean.class, Boolean.TRUE);

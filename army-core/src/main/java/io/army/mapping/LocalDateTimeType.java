@@ -6,7 +6,6 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.TimeUtils;
 
-import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 
@@ -18,9 +17,9 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
 
     public static final LocalDateTimeType INSTANCE = new LocalDateTimeType();
 
-    public static LocalDateTimeType create(Class<?> javaType) {
-        if (javaType != LocalDateTime.class) {
-            throw errorJavaType(LocalDateTimeType.class, javaType);
+    public static LocalDateTimeType from(final Class<?> fieldType) {
+        if (fieldType != LocalDateTime.class) {
+            throw errorJavaType(LocalDateTimeType.class, fieldType);
         }
         return INSTANCE;
     }

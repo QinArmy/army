@@ -1,8 +1,8 @@
 package io.army.tx.reactive;
 
 
-import io.army.reactive.ReactiveSessionFactory;
 import io.army.reactive.Session;
+import io.army.reactive.SessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.NoTransactionException;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 
 public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionManager {
 
-    private ReactiveSessionFactory sessionFactory;
+    private SessionFactory sessionFactory;
 
 
     @Override
@@ -77,7 +77,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     protected Mono<Object> doSuspend(TransactionSynchronizationManager synchronizationManager, Object transaction)
             throws TransactionException {
         ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
-        ReactiveSessionFactory sessionFactory = this.sessionFactory;
+        SessionFactory sessionFactory = this.sessionFactory;
         synchronizationManager.unbindResource(sessionFactory);
         return txObject.suspend();
     }
@@ -85,7 +85,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     @Override
     protected Mono<Void> doResume(TransactionSynchronizationManager synchronizationManager
             , @Nullable Object transaction, Object suspendedResources) throws TransactionException {
-        ReactiveSessionFactory sessionFactory = this.sessionFactory;
+        SessionFactory sessionFactory = this.sessionFactory;
         if (synchronizationManager.hasResource(sessionFactory)) {
             synchronizationManager.unbindResource(sessionFactory);
         }
@@ -128,11 +128,11 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     }
 
 
-    public ReactiveSessionFactory getSessionFactory() {
+    public SessionFactory getSessionFactory() {
         return sessionFactory;
     }
 
-    public void setSessionFactory(ReactiveSessionFactory sessionFactory) {
+    public void setSessionFactory(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 

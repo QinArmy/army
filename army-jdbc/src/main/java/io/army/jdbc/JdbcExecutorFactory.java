@@ -27,6 +27,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     final ExecutorEnvironment env;
 
+    boolean closed;
 
     private JdbcExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env) {
         this.dataSource = dataSource;
@@ -42,6 +43,9 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     @Override
     public MetaExecutor createMetaExecutor() throws DataAccessException {
+        if (this.closed) {
+            throw closedError();
+        }
         try {
             return JdbcMetaExecutor.create(this.dataSource.getConnection());
         } catch (SQLException e) {
@@ -51,6 +55,9 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     @Override
     public StmtExecutor createStmtExecutor() throws DataAccessException {
+        if (this.closed) {
+            throw closedError();
+        }
         final Connection connection;
         try {
             connection = this.dataSource.getConnection();
@@ -70,6 +77,17 @@ final class JdbcExecutorFactory implements ExecutorFactory {
                 throw _Exceptions.unexpectedEnum(this.database);
         }
         return executor;
+    }
+
+    @Override
+    public void close() throws DataAccessException {
+        this.closed = true;
+    }
+
+
+    private static DataAccessException closedError() {
+        String m = String.format("%s have closed.", JdbcExecutorFactory.class.getName());
+        return new DataAccessException(m);
     }
 
 

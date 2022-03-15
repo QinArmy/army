@@ -1,7 +1,7 @@
 package io.army.boot.reactive;
 
 import io.army.SessionFactoryException;
-import io.army.reactive.ReactiveSessionFactory;
+import io.army.reactive.SessionFactory;
 import io.army.session.FactoryMode;
 
 
@@ -24,7 +24,7 @@ public interface ReactiveSessionFactoryBuilder
      */
     ReactiveSessionFactoryBuilder shardingMode(FactoryMode factoryMode);
 
-    ReactiveSessionFactory build() throws SessionFactoryException;
+    SessionFactory build() throws SessionFactoryException;
 
     static ReactiveSessionFactoryBuilder builder() {
         return builder(false);

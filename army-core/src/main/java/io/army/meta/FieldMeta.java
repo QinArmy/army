@@ -6,6 +6,8 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
 
+import java.util.List;
+
 /**
  * <p> this interface representing a Java class then tableMeta column mapping.</p>
  *
@@ -66,9 +68,7 @@ public interface FieldMeta<T extends IDomain> extends GenericField<T> {
      * else return {@code void.class}.
      * </p>
      */
-    default Class<?> elementType() {
-        return void.class;
-    }
+    List<Class<?>> elementTypes();
 
 
 }

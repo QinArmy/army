@@ -15,9 +15,9 @@ public final class UnsignedBigInteger extends _ArmyNoInjectionMapping {
 
     public static final UnsignedBigInteger INSTANCE = new UnsignedBigInteger();
 
-    public static UnsignedBigInteger create(Class<?> javaType) {
-        if (javaType != BigInteger.class) {
-            throw errorJavaType(UnsignedBigInteger.class, javaType);
+    public static UnsignedBigInteger from(final Class<?> fieldType) {
+        if (fieldType != BigInteger.class) {
+            throw errorJavaType(UnsignedBigInteger.class, fieldType);
         }
         return INSTANCE;
     }

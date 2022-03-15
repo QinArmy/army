@@ -10,9 +10,9 @@ public final class BigIntegerType extends _ArmyNoInjectionMapping {
 
     public static final BigIntegerType INSTANCE = new BigIntegerType();
 
-    public static BigIntegerType create(Class<?> javaType) {
-        if (javaType != BigDecimal.class) {
-            throw errorJavaType(BigIntegerType.class, javaType);
+    public static BigIntegerType from(Class<?> fieldType) {
+        if (fieldType != BigDecimal.class) {
+            throw errorJavaType(BigIntegerType.class, fieldType);
         }
         return INSTANCE;
     }

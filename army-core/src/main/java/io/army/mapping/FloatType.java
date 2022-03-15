@@ -10,9 +10,9 @@ public final class FloatType extends _ArmyNoInjectionMapping {
 
     public static final FloatType INSTANCE = new FloatType();
 
-    public static FloatType create(Class<?> javaType) {
-        if (javaType != Float.class) {
-            throw errorJavaType(FloatType.class, javaType);
+    public static FloatType from(final Class<?> fieldType) {
+        if (fieldType != Float.class) {
+            throw errorJavaType(FloatType.class, fieldType);
         }
         return INSTANCE;
     }

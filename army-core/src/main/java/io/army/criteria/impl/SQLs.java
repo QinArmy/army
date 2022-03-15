@@ -218,7 +218,7 @@ public abstract class SQLs extends StandardFunctions {
      */
     public static Expression param(final Object value) {
         Objects.requireNonNull(value);
-        return ParamExpression.create(_MappingFactory.getMapping(value.getClass()), value);
+        return ParamExpression.create(_MappingFactory.getDefault(value.getClass()), value);
     }
 
     /**
@@ -338,7 +338,7 @@ public abstract class SQLs extends StandardFunctions {
 
     public static Expression literal(Object value) {
         Objects.requireNonNull(value);
-        return LiteralExpression.literal(_MappingFactory.getMapping(value.getClass()), value);
+        return LiteralExpression.literal(_MappingFactory.getDefault(value.getClass()), value);
     }
 
     public static Expression literal(ParamMeta paramMeta, Object value) {

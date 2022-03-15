@@ -7,9 +7,9 @@ public final class ByteArrayType extends AbstractMappingType {
 
     public static final ByteArrayType INSTANCE = new ByteArrayType();
 
-    public static ByteArrayType create(Class<?> javaType) {
-        if (javaType != byte[].class) {
-            throw errorJavaType(ByteArrayType.class, javaType);
+    public static ByteArrayType from(final Class<?> fieldType) {
+        if (fieldType != byte[].class) {
+            throw errorJavaType(ByteArrayType.class, fieldType);
         }
         return INSTANCE;
     }

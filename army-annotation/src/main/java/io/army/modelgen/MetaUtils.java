@@ -11,6 +11,9 @@ import javax.lang.model.type.TypeMirror;
 
 abstract class MetaUtils {
 
+    private MetaUtils() {
+        throw new UnsupportedOperationException();
+    }
 
     static String getClassName(final TypeElement domain) {
         String className;

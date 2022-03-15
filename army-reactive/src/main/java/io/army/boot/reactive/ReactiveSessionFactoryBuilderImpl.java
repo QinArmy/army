@@ -4,7 +4,7 @@ import io.army.SessionFactoryException;
 import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
-import io.army.reactive.ReactiveSessionFactory;
+import io.army.reactive.SessionFactory;
 import io.army.reactive.advice.ReactiveDomainDeleteAdvice;
 import io.army.reactive.advice.ReactiveDomainInsertAdvice;
 import io.army.reactive.advice.ReactiveDomainUpdateAdvice;
@@ -130,7 +130,7 @@ class ReactiveSessionFactoryBuilderImpl
     }
 
     @Override
-    public ReactiveSessionFactory build() throws SessionFactoryException {
+    public SessionFactory build() throws SessionFactoryException {
 //        final long startTime = System.currentTimeMillis();
 //
 //        Assert.hasText(this.name, "name required");

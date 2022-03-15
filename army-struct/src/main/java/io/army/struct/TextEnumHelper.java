@@ -25,7 +25,7 @@ abstract class TextEnumHelper {
 
     @SuppressWarnings("unchecked")
     private static <T extends Enum<T> & TextEnum> Map<String, ? extends TextEnum> createTextMap(final Class<?> javaType) {
-        if (!javaType.isEnum() || TextEnum.class.isAssignableFrom(javaType)) {
+        if (!javaType.isEnum() || !TextEnum.class.isAssignableFrom(javaType)) {
             String m = String.format("%s isn't %s enum.", javaType.getName(), TextEnum.class.getName());
             throw new IllegalArgumentException(m);
         }

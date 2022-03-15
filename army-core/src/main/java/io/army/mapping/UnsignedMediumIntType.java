@@ -12,9 +12,9 @@ public final class UnsignedMediumIntType extends _ArmyNoInjectionMapping {
     public static final int MAX = 0xFFFF_FF;
 
 
-    public static UnsignedMediumIntType create(Class<?> javaType) {
-        if (javaType != Integer.class) {
-            throw errorJavaType(UnsignedMediumIntType.class, javaType);
+    public static UnsignedMediumIntType from(final Class<?> fieldType) {
+        if (fieldType != Integer.class) {
+            throw errorJavaType(UnsignedMediumIntType.class, fieldType);
         }
         return INSTANCE;
     }

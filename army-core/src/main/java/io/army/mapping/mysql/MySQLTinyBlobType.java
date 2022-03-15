@@ -13,7 +13,7 @@ public final class MySQLTinyBlobType extends AbstractMappingType {
 
     public static final int MAX_LENGTH = 0x7F;
 
-    public static MySQLTinyBlobType create(Class<?> javaType) {
+    public static MySQLTinyBlobType from(Class<?> javaType) {
         if (javaType != byte[].class) {
             throw errorJavaType(MySQLTinyBlobType.class, javaType);
         }

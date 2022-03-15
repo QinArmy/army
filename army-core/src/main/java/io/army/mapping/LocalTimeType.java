@@ -17,9 +17,9 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping {
 
     public static final LocalTimeType INSTANCE = new LocalTimeType();
 
-    public static LocalTimeType create(Class<?> javaType) {
-        if (javaType != LocalTime.class) {
-            throw errorJavaType(LocalTimeType.class, javaType);
+    public static LocalTimeType from(final Class<?> fieldType) {
+        if (fieldType != LocalTime.class) {
+            throw errorJavaType(LocalTimeType.class, fieldType);
         }
         return INSTANCE;
     }

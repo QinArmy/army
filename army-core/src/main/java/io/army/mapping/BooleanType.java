@@ -14,9 +14,9 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
     public static final BooleanType INSTANCE = new BooleanType();
 
-    public static BooleanType create(Class<?> javaType) {
-        if (javaType != Boolean.class) {
-            throw errorJavaType(BooleanType.class, javaType);
+    public static BooleanType from(Class<?> fieldType) {
+        if (fieldType != Boolean.class) {
+            throw errorJavaType(BooleanType.class, fieldType);
         }
         return INSTANCE;
     }

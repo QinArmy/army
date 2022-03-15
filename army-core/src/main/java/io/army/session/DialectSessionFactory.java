@@ -24,7 +24,6 @@ public interface DialectSessionFactory extends GenericSessionFactory {
 
     DomainValuesGenerator domainValuesGenerator();
 
-    FactoryMode factoryMode();
 
 
 }

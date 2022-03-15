@@ -15,5 +15,6 @@ public interface ExecutorFactory {
 
     StmtExecutor createStmtExecutor() throws DataAccessException;
 
+    void close() throws DataAccessException;
 
 }

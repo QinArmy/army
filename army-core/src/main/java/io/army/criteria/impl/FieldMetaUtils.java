@@ -6,12 +6,10 @@ import io.army.generator.PreFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.mapping.CodeEnumType;
 import io.army.mapping.MappingType;
-import io.army.mapping.NameEnumType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
-import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util.CollectionUtils;
@@ -125,34 +123,28 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     }
 
 
-    static MappingType columnMappingMeta(final TableMeta<?> tableMeta, final Field field
-            , final boolean isDiscriminator) {
-        final Class<?> mappingClass = getMappingClass(tableMeta, field);
+    static MappingType fieldMappingType(final Field field, final boolean isDiscriminator) {
 
         final Class<?> fieldJavaType = field.getType();
-        if (fieldJavaType.isEnum()
-                && mappingClass != null
-                && mappingClass != CodeEnumType.class
-                && mappingClass != NameEnumType.class) {
-            String m = String.format("enum must mapping to %s or %s.", CodeEnumType.class.getName()
-                    , NameEnumType.class.getName());
-            throw new MetaException(m);
-        }
-
-        if (isDiscriminator && (!fieldJavaType.isEnum() || !CodeEnum.class.isAssignableFrom(fieldJavaType))) {
-            String m = String.format("discriminator java type must mapping to %s", CodeEnumType.class.getName());
-            throw new MetaException(m);
-        }
+        final Mapping mapping;
+        mapping = field.getAnnotation(Mapping.class);
 
         final MappingType mappingType;
-        if (mappingClass == null) {
-            mappingType = _MappingFactory.getMapping(fieldJavaType);
+        if (mapping == null) {
+            if (isDiscriminator && !CodeEnum.class.isAssignableFrom(fieldJavaType)) {
+                throw discriminatorNotCodeEnum(null, field);
+            }
+            mappingType = _MappingFactory.getDefault(fieldJavaType);
         } else {
-            mappingType = _MappingFactory.getMapping(mappingClass, fieldJavaType);
+            if (isDiscriminator && CodeEnumType.class.getName().equals(mapping.value())) {
+                throw discriminatorNotCodeEnum(mapping, field);
+            }
+            mappingType = _MappingFactory.map(mapping, field);
         }
         return mappingType;
 
     }
+
 
     static boolean isDiscriminator(final FieldMeta<?> fieldMeta) {
         final Inheritance inheritance = fieldMeta.tableMeta().javaType().getAnnotation(Inheritance.class);
@@ -222,26 +214,19 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     /*################################## blow private method ##################################*/
 
-    @Nullable
-    private static Class<?> getMappingClass(final TableMeta<?> tableMeta, final Field field) {
-        final Mapping mapping = field.getAnnotation(Mapping.class);
-        final Class<?> mappingClass;
+
+    private static MetaException discriminatorNotCodeEnum(final @Nullable Mapping mapping, final Field field) {
+        final String m;
         if (mapping == null) {
-            mappingClass = null;
+            m = String.format("Discriminator %s.%s type %s don't implements %s."
+                    , field.getDeclaringClass().getName(), field.getName()
+                    , field.getType().getName(), CodeEnum.class.getName());
         } else {
-            try {
-                mappingClass = Class.forName(mapping.value());
-                if (!MappingType.class.isAssignableFrom(mappingClass)) {
-                    String m = String.format("%s.%s mapping class isn't %s type.", tableMeta.javaType().getName()
-                            , field.getName(), MappingType.class.getName());
-                    throw new MetaException(m);
-                }
-            } catch (ClassNotFoundException e) {
-                String m = String.format("%s.value() class[%s] not found.", Mapping.class.getName(), mapping.value());
-                throw new MetaException(m, e);
-            }
+            m = String.format("Discriminator %s.%s %s.value() isn't %s."
+                    , field.getDeclaringClass().getName(), field.getName()
+                    , Mapping.class.getName(), CodeEnumType.class.getName());
         }
-        return mappingClass;
+        return new MetaException(m);
     }
 
 

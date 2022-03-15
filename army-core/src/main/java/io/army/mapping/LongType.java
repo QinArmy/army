@@ -13,9 +13,9 @@ public final class LongType extends _ArmyNoInjectionMapping {
     public static final LongType INSTANCE = new LongType();
 
 
-    public static LongType create(Class<?> javaType) {
-        if (javaType != Long.class) {
-            throw errorJavaType(LongType.class, javaType);
+    public static LongType from(final Class<?> fieldType) {
+        if (fieldType != Long.class) {
+            throw errorJavaType(LongType.class, fieldType);
         }
         return INSTANCE;
     }

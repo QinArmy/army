@@ -17,14 +17,14 @@ public final class MySQLLongTextType extends AbstractMappingType {
 
     public static final long MAX_LENGTH = 0xFFFF_FFFFL;
 
-    public static MySQLLongTextType create(final Class<?> javaType) {
+    public static MySQLLongTextType from(final Class<?> fieldType) {
         final MySQLLongTextType instance;
-        if (javaType == String.class) {
+        if (fieldType == String.class) {
             instance = STRING_INSTANCE;
-        } else if (javaType == Reader.class) {
+        } else if (fieldType == Reader.class) {
             instance = READER_INSTANCE;
         } else {
-            throw errorJavaType(MySQLLongTextType.class, javaType);
+            throw errorJavaType(MySQLLongTextType.class, fieldType);
         }
         return instance;
     }
@@ -42,7 +42,7 @@ public final class MySQLLongTextType extends AbstractMappingType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }

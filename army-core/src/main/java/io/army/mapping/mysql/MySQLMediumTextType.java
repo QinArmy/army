@@ -17,9 +17,9 @@ public final class MySQLMediumTextType extends AbstractMappingType {
 
     public static final int MAX_LENGTH = 0x7FFF_FF;
 
-    public static MySQLMediumTextType create(Class<?> javaType) {
-        if (javaType != String.class) {
-            throw errorJavaType(MySQLMediumTextType.class, javaType);
+    public static MySQLMediumTextType from(Class<?> fieldType) {
+        if (fieldType != String.class) {
+            throw errorJavaType(MySQLMediumTextType.class, fieldType);
         }
         return INSTANCE;
     }

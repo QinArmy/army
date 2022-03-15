@@ -13,7 +13,7 @@ public final class JsonStringType extends AbstractMappingType {
 
     public static final JsonStringType INSTANCE = new JsonStringType();
 
-    public static JsonStringType create(Class<?> javaType) {
+    public static JsonStringType from(Class<?> javaType) {
         if (javaType != String.class) {
             throw errorJavaType(JsonStringType.class, javaType);
         }

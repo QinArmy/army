@@ -13,7 +13,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
 
     public static final ZonedDateTimeType INSTANCE = new ZonedDateTimeType();
 
-    public static ZonedDateTimeType create(Class<?> javaType) {
+    public static ZonedDateTimeType from(Class<?> javaType) {
         if (javaType != ZonedDateTime.class) {
             throw errorJavaType(ZonedDateTimeType.class, javaType);
         }

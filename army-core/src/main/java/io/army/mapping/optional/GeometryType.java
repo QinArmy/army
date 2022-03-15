@@ -20,7 +20,7 @@ public final class GeometryType extends AbstractMappingType {
 
     public static final GeometryType PATH_INSTANCE = new GeometryType(Path.class);
 
-    public static GeometryType create(final Class<?> javaType) {
+    public static GeometryType from(final Class<?> javaType) {
         final GeometryType instance;
         if (javaType == byte[].class) {
             instance = BYTES_INSTANCE;

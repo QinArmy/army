@@ -9,11 +9,10 @@ import io.army.mapping.TextEnumType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
+import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -21,34 +20,35 @@ public final class MySQLTextEnumSetType extends AbstractMappingType implements E
 
     private static final ConcurrentMap<Class<?>, MySQLTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static MySQLTextEnumSetType create(Class<?> javaType, Class<?> elementJavaType) {
-        if (javaType != Set.class) {
-            throw errorJavaType(MySQLTextEnumSetType.class, javaType);
-        } else if (!elementJavaType.isEnum() || !TextEnum.class.isAssignableFrom(elementJavaType)) {
-            throw errorJavaType(MySQLTextEnumSetType.class, elementJavaType);
+    public static MySQLTextEnumSetType forElements(final Class<?> fieldType, final Class<?>[] elementTypes) {
+        if (!Set.class.isAssignableFrom(fieldType)
+                || elementTypes.length != 1
+                || !elementTypes[0].isEnum()
+                || !TextEnum.class.isAssignableFrom(elementTypes[0])
+                || CodeEnum.class.isAssignableFrom(elementTypes[0])) {
+            throw errorJavaType(MySQLTextEnumSetType.class, elementTypes[0]);
         }
-        return INSTANCE_MAP.computeIfAbsent(elementJavaType, MySQLTextEnumSetType::new);
+        return INSTANCE_MAP.computeIfAbsent(elementTypes[0], MySQLTextEnumSetType::new);
     }
 
-
-    private final Class<?> elementJavaType;
+    private final List<Class<?>> elementTypes;
 
     private final Map<String, ? extends TextEnum> textEnumMap;
 
     private MySQLTextEnumSetType(Class<?> elementJavaType) {
-        this.elementJavaType = elementJavaType;
+        this.elementTypes = Collections.singletonList(elementJavaType);
         this.textEnumMap = TextEnumType.getTextMap(elementJavaType);
     }
 
 
     @Override
-    public Class<?> elementType() {
-        return this.elementJavaType;
+    public Class<?> javaType() {
+        return Set.class;
     }
 
     @Override
-    public Class<?> javaType() {
-        return Set.class;
+    public List<Class<?>> elementTypes() {
+        return this.elementTypes;
     }
 
     @Override
@@ -65,7 +65,7 @@ public final class MySQLTextEnumSetType extends AbstractMappingType implements E
             throw outRangeOfSqlType(sqlType, nonNull);
         }
         final StringBuilder builder = new StringBuilder();
-        final Class<?> elementJavaType = this.elementJavaType;
+        final Class<?> elementJavaType = this.elementTypes.get(0);
         int index = 0;
         for (Object e : (Set<?>) nonNull) {
             if (!elementJavaType.isInstance(e)) {
@@ -92,7 +92,7 @@ public final class MySQLTextEnumSetType extends AbstractMappingType implements E
         for (String text : array) {
             textEnum = textEnumMap.get(text);
             if (textEnum == null) {
-                String m = String.format("%s unknown text[%s] instance.", this.elementJavaType.getName(), text);
+                String m = String.format("%s unknown text[%s] instance.", elementTypes.get(0).getName(), text);
                 throw errorValueForSqlType(sqlType, nonNull, new IllegalArgumentException(m));
             }
             set.add(textEnum);

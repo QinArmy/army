@@ -12,4 +12,6 @@ public interface ExecutorEnvironment {
 
     ArmyEnvironment environment();
 
+    boolean inBeanContainer();
+
 }

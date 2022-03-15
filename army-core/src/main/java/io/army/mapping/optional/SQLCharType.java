@@ -13,7 +13,7 @@ public final class SQLCharType extends AbstractMappingType {
 
     public static final SQLCharType INSTANCE = new SQLCharType();
 
-    public static SQLCharType create(Class<?> javaType) {
+    public static SQLCharType from(Class<?> javaType) {
         if (javaType != String.class) {
             throw errorJavaType(SQLCharType.class, javaType);
         }

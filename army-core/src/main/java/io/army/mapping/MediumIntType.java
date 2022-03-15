@@ -14,9 +14,9 @@ public final class MediumIntType extends _ArmyNoInjectionMapping {
     public static final int MIN = -MAX - 1;
 
 
-    public static MediumIntType create(Class<?> javaType) {
-        if (javaType != Integer.class) {
-            throw errorJavaType(MediumIntType.class, javaType);
+    public static MediumIntType from(final Class<?> fieldType) {
+        if (fieldType != Integer.class) {
+            throw errorJavaType(MediumIntType.class, fieldType);
         }
         return INSTANCE;
     }

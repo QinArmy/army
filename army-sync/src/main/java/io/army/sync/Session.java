@@ -6,7 +6,9 @@ import io.army.tx.Isolation;
 import io.army.tx.Transaction;
 import io.army.tx.TransactionException;
 
-
+/**
+ * @see SessionFactory
+ */
 public interface Session extends SyncSession, AutoCloseable {
 
 

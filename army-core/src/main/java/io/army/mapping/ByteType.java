@@ -5,14 +5,11 @@ import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 public final class ByteType extends _ArmyNoInjectionMapping {
 
     public static final ByteType INSTANCE = new ByteType();
 
-    public static ByteType create(Class<?> javaType) {
+    public static ByteType from(final Class<?> javaType) {
         if (javaType != Byte.class) {
             throw errorJavaType(ByteType.class, javaType);
         }

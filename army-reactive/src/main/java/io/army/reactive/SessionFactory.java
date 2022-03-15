@@ -4,7 +4,7 @@ import io.army.SessionException;
 import io.army.session.DialectSessionFactory;
 import reactor.core.publisher.Mono;
 
-public interface ReactiveSessionFactory extends GenericReactiveApiSessionFactory, DialectSessionFactory {
+public interface SessionFactory extends GenericReactiveApiSessionFactory, DialectSessionFactory {
 
     @Override
     ProxyReactiveSession proxySession();

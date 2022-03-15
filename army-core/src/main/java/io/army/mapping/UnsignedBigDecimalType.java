@@ -11,9 +11,9 @@ public final class UnsignedBigDecimalType extends _ArmyNoInjectionMapping {
 
     public static final UnsignedBigDecimalType INSTANCE = new UnsignedBigDecimalType();
 
-    public static UnsignedBigDecimalType create(Class<?> javaType) {
-        if (javaType != BigDecimal.class) {
-            throw errorJavaType(UnsignedBigDecimalType.class, javaType);
+    public static UnsignedBigDecimalType from(final Class<?> fieldType) {
+        if (fieldType != BigDecimal.class) {
+            throw errorJavaType(UnsignedBigDecimalType.class, fieldType);
         }
         return INSTANCE;
     }

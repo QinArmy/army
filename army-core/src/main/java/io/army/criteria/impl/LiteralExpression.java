@@ -27,7 +27,7 @@ final class LiteralExpression extends OperationExpression implements ValueExpres
 
     static LiteralExpression literal(final Object constant) {
         Objects.requireNonNull(constant);
-        return literal(_MappingFactory.getMapping(constant.getClass()), constant);
+        return literal(_MappingFactory.getDefault(constant.getClass()), constant);
     }
 
     private final ParamMeta paramMeta;

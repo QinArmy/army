@@ -49,7 +49,7 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
     @Override
     public final void prepared() {
-        _Assert.nonPrepared(this.prepared);
+        _Assert.prepared(this.prepared);
     }
 
     @Override

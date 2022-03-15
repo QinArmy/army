@@ -11,7 +11,7 @@ public final class BinaryType extends AbstractMappingType {
 
     public static final BinaryType INSTANCE = new BinaryType();
 
-    public static BinaryType create(Class<?> javaType) {
+    public static BinaryType from(Class<?> javaType) {
         if (javaType != byte[].class) {
             throw errorJavaType(BinaryType.class, javaType);
         }

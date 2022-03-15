@@ -454,6 +454,11 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
             return this.environment;
         }
 
+        @Override
+        public boolean inBeanContainer() {
+            return this.environment.getClass().getName().equals("io.army.env.SpringArmyEnvironment");
+        }
+
     }
 
 

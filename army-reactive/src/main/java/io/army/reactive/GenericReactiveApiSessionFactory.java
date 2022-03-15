@@ -8,7 +8,7 @@ import java.util.function.Function;
 /**
  * This interface is base interface of below:
  * <ul>
- *     <li>{@link io.army.reactive.ReactiveSessionFactory}</li>
+ *     <li>{@link SessionFactory}</li>
  *     <li>{@code io.army.reactive.ReactiveTmSessionFactory}</li>
  * </ul>
  */

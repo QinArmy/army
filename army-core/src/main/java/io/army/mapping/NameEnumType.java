@@ -21,21 +21,21 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
 
     private static final ConcurrentMap<Class<?>, NameEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    public static NameEnumType create(final Class<?> javaType) {
-        if (!javaType.isEnum()) {
-            throw errorJavaType(NameEnumType.class, javaType);
+    public static NameEnumType from(final Class<?> fieldType) {
+        if (!fieldType.isEnum()) {
+            throw errorJavaType(NameEnumType.class, fieldType);
         }
-        if (CodeEnum.class.isAssignableFrom(javaType)) {
+        if (CodeEnum.class.isAssignableFrom(fieldType)) {
             String m = String.format("enum %s implements %s,please use %s."
-                    , javaType.getName(), CodeEnum.class.getName(), CodeEnumType.class.getName());
+                    , fieldType.getName(), CodeEnum.class.getName(), CodeEnumType.class.getName());
             throw new IllegalArgumentException(m);
         }
-        if (TextEnum.class.isAssignableFrom(javaType)) {
+        if (TextEnum.class.isAssignableFrom(fieldType)) {
             String m = String.format("enum %s implements %s,please use %s."
-                    , javaType.getName(), TextEnum.class.getName(), TextEnumType.class.getName());
+                    , fieldType.getName(), TextEnum.class.getName(), TextEnumType.class.getName());
             throw new IllegalArgumentException(m);
         }
-        return INSTANCE_MAP.computeIfAbsent(javaType, NameEnumType::new);
+        return INSTANCE_MAP.computeIfAbsent(fieldType, NameEnumType::new);
     }
 
     private final Class<?> enumClass;

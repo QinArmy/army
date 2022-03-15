@@ -11,7 +11,7 @@ import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
 import io.army.meta.ServerMeta;
 import io.army.session.AbstractSessionFactory;
-import io.army.session.FactoryMode;
+import io.army.session.DataAccessException;
 import io.army.sync.executor.ExecutorFactory;
 
 import java.util.Objects;
@@ -52,14 +52,21 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     @Override
     public void close() throws SessionFactoryException {
-        destroyArmyBeans();
-        this.closed = true;
+        synchronized (this) {
+            if (this.closed) {
+                return;
+            }
+            destroyArmyBeans();
+            try {
+                this.executorFactory.close();
+            } catch (DataAccessException e) {
+                String m = String.format("%s close occur error.%s", ExecutorFactory.class.getName(), e.getMessage());
+                throw new SessionFactoryException(m, e);
+            }
+            this.closed = true;
+        }
     }
 
-    @Override
-    public FactoryMode factoryMode() {
-        return null;
-    }
 
     @Override
     public ServerMeta serverMeta() {
