@@ -38,6 +38,7 @@ public class StandardCriteriaUnitTests {
 
     }
 
+
     @Test
     public void insertChild() {
         final Insert insert;

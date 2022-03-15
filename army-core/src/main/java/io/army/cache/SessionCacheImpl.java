@@ -59,7 +59,7 @@ final class SessionCacheImpl implements SessionCache {
         // 2. cache proxy by id
         Map<Object, IDomain> cacheById = this.tableCacheById.computeIfAbsent(tableMeta, key -> new HashMap<>());
         // do cache proxy by id
-        cacheById.put(proxy.getId(), proxy);
+        // cacheById.put(proxy.getId(), proxy);
 
         if (this.tableIdUniqueMap.containsKey(tableMeta)) {
             // 2.1 catch proxy by unique (optional)
@@ -69,7 +69,7 @@ final class SessionCacheImpl implements SessionCache {
         Map<Object, DomainUpdateAdvice> updateAdviceMapById;
         // 3. cache DomainUpdateAdvice
         updateAdviceMapById = this.adviceCacheById.computeIfAbsent(tableMeta, key -> new HashMap<>());
-        updateAdviceMapById.put(proxy.getId(), pair.getSecond());
+        //updateAdviceMapById.put(proxy.getId(), pair.getSecond());
         return (T) proxy;
     }
 
@@ -91,19 +91,19 @@ final class SessionCacheImpl implements SessionCache {
         // 3. cache proxy by id
         Map<Object, IDomain> cacheById = this.tableCacheById.computeIfAbsent(tableMeta, key -> new HashMap<>());
         // do cache proxy by id
-        cacheById.put(proxy.getId(), proxy);
+        //cacheById.put(proxy.getId(), proxy);
 
         // 4. map id to unique set
         Map<Object, Set<UniqueKey>> idUniqueSetMap;
         idUniqueSetMap = this.tableIdUniqueMap.computeIfAbsent(tableMeta, key -> new HashMap<>());
-        Set<UniqueKey> uniqueKeySet = idUniqueSetMap.computeIfAbsent(proxy.getId(), key -> new HashSet<>());
+        // Set<UniqueKey> uniqueKeySet = idUniqueSetMap.computeIfAbsent(proxy.getId(), key -> new HashSet<>());
         // do map id to unique set
-        uniqueKeySet.add(uniqueKey);
+        //  uniqueKeySet.add(uniqueKey);
 
         Map<Object, DomainUpdateAdvice> updateAdviceMapById;
         // 5. cache DomainUpdateAdvice
         updateAdviceMapById = this.adviceCacheById.computeIfAbsent(tableMeta, key -> new HashMap<>());
-        updateAdviceMapById.put(proxy.getId(), pair.getSecond());
+        // updateAdviceMapById.put(proxy.getId(), pair.getSecond());
         return (T) proxy;
     }
 
@@ -138,19 +138,19 @@ final class SessionCacheImpl implements SessionCache {
         if (CollectionUtils.isEmpty(uniqueKeySetMap)) {
             return;
         }
-        Set<UniqueKey> uniqueKeySet = uniqueKeySetMap.get(proxy.getId());
-        if (CollectionUtils.isEmpty(uniqueKeySet)) {
-            return;
-        }
-        Map<UniqueKey, IDomain> cacheByUnique = this.tableCacheByUnique.get(tableMeta);
-        for (UniqueKey uniqueKey : uniqueKeySet) {
-            if (cacheByUnique == null) {
-                throw new SessionCacheException("TableMeta[%s] not found cache by UniqueKey[%s] for id[%s]"
-                        , tableMeta, uniqueKey, proxy.getId());
-            }
-            // cache proxy by unique key
-            cacheByUnique.put(uniqueKey, proxy);
-        }
+//        Set<UniqueKey> uniqueKeySet = uniqueKeySetMap.get(proxy.getId());
+//        if (CollectionUtils.isEmpty(uniqueKeySet)) {
+//            return;
+//        }
+//        Map<UniqueKey, IDomain> cacheByUnique = this.tableCacheByUnique.get(tableMeta);
+//        for (UniqueKey uniqueKey : uniqueKeySet) {
+//            if (cacheByUnique == null) {
+//                throw new SessionCacheException("TableMeta[%s] not found cache by UniqueKey[%s] for id[%s]"
+//                        , tableMeta, uniqueKey, "");
+//            }
+//            // cache proxy by unique key
+//            cacheByUnique.put(uniqueKey, proxy);
+//        }
 
     }
 }

@@ -9,7 +9,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -21,8 +20,6 @@ final class AnnotationHandler {
 
     private final ProcessingEnvironment env;
 
-    private final Types types;
-
     final List<String> errorMsgList = new ArrayList<>();
 
     private final Map<String, Map<String, VariableElement>> parentFieldCache = new HashMap<>();
@@ -31,7 +28,6 @@ final class AnnotationHandler {
 
     AnnotationHandler(ProcessingEnvironment env) {
         this.env = env;
-        this.types = env.getTypeUtils();
     }
 
 
@@ -71,11 +67,18 @@ final class AnnotationHandler {
                 continue;
             }
             indexModeMap = createFieldToIndexModeMap(domain);
+            for (String fieldName : indexModeMap.keySet()) {
+                if (!fieldMap.containsKey(fieldName)) {
+                    String m = String.format("Not found index field[%s] in %s."
+                            , fieldName, MetaUtils.getClassName(domain));
+                    errorMsgList.add(m);
+                }
+            }
             if (errorMsgList.size() > 0) {
                 continue;
             }
 
-            codeCreator.create(domain, fieldMap.values(), parentDomain, mode, indexModeMap);
+            codeCreator.create(domain, fieldMap, parentDomain, mode, indexModeMap);
 
         }
 
@@ -92,12 +95,11 @@ final class AnnotationHandler {
     private List<TypeElement> getMappedList(final TypeElement tableElement, final TypeElement[] outParent) {
         TypeElement superElement = tableElement, parentElement = null;
         List<TypeElement> mappedList = null;
-        final Types types = this.types;
         for (TypeMirror superMirror = superElement.getSuperclass(); ; ) {
             if (superMirror instanceof NoType) {
                 break;
             }
-            superElement = (TypeElement) types.asElement(superMirror);
+            superElement = (TypeElement) ((DeclaredType) superMirror).asElement();
             if (superElement.getNestingKind() != NestingKind.TOP_LEVEL) {
                 break;
             }
@@ -417,6 +419,9 @@ final class AnnotationHandler {
     private Map<String, IndexMode> createFieldToIndexModeMap(final TypeElement domain) {
         final Table table = domain.getAnnotation(Table.class);
         final Index[] indexArray = table.indexes();
+        if (indexArray.length == 0) {
+            return Collections.emptyMap();
+        }
         final Map<String, IndexMode> indexMetaMap = new HashMap<>();
 
         final Map<String, Boolean> indexNameMap = new HashMap<>(indexArray.length + 3);

@@ -4,6 +4,7 @@ import io.army.annotation.Table;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.util.List;
@@ -29,25 +30,28 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        final Set<? extends Element> elementSet;
+        elementSet = roundEnv.getElementsAnnotatedWith(Table.class);
 
-        final long startTime = System.currentTimeMillis();
-        try {
-            final AnnotationHandler handler = new AnnotationHandler(this.processingEnv);
-            handler.createSourceFiles(roundEnv.getElementsAnnotatedWith(Table.class));
-            if (handler.errorMsgList.size() > 0) {
-                throw createException(handler.errorMsgList);
+        if (elementSet.size() > 0) {
+            final long startTime = System.currentTimeMillis();
+            try {
+                final AnnotationHandler handler = new AnnotationHandler(this.processingEnv);
+                handler.createSourceFiles(elementSet);
+                if (handler.errorMsgList.size() > 0) {
+                    throw createException(handler.errorMsgList);
+                }
+            } catch (IOException e) {
+                throw new AnnotationMetaException("Army create source file occur.", e);
             }
-        } catch (IOException e) {
-            throw new AnnotationMetaException("Army create source file occur.", e);
+            System.out.printf("[INFO] %s cost %s ms.%n", ArmyMetaModelDomainProcessor.class.getName()
+                    , System.currentTimeMillis() - startTime);
         }
-        System.out.printf("[INFO] %s cost %s ms.%n", ArmyMetaModelDomainProcessor.class.getName()
-                , System.currentTimeMillis() - startTime);
         return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
     }
 
 
     /*################################## blow private static method ##################################*/
-
 
 
     private static AnnotationMetaException createException(final List<String> errorMsgList) {

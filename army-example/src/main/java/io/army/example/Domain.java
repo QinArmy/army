@@ -6,6 +6,9 @@ import java.util.Objects;
 
 public abstract class Domain extends Criteria implements IDomain {
 
+
+    public abstract Object getId();
+
     @Override
     public int hashCode() {
         return Objects.hash(getId());

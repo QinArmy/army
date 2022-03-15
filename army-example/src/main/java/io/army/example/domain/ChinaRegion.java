@@ -37,7 +37,6 @@ public class ChinaRegion extends VersionDomain {
     private BigDecimal regionGdp;
 
 
-    @Override
     public Long getId() {
         return id;
     }

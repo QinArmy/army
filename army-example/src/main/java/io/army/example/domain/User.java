@@ -39,7 +39,6 @@ public class User extends VersionDomain {
     private Long identityId;
 
 
-    @Override
     public Long getId() {
         return id;
     }

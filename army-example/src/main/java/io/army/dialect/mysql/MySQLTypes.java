@@ -4,13 +4,12 @@ import io.army.annotation.Column;
 import io.army.annotation.Mapping;
 import io.army.annotation.Table;
 import io.army.example.VersionDomain;
+import io.army.example.struct.QinArmy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
+import java.time.*;
+import java.util.Set;
 
 @Table(name = "mysql_types", comment = "mysql types")
 public class MySQLTypes extends VersionDomain {
@@ -141,13 +140,13 @@ public class MySQLTypes extends VersionDomain {
     @Column(comment = "long text type")
     private String myLongText;
 
-//    @Mapping("io.army.mapping.mysql.MySQLNameEnumSetType")
-//    @Column(comment = "set of name enum")
-//    private Set<Month> myNameEnumSet;
-//
-//    @Mapping("io.army.mapping.mysql.MySQLTextEnumSetType")
-//    @Column(comment = "set of text enum")
-//    private Set<QinArmy> myTextEnumSet;
+    @Mapping("io.army.mapping.mysql.MySQLNameEnumSetType")
+    @Column(comment = "set of name enum")
+    private Set<Month> myNameEnumSet;
+
+    @Mapping("io.army.mapping.mysql.MySQLTextEnumSetType")
+    @Column(comment = "set of text enum")
+    private Set<QinArmy> myTextEnumSet;
 
     @Mapping("io.army.mapping.mysql.JsonStringType")
     @Column(comment = "json type")
@@ -170,7 +169,6 @@ public class MySQLTypes extends VersionDomain {
     private String myLongBlob;
 
 
-    @Override
     public Long getId() {
         return id;
     }
@@ -493,5 +491,19 @@ public class MySQLTypes extends VersionDomain {
         this.myLongBlob = myLongBlob;
     }
 
+    public Set<Month> getMyNameEnumSet() {
+        return myNameEnumSet;
+    }
 
+    public void setMyNameEnumSet(Set<Month> myNameEnumSet) {
+        this.myNameEnumSet = myNameEnumSet;
+    }
+
+    public Set<QinArmy> getMyTextEnumSet() {
+        return myTextEnumSet;
+    }
+
+    public void setMyTextEnumSet(Set<QinArmy> myTextEnumSet) {
+        this.myTextEnumSet = myTextEnumSet;
+    }
 }

@@ -1,6 +1,7 @@
 package io.army.modelgen;
 
 import io.army.annotation.Column;
+import io.army.annotation.Index;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
 import io.army.lang.Nullable;
@@ -15,7 +16,6 @@ import java.io.PrintWriter;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,44 +50,45 @@ final class SourceCodeCreator {
 
     private final Filer filer;
 
+    private final String codeCreateTime;
+
     SourceCodeCreator(Filer filer) {
         this.filer = filer;
+        this.codeCreateTime = OffsetDateTime.now().format(ISO_OFFSET_DATETIME_FORMATTER);
     }
 
-    void create(final TypeElement element, final Collection<VariableElement> fieldCollection
+    void create(final TypeElement element, final Map<String, VariableElement> fieldMap
             , final @Nullable TypeElement parentElement, final MappingMode mode
             , final Map<String, IndexMode> indexModeMap) throws IOException {
-
-        final StringBuilder builder = new StringBuilder(1024);
+        final int fieldCount = fieldMap.size();
+        final StringBuilder builder = new StringBuilder(fieldCount << 8);
         // 1. source army import part
         appendImports(element, builder, mode);
 
-        // 3. source parentMeta class import part
+        // 2. source parentMeta class import part
         if (parentElement != null) {
             appendParentClassImport(builder, element, parentElement);
         }
 
-        final StringBuilder fieldNameBuilder = new StringBuilder(256);
+        final String simpleClassName, domainName;
+        simpleClassName = MetaUtils.getSimpleClassName(element);
 
-        appendClassDefinition(element, parentElement, fieldNameBuilder);
-        appendTableMeta(element, fieldNameBuilder, parentElement);
-        appendMetaCount(element, fieldNameBuilder, fieldCollection.size());
+        //3. class definition
+        appendClassDefinition(element, simpleClassName, parentElement, mode, builder);
 
-        final String className;
-        className = element.getSimpleName().toString();
-        appendFieldCountValidateMethod(className, fieldNameBuilder);
+        //4. static block
+        domainName = appendStaticBlock(element, simpleClassName, parentElement, fieldCount, builder);
 
         String fieldName, commentLine, upperCaseFieldName, methodName, metaTypeName;
 
-        final StringBuilder fieldBuilder = new StringBuilder(256);
+        final StringBuilder fieldBuilder = new StringBuilder(fieldCount << 7);
 
 
-        final String domainName = MetaUtils.getSimpleClassName(element);
         StringBuilder commentBuilder;
         int count = 0;
-        boolean primary = false, hasIndex = false, hasUnique = false;
-
-        for (VariableElement field : fieldCollection) {
+        boolean primary = false;
+        //5. create field name definition and field definitions and append import statement
+        for (VariableElement field : fieldMap.values()) {
             fieldName = field.getSimpleName().toString();
 
             commentBuilder = new StringBuilder()
@@ -100,7 +101,7 @@ final class SourceCodeCreator {
 
             // field name definition
             upperCaseFieldName = _MetaBridge.camelToUpperCase(fieldName);
-            fieldNameBuilder
+            builder
                     .append(commentLine)
                     .append(FIELD_PREFIX)
                     .append("String ")
@@ -111,7 +112,7 @@ final class SourceCodeCreator {
 
             count++;
             if ((count & 3) == 0) {
-                fieldNameBuilder.append('\n');
+                builder.append('\n');
             }
 
             // field definitions
@@ -123,24 +124,15 @@ final class SourceCodeCreator {
                     methodName = "getField";
                     metaTypeName = "FieldMeta";
                     break;
-                case GENERIC: {
+                case GENERIC:
                     metaTypeName = "FieldMeta";
                     methodName = "getField";
-                    if (!hasIndex) {
-                        hasIndex = true;
-                        builder.append("import io.army.meta.IndexFieldMeta;\n");
-                    }
-                }
-                break;
-                case UNIQUE: {
+
+                    break;
+                case UNIQUE:
                     methodName = "getUniqueField";
                     metaTypeName = "UniqueFieldMeta";
-                    if (!hasUnique) {
-                        hasUnique = true;
-                        builder.append("import io.army.meta.UniqueFieldMeta;\n");
-                    }
-                }
-                break;
+                    break;
                 case PRIMARY:
                     methodName = "id";
                     metaTypeName = "PrimaryFieldMeta";
@@ -178,17 +170,97 @@ final class SourceCodeCreator {
         }// for
 
 
-        builder.append(fieldNameBuilder)
-                .append("\n\n")
+        //6. merge three builder
+        builder.append("\n\n")
                 .append(fieldBuilder)
-                .append("\n\n}\n\n\n");
+                .append("\n\n}\n\n");
 
+        //7. output source code.
         final FileObject fileObject;
-        fileObject = this.filer.createSourceFile(className + _MetaBridge.META_CLASS_NAME_SUFFIX);
+        fileObject = this.filer.createSourceFile(MetaUtils.getClassName(element) + _MetaBridge.META_CLASS_NAME_SUFFIX);
         try (PrintWriter pw = new PrintWriter(fileObject.openOutputStream())) {
             pw.println(builder);
         }
 
+    }
+
+
+    /**
+     * debugSQL meta source code class definition part
+     */
+    private void appendClassDefinition(final TypeElement element, final String simpleClassName
+            , @Nullable final TypeElement parentElement, final MappingMode mode, final StringBuilder builder) {
+
+
+        builder.append("\n\n@Generated(value = \"")
+                .append(ArmyMetaModelDomainProcessor.class.getName())
+                .append("\"\n")
+                .append(ANNOTATION_PRE)
+                .append(",date = \"")
+                .append(this.codeCreateTime)
+                .append("\"\n")
+                .append(ANNOTATION_PRE)
+                .append(",comments = \"")
+                .append(element.getAnnotation(Table.class).comment())
+                .append("\")")
+                .append("\n")
+                .append("public abstract class ")
+                .append(simpleClassName)
+                .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
+        ;
+
+        if (parentElement != null) {
+            builder.append(" extends ");
+            if (isSameClassName(element, parentElement)) {
+                builder.append(MetaUtils.getClassName(parentElement));
+            } else {
+                builder.append(MetaUtils.getSimpleClassName(parentElement));
+            }
+            builder.append(_MetaBridge.META_CLASS_NAME_SUFFIX);
+        }
+        builder.append(" {\n\n");
+
+        // append default Constructor
+        builder.append(MEMBER_PRE);
+        switch (mode) {
+            case SIMPLE: {
+                // simple domain
+                builder.append("private ").
+                        append(simpleClassName)
+                        .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
+                        .append("(){\n")
+                        .append(MEMBER_PRE)
+                        .append("\tthrow new UnsupportedOperationException();\n")
+                        .append(MEMBER_PRE)
+                        .append('}');
+            }
+            break;
+            case PARENT: {
+                // parent domain
+                builder.append("protected ").
+                        append(simpleClassName)
+                        .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
+                        .append("(){\n")
+                        .append(MEMBER_PRE)
+                        .append("\tthrow new UnsupportedOperationException();\n")
+                        .append(MEMBER_PRE)
+                        .append('}');
+            }
+            break;
+            case CHILD: {
+                // child domain
+                builder.append("private ").
+                        append(simpleClassName)
+                        .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
+                        .append("(){\n")
+                        .append(MEMBER_PRE)
+                        .append('}');
+            }
+            break;
+            default:
+                throw new IllegalArgumentException(String.format("unexpected enum %s", mode));
+        }
+        builder.append("\n\n");
     }
 
 
@@ -201,7 +273,27 @@ final class SourceCodeCreator {
         builder.append("import io.army.meta.FieldMeta;\n")
                 .append("import javax.annotation.Generated;\n")
                 .append("import io.army.criteria.impl._TableMetaFactory;\n")
-                .append("import io.army.meta.PrimaryFieldMeta;\n\n");
+                .append("import io.army.meta.PrimaryFieldMeta;\n");
+
+        boolean hasIndex = false, hasUnique = false;
+
+        for (Index index : element.getAnnotation(Table.class).indexes()) {
+            if (!hasIndex) {
+                hasIndex = true;
+            }
+            if (index.unique() && index.fieldList().length == 1) {
+                hasUnique = true;
+                break;
+            }
+
+        }
+        if (hasIndex) {
+            builder.append("import io.army.meta.IndexFieldMeta;\n");
+        }
+
+        if (hasUnique) {
+            builder.append("import io.army.meta.UniqueFieldMeta;\n");
+        }
 
         switch (mode) {
             case SIMPLE:
@@ -220,26 +312,19 @@ final class SourceCodeCreator {
     }
 
 
-    private void appendParentClassImport(final StringBuilder builder, final TypeElement tableElement
+    private static void appendParentClassImport(final StringBuilder builder, final TypeElement tableElement
             , final TypeElement parentElement) {
         if (!isSameClassName(tableElement, parentElement) && !isSamePackage(tableElement, parentElement)) {
-            builder.append("import ");
-            builder.append(MetaUtils.getSimpleClassName(parentElement));
-            builder.append(_MetaBridge.META_CLASS_NAME_SUFFIX)
+            builder.append("import ")
+                    .append(MetaUtils.getClassName(parentElement))
+                    .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
                     .append(";\n");
         }
 
     }
 
-    static boolean isSameClassName(TypeElement element1, TypeElement element2) {
-        return element1.getSimpleName().equals(element2.getSimpleName());
-    }
 
-    static boolean isSamePackage(TypeElement element1, TypeElement element2) {
-        return element1.getQualifiedName().equals(element2.getQualifiedName());
-    }
-
-    private String getComment(final VariableElement field) {
+    private static String getComment(final VariableElement field) {
         final Column column;
         column = field.getAnnotation(Column.class);
         String comment;
@@ -273,85 +358,32 @@ final class SourceCodeCreator {
         return comment;
     }
 
-    private boolean isEnum(final TypeMirror fieldType) {
+
+    private static boolean isSameClassName(TypeElement element1, TypeElement element2) {
+        return element1.getSimpleName().equals(element2.getSimpleName());
+    }
+
+    private static boolean isSamePackage(TypeElement element1, TypeElement element2) {
+        return element1.getQualifiedName().equals(element2.getQualifiedName());
+    }
+
+    private static boolean isEnum(final TypeMirror fieldType) {
         return fieldType instanceof DeclaredType
                 && ((DeclaredType) fieldType).asElement().getKind() == ElementKind.ENUM;
     }
 
 
-    /**
-     * debugSQL meta source code class definition part
-     */
-    private static void appendClassDefinition(final TypeElement element, @Nullable final TypeElement parentElement
-            , final StringBuilder builder) {
+    private static String appendStaticBlock(final TypeElement element, final String simpleClassName
+            , @Nullable final TypeElement parentElement, int fieldCount, final StringBuilder builder) {
 
-        final String className = element.getSimpleName().toString();
+        final Table table = element.getAnnotation(Table.class);
 
-        builder.append("@Generated(value = \"")
-                .append(ArmyMetaModelDomainProcessor.class.getName())
-                .append("\"\n")
-                .append(ANNOTATION_PRE)
-                .append(",date = \"")
-                .append(OffsetDateTime.now().format(ISO_OFFSET_DATETIME_FORMATTER))
-                .append("\"\n")
-                .append(ANNOTATION_PRE)
-                .append(",comments = \"")
-                .append(element.getAnnotation(Table.class).comment())
-                .append("\")")
-                .append("\n")
-                .append("public abstract class ")
-                .append(className)
-                .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-        ;
-
-        if (parentElement != null) {
-            builder.append(" extends ");
-            if (isSameClassName(element, parentElement)) {
-                builder.append(parentElement.getQualifiedName());
-            } else {
-                builder.append(parentElement.getSimpleName());
-            }
-            builder.append(_MetaBridge.META_CLASS_NAME_SUFFIX);
-        }
-        builder.append(" {\n\n");
-
-        // append default Constructor
-        builder.append(MEMBER_PRE);
-        if (parentElement == null && element.getAnnotation(Inheritance.class) != null) {
-            // parent domain
-            builder.append("protected ").
-                    append(className)
-                    .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-                    .append("(){\n")
-                    .append(MEMBER_PRE)
-                    .append("\tthrow new UnsupportedOperationException();\n")
-                    .append(MEMBER_PRE)
-                    .append('}');
-
-        } else if (parentElement == null) {
-            // simple domain
-            builder.append("private ").
-                    append(className)
-                    .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-                    .append("(){\n")
-                    .append(MEMBER_PRE)
-                    .append("\tthrow new UnsupportedOperationException();\n")
-                    .append(MEMBER_PRE)
-                    .append('}');
-        } else {
-            // child domain
-            builder.append("private ").
-                    append(className)
-                    .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-                    .append("(){\n")
-                    .append(MEMBER_PRE)
-                    .append('}');
-        }
-        builder.append("\n\n");
-    }
-
-    private static void appendTableMeta(final TypeElement element, final StringBuilder builder,
-                                        @Nullable final TypeElement parentElement) {
+        builder.append(FIELD_PREFIX)
+                .append(" String ")
+                .append(_MetaBridge.TABLE_NAME)
+                .append(" = \"")
+                .append(table.name())
+                .append("\";\n\n");
 
         final String parentClassName, methodName, tableMetaName;
         if (parentElement == null) {
@@ -367,9 +399,9 @@ final class SourceCodeCreator {
             methodName = "getChildTableMeta";
             tableMetaName = "ChildTableMeta";
             if (isSameClassName(element, parentElement)) {
-                parentClassName = parentElement.getQualifiedName().toString();
+                parentClassName = MetaUtils.getClassName(parentElement);
             } else {
-                parentClassName = parentElement.getSimpleName().toString();
+                parentClassName = MetaUtils.getSimpleClassName(parentElement);
             }
         }
 
@@ -377,103 +409,110 @@ final class SourceCodeCreator {
         paramList = element.getTypeParameters();
         final int paramSize = paramList.size();
 
-
-        final String className;
-        className = element.getSimpleName().toString();
-
         builder.append(FIELD_PREFIX)
                 .append(tableMetaName)
-                .append('<')
-                .append(className);
+                .append('<');
 
+        final int domainStart;
+        domainStart = builder.length();
+        builder.append(simpleClassName);
+
+        final String domainName;
         if (paramSize > 0) {
+            builder.append('<');
             for (int i = 0; i < paramSize; i++) {
                 if (i > 0) {
                     builder.append(',');
                 }
                 builder.append('?');
             }
-
+            builder.append('>');
+            domainName = builder.substring(domainStart, builder.length());
+        } else {
+            domainName = simpleClassName;
         }
         builder.append("> ")
                 .append(_MetaBridge.TABLE_META)
-                .append(" =");
+                .append(";\n\n")
 
-        if (paramSize > 0) {
-            builder.append(" (")
-                    .append(tableMetaName)
-                    .append('<')
-                    .append(className);
-            for (int i = 0; i < paramSize; i++) {
-                if (i > 0) {
-                    builder.append(',');
-                }
-                builder.append('?');
-            }
-            builder.append(">)");
-        }
-        builder.append(" _TableMetaFactory.")
-                .append(methodName)
-                .append('(');
-
-        if (parentClassName != null) {
-            builder.append(parentClassName)
-                    .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
-                    .append('.')
-                    .append(_MetaBridge.TABLE_META)
-                    .append(',');
-        }
-
-        builder.append(className)
-                .append(".class);\n\n");
-    }
-
-
-    private static void appendMetaCount(final TypeElement element, final StringBuilder builder
-            , final int fieldSize) {
-        Table table = element.getAnnotation(Table.class);
-
-        builder.append(FIELD_PREFIX)
-                .append(" String ")
-                .append(_MetaBridge.TABLE_NAME)
-                .append(" = \"")
-                .append(table.name())
-                .append("\";\n\n")
-
-                .append(FIELD_PREFIX)
-                .append(" int ")
-                .append(_MetaBridge.FIELD_COUNT)
-                .append(" = ")
-                .append(fieldSize)
-                .append(";\n\n");
-    }
-
-    private static void appendFieldCountValidateMethod(final String className, final StringBuilder builder) {
-        builder.append("\n")
                 .append(MEMBER_PRE)
                 .append("static {\n")
                 .append(MEMBER_PRE)
-                .append("\t")
+                .append('\t');
 
-                .append("if(")
+        if (paramSize > 0) {
+            builder.append("final ")
+                    .append(tableMetaName)
+                    .append("<?> temp;\n")
+                    .append(MEMBER_PRE)
+                    .append("\ttemp = _TableMetaFactory.")
+                    .append(methodName)
+                    .append('(');
+
+            if (parentClassName != null) {
+                builder.append(parentClassName)
+                        .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
+                        .append('.')
+                        .append(_MetaBridge.TABLE_META)
+                        .append(',');
+            }
+            builder.append(simpleClassName)
+                    .append(".class);\n")
+                    .append(MEMBER_PRE)
+                    .append('\t')
+                    .append(_MetaBridge.TABLE_META)
+                    .append(" = (")
+                    .append(tableMetaName)
+                    .append('<')
+                    .append(domainName)
+                    .append(">)temp;\n\n");
+
+        } else {
+            builder.append(_MetaBridge.TABLE_META)
+                    .append(" = _TableMetaFactory.")
+                    .append(methodName)
+                    .append('(');
+
+            if (parentClassName != null) {
+                builder.append(parentClassName)
+                        .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
+                        .append('.')
+                        .append(_MetaBridge.TABLE_META)
+                        .append(',');
+            }
+            builder.append(simpleClassName)
+                    .append(".class);\n\n");
+        }
+
+        final String varFieldSize = "fieldSize";
+
+        builder.append(MEMBER_PRE)
+                .append("\tfinal int ")
+                .append(varFieldSize)
+                .append(" = ")
                 .append(_MetaBridge.TABLE_META)
-                .append(".fieldList().size() != ")
-                .append(_MetaBridge.FIELD_COUNT)
+                .append(".fieldList().size();\n")
+                .append(MEMBER_PRE)
+                .append("\tif(")
+                .append(varFieldSize)
+                .append(" != ")
+                .append(fieldCount)
                 .append("){\n")
                 .append(MEMBER_PRE)
                 .append("\t\t")
                 .append("String m = String.format(\"Domain[%s] field count[%s] error.\",")
-                .append(className)
+                .append(simpleClassName)
                 .append(".class.getName(),")
-                .append(_MetaBridge.FIELD_COUNT)
+                .append(varFieldSize)
                 .append(");\n")
                 .append(MEMBER_PRE)
                 .append("\t\tthrow new IllegalStateException(m);\n")
                 .append(MEMBER_PRE)
                 .append("\t}\n")
                 .append(MEMBER_PRE)
-                .append("}\n\n")
-        ;
+                .append("}\n\n");
+
+        return domainName;
     }
 
 
