@@ -30,7 +30,7 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     }
 
     @Override
-    public final DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain, boolean migrationData)
+    public DomainWrapper createValues(TableMeta<?> tableMeta, IDomain domain, boolean migrationData)
             throws FieldValuesCreateException {
 
         _Assert.isTrue(tableMeta.javaType() == domain.getClass(), "tableMeta then entity not match");
@@ -43,18 +43,18 @@ final class DomainValuesGeneratorImpl implements DomainValuesGenerator {
     }
 
     @Override
-    public final void createValues(ObjectWrapper domainWrapper, boolean migrationData) {
+    public void createValues(ObjectWrapper warpper, boolean migrationData) {
         final TableMeta<?> tableMeta = null;
         if (migrationData) {
             // discriminator
-            createDiscriminatorValue(tableMeta, domainWrapper);
+            createDiscriminatorValue(tableMeta, warpper);
         } else {
-            createValuesManagedByArmy(tableMeta, domainWrapper);
+            createValuesManagedByArmy(tableMeta, warpper);
             if (tableMeta instanceof ChildTableMeta) {
                 ChildTableMeta<?> childMeta = (ChildTableMeta<?>) tableMeta;
-                createValuesWithGenerator(childMeta.parentMeta(), domainWrapper);
+                createValuesWithGenerator(childMeta.parentMeta(), warpper);
             }
-            createValuesWithGenerator(tableMeta, domainWrapper);
+            createValuesWithGenerator(tableMeta, warpper);
         }
     }
 

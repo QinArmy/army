@@ -26,9 +26,9 @@ public interface Session extends SyncSession, AutoCloseable {
 
         TransactionBuilder isolation(Isolation isolation);
 
-        TransactionBuilder readOnly(boolean readOnly);
+        TransactionBuilder readonly(boolean readOnly);
 
-        TransactionBuilder timeout(int timeout);
+        TransactionBuilder timeout(int timeoutSeconds);
 
         Transaction build() throws TransactionException;
 

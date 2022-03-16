@@ -36,6 +36,8 @@ public interface GenericSessionFactory {
 
     boolean supportSessionCache();
 
+    boolean supportSavePoints();
+
     /**
      * Is this factory already closed?
      *

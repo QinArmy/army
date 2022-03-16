@@ -1,5 +1,6 @@
 package io.army.tx;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -52,10 +53,10 @@ public enum TransactionStatus {
     ROLLING_BACK;
 
 
-    public static final Set<TransactionStatus> SAVE_POINT_ABLE_SET = EnumSet.of(
+    public static final Set<TransactionStatus> SAVE_POINT_ABLE_SET = Collections.unmodifiableSet(EnumSet.of(
             ACTIVE,
             MARKED_ROLLBACK
-    );
+    ));
 
     public static final Set<TransactionStatus> ROLL_BACK_ONLY_ABLE_SET = EnumSet.of(
             ACTIVE,

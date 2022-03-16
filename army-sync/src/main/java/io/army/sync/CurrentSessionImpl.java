@@ -1,7 +1,6 @@
 package io.army.sync;
 
 import io.army.SessionException;
-import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
@@ -13,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-class ProxySessionImpl extends AbstractSyncSession implements ProxySession {
+class CurrentSessionImpl extends AbstractSyncSession implements CurrentSession {
 
     private final SessionFactory sessionFactory;
 
 
-    ProxySessionImpl(SessionFactory sessionFactory, CurrentSessionContext sessionContext) {
+    CurrentSessionImpl(SessionFactory sessionFactory, CurrentSessionContext sessionContext) {
         this.sessionFactory = sessionFactory;
     }
 

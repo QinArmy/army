@@ -5,7 +5,16 @@ package io.army.tx;
  */
 public class TransactionFailureException extends TransactionSystemException {
 
+    @Deprecated
     public TransactionFailureException(Throwable cause, String format, Object... args) {
         super(cause, format, args);
+    }
+
+    public TransactionFailureException(String message) {
+        super(message);
+    }
+
+    public TransactionFailureException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

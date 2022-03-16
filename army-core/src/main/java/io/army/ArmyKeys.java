@@ -15,5 +15,9 @@ public interface ArmyKeys {
 
     String executorProvider = "";
 
+    String ZONE_OFFSET_ID = "zone.offset.id";
+
+    String CURRENT_SESSION_CONTEXT = "current.session.context";
+
 
 }

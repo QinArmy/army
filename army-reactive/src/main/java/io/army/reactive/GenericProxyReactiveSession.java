@@ -1,6 +1,6 @@
 package io.army.reactive;
 
-import io.army.session.GenericProxySession;
+import io.army.session.GenericCurrentSession;
 import reactor.core.publisher.Mono;
 
 /**
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
  *     </ul>
  * </p>
  */
-public interface GenericProxyReactiveSession extends BaseReactiveApiSession, GenericProxySession {
+public interface GenericProxyReactiveSession extends BaseReactiveApiSession, GenericCurrentSession {
 
     Mono<Boolean> readOnly();
 

@@ -1,7 +1,9 @@
 package io.army.sync;
 
-import io.army.*;
-import io.army.cache.DomainUpdateAdvice;
+import io.army.ArmyException;
+import io.army.DuplicationSessionTransaction;
+import io.army.SessionCloseFailureException;
+import io.army.SessionException;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Insert;
@@ -28,9 +30,9 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
     private final String name;
 
-    private final SessionFactoryImpl sessionFactory;
+    final SessionFactoryImpl sessionFactory;
 
-    private final StmtExecutor stmtExecutor;
+    final StmtExecutor stmtExecutor;
 
     private final boolean currentSession;
 
@@ -202,61 +204,61 @@ final class SessionImpl extends AbstractSyncSession implements Session {
         }
         try {
             if (this.transaction != null) {
-                throw new TransactionNotCloseException("Transaction not close.");
+                throw new TransactionNotCloseException("Transaction not end.");
             }
-//            if (this.currentSession) {
-//                this.sessionFactory.currentSessionContext().removeCurrentSession(this);
-//            }
-            //  this.connection.close();
+            this.stmtExecutor.close();
             this.closed = true;
         } catch (SessionException e) {
             throw e;
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new SessionCloseFailureException(e, "session close connection error.");
         }
     }
 
     @Override
-    public final Transaction sessionTransaction() throws NoSessionTransactionException {
-        if (this.transaction == null) {
+    public Transaction sessionTransaction() throws NoSessionTransactionException {
+        final Transaction transaction = this.transaction;
+        if (transaction == null) {
             throw new NoSessionTransactionException("no session transaction.");
         }
-        return this.transaction;
+        return transaction;
     }
 
     @Override
-    public TransactionBuilder builder()
-            throws TransactionException {
-        checkSessionTransaction();
-        return new TransactionBuilderImpl();
+    public TransactionBuilder builder() {
+        if (this.transaction != null) {
+            String m = String.format("%s duplication transaction.", this);
+            throw new DuplicationSessionTransaction(m);
+        }
+        return new LocalTransactionBuilder(this);
     }
 
     @Override
-    public final boolean hasTransaction() {
+    public boolean hasTransaction() {
         return this.transaction != null;
     }
 
     @Override
-    public final void flush() throws SessionException {
-        if (this.sessionCache == null) {
-            return;
-        }
-        final boolean readOnly = this.isReadonlySession();
-        for (DomainUpdateAdvice advice : this.sessionCache.updateAdvices()) {
-            if (!advice.hasUpdate()) {
-                continue;
-            }
-            if (readOnly) {
-                throw new ReadOnlySessionException("Session is read only,can't update Domain cache.");
-            }
-//            int updateRows;
-//           // updateRows = update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
-//            if (updateRows != 1) {
-//                throw new OptimisticLockException("TableMeta[%s] maybe updated by other transaction."
-//                        , advice.readonlyWrapper().tableMeta());
+    public void flush() throws SessionException {
+//        if (this.sessionCache == null) {
+//            return;
+//        }
+//        final boolean readOnly = this.isReadonlySession();
+//        for (DomainUpdateAdvice advice : this.sessionCache.updateAdvices()) {
+//            if (!advice.hasUpdate()) {
+//                continue;
 //            }
-            advice.updateFinish();
-        }
+//            if (readOnly) {
+//                throw new ReadOnlySessionException("Session is read only,can't update Domain cache.");
+//            }
+////            int updateRows;
+////           // updateRows = update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
+////            if (updateRows != 1) {
+////                throw new OptimisticLockException("TableMeta[%s] maybe updated by other transaction."
+////                        , advice.readonlyWrapper().tableMeta());
+////            }
+//            advice.updateFinish();
+//        }
     }
 
     @Override
@@ -267,22 +269,11 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
     /*################################## blow package method ##################################*/
 
-    // @Override
-    GenericTransaction obtainTransaction() {
-        return null;
+    void clearChangedCache(final LocalTransaction transaction) {
+
+        //TODO
     }
 
-    private void setSessionTransaction(Transaction transaction) throws TransactionException {
-        checkSessionTransaction();
-        this.transaction = transaction;
-    }
-
-    private void checkSessionTransaction() throws TransactionException {
-        if (this.transaction != null) {
-            throw new DuplicationSessionTransaction(
-                    "create transaction failure,session[%s] duplication transaction.", this);
-        }
-    }
 
     /**
      * @see #insert(Insert, Visible)
@@ -323,20 +314,18 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
     /*################################## blow instance inner class  ##################################*/
 
-    final class TransactionBuilderImpl implements TransactionBuilder, TransactionOption {
 
-        private Isolation isolation;
 
-        private int timeout = -1;
+    /*################################## blow static inner class ##################################*/
 
-        private boolean readOnly;
 
-        private long endMills = -1;
+    static final class LocalTransactionBuilder extends TransactionOptions implements Session.TransactionBuilder {
 
-        private String name;
+        final SessionImpl session;
 
-        private TransactionBuilderImpl() {
 
+        private LocalTransactionBuilder(SessionImpl session) {
+            this.session = session;
         }
 
         @Override
@@ -352,63 +341,32 @@ final class SessionImpl extends AbstractSyncSession implements Session {
         }
 
         @Override
-        public TransactionBuilder readOnly(boolean readOnly) {
-            this.readOnly = readOnly;
+        public TransactionBuilder readonly(boolean readOnly) {
+            this.readonly = readOnly;
             return this;
         }
 
         @Override
-        public TransactionBuilder timeout(int timeout) {
-            this.timeout = timeout;
-            if (timeout > 0) {
-                this.endMills = (System.currentTimeMillis() + timeout + 1000L);
-            } else {
-                this.endMills = -1;
-            }
+        public TransactionBuilder timeout(int timeoutSeconds) {
+            this.timeout = timeoutSeconds;
             return this;
-        }
-
-        @Override
-        public long endMills() {
-            return this.endMills;
-        }
-
-        @Override
-        public String name() {
-            return this.name;
-        }
-
-        @Override
-        public final boolean readOnly() {
-            return this.readOnly;
-        }
-
-        @Override
-        public final Isolation isolation() {
-            return this.isolation;
-        }
-
-        @Override
-        public int timeout() {
-            return this.timeout;
         }
 
         @Override
         public Transaction build() throws TransactionException {
-//            if (this.isolation == null) {
-//                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR, "not specified isolation.");
-//            }
-//            if (!this.readOnly && SessionImpl.this.readonly) {
-//                throw new CannotCreateTransactionException(ErrorCode.TRANSACTION_ERROR
-//                        , "Readonly session can't create non-readonly transaction.");
-//            }
-//            Transaction tx = new LocalTransaction(SessionImpl.this, TransactionBuilderImpl.this);
-//            SessionImpl.this.setSessionTransaction(tx);
-            return null;
+            if (this.isolation == null) {
+                String m = String.format("No specified %s,couldn't create transaction.", Isolation.class.getName());
+                throw new CannotCreateTransactionException(m);
+            }
+            if (!this.readonly && this.session.readonly) {
+                String m = String.format("Session[%s] is readonly,couldn't create non-readonly transaction."
+                        , this.session.name);
+                throw new CannotCreateTransactionException(m);
+            }
+            return new LocalTransaction(this);
         }
-    }
 
-    /*################################## blow static inner class ##################################*/
+    }//LocalTransactionBuilder
 
 
 }

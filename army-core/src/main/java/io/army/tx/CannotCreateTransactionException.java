@@ -19,6 +19,11 @@ public class CannotCreateTransactionException extends TransactionException {
     }
 
     public CannotCreateTransactionException(String format, Object... args) {
-        super(ErrorCode.NONE, format, args);
+        super(format);
     }
+
+    public CannotCreateTransactionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

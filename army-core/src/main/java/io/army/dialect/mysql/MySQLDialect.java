@@ -12,6 +12,7 @@ import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
+import io.army.tx.Isolation;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -25,6 +26,10 @@ abstract class MySQLDialect extends _AbstractDialect {
         super(environment);
     }
 
+    @Override
+    public final List<String> startTransaction(final Isolation isolation, final boolean readonly) {
+        return null;
+    }
 
     @Override
     public final String safeTableName(String tableName) {

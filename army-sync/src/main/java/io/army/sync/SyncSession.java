@@ -21,7 +21,7 @@ import java.util.function.Supplier;
  * This interface is base interface of below interface:
  *     <ul>
  *         <li>{@link Session}</li>
- *         <li>{@link ProxySession}</li>
+ *         <li>{@link CurrentSession}</li>
  *     </ul>
  * </p>
  */

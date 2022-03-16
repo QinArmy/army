@@ -1,5 +1,7 @@
 package io.army;
 
+import io.army.lang.Nullable;
+
 public class SessionFactoryException extends ArmyRuntimeException {
 
     @Deprecated
@@ -16,7 +18,7 @@ public class SessionFactoryException extends ArmyRuntimeException {
         super(message);
     }
 
-    public SessionFactoryException(String message, Throwable cause) {
+    public SessionFactoryException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 

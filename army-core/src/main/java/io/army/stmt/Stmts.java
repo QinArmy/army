@@ -1,10 +1,12 @@
 package io.army.stmt;
 
+import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NamedParam;
 import io.army.criteria.NonNullNamedParam;
 import io.army.criteria.Selection;
+import io.army.meta.PrimaryFieldMeta;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -29,6 +31,11 @@ public abstract class Stmts {
 
     public static SimpleStmt simple(String sql, List<ParamValue> paramList) {
         return new MinSimpleStmt(sql, paramList);
+    }
+
+    public static GeneratedKeyStmt post(String sql, List<ParamValue> paramList
+            , List<ObjectWrapper> domainList, PrimaryFieldMeta<?> field) {
+        return new PostStmt(sql, paramList, domainList, field);
     }
 
     public static SimpleStmt dml(String sql, List<ParamValue> paramList, boolean hasOptimistic) {
@@ -241,6 +248,61 @@ public abstract class Stmts {
         }
 
     }//SelectStmt
+
+    private static final class PostStmt implements GeneratedKeyStmt {
+
+        private final String sql;
+
+        private final List<ParamValue> paramGroup;
+
+        private final List<ObjectWrapper> domainList;
+
+        private final PrimaryFieldMeta<?> field;
+
+        private PostStmt(String sql, List<ParamValue> paramGroup, List<ObjectWrapper> domainList
+                , PrimaryFieldMeta<?> field) {
+            this.sql = sql;
+            this.paramGroup = Collections.unmodifiableList(paramGroup);
+            this.domainList = domainList;
+            this.field = field;
+        }
+
+        @Override
+        public String primaryKeyName() {
+            return this.field.fieldName();
+        }
+
+        @Override
+        public List<ObjectWrapper> domainList() {
+            return this.domainList;
+        }
+
+        @Override
+        public PrimaryFieldMeta<?> idMeta() {
+            return this.field;
+        }
+
+        @Override
+        public String sql() {
+            return this.sql;
+        }
+
+        @Override
+        public boolean hasOptimistic() {
+            return false;
+        }
+
+        @Override
+        public List<ParamValue> paramGroup() {
+            return this.paramGroup;
+        }
+
+        @Override
+        public List<Selection> selectionList() {
+            return Collections.emptyList();
+        }
+
+    }//PostStmt
 
 
 }

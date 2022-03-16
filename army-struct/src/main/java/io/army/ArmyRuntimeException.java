@@ -1,5 +1,7 @@
 package io.army;
 
+import io.army.lang.Nullable;
+
 /**
  *
  */
@@ -32,7 +34,7 @@ public class ArmyRuntimeException extends RuntimeException implements IArmyExpre
         this.errorCode = ErrorCode.NONE;
     }
 
-    public ArmyRuntimeException(String message, Throwable cause) {
+    public ArmyRuntimeException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 

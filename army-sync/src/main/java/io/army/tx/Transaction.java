@@ -2,20 +2,28 @@ package io.army.tx;
 
 import io.army.sync.Session;
 
-public interface Transaction extends GenericSyncTransaction {
+public interface Transaction extends GenericTransaction {
+
+    void start() throws TransactionException;
+
+    void commit() throws TransactionException;
+
+    /**
+     * rollback and clear changed cache.
+     */
+    void rollback() throws TransactionException;
+
+    void flush() throws TransactionException;
 
     TransactionStatus status();
 
-    @Override
     Session session();
 
-    Object createSavepoint() throws TransactionException;
+    Object createSavePoint() throws TransactionException;
 
-    void rollbackToSavepoint(Object savepoint) throws TransactionException;
+    void rollbackToSavePoint(Object savepoint) throws TransactionException;
 
-    void releaseSavepoint(Object savepoint) throws TransactionException;
-
-    boolean supportsSavePoints();
+    void releaseSavePoint(Object savepoint) throws TransactionException;
 
 
 

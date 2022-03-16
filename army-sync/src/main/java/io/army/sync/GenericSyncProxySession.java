@@ -1,8 +1,8 @@
 package io.army.sync;
 
-import io.army.session.GenericProxySession;
+import io.army.session.GenericCurrentSession;
 
-public interface GenericSyncProxySession extends GenericProxySession, GenericSyncApiSession {
+public interface GenericSyncProxySession extends GenericCurrentSession, GenericSyncApiSession {
 
     boolean hasCurrentSession();
 

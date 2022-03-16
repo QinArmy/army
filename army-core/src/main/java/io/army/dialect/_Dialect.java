@@ -7,6 +7,7 @@ import io.army.schema._SchemaResult;
 import io.army.session.DialectSessionFactory;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
+import io.army.tx.Isolation;
 
 import java.util.List;
 
@@ -28,6 +29,8 @@ public interface _Dialect {
 
 
     void subQuery(SubQuery subQuery, _SqlContext original);
+
+    List<String> startTransaction(Isolation isolation, boolean readonly);
 
 
     default List<String> schemaDdl(_SchemaResult schemaResult) {

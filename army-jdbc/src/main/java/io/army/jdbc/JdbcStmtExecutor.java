@@ -5,6 +5,7 @@ import io.army.bean.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.Selection;
+import io.army.mapping.MappingEnvironment;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -28,13 +29,14 @@ import java.util.Map;
 
 abstract class JdbcStmtExecutor implements StmtExecutor {
 
-    final Connection conn;
+    final JdbcExecutorFactory factory;
 
-    ServerMeta serverMeta;
+    final Connection conn;
 
     Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
     JdbcStmtExecutor(JdbcExecutorFactory factory, Connection conn) {
+        this.factory = factory;
         this.conn = conn;
     }
 
@@ -69,6 +71,60 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     @Override
     public final <T> List<T> select(Stmt stmt, int txTimeout, Class<T> resultClass) {
         return null;
+    }
+
+    @Override
+    public final Object createSavepoint() throws DataAccessException {
+        try {
+            return this.conn.setSavepoint();
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
+    }
+
+    @Override
+    public final void rollbackToSavepoint(Object savepoint) throws DataAccessException {
+        try {
+            this.conn.releaseSavepoint((Savepoint) savepoint);
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
+    }
+
+    @Override
+    public final void releaseSavepoint(Object savepoint) throws DataAccessException {
+        try {
+            this.conn.releaseSavepoint((Savepoint) savepoint);
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
+    }
+
+    @Override
+    public final void executeBatch(final List<String> stmtList) throws DataAccessException {
+        try (Statement statement = this.conn.createStatement()) {
+            for (String sql : stmtList) {
+                statement.addBatch(sql);
+            }
+            final int[] batch;
+            batch = statement.executeBatch();
+            if (batch.length != stmtList.size()) {
+                String m = String.format("execute batch[%s] and stmtList size[%s] not match."
+                        , batch.length, stmtList.size());
+                throw new DataAccessException(m);
+            }
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
+    }
+
+    @Override
+    public final void execute(String stmt) throws DataAccessException {
+        try (Statement statement = this.conn.createStatement()) {
+            statement.executeUpdate(stmt);
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
     }
 
     @Override
@@ -211,39 +267,34 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     /**
      * @see #executeInsert(SimpleStmt, int)
      */
-    private void bindParameter(PreparedStatement statement, List<ParamValue> paramGroup, Stmt stmt)
+    private void bindParameter(final PreparedStatement statement, final List<ParamValue> paramGroup, final Stmt stmt)
             throws SQLException {
         final int size = paramGroup.size();
-        final ServerMeta serverMeta = this.serverMeta;
+        final ServerMeta serverMeta = this.factory.serverMeta;
+        final MappingEnvironment mapEnv = this.factory.mapEnv;
 
         ParamValue paramValue;
         Object value;
         MappingType mappingType;
         ParamMeta paramMeta;
-        SqlType sqlDataType;
+        SqlType sqlType;
         for (int i = 0; i < size; i++) {
             paramValue = paramGroup.get(i);
             value = paramValue.value();
-            mappingType = paramValue.paramMeta().mappingType();
             if (value == null) {
                 // bind null
-                statement.setNull(i + 1, 0);
+                statement.setNull(i + 1, Types.NULL);
                 continue;
             }
             paramMeta = paramValue.paramMeta();
-            if (paramMeta instanceof FieldMeta) {
-                final FieldMeta<?> fieldMeta = (FieldMeta<?>) paramMeta;
-                if (stmt instanceof ChildInsertStmt && fieldMeta.primary()
-                        && !(paramMeta instanceof AutoIdParamValue)) {
-                    throw childInsertStmtIdParamError();
-                }
-                if (fieldMeta.codec()) {
-                    value = encodeField(fieldMeta, value);
-                }
+            if (paramMeta instanceof MappingType) {
+                mappingType = (MappingType) paramMeta;
+            } else {
+                mappingType = paramMeta.mappingType();
             }
-            sqlDataType = mappingType.map(serverMeta);
-            value = mappingType.beforeBind(sqlDataType, null, value);
-            bind(statement, i + 1, sqlDataType, value);
+            sqlType = mappingType.map(serverMeta);
+            value = mappingType.beforeBind(sqlType, mapEnv, value);
+            bind(statement, i + 1, sqlType, value);
 
         }
 
@@ -285,6 +336,12 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
 
     /*################################## blow static method ##################################*/
+
+    static IllegalArgumentException beforeBindReturnError(SqlType sqlType, Object nonNull) {
+        String m = String.format("%s beforeBind method return error type[%s] for %s.%s."
+                , MappingType.class.getName(), nonNull.getClass().getName(), sqlType.database(), sqlType);
+        return new IllegalArgumentException(m);
+    }
 
 
     /**
@@ -374,21 +431,6 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     private static SQLException insertedRowsAndGenerateIdNotMatch(int insertedRows, int generateIdCount) {
         String m = String.format("insertedRows[%s] and generateKeys count[%s] not match.", insertedRows, generateIdCount);
         return new SQLException(m);
-    }
-
-
-    /**
-     * <p>
-     * Can't use {@link java.util.function.Function},because throw {@link SQLException}
-     * </p>
-     *
-     * @param <T>
-     * @param <R>
-     */
-    interface CacheFunction<T, R> {
-
-        R apply(T t) throws SQLException;
-
     }
 
 

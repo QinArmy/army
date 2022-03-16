@@ -1,6 +1,7 @@
 package io.army.jdbc;
 
 
+import com.mysql.cj.MysqlType;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
@@ -9,14 +10,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Set;
 
 final class MySQLExecutor extends JdbcStmtExecutor {
 
@@ -55,9 +58,13 @@ final class MySQLExecutor extends JdbcStmtExecutor {
             case BIT:
                 stmt.setLong(index, (Long) nonNull);
                 break;
-            case BIGINT_UNSIGNED:
-                stmt.setObject(index, nonNull, JDBCType.BIGINT);
-                break;
+            case BIGINT_UNSIGNED: {
+                if (!(nonNull instanceof BigInteger || nonNull instanceof BigDecimal)) {
+                    throw beforeBindReturnError(sqlDataType, nonNull);
+                }
+                stmt.setObject(index, nonNull, MysqlType.BIGINT_UNSIGNED);
+            }
+            break;
             case DECIMAL:
             case DECIMAL_UNSIGNED:
                 stmt.setBigDecimal(index, (BigDecimal) nonNull);
@@ -68,25 +75,25 @@ final class MySQLExecutor extends JdbcStmtExecutor {
             case DOUBLE:
                 stmt.setDouble(index, (Double) nonNull);
                 break;
-            case TIME:
-                stmt.setTime(index, Time.valueOf(((LocalTime) nonNull)));
-                break;
-            case DATE:
-                stmt.setDate(index, Date.valueOf((LocalDate) nonNull));
-                break;
-            case DATETIME:
-                stmt.setTimestamp(index, Timestamp.valueOf((LocalDateTime) nonNull));
-                break;
-            case ENUM: {
-                if (nonNull instanceof Integer) {
-                    stmt.setInt(index, (Integer) nonNull);
-                } else {
-                    stmt.setString(index, (String) nonNull);
-                }
+            case TIME: {
+                final LocalTime value = (LocalTime) nonNull;
+                stmt.setObject(index, value, MysqlType.TIME);
+            }
+            break;
+            case DATE: {
+                final LocalDate value = (LocalDate) nonNull;
+                stmt.setObject(index, value, MysqlType.DATE);
+            }
+            break;
+            case DATETIME: {
+                final LocalDateTime value = (LocalDateTime) nonNull;
+                stmt.setObject(index, value, MysqlType.DATETIME);
             }
             break;
             case CHAR:
             case VARCHAR:
+            case ENUM:
+            case SET:
             case TINYTEXT:
             case TEXT:
             case MEDIUMTEXT:
@@ -106,27 +113,6 @@ final class MySQLExecutor extends JdbcStmtExecutor {
                 break;
             case LONGBLOB: {
                 setLongBinary(stmt, index, nonNull);
-            }
-            break;
-            case SET: {
-                final Set<?> set = (Set<?>) nonNull;
-                final StringBuilder builder = new StringBuilder();
-                int i = 0;
-                for (Object o : set) {
-                    if (i > 0) {
-                        builder.append(',');
-                    }
-                    if (o instanceof Enum) {
-                        builder.append(((Enum<?>) o).name());
-                    } else if (o instanceof String) {
-                        builder.append(o);
-                    } else {
-                        String m = String.format("Parameter[%s] element of %s error.", index, Set.class.getName());
-                        throw new SQLException(m);
-                    }
-                    i++;
-                }
-                stmt.setString(index, builder.toString());
             }
             break;
             case POINT:

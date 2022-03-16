@@ -2,6 +2,7 @@ package io.army.tx;
 
 import io.army.lang.Nullable;
 
+@Deprecated
 public class TransactionOptionImpl implements TransactionOption {
 
     public static TransactionOptionImpl build(@Nullable String name, boolean readOnly

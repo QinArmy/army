@@ -4,8 +4,10 @@ import io.army.ArmyException;
 import io.army.ArmyKey;
 import io.army.ArmyKeys;
 import io.army.SessionFactoryException;
+import io.army.bean.ObjectWrapper;
 import io.army.codec.JsonCodec;
 import io.army.dialect.FieldValuesGenerator;
+import io.army.dialect._AbstractFieldValuesGenerator;
 import io.army.dialect._DialectEnvironment;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
@@ -14,6 +16,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
+import io.army.util.TimeUtils;
 import io.army.util._Assert;
 
 import java.time.ZoneOffset;
@@ -44,9 +47,13 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     protected final SubQueryInsertMode subQueryInsertMode;
 
+    protected final FieldValuesGenerator fieldValuesGenerator;
+
     protected final boolean readOnly;
 
     protected final boolean supportSessionCache;
+
+    private final ZoneOffset zoneOffset;
 
 
     protected AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
@@ -66,57 +73,61 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
         this.subQueryInsertMode = env.get(ArmyKeys.SUBQUERY_INSERT_MODE, SubQueryInsertMode.class, SubQueryInsertMode.ONLY_MIGRATION);
         this.readOnly = env.get(ArmyKeys.READ_ONLY, Boolean.class, Boolean.FALSE);
 
+        this.zoneOffset = support.zoneOffset;
+
         this.supportSessionCache = env.get(ArmyKeys.sessionCache, Boolean.class, Boolean.TRUE);
+        this.fieldValuesGenerator = new FieldValuesGeneratorImpl(this.zoneOffset, this.fieldGeneratorMap);
     }
 
 
     @Override
-    public String name() {
+    public final String name() {
         return this.name;
     }
 
     @Override
-    public ArmyEnvironment environment() {
+    public final ArmyEnvironment environment() {
         return this.env;
     }
 
     @Override
-    public ZoneOffset zoneOffset() {
-        throw new UnsupportedOperationException();
+    public final ZoneOffset zoneOffset() {
+        final ZoneOffset zoneOffset = this.zoneOffset;
+        return zoneOffset == null ? TimeUtils.systemZoneOffset() : zoneOffset;
     }
 
     @Override
-    public SchemaMeta schemaMeta() {
+    public final SchemaMeta schemaMeta() {
         return this.schemaMeta;
     }
 
     @Override
-    public Map<Class<?>, TableMeta<?>> tableMap() {
+    public final Map<Class<?>, TableMeta<?>> tableMap() {
         return this.tableMap;
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+    public final <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
         return (TableMeta<T>) tableMap.get(domainClass);
     }
 
     @Nullable
     @Override
-    public FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta) {
+    public final FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta) {
         return this.fieldGeneratorMap.get(fieldMeta);
     }
 
 
     @Override
-    public boolean supportSessionCache() {
+    public final boolean supportSessionCache() {
         return this.supportSessionCache;
     }
 
 
     @Override
-    public boolean readonly() {
+    public final boolean readonly() {
         return this.readOnly;
     }
 
@@ -137,8 +148,8 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
     }
 
     @Override
-    public FieldValuesGenerator fieldValuesGenerator() {
-        return null;
+    public final FieldValuesGenerator fieldValuesGenerator() {
+        return this.fieldValuesGenerator;
     }
 
     @Override
@@ -151,6 +162,8 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
     public boolean factoryClosed() {
         return false;
     }
+
+
 
     /*################################## blow protected method ##################################*/
 
@@ -173,5 +186,29 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
         return (byte) tableCount;
     }
 
+    private static final class FieldValuesGeneratorImpl extends _AbstractFieldValuesGenerator {
+
+        private final ZoneOffset zoneOffset;
+
+        private final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
+
+        private FieldValuesGeneratorImpl(@Nullable ZoneOffset zoneOffset
+                , Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap) {
+            this.zoneOffset = zoneOffset;
+            this.fieldGeneratorMap = fieldGeneratorMap;
+        }
+
+        @Override
+        protected ZoneOffset zoneOffset() {
+            final ZoneOffset zoneOffset = this.zoneOffset;
+            return zoneOffset == null ? TimeUtils.systemZoneOffset() : zoneOffset;
+        }
+
+        @Override
+        protected void generatorChan(TableMeta<?> table, ObjectWrapper wrapper) {
+            //TODO no-op
+        }
+
+    }// FieldValuesGeneratorImpl
 
 }

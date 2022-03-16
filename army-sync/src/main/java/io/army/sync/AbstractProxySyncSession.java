@@ -1,15 +1,14 @@
 package io.army.sync;
 
 import io.army.SessionException;
-import io.army.context.spi.CurrentSessionContext;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
-import io.army.session.GenericProxySession;
+import io.army.session.GenericCurrentSession;
 
 import java.util.List;
 
-abstract class AbstractProxySyncSession implements GenericSyncApiSession, GenericProxySession, GenericSyncProxySession {
+abstract class AbstractProxySyncSession implements GenericSyncApiSession, GenericCurrentSession, GenericSyncProxySession {
 
 
     final CurrentSessionContext sessionContext;
@@ -20,17 +19,17 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
 
     @Override
     public boolean isReadonlySession() {
-        return this.sessionContext.currentSession().isReadonlySession();
+        return this.sessionContext.session().isReadonlySession();
     }
 
     @Override
     public boolean closed() {
-        return this.sessionContext.currentSession().closed();
+        return this.sessionContext.session().closed();
     }
 
     @Override
     public boolean hasTransaction() {
-        return this.sessionContext.currentSession().hasTransaction();
+        return this.sessionContext.session().hasTransaction();
     }
 
     @Override
@@ -40,12 +39,12 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
 
     @Override
     public <T extends IDomain> T get(TableMeta<T> tableMeta, Object id) {
-        return this.sessionContext.currentSession().get(tableMeta, id);
+        return this.sessionContext.session().get(tableMeta, id);
     }
 
     @Override
     public <T extends IDomain> T get(TableMeta<T> table, Object id, Visible visible) {
-        return this.sessionContext.currentSession().get(table, id, visible);
+        return this.sessionContext.session().get(table, id, visible);
     }
 
     //@Override
@@ -62,34 +61,34 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
 
     @Override
     public <T> T selectOne(Select select, Class<T> resultClass) {
-        return this.sessionContext.currentSession().selectOne(select, resultClass);
+        return this.sessionContext.session().selectOne(select, resultClass);
     }
 
     @Override
     public <T> T selectOne(Select select, Class<T> resultClass, Visible visible) {
-        return this.sessionContext.currentSession().selectOne(select, resultClass, visible);
+        return this.sessionContext.session().selectOne(select, resultClass, visible);
     }
 
     @Override
     public <T> List<T> select(Select select, Class<T> resultClass) {
-        return this.sessionContext.currentSession().select(select, resultClass);
+        return this.sessionContext.session().select(select, resultClass);
     }
 
     @Override
     public <T> List<T> select(Select select, Class<T> resultClass, Visible visible) {
-        return this.sessionContext.currentSession().select(select, resultClass, visible);
+        return this.sessionContext.session().select(select, resultClass, visible);
     }
 
 
     @Override
     public long insert(Insert insert) {
-        this.sessionContext.currentSession().insert(insert);
+        this.sessionContext.session().insert(insert);
         return 0;
     }
 
     @Override
     public long insert(Insert insert, Visible visible) {
-        this.sessionContext.currentSession().insert(insert, visible);
+        this.sessionContext.session().insert(insert, visible);
         return 0;
     }
 
@@ -119,59 +118,59 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
 
     @Override
     public <T> List<T> returningInsert(Insert insert, Class<T> resultClass) {
-        return this.sessionContext.currentSession().returningInsert(insert, resultClass);
+        return this.sessionContext.session().returningInsert(insert, resultClass);
     }
 
     @Override
     public <T> List<T> returningInsert(Insert insert, Class<T> resultClass, Visible visible) {
-        return this.sessionContext.currentSession().returningInsert(insert, resultClass, visible);
+        return this.sessionContext.session().returningInsert(insert, resultClass, visible);
     }
 
 
     @Override
     public <T> List<T> returningUpdate(Update update, Class<T> resultClass) {
-        return this.sessionContext.currentSession().returningUpdate(update, resultClass);
+        return this.sessionContext.session().returningUpdate(update, resultClass);
     }
 
     @Override
     public <T> List<T> returningUpdate(Update update, Class<T> resultClass, Visible visible) {
-        return this.sessionContext.currentSession().returningUpdate(update, resultClass, visible);
+        return this.sessionContext.session().returningUpdate(update, resultClass, visible);
     }
 
     @Override
     public long update(Update update) {
-        return this.sessionContext.currentSession().update(update);
+        return this.sessionContext.session().update(update);
     }
 
     @Override
     public long update(Update update, Visible visible) {
-        return this.sessionContext.currentSession().update(update, visible);
+        return this.sessionContext.session().update(update, visible);
     }
 
 
     @Override
     public <T> List<T> returningDelete(Delete delete, Class<T> resultClass) {
-        return this.sessionContext.currentSession().returningDelete(delete, resultClass);
+        return this.sessionContext.session().returningDelete(delete, resultClass);
     }
 
     @Override
     public <T> List<T> returningDelete(Delete delete, Class<T> resultClass, Visible visible) {
-        return this.sessionContext.currentSession().returningDelete(delete, resultClass, visible);
+        return this.sessionContext.session().returningDelete(delete, resultClass, visible);
     }
 
     @Override
     public long delete(Delete delete) {
-        return this.sessionContext.currentSession().delete(delete);
+        return this.sessionContext.session().delete(delete);
     }
 
     @Override
     public long delete(Delete delete, Visible visible) {
-        return this.sessionContext.currentSession().delete(delete, visible);
+        return this.sessionContext.session().delete(delete, visible);
     }
 
     @Override
     public void flush() throws SessionException {
-        this.sessionContext.currentSession().flush();
+        this.sessionContext.session().flush();
     }
 
 }

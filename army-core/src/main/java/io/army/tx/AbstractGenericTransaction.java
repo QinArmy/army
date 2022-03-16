@@ -6,22 +6,25 @@ public abstract class AbstractGenericTransaction implements GenericTransaction {
 
     protected final Isolation isolation;
 
-    protected final boolean readOnly;
+    protected final boolean readonly;
 
-    private final String name;
+    protected final String name;
 
-    private final long endMills;
+    protected final long timeoutMills;
 
-    protected AbstractGenericTransaction(TransactionOption option) {
-        this.readOnly = option.readOnly();
-        this.isolation = option.isolation();
+    protected long startMills;
 
-        this.name = option.name();
-        int timeout = option.timeout();
+    protected AbstractGenericTransaction(final TransactionOptions options) {
+        this.readonly = options.readonly;
+        this.isolation = options.isolation;
+        assert this.isolation != null;
+        this.name = options.name;
+
+        final int timeout = options.timeout;
         if (timeout > 0) {
-            this.endMills = (System.currentTimeMillis() + timeout * 1000L);
+            this.timeoutMills = timeout * 1000L;
         } else {
-            this.endMills = -1;
+            this.timeoutMills = -1L;
         }
     }
 
@@ -38,36 +41,50 @@ public abstract class AbstractGenericTransaction implements GenericTransaction {
 
     @Override
     public final boolean readOnly() {
-        return this.readOnly;
+        return this.readonly;
     }
 
     @Override
     public final int timeToLiveInSeconds() throws TransactionTimeOutException {
-        long liveInMills = timeToLiveInMillis();
-        int liveInsSeconds;
-        if (liveInMills < 0L) {
-            liveInsSeconds = -1;
-        } else {
-            final long thousand = 1000L;
-            liveInsSeconds = (int) (liveInMills / thousand);
-            if (liveInsSeconds % thousand != 0) {
-                liveInsSeconds++;
-            }
-        }
-        return liveInsSeconds;
+        final long restMills;
+        restMills = timeToLiveInMillis();
+        return (int) ((restMills % 1000L == 0) ? (restMills / 1000L) : (restMills / 1000L + 1L));
     }
 
     @Override
     public final long timeToLiveInMillis() throws TransactionTimeOutException {
-        if (this.endMills < 0L) {
-            return -1L;
+        final long restMills;
+        restMills = restTimeoutMills();
+        if (restMills < 0L) {
+            String m = String.format("%s timeout,rest %s mills.", this, restMills);
+            throw new TransactionTimeOutException(m);
         }
-        long liveInMills = this.endMills - System.currentTimeMillis();
-        if (liveInMills < 0) {
-            throw new TransactionTimeOutException("transaction[name:%s] timeout,live in mills is %s ."
-                    , this.name, liveInMills);
+        return restMills;
+    }
+
+
+    @Override
+    public final String toString() {
+        return String.format("%s[%s] of session[%s] status[%s] isolation:%s readOnly:%s rest:%s ms."
+                , this.getClass().getName(), this.name
+                , this.session().name(), this.status()
+                , this.isolation, this.readonly
+                , this.restTimeoutMills());
+    }
+
+
+    private long restTimeoutMills() {
+        final long restMills;
+        final long startMills = this.startMills;
+        if (startMills < 0) {
+            if (status() != TransactionStatus.NOT_ACTIVE) {
+                throw new IllegalStateException(String.format("startMills[%s] error.", startMills));
+            }
+            restMills = (int) (this.timeoutMills / 1000L);
+        } else {
+            restMills = this.timeoutMills - (System.currentTimeMillis() - startMills);
         }
-        return liveInMills;
+        return restMills;
     }
 
 }

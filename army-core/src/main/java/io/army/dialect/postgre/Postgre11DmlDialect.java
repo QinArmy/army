@@ -6,13 +6,21 @@ import io.army.dialect._AbstractDialect;
 import io.army.dialect._DialectEnvironment;
 import io.army.meta.ParamMeta;
 import io.army.stmt.Stmt;
+import io.army.tx.Isolation;
 
+import java.util.List;
 import java.util.Set;
 
 class Postgre11DmlDialect extends _AbstractDialect {
 
     Postgre11DmlDialect(_DialectEnvironment environment) {
         super(environment);
+    }
+
+
+    @Override
+    public List<String> startTransaction(Isolation isolation, boolean readonly) {
+        return null;
     }
 
     @Override

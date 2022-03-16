@@ -1,30 +1,20 @@
 package io.army.sync;
 
-import io.army.ErrorCode;
 import io.army.SessionException;
+import io.army.session.DataAccessException;
 import io.army.tx.*;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Savepoint;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-final class LocalTransaction extends AbstractSyncTransaction implements Transaction {
+final class LocalTransaction extends AbstractGenericTransaction implements Transaction {
 
-    static final String SAVEPOINT_NAME_PREFIX = "ARMY_SAVEPOINT_";
-
-    final InnerSession session;
-
-    final Set<Savepoint> savepointSet = new HashSet<>();
+    final SessionImpl session;
 
     private TransactionStatus status;
 
-    int savePointCounter = 0;
-
-    LocalTransaction(InnerSession session, TransactionOption option) {
-        super(option);
-        this.session = session;
+    LocalTransaction(final SessionImpl.LocalTransactionBuilder builder) {
+        super(builder);
+        this.session = builder.session;
         this.status = TransactionStatus.NOT_ACTIVE;
     }
 
@@ -34,156 +24,166 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
     }
 
     @Override
-    public final TransactionStatus status() {
+    public TransactionStatus status() {
         return this.status;
     }
 
     @Override
-    public final void start() throws TransactionException {
-        checkTransaction();
+    public boolean nonActive() {
+        return false;
+    }
 
+    @Override
+    public boolean rollbackOnly() {
+        return false;
+    }
+
+    @Override
+    public void start() throws TransactionException {
         if (this.status != TransactionStatus.NOT_ACTIVE) {
-            throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't start transaction."
+            String m = String.format("transaction status[%s] isn't %s,can't start transaction."
                     , this.status, TransactionStatus.NOT_ACTIVE);
+            throw new IllegalTransactionStateException(m);
         }
-
         try {
-            final Connection connection = this.session.connection();
-
-            if (this.readOnly) {
-                connection.setReadOnly(true);
-            } else {
-                connection.setAutoCommit(false);
-            }
-            if (this.isolation != Isolation.DEFAULT) {
-                connection.setTransactionIsolation(isolation.level);
-            }
+            this.startMills = System.currentTimeMillis();
+            final SessionImpl session = this.session;
+            final List<String> stmtList;
+            stmtList = session.sessionFactory.dialect.startTransaction(this.isolation, this.readonly);
+            session.stmtExecutor.executeBatch(stmtList);
             this.status = TransactionStatus.ACTIVE;
-        } catch (SQLException e) {
-            throw new CannotCreateTransactionException(ErrorCode.START_TRANSACTION_FAILURE
-                    , e, "army start transaction failure");
+        } catch (DataAccessException e) {
+            throw new CannotCreateTransactionException("start transaction failure", e);
         }
 
     }
 
     @Override
     public void commit() throws TransactionException {
-        checkReadWrite("commit");
-
         if (this.status != TransactionStatus.ACTIVE) {
-            throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't commit."
-                    , this.status, TransactionStatus.ACTIVE);
+            String m = String.format("transaction status[%s] isn't %s,can't commit transaction."
+                    , this.status, TransactionStatus.NOT_ACTIVE);
+            throw new IllegalTransactionStateException(m);
         }
         this.status = TransactionStatus.COMMITTING;
         try {
-            this.session.connection().commit();
+            final SessionImpl session = this.session;
+            session.flush();
+            session.stmtExecutor.execute("COMMIT");
             this.status = TransactionStatus.COMMITTED;
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
             this.status = TransactionStatus.FAILED_COMMIT;
-            throw new TransactionFailureException(e, "army commit transaction failure.");
+            throw new TransactionFailureException("army commit transaction failure.", e);
+        } catch (Throwable e) {
+            this.status = TransactionStatus.FAILED_COMMIT;
+            throw e;
         }
     }
 
     @Override
     public void rollback() throws TransactionException {
-        checkReadWrite("rollback");
-
-        if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(this.status)) {
-            throw new IllegalTransactionStateException("transaction status[%s] don't in %s,can't rollback."
-                    , this.status, TransactionStatus.ROLL_BACK_ABLE_SET);
-        }
-        this.status = TransactionStatus.ROLLING_BACK;
-        try {
-            this.session.connection().rollback();
-            this.status = TransactionStatus.ROLLED_BACK;
-        } catch (SQLException e) {
-            this.status = TransactionStatus.FAILED_ROLLBACK;
-            throw new TransactionFailureException(e, "army roll back transaction failure.");
+        switch (this.status) {
+            case ACTIVE:
+            case MARKED_ROLLBACK: {
+                this.status = TransactionStatus.ROLLING_BACK;
+                try {
+                    final SessionImpl session = this.session;
+                    session.clearChangedCache(this);
+                    session.stmtExecutor.execute("ROLLBACK");
+                    this.status = TransactionStatus.ROLLED_BACK;
+                } catch (DataAccessException e) {
+                    this.status = TransactionStatus.FAILED_ROLLBACK;
+                    throw new TransactionFailureException("army rollback transaction failure.", e);
+                } catch (Throwable e) {
+                    this.status = TransactionStatus.FAILED_ROLLBACK;
+                    throw e;
+                }
+            }
+            break;
+            default: {
+                String m = String.format("transaction status[%s] not in [%s,%s],can't rollback transaction."
+                        , this.status, TransactionStatus.ACTIVE, TransactionStatus.MARKED_ROLLBACK);
+                throw new IllegalTransactionStateException(m);
+            }
         }
 
     }
 
 
     @Override
-    public boolean supportsSavePoints() {
-        checkTransaction();
-        try {
-            return this.session.connection().getMetaData().supportsSavepoints();
-        } catch (SQLException e) {
-            throw new TransactionSystemException(e, "army invoke supports save points  occur error.");
+    public Object createSavePoint() throws TransactionException {
+        if (this.readonly) {
+            String m = String.format("%s is readonly,couldn't create save points.", this);
+            throw new ReadOnlyTransactionException(m);
         }
-    }
-
-    @Override
-    public Object createSavepoint() throws TransactionException {
-        checkReadWrite("createSavepoint");
-
         if (this.status != TransactionStatus.ACTIVE) {
             throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't create save point."
                     , this.status, TransactionStatus.ACTIVE);
         }
         try {
-            final String savePointName = SAVEPOINT_NAME_PREFIX + (this.savePointCounter++);
-            final Savepoint savepoint = this.session.connection().setSavepoint(savePointName);
-            this.savepointSet.add(savepoint);
-            return savepoint;
-        } catch (SQLException e) {
-            throw new TransactionSystemException(e, "army create save point occur error.");
+            return this.session.stmtExecutor.createSavepoint();
+        } catch (DataAccessException e) {
+            throw new TransactionSystemException("army create save point occur error.", e);
+        }
+
+    }
+
+    @Override
+    public void rollbackToSavePoint(final Object savepoint) throws TransactionException {
+        switch (this.status) {
+            case ACTIVE:
+            case MARKED_ROLLBACK: {
+                try {
+                    this.session.stmtExecutor.rollbackToSavepoint(savepoint);
+                } catch (DataAccessException e) {
+                    throw new TransactionFailureException("army rollback transaction to save point failure.", e);
+                }
+            }
+            break;
+            default: {
+                String m;
+                m = String.format("transaction status[%s] not in [%s,%s],can't rollback transaction to save point."
+                        , this.status, TransactionStatus.ACTIVE, TransactionStatus.MARKED_ROLLBACK);
+                throw new IllegalTransactionStateException(m);
+            }
         }
     }
 
     @Override
-    public void rollbackToSavepoint(final Object savepoint) throws TransactionException {
-//        checkReadWrite("rollbackToSavepoint");
-//
-//        if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(this.status)) {
-//            throw new IllegalTransactionStateException(
-//                    "transaction status[%s] don't in %s,can't rollback to save point."
-//                    , this.status, TransactionStatus.ROLL_BACK_ABLE_SET);
-//        }
-//        if (!this.savepointSet.contains(savepoint)) {
-//            throw new UnKnownSavepointException("Savepoint[%s] not exists", savepoint);
-//        }
-//        try {
-//            this.session.connection().rollback((Savepoint) savepoint);
-//        } catch (SQLException e) {
-//            throw new TransactionSystemException(e, "army roll back to save point[%s] occur error.", savepoint);
-//        }
-    }
-
-    @Override
-    public void releaseSavepoint(final Object savepoint) throws TransactionException {
-//        checkReadWrite("releaseSavepoint");
-//
-//        if (!this.savepointSet.contains(savepoint)) {
-//            throw new UnKnownSavepointException("Savepoint[%s] not exists", savepoint);
-//        }
-//        try {
-//            this.session.connection().releaseSavepoint(savepoint);
-//            this.savepointSet.remove(savepoint);
-//        } catch (SQLException e) {
-//            throw new TransactionSystemException(e, "army release save point occur error.");
-//        }
+    public void releaseSavePoint(final Object savepoint) throws TransactionException {
+        if (this.status != TransactionStatus.ACTIVE) {
+            throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't release save point."
+                    , this.status, TransactionStatus.ACTIVE);
+        }
+        try {
+            this.session.stmtExecutor.releaseSavepoint(savepoint);
+        } catch (DataAccessException e) {
+            throw new TransactionSystemException("army release save point occur error.", e);
+        }
     }
 
     @Override
     public void markRollbackOnly() throws TransactionException {
-        checkReadWrite("markRollbackOnly");
-
-        if (!TransactionStatus.ROLL_BACK_ONLY_ABLE_SET.contains(this.status())) {
-            throw new IllegalTransactionStateException("transaction status[%s] not in %s,can't mark roll back only."
-                    , this.status, TransactionStatus.ROLL_BACK_ONLY_ABLE_SET);
+        switch (this.status) {
+            case ACTIVE:
+            case MARKED_ROLLBACK:
+                this.status = TransactionStatus.MARKED_ROLLBACK;
+                break;
+            default: {
+                String m = String.format("transaction status[%s] can't mark roll back only."
+                        , this.status);
+                throw new IllegalTransactionStateException(m);
+            }
         }
-        this.status = TransactionStatus.MARKED_ROLLBACK;
+
     }
 
     @Override
     public void flush() throws TransactionException {
-        checkReadWrite("flush");
         try {
             this.session.flush();
         } catch (SessionException e) {
-            throw new RuntimeException();
+            throw new TransactionUsageException("flush session cache occur error.", e);
         }
     }
 
@@ -193,9 +193,9 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
         return TransactionStatus.END_STATUS_SET.contains(this.status);
     }
 
+
+
     /*################################## blow package method ##################################*/
-
-
 
 
     /*################################## blow private method ##################################*/

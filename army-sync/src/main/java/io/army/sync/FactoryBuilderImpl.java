@@ -7,7 +7,7 @@ import io.army.SessionFactoryException;
 import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
-import io.army.context.spi.CurrentSessionContext;
+import io.army.codec.JsonCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 
@@ -120,10 +121,18 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     public SessionFactory build() throws SessionFactoryException {
 
         try {
+            final ArmyEnvironment env = Objects.requireNonNull(this.environment);
+            final String offsetId;
+            offsetId = env.get(ArmyKeys.ZONE_OFFSET_ID);
+            if (offsetId == null) {
+                this.zoneOffset = null;
+            } else {
+                this.zoneOffset = ZoneOffset.of(offsetId);
+            }
             //1. scan table meta
             this.scanSchema();
 
-            final ArmyEnvironment env = Objects.requireNonNull(this.environment);
+
             //2. create ExecutorFactory
             final ExecutorFactory executorFactory;
             executorFactory = getExecutorProvider(env)
@@ -459,7 +468,23 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
             return this.environment.getClass().getName().equals("io.army.env.SpringArmyEnvironment");
         }
 
-    }
+        @Override
+        public ZoneOffset zoneOffset() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public JsonCodec jsonCodec() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isReactive() {
+            //always false
+            return false;
+        }
+
+    }//FactoryInfoImpl
 
 
 }

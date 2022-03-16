@@ -113,12 +113,9 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
     }
 
     @Override
-    public DomainValuesGenerator domainValuesGenerator() {
-        return this.domainValuesGenerator;
+    public boolean supportSavePoints() {
+        return false;
     }
-
-
-
     /*################################## blow InnerReactiveApiSessionFactory method ##################################*/
 
     @Override

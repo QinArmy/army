@@ -13,7 +13,7 @@ public interface DomainValuesGenerator {
         throw new UnsupportedOperationException();
     }
 
-    void createValues(ObjectWrapper domainWrapper, boolean migrationData);
+    void createValues(ObjectWrapper warpper, boolean migrationData);
 
 
     static DomainValuesGenerator build(GenericSessionFactory sessionFactory) {

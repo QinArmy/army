@@ -13,4 +13,12 @@ public class TransactionSystemException extends TransactionException {
         super(ErrorCode.TRANSACTION_SYSTEM_ERROR, cause, format, args);
     }
 
+    public TransactionSystemException(String message) {
+        super(message);
+    }
+
+    public TransactionSystemException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

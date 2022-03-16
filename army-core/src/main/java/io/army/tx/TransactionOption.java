@@ -2,6 +2,7 @@ package io.army.tx;
 
 import io.army.lang.Nullable;
 
+@Deprecated
 public interface TransactionOption {
 
     @Nullable

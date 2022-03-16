@@ -1,6 +1,6 @@
 package io.army.sync;
 
-import io.army.session.GenericProxySession;
+import io.army.session.GenericCurrentSession;
 
 /**
  * This interface representing a sync api session factory(used by developer).
@@ -12,7 +12,7 @@ import io.army.session.GenericProxySession;
  */
 public interface GenericSyncApiSessionFactory extends SyncSessionFactory {
 
-    GenericProxySession proxySession();
+    GenericCurrentSession proxySession();
 
 
     boolean hasCurrentSession();

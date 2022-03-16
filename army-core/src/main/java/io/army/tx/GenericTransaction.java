@@ -2,8 +2,11 @@ package io.army.tx;
 
 
 import io.army.lang.Nullable;
+import io.army.session.GenericSession;
 
 public interface GenericTransaction {
+
+    GenericSession session();
 
     @Nullable
     String name();
@@ -15,6 +18,7 @@ public interface GenericTransaction {
     Enum<?> status();
 
     boolean nonActive();
+
 
     int timeToLiveInSeconds() throws TransactionTimeOutException;
 

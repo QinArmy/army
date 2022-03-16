@@ -1,6 +1,8 @@
 package io.army.jdbc;
 
 import io.army.Database;
+import io.army.codec.JsonCodec;
+import io.army.mapping.MappingEnvironment;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.ExecutorEnvironment;
@@ -12,11 +14,12 @@ import io.army.util._Exceptions;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.ZoneOffset;
 
 final class JdbcExecutorFactory implements ExecutorFactory {
 
-    static JdbcExecutorFactory create(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment info) {
-        return new JdbcExecutorFactory(dataSource, serverMeta, info);
+    static JdbcExecutorFactory create(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env) {
+        return new JdbcExecutorFactory(dataSource, serverMeta, env);
     }
 
     private final DataSource dataSource;
@@ -27,6 +30,8 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     final ExecutorEnvironment env;
 
+    final MappingEnvironment mapEnv;
+
     boolean closed;
 
     private JdbcExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env) {
@@ -34,11 +39,17 @@ final class JdbcExecutorFactory implements ExecutorFactory {
         this.serverMeta = serverMeta;
         this.database = serverMeta.database();
         this.env = env;
+        this.mapEnv = new JdbcMappingEnvironment(serverMeta, env);
     }
 
     @Override
     public ServerMeta serverMeta() {
         return this.serverMeta;
+    }
+
+    @Override
+    public boolean supportSavePoints() {
+        return true;
     }
 
     @Override
@@ -89,6 +100,36 @@ final class JdbcExecutorFactory implements ExecutorFactory {
         String m = String.format("%s have closed.", JdbcExecutorFactory.class.getName());
         return new DataAccessException(m);
     }
+
+
+    private static final class JdbcMappingEnvironment implements MappingEnvironment {
+
+        private final ServerMeta serverMeta;
+
+        private JdbcMappingEnvironment(ServerMeta serverMeta, ExecutorEnvironment env) {
+            this.serverMeta = serverMeta;
+        }
+
+        @Override
+        public boolean isReactive() {
+            return false;
+        }
+
+        @Override
+        public ServerMeta serverMeta() {
+            return this.serverMeta;
+        }
+
+        @Override
+        public ZoneOffset zoneOffset() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public JsonCodec jsonCodec() {
+            throw new UnsupportedOperationException();
+        }
+    }//JdbcMappingEnvironment
 
 
 }

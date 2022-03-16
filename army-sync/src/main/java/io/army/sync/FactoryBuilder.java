@@ -5,7 +5,6 @@ import io.army.SessionFactoryException;
 import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
-import io.army.context.spi.CurrentSessionContext;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.meta.FieldMeta;

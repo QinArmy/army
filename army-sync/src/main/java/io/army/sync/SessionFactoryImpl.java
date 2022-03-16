@@ -1,35 +1,34 @@
 package io.army.sync;
 
+import io.army.ArmyKeys;
 import io.army.SessionException;
 import io.army.SessionFactoryException;
 import io.army.bean.ArmyBean;
-import io.army.boot.DomainValuesGenerator;
 import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheFactory;
-import io.army.context.spi.CurrentSessionContext;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
+import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.session.AbstractSessionFactory;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.ExecutorFactory;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
 
 /**
  * This class is a implementation of {@link SessionFactory}
  */
-class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactory {
+final class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactory {
 
     final ExecutorFactory executorFactory;
 
     final _Dialect dialect;
 
     private final SessionCacheFactory sessionCacheFactory;
-
-    private final DomainValuesGenerator domainValuesGenerator;
-
-    private final ProxySession proxySession;
 
     private final CurrentSessionContext currentSessionContext;
 
@@ -42,11 +41,8 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
         this.executorFactory = Objects.requireNonNull(builder.executorFactory);
         this.dialect = _DialectFactory.createDialect(this);
-        this.currentSessionContext = builder.currentSessionContext;
-
-        this.proxySession = new ProxySessionImpl(this, this.currentSessionContext);
+        this.currentSessionContext = getCurrentSessionContext();
         this.sessionCacheFactory = SessionCacheFactory.build(this);
-        this.domainValuesGenerator = DomainValuesGenerator.build(this);
     }
 
 
@@ -67,6 +63,10 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         }
     }
 
+    @Override
+    public boolean supportSavePoints() {
+        return this.dialect.supportSavePoint() && this.executorFactory.supportSavePoints();
+    }
 
     @Override
     public ServerMeta serverMeta() {
@@ -74,25 +74,18 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
     }
 
     @Override
-    public ProxySession proxySession() {
-        return this.proxySession;
+    public CurrentSessionContext currentSessionContext() throws SessionFactoryException {
+        final CurrentSessionContext context = this.currentSessionContext;
+        if (context == null) {
+            String m = String.format("%s no specified %s.", this, CurrentSessionContext.class.getName());
+            throw new SessionFactoryException(m);
+        }
+        return context;
     }
 
     @Override
     public SessionFactory.SessionBuilder builder() {
         return null;
-    }
-
-
-    @Override
-    public boolean hasCurrentSession() {
-        return this.currentSessionContext.hasCurrentSession();
-    }
-
-
-    @Override
-    public DomainValuesGenerator domainValuesGenerator() {
-        return this.domainValuesGenerator;
     }
 
 
@@ -104,7 +97,7 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
 
     @Override
     public String toString() {
-        return String.format("%s[%s]", SessionFactory.class.getName(), this.name);
+        return String.format("%s[%s] readonly:%s", SessionFactory.class.getName(), this.name, this.readOnly);
     }
 
     /*################################## blow package method ##################################*/
@@ -138,6 +131,44 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
             }
         } catch (Exception e) {
             throw new SessionFactoryException(e, "ArmyBean destroy occur error,ArmyBean[%s].", armyBean);
+        }
+    }
+
+
+    @Nullable
+    private CurrentSessionContext getCurrentSessionContext() {
+        final String className;
+        className = this.env.get(ArmyKeys.CURRENT_SESSION_CONTEXT);
+        if (className == null) {
+            return null;
+        }
+
+        try {
+            final Class<?> clazz;
+            clazz = Class.forName(className);
+            final Method method;
+            method = clazz.getDeclaredMethod("create", SessionFactory.class);
+            final int modifiers = method.getModifiers();
+            if (!(Modifier.isPublic(modifiers)
+                    && Modifier.isStatic(modifiers)
+                    && clazz.isAssignableFrom(method.getReturnType()))) {
+                throw noCurrentSessionContextFactoryMethod(className, null);
+            }
+            final Object context;
+            context = method.invoke(null, this);
+            if (context == null) {
+                String m = String.format("%s return null", method);
+                throw new SessionFactoryException(m);
+            }
+            return (CurrentSessionContext) context;
+        } catch (ClassNotFoundException e) {
+            String m = String.format("Create %s,Not found %s class.", CurrentSessionContext.class.getName(), className);
+            throw new SessionFactoryException(m, e);
+        } catch (NoSuchMethodException e) {
+            throw noCurrentSessionContextFactoryMethod(className, e);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            String m = String.format("Create %s occur error.%s", CurrentSessionContext.class.getName(), this);
+            throw new SessionFactoryException(m, e);
         }
     }
 
@@ -225,6 +256,13 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         }
 
 
+    }
+
+
+    private static SessionFactoryException noCurrentSessionContextFactoryMethod(String className, @Nullable Throwable cause) {
+        String m = String.format("%s don't definite public static %s create(%s) method."
+                , className, className, SessionFactory.class.getName());
+        return new SessionFactoryException(m, cause);
     }
 
 

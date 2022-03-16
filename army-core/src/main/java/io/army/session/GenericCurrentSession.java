@@ -12,7 +12,7 @@ import io.army.meta.TableMeta;
  *     <li>{@code  io.army.sync.ProxyTmSession}</li>
  * </ul>
  */
-public interface GenericProxySession {
+public interface GenericCurrentSession {
 
     ArmyEnvironment environment();
 

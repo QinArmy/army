@@ -22,12 +22,15 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
     private final SessionFactory sessionFactory;
 
+    private final boolean supportSavePoints;
+
     private String beanName;
 
 
     public ArmyTransactionManager(SessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
+        this.supportSavePoints = sessionFactory.supportSavePoints();
     }
 
     @Override
@@ -65,7 +68,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     protected final Object doSuspend(final Object transaction) throws TransactionException {
         ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
         if (txObject.session == null) {
-            throw new IllegalTransactionStateException("transaction no army session.");
+            throw transactionNoSession();
         }
         TransactionSynchronizationManager.unbindResource(this.sessionFactory);
         return txObject.suspend();
@@ -97,7 +100,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             //4. create and start transaction
             session.builder()
                     .isolation(SpringUtils.toArmyIsolation(definition.getIsolationLevel()))
-                    .readOnly(definition.isReadOnly())
+                    .readonly(definition.isReadOnly())
                     .timeout(timeoutSeconds)
                     .build()
                     .start();
@@ -198,14 +201,14 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     }
 
     @Override
-    protected void doCleanupAfterCompletion(final Object transaction) {
+    protected final void doCleanupAfterCompletion(final Object transaction) {
         final ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
         final Session session = txObject.session;
         if (session == null) {
             throw transactionNoSession();
         }
 
-        SessionFactory sessionFactory = this.sessionFactory;
+        final SessionFactory sessionFactory = this.sessionFactory;
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             TransactionSynchronizationManager.unbindResource(sessionFactory);
         }
@@ -218,10 +221,10 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
     @Override
     protected final boolean useSavepointForNestedTransaction() {
-        // return this.isNestedTransactionAllowed() && this.sessionFactory.supportsSavePoints();
-        //TODO
-        return true;
+        return this.supportSavePoints;
     }
+
+
 
     /*################################## blow setter method ##################################*/
 
@@ -267,7 +270,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                 throw transactionNoSession();
             }
             try {
-                return session.sessionTransaction().createSavepoint();
+                return session.sessionTransaction().createSavePoint();
             } catch (io.army.tx.TransactionException e) {
                 throw SpringUtils.convertTransactionException(e);
             }
@@ -280,7 +283,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                 throw transactionNoSession();
             }
             try {
-                session.sessionTransaction().rollbackToSavepoint(savepoint);
+                session.sessionTransaction().rollbackToSavePoint(savepoint);
             } catch (io.army.tx.TransactionException e) {
                 throw SpringUtils.convertTransactionException(e);
             }
@@ -293,7 +296,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                 throw transactionNoSession();
             }
             try {
-                session.sessionTransaction().releaseSavepoint(savepoint);
+                session.sessionTransaction().releaseSavePoint(savepoint);
             } catch (io.army.tx.TransactionException e) {
                 throw SpringUtils.convertTransactionException(e);
             }

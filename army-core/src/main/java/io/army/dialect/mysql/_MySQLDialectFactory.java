@@ -8,6 +8,11 @@ import io.army.util._Exceptions;
 
 public abstract class _MySQLDialectFactory {
 
+
+    private _MySQLDialectFactory() {
+        throw new UnsupportedOperationException();
+    }
+
     public static _Dialect createDialect(final _DialectEnvironment environment) {
         final ServerMeta meta = environment.serverMeta();
         if (meta.database() != Database.MySQL) {

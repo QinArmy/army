@@ -11,6 +11,8 @@ public interface ExecutorFactory {
      */
     ServerMeta serverMeta();
 
+    boolean supportSavePoints();
+
     MetaExecutor createMetaExecutor() throws DataAccessException;
 
     StmtExecutor createStmtExecutor() throws DataAccessException;

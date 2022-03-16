@@ -1,8 +1,6 @@
-package io.army.context.spi;
+package io.army.sync;
 
-import io.army.DataAccessException_0;
 import io.army.NoCurrentSessionException;
-import io.army.sync.GenericSyncApiSession;
 
 /**
  * This interface's implementation must definite a public static build method like below.
@@ -17,6 +15,8 @@ import io.army.sync.GenericSyncApiSession;
  */
 public interface CurrentSessionContext {
 
+    SessionFactory sessionFactory();
+
     boolean hasCurrentSession();
 
     /**
@@ -24,13 +24,11 @@ public interface CurrentSessionContext {
      * by this implementation.
      *
      * @return The current session.
-     * @throws DataAccessException_0 Typically indicates an issue
-     *                             locating or creating the current session.
+     * @throws NoCurrentSessionException Typically indicates an issue
+     *                                   locating or creating the current session.
      */
-    GenericSyncApiSession currentSession() throws NoCurrentSessionException;
+    CurrentSession session() throws NoCurrentSessionException;
 
-    void currentSession(GenericSyncApiSession session) throws IllegalStateException;
 
-    void removeCurrentSession(GenericSyncApiSession session) throws IllegalStateException;
 
 }

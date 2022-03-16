@@ -14,6 +14,7 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 
@@ -37,6 +38,8 @@ public abstract class FactoryBuilderSupport {
     protected Collection<FactoryAdvice> factoryAdvices;
 
     protected List<String> packagesToScan;
+
+    protected ZoneOffset zoneOffset;
 
 
     /*################################## blow non-setter fields ##################################*/

@@ -12,4 +12,9 @@ public abstract class SessionException extends DataAccessException {
     public SessionException(Throwable cause, String format, Object... args) {
         super(format, cause);
     }
+
+    public SessionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

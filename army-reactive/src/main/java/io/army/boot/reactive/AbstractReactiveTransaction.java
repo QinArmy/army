@@ -55,7 +55,7 @@ abstract class AbstractReactiveTransaction extends AbstractGenericTransaction im
 
 
     final Mono<Void> checkNonReadOnly(String command) {
-        return this.readOnly
+        return this.readonly
                 ? Mono.error(new ReadOnlyTransactionException("read only transaction can't %s.", command))
                 : Mono.empty();
     }

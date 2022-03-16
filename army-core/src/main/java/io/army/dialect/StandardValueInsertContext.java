@@ -1,5 +1,7 @@
 package io.army.dialect;
 
+import io.army.annotation.GeneratorType;
+import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
@@ -41,7 +43,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     final Map<FieldMeta<?>, _Expression> commonExpMap;
 
-    final List<? extends ReadWrapper> domainList;
+    final List<ObjectWrapper> domainList;
 
     private final PrimaryFieldMeta<?> returnId;
 
@@ -111,10 +113,12 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
         final PrimaryFieldMeta<?> returnId = this.returnId;
         final SimpleStmt parentStmt;
-        if (returnId == null) {
-            parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
-        } else {
+        if (returnId != null) {
             parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList, returnId);
+        } else if (this.table.id().generatorType() == GeneratorType.POST) {
+            parentStmt = Stmts.post(this.sqlBuilder.toString(), this.paramList, this.domainList, this.table.id());
+        } else {
+            parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
         }
         final ChildBlock childBlock = this.childBlock;
         final Stmt stmt;
