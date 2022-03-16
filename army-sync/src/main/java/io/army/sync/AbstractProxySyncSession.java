@@ -19,8 +19,8 @@ abstract class AbstractProxySyncSession implements GenericSyncApiSession, Generi
     }
 
     @Override
-    public boolean readonly() {
-        return this.sessionContext.currentSession().readonly();
+    public boolean isReadonlySession() {
+        return this.sessionContext.currentSession().isReadonlySession();
     }
 
     @Override

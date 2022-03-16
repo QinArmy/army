@@ -130,7 +130,7 @@ abstract class AbstractRmSession extends AbstractSyncSession
         }
         final _Statement.SessionMode mode;
         mode = ((_Statement) statement).sessionMode();
-        if (this.readonly() && mode != _Statement.SessionMode.READ) {
+        if (this.isReadonlySession() && mode != _Statement.SessionMode.READ) {
             String m = String.format("%s is read only.", this);
             throw new SessionUsageException(m);
         }

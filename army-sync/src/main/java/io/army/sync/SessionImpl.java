@@ -66,7 +66,7 @@ final class SessionImpl extends AbstractSyncSession implements Session {
     }
 
     @Override
-    public boolean readonly() {
+    public boolean isReadonlySession() {
         final Transaction tx = this.transaction;
         return this.readonly || (tx != null && tx.readOnly());
     }
@@ -241,7 +241,7 @@ final class SessionImpl extends AbstractSyncSession implements Session {
         if (this.sessionCache == null) {
             return;
         }
-        final boolean readOnly = this.readonly();
+        final boolean readOnly = this.isReadonlySession();
         for (DomainUpdateAdvice advice : this.sessionCache.updateAdvices()) {
             if (!advice.hasUpdate()) {
                 continue;

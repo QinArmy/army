@@ -40,7 +40,7 @@ public interface Session extends SingleDatabaseReactiveSession, GenericReactiveA
          * @throws CannotCreateTransactionException throw when
          *                                          <ul>
          *                                              <li>not specified {@link Isolation}</li>
-         *                                              <li>{@link Session#readonly()} equals {@code true} but,specified transaction readOnly</li>
+         *                                              <li>{@link Session#isReadonlySession()} equals {@code true} but,specified transaction readOnly</li>
          *                                              <li>session already have {@link ReactiveTransaction}</li>
          *                                          </ul>
          */

@@ -1,17 +1,28 @@
 package io.army.bean;
 
 import io.army.ErrorCode;
+import org.springframework.beans.PropertyAccessor;
+import org.springframework.beans.PropertyAccessorFactory;
 
 class ReadonlyWrapperImpl implements ReadWrapper {
 
-    private final org.springframework.beans.BeanWrapper beanWrapper;
+    private final PropertyAccessor beanWrapper;
 
-    ReadonlyWrapperImpl(org.springframework.beans.BeanWrapper beanWrapper) {
+    private final Object bean;
+
+    ReadonlyWrapperImpl(Object bean, PropertyAccessor beanWrapper) {
+        this.bean = bean;
         this.beanWrapper = beanWrapper;
     }
 
-    ReadonlyWrapperImpl(Object target) {
-        beanWrapper = org.springframework.beans.PropertyAccessorFactory.forBeanPropertyAccess(target);
+    ReadonlyWrapperImpl(Object bean) {
+        this.bean = bean;
+        if (bean instanceof FieldAccessBean) {
+            this.beanWrapper = PropertyAccessorFactory.forDirectFieldAccess(bean);
+        } else {
+            this.beanWrapper = PropertyAccessorFactory.forBeanPropertyAccess(bean);
+        }
+
     }
 
     @Override
@@ -40,7 +51,7 @@ class ReadonlyWrapperImpl implements ReadWrapper {
 
     @Override
     public final Class<?> getWrappedClass() {
-        return beanWrapper.getWrappedClass();
+        return this.bean.getClass();
     }
 
 

@@ -23,10 +23,7 @@ final class DomainWrapperImpl extends BeanWrapperImpl implements DomainWrapper {
 
     @Override
     public final DomainReadonlyWrapper getReadonlyWrapper() {
-        if (this.readonlyWrapper == null || !(this.readonlyWrapper instanceof DomainReadonlyWrapper)) {
-            this.readonlyWrapper = new DomainReadonlyWrapperImpl(this.actualWrapper, this.tableMeta);
-        }
-        return (DomainReadonlyWrapper) readonlyWrapper;
+       throw new UnsupportedOperationException();
     }
 
     @Override

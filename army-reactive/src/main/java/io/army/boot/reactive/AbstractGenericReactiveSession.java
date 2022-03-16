@@ -40,8 +40,9 @@ abstract class AbstractGenericReactiveSession extends AbstractGenericSession imp
         }
     }
 
+
     @Override
-    public final boolean readonly() {
+    public final boolean isReadonlySession() {
         GenericTransaction tx = obtainTransaction();
         return this.readOnly || (tx != null && tx.readOnly());
     }

@@ -115,7 +115,7 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
     }
 
     @Override
-    public Savepoint createSavepoint() throws TransactionException {
+    public Object createSavepoint() throws TransactionException {
         checkReadWrite("createSavepoint");
 
         if (this.status != TransactionStatus.ACTIVE) {
@@ -133,37 +133,37 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
     }
 
     @Override
-    public void rollbackToSavepoint(final Savepoint savepoint) throws TransactionException {
-        checkReadWrite("rollbackToSavepoint");
-
-        if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(this.status)) {
-            throw new IllegalTransactionStateException(
-                    "transaction status[%s] don't in %s,can't rollback to save point."
-                    , this.status, TransactionStatus.ROLL_BACK_ABLE_SET);
-        }
-        if (!this.savepointSet.contains(savepoint)) {
-            throw new UnKnownSavepointException("Savepoint[%s] not exists", savepoint);
-        }
-        try {
-            this.session.connection().rollback(savepoint);
-        } catch (SQLException e) {
-            throw new TransactionSystemException(e, "army roll back to save point[%s] occur error.", savepoint);
-        }
+    public void rollbackToSavepoint(final Object savepoint) throws TransactionException {
+//        checkReadWrite("rollbackToSavepoint");
+//
+//        if (!TransactionStatus.ROLL_BACK_ABLE_SET.contains(this.status)) {
+//            throw new IllegalTransactionStateException(
+//                    "transaction status[%s] don't in %s,can't rollback to save point."
+//                    , this.status, TransactionStatus.ROLL_BACK_ABLE_SET);
+//        }
+//        if (!this.savepointSet.contains(savepoint)) {
+//            throw new UnKnownSavepointException("Savepoint[%s] not exists", savepoint);
+//        }
+//        try {
+//            this.session.connection().rollback((Savepoint) savepoint);
+//        } catch (SQLException e) {
+//            throw new TransactionSystemException(e, "army roll back to save point[%s] occur error.", savepoint);
+//        }
     }
 
     @Override
-    public void releaseSavepoint(final Savepoint savepoint) throws TransactionException {
-        checkReadWrite("releaseSavepoint");
-
-        if (!this.savepointSet.contains(savepoint)) {
-            throw new UnKnownSavepointException("Savepoint[%s] not exists", savepoint);
-        }
-        try {
-            this.session.connection().releaseSavepoint(savepoint);
-            this.savepointSet.remove(savepoint);
-        } catch (SQLException e) {
-            throw new TransactionSystemException(e, "army release save point occur error.");
-        }
+    public void releaseSavepoint(final Object savepoint) throws TransactionException {
+//        checkReadWrite("releaseSavepoint");
+//
+//        if (!this.savepointSet.contains(savepoint)) {
+//            throw new UnKnownSavepointException("Savepoint[%s] not exists", savepoint);
+//        }
+//        try {
+//            this.session.connection().releaseSavepoint(savepoint);
+//            this.savepointSet.remove(savepoint);
+//        } catch (SQLException e) {
+//            throw new TransactionSystemException(e, "army release save point occur error.");
+//        }
     }
 
     @Override
@@ -187,11 +187,6 @@ final class LocalTransaction extends AbstractSyncTransaction implements Transact
         }
     }
 
-    @Override
-    public void close() throws TransactionException {
-        assertCanClose();
-        this.session.closeTransaction(this);
-    }
 
     @Override
     public boolean transactionEnded() {

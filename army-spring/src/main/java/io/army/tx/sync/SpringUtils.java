@@ -9,7 +9,7 @@ import org.springframework.transaction.TransactionDefinition;
 
 public abstract class SpringUtils {
 
-    protected SpringUtils() {
+    private SpringUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -38,7 +38,7 @@ public abstract class SpringUtils {
     }
 
 
-    public static Isolation convertTotArmyIsolation(int springIsolation) {
+    public static Isolation toArmyIsolation(final int springIsolation) {
         Isolation isolation;
         switch (springIsolation) {
             case TransactionDefinition.ISOLATION_DEFAULT:

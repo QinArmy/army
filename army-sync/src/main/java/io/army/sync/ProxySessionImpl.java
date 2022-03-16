@@ -33,8 +33,8 @@ class ProxySessionImpl extends AbstractSyncSession implements ProxySession {
     }
 
     @Override
-    public boolean readonly() {
-        return this.currentSession().readonly();
+    public boolean isReadonlySession() {
+        return this.currentSession().isReadonlySession();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.army.sync;
 
 import io.army.SessionException;
+import io.army.lang.Nullable;
 import io.army.session.DialectSessionFactory;
 import io.army.session.FactoryMode;
 
@@ -22,6 +23,8 @@ public interface SessionFactory extends GenericSyncApiSessionFactory, DialectSes
 
     interface SessionBuilder {
 
+        SessionBuilder name(@Nullable String name);
+
         /**
          * Optional,default is {@code false}
          */
@@ -35,6 +38,7 @@ public interface SessionFactory extends GenericSyncApiSessionFactory, DialectSes
         /**
          * Optional,default is {@code true}
          */
+        @Deprecated
         SessionBuilder resetConnection(boolean reset);
 
         Session build() throws SessionException;

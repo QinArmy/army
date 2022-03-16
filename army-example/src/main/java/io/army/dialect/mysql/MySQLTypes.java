@@ -1,8 +1,6 @@
 package io.army.dialect.mysql;
 
-import io.army.annotation.Column;
-import io.army.annotation.Mapping;
-import io.army.annotation.Table;
+import io.army.annotation.*;
 import io.army.example.VersionDomain;
 import io.army.example.struct.QinArmy;
 
@@ -20,494 +18,164 @@ public class MySQLTypes extends VersionDomain {
 
     private static final String BIT_TYPE = "io.army.mapping.mysql.MySQLBitType";
 
+    @Generator(type = GeneratorType.POST)
     @Column
-    private Long id;
+    public Long id;
 
     @Column
-    private LocalDateTime createTime;
+    public LocalDateTime createTime;
 
     @Column
-    private LocalDateTime updateTime;
+    public LocalDateTime updateTime;
 
     @Column
-    private Integer version;
+    public Integer version;
 
     @Column
-    private Boolean visible;
+    public Boolean visible;
 
     @Column(comment = "datetime type")
-    private LocalDateTime myDatetime;
+    public LocalDateTime myDatetime;
 
     @Column(scale = 6, comment = "datetime(6) type")
-    private LocalDateTime myDatetime6;
+    public LocalDateTime myDatetime6;
 
     @Column(comment = "date type")
-    private LocalDate myDate;
+    public LocalDate myDate;
 
     @Column(comment = "time type")
-    private LocalTime myTime;
+    public LocalTime myTime;
 
     @Column(scale = 1, comment = "time(1) type")
-    private LocalTime myTime1;
+    public LocalTime myTime1;
 
     @Column(comment = "year type")
-    private Year myYear;
+    public Year myYear;
 
     @Column(precision = 200, comment = "varchar(200) type")
-    private String myVarChar200;
+    public String myVarChar200;
 
     @Mapping(CHAR_TYPE)
     @Column(precision = 200, comment = "char(200) type")
-    private String myChar200;
+    public String myChar200;
 
     @Mapping(BINARY_TYPE)
     @Column(precision = 60, comment = "binary(60) type")
-    private byte[] myBinary60;
+    public byte[] myBinary60;
 
     @Column(precision = 60, comment = "varbinary(60) type")
-    private byte[] myVarBinary60;
+    public byte[] myVarBinary60;
 
     @Mapping(BIT_TYPE)
     @Column(precision = 64, comment = "bit(64) type")
-    private Long myBit64;
+    public Long myBit64;
 
     @Mapping(BIT_TYPE)
     @Column(precision = 20, comment = "bit(20) type")
-    private Long myBit20;
+    public Long myBit20;
 
     @Column(comment = "tinyint type")
-    private Byte myTinyint;
+    public Byte myTinyint;
 
     @Mapping("io.army.mapping.UnsignedByteType")
     @Column(comment = "tinyint unsigned type")
-    private Short myTinyintUnsigned;
+    public Short myTinyintUnsigned;
 
     @Column(comment = "smallint type")
-    private Short mySmallint;
+    public Short mySmallint;
 
     @Mapping("io.army.mapping.UnsignedShortType")
     @Column(comment = "smallint unsigned type")
-    private Integer mySmallintUnsigned;
+    public Integer mySmallintUnsigned;
 
     @Mapping("io.army.mapping.MediumIntType")
     @Column(comment = "medium type")
-    private Integer myMediumint;
+    public Integer myMediumint;
 
     @Mapping("io.army.mapping.UnsignedMediumIntType")
     @Column(comment = "medium unsigned type")
-    private Integer myMediumintUnsigned;
+    public Integer myMediumintUnsigned;
 
     @Column(comment = "int type")
-    private Integer myInt;
+    public Integer myInt;
 
     @Mapping("io.army.mapping.UnsignedIntegerType")
     @Column(comment = "int unsigned type")
-    private Long myIntUnsigned;
+    public Long myIntUnsigned;
 
     @Column(comment = "bigint type")
-    private Long myBigint;
+    public Long myBigint;
 
     @Mapping("io.army.mapping.UnsignedLongType")
     @Column(comment = "bigint unsigned type")
-    private BigInteger myBigintUnsigned;
+    public BigInteger myBigintUnsigned;
 
     @Column(comment = "decimal unsigned type")
-    private BigDecimal myDecimal;
+    public BigDecimal myDecimal;
 
     @Mapping("io.army.mapping.UnsignedBigDecimalType")
     @Column(comment = "decimal unsigned type")
-    private BigDecimal myDecimalUnsigned;
+    public BigDecimal myDecimalUnsigned;
 
     @Column(comment = "float unsigned type")
-    private Float myFloat;
+    public Float myFloat;
 
     @Column(comment = "double unsigned type")
-    private Double myDouble;
+    public Double myDouble;
 
     @Mapping(value = "io.army.mapping.mysql.MySQLNameEnumSetType", elements = Month.class)
     @Column(comment = "set of name enum")
-    private Set<Month> myNameEnumSet;
+    public Set<Month> myNameEnumSet;
 
     @Mapping(value = "io.army.mapping.mysql.MySQLTextEnumSetType", elements = QinArmy.class)
     @Column(comment = "set of text enum")
-    private Set<QinArmy> myTextEnumSet;
+    public Set<QinArmy> myTextEnumSet;
 
     @Mapping("io.army.mapping.optional.JsonStringType")
     @Column(comment = "json type")
-    private String myJson;
+    public String myJson;
 
     @Mapping("io.army.mapping.mysql.MySQLTinyTextType")
     @Column(comment = "tiny text type")
-    private String myTinyText;
+    public String myTinyText;
 
     @Mapping("io.army.mapping.mysql.MySQLTextType")
     @Column(comment = "text type")
-    private String myText;
+    public String myText;
 
     @Mapping("io.army.mapping.mysql.MySQLMediumTextType")
     @Column(comment = "medium text type")
-    private String myMediumText;
+    public String myMediumText;
 
     @Mapping("io.army.mapping.mysql.MySQLLongTextType")
     @Column(comment = "long text type")
-    private String myLongText;
+    public String myLongText;
 
     @Mapping("io.army.mapping.mysql.MySQLTinyBlobType")
     @Column(comment = "tiny blob type")
-    private byte[] myTinyBlob;
+    public byte[] myTinyBlob;
 
     @Mapping("io.army.mapping.mysql.MySQLTinyBlobType")
     @Column(comment = "blob type")
-    private byte[] myBlob;
+    public byte[] myBlob;
 
     @Mapping("io.army.mapping.mysql.MySQLMediumBlobType")
     @Column(comment = "medium blob type")
-    private byte[] myMediumBlob;
+    public byte[] myMediumBlob;
 
     @Mapping("io.army.mapping.mysql.MySQLLongBlobType")
     @Column(comment = "long blob type")
-    private byte[] myLongBlob;
+    public byte[] myLongBlob;
 
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
 
     @Override
     public Integer getVersion() {
         return version;
     }
-
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-
-    public Boolean getVisible() {
-        return visible;
-    }
-
-    public void setVisible(Boolean visible) {
-        this.visible = visible;
-    }
-
-    public LocalDateTime getMyDatetime() {
-        return myDatetime;
-    }
-
-    public void setMyDatetime(LocalDateTime myDatetime) {
-        this.myDatetime = myDatetime;
-    }
-
-    public LocalDateTime getMyDatetime6() {
-        return myDatetime6;
-    }
-
-    public void setMyDatetime6(LocalDateTime myDatetime6) {
-        this.myDatetime6 = myDatetime6;
-    }
-
-    public LocalDate getMyDate() {
-        return myDate;
-    }
-
-    public void setMyDate(LocalDate myDate) {
-        this.myDate = myDate;
-    }
-
-    public LocalTime getMyTime() {
-        return myTime;
-    }
-
-    public void setMyTime(LocalTime myTime) {
-        this.myTime = myTime;
-    }
-
-    public LocalTime getMyTime1() {
-        return myTime1;
-    }
-
-    public void setMyTime1(LocalTime myTime1) {
-        this.myTime1 = myTime1;
-    }
-
-    public Year getMyYear() {
-        return myYear;
-    }
-
-    public void setMyYear(Year myYear) {
-        this.myYear = myYear;
-    }
-
-    public String getMyVarChar200() {
-        return myVarChar200;
-    }
-
-    public void setMyVarChar200(String myVarChar200) {
-        this.myVarChar200 = myVarChar200;
-    }
-
-    public String getMyChar200() {
-        return myChar200;
-    }
-
-    public void setMyChar200(String myChar200) {
-        this.myChar200 = myChar200;
-    }
-
-    public byte[] getMyBinary60() {
-        return myBinary60;
-    }
-
-    public void setMyBinary60(byte[] myBinary60) {
-        this.myBinary60 = myBinary60;
-    }
-
-    public byte[] getMyVarBinary60() {
-        return myVarBinary60;
-    }
-
-    public void setMyVarBinary60(byte[] myVarBinary60) {
-        this.myVarBinary60 = myVarBinary60;
-    }
-
-    public Long getMyBit64() {
-        return myBit64;
-    }
-
-    public void setMyBit64(Long myBit64) {
-        this.myBit64 = myBit64;
-    }
-
-    public Long getMyBit20() {
-        return myBit20;
-    }
-
-    public void setMyBit20(Long myBit20) {
-        this.myBit20 = myBit20;
-    }
-
-    public Byte getMyTinyint() {
-        return myTinyint;
-    }
-
-    public void setMyTinyint(Byte myTinyint) {
-        this.myTinyint = myTinyint;
-    }
-
-    public Short getMyTinyintUnsigned() {
-        return myTinyintUnsigned;
-    }
-
-    public void setMyTinyintUnsigned(Short myTinyintUnsigned) {
-        this.myTinyintUnsigned = myTinyintUnsigned;
-    }
-
-    public Short getMySmallint() {
-        return mySmallint;
-    }
-
-    public void setMySmallint(Short mySmallint) {
-        this.mySmallint = mySmallint;
-    }
-
-    public Integer getMySmallintUnsigned() {
-        return mySmallintUnsigned;
-    }
-
-    public void setMySmallintUnsigned(Integer mySmallintUnsigned) {
-        this.mySmallintUnsigned = mySmallintUnsigned;
-    }
-
-    public Integer getMyMediumint() {
-        return myMediumint;
-    }
-
-    public void setMyMediumint(Integer myMediumint) {
-        this.myMediumint = myMediumint;
-    }
-
-    public Integer getMyMediumintUnsigned() {
-        return myMediumintUnsigned;
-    }
-
-    public void setMyMediumintUnsigned(Integer myMediumintUnsigned) {
-        this.myMediumintUnsigned = myMediumintUnsigned;
-    }
-
-    public Integer getMyInt() {
-        return myInt;
-    }
-
-    public void setMyInt(Integer myInt) {
-        this.myInt = myInt;
-    }
-
-    public Long getMyIntUnsigned() {
-        return myIntUnsigned;
-    }
-
-    public void setMyIntUnsigned(Long myIntUnsigned) {
-        this.myIntUnsigned = myIntUnsigned;
-    }
-
-    public Long getMyBigint() {
-        return myBigint;
-    }
-
-    public void setMyBigint(Long myBigint) {
-        this.myBigint = myBigint;
-    }
-
-    public BigInteger getMyBigintUnsigned() {
-        return myBigintUnsigned;
-    }
-
-    public void setMyBigintUnsigned(BigInteger myBigintUnsigned) {
-        this.myBigintUnsigned = myBigintUnsigned;
-    }
-
-    public BigDecimal getMyDecimal() {
-        return myDecimal;
-    }
-
-    public void setMyDecimal(BigDecimal myDecimal) {
-        this.myDecimal = myDecimal;
-    }
-
-    public BigDecimal getMyDecimalUnsigned() {
-        return myDecimalUnsigned;
-    }
-
-    public void setMyDecimalUnsigned(BigDecimal myDecimalUnsigned) {
-        this.myDecimalUnsigned = myDecimalUnsigned;
-    }
-
-    public Float getMyFloat() {
-        return myFloat;
-    }
-
-    public void setMyFloat(Float myFloat) {
-        this.myFloat = myFloat;
-    }
-
-    public Double getMyDouble() {
-        return myDouble;
-    }
-
-    public void setMyDouble(Double myDouble) {
-        this.myDouble = myDouble;
-    }
-
-    public String getMyTinyText() {
-        return myTinyText;
-    }
-
-    public void setMyTinyText(String myTinyText) {
-        this.myTinyText = myTinyText;
-    }
-
-    public String getMyText() {
-        return myText;
-    }
-
-    public void setMyText(String myText) {
-        this.myText = myText;
-    }
-
-    public String getMyMediumText() {
-        return myMediumText;
-    }
-
-    public void setMyMediumText(String myMediumText) {
-        this.myMediumText = myMediumText;
-    }
-
-    public String getMyLongText() {
-        return myLongText;
-    }
-
-    public void setMyLongText(String myLongText) {
-        this.myLongText = myLongText;
-    }
-
-
-    public String getMyJson() {
-        return myJson;
-    }
-
-    public void setMyJson(String myJson) {
-        this.myJson = myJson;
-    }
-
-
-    public Set<Month> getMyNameEnumSet() {
-        return myNameEnumSet;
-    }
-
-    public void setMyNameEnumSet(Set<Month> myNameEnumSet) {
-        this.myNameEnumSet = myNameEnumSet;
-    }
-
-    public Set<QinArmy> getMyTextEnumSet() {
-        return myTextEnumSet;
-    }
-
-    public void setMyTextEnumSet(Set<QinArmy> myTextEnumSet) {
-        this.myTextEnumSet = myTextEnumSet;
-    }
-
-
-    public byte[] getMyTinyBlob() {
-        return myTinyBlob;
-    }
-
-    public void setMyTinyBlob(byte[] myTinyBlob) {
-        this.myTinyBlob = myTinyBlob;
-    }
-
-    public byte[] getMyBlob() {
-        return myBlob;
-    }
-
-    public void setMyBlob(byte[] myBlob) {
-        this.myBlob = myBlob;
-    }
-
-    public byte[] getMyMediumBlob() {
-        return myMediumBlob;
-    }
-
-    public void setMyMediumBlob(byte[] myMediumBlob) {
-        this.myMediumBlob = myMediumBlob;
-    }
-
-    public byte[] getMyLongBlob() {
-        return myLongBlob;
-    }
-
-    public void setMyLongBlob(byte[] myLongBlob) {
-        this.myLongBlob = myLongBlob;
-    }
-
 
 }

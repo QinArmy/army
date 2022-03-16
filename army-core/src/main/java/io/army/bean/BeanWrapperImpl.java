@@ -1,15 +1,24 @@
 package io.army.bean;
 
+import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
 
 class BeanWrapperImpl implements ObjectWrapper {
 
-    final org.springframework.beans.BeanWrapper actualWrapper;
+    final PropertyAccessor actualWrapper;
+
+    final Object bean;
 
     ReadWrapper readonlyWrapper;
 
     BeanWrapperImpl(Object target) {
-        this.actualWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
+        this.bean = target;
+        if (target instanceof FieldAccessBean) {
+            this.actualWrapper = PropertyAccessorFactory.forDirectFieldAccess(target);
+        } else {
+            this.actualWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
+        }
+
     }
 
 
@@ -52,18 +61,18 @@ class BeanWrapperImpl implements ObjectWrapper {
 
     @Override
     public final Object getWrappedInstance() {
-        return actualWrapper.getWrappedInstance();
+        return this.bean;
     }
 
     @Override
     public final Class<?> getWrappedClass() {
-        return actualWrapper.getWrappedClass();
+        return this.bean.getClass();
     }
 
     @Override
     public ReadWrapper getReadonlyWrapper() {
         if (this.readonlyWrapper == null) {
-            this.readonlyWrapper = new ReadonlyWrapperImpl(this.actualWrapper);
+            this.readonlyWrapper = new ReadonlyWrapperImpl(this.bean, this.actualWrapper);
         }
         return readonlyWrapper;
     }

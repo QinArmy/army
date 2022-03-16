@@ -158,6 +158,11 @@ class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactor
         }
 
         @Override
+        public SessionBuilder name(String name) {
+            return null;
+        }
+
+        @Override
         public SessionFactory.SessionBuilder currentSession(boolean current) {
             this.currentSession = current;
             return this;

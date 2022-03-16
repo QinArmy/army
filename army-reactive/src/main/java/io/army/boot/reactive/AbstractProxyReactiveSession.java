@@ -41,7 +41,7 @@ abstract class AbstractProxyReactiveSession<F extends GenericReactiveSessionFact
     @Override
     public Mono<Boolean> readOnly() {
         return this.currentSessionContext.currentSession()
-                .map(GenericReactiveApiSession::readonly);
+                .map(GenericReactiveApiSession::isReadonlySession);
     }
 
     @Override
