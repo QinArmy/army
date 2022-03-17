@@ -14,6 +14,7 @@ import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.util._Exceptions;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,13 +42,13 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     }
 
     @Override
-    public final long insert(final Stmt stmt, final long txTimeout) {
+    public final long insert(final Stmt stmt, final int timeout) {
         try {
             final int insertRows;
             if (stmt instanceof SimpleStmt) {
-                insertRows = this.executeInsert((SimpleStmt) stmt, getSingleTimeout(txTimeout));
+                insertRows = this.executeInsert((SimpleStmt) stmt, timeout);
             } else if (stmt instanceof PairStmt) {
-                insertRows = this.executePariInsert((PairStmt) stmt, txTimeout);
+                insertRows = this.executePariInsert((PairStmt) stmt, timeout);
             } else {
                 throw _Exceptions.unexpectedStmt(stmt);
             }
@@ -141,6 +142,8 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
     /*################################## blow packet template ##################################*/
 
+    abstract Logger getLogger();
+
     abstract void bind(PreparedStatement stmt, int index, SqlType sqlDataType, Object nonNull)
             throws SQLException;
 
@@ -195,32 +198,26 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
 
     /**
-     * @see #insert(Stmt, long)
+     * @see #insert(Stmt, int)
      */
-    private int executePariInsert(final PairStmt stmt, final long txTimeout) throws SQLException {
-        int timeout;
-        final long startTime;
-        if (txTimeout > 0) {
-            timeout = getSingleTimeout(txTimeout);
-            startTime = System.currentTimeMillis();
-        } else {
-            timeout = 0;
-            startTime = -1L;
-        }
+    private int executePariInsert(final PairStmt stmt, final int timeout) throws SQLException {
+        final long startTime = System.currentTimeMillis();
+
         final int insertRows;
         insertRows = this.executeInsert(stmt.parentStmt(), timeout);
 
-        timeout = 0;
-        if (txTimeout > 0) {
-            final long restMillis;
-            restMillis = txTimeout - (System.currentTimeMillis() - startTime);
-            if (restMillis < 0L) {
-                throw _Exceptions.transactionTimeout(restMillis);
-            }
-            timeout = getSingleTimeout(restMillis);
+        final long restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime);
+        if (restMills < 1L) {
+            throw _Exceptions.timeout(timeout, restMills);
+        }
+        final int restSeconds;
+        if ((restMills % 1000L) == 0) {
+            restSeconds = (int) (restMills / 1000L);
+        } else {
+            restSeconds = (int) (restMills / 1000L) + 1;
         }
         final int childRows;
-        childRows = this.executeInsert(stmt.childStmt(), timeout);
+        childRows = this.executeInsert(stmt.childStmt(), restSeconds);
 
         if (childRows != insertRows) {
             throw parentChildRowsNotMatch(insertRows, childRows);

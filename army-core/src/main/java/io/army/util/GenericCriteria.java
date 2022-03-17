@@ -13,9 +13,9 @@ import io.army.modelgen._MetaBridge;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class CriteriaUtils {
+public abstract class GenericCriteria {
 
-    protected CriteriaUtils() {
+    protected GenericCriteria() {
         throw new UnsupportedOperationException();
     }
 

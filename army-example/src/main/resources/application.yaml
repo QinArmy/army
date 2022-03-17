@@ -7,17 +7,13 @@ spring:
       parameter-name: content
       media-types:
         json: application/json
-
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    example:
-      primary:
-        url: jdbc:mysql://localhost:3306/army_test
-        username: army_w
-        password: army123
+  profiles:
+    active: sync,mysql
 army:
   example:
     ddl:
       mode: UPDATE
-
+    current:
+      session:
+        context: io.army.boot.sync.SpringCurrentSessionContext
 

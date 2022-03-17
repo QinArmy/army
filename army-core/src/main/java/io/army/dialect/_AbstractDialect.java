@@ -962,7 +962,7 @@ public abstract class _AbstractDialect implements _Dialect {
             sqlBuilder.append(safeTableAlias)
                     .append(Constant.POINT);
         }
-        sqlBuilder.append(dialect.safeObjectName(updateTime.columnName()))
+        dialect.safeObjectName(updateTime.columnName(), sqlBuilder)
                 .append(Constant.SPACE_EQUAL);
 
         context.appendParam(ParamValue.build(updateTime.mappingType(), updateTimeValue));

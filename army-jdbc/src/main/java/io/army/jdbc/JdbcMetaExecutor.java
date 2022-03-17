@@ -4,6 +4,8 @@ import io.army.lang.Nullable;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -15,6 +17,8 @@ final class JdbcMetaExecutor implements MetaExecutor {
     static JdbcMetaExecutor create(Connection conn) {
         return new JdbcMetaExecutor(conn);
     }
+
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcMetaExecutor.class);
 
     private final Connection conn;
 
@@ -52,9 +56,20 @@ final class JdbcMetaExecutor implements MetaExecutor {
     @Override
     public void executeDdl(final List<String> ddlList) throws DataAccessException {
         try (Statement stmt = this.conn.createStatement()) {
-            for (String ddl : ddlList) {
+
+            // execute ddl
+            final int size = ddlList.size();
+            final StringBuilder builder = new StringBuilder(size * 40);
+            String ddl;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append("\n\n");
+                }
+                ddl = ddlList.get(i);
+                builder.append(ddl);
                 stmt.addBatch(ddl);
             }
+            LOG.info(builder.toString());
             stmt.executeBatch();
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);

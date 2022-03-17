@@ -186,7 +186,14 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
                 this.elementTypeList = Collections.emptyList();
             }
 
-            this.insertable = FieldMetaUtils.columnInsertable(this, column, isDiscriminator);
+            final Generator generator;
+            if (table instanceof ChildTableMeta && _MetaBridge.ID.equals(this.fieldName)) {
+                this.insertable = true;
+                generator = null;
+            } else {
+                generator = field.getAnnotation(Generator.class);
+                this.insertable = FieldMetaUtils.columnInsertable(this, generator, column, isDiscriminator);
+            }
             this.updateMode = FieldMetaUtils.columnUpdatable(this, column, isDiscriminator);
             this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);
             this.nullable = !_MetaBridge.RESERVED_PROPS.contains(this.fieldName)
@@ -194,8 +201,8 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
                     && column.nullable();
             this.defaultValue = column.defaultValue();
 
-            final Generator generator;
-            generator = this.javaType.getAnnotation(Generator.class);
+            this.codec = field.getAnnotation(Codec.class) != null;
+
             final GeneratorType generatorType;
             if (generator == null) {
                 this.generatorType = null;
@@ -210,9 +217,6 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
             } else {
                 throw _Exceptions.unexpectedEnum(generatorType);
             }
-
-
-            this.codec = field.getAnnotation(Codec.class) != null;
         } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {

@@ -3,7 +3,6 @@ package io.army.example.domain;
 import io.army.annotation.Column;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.example.VersionDomain;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

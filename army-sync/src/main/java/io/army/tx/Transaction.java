@@ -13,8 +13,6 @@ public interface Transaction extends GenericTransaction {
      */
     void rollback() throws TransactionException;
 
-    void flush() throws TransactionException;
-
     TransactionStatus status();
 
     Session session();

@@ -1,7 +1,8 @@
 package io.army.dialect.mysql;
 
 import io.army.annotation.*;
-import io.army.example.VersionDomain;
+import io.army.bean.FieldAccessBean;
+import io.army.example.domain.VersionDomain;
 import io.army.example.struct.QinArmy;
 
 import java.math.BigDecimal;
@@ -10,7 +11,7 @@ import java.time.*;
 import java.util.Set;
 
 @Table(name = "mysql_army_types", comment = "mysql types for army example")
-public class MySQLTypes extends VersionDomain {
+public class MySQLTypes extends VersionDomain implements FieldAccessBean {
 
     private static final String CHAR_TYPE = "io.army.mapping.optional.SQLCharType";
 

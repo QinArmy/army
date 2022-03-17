@@ -1,7 +1,6 @@
 package io.army.example.domain;
 
 import io.army.annotation.*;
-import io.army.example.VersionDomain;
 import io.army.example.struct.IdentityType;
 import io.army.example.struct.UserType;
 

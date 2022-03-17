@@ -1,8 +1,14 @@
 package io.army.tx.sync;
 
 import io.army.SessionException;
+import io.army.criteria.*;
+import io.army.domain.IDomain;
+import io.army.meta.TableMeta;
+import io.army.meta.UniqueFieldMeta;
 import io.army.sync.Session;
 import io.army.sync.SessionFactory;
+import io.army.sync.SyncSession;
+import io.army.sync._AbstractSyncSession;
 import io.army.tx.Transaction;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -13,6 +19,10 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.SmartTransactionObject;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @since 1.0
@@ -25,6 +35,8 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     private final boolean supportSavePoints;
 
     private String beanName;
+
+    private boolean wrapSession = true;
 
 
     public ArmyTransactionManager(SessionFactory sessionFactory) {
@@ -44,6 +56,14 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         //TransactionDefinitionHolder.registerTransactionManager(this.beanName, this.useSavepointForNestedTransaction());
     }
 
+
+    public final void setWrapSession(boolean wrapSession) {
+        this.wrapSession = wrapSession;
+    }
+
+    public final boolean isWrapSession() {
+        return this.wrapSession;
+    }
 
     /*################################## blow AbstractPlatformTransactionManager template method ##################################*/
 
@@ -89,6 +109,8 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             session = this.sessionFactory.builder()
                     .name(txName)
                     .build();
+            // bind to txObject
+            txObject.setSession(session);
 
             //3. get timeout seconds
             int timeoutSeconds;
@@ -103,10 +125,16 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                     .readonly(definition.isReadOnly())
                     .timeout(timeoutSeconds)
                     .build()
-                    .start();
+                    .start();//start transaction
 
-            //5. bind session
-            TransactionSynchronizationManager.bindResource(this.sessionFactory, txObject.setSession(session));
+            //5. bind current session
+            final SyncSession currentSession;
+            if (this.wrapSession) {
+                currentSession = new CurrentSession(session);
+            } else {
+                currentSession = session;
+            }
+            TransactionSynchronizationManager.bindResource(this.sessionFactory, currentSession);
 
         } catch (io.army.session.DataAccessException e) {
             throw new CannotCreateTransactionException("Could not open Army transaction", e);
@@ -219,10 +247,12 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
     }
 
+
     @Override
     protected final boolean useSavepointForNestedTransaction() {
         return this.supportSavePoints;
     }
+
 
 
 
@@ -243,12 +273,11 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
 
-        private Session setSession(final Session session) {
+        private void setSession(final Session session) {
             if (this.session != null) {
                 throw new IllegalStateException("session non-null.");
             }
             this.session = session;
-            return session;
         }
 
         private Session suspend() {
@@ -324,6 +353,137 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
     }//ArmyTransactionObject
+
+
+    private static final class CurrentSession extends _AbstractSyncSession {
+
+        private final Session session;
+
+
+        private CurrentSession(Session session) {
+            this.session = session;
+        }
+
+
+        @Override
+        public SessionFactory sessionFactory() {
+            return this.session.sessionFactory();
+        }
+
+        @Override
+        public String name() {
+            return this.session.name();
+        }
+
+        @Override
+        public boolean isReadonlySession() {
+            return this.session.isReadonlySession();
+        }
+
+        @Override
+        public boolean isReadOnlyStatus() {
+            return this.session.isReadOnlyStatus();
+        }
+
+        @Override
+        public boolean closed() {
+            return this.session.closed();
+        }
+
+        @Override
+        public boolean hasTransaction() {
+            return this.session.hasTransaction();
+        }
+
+        @Override
+        public void flush() throws SessionException {
+            this.session.flush();
+        }
+
+        @Override
+        public <T extends IDomain> TableMeta<T> table(Class<T> domainClass) {
+            return this.session.table(domainClass);
+        }
+
+
+        @Override
+        public <R extends IDomain> R get(TableMeta<R> table, Object id, Visible visible) {
+            return this.session.get(table, id, visible);
+        }
+
+        @Override
+        public <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
+                , Visible visible) {
+            return this.session.getByUnique(table, field, value, visible);
+        }
+
+        @Override
+        public Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+                , Visible visible) {
+            return this.session.selectOneAsMap(select, mapConstructor, visible);
+        }
+
+        @Override
+        public <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
+            return this.session.select(select, resultClass, listConstructor, visible);
+        }
+
+        @Override
+        public List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+                , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+            return this.session.selectAsMap(select, mapConstructor, listConstructor, visible);
+        }
+
+        @Override
+        public long insert(Insert insert, Visible visible) {
+            return this.session.insert(insert, visible);
+        }
+
+        @Override
+        public <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor
+                , Visible visible) {
+            return this.session.returningInsert(insert, resultClass, listConstructor, visible);
+        }
+
+        @Override
+        public long update(Update update, Visible visible) {
+            return this.session.update(update, visible);
+        }
+
+        @Override
+        public <R> List<R> returningUpdate(Update update, Class<R> resultClass, Supplier<List<R>> listConstructor
+                , Visible visible) {
+            return this.session.returningUpdate(update, resultClass, listConstructor, visible);
+        }
+
+        @Override
+        public long delete(Delete delete, Visible visible) {
+            return this.session.delete(delete, visible);
+        }
+
+        @Override
+        public <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Supplier<List<R>> listConstructor
+                , Visible visible) {
+            return this.session.returningDelete(delete, resultClass, listConstructor, visible);
+        }
+
+        @Override
+        public List<Long> batchUpdate(Update update, Visible visible) {
+            return this.session.batchUpdate(update, visible);
+        }
+
+        @Override
+        public List<Long> batchDelete(Delete delete, Visible visible) {
+            return this.session.batchDelete(delete, visible);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Wrapper[%s] of %s", System.identityHashCode(this), this.session);
+        }
+
+
+    }// CurrentSession
 
 
 }

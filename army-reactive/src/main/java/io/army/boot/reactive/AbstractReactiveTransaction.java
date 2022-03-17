@@ -17,7 +17,7 @@ abstract class AbstractReactiveTransaction extends AbstractGenericTransaction im
     final AtomicReference<TransactionStatus> status = new AtomicReference<>(TransactionStatus.NOT_ACTIVE);
 
     AbstractReactiveTransaction(TransactionOption option) {
-        super(option);
+        super(null);
     }
 
 

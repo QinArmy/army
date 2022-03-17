@@ -2,13 +2,21 @@ package io.army.datasource;
 
 public enum DataSourceRole {
 
-    PRIMARY,
-    SECONDARY,
-    TIMEOUT_SECONDARY;
+    PRIMARY("primary"),
+    SECONDARY("secondary"),
+    TIMEOUT_SECONDARY("timeout.secondary");
+
+    private final String tag;
+
+    DataSourceRole(String tag) {
+        this.tag = tag;
+    }
 
 
     @Override
-    public String toString() {
-        return this.name().toLowerCase();
+    public final String toString() {
+        return this.tag;
     }
+
+
 }

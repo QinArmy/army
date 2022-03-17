@@ -146,8 +146,8 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
             }
             //4. create SessionFactoryImpl instance
             this.executorFactory = executorFactory;
-            final SessionFactoryImpl sessionFactory;
-            sessionFactory = new SessionFactoryImpl(this);
+            final LocalSessionFactory sessionFactory;
+            sessionFactory = new LocalSessionFactory(this);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Created {}[{}]", SessionFactory.class.getName(), sessionFactory.name());
             }
@@ -218,7 +218,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     /**
      * @see #build()
      */
-    private static void initializingFactory(SessionFactoryImpl sessionFactory) throws SessionFactoryException {
+    private static void initializingFactory(LocalSessionFactory sessionFactory) throws SessionFactoryException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing {}[{}]", SessionFactory.class.getName(), sessionFactory.name());
         }
@@ -243,9 +243,9 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
     /**
-     * @see #initializingFactory(SessionFactoryImpl)
+     * @see #initializingFactory(LocalSessionFactory)
      */
-    private static void initializingSchema(final SessionFactoryImpl sessionFactory, final DdlMode ddlMode) {
+    private static void initializingSchema(final LocalSessionFactory sessionFactory, final DdlMode ddlMode) {
 
         final String msgPrefix;
         msgPrefix = String.format("Initializing schema of %s[%s],%s[%s]"
@@ -298,16 +298,6 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
                     //create ddl
                     final List<String> ddlList;
                     ddlList = sessionFactory.dialect.schemaDdl(schemaResult);
-                    // execute ddl
-                    final int size = ddlList.size();
-                    final StringBuilder builder = new StringBuilder(size * 40);
-                    for (int i = 0; i < size; i++) {
-                        if (i > 0) {
-                            builder.append("\n\n");
-                        }
-                        builder.append(ddlList.get(i));
-                    }
-                    LOG.info(builder.toString());
                     metaExecutor.executeDdl(ddlList);
                 }
                 break;
@@ -325,9 +315,9 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
     }
 
     /**
-     * @see #initializingSchema(SessionFactoryImpl, DdlMode)
+     * @see #initializingSchema(LocalSessionFactory, DdlMode)
      */
-    private static void validateSchema(SessionFactoryImpl sessionFactory, _SchemaResult schemaResult) {
+    private static void validateSchema(LocalSessionFactory sessionFactory, _SchemaResult schemaResult) {
 
         final StringBuilder builder = new StringBuilder()
                 .append(SessionFactory.class.getName())

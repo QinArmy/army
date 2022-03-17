@@ -5,6 +5,8 @@ import com.mysql.cj.MysqlType;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,10 +29,17 @@ final class MySQLExecutor extends JdbcStmtExecutor {
         return new MySQLExecutor(factory, conn);
     }
 
+    private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
+
     private MySQLExecutor(JdbcExecutorFactory factory, Connection conn) {
         super(factory, conn);
     }
 
+
+    @Override
+    Logger getLogger() {
+        return LOG;
+    }
 
     @Override
     void bind(final PreparedStatement stmt, final int index, final SqlType sqlDataType, final Object nonNull)

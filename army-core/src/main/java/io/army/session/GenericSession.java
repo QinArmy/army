@@ -1,13 +1,14 @@
 package io.army.session;
 
+import io.army.domain.IDomain;
+import io.army.meta.TableMeta;
+
 /**
  *
  */
 public interface GenericSession {
 
-    default boolean isReadOnlyStatus() {
-        throw new UnsupportedOperationException();
-    }
+    boolean isReadOnlyStatus();
 
     boolean isReadonlySession();
 
@@ -15,10 +16,13 @@ public interface GenericSession {
 
     boolean hasTransaction();
 
-    default String name() {
-        throw new UnsupportedOperationException();
-    }
+    String name();
 
     GenericSessionFactory sessionFactory();
+
+    /**
+     * @throws IllegalArgumentException throw,when not found {@link TableMeta}.
+     */
+    <T extends IDomain> TableMeta<T> table(Class<T> domainClass);
 
 }

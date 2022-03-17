@@ -1,4 +1,4 @@
-package io.army.example;
+package io.army.example.domain;
 
 public class Criteria {
 

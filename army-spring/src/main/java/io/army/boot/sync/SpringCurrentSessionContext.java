@@ -1,13 +1,13 @@
 package io.army.boot.sync;
 
 import io.army.NoCurrentSessionException;
-import io.army.sync.CurrentSession;
 import io.army.sync.CurrentSessionContext;
 import io.army.sync.SessionFactory;
+import io.army.sync.SyncSession;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @SuppressWarnings("unused")
-final class SpringCurrentSessionContext implements CurrentSessionContext {
+public final class SpringCurrentSessionContext implements CurrentSessionContext {
 
 
     public static SpringCurrentSessionContext create(SessionFactory factory) {
@@ -26,19 +26,19 @@ final class SpringCurrentSessionContext implements CurrentSessionContext {
     }
 
     @Override
-    public CurrentSession session() throws NoCurrentSessionException {
+    public SyncSession currentSession() throws NoCurrentSessionException {
         final Object currentSession;
         currentSession = TransactionSynchronizationManager.getResource(this.sessionFactory);
-        if (!(currentSession instanceof CurrentSession)) {
+        if (!(currentSession instanceof SyncSession)) {
             throw new NoCurrentSessionException("no current session");
         }
-        return (CurrentSession) currentSession;
+        return (SyncSession) currentSession;
     }
 
 
     @Override
     public boolean hasCurrentSession() {
-        return TransactionSynchronizationManager.getResource(this.sessionFactory) instanceof CurrentSession;
+        return TransactionSynchronizationManager.getResource(this.sessionFactory) instanceof SyncSession;
     }
 
 

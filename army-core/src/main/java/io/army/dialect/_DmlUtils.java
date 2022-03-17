@@ -116,6 +116,8 @@ public abstract class _DmlUtils {
         int batch = 0;
         final Map<FieldMeta<?>, _Expression> expMap = context.commonExpMap();
         final boolean mockEnvironment = dialect instanceof _MockDialects;
+        final NullHandleMode nullHandleMode = context.nullHandle();
+
         _Expression expression;
         GeneratorType generatorType;
         Object value;
@@ -144,6 +146,8 @@ public abstract class _DmlUtils {
                     } else {
                         blockContext.appendParam(ParamValue.build(field, value)); // parameter append block context
                     }
+                } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
+                    builder.append(Constant.SPACE_DEFAULT);
                 } else if (field.nullable()) {
                     builder.append(Constant.SPACE_NULL);
                 } else if ((generatorType = field.generatorType()) == null) {
@@ -156,10 +160,10 @@ public abstract class _DmlUtils {
                     }
                 } else if (generatorType != GeneratorType.POST) {
                     throw _Exceptions.unexpectedEnum(generatorType);
-                } else if (childBlock && field instanceof PrimaryFieldMeta) {
+                } else if (!(field instanceof PrimaryFieldMeta)) {
+                    throw new MetaException(String.format("%s generatorType error.", field));
+                } else if (childBlock) {
                     blockContext.appendParam(new DelayIdParamValue(field, domain)); // parameter append block context
-                } else {
-                    throw new IllegalArgumentException("childBlock or context error.");
                 }
                 index++;
             }

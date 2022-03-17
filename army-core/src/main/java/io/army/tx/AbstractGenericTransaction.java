@@ -1,6 +1,7 @@
 package io.army.tx;
 
 import io.army.lang.Nullable;
+import io.army.util._Exceptions;
 
 public abstract class AbstractGenericTransaction implements GenericTransaction {
 
@@ -12,19 +13,23 @@ public abstract class AbstractGenericTransaction implements GenericTransaction {
 
     protected final long timeoutMills;
 
-    protected long startMills;
+    protected final long startMills;
 
     protected AbstractGenericTransaction(final TransactionOptions options) {
         this.readonly = options.readonly;
         this.isolation = options.isolation;
         assert this.isolation != null;
-        this.name = options.name;
+
+        final String name = options.name;
+        this.name = name == null ? "unnamed" : name;
 
         final int timeout = options.timeout;
         if (timeout > 0) {
             this.timeoutMills = timeout * 1000L;
+            this.startMills = System.currentTimeMillis();
         } else {
-            this.timeoutMills = -1L;
+            this.timeoutMills = -1;
+            this.startMills = -1L;
         }
     }
 
@@ -45,21 +50,22 @@ public abstract class AbstractGenericTransaction implements GenericTransaction {
     }
 
     @Override
-    public final int timeToLiveInSeconds() throws TransactionTimeOutException {
-        final long restMills;
-        restMills = timeToLiveInMillis();
-        return (int) ((restMills % 1000L == 0) ? (restMills / 1000L) : (restMills / 1000L + 1L));
-    }
-
-    @Override
-    public final long timeToLiveInMillis() throws TransactionTimeOutException {
-        final long restMills;
-        restMills = restTimeoutMills();
-        if (restMills < 0L) {
-            String m = String.format("%s timeout,rest %s mills.", this, restMills);
-            throw new TransactionTimeOutException(m);
+    public final int nextTimeout() throws TransactionTimeOutException {
+        final long timeoutMills = this.timeoutMills;
+        if (timeoutMills < 0) {
+            return 0;
         }
-        return restMills;
+        final long restMills = System.currentTimeMillis() - this.startMills;
+        if (restMills < 1L) {
+            throw _Exceptions.timeout((int) (timeoutMills / 1000L), restMills);
+        }
+        final int timeout;
+        if (restMills % 1000L == 0) {
+            timeout = (int) (restMills / 1000L);
+        } else {
+            timeout = (int) (restMills / 1000L) + 1;
+        }
+        return timeout;
     }
 
 
@@ -69,22 +75,8 @@ public abstract class AbstractGenericTransaction implements GenericTransaction {
                 , this.getClass().getName(), this.name
                 , this.session().name(), this.status()
                 , this.isolation, this.readonly
-                , this.restTimeoutMills());
+                , System.currentTimeMillis() - this.startMills);
     }
 
-
-    private long restTimeoutMills() {
-        final long restMills;
-        final long startMills = this.startMills;
-        if (startMills < 0) {
-            if (status() != TransactionStatus.NOT_ACTIVE) {
-                throw new IllegalStateException(String.format("startMills[%s] error.", startMills));
-            }
-            restMills = (int) (this.timeoutMills / 1000L);
-        } else {
-            restMills = this.timeoutMills - (System.currentTimeMillis() - startMills);
-        }
-        return restMills;
-    }
 
 }

@@ -6,7 +6,6 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
-import io.army.session.AbstractGenericSession;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,13 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-abstract class AbstractSyncSession extends AbstractGenericSession implements SyncSession {
+public abstract class _AbstractSyncSession implements SyncSession {
 
 
     @Nullable
     @Override
-    public final <R extends IDomain> R get(TableMeta<R> tableMeta, Object id) {
-        return this.get(tableMeta, id, Visible.ONLY_VISIBLE);
+    public final <R extends IDomain> R get(TableMeta<R> table, Object id) {
+        return this.get(table, id, Visible.ONLY_VISIBLE);
     }
 
     @Nullable

@@ -7,6 +7,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.CodeEnumType;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
@@ -96,7 +97,10 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                     , Generator.class.getName(), GeneratorType.POST, _MetaBridge.ID);
             throw new MetaException(m);
         }
-
+        if (field.insertable()) {
+            String m = String.format("%s insertable error.", field);
+            throw new MetaException(m);
+        }
 
     }
 
@@ -151,26 +155,26 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         return inheritance != null && fieldMeta.fieldName().equals(inheritance.value());
     }
 
-    static boolean columnInsertable(FieldMeta<?> field, final Column column, boolean isDiscriminator) {
+    static boolean columnInsertable(FieldMeta<?> field, @Nullable Generator generator
+            , final Column column, final boolean isDiscriminator) {
         final boolean insertable;
-        final Generator generator;
-        generator = field.javaType().getAnnotation(Generator.class);
-        if (generator != null) {
+        if (generator == null) {
+            insertable = isDiscriminator
+                    || _MetaBridge.RESERVED_PROPS.contains(field.fieldName())
+                    || column.insertable();
+        } else {
             switch (generator.type()) {
                 case PRECEDE:
                     insertable = true;
                     break;
                 case POST:
                     // child insertable
-                    insertable = field.tableMeta().javaType().getAnnotation(DiscriminatorValue.class) != null;
+                    insertable = field.tableMeta() instanceof ChildTableMeta;
                     break;
                 default:
                     throw _Exceptions.unexpectedEnum(generator.type());
             }
-        } else {
-            insertable = isDiscriminator
-                    || _MetaBridge.RESERVED_PROPS.contains(field.fieldName())
-                    || column.insertable();
+
         }
         return insertable;
     }

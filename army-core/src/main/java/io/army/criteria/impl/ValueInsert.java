@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ObjectWrapper;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.Insert;
-import io.army.criteria.WithElement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
@@ -30,6 +27,8 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
 
     private boolean migration;
+
+    private NullHandleMode nullHandleMode = NullHandleMode.INSERT_DEFAULT;
 
     private boolean prepared;
 
@@ -58,6 +57,12 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
         return (OR) this;
     }
 
+    @Override
+    public final OR nullHandle(NullHandleMode mode) {
+        Objects.requireNonNull(mode);
+        this.nullHandleMode = mode;
+        return (OR) this;
+    }
 
     @Override
     public final SR set(final FieldMeta<? super T> field, final @Nullable Object paramOrExp) {
@@ -198,6 +203,13 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
     @Override
     public final boolean isMigration() {
         return this.migration;
+    }
+
+    @Override
+    public final NullHandleMode nullHandle() {
+        final NullHandleMode mode = this.nullHandleMode;
+        assert mode != null;
+        return mode;
     }
 
     @Override

@@ -44,20 +44,9 @@ public interface SessionFactory extends GenericSessionFactory, AutoCloseable {
         SessionBuilder name(@Nullable String name);
 
         /**
-         * Optional,default is {@code false}
-         */
-        SessionBuilder currentSession(boolean current);
-
-        /**
          * Optional,default is {@link SessionFactory#readonly()}
          */
-        SessionBuilder readOnly(boolean readOnly);
-
-        /**
-         * Optional,default is {@code true}
-         */
-        @Deprecated
-        SessionBuilder resetConnection(boolean reset);
+        SessionBuilder readonly(boolean readonly);
 
         Session build() throws SessionException;
 

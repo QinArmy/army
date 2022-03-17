@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class AbstractRmSession extends AbstractSyncSession
+abstract class AbstractRmSession extends _AbstractSyncSession
         implements GenericSyncRmSession {
 
     final StmtExecutor stmtExecutor;
@@ -153,7 +153,7 @@ abstract class AbstractRmSession extends AbstractSyncSession
         if (tx == null) {
             liveInsSeconds = -1;
         } else {
-            liveInsSeconds = tx.timeToLiveInSeconds();
+            liveInsSeconds = tx.nextTimeout();
         }
         return liveInsSeconds;
     }

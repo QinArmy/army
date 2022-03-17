@@ -34,6 +34,13 @@ public interface Insert extends Statement {
     interface OptionClause<OR> {
 
         OR migration();
+
+        /**
+         * <p>
+         * When invoking {@link InsertIntoClause#insertInto(TableMeta)} and appropriate field value is null,mode is valid.
+         * </p>
+         */
+        OR nullHandle(NullHandleMode mode);
     }
 
     /**

@@ -8,6 +8,8 @@ public interface Constant {
 
     String SPACE_NULL = " NULL";
 
+    String SPACE_DEFAULT = " DEFAULT";
+
     String SPACE_NOT_NULL = " NOT NULL";
 
     String FORBID_ALIAS = "_army_";

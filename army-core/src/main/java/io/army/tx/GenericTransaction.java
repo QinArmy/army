@@ -19,10 +19,11 @@ public interface GenericTransaction {
 
     boolean nonActive();
 
+    /**
+     * @return the next query timeout limit in seconds; zero means there is no limit
+     */
+    int nextTimeout() throws TransactionTimeOutException;
 
-    int timeToLiveInSeconds() throws TransactionTimeOutException;
-
-    long timeToLiveInMillis() throws TransactionTimeOutException;
 
     boolean rollbackOnly();
 

@@ -27,8 +27,7 @@ public interface CurrentSessionContext {
      * @throws NoCurrentSessionException Typically indicates an issue
      *                                   locating or creating the current session.
      */
-    CurrentSession session() throws NoCurrentSessionException;
-
+    SyncSession currentSession() throws NoCurrentSessionException;
 
 
 }

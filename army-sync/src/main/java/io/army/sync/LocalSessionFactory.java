@@ -1,10 +1,10 @@
 package io.army.sync;
 
 import io.army.ArmyKeys;
+import io.army.CreateSessionException;
 import io.army.SessionException;
 import io.army.SessionFactoryException;
 import io.army.bean.ArmyBean;
-import io.army.cache.SessionCache;
 import io.army.cache.SessionCacheFactory;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
@@ -13,6 +13,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.AbstractSessionFactory;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.ExecutorFactory;
+import io.army.sync.executor.StmtExecutor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,7 +23,7 @@ import java.util.Objects;
 /**
  * This class is a implementation of {@link SessionFactory}
  */
-final class SessionFactoryImpl extends AbstractSessionFactory implements SessionFactory {
+final class LocalSessionFactory extends AbstractSessionFactory implements SessionFactory {
 
     final ExecutorFactory executorFactory;
 
@@ -36,13 +37,14 @@ final class SessionFactoryImpl extends AbstractSessionFactory implements Session
     private boolean closed;
 
 
-    SessionFactoryImpl(FactoryBuilderImpl builder) throws SessionFactoryException {
+    LocalSessionFactory(FactoryBuilderImpl builder) throws SessionFactoryException {
         super(builder);
 
         this.executorFactory = Objects.requireNonNull(builder.executorFactory);
         this.dialect = _DialectFactory.createDialect(this);
         this.currentSessionContext = getCurrentSessionContext();
-        this.sessionCacheFactory = SessionCacheFactory.build(this);
+        //this.sessionCacheFactory = SessionCacheFactory.build(this);
+        this.sessionCacheFactory = null;
     }
 
 
@@ -85,7 +87,7 @@ final class SessionFactoryImpl extends AbstractSessionFactory implements Session
 
     @Override
     public SessionFactory.SessionBuilder builder() {
-        return null;
+        return new LocalSessionBuilder(this);
     }
 
 
@@ -97,30 +99,15 @@ final class SessionFactoryImpl extends AbstractSessionFactory implements Session
 
     @Override
     public String toString() {
-        return String.format("%s[%s] readonly:%s", SessionFactory.class.getName(), this.name, this.readOnly);
+        return String.format("%s[%s] readonly:%s.", SessionFactory.class.getName(), this.name, this.readonly);
     }
 
     /*################################## blow package method ##################################*/
-
-    final SessionCache createSessionCache(Session session) {
-        return this.sessionCacheFactory.createSessionCache(session);
-    }
 
 
     /*################################## blow private method ##################################*/
 
 
-    private void initializeArmyBeans() {
-        ArmyBean armyBean = null;
-        try {
-            for (ArmyBean bean : this.env.getAllBean().values()) {
-                armyBean = bean;
-                bean.initializing(this);
-            }
-        } catch (Exception e) {
-            throw new SessionFactoryException(e, "ArmyBean initializing occur error,ArmyBean[%s].", armyBean);
-        }
-    }
 
     private void destroyArmyBeans() {
         ArmyBean armyBean = null;
@@ -172,98 +159,61 @@ final class SessionFactoryImpl extends AbstractSessionFactory implements Session
         }
     }
 
-    /*################################## blow instance inner class  ##################################*/
-
-    final class SessionBuilderImpl implements SessionFactory.SessionBuilder {
-
-        private final SessionFactoryImpl sessionFactory;
-
-        private boolean currentSession;
-
-        private boolean readOnly = SessionFactoryImpl.this.readOnly;
-
-        private boolean resetConnection = true;
-
-        private SessionBuilderImpl(SessionFactoryImpl sessionFactory) {
-            this.sessionFactory = sessionFactory;
-        }
-
-        @Override
-        public SessionBuilder name(String name) {
-            return null;
-        }
-
-        @Override
-        public SessionFactory.SessionBuilder currentSession(boolean current) {
-            this.currentSession = current;
-            return this;
-        }
-
-        @Override
-        public final SessionBuilder readOnly(boolean readOnly) {
-            this.readOnly = readOnly;
-            return this;
-        }
-
-        @Override
-        public SessionBuilder resetConnection(boolean reset) {
-            this.resetConnection = reset;
-            return this;
-        }
-
-        public final boolean currentSession() {
-            return currentSession;
-        }
-
-        public final boolean readOnly() {
-            return this.readOnly;
-        }
-
-        public final boolean resetConnection() {
-            return resetConnection;
-        }
-
-        @Override
-        public Session build() throws SessionException {
-//            final boolean current = this.currentSession;
-//            try {
-//                if (SessionFactoryImpl.this.readOnly && !this.readOnly) {
-//                    throw new CreateSessionException(ErrorCode.SESSION_CREATE_ERROR
-//                            , "%s can't create create non-readonly TmSession.", SessionFactoryImpl.this);
-//                }
-//                final Session session = new SessionImpl(SessionFactoryImpl.this
-//                        , SessionFactoryImpl.this.dataSource.getConnection(), this);
-//                if (current) {
-//                    SessionFactoryImpl.this.currentSessionContext.currentSession(session);
-//                }
-//                return session;
-//            } catch (SQLException e) {
-//                throw new CreateSessionException(ErrorCode.CANNOT_GET_CONN, e
-//                        , "Could not create Army-managed session,because can't get connection.");
-//            } catch (IllegalStateException e) {
-//                if (current) {
-//                    throw new CreateSessionException(ErrorCode.DUPLICATION_CURRENT_SESSION, e
-//                            , "Could not create Army-managed session,because duplication current session.");
-//                } else {
-//                    throw new CreateSessionException(ErrorCode.ACCESS_ERROR, e
-//                            , "Could not create Army-managed session.");
-//                }
-//
-//            }
-            return null;
-
-
-        }
-
-
-    }
-
 
     private static SessionFactoryException noCurrentSessionContextFactoryMethod(String className, @Nullable Throwable cause) {
         String m = String.format("%s don't definite public static %s create(%s) method."
                 , className, className, SessionFactory.class.getName());
         return new SessionFactoryException(m, cause);
     }
+
+
+    /*################################## blow instance inner class  ##################################*/
+
+    static final class LocalSessionBuilder implements SessionFactory.SessionBuilder {
+
+        final LocalSessionFactory sessionFactory;
+
+        StmtExecutor stmtExecutor;
+
+        String name;
+
+        boolean readonly;
+
+        private LocalSessionBuilder(LocalSessionFactory sessionFactory) {
+            this.sessionFactory = sessionFactory;
+            this.readonly = sessionFactory.readonly;
+        }
+
+        @Override
+        public SessionBuilder name(@Nullable String name) {
+            this.name = name;
+            return this;
+        }
+
+        @Override
+        public SessionBuilder readonly(boolean readonly) {
+            this.readonly = readonly;
+            return this;
+        }
+
+        @Override
+        public Session build() throws SessionException {
+            if (!this.readonly && this.sessionFactory.readonly) {
+                String m = String.format("%s couldn't create non-readonly %s."
+                        , this.sessionFactory, Session.class.getName());
+                throw new CreateSessionException(m);
+            }
+            try {
+                this.stmtExecutor = this.sessionFactory.executorFactory.createStmtExecutor();
+            } catch (DataAccessException e) {
+                throw new CreateSessionException("create session occur error.", e);
+            }
+            return new LocalSession(this);
+
+        }
+
+
+    }//LocalSessionBuilder
 
 
 }

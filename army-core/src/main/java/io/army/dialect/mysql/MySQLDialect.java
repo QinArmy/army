@@ -15,6 +15,8 @@ import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 abstract class MySQLDialect extends _AbstractDialect {
@@ -28,7 +30,23 @@ abstract class MySQLDialect extends _AbstractDialect {
 
     @Override
     public final List<String> startTransaction(final Isolation isolation, final boolean readonly) {
-        return null;
+        final String startStmt;
+        if (readonly) {
+            startStmt = "START TRANSACTION READ ONLY";
+        } else {
+            startStmt = "START TRANSACTION READ WRITE";
+        }
+        List<String> stmtList;
+        if (isolation == Isolation.DEFAULT) {
+            stmtList = Collections.singletonList(startStmt);
+        } else {
+            stmtList = new ArrayList<>(2);
+            // no key word 'SESSION' or 'GLOBAL',so Next transaction only
+            stmtList.add("SET TRANSACTION ISOLATION LEVEL " + isolation.command);
+            stmtList.add(startStmt);
+            stmtList = Collections.unmodifiableList(stmtList);
+        }
+        return stmtList;
     }
 
     @Override

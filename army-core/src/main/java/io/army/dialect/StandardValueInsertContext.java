@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
+import io.army.criteria.NullHandleMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
@@ -45,6 +46,8 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     final List<ObjectWrapper> domainList;
 
+    final NullHandleMode nullHandleMode;
+
     private final PrimaryFieldMeta<?> returnId;
 
     private final ChildBlock childBlock;
@@ -55,6 +58,12 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
         this.commonExpMap = insert.commonExpMap();
         this.domainList = insert.domainList();
+
+        if (insert.fieldList().size() == 0) {
+            this.nullHandleMode = insert.nullHandle();
+        } else {
+            this.nullHandleMode = NullHandleMode.INSERT_NULL;
+        }
 
         final TableMeta<?> table = insert.table();
         if (table instanceof ChildTableMeta) {
@@ -135,6 +144,11 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     @Override
     public SingleTableMeta<?> table() {
         return this.table;
+    }
+
+    @Override
+    public NullHandleMode nullHandle() {
+        return null;
     }
 
     @Override

@@ -14,7 +14,7 @@ import io.army.session.AbstractGenericSession;
 import io.army.tx.GenericTransaction;
 import io.army.tx.TransactionNotCloseException;
 import io.army.tx.reactive.GenericReactiveTransaction;
-import io.army.util.CriteriaUtils;
+import io.army.util.GenericCriteria;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -162,7 +162,7 @@ abstract class AbstractGenericReactiveSession extends AbstractGenericSession imp
 
     final <R extends IDomain> Mono<R> doGet(TableMeta<R> tableMeta, Object id) {
         // 1. parse  sql
-        Select select = CriteriaUtils.createSelectDomainById(tableMeta, id);
+        Select select = GenericCriteria.createSelectDomainById(tableMeta, id);
         // 2. execute sql
         return this.selectOne(select, tableMeta.javaType())
                 // 3. cache domain by id
@@ -173,7 +173,7 @@ abstract class AbstractGenericReactiveSession extends AbstractGenericSession imp
     final <R extends IDomain> Mono<R> doGetByUnique(TableMeta<R> tableMeta, List<String> propNameList
             , List<Object> valueList, UniqueKey uniqueKey) {
         // 1. create sql
-        Select select = CriteriaUtils.createSelectDomainByUnique(tableMeta, propNameList, valueList);
+        Select select = GenericCriteria.createSelectDomainByUnique(tableMeta, propNameList, valueList);
         // 2. execute sql
         return this.selectOne(select, tableMeta.javaType())
                 // 3. cache domain by unique

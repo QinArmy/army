@@ -1,6 +1,5 @@
 package io.army.sync;
 
-import io.army.SessionException;
 import io.army.session.DataAccessException;
 import io.army.tx.*;
 
@@ -8,11 +7,11 @@ import java.util.List;
 
 final class LocalTransaction extends AbstractGenericTransaction implements Transaction {
 
-    final SessionImpl session;
+    final LocalSession session;
 
     private TransactionStatus status;
 
-    LocalTransaction(final SessionImpl.LocalTransactionBuilder builder) {
+    LocalTransaction(final LocalSession.LocalTransactionBuilder builder) {
         super(builder);
         this.session = builder.session;
         this.status = TransactionStatus.NOT_ACTIVE;
@@ -46,8 +45,7 @@ final class LocalTransaction extends AbstractGenericTransaction implements Trans
             throw new IllegalTransactionStateException(m);
         }
         try {
-            this.startMills = System.currentTimeMillis();
-            final SessionImpl session = this.session;
+            final LocalSession session = this.session;
             final List<String> stmtList;
             stmtList = session.sessionFactory.dialect.startTransaction(this.isolation, this.readonly);
             session.stmtExecutor.executeBatch(stmtList);
@@ -66,8 +64,8 @@ final class LocalTransaction extends AbstractGenericTransaction implements Trans
             throw new IllegalTransactionStateException(m);
         }
         this.status = TransactionStatus.COMMITTING;
+        final LocalSession session = this.session;
         try {
-            final SessionImpl session = this.session;
             session.flush();
             session.stmtExecutor.execute("COMMIT");
             this.status = TransactionStatus.COMMITTED;
@@ -77,7 +75,12 @@ final class LocalTransaction extends AbstractGenericTransaction implements Trans
         } catch (Throwable e) {
             this.status = TransactionStatus.FAILED_COMMIT;
             throw e;
+        } finally {
+            if (this.status != TransactionStatus.COMMITTING) {
+                session.endTransaction(this);
+            }
         }
+
     }
 
     @Override
@@ -86,8 +89,8 @@ final class LocalTransaction extends AbstractGenericTransaction implements Trans
             case ACTIVE:
             case MARKED_ROLLBACK: {
                 this.status = TransactionStatus.ROLLING_BACK;
+                final LocalSession session = this.session;
                 try {
-                    final SessionImpl session = this.session;
                     session.clearChangedCache(this);
                     session.stmtExecutor.execute("ROLLBACK");
                     this.status = TransactionStatus.ROLLED_BACK;
@@ -97,6 +100,10 @@ final class LocalTransaction extends AbstractGenericTransaction implements Trans
                 } catch (Throwable e) {
                     this.status = TransactionStatus.FAILED_ROLLBACK;
                     throw e;
+                } finally {
+                    if (this.status != TransactionStatus.ROLLING_BACK) {
+                        session.endTransaction(this);
+                    }
                 }
             }
             break;
@@ -176,15 +183,6 @@ final class LocalTransaction extends AbstractGenericTransaction implements Trans
             }
         }
 
-    }
-
-    @Override
-    public void flush() throws TransactionException {
-        try {
-            this.session.flush();
-        } catch (SessionException e) {
-            throw new TransactionUsageException("flush session cache occur error.", e);
-        }
     }
 
 

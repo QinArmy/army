@@ -49,7 +49,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     protected final FieldValuesGenerator fieldValuesGenerator;
 
-    protected final boolean readOnly;
+    protected final boolean readonly;
 
     protected final boolean supportSessionCache;
 
@@ -71,7 +71,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
         this.fieldGeneratorMap = Objects.requireNonNull(support.generatorMap);
 
         this.subQueryInsertMode = env.get(ArmyKeys.SUBQUERY_INSERT_MODE, SubQueryInsertMode.class, SubQueryInsertMode.ONLY_MIGRATION);
-        this.readOnly = env.get(ArmyKeys.READ_ONLY, Boolean.class, Boolean.FALSE);
+        this.readonly = env.get(ArmyKeys.READ_ONLY, Boolean.class, Boolean.FALSE);
 
         this.zoneOffset = support.zoneOffset;
 
@@ -110,7 +110,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
     @Nullable
     @Override
     public final <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
-        return (TableMeta<T>) tableMap.get(domainClass);
+        return (TableMeta<T>) this.tableMap.get(domainClass);
     }
 
     @Nullable
@@ -128,7 +128,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     @Override
     public final boolean readonly() {
-        return this.readOnly;
+        return this.readonly;
     }
 
     @Override

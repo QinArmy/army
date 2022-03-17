@@ -21,7 +21,6 @@ import java.util.function.Supplier;
  * This interface is base interface of below interface:
  *     <ul>
  *         <li>{@link Session}</li>
- *         <li>{@link CurrentSession}</li>
  *     </ul>
  * </p>
  */
@@ -34,7 +33,7 @@ public interface SyncSession extends GenericSession {
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R extends IDomain> R get(TableMeta<R> tableMeta, Object id);
+    <R extends IDomain> R get(TableMeta<R> table, Object id);
 
     /**
      * @param <R> representing select result Java Type.

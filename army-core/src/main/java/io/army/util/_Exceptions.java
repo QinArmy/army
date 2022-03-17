@@ -45,11 +45,10 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static TimeoutException timeout(int timeout, long overspendMills) {
-        final long overspend = Math.abs(overspendMills);
+    public static TransactionTimeOutException timeout(int timeout, long restMills) {
         String m;
-        m = String.format("timout[%s] seconds,but overspend %s millis", timeout, overspend);
-        throw new TimeoutException(m, overspend);
+        m = String.format("Expected completion in %s seconds,but rest %s millis", timeout, restMills);
+        throw new TransactionTimeOutException(m);
     }
 
     public static ArmyException notSupportDialectMode(Dialect dialect, ServerMeta serverMeta) {

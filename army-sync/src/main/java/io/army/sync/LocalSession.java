@@ -15,52 +15,65 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
+import io.army.session.ExecutorExecutionException;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.StmtExecutor;
 import io.army.tx.*;
-import io.army.util.CriteriaUtils;
+import io.army.util.GenericCriteria;
 import io.army.util._Exceptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-final class SessionImpl extends AbstractSyncSession implements Session {
+final class LocalSession extends _AbstractSyncSession implements Session {
 
-    private final String name;
+    private static final Logger LOG = LoggerFactory.getLogger(LocalSession.class);
 
-    final SessionFactoryImpl sessionFactory;
+    final String name;
+
+    final LocalSessionFactory sessionFactory;
 
     final StmtExecutor stmtExecutor;
 
-    private final boolean currentSession;
-
     private final SessionCache sessionCache;
 
-    private final boolean readonly;
+    final boolean readonly;
 
     private boolean onlySupportVisible;
 
     private boolean dontSupportSubQueryInsert;
 
-    private Transaction transaction;
+    private LocalTransaction transaction;
 
     private boolean closed;
 
-    SessionImpl(final SessionFactoryImpl sessionFactory, final SessionFactoryImpl.SessionBuilderImpl builder) {
-        this.name = "unnamed";
-        this.sessionFactory = sessionFactory;
-        this.stmtExecutor = sessionFactory.executorFactory.createStmtExecutor();
-        this.currentSession = builder.currentSession();
-        this.readonly = builder.readOnly();
-        if (sessionFactory.supportSessionCache()) {
-            this.sessionCache = sessionFactory.createSessionCache(this);
+    LocalSession(final LocalSessionFactory.LocalSessionBuilder builder) {
+        final String name = builder.name;
+        if (name == null) {
+            this.name = "unnamed";
         } else {
-            this.sessionCache = null;
+            this.name = name;
         }
+        this.sessionFactory = builder.sessionFactory;
+        this.stmtExecutor = builder.stmtExecutor;
+        assert this.stmtExecutor != null;
+        this.readonly = builder.readonly;
+//        if (sessionFactory.supportSessionCache()) {
+//            this.sessionCache = this.sessionFactory.createSessionCache(this);
+//        } else {
+//            this.sessionCache = null;
+//        }
+        this.sessionCache = null;
     }
 
+    @Override
+    public String name() {
+        return this.name;
+    }
 
     @Override
     public SessionFactory sessionFactory() {
@@ -68,9 +81,25 @@ final class SessionImpl extends AbstractSyncSession implements Session {
     }
 
     @Override
-    public boolean isReadonlySession() {
+    public <T extends IDomain> TableMeta<T> table(Class<T> domainClass) {
+        final TableMeta<T> table;
+        table = this.sessionFactory.tableMeta(domainClass);
+        if (table == null) {
+            String m = String.format("Not found %s for %s.", TableMeta.class.getName(), domainClass.getName());
+            throw new IllegalArgumentException(m);
+        }
+        return table;
+    }
+
+    @Override
+    public boolean isReadOnlyStatus() {
         final Transaction tx = this.transaction;
         return this.readonly || (tx != null && tx.readOnly());
+    }
+
+    @Override
+    public boolean isReadonlySession() {
+        return this.readonly;
     }
 
 
@@ -87,7 +116,7 @@ final class SessionImpl extends AbstractSyncSession implements Session {
         }
 
         // 1. create sql
-        Select select = CriteriaUtils.createSelectDomainById(table, id);
+        Select select = GenericCriteria.createSelectDomainById(table, id);
         // 2. execute sql
         T domain = this.selectOne(select, table.javaType(), visible);
 
@@ -143,7 +172,15 @@ final class SessionImpl extends AbstractSyncSession implements Session {
                 throw _Exceptions.unexpectedStatement(insert);
             }
             final Transaction tx = this.transaction;
-            return stmtExecutor.insert(stmt, tx == null ? 0L : tx.timeToLiveInMillis());
+            final long affectedRows;
+            affectedRows = stmtExecutor.insert(stmt, tx == null ? 0 : tx.nextTimeout());
+            if (insert instanceof _ValuesInsert
+                    && affectedRows != ((_ValuesInsert) insert).domainList().size()) {
+                String m = String.format("value list size is %s,but affected rows[%s]"
+                        , ((_ValuesInsert) insert).domainList().size(), affectedRows);
+                throw new ExecutorExecutionException(m);
+            }
+            return affectedRows;
         } catch (ArmyException e) {
             throw this.sessionFactory.exceptionFunction().apply(e);
         } catch (RuntimeException e) {
@@ -227,8 +264,7 @@ final class SessionImpl extends AbstractSyncSession implements Session {
     @Override
     public TransactionBuilder builder() {
         if (this.transaction != null) {
-            String m = String.format("%s duplication transaction.", this);
-            throw new DuplicationSessionTransaction(m);
+            throw duplicationTransaction(this);
         }
         return new LocalTransactionBuilder(this);
     }
@@ -263,8 +299,11 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
     @Override
     public String toString() {
-        return String.format("%s[%s] readonly[%s] %s.", Session.class.getName()
-                , this.name, this.readonly, this.transaction);
+        return String.format("%s[%s] hash:%s readonly:%s transaction non-null:%s."
+                , Session.class.getName(), this.name
+                , System.identityHashCode(this)
+                , this.readonly
+                , this.transaction != null);
     }
 
     /*################################## blow package method ##################################*/
@@ -272,6 +311,24 @@ final class SessionImpl extends AbstractSyncSession implements Session {
     void clearChangedCache(final LocalTransaction transaction) {
 
         //TODO
+    }
+
+    void endTransaction(final LocalTransaction transaction) {
+        if (this.transaction != transaction) {
+            throw new IllegalArgumentException("transaction not match.");
+        }
+        final TransactionStatus status = transaction.status();
+        switch (status) {
+            case ROLLED_BACK:
+            case COMMITTED:
+            case FAILED_COMMIT:
+            case FAILED_ROLLBACK:
+                this.transaction = null;
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("transaction status[%s] error.", status));
+        }
+
     }
 
 
@@ -308,6 +365,12 @@ final class SessionImpl extends AbstractSyncSession implements Session {
     }
 
 
+    private static DuplicationSessionTransaction duplicationTransaction(LocalSession session) {
+        String m = String.format("%s duplication transaction.", session);
+        throw new DuplicationSessionTransaction(m);
+    }
+
+
     /*################################## blow private multiInsert method ##################################*/
 
 
@@ -321,10 +384,10 @@ final class SessionImpl extends AbstractSyncSession implements Session {
 
     static final class LocalTransactionBuilder extends TransactionOptions implements Session.TransactionBuilder {
 
-        final SessionImpl session;
+        final LocalSession session;
 
 
-        private LocalTransactionBuilder(SessionImpl session) {
+        private LocalTransactionBuilder(LocalSession session) {
             this.session = session;
         }
 
@@ -358,12 +421,19 @@ final class SessionImpl extends AbstractSyncSession implements Session {
                 String m = String.format("No specified %s,couldn't create transaction.", Isolation.class.getName());
                 throw new CannotCreateTransactionException(m);
             }
-            if (!this.readonly && this.session.readonly) {
+            final LocalSession session = this.session;
+            if (!this.readonly && session.readonly) {
                 String m = String.format("Session[%s] is readonly,couldn't create non-readonly transaction."
                         , this.session.name);
                 throw new CannotCreateTransactionException(m);
             }
-            return new LocalTransaction(this);
+            if (session.transaction != null) {
+                throw duplicationTransaction(session);
+            }
+            final LocalTransaction transaction;
+            transaction = new LocalTransaction(this);
+            session.transaction = transaction;
+            return transaction;
         }
 
     }//LocalTransactionBuilder

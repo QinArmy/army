@@ -56,6 +56,21 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
 
 
     @Override
+    public boolean isReadOnlyStatus() {
+        return false;
+    }
+
+    @Override
+    public String name() {
+        return null;
+    }
+
+    @Override
+    public <T extends IDomain> TableMeta<T> table(Class<T> domainClass) {
+        return null;
+    }
+
+    @Override
     public final <R extends IDomain> Mono<R> get(TableMeta<R> tableMeta, Object id) {
         //1. try obtain domain from cache
         return this.tryObtainCatch(tableMeta, id)
