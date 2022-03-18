@@ -62,12 +62,16 @@ public interface SyncSession extends GenericSession {
     @Nullable
     <R> R selectOne(Select select, Class<R> resultClass, Visible visible);
 
+    @Nullable
     Map<String, Object> selectOneAsMap(Select select);
 
-    Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor);
-
+    @Nullable
     Map<String, Object> selectOneAsMap(Select select, Visible visible);
 
+    @Nullable
+    Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor);
+
+    @Nullable
     Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor, Visible visible);
 
     /**
@@ -114,6 +118,16 @@ public interface SyncSession extends GenericSession {
 
     <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
+    List<Map<String, Object>> returningInsertAsMap(Insert insert);
+
+    List<Map<String, Object>> returningInsertAsMap(Insert insert, Visible visible);
+
+    List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor);
+
+    List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
+
     long update(Update update);
 
     long update(Update update, Visible visible);
@@ -138,6 +152,16 @@ public interface SyncSession extends GenericSession {
      */
     <R> List<R> returningUpdate(Update update, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
+    List<Map<String, Object>> returningUpdateAsMap(Update update);
+
+    List<Map<String, Object>> returningUpdateAsMap(Update update, Visible visible);
+
+    List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor);
+
+    List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
+
     long delete(Delete delete);
 
     long delete(Delete delete, Visible visible);
@@ -161,6 +185,16 @@ public interface SyncSession extends GenericSession {
      * @param <R> representing returning result Java Type.
      */
     <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
+
+    List<Map<String, Object>> returningDeleteAsMap(Delete delete);
+
+    List<Map<String, Object>> returningDeleteAsMap(Delete delete, Visible visible);
+
+    List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor);
+
+    List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
 
     List<Long> batchUpdate(Update update);

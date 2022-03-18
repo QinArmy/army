@@ -16,4 +16,7 @@ army:
     current:
       session:
         context: io.army.boot.sync.SpringCurrentSessionContext
+    sql:
+      log:
+        show: true
 

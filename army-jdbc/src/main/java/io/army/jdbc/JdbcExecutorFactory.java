@@ -1,7 +1,9 @@
 package io.army.jdbc;
 
+import io.army.ArmyKeys;
 import io.army.Database;
 import io.army.codec.JsonCodec;
+import io.army.env.ArmyEnvironment;
 import io.army.mapping.MappingEnvironment;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -28,18 +30,30 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     final Database database;
 
-    final ExecutorEnvironment env;
+    final ExecutorEnvironment executorEnv;
+
+    final ArmyEnvironment env;
 
     final MappingEnvironment mapEnv;
 
+    final boolean sqlLogDynamic;
+
+    final boolean sqlLogShow;
+
+
     boolean closed;
 
-    private JdbcExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env) {
+    private JdbcExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment executorEnv) {
         this.dataSource = dataSource;
         this.serverMeta = serverMeta;
         this.database = serverMeta.database();
-        this.env = env;
-        this.mapEnv = new JdbcMappingEnvironment(serverMeta, env);
+        this.executorEnv = executorEnv;
+
+        this.env = executorEnv.environment();
+        this.mapEnv = new JdbcMappingEnvironment(serverMeta, executorEnv);
+        this.sqlLogDynamic = this.env.get(ArmyKeys.SQL_LOG_DYNAMIC, Boolean.class, Boolean.FALSE);
+        this.sqlLogShow = this.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE);
+
     }
 
     @Override

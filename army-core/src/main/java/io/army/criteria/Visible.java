@@ -18,7 +18,7 @@ public enum Visible {
         Visible visibleEnm;
         if (visible == null) {
             visibleEnm = Visible.BOTH;
-        } else if (Boolean.TRUE.equals(visible)) {
+        } else if (visible) {
             visibleEnm = Visible.ONLY_VISIBLE;
         } else {
             visibleEnm = Visible.ONLY_NON_VISIBLE;

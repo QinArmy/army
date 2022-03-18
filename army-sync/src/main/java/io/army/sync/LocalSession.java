@@ -6,15 +6,13 @@ import io.army.SessionCloseFailureException;
 import io.army.SessionException;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._SubQueryInsert;
-import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
+import io.army.session.ChildInsertException;
 import io.army.session.ExecutorExecutionException;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.StmtExecutor;
@@ -138,19 +136,27 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
 
     @Override
-    public Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
-            , Visible visible) {
-        return Collections.emptyMap();
-    }
+    public <R> List<R> select(final Select select, final Class<R> resultClass, final Supplier<List<R>> listConstructor
+            , final Visible visible) {
+        try {
+            assertSession(false, visible);
 
-    @Override
-    public <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
-        return Collections.emptyList();
+
+            return Collections.emptyList();
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", Select.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) select).clear();
+        }
     }
 
     @Override
     public List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+
         return Collections.emptyList();
     }
 
@@ -158,22 +164,23 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     @Override
     public long insert(final Insert insert, final Visible visible) {
         try {
-            assertSessionForDml(visible);
+            //1. assert session status
+            assertSession(true, visible);
             assertSessionForChildInsert((_Insert) insert);
-            final Stmt stmt;
-            if (insert instanceof _ValuesInsert) {
-                stmt = this.sessionFactory.dialect.insert(insert, visible);
-            } else if (insert instanceof _SubQueryInsert) {
-                if (this.dontSupportSubQueryInsert) {
-                    throw _Exceptions.dontSupportSubQueryInsert(this);
-                }
-                stmt = this.sessionFactory.dialect.insert(insert, visible);
-            } else {
-                throw _Exceptions.unexpectedStatement(insert);
+
+            //2. parse statement to stmt
+            if (insert instanceof _SubQueryInsert && this.dontSupportSubQueryInsert) {
+                throw _Exceptions.dontSupportSubQueryInsert(this);
             }
+            final Stmt stmt;
+            stmt = this.sessionFactory.dialect.insert(insert, visible);
+
+            //3. execute stmt
             final Transaction tx = this.transaction;
             final long affectedRows;
-            affectedRows = stmtExecutor.insert(stmt, tx == null ? 0 : tx.nextTimeout());
+            affectedRows = this.stmtExecutor.insert(stmt, tx == null ? 0 : tx.nextTimeout());
+
+            //4. validate value insert affected rows
             if (insert instanceof _ValuesInsert
                     && affectedRows != ((_ValuesInsert) insert).domainList().size()) {
                 String m = String.format("value list size is %s,but affected rows[%s]"
@@ -181,10 +188,17 @@ final class LocalSession extends _AbstractSyncSession implements Session {
                 throw new ExecutorExecutionException(m);
             }
             return affectedRows;
+        } catch (ChildInsertException e) {
+            final Transaction tx = this.transaction;
+            if (tx != null) {
+                tx.markRollbackOnly();
+            }
+            throw e;
         } catch (ArmyException e) {
-            throw this.sessionFactory.exceptionFunction().apply(e);
+            throw e;
         } catch (RuntimeException e) {
-            throw this.sessionFactory.exceptionFunction().apply(new ArmyException(e));
+            String m = String.format("Army execute %s occur error.", Insert.class.getName());
+            throw _Exceptions.unknownError(m, e);
         } finally {
             ((_Statement) insert).clear();
         }
@@ -198,9 +212,21 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     }
 
     @Override
+    public List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+        return null;
+    }
+
+    @Override
     public <R> List<R> returningUpdate(Update update, Class<R> resultClass
             , Supplier<List<R>> listConstructor, Visible visible) {
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+        return null;
     }
 
     @Override
@@ -210,12 +236,22 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     }
 
     @Override
+    public List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+        return null;
+    }
+
+    @Override
     public long delete(Delete delete, Visible visible) {
         return 0;
     }
 
     @Override
-    public long update(Update update, Visible visible) {
+    public long update(final Update update, final Visible visible) {
+        if (update instanceof _BatchDml) {
+
+        }
+        assertSession(true, visible);
         return 0;
     }
 
@@ -335,16 +371,19 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     /**
      * @see #insert(Insert, Visible)
      */
-    private void assertSessionForDml(final Visible visible) throws SessionException {
+    private void assertSession(final boolean dmlStmt, final Visible visible) throws SessionException {
         if (this.closed) {
             throw _Exceptions.sessionClosed(this);
         }
-        if (this.readonly) {
-            throw _Exceptions.readOnlySession(this);
-        }
-        final Transaction tx = this.transaction;
-        if (tx != null && tx.readOnly()) {
-            throw _Exceptions.readOnlyTransaction(this);
+
+        if (dmlStmt) {
+            if (this.readonly) {
+                throw _Exceptions.readOnlySession(this);
+            }
+            final Transaction tx = this.transaction;
+            if (tx != null && tx.readOnly()) {
+                throw _Exceptions.readOnlyTransaction(this);
+            }
         }
         if (visible != Visible.ONLY_VISIBLE && this.onlySupportVisible) {
             throw _Exceptions.dontSupportNonVisible(this, visible);

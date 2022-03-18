@@ -36,6 +36,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return ExceptionUtils.createUnexpectedEnumException(e);
     }
 
+    public static ArmyException unknownError(String message, RuntimeException e) {
+        return new ArmyException(message, e);
+    }
+
     public static ArmyException unexpectedStmt(Stmt stmt) {
         return new ArmyException(String.format("Unexpected Stmt type[%s]", stmt));
     }

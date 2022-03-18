@@ -35,13 +35,13 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 
-final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryBuilder {
+final class LocalFactoryBuilder extends FactoryBuilderSupport implements FactoryBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FactoryBuilderImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LocalFactoryBuilder.class);
 
     Map<TableMeta<?>, DomainAdvice> domainAdviceMap = Collections.emptyMap();
 
-    Object dataSource;
+    private Object dataSource;
 
     ExecutorFactory executorFactory;
 
@@ -220,7 +220,7 @@ final class FactoryBuilderImpl extends FactoryBuilderSupport implements FactoryB
      */
     private static void initializingFactory(LocalSessionFactory sessionFactory) throws SessionFactoryException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Initializing {}[{}]", SessionFactory.class.getName(), sessionFactory.name());
+            LOG.debug("Initializing {}", sessionFactory);
         }
 
         final ArmyEnvironment env = sessionFactory.environment();

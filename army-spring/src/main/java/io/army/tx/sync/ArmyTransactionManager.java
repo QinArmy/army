@@ -418,12 +418,6 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
-                , Visible visible) {
-            return this.session.selectOneAsMap(select, mapConstructor, visible);
-        }
-
-        @Override
         public <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
             return this.session.select(select, resultClass, listConstructor, visible);
         }
@@ -446,6 +440,12 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
+        public List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+                , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+            return this.session.returningInsertAsMap(insert, mapConstructor, listConstructor, visible);
+        }
+
+        @Override
         public long update(Update update, Visible visible) {
             return this.session.update(update, visible);
         }
@@ -457,6 +457,12 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
+        public List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
+                , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+            return this.session.returningUpdateAsMap(update, mapConstructor, listConstructor, visible);
+        }
+
+        @Override
         public long delete(Delete delete, Visible visible) {
             return this.session.delete(delete, visible);
         }
@@ -465,6 +471,12 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         public <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Supplier<List<R>> listConstructor
                 , Visible visible) {
             return this.session.returningDelete(delete, resultClass, listConstructor, visible);
+        }
+
+        @Override
+        public List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
+                , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+            return this.session.returningDeleteAsMap(delete, mapConstructor, listConstructor, visible);
         }
 
         @Override

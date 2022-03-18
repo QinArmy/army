@@ -19,5 +19,12 @@ public interface ArmyKeys {
 
     String CURRENT_SESSION_CONTEXT = "current.session.context";
 
+    String SQL_LOG_DYNAMIC = "sql.log.dynamic";
+
+    String SQL_LOG_SHOW = "sql.log.show";
+
+    String SQL_LOG_FORMAT = "sql.log.format";
+
+    String SQL_LOG_DEBUG = "sql.log.debug";
 
 }

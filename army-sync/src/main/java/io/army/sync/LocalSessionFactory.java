@@ -4,7 +4,6 @@ import io.army.ArmyKeys;
 import io.army.CreateSessionException;
 import io.army.SessionException;
 import io.army.SessionFactoryException;
-import io.army.bean.ArmyBean;
 import io.army.cache.SessionCacheFactory;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
@@ -37,7 +36,7 @@ final class LocalSessionFactory extends AbstractSessionFactory implements Sessio
     private boolean closed;
 
 
-    LocalSessionFactory(FactoryBuilderImpl builder) throws SessionFactoryException {
+    LocalSessionFactory(LocalFactoryBuilder builder) throws SessionFactoryException {
         super(builder);
 
         this.executorFactory = Objects.requireNonNull(builder.executorFactory);
@@ -110,15 +109,15 @@ final class LocalSessionFactory extends AbstractSessionFactory implements Sessio
 
 
     private void destroyArmyBeans() {
-        ArmyBean armyBean = null;
-        try {
-            for (ArmyBean bean : this.env.getAllBean().values()) {
-                armyBean = bean;
-                bean.armyBeanDestroy();
-            }
-        } catch (Exception e) {
-            throw new SessionFactoryException(e, "ArmyBean destroy occur error,ArmyBean[%s].", armyBean);
-        }
+//        ArmyBean armyBean = null;
+//        try {
+//            for (ArmyBean bean : this.env.getAllBean().values()) {
+//                armyBean = bean;
+//                bean.armyBeanDestroy();
+//            }
+//        } catch (Exception e) {
+//            throw new SessionFactoryException(e, "ArmyBean destroy occur error,ArmyBean[%s].", armyBean);
+//        }
     }
 
 

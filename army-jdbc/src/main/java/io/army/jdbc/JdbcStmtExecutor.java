@@ -1,6 +1,7 @@
 package io.army.jdbc;
 
 import io.army.ArmyException;
+import io.army.ArmyKeys;
 import io.army.bean.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
@@ -9,6 +10,7 @@ import io.army.mapping.MappingEnvironment;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.ChildInsertException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
@@ -30,6 +32,8 @@ import java.util.Map;
 
 abstract class JdbcStmtExecutor implements StmtExecutor {
 
+    static final String SQL_LOG_FORMAT = "army-jdbc will execute sql:\n{}";
+
     final JdbcExecutorFactory factory;
 
     final Connection conn;
@@ -44,7 +48,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     @Override
     public final long insert(final Stmt stmt, final int timeout) {
         try {
-            final int insertRows;
+            final long insertRows;
             if (stmt instanceof SimpleStmt) {
                 insertRows = this.executeInsert((SimpleStmt) stmt, timeout);
             } else if (stmt instanceof PairStmt) {
@@ -200,15 +204,16 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     /**
      * @see #insert(Stmt, int)
      */
-    private int executePariInsert(final PairStmt stmt, final int timeout) throws SQLException {
+    private long executePariInsert(final PairStmt stmt, final int timeout) throws SQLException {
         final long startTime = System.currentTimeMillis();
 
-        final int insertRows;
+        final long insertRows;
         insertRows = this.executeInsert(stmt.parentStmt(), timeout);
 
         final long restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime);
         if (restMills < 1L) {
-            throw _Exceptions.timeout(timeout, restMills);
+            String m = "Parent insert completion,but timeout,so no time insert child.";
+            throw new ChildInsertException(m, _Exceptions.timeout(timeout, restMills));
         }
         final int restSeconds;
         if ((restMills % 1000L) == 0) {
@@ -216,16 +221,21 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         } else {
             restSeconds = (int) (restMills / 1000L) + 1;
         }
-        final int childRows;
-        childRows = this.executeInsert(stmt.childStmt(), restSeconds);
 
-        if (childRows != insertRows) {
-            throw parentChildRowsNotMatch(insertRows, childRows);
+        try {
+            final long childRows;
+            childRows = this.executeInsert(stmt.childStmt(), restSeconds);
+
+            if (childRows != insertRows) {
+                throw parentChildRowsNotMatch(insertRows, childRows);
+            }
+        } catch (Exception e) {
+            throw new ChildInsertException("Parent insert completion,but child insert occur error.", e);
         }
         return insertRows;
     }
 
-    private int executeInsert(final SimpleStmt stmt, final int timeoutSeconds) throws SQLException {
+    private long executeInsert(final SimpleStmt stmt, final int timeoutSeconds) throws SQLException {
         final List<Selection> selectionList = stmt.selectionList();
         final boolean returningId;
         returningId = selectionList.size() == 1 && selectionList.get(0) instanceof PrimaryFieldMeta;
@@ -236,18 +246,25 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         } else {
             resultSetType = Statement.RETURN_GENERATED_KEYS;
         }
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql(), resultSetType)) {
+        final JdbcExecutorFactory factory = this.factory;
+        final String sql = stmt.sql();
+
+        if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
+                || factory.sqlLogShow) {
+            getLogger().info(SQL_LOG_FORMAT, sql);
+        }
+        try (PreparedStatement statement = this.conn.prepareStatement(sql, resultSetType)) {
 
             bindParameter(statement, stmt.paramGroup(), stmt);
 
             if (timeoutSeconds > 0) {
                 statement.setQueryTimeout(timeoutSeconds);
             }
-            final int rows;
+            final long rows;
             if (returningId) {
                 rows = doExtractId(statement.executeQuery(), (GeneratedKeyStmt) stmt);
             } else {
-                rows = statement.executeUpdate();
+                rows = statement.executeLargeUpdate();
                 if (resultSetType == Statement.RETURN_GENERATED_KEYS) {
                     getGenerateKeys(statement, rows, (GeneratedKeyStmt) stmt);
                 }
@@ -315,7 +332,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     /**
      * @see #executeInsert(SimpleStmt, int)
      */
-    private void getGenerateKeys(PreparedStatement statement, final int insertedRows, final GeneratedKeyStmt stmt)
+    private void getGenerateKeys(PreparedStatement statement, final long insertedRows, final GeneratedKeyStmt stmt)
             throws SQLException {
         final List<ObjectWrapper> domainList = stmt.domainList();
         if (insertedRows != domainList.size()) {
@@ -343,7 +360,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
     /**
      * @see #executeInsert(SimpleStmt, int)
-     * @see #getGenerateKeys(PreparedStatement, int, GeneratedKeyStmt)
+     * @see #getGenerateKeys(PreparedStatement, long, GeneratedKeyStmt)
      */
     private static int doExtractId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
         final List<ObjectWrapper> domainList = stmt.domainList();
@@ -404,12 +421,12 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         return new MetaException(m);
     }
 
-    private static ArmyException valueInsertDomainWrapperSizeError(int insertedRows, int domainWrapperSize) {
+    private static ArmyException valueInsertDomainWrapperSizeError(long insertedRows, int domainWrapperSize) {
         String m = String.format("InsertedRows[%s] and domainWrapperSize[%s] not match.", insertedRows, domainWrapperSize);
         throw new ArmyException(m);
     }
 
-    private ArmyException parentChildRowsNotMatch(int parentRows, int childRows) {
+    private ArmyException parentChildRowsNotMatch(long parentRows, long childRows) {
         String m = String.format("Parent insert/update rows[%s] and child insert/update rows[%s] not match."
                 , parentRows, childRows);
         throw new ArmyException(m);

@@ -15,6 +15,8 @@ import java.util.function.Supplier;
 
 public abstract class _AbstractSyncSession implements SyncSession {
 
+    protected _AbstractSyncSession() {
+    }
 
     @Nullable
     @Override
@@ -35,18 +37,23 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
 
+    @Nullable
     @Override
     public final <R> R selectOne(Select select, Class<R> resultClass, final Visible visible) {
-        List<R> list = select(select, resultClass, visible);
-        R r;
-        if (list.size() == 1) {
-            r = list.get(0);
-        } else if (list.size() == 0) {
-            r = null;
-        } else {
-            throw new NonUniqueException("select result[%s] more than 1.", list.size());
+        final List<R> list;
+        list = this.select(select, resultClass, ArrayList::new, visible);
+        final R result;
+        switch (list.size()) {
+            case 1:
+                result = list.get(0);
+                break;
+            case 0:
+                result = null;
+                break;
+            default:
+                throw new NonUniqueException("select result[%s] more than 1.", list.size());
         }
-        return r;
+        return result;
     }
 
 
@@ -56,13 +63,33 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
+    public final Map<String, Object> selectOneAsMap(Select select, Visible visible) {
+        return this.selectOneAsMap(select, HashMap::new, visible);
+    }
+
+    @Override
     public final Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor) {
         return this.selectOneAsMap(select, mapConstructor, Visible.ONLY_VISIBLE);
     }
 
+    @Nullable
     @Override
-    public final Map<String, Object> selectOneAsMap(Select select, Visible visible) {
-        return this.selectOneAsMap(select, HashMap::new, visible);
+    public final Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+            , Visible visible) {
+        final List<Map<String, Object>> list;
+        list = this.selectAsMap(select, mapConstructor, ArrayList::new, visible);
+        final Map<String, Object> result;
+        switch (list.size()) {
+            case 1:
+                result = list.get(0);
+                break;
+            case 0:
+                result = null;
+                break;
+            default:
+                throw new NonUniqueException("select result[%s] more than 1.", list.size());
+        }
+        return result;
     }
 
     @Override
@@ -118,6 +145,23 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
+    public final List<Map<String, Object>> returningInsertAsMap(Insert insert) {
+        return this.returningInsertAsMap(insert, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final List<Map<String, Object>> returningInsertAsMap(Insert insert, Visible visible) {
+        return this.returningInsertAsMap(insert, HashMap::new, ArrayList::new, visible);
+    }
+
+    @Override
+    public final List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor) {
+        return this.returningInsertAsMap(insert, mapConstructor, listConstructor, Visible.ONLY_VISIBLE);
+    }
+
+
+    @Override
     public final <R> List<R> returningUpdate(Update update, Class<R> resultClass) {
         return this.returningUpdate(update, resultClass, ArrayList::new, Visible.ONLY_VISIBLE);
     }
@@ -133,6 +177,22 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
+    public final List<Map<String, Object>> returningUpdateAsMap(Update update) {
+        return this.returningUpdateAsMap(update, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final List<Map<String, Object>> returningUpdateAsMap(Update update, Visible visible) {
+        return this.returningUpdateAsMap(update, HashMap::new, ArrayList::new, visible);
+    }
+
+    @Override
+    public final List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor) {
+        return this.returningUpdateAsMap(update, mapConstructor, listConstructor, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
     public final long update(Update update) {
         return this.update(update, Visible.ONLY_VISIBLE);
     }
@@ -140,6 +200,11 @@ public abstract class _AbstractSyncSession implements SyncSession {
     @Override
     public final List<Long> batchUpdate(Update update) {
         return this.batchUpdate(update, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final long delete(Delete delete) {
+        return this.delete(delete, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -158,9 +223,21 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
-    public final long delete(Delete delete) {
-        return this.delete(delete, Visible.ONLY_VISIBLE);
+    public final List<Map<String, Object>> returningDeleteAsMap(Delete delete) {
+        return this.returningDeleteAsMap(delete, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
     }
+
+    @Override
+    public final List<Map<String, Object>> returningDeleteAsMap(Delete delete, Visible visible) {
+        return this.returningDeleteAsMap(delete, HashMap::new, ArrayList::new, visible);
+    }
+
+    @Override
+    public final List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
+            , Supplier<List<Map<String, Object>>> listConstructor) {
+        return this.returningDeleteAsMap(delete, mapConstructor, listConstructor, Visible.ONLY_VISIBLE);
+    }
+
 
     @Override
     public final List<Long> batchDelete(Delete delete) {

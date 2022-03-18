@@ -148,7 +148,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
     @Override
     public NullHandleMode nullHandle() {
-        return null;
+        return this.nullHandleMode;
     }
 
     @Override
@@ -159,15 +159,14 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     void onParentEnd() {
         final PrimaryFieldMeta<?> returnId = this.returnId;
         if (returnId != null) {
-            this.sqlBuilder
-                    .append(Constant.SPACE)
+            final StringBuilder builder;
+            builder = this.sqlBuilder
                     .append(Constant.SPACE_RETURNING)
-                    .append(Constant.SPACE)
-                    .append(returnId.columnName())
-                    .append(Constant.SPACE)
-                    .append(Constant.SPACE_AS_SPACE)
-                    .append(Constant.SPACE)
-                    .append(this.dialect.quoteIfNeed(returnId.fieldName()));
+                    .append(Constant.SPACE);
+
+            this.dialect.quoteIfNeed(returnId.columnName(), builder)
+                    .append(Constant.SPACE_AS_SPACE);
+            this.dialect.quoteIfNeed(returnId.fieldName(), builder);
         }
     }
 

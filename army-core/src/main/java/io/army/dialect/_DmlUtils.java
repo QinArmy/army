@@ -164,6 +164,8 @@ public abstract class _DmlUtils {
                     throw new MetaException(String.format("%s generatorType error.", field));
                 } else if (childBlock) {
                     blockContext.appendParam(new DelayIdParamValue(field, domain)); // parameter append block context
+                } else {
+                    throw new MetaException(String.format("%s insertable() method error.", field));
                 }
                 index++;
             }
