@@ -1,8 +1,6 @@
 package io.army.boot.reactive;
 
 import io.army.Database;
-import io.army.boot.DomainValuesGenerator;
-import io.army.boot.migratioin.ReactiveMigrator;
 import io.army.cache.SessionCacheFactory;
 import io.army.dialect._Dialect;
 import io.army.lang.Nullable;
@@ -46,8 +44,6 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
 
     private final ProxyReactiveSession proxyReactiveSession;
 
-    private final DomainValuesGenerator domainValuesGenerator;
-
     private final SessionCacheFactory sessionCacheFactory;
 
     private final Map<TableMeta<?>, ReactiveDomainInsertAdvice> insertAdviceMap;
@@ -79,7 +75,6 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
 
         this.currentSessionContext = SessionFactoryUtils.createCurrentSessionContext(this);
         this.proxyReactiveSession = ProxyReactiveSessionImpl.build(this, this.currentSessionContext);
-        this.domainValuesGenerator = null;
 
         this.sessionCacheFactory = SessionCacheFactory.build(this);
         // create domain advice map
@@ -233,23 +228,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
 
     /*################################## blow private method ##################################*/
 
-    private Mono<DatabaseSession> migrateMetaToDatabase(DatabaseSession session) {
-        return ReactiveMigrator.build()
-                .migrate(session, this)
-                .thenReturn(session)
-                ;
-    }
 
-    private Mono<DatabaseSession> validateSchemaMeta(DatabaseSession session) {
-        if (this.schemaMeta.defaultSchema()) {
-            return Mono.just(session);
-        }
-//        return session.getDatabaseMetaData()
-//                .getSchema()
-//             //   .flatMap(this::assertSchemaMatch)
-//                .thenReturn(session);
-        return Mono.empty();
-    }
 
     private Mono<Void> assertSchemaMatch(DatabaseSchemaMetaData databaseSchema) {
         if (Objects.equals(databaseSchema.getCatalog(), this.schemaMeta.catalog())
