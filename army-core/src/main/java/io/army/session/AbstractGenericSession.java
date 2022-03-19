@@ -42,7 +42,7 @@ public abstract class AbstractGenericSession implements GenericSession {
         private CacheDomainUpdate(DomainUpdateAdvice advice, List<FieldMeta<?>> targetFieldList
                 , List<_Expression> valueExpList) {
 
-            this.tableMeta = advice.readonlyWrapper().tableMeta();
+            this.tableMeta = null;
             this.tableAlias = "t";
 
             this.targetFieldList = Collections.unmodifiableList(targetFieldList);

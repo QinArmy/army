@@ -106,6 +106,10 @@ public interface SyncSession extends GenericSession {
     List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
+    <T extends IDomain> void save(T domain);
+
+    <T extends IDomain> void save(T domain, NullHandleMode mode);
+
     long insert(Insert insert);
 
     long insert(Insert insert, Visible visible);
@@ -196,6 +200,9 @@ public interface SyncSession extends GenericSession {
     List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
+    <T extends IDomain> void batchSave(List<T> domainList);
+
+    <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode);
 
     List<Long> batchUpdate(Update update);
 

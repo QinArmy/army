@@ -47,7 +47,7 @@ import io.army.meta.GeneratorMeta;
  * @see io.army.annotation.Generator
  * @since Army 1.0
  */
-public interface PreFieldGenerator extends FieldGenerator {
+public interface PreFieldGenerator extends _FieldGenerator {
 
     /**
      * @see GeneratorMeta#dependFieldName()

@@ -1,18 +1,26 @@
 package io.army.bean;
 
-import io.army.ErrorCode;
+public class PropertyAccessException extends ObjectAccessException {
 
-public class PropertyAccessException extends BeansException {
+    private final Class<?> beanClass;
 
-    PropertyAccessException(ErrorCode errorCode, String format, Object... args) {
-        super(errorCode, format, args);
+    private final String propertyName;
+
+    public PropertyAccessException(String message, Class<?> beanClass, String propertyName) {
+        super(message);
+        this.beanClass = beanClass;
+        this.propertyName = propertyName;
     }
 
-    PropertyAccessException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    public PropertyAccessException(String message, Throwable cause, Class<?> beanClass, String propertyName) {
+        super(message, cause);
+        this.beanClass = beanClass;
+        this.propertyName = propertyName;
     }
 
-    PropertyAccessException(String format, Object... args) {
-        super(ErrorCode.NONE, format, args);
+    public PropertyAccessException(Throwable cause, Class<?> beanClass, String propertyName) {
+        super(cause);
+        this.beanClass = beanClass;
+        this.propertyName = propertyName;
     }
 }

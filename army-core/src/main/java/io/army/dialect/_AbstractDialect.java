@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.ArmyException;
 import io.army.Database;
-import io.army.bean.ObjectWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl._SQLCounselor;
 import io.army.criteria.impl.inner.*;
@@ -1039,19 +1038,12 @@ public abstract class _AbstractDialect implements _Dialect {
         final StandardValueInsertContext context;
         context = StandardValueInsertContext.create(insert, this, visible);
 
-        final FieldValuesGenerator generator = this.environment.fieldValuesGenerator();
-        final TableMeta<?> table = context.table;
-        final boolean migration = insert.isMigration();
-        for (ObjectWrapper wrapper : insert.domainList()) {
-            generator.generate(table, wrapper, migration);
-        }
-
-        _DmlUtils.appendStandardValueInsert(false, context); // append parent insert to parent context.
+        _DmlUtils.appendStandardValueInsert(context, this.environment.fieldValuesGenerator()); // append parent insert to parent context.
         context.onParentEnd(); // parent end event
 
         final _InsertBlock childBlock = context.childBlock();
         if (childBlock != null) {
-            _DmlUtils.appendStandardValueInsert(true, context); // append child insert to child context.
+            _DmlUtils.appendStandardValueInsert(context, null); // append child insert to child context.
         }
         return context.build();
     }

@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner;
 
-import io.army.bean.ObjectWrapper;
 import io.army.criteria.NullHandleMode;
+import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 
 import java.util.List;
@@ -15,6 +15,6 @@ public interface _ValuesInsert extends _Insert {
 
     Map<FieldMeta<?>, _Expression> commonExpMap();
 
-    List<ObjectWrapper> domainList();
+    List<IDomain> domainList();
 
 }

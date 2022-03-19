@@ -125,6 +125,11 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
+    public final <T extends IDomain> void save(T domain) {
+        this.save(domain, NullHandleMode.INSERT_DEFAULT);
+    }
+
+    @Override
     public final long insert(Insert insert) {
         return this.insert(insert, Visible.ONLY_VISIBLE);
     }
@@ -238,10 +243,25 @@ public abstract class _AbstractSyncSession implements SyncSession {
         return this.returningDeleteAsMap(delete, mapConstructor, listConstructor, Visible.ONLY_VISIBLE);
     }
 
+    @Override
+    public final <T extends IDomain> void batchSave(List<T> domainList) {
+        this.batchSave(domainList, NullHandleMode.INSERT_DEFAULT);
+    }
 
     @Override
     public final List<Long> batchDelete(Delete delete) {
         return this.batchDelete(delete, Visible.ONLY_VISIBLE);
+    }
+
+
+    @Override
+    public final int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        return obj == this;
     }
 
 

@@ -3,7 +3,7 @@ package io.army.session;
 import io.army.ArmyException;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
-import io.army.generator.FieldGenerator;
+import io.army.generator._FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
@@ -32,7 +32,7 @@ public interface GenericSessionFactory {
     <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
 
     @Nullable
-    FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta);
+    _FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta);
 
     boolean supportSessionCache();
 

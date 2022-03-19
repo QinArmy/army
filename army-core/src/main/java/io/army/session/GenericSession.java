@@ -23,6 +23,6 @@ public interface GenericSession {
     /**
      * @throws IllegalArgumentException throw,when not found {@link TableMeta}.
      */
-    <T extends IDomain> TableMeta<T> table(Class<T> domainClass);
+    <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
 
 }

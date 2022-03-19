@@ -1,7 +1,6 @@
 package io.army.boot;
 
 import io.army.*;
-import io.army.bean.MapWrapper;
 import io.army.bean.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
@@ -172,13 +171,7 @@ public abstract class GenericSQLExecutorSupport {
 
     @SuppressWarnings("unchecked")
     protected static <T> T getWrapperInstance(ObjectWrapper beanWrapper) {
-        T result;
-        if (beanWrapper instanceof MapWrapper) {
-            result = (T) ((MapWrapper) beanWrapper).getUnmodifiableMap();
-        } else {
-            result = (T) beanWrapper.getWrappedInstance();
-        }
-        return result;
+       throw new UnsupportedOperationException();
     }
 
 

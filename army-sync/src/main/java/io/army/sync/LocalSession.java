@@ -6,6 +6,7 @@ import io.army.SessionCloseFailureException;
 import io.army.SessionException;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -14,6 +15,7 @@ import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 import io.army.session.ChildInsertException;
 import io.army.session.ExecutorExecutionException;
+import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.StmtExecutor;
 import io.army.tx.*;
@@ -79,7 +81,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     }
 
     @Override
-    public <T extends IDomain> TableMeta<T> table(Class<T> domainClass) {
+    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
         final TableMeta<T> table;
         table = this.sessionFactory.tableMeta(domainClass);
         if (table == null) {
@@ -139,10 +141,14 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     public <R> List<R> select(final Select select, final Class<R> resultClass, final Supplier<List<R>> listConstructor
             , final Visible visible) {
         try {
+            //1.assert session status
             assertSession(false, visible);
-
-
-            return Collections.emptyList();
+            //2. parse statement to stmt
+            final SimpleStmt stmt;
+            stmt = this.sessionFactory.dialect.select(select, visible);
+            //3. execute stmt
+            final Transaction tx = this.transaction;
+            return this.stmtExecutor.select(stmt, tx == null ? 0 : tx.nextTimeout(), resultClass, listConstructor);
         } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -156,10 +162,43 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     @Override
     public List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-
-        return Collections.emptyList();
+        try {
+            //1.assert session status
+            assertSession(false, visible);
+            //2. parse statement to stmt
+            final SimpleStmt stmt;
+            stmt = this.sessionFactory.dialect.select(select, visible);
+            //3. execute stmt
+            final Transaction tx = this.transaction;
+            final int timeout = tx == null ? 0 : tx.nextTimeout();
+            return this.stmtExecutor.selectAsMap(stmt, timeout, mapConstructor, listConstructor);
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", Select.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) select).clear();
+        }
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends IDomain> void save(final T domain, final NullHandleMode mode) {
+        final TableMeta<T> table;
+        table = (TableMeta<T>) this.sessionFactory.tableMeta(domain.getClass());
+        if (table == null) {
+            String m = String.format("Not found %s for %s.", TableMeta.class.getName(), domain.getClass().getName());
+            throw new IllegalArgumentException(m);
+        }
+        final Insert stmt;
+        stmt = SQLs.valueInsert(table)
+                .nullHandle(mode)
+                .insertInto(table)
+                .value(domain)
+                .asInsert();
+        this.insert(stmt, Visible.ONLY_VISIBLE);
+    }
 
     @Override
     public long insert(final Insert insert, final Visible visible) {
@@ -183,7 +222,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             //4. validate value insert affected rows
             if (insert instanceof _ValuesInsert
                     && affectedRows != ((_ValuesInsert) insert).domainList().size()) {
-                String m = String.format("value list size is %s,but affected rows[%s]"
+                String m = String.format("value list size is %s,but affected %s rows."
                         , ((_ValuesInsert) insert).domainList().size(), affectedRows);
                 throw new ExecutorExecutionException(m);
             }
@@ -241,10 +280,6 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         return null;
     }
 
-    @Override
-    public long delete(Delete delete, Visible visible) {
-        return 0;
-    }
 
     @Override
     public long update(final Update update, final Visible visible) {
@@ -253,6 +288,31 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         }
         assertSession(true, visible);
         return 0;
+    }
+
+    @Override
+    public long delete(Delete delete, Visible visible) {
+        return 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends IDomain> void batchSave(final List<T> domainList, final NullHandleMode mode) {
+        final Class<T> domainClass;
+        domainClass = (Class<T>) domainList.get(0).getClass();
+        final TableMeta<T> table;
+        table = this.sessionFactory.tableMeta(domainClass);
+        if (table == null) {
+            String m = String.format("Not found %s for %s.", TableMeta.class.getName(), domainClass);
+            throw new IllegalArgumentException(m);
+        }
+        final Insert stmt;
+        stmt = SQLs.valueInsert(table)
+                .nullHandle(mode)
+                .insertInto(table)
+                .values(domainList)
+                .asInsert();
+        this.insert(stmt, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -333,13 +393,13 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 //        }
     }
 
+
     @Override
     public String toString() {
-        return String.format("%s[%s] hash:%s readonly:%s transaction non-null:%s."
-                , Session.class.getName(), this.name
-                , System.identityHashCode(this)
-                , this.readonly
-                , this.transaction != null);
+        return String.format("[%s name:%s,factory:%s,hash:%s,readonly:%s,transaction non-null:%s]"
+                , LocalSession.class.getName(), this.name
+                , this.sessionFactory.name(), System.identityHashCode(this)
+                , this.readonly, this.transaction != null);
     }
 
     /*################################## blow package method ##################################*/

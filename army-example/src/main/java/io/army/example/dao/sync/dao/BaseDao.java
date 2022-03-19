@@ -8,7 +8,7 @@ public interface BaseDao {
 
     <T extends Domain> void save(T domain);
 
-    <T extends Domain> void saveBatch(List<T> domainList);
+    <T extends Domain> void batchSave(List<T> domainList);
 
     <T extends Domain> T get(Class<T> domainClass, Object id);
 

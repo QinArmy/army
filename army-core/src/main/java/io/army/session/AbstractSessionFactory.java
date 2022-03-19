@@ -4,14 +4,14 @@ import io.army.ArmyException;
 import io.army.ArmyKey;
 import io.army.ArmyKeys;
 import io.army.SessionFactoryException;
-import io.army.bean.ObjectWrapper;
+import io.army.bean.ObjectAccessor;
 import io.army.codec.JsonCodec;
-import io.army.dialect.FieldValuesGenerator;
+import io.army.dialect.FieldGenerator;
 import io.army.dialect._AbstractFieldValuesGenerator;
 import io.army.dialect._DialectEnvironment;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
-import io.army.generator.FieldGenerator;
+import io.army.generator._FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
@@ -41,13 +41,13 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     protected final Map<Class<?>, TableMeta<?>> tableMap;
 
-    protected final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
+    protected final Map<FieldMeta<?>, _FieldGenerator> fieldGeneratorMap;
 
     protected final Function<ArmyException, RuntimeException> exceptionFunction;
 
     protected final SubQueryInsertMode subQueryInsertMode;
 
-    protected final FieldValuesGenerator fieldValuesGenerator;
+    protected final FieldGenerator fieldValuesGenerator;
 
     protected final boolean readonly;
 
@@ -115,7 +115,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     @Nullable
     @Override
-    public final FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta) {
+    public final _FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta) {
         return this.fieldGeneratorMap.get(fieldMeta);
     }
 
@@ -148,7 +148,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
     }
 
     @Override
-    public final FieldValuesGenerator fieldValuesGenerator() {
+    public final FieldGenerator fieldValuesGenerator() {
         return this.fieldValuesGenerator;
     }
 
@@ -161,6 +161,16 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
     @Override
     public boolean factoryClosed() {
         return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        return obj == this;
     }
 
 
@@ -190,10 +200,10 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
         private final ZoneOffset zoneOffset;
 
-        private final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
+        private final Map<FieldMeta<?>, _FieldGenerator> fieldGeneratorMap;
 
         private FieldValuesGeneratorImpl(@Nullable ZoneOffset zoneOffset
-                , Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap) {
+                , Map<FieldMeta<?>, _FieldGenerator> fieldGeneratorMap) {
             this.zoneOffset = zoneOffset;
             this.fieldGeneratorMap = fieldGeneratorMap;
         }
@@ -205,7 +215,7 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
         }
 
         @Override
-        protected void generatorChan(TableMeta<?> table, ObjectWrapper wrapper) {
+        protected void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor) {
             //TODO no-op
         }
 

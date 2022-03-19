@@ -1,6 +1,7 @@
 package io.army.stmt;
 
-import io.army.bean.ObjectWrapper;
+import io.army.bean.ObjectAccessor;
+import io.army.domain.IDomain;
 import io.army.meta.PrimaryFieldMeta;
 
 import java.util.List;
@@ -14,7 +15,9 @@ public interface GeneratedKeyStmt extends SimpleStmt {
 
     String primaryKeyName();
 
-    List<ObjectWrapper> domainList();
+    ObjectAccessor domainAccessor();
+
+    List<IDomain> domainList();
 
     PrimaryFieldMeta<?> idMeta();
 

@@ -11,7 +11,7 @@ import io.army.codec.JsonCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
-import io.army.generator.FieldGenerator;
+import io.army.generator._FieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
@@ -95,7 +95,7 @@ final class LocalFactoryBuilder extends FactoryBuilderSupport implements Factory
     }
 
     @Override
-    public FactoryBuilder fieldGenerator(Map<FieldMeta<?>, FieldGenerator> generatorMap) {
+    public FactoryBuilder fieldGenerator(Map<FieldMeta<?>, _FieldGenerator> generatorMap) {
         return this;
     }
 

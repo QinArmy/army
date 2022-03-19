@@ -7,8 +7,8 @@ import io.army.annotation.Param;
 import io.army.bean.ArmyBean;
 import io.army.bean.ReadWrapper;
 import io.army.env.ArmyEnvironment;
-import io.army.generator.FieldGenerator;
 import io.army.generator.PreFieldGenerator;
+import io.army.generator._FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
@@ -97,7 +97,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
     /*################################## blow static method ##################################*/
 
     /**
-     * @see FieldGenerator
+     * @see _FieldGenerator
      */
     public static SnowflakeGenerator build(FieldMeta<?> fieldMeta, GenericSessionFactory sessionFactory) {
         SnowflakeGenerator generator = INSTANCE_HOLDER.computeIfAbsent(
@@ -108,7 +108,7 @@ public final class SnowflakeGenerator implements PreFieldGenerator, ArmyBean {
     }
 
     /**
-     * @see FieldGenerator
+     * @see _FieldGenerator
      */
     public static boolean isSupported(Class<?> dependType) {
         return dependType == Long.class

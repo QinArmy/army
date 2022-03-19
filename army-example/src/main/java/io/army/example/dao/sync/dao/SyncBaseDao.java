@@ -1,8 +1,8 @@
 package io.army.example.dao.sync.dao;
 
+import io.army.criteria.NullHandleMode;
 import io.army.example.domain.Domain;
 import io.army.meta.TableMeta;
-import io.army.sync.CriteriaUtils;
 import io.army.sync.CurrentSessionContext;
 import io.army.sync.SessionFactory;
 import io.army.sync.SyncSession;
@@ -17,6 +17,7 @@ public class SyncBaseDao implements BaseDao {
 
     protected CurrentSessionContext sessionContext;
 
+
     @Autowired
     public void setSessionFactory(@Qualifier("exampleSyncSessionFactory") SessionFactory sessionFactory) {
         this.sessionContext = sessionFactory.currentSessionContext();
@@ -25,19 +26,21 @@ public class SyncBaseDao implements BaseDao {
 
     @Override
     public <T extends Domain> void save(final T domain) {
-        CriteriaUtils.save(this.sessionContext.currentSession(), domain);
+        this.sessionContext.currentSession()
+                .save(domain, NullHandleMode.INSERT_DEFAULT);
     }
 
     @Override
-    public <T extends Domain> void saveBatch(List<T> domainList) {
-        CriteriaUtils.saveBatch(this.sessionContext.currentSession(), domainList);
+    public <T extends Domain> void batchSave(List<T> domainList) {
+        this.sessionContext.currentSession()
+                .batchSave(domainList, NullHandleMode.INSERT_DEFAULT);
     }
 
     @Override
     public <T extends Domain> T get(Class<T> domainClass, Object id) {
         final SyncSession session;
         session = this.sessionContext.currentSession();
-        return session.get(session.table(domainClass), id);
+        return session.get(session.tableMeta(domainClass), id);
     }
 
     @Override
@@ -45,7 +48,7 @@ public class SyncBaseDao implements BaseDao {
         final SyncSession session;
         session = this.sessionContext.currentSession();
         final TableMeta<T> table;
-        table = session.table(domainClass);
+        table = session.tableMeta(domainClass);
         return session.getByUnique(table, table.getUniqueField(fieldName), fieldValue);
     }
 

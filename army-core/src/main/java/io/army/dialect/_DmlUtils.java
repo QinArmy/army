@@ -1,12 +1,14 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.bean.ReadWrapper;
+import io.army.bean.ObjectAccessor;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
@@ -71,15 +73,21 @@ public abstract class _DmlUtils {
     }
 
 
-    static void appendStandardValueInsert(final boolean childBlock, final _ValueInsertContext context) {
+    static void appendStandardValueInsert(final _ValueInsertContext context, final @Nullable FieldGenerator generator) {
         final _Dialect dialect = context.dialect();
         final _InsertBlock block;
         final _SqlContext blockContext;
-        if (childBlock) {
+        final TableMeta<?> domainTable;
+        if (generator == null) {
+            // child table;
+            domainTable = null;
             block = context.childBlock();
             assert block != null;
             blockContext = block.getContext();
         } else {
+            // parent table or simple table
+            final _InsertBlock childBlock = context.childBlock();
+            domainTable = childBlock == null ? context.table() : childBlock.table();
             block = context;
             blockContext = context;
         }
@@ -109,7 +117,7 @@ public abstract class _DmlUtils {
         // 2. values clause
         builder.append(Constant.SPACE_VALUES);
 
-        final List<? extends ReadWrapper> domainList = context.domainList();
+        final List<IDomain> domainList = context.domainList();
         //2.1 get domainTable and discriminator
         final FieldMeta<?> discriminator = context.table().discriminator();
 
@@ -117,12 +125,18 @@ public abstract class _DmlUtils {
         final Map<FieldMeta<?>, _Expression> expMap = context.commonExpMap();
         final boolean mockEnvironment = dialect instanceof _MockDialects;
         final NullHandleMode nullHandleMode = context.nullHandle();
+        final ObjectAccessor accessor = context.domainAccessor();
+        final boolean migration = context.migration();
 
         _Expression expression;
         GeneratorType generatorType;
         Object value;
         //2.2 append values
-        for (ReadWrapper domain : domainList) {
+        for (IDomain domain : domainList) {
+            if (generator != null) {
+                //only non-child table
+                generator.generate(domainTable, domain, accessor, migration);
+            }
             if (batch > 0) {
                 builder.append(Constant.SPACE_COMMA);
             }
@@ -138,7 +152,7 @@ public abstract class _DmlUtils {
                             .append(context.discriminatorValue());
                 } else if ((expression = expMap.get(field)) != null) {
                     expression.appendSql(blockContext); // common append to block context
-                } else if ((value = domain.get(field.fieldName())) != null) {
+                } else if ((value = accessor.get(domain, field.fieldName())) != null) {
                     final MappingType mappingType = field.mappingType();
                     if (mappingType instanceof _ArmyNoInjectionMapping) {
                         builder.append(Constant.SPACE)
@@ -162,10 +176,10 @@ public abstract class _DmlUtils {
                     throw _Exceptions.unexpectedEnum(generatorType);
                 } else if (!(field instanceof PrimaryFieldMeta)) {
                     throw new MetaException(String.format("%s generatorType error.", field));
-                } else if (childBlock) {
-                    blockContext.appendParam(new DelayIdParamValue(field, domain)); // parameter append block context
-                } else {
+                } else if (generator == null) {
                     throw new MetaException(String.format("%s insertable() method error.", field));
+                } else {
+                    blockContext.appendParam(new DelayIdParamValue(field, domain, accessor)); // parameter append block context
                 }
                 index++;
             }
@@ -287,11 +301,14 @@ public abstract class _DmlUtils {
 
         private final ParamMeta paramMeta;
 
-        private final ReadWrapper wrapper;
+        private final IDomain domain;
 
-        private DelayIdParamValue(ParamMeta paramMeta, ReadWrapper wrapper) {
+        private final ObjectAccessor accessor;
+
+        private DelayIdParamValue(ParamMeta paramMeta, IDomain domain, ObjectAccessor accessor) {
             this.paramMeta = paramMeta;
-            this.wrapper = wrapper;
+            this.domain = domain;
+            this.accessor = accessor;
         }
 
         @Override
@@ -302,7 +319,7 @@ public abstract class _DmlUtils {
         @Override
         public Object value() {
             final Object value;
-            value = this.wrapper.get(_MetaBridge.ID);
+            value = this.accessor.get(this.domain, _MetaBridge.ID);
             if (value == null) {
                 throw new IllegalStateException("parent insert statement don't execute.");
             }

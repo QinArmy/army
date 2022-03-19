@@ -40,6 +40,8 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     final boolean sqlLogShow;
 
+    final boolean useLargeUpdate;
+
 
     boolean closed;
 
@@ -54,6 +56,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
         this.sqlLogDynamic = this.env.get(ArmyKeys.SQL_LOG_DYNAMIC, Boolean.class, Boolean.FALSE);
         this.sqlLogShow = this.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE);
 
+        this.useLargeUpdate = this.env.get(ArmyKeys.JDBC_LARGE_UPDATE, Boolean.class, Boolean.TRUE);
     }
 
     @Override

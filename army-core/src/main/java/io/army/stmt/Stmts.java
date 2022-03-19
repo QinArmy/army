@@ -1,11 +1,12 @@
 package io.army.stmt;
 
-import io.army.bean.ObjectWrapper;
+import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NamedParam;
 import io.army.criteria.NonNullNamedParam;
 import io.army.criteria.Selection;
+import io.army.domain.IDomain;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
@@ -34,8 +35,8 @@ public abstract class Stmts {
     }
 
     public static GeneratedKeyStmt post(String sql, List<ParamValue> paramList
-            , List<ObjectWrapper> domainList, PrimaryFieldMeta<?> field) {
-        return new PostStmt(sql, paramList, domainList, field);
+            , List<IDomain> domainList, ObjectAccessor domainAccessor, PrimaryFieldMeta<?> field) {
+        return new PostStmt(sql, paramList, domainList, domainAccessor, field);
     }
 
     public static SimpleStmt dml(String sql, List<ParamValue> paramList, boolean hasOptimistic) {
@@ -255,15 +256,18 @@ public abstract class Stmts {
 
         private final List<ParamValue> paramGroup;
 
-        private final List<ObjectWrapper> domainList;
+        private final List<IDomain> domainList;
+
+        private final ObjectAccessor domainAccessor;
 
         private final PrimaryFieldMeta<?> field;
 
-        private PostStmt(String sql, List<ParamValue> paramGroup, List<ObjectWrapper> domainList
-                , PrimaryFieldMeta<?> field) {
+        private PostStmt(String sql, List<ParamValue> paramGroup, List<IDomain> domainList
+                , ObjectAccessor domainAccessor, PrimaryFieldMeta<?> field) {
             this.sql = sql;
             this.paramGroup = Collections.unmodifiableList(paramGroup);
             this.domainList = domainList;
+            this.domainAccessor = domainAccessor;
             this.field = field;
         }
 
@@ -273,7 +277,12 @@ public abstract class Stmts {
         }
 
         @Override
-        public List<ObjectWrapper> domainList() {
+        public ObjectAccessor domainAccessor() {
+            return this.domainAccessor;
+        }
+
+        @Override
+        public List<IDomain> domainList() {
             return this.domainList;
         }
 

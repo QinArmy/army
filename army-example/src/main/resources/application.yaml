@@ -19,4 +19,7 @@ army:
     sql:
       log:
         show: true
+    jdbc:
+      large:
+        update: false
 

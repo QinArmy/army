@@ -1,81 +1,88 @@
 package io.army.dialect;
 
-import io.army.bean.ObjectWrapper;
+import io.army.bean.ObjectAccessor;
 import io.army.criteria.CriteriaException;
+import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util.TimeUtils;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenerator {
+public abstract class _AbstractFieldValuesGenerator implements FieldGenerator {
 
     @Override
-    public final void generate(TableMeta<?> table, ObjectWrapper wrapper, final boolean migrationData) {
+    public final void generate(final TableMeta<?> table, final IDomain domain
+            , final ObjectAccessor accessor, final boolean migration) {
         if (!(table instanceof SimpleTableMeta)) {
-            discriminatorValue(table, wrapper);
+            discriminatorValue(table, domain, accessor);
         }
-        if (migrationData) {
-            checkArmyManagerFields(table, wrapper);
+        if (migration) {
+            checkArmyManagerFields(table, domain, accessor);
         } else {
-            reservedFields(table, wrapper);
-            generatorChan(table, wrapper);
+            reservedFields(table, domain, accessor);
+            generatorChan(table, domain, accessor);
         }
     }
 
 
     protected abstract ZoneOffset zoneOffset();
 
-    protected abstract void generatorChan(TableMeta<?> table, ObjectWrapper wrapper);
+    protected abstract void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor);
 
 
-    private void reservedFields(TableMeta<?> table, ObjectWrapper wrapper) {
-        final TableMeta<?> domain;
+    private void reservedFields(final TableMeta<?> table, final IDomain domain, final ObjectAccessor accessor) {
+        final TableMeta<?> parent;
         if (table instanceof ChildTableMeta) {
-            domain = ((ChildTableMeta<?>) table).parentMeta();
+            parent = ((ChildTableMeta<?>) table).parentMeta();
         } else {
-            domain = table;
+            parent = table;
         }
 
         final OffsetDateTime now = OffsetDateTime.now(this.zoneOffset());
-        createDateTimeValue(domain.getField(_MetaBridge.CREATE_TIME), now, wrapper);
-        if (!domain.immutable()) {
-            createDateTimeValue(domain.getField(_MetaBridge.UPDATE_TIME), now, wrapper);
+        createDateTimeValue(parent.getField(_MetaBridge.CREATE_TIME), now, domain, accessor);
+        if (!parent.immutable()) {
+            createDateTimeValue(parent.getField(_MetaBridge.UPDATE_TIME), now, domain, accessor);
         }
 
-        FieldMeta<?> field;
-        if (domain.containField(_MetaBridge.VERSION)) {
-            field = domain.getField(_MetaBridge.VERSION);
-            Class<?> javaType = field.javaType();
+        if (parent.containField(_MetaBridge.VERSION)) {
+            final FieldMeta<?> field;
+            field = parent.getField(_MetaBridge.VERSION);
+            final Class<?> javaType = field.javaType();
             if (javaType == Integer.class) {
-                wrapper.set(_MetaBridge.VERSION, 0);
+                accessor.set(domain, _MetaBridge.VERSION, 0);
             } else if (javaType == Long.class) {
-                wrapper.set(_MetaBridge.VERSION, 0L);
+                accessor.set(domain, _MetaBridge.VERSION, 0L);
+            } else if (javaType == BigInteger.class) {
+                accessor.set(domain, _MetaBridge.VERSION, BigInteger.ZERO);
             } else {
                 String m = String.format("%s not support java type[%s]", field, javaType.getName());
                 throw new MetaException(m);
             }
         }
 
-        if (domain.containField(_MetaBridge.VISIBLE) && wrapper.get(_MetaBridge.VISIBLE) == null) {
-            wrapper.set(_MetaBridge.VISIBLE, Boolean.TRUE);
+        if (parent.containField(_MetaBridge.VISIBLE) && accessor.get(domain, _MetaBridge.VISIBLE) == null) {
+            accessor.set(domain, _MetaBridge.VISIBLE, Boolean.TRUE);
         }
 
     }
 
 
-    private void createDateTimeValue(FieldMeta<?> field, OffsetDateTime now, ObjectWrapper wrapper) {
+    private void createDateTimeValue(final FieldMeta<?> field, final OffsetDateTime now, final IDomain domain
+            , final ObjectAccessor accessor) {
         final Class<?> javaType = field.javaType();
         if (javaType == LocalDateTime.class) {
-            wrapper.set(field.fieldName(), now.withOffsetSameInstant(TimeUtils.systemZoneOffset()).toLocalDateTime());
+            LocalDateTime value = now.withOffsetSameInstant(TimeUtils.systemZoneOffset()).toLocalDateTime();
+            accessor.set(domain, field.fieldName(), value);
         } else if (javaType == OffsetDateTime.class) {
-            wrapper.set(field.fieldName(), now);
+            accessor.set(domain, field.fieldName(), now);
         } else if (javaType == ZonedDateTime.class) {
-            wrapper.set(field.fieldName(), now.toZonedDateTime());
+            accessor.set(domain, field.fieldName(), now.toZonedDateTime());
         } else {
             String m = String.format("%s not support java type[%s]", field, javaType.getName());
             throw new MetaException(m);
@@ -83,59 +90,61 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValuesGenera
     }
 
 
-    private <E extends Enum<E> & CodeEnum> void discriminatorValue(TableMeta<?> table, ObjectWrapper wrapper) {
-        final TableMeta<?> domain;
+    private void discriminatorValue(final TableMeta<?> table, final IDomain domain, final ObjectAccessor accessor) {
+        final TableMeta<?> parent;
         if (table instanceof ChildTableMeta) {
-            domain = ((ChildTableMeta<?>) table).parentMeta();
+            parent = ((ChildTableMeta<?>) table).parentMeta();
         } else if (table instanceof ParentTableMeta) {
-            domain = table;
+            parent = table;
         } else {
             throw new IllegalArgumentException("table error");
         }
         final FieldMeta<?> discriminator;
-        discriminator = domain.discriminator();
+        discriminator = parent.discriminator();
         final CodeEnum codeEnum;
         codeEnum = CodeEnum.resolve(discriminator.javaType(), table.discriminatorValue());
         if (codeEnum == null) {
-            String m = String.format("%s code[%s] no mapping.", discriminator.javaType().getName(), table.discriminatorValue());
+            String m = String.format("%s code[%s] no mapping.", discriminator.javaType().getName()
+                    , table.discriminatorValue());
             throw new MetaException(m);
         }
-        wrapper.set(discriminator.fieldName(), codeEnum);
+        accessor.set(domain, discriminator.fieldName(), codeEnum);
     }
 
-    private void checkArmyManagerFields(TableMeta<?> table, ObjectWrapper wrapper) {
-        if (wrapper.get(_MetaBridge.ID) == null) {
+    private void checkArmyManagerFields(final TableMeta<?> table, final IDomain domain, final ObjectAccessor accessor) {
+        if (accessor.get(domain, _MetaBridge.ID) == null) {
             throw nullValueErrorForMigration(table.id());
         }
 
-        final TableMeta<?> domain;
+        final TableMeta<?> parent;
         if (table instanceof ChildTableMeta) {
-            domain = ((ChildTableMeta<?>) table).parentMeta();
+            parent = ((ChildTableMeta<?>) table).parentMeta();
         } else {
-            domain = table;
+            parent = table;
         }
-        if (wrapper.get(_MetaBridge.CREATE_TIME) == null) {
-            throw nullValueErrorForMigration(domain.getField(_MetaBridge.CREATE_TIME));
-        }
-
-        if (!domain.immutable() && wrapper.get(_MetaBridge.UPDATE_TIME) == null) {
-            throw nullValueErrorForMigration(domain.getField(_MetaBridge.UPDATE_TIME));
-        }
-        if (domain.containField(_MetaBridge.VERSION) && wrapper.get(_MetaBridge.VERSION) == null) {
-            throw nullValueErrorForMigration(domain.getField(_MetaBridge.VERSION));
-        }
-        if (domain.containField(_MetaBridge.VISIBLE) && wrapper.get(_MetaBridge.VISIBLE) == null) {
-            throw nullValueErrorForMigration(domain.getField(_MetaBridge.VISIBLE));
+        if (accessor.get(domain, _MetaBridge.CREATE_TIME) == null) {
+            throw nullValueErrorForMigration(parent.getField(_MetaBridge.CREATE_TIME));
         }
 
+        if (!parent.immutable() && accessor.get(domain, _MetaBridge.UPDATE_TIME) == null) {
+            throw nullValueErrorForMigration(parent.getField(_MetaBridge.UPDATE_TIME));
+        }
+        if (parent.containField(_MetaBridge.VERSION) && accessor.get(domain, _MetaBridge.VERSION) == null) {
+            throw nullValueErrorForMigration(parent.getField(_MetaBridge.VERSION));
+        }
+        if (parent.containField(_MetaBridge.VISIBLE) && accessor.get(domain, _MetaBridge.VISIBLE) == null) {
+            throw nullValueErrorForMigration(parent.getField(_MetaBridge.VISIBLE));
+        }
+
+        //TODO 验证这个设计 的合理性
         for (FieldMeta<?> field : table.generatorChain()) {
-            if (wrapper.get(field.fieldName()) == null) {
+            if (accessor.get(domain, field.fieldName()) == null) {
                 throw nullValueErrorForMigration(field);
             }
         }
-        if (table != domain) {
-            for (FieldMeta<?> field : domain.generatorChain()) {
-                if (wrapper.get(field.fieldName()) == null) {
+        if (table != parent) {
+            for (FieldMeta<?> field : parent.generatorChain()) {
+                if (accessor.get(domain, field.fieldName()) == null) {
                     throw nullValueErrorForMigration(field);
                 }
             }

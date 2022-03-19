@@ -2,10 +2,11 @@ package io.army.jdbc;
 
 import io.army.ArmyException;
 import io.army.ArmyKeys;
-import io.army.bean.ObjectWrapper;
+import io.army.bean.ObjectAccessor;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.Selection;
+import io.army.domain.IDomain;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -29,6 +30,7 @@ import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 abstract class JdbcStmtExecutor implements StmtExecutor {
 
@@ -74,7 +76,30 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
 
     @Override
-    public final <T> List<T> select(Stmt stmt, int txTimeout, Class<T> resultClass) {
+    public final <T> List<T> select(final SimpleStmt stmt, final int timeout, final Class<T> resultClass
+            , final Supplier<List<T>> listConstructor) {
+        final String sql = stmt.sql();
+        try (PreparedStatement statement = this.conn.prepareStatement(sql)) {
+
+            bindParameter(statement, stmt.paramGroup());
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            final List<T> list = listConstructor.get();
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+            }
+            return list;
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
+    }
+
+    @Override
+    public final List<Map<String, Object>> selectAsMap(SimpleStmt stmt, int timeout
+            , Supplier<Map<String, Object>> mapConstructor, Supplier<List<Map<String, Object>>> listConstructor)
+            throws DataAccessException {
         return null;
     }
 
@@ -255,7 +280,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         }
         try (PreparedStatement statement = this.conn.prepareStatement(sql, resultSetType)) {
 
-            bindParameter(statement, stmt.paramGroup(), stmt);
+            bindParameter(statement, stmt.paramGroup());
 
             if (timeoutSeconds > 0) {
                 statement.setQueryTimeout(timeoutSeconds);
@@ -264,7 +289,11 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
             if (returningId) {
                 rows = doExtractId(statement.executeQuery(), (GeneratedKeyStmt) stmt);
             } else {
-                rows = statement.executeLargeUpdate();
+                if (factory.useLargeUpdate) {
+                    rows = statement.executeLargeUpdate();
+                } else {
+                    rows = statement.executeUpdate();
+                }
                 if (resultSetType == Statement.RETURN_GENERATED_KEYS) {
                     getGenerateKeys(statement, rows, (GeneratedKeyStmt) stmt);
                 }
@@ -281,7 +310,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     /**
      * @see #executeInsert(SimpleStmt, int)
      */
-    private void bindParameter(final PreparedStatement statement, final List<ParamValue> paramGroup, final Stmt stmt)
+    private void bindParameter(final PreparedStatement statement, final List<ParamValue> paramGroup)
             throws SQLException {
         final int size = paramGroup.size();
         final ServerMeta serverMeta = this.factory.serverMeta;
@@ -334,7 +363,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
      */
     private void getGenerateKeys(PreparedStatement statement, final long insertedRows, final GeneratedKeyStmt stmt)
             throws SQLException {
-        final List<ObjectWrapper> domainList = stmt.domainList();
+        final List<IDomain> domainList = stmt.domainList();
         if (insertedRows != domainList.size()) {
             throw valueInsertDomainWrapperSizeError(insertedRows, domainList.size());
         }
@@ -363,21 +392,22 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
      * @see #getGenerateKeys(PreparedStatement, long, GeneratedKeyStmt)
      */
     private static int doExtractId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
-        final List<ObjectWrapper> domainList = stmt.domainList();
+        final List<IDomain> domainList = stmt.domainList();
         int index = 0;
         try (ResultSet resultSet = idResultSet) {
             final String primaryKeyName = stmt.primaryKeyName();
             final PrimaryFieldMeta<?> idField = stmt.idMeta();
             final Class<?> idJavaType = idField.javaType();
-            ObjectWrapper wrapper;
+            final ObjectAccessor accessor = stmt.domainAccessor();
+            IDomain domain;
             for (; resultSet.next(); index++) {
-                wrapper = domainList.get(index);
-                if (idJavaType == Long.class) {
-                    wrapper.set(primaryKeyName, resultSet.getLong(1));
-                } else if (idJavaType == Integer.class) {
-                    wrapper.set(primaryKeyName, resultSet.getInt(1));
+                domain = domainList.get(index);
+                if (idJavaType == Integer.class) {
+                    accessor.set(domain, primaryKeyName, resultSet.getInt(1));
+                } else if (idJavaType == Long.class) {
+                    accessor.set(domain, primaryKeyName, resultSet.getLong(1));
                 } else if (idJavaType == BigInteger.class) {
-                    wrapper.set(primaryKeyName, resultSet.getObject(1, BigInteger.class));
+                    accessor.set(domain, primaryKeyName, resultSet.getObject(1, BigInteger.class));
                 } else {
                     throw _Exceptions.autoIdErrorJavaType(idField);
                 }

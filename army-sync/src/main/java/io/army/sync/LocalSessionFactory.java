@@ -98,7 +98,8 @@ final class LocalSessionFactory extends AbstractSessionFactory implements Sessio
 
     @Override
     public String toString() {
-        return String.format("%s[%s] readonly:%s.", SessionFactory.class.getName(), this.name, this.readonly);
+        return String.format("[%s name:%s,readonly:%s]"
+                , SessionFactory.class.getName(), this.name, this.readonly);
     }
 
     /*################################## blow package method ##################################*/

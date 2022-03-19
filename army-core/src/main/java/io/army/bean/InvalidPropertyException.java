@@ -1,34 +1,19 @@
 package io.army.bean;
 
-import io.army.ErrorCode;
 
-public class InvalidPropertyException extends FatalBeanException {
+public class InvalidPropertyException extends ObjectAccessException {
 
 
     private final Class<?> beanClass;
 
     private final String propertyName;
 
-     InvalidPropertyException(ErrorCode errorCode, String propertyName,
-                              Class<?> beanClass, String format, Object... args) {
-         super(errorCode, format, args);
-         this.beanClass = beanClass;
-         this.propertyName = propertyName;
-     }
-
-    InvalidPropertyException(ErrorCode errorCode, Throwable cause, String propertyName,
-                             Class<?> beanClass, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    public InvalidPropertyException(String message, Class<?> beanClass, String propertyName) {
+        super(message);
         this.beanClass = beanClass;
         this.propertyName = propertyName;
     }
 
-    InvalidPropertyException(String propertyName,
-                             Class<?> beanClass, String format, Object... args) {
-        super(ErrorCode.NONE, format, args);
-        this.beanClass = beanClass;
-        this.propertyName = propertyName;
-    }
 
     public Class<?> getBeanClass() {
         return beanClass;

@@ -1,12 +1,13 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.bean.ObjectWrapper;
-import io.army.bean.ReadWrapper;
+import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
@@ -38,13 +39,17 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
         }
     }
 
+    final boolean migration;
+
     final SingleTableMeta<?> table;
 
     final List<FieldMeta<?>> fieldList;
 
     final Map<FieldMeta<?>, _Expression> commonExpMap;
 
-    final List<ObjectWrapper> domainList;
+    final ObjectAccessor domainAccessor;
+
+    final List<IDomain> domainList;
 
     final NullHandleMode nullHandleMode;
 
@@ -56,16 +61,17 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     private StandardValueInsertContext(_ValuesInsert insert, _Dialect dialect, Visible visible) {
         super(dialect, visible);
 
+        this.migration = insert.isMigration();
         this.commonExpMap = insert.commonExpMap();
         this.domainList = insert.domainList();
 
-        if (insert.fieldList().size() == 0) {
+        if (!this.migration && insert.fieldList().size() == 0) {
             this.nullHandleMode = insert.nullHandle();
         } else {
             this.nullHandleMode = NullHandleMode.INSERT_NULL;
         }
-
         final TableMeta<?> table = insert.table();
+        this.domainAccessor = ObjectAccessorFactory.forBean(table.javaType());
         if (table instanceof ChildTableMeta) {
             final ChildTableMeta<?> childTable = ((ChildTableMeta<?>) table);
             this.table = childTable.parentMeta();
@@ -95,7 +101,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
     @Override
-    public List<? extends ReadWrapper> domainList() {
+    public List<IDomain> domainList() {
         return this.domainList;
     }
 
@@ -125,7 +131,8 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
         if (returnId != null) {
             parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList, returnId);
         } else if (this.table.id().generatorType() == GeneratorType.POST) {
-            parentStmt = Stmts.post(this.sqlBuilder.toString(), this.paramList, this.domainList, this.table.id());
+            parentStmt = Stmts.post(this.sqlBuilder.toString(), this.paramList, this.domainList, this.domainAccessor
+                    , this.table.id());
         } else {
             parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
         }
@@ -147,6 +154,11 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
     @Override
+    public boolean migration() {
+        return this.migration;
+    }
+
+    @Override
     public NullHandleMode nullHandle() {
         return this.nullHandleMode;
     }
@@ -154,6 +166,11 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     @Override
     public Map<FieldMeta<?>, _Expression> commonExpMap() {
         return this.commonExpMap;
+    }
+
+    @Override
+    public ObjectAccessor domainAccessor() {
+        return this.domainAccessor;
     }
 
     void onParentEnd() {

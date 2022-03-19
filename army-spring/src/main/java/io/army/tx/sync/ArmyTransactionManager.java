@@ -401,8 +401,8 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public <T extends IDomain> TableMeta<T> table(Class<T> domainClass) {
-            return this.session.table(domainClass);
+        public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+            return this.session.tableMeta(domainClass);
         }
 
 
@@ -426,6 +426,11 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         public List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
                 , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
             return this.session.selectAsMap(select, mapConstructor, listConstructor, visible);
+        }
+
+        @Override
+        public <T extends IDomain> void save(T domain, NullHandleMode mode) {
+            this.session.save(domain, mode);
         }
 
         @Override
@@ -477,6 +482,11 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         public List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
                 , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
             return this.session.returningDeleteAsMap(delete, mapConstructor, listConstructor, visible);
+        }
+
+        @Override
+        public <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode) {
+            this.session.batchSave(domainList, mode);
         }
 
         @Override

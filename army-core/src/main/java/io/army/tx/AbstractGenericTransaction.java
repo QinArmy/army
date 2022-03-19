@@ -69,13 +69,14 @@ public abstract class AbstractGenericTransaction implements GenericTransaction {
     }
 
 
+
     @Override
     public final String toString() {
-        return String.format("%s[%s] of session[%s] status[%s] isolation:%s readOnly:%s rest:%s ms."
+        return String.format("[%s name:%s,session:%s,status:%s,isolation:%s,readonly:%s,timeout:%s s,rest:%s ms]"
                 , this.getClass().getName(), this.name
                 , this.session().name(), this.status()
                 , this.isolation, this.readonly
-                , System.currentTimeMillis() - this.startMills);
+                , this.timeoutMills / 1000L, System.currentTimeMillis() - this.startMills);
     }
 
 

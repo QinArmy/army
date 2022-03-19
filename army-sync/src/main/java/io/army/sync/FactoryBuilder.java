@@ -6,7 +6,7 @@ import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
-import io.army.generator.FieldGenerator;
+import io.army.generator._FieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -90,7 +90,7 @@ public interface FactoryBuilder {
      * Optional.
      * </p>
      */
-    FactoryBuilder fieldGenerator(Map<FieldMeta<?>, FieldGenerator> generatorMap);
+    FactoryBuilder fieldGenerator(Map<FieldMeta<?>, _FieldGenerator> generatorMap);
 
 
     /**

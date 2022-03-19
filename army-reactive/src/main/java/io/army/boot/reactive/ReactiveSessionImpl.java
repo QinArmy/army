@@ -66,7 +66,7 @@ final class ReactiveSessionImpl extends AbstractGenericReactiveRmSession<Databas
     }
 
     @Override
-    public <T extends IDomain> TableMeta<T> table(Class<T> domainClass) {
+    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
         return null;
     }
 

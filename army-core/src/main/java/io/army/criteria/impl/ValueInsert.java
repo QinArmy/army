@@ -1,7 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ObjectAccessorFactory;
-import io.army.bean.ObjectWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
@@ -34,7 +32,7 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
     private Map<FieldMeta<?>, _Expression> commonExpMap;
 
-    private List<ObjectWrapper> wrapperList;
+    private List<IDomain> domainList;
 
     ValueInsert(TableMeta<T> table, CriteriaContext criteriaContext) {
         super(table, criteriaContext);
@@ -111,7 +109,8 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
     @Override
     public final InsertSpec value(T domain) {
-        this.wrapperList = Collections.singletonList(ObjectAccessorFactory.forBeanPropertyAccess(domain));
+        Objects.requireNonNull(domain);
+        this.domainList = Collections.singletonList(domain);
         return this;
     }
 
@@ -137,11 +136,7 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
     @Override
     public final InsertSpec values(List<T> domainList) {
-        final List<ObjectWrapper> wrapperList = new ArrayList<>(domainList.size());
-        for (T domain : domainList) {
-            wrapperList.add(ObjectAccessorFactory.forBeanPropertyAccess(domain));
-        }
-        this.wrapperList = Collections.unmodifiableList(wrapperList);
+        this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
         return this;
     }
 
@@ -166,14 +161,14 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
         final List<?> domainList = (List<?>) value;
         final Class<T> javaType = this.table.javaType();
 
-        final List<ObjectWrapper> wrapperList = new ArrayList<>(domainList.size());
+        final List<IDomain> list = new ArrayList<>(domainList.size());
         for (Object domain : domainList) {
             if (domain == null || domain.getClass() != javaType) {
                 throw domainTypeNotMatch(domain);
             }
-            wrapperList.add(ObjectAccessorFactory.forBeanPropertyAccess(domain));
+            list.add((IDomain) domain);
         }
-        this.wrapperList = Collections.unmodifiableList(wrapperList);
+        this.domainList = Collections.unmodifiableList(list);
         return this;
     }
 
@@ -186,7 +181,7 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        if (CollectionUtils.isEmpty(this.wrapperList)) {
+        if (CollectionUtils.isEmpty(this.domainList)) {
             throw _Exceptions.castCriteriaApi();
         }
         final Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
@@ -219,9 +214,9 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
     }
 
     @Override
-    public final List<ObjectWrapper> domainList() {
+    public final List<IDomain> domainList() {
         prepared();
-        return this.wrapperList;
+        return this.domainList;
     }
 
     @Override
@@ -230,7 +225,7 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
         this.prepared = false;
         this.migration = false;
         this.commonExpMap = null;
-        this.wrapperList = null;
+        this.domainList = null;
         this.onClear();
     }
 

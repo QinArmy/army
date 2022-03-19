@@ -83,7 +83,7 @@ class ReactiveSessionFactoryImpl extends AbstractSessionFactory implements Inner
 
         this.currentSessionContext = SessionFactoryUtils.createCurrentSessionContext(this);
         this.proxyReactiveSession = ProxyReactiveSessionImpl.build(this, this.currentSessionContext);
-        this.domainValuesGenerator = DomainValuesGenerator.build(this);
+        this.domainValuesGenerator = null;
 
         this.sessionCacheFactory = SessionCacheFactory.build(this);
         // create domain advice map

@@ -27,4 +27,6 @@ public interface ArmyKeys {
 
     String SQL_LOG_DEBUG = "sql.log.debug";
 
+    String JDBC_LARGE_UPDATE = "jdbc.large.update";
+
 }

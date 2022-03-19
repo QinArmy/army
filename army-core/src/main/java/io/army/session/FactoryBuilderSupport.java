@@ -7,7 +7,7 @@ import io.army.codec.FieldCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
-import io.army.generator.FieldGenerator;
+import io.army.generator._FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
@@ -33,7 +33,7 @@ public abstract class FactoryBuilderSupport {
     protected SchemaMeta schemaMeta = _SchemaMetaFactory.getSchema("", "");
     protected Function<ArmyException, RuntimeException> exceptionFunction;
 
-    protected Map<FieldMeta<?>, FieldGenerator> generatorMap = Collections.emptyMap();
+    protected Map<FieldMeta<?>, _FieldGenerator> generatorMap = Collections.emptyMap();
 
     protected Collection<FactoryAdvice> factoryAdvices;
 

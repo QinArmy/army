@@ -45,6 +45,6 @@ package io.army.generator;
  * @see io.army.annotation.Generator
  * @see PreFieldGenerator
  */
-public interface FieldGenerator {
+public interface _FieldGenerator {
 
 }
