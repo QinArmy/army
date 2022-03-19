@@ -14,5 +14,7 @@ public interface BaseService {
 
     <T extends Domain> Mono<Void> save(T domain);
 
+    <T extends Domain> Mono<T> findById(Class<T> domainClass, Object id);
+
 
 }

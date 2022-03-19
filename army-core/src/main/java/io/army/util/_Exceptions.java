@@ -407,5 +407,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new TransactionTimeOutException(String.format("transaction timeout,reset %s", resetMillis));
     }
 
+    public static ArmyException expectedTypeAndResultNotMatch(Selection selection, Class<?> resultType) {
+        String m = String.format("expected type %s and query result mapping type %s not match."
+                , resultType.getName(), selection.paramMeta().mappingType().getClass().getName());
+        throw new ArmyException(m);
+    }
+
 
 }

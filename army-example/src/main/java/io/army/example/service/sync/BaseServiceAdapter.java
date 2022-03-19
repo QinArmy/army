@@ -16,7 +16,7 @@ public class BaseServiceAdapter implements BaseService {
 
     @Override
     public <T extends Domain> Mono<T> get(Class<T> domainClass, Object id) {
-        return Mono.defer(() -> Mono.just(getBaseService().get(domainClass, id)));
+        return Mono.defer(() -> Mono.justOrEmpty(getBaseService().get(domainClass, id)));
     }
 
     @Override
@@ -27,6 +27,10 @@ public class BaseServiceAdapter implements BaseService {
         });
     }
 
+    @Override
+    public <T extends Domain> Mono<T> findById(Class<T> domainClass, Object id) {
+        return Mono.defer(() -> Mono.justOrEmpty(getBaseService().findById(domainClass, id)));
+    }
 
     protected SyncBaseService getBaseService() {
         return this.baseService;

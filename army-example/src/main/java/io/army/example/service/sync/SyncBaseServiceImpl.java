@@ -31,6 +31,11 @@ public class SyncBaseServiceImpl implements SyncBaseService {
         getBaseDao().save(domain);
     }
 
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
+    @Override
+    public <T extends Domain> T findById(Class<T> domainClass, Object id) {
+        return this.baseDao.findById(domainClass, id);
+    }
 
     protected BaseDao getBaseDao() {
         return this.baseDao;

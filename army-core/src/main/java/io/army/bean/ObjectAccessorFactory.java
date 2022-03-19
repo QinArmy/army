@@ -3,6 +3,7 @@ package io.army.bean;
 
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -46,6 +47,16 @@ public abstract class ObjectAccessorFactory {
 
     public static ObjectAccessor forBean(final Class<?> beanClass) {
         return new BeanWriterAccessor(getBeanAccessors(beanClass));
+    }
+
+    public static Object createBean(final Class<?> beanClass) {
+        try {
+            return beanClass.getConstructor().newInstance();
+        } catch (InstantiationException | NoSuchMethodException
+                | InvocationTargetException | IllegalAccessException e) {
+            String m = String.format("%s don't declared public default constructor.", beanClass.getName());
+            throw new ObjectAccessException(m, e);
+        }
     }
 
 

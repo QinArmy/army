@@ -3,10 +3,12 @@ package io.army.jdbc;
 import io.army.ArmyException;
 import io.army.ArmyKeys;
 import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectAccessorFactory;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -75,26 +77,59 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
     public final <T> List<T> select(final SimpleStmt stmt, final int timeout, final Class<T> resultClass
             , final Supplier<List<T>> listConstructor) {
+        final JdbcExecutorFactory factory = this.factory;
         final String sql = stmt.sql();
+
+        if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
+                || factory.sqlLogShow) {
+            getLogger().info(SQL_LOG_FORMAT, sql);
+        }
+        final List<Selection> selectionList = stmt.selectionList();
         try (PreparedStatement statement = this.conn.prepareStatement(sql)) {
 
             bindParameter(statement, stmt.paramGroup());
             if (timeout > 0) {
                 statement.setQueryTimeout(timeout);
             }
-
             final List<T> list = listConstructor.get();
             try (ResultSet resultSet = statement.executeQuery()) {
-
+                final ObjectAccessor accessor;
+                final Selection singleSelection;
+                if (selectionList.size() == 1) {
+                    accessor = null;
+                    singleSelection = selectionList.get(0);
+                } else {
+                    singleSelection = null;
+                    accessor = ObjectAccessorFactory.forBean(resultClass);
+                }
+                for (Object bean, columnValue; resultSet.next(); ) {
+                    if (accessor == null) {
+                        columnValue = getColumnValue(resultSet, singleSelection);
+                        if (columnValue != null && !resultClass.isInstance(columnValue)) {
+                            throw _Exceptions.expectedTypeAndResultNotMatch(singleSelection, resultClass);
+                        }
+                        list.add((T) columnValue);
+                        continue;
+                    }
+                    bean = ObjectAccessorFactory.createBean(resultClass);
+                    for (Selection selection : selectionList) {
+                        columnValue = getColumnValue(resultSet, selection);
+                        accessor.set(bean, selection.alias(), columnValue);
+                    }
+                    list.add((T) bean);
+                }
             }
             return list;
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);
         }
+
     }
+
 
     @Override
     public final List<Map<String, Object>> selectAsMap(SimpleStmt stmt, int timeout
@@ -175,6 +210,9 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
     abstract void bind(PreparedStatement stmt, int index, SqlType sqlDataType, Object nonNull)
             throws SQLException;
+
+    @Nullable
+    abstract Object get(ResultSet resultSet, String alias, SqlType sqlType) throws SQLException;
 
 
     final void setLongText(PreparedStatement stmt, int index, Object nonNull) throws SQLException {
@@ -341,6 +379,26 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
         }
 
+    }
+
+    @Nullable
+    private Object getColumnValue(final ResultSet resultSet, final Selection selection)
+            throws SQLException {
+        final ParamMeta paramMeta = selection.paramMeta();
+        final MappingType mappingType;
+        if (paramMeta instanceof MappingType) {
+            mappingType = (MappingType) paramMeta;
+        } else {
+            mappingType = paramMeta.mappingType();
+        }
+        final SqlType sqlType;
+        sqlType = mappingType.map(this.factory.serverMeta);
+        Object value;
+        value = get(resultSet, selection.alias(), sqlType);
+        if (value != null) {
+            value = mappingType.afterGet(sqlType, this.factory.mapEnv, value);
+        }
+        return value;
     }
 
 

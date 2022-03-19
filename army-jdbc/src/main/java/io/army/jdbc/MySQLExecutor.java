@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -154,6 +155,83 @@ final class MySQLExecutor extends JdbcStmtExecutor {
 
         }
 
+    }
+
+    @Override
+    Object get(final ResultSet resultSet, final String alias, final SqlType sqlType) throws SQLException {
+        final Object value;
+        switch ((MySqlType) sqlType) {
+            case TINYINT:
+            case TINYINT_UNSIGNED:
+            case SMALLINT:
+            case SMALLINT_UNSIGNED:
+            case MEDIUMINT:
+            case MEDIUMINT_UNSIGNED:
+            case INT:
+            case YEAR:
+                value = resultSet.getObject(alias, Integer.class);
+                break;
+            case INT_UNSIGNED:
+            case BIGINT:
+            case BIT:
+                value = resultSet.getObject(alias, Long.class);
+                break;
+            case DECIMAL:
+            case DECIMAL_UNSIGNED:
+                value = resultSet.getObject(alias, BigDecimal.class);
+                break;
+            case BOOLEAN:
+                value = resultSet.getObject(alias, Boolean.class);
+                break;
+            case DATETIME:
+                value = resultSet.getObject(alias, LocalDateTime.class);
+                break;
+            case DATE:
+                value = resultSet.getObject(alias, LocalDate.class);
+                break;
+            case TIME:
+                value = resultSet.getObject(alias, LocalTime.class);
+                break;
+            case CHAR:
+            case VARCHAR:
+            case ENUM:
+            case SET:
+            case TINYTEXT:
+            case TEXT:
+            case MEDIUMTEXT:
+            case LONGTEXT:
+            case JSON:
+                value = resultSet.getObject(alias, String.class);
+                break;
+            case FLOAT:
+                value = resultSet.getObject(alias, Float.class);
+                break;
+            case DOUBLE:
+                value = resultSet.getObject(alias, Double.class);
+                break;
+            case BIGINT_UNSIGNED:
+                value = resultSet.getObject(alias, BigInteger.class);
+                break;
+            case BINARY:
+            case VARBINARY:
+            case TINYBLOB:
+            case BLOB:
+            case MEDIUMBLOB:
+            case LONGBLOB:
+                //
+            case POINT:
+            case LINESTRING:
+            case POLYGON:
+            case MULTIPOINT:
+            case MULTIPOLYGON:
+            case MULTILINESTRING:
+            case GEOMETRYCOLLECTION:
+                value = resultSet.getObject(alias, byte[].class);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
+        }
+        return value;
     }
 
 

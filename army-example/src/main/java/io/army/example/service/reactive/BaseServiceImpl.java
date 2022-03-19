@@ -46,5 +46,11 @@ public class BaseServiceImpl implements BaseService, InitializingBean, Applicati
         throw new UnsupportedOperationException();
     }
 
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
+    @Override
+    public <T extends Domain> Mono<T> findById(Class<T> domainClass, Object id) {
+        throw new UnsupportedOperationException();
+    }
+
 
 }

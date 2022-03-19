@@ -156,11 +156,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             if (status.isDebug()) {
                 logger.debug(String.format("Committing Army transaction on %s", session));
             }
-            if (!tx.readOnly()) {
-                // commit transaction
-                session.flush();
-                tx.commit();
-            }
+            tx.commit();
         } catch (io.army.tx.TransactionException e) {
             throw SpringUtils.convertTransactionException(e);
         } catch (io.army.SessionException e) {
@@ -182,10 +178,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             if (status.isDebug()) {
                 logger.debug(String.format("Rolling Army transaction on %s", session));
             }
-            if (!tx.readOnly()) {
-                //rollback transaction and clear changed cache.
-                tx.rollback();
-            }
+            tx.rollback();
         } catch (io.army.tx.TransactionException e) {
             throw SpringUtils.convertTransactionException(e);
         }

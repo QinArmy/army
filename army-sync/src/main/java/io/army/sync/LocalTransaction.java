@@ -66,7 +66,9 @@ final class LocalTransaction extends AbstractGenericTransaction implements Trans
         this.status = TransactionStatus.COMMITTING;
         final LocalSession session = this.session;
         try {
-            session.flush();
+            if (!this.readonly) {
+                session.flush();
+            }
             session.stmtExecutor.execute("COMMIT");
             this.status = TransactionStatus.COMMITTED;
         } catch (DataAccessException e) {
@@ -87,6 +89,7 @@ final class LocalTransaction extends AbstractGenericTransaction implements Trans
     public void rollback() throws TransactionException {
         switch (this.status) {
             case ACTIVE:
+            case COMMITTING:// flush failure.
             case MARKED_ROLLBACK: {
                 this.status = TransactionStatus.ROLLING_BACK;
                 final LocalSession session = this.session;

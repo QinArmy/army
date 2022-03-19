@@ -12,6 +12,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -43,13 +44,18 @@ public class TestController implements InitializingBean, ApplicationContextAware
     }
 
 
-    @RequestMapping(value = "save/mysql/types", method = RequestMethod.POST)
+    @RequestMapping(value = "save/mysql/types/save", method = RequestMethod.POST)
     public Mono<MySQLTypes> saveMySQLTypes() {
         final MySQLTypes mySQLTypes = new MySQLTypes();
         mySQLTypes.myBigint = 8870L;
         mySQLTypes.myBit64 = -1L;
         return this.baseService.save(mySQLTypes)
                 .thenReturn(mySQLTypes);
+    }
+
+    @RequestMapping(value = "save/mysql/types/findById", method = RequestMethod.GET)
+    public Mono<MySQLTypes> findMySQLTypesById(@RequestParam(value = "id", required = false) Long id) {
+        return this.baseService.findById(MySQLTypes.class, id);
     }
 
 

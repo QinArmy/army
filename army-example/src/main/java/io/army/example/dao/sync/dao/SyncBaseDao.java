@@ -1,7 +1,11 @@
 package io.army.example.dao.sync.dao;
 
 import io.army.criteria.NullHandleMode;
+import io.army.criteria.Select;
+import io.army.criteria.impl.SQLs;
 import io.army.example.domain.Domain;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.sync.CurrentSessionContext;
 import io.army.sync.SessionFactory;
@@ -51,6 +55,33 @@ public class SyncBaseDao implements BaseDao {
         table = session.tableMeta(domainClass);
         return session.getByUnique(table, table.getUniqueField(fieldName), fieldValue);
     }
+
+    @Override
+    public <T extends Domain> T findById(Class<T> domainClass, Object id) {
+        final SyncSession session;
+        session = this.sessionContext.currentSession();
+        final TableMeta<T> table;
+        table = session.tableMeta(domainClass);
+
+        final Select stmt;
+        if (table instanceof ChildTableMeta) {
+            final ParentTableMeta<?> parent = ((ChildTableMeta<T>) table).parentMeta();
+            stmt = SQLs.query()
+                    .select(SQLs.childGroup((ChildTableMeta<? extends Domain>) table, "c", "p"))
+                    .from(table, "c")
+                    .join(parent, "p").on(table.id().equal(parent.id()))
+                    .where(table.id().equalLiteral(id))
+                    .asQuery();
+        } else {
+            stmt = SQLs.query()
+                    .select(SQLs.group(table, "t"))
+                    .from(table, "t")
+                    .where(table.id().equalLiteral(id))
+                    .asQuery();
+        }
+        return session.selectOne(stmt, domainClass);
+    }
+
 
     @Override
     public void flush() {

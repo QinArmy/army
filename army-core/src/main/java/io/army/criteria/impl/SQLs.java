@@ -470,6 +470,7 @@ public abstract class SQLs extends StandardFunctions {
         return SelectionGroups.childGroup(child, childAlias, parentAlias);
     }
 
+
     public static SelectionGroup derivedGroup(String subQueryAlias) {
         return SelectionGroups.buildDerivedGroup(subQueryAlias);
     }
