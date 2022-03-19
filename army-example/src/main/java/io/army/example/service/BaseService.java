@@ -1,7 +1,10 @@
 package io.army.example.service;
 
+import io.army.domain.IDomain;
 import io.army.example.domain.Domain;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 public interface BaseService {
 
@@ -16,5 +19,5 @@ public interface BaseService {
 
     <T extends Domain> Mono<T> findById(Class<T> domainClass, Object id);
 
-
+    Mono<Map<String, Object>> findByIdAsMap(Class<? extends IDomain> domainClass, Object id);
 }

@@ -1,7 +1,5 @@
 package io.army.boot.reactive;
 
-import io.army.SessionException;
-import io.army.SessionUsageException;
 import io.army.cache.UniqueKey;
 import io.army.criteria.Delete;
 import io.army.criteria.Insert;
@@ -14,6 +12,8 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.reactive.Session;
 import io.army.reactive.SessionFactory;
+import io.army.session.SessionException;
+import io.army.session.SessionUsageException;
 import io.army.stmt.Stmt;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;

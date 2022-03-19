@@ -2,6 +2,8 @@ package io.army.sync.executor;
 
 import io.army.session.DataAccessException;
 import io.army.session.Executor;
+import io.army.session.OptimisticLockException;
+import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 
@@ -25,7 +27,13 @@ public interface StmtExecutor extends Executor {
     /**
      * @throws io.army.session.DataAccessException when access database occur error.
      */
-    int update(Stmt stmt, int txTimeout) throws DataAccessException;
+    long update(SimpleStmt stmt, int timeout) throws DataAccessException;
+
+    /**
+     * @return a unmodified list.
+     * @throws OptimisticLockException
+     */
+    List<Long> batchUpdate(BatchStmt stmt, int timeout) throws DataAccessException;
 
     <T> List<T> select(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
             throws DataAccessException;

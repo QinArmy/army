@@ -3,7 +3,6 @@ package io.army.sync;
 import io.army.ArmyException;
 import io.army.ArmyKeys;
 import io.army.DdlMode;
-import io.army.SessionFactoryException;
 import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
@@ -18,6 +17,7 @@ import io.army.meta.TableMeta;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.session.FactoryBuilderSupport;
+import io.army.session.SessionFactoryException;
 import io.army.sync.executor.ExecutorEnvironment;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.ExecutorProvider;
@@ -45,7 +45,7 @@ final class LocalFactoryBuilder extends FactoryBuilderSupport implements Factory
 
     ExecutorFactory executorFactory;
 
-    CurrentSessionContext currentSessionContext;
+    SessionContext sessionContext;
 
 
     @Override
@@ -112,8 +112,8 @@ final class LocalFactoryBuilder extends FactoryBuilderSupport implements Factory
     }
 
     @Override
-    public FactoryBuilder currentSessionContext(CurrentSessionContext context) {
-        this.currentSessionContext = context;
+    public FactoryBuilder currentSessionContext(SessionContext context) {
+        this.sessionContext = context;
         return this;
     }
 

@@ -1,9 +1,11 @@
 package io.army.example.dao.sync.dao;
 
+import io.army.domain.IDomain;
 import io.army.example.domain.Domain;
 import io.army.lang.Nullable;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BaseDao {
 
@@ -19,6 +21,9 @@ public interface BaseDao {
 
     @Nullable
     <T extends Domain> T findById(Class<T> domainClass, Object id);
+
+    @Nullable
+    Map<String, Object> findByIdAsMap(Class<? extends IDomain> domainClass, Object id);
 
     void flush();
 

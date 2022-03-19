@@ -1,4 +1,4 @@
-package io.army;
+package io.army.session;
 
 public class CreateSessionException extends SessionException {
 

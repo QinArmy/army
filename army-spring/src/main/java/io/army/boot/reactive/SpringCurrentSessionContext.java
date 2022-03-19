@@ -1,8 +1,8 @@
 package io.army.boot.reactive;
 
-import io.army.NoCurrentSessionException;
 import io.army.reactive.GenericReactiveApiSession;
 import io.army.reactive.GenericReactiveApiSessionFactory;
+import io.army.session.NoCurrentSessionException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.reactive.TransactionSynchronizationManager;
 import reactor.core.publisher.Mono;

@@ -1,8 +1,8 @@
 package io.army.sync;
 
-import io.army.SessionFactoryException;
 import io.army.session.GenericSession;
 import io.army.session.GenericSessionFactory;
+import io.army.session.SessionFactoryException;
 
 
 /**

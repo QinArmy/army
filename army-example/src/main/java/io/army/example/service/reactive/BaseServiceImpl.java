@@ -1,5 +1,6 @@
 package io.army.example.service.reactive;
 
+import io.army.domain.IDomain;
 import io.army.example.domain.Domain;
 import io.army.example.service.BaseService;
 import org.springframework.beans.BeansException;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 @Component("baseServiceDispatcher")
 @Profile(BaseService.REACTIVE)
@@ -46,9 +49,15 @@ public class BaseServiceImpl implements BaseService, InitializingBean, Applicati
         throw new UnsupportedOperationException();
     }
 
-    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
     @Override
     public <T extends Domain> Mono<T> findById(Class<T> domainClass, Object id) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
+    @Override
+    public Mono<Map<String, Object>> findByIdAsMap(Class<? extends IDomain> domainClass, Object id) {
         throw new UnsupportedOperationException();
     }
 

@@ -1,6 +1,9 @@
 package io.army.sync;
 
-import io.army.NoCurrentSessionException;
+import io.army.session.NoCurrentSessionException;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * This interface's implementation must definite a public static build method like below.
@@ -13,7 +16,7 @@ import io.army.NoCurrentSessionException;
  * }
  * }
  */
-public interface CurrentSessionContext {
+public interface SessionContext {
 
     SessionFactory sessionFactory();
 
@@ -29,5 +32,12 @@ public interface CurrentSessionContext {
      */
     SyncSession currentSession() throws NoCurrentSessionException;
 
+    void executeWithTempSession(Consumer<SyncSession> consumer);
+
+    void executeWithTempSession(boolean readonly, Consumer<SyncSession> consumer);
+
+    <T> T returnWithTempSession(Function<SyncSession, T> function);
+
+    <T> T returnWithTempSession(boolean readonly, Function<SyncSession, T> function);
 
 }

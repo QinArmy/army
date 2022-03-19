@@ -1,7 +1,7 @@
 package io.army.tx.sync;
 
 import io.army.DataAccessException_0;
-import io.army.SessionException;
+import io.army.session.SessionException;
 import io.army.tx.Isolation;
 import io.army.tx.TransactionException;
 import org.springframework.core.NestedRuntimeException;

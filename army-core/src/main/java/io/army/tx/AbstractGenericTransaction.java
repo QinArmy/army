@@ -52,22 +52,22 @@ public abstract class AbstractGenericTransaction implements GenericTransaction {
     @Override
     public final int nextTimeout() throws TransactionTimeOutException {
         final long timeoutMills = this.timeoutMills;
-        if (timeoutMills < 0) {
+        if (timeoutMills < 1000L) {
             return 0;
         }
-        final long restMills = System.currentTimeMillis() - this.startMills;
-        if (restMills < 1L) {
+        final long restMills;
+        restMills = timeoutMills - (System.currentTimeMillis() - this.startMills);
+        if (restMills < 0L) {
             throw _Exceptions.timeout((int) (timeoutMills / 1000L), restMills);
         }
         final int timeout;
-        if (restMills % 1000L == 0) {
+        if (restMills % 1000L == 0L) {
             timeout = (int) (restMills / 1000L);
         } else {
-            timeout = (int) (restMills / 1000L) + 1;
+            timeout = ((int) (restMills / 1000L)) + 1;
         }
         return timeout;
     }
-
 
 
     @Override

@@ -3,7 +3,6 @@ package io.army.session;
 import io.army.ArmyException;
 import io.army.ArmyKey;
 import io.army.ArmyKeys;
-import io.army.SessionFactoryException;
 import io.army.bean.ObjectAccessor;
 import io.army.codec.JsonCodec;
 import io.army.dialect.FieldGenerator;

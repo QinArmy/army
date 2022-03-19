@@ -3,6 +3,7 @@ package io.army;
 import io.army.generator.snowflake.FiveBitWorkerSnowflake;
 import io.army.generator.snowflake.Snowflake;
 
+@Deprecated
 public interface ArmyKey {
 
     String SYNC_EXECUTOR_PROVIDER = "army.%s.sync.executorProvider";

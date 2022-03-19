@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @RestController("testController")
 @RequestMapping("/test")
 public class TestController implements InitializingBean, ApplicationContextAware {
@@ -32,7 +34,7 @@ public class TestController implements InitializingBean, ApplicationContextAware
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         final ApplicationContext context = this.applicationContext;
         final Environment env = context.getEnvironment();
 
@@ -54,8 +56,13 @@ public class TestController implements InitializingBean, ApplicationContextAware
     }
 
     @RequestMapping(value = "save/mysql/types/findById", method = RequestMethod.GET)
-    public Mono<MySQLTypes> findMySQLTypesById(@RequestParam(value = "id", required = false) Long id) {
+    public Mono<MySQLTypes> findMySQLTypesById(@RequestParam(value = "id") Long id) {
         return this.baseService.findById(MySQLTypes.class, id);
+    }
+
+    @RequestMapping(value = "save/mysql/types/findByIdAsMap", method = RequestMethod.GET)
+    public Mono<Map<String, Object>> findMySQLTypesByIdAsMap(@RequestParam(value = "id") Long id) {
+        return this.baseService.findByIdAsMap(MySQLTypes.class, id);
     }
 
 

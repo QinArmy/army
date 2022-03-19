@@ -1,7 +1,7 @@
 package io.army.tx;
 
-import io.army.SessionException;
 import io.army.session.GenericSession;
+import io.army.session.SessionException;
 
 /**
  * throw when try close {@link GenericSession} ,but {@link GenericTransaction} not close.

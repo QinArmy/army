@@ -1,12 +1,12 @@
 package io.army.sync;
 
-import io.army.SessionException;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 import io.army.session.GenericSession;
+import io.army.session.SessionException;
 
 import java.util.List;
 import java.util.Map;
@@ -204,6 +204,9 @@ public interface SyncSession extends GenericSession {
 
     <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode);
 
+    /**
+     * @return a unmodifiable list
+     */
     List<Long> batchUpdate(Update update);
 
     /**

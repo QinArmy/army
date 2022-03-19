@@ -1,16 +1,12 @@
 package io.army.sync;
 
 import io.army.ArmyKeys;
-import io.army.CreateSessionException;
-import io.army.SessionException;
-import io.army.SessionFactoryException;
 import io.army.cache.SessionCacheFactory;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
-import io.army.session.AbstractSessionFactory;
-import io.army.session.DataAccessException;
+import io.army.session.*;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.StmtExecutor;
 
@@ -30,7 +26,7 @@ final class LocalSessionFactory extends AbstractSessionFactory implements Sessio
 
     private final SessionCacheFactory sessionCacheFactory;
 
-    private final CurrentSessionContext currentSessionContext;
+    private final SessionContext sessionContext;
 
 
     private boolean closed;
@@ -41,7 +37,7 @@ final class LocalSessionFactory extends AbstractSessionFactory implements Sessio
 
         this.executorFactory = Objects.requireNonNull(builder.executorFactory);
         this.dialect = _DialectFactory.createDialect(this);
-        this.currentSessionContext = getCurrentSessionContext();
+        this.sessionContext = getCurrentSessionContext();
         //this.sessionCacheFactory = SessionCacheFactory.build(this);
         this.sessionCacheFactory = null;
     }
@@ -75,10 +71,10 @@ final class LocalSessionFactory extends AbstractSessionFactory implements Sessio
     }
 
     @Override
-    public CurrentSessionContext currentSessionContext() throws SessionFactoryException {
-        final CurrentSessionContext context = this.currentSessionContext;
+    public SessionContext currentSessionContext() throws SessionFactoryException {
+        final SessionContext context = this.sessionContext;
         if (context == null) {
-            String m = String.format("%s no specified %s.", this, CurrentSessionContext.class.getName());
+            String m = String.format("%s no specified %s.", this, SessionContext.class.getName());
             throw new SessionFactoryException(m);
         }
         return context;
@@ -123,7 +119,7 @@ final class LocalSessionFactory extends AbstractSessionFactory implements Sessio
 
 
     @Nullable
-    private CurrentSessionContext getCurrentSessionContext() {
+    private SessionContext getCurrentSessionContext() {
         final String className;
         className = this.env.get(ArmyKeys.CURRENT_SESSION_CONTEXT);
         if (className == null) {
@@ -147,14 +143,14 @@ final class LocalSessionFactory extends AbstractSessionFactory implements Sessio
                 String m = String.format("%s return null", method);
                 throw new SessionFactoryException(m);
             }
-            return (CurrentSessionContext) context;
+            return (SessionContext) context;
         } catch (ClassNotFoundException e) {
-            String m = String.format("Create %s,Not found %s class.", CurrentSessionContext.class.getName(), className);
+            String m = String.format("Create %s,Not found %s class.", SessionContext.class.getName(), className);
             throw new SessionFactoryException(m, e);
         } catch (NoSuchMethodException e) {
             throw noCurrentSessionContextFactoryMethod(className, e);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            String m = String.format("Create %s occur error.%s", CurrentSessionContext.class.getName(), this);
+            String m = String.format("Create %s occur error.%s", SessionContext.class.getName(), this);
             throw new SessionFactoryException(m, e);
         }
     }

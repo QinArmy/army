@@ -1,8 +1,6 @@
 package io.army.util;
 
 import io.army.ArmyException;
-import io.army.ReadOnlySessionException;
-import io.army.SessionException;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
@@ -45,7 +43,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static ArmyException unexpectedStatement(Statement statement) {
-        return new ArmyException(String.format("Unexpected %S type[%s]", Statement.class.getName(), statement));
+        return new ArmyException(String.format("Unexpected %s type[%s]", Statement.class.getName(), statement));
     }
 
 
@@ -411,6 +409,23 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("expected type %s and query result mapping type %s not match."
                 , resultType.getName(), selection.paramMeta().mappingType().getClass().getName());
         throw new ArmyException(m);
+    }
+
+    public static OptimisticLockException optimisticLock(long affectedRows) {
+        String m = String.format("Affected rows is %s,don't satisfy expected rows.", affectedRows);
+        return new OptimisticLockException(m);
+    }
+
+    public static OptimisticLockException batchOptimisticLock(int batchIndex, long affectedRows) {
+        String m = String.format("Batch index[%s] affected rows is %s,don't satisfy expected rows."
+                , batchIndex, affectedRows);
+        return new OptimisticLockException(m);
+    }
+
+    public static DataAccessException batchCountNotMatch(int paramGroupCount, int batchResultCount) {
+        String m = String.format("Parameter group count[%s] but batch result count is %s,not match."
+                , paramGroupCount, batchResultCount);
+        return new DataAccessException(m);
     }
 
 

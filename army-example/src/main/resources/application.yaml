@@ -15,7 +15,7 @@ army:
       mode: UPDATE
     current:
       session:
-        context: io.army.boot.sync.SpringCurrentSessionContext
+        context: io.army.boot.sync.SpringSessionContext
     sql:
       log:
         show: true

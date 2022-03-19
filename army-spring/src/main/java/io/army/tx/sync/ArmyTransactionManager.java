@@ -1,10 +1,10 @@
 package io.army.tx.sync;
 
-import io.army.SessionException;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
+import io.army.session.SessionException;
 import io.army.sync.Session;
 import io.army.sync.SessionFactory;
 import io.army.sync.SyncSession;
@@ -159,7 +159,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             tx.commit();
         } catch (io.army.tx.TransactionException e) {
             throw SpringUtils.convertTransactionException(e);
-        } catch (io.army.SessionException e) {
+        } catch (SessionException e) {
             throw SpringUtils.convertSessionException(e);
         }
     }
@@ -235,7 +235,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
         try {
             session.close();
-        } catch (io.army.SessionException e) {
+        } catch (SessionException e) {
             throw SpringUtils.convertSessionException(e);
         }
     }

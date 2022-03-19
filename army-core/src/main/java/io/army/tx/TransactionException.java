@@ -1,7 +1,7 @@
 package io.army.tx;
 
 import io.army.ErrorCode;
-import io.army.SessionException;
+import io.army.session.SessionException;
 
 /**
  * Superclass for all transaction exceptions.

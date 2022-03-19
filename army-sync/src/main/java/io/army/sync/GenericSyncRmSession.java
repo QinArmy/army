@@ -1,6 +1,6 @@
 package io.army.sync;
 
-import io.army.SessionException;
+import io.army.session.SessionException;
 import io.army.tx.GenericTransaction;
 import io.army.tx.NoSessionTransactionException;
 
@@ -14,7 +14,7 @@ public interface GenericSyncRmSession extends SyncSession, AutoCloseable, Flusha
 
     /**
      * <o>
-     * <li>invoke {@link CurrentSessionContext#removeCurrentSession(SyncSession)},if need</li>
+     * <li>invoke {@link SessionContext#removeCurrentSession(SyncSession)},if need</li>
      * <li>invoke {@link Connection#close()}</li>
      * </o>
      *

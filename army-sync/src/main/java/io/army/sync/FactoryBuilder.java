@@ -1,7 +1,6 @@
 package io.army.sync;
 
 import io.army.ArmyException;
-import io.army.SessionFactoryException;
 import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
@@ -9,6 +8,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.generator._FieldGenerator;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.session.SessionFactoryException;
 
 import java.util.Collection;
 import java.util.List;
@@ -96,7 +96,7 @@ public interface FactoryBuilder {
     /**
      * (optional)
      */
-    FactoryBuilder currentSessionContext(CurrentSessionContext context);
+    FactoryBuilder currentSessionContext(SessionContext context);
 
     SessionFactory build() throws SessionFactoryException;
 

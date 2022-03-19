@@ -1,11 +1,7 @@
 package io.army.sync;
 
-import io.army.SessionException;
-import io.army.SessionFactoryException;
 import io.army.lang.Nullable;
-import io.army.session.FactoryMode;
-import io.army.session.GenericSession;
-import io.army.session.GenericSessionFactory;
+import io.army.session.*;
 
 /**
  * This interface representing single database(or single schema).
@@ -18,7 +14,7 @@ import io.army.session.GenericSessionFactory;
 public interface SessionFactory extends GenericSessionFactory, AutoCloseable {
 
 
-    CurrentSessionContext currentSessionContext() throws SessionFactoryException;
+    SessionContext currentSessionContext() throws SessionFactoryException;
 
     SessionBuilder builder();
 

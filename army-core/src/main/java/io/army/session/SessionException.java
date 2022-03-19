@@ -1,6 +1,4 @@
-package io.army;
-
-import io.army.session.DataAccessException;
+package io.army.session;
 
 public abstract class SessionException extends DataAccessException {
 

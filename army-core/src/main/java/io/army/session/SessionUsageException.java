@@ -1,4 +1,6 @@
-package io.army;
+package io.army.session;
+
+import io.army.ErrorCode;
 
 public class SessionUsageException extends SessionException {
 

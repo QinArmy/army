@@ -3,11 +3,12 @@ package io.army.example.dao.sync.dao;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
+import io.army.domain.IDomain;
 import io.army.example.domain.Domain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.sync.CurrentSessionContext;
+import io.army.sync.SessionContext;
 import io.army.sync.SessionFactory;
 import io.army.sync.SyncSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +16,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository("syncBaseDao")
 public class SyncBaseDao implements BaseDao {
 
-    protected CurrentSessionContext sessionContext;
+    protected SessionContext sessionContext;
 
 
     @Autowired
@@ -60,6 +62,25 @@ public class SyncBaseDao implements BaseDao {
     public <T extends Domain> T findById(Class<T> domainClass, Object id) {
         final SyncSession session;
         session = this.sessionContext.currentSession();
+        return session.selectOne(createFindByIdStmt(session, domainClass, id), domainClass);
+    }
+
+    @Override
+    public Map<String, Object> findByIdAsMap(Class<? extends IDomain> domainClass, Object id) {
+        final SyncSession session;
+        session = this.sessionContext.currentSession();
+        final Select stmt;
+        stmt = createFindByIdStmt(session, domainClass, id);
+        return session.selectOneAsMap(stmt);
+    }
+
+    @Override
+    public void flush() {
+        this.sessionContext.currentSession().flush();
+    }
+
+
+    private <T extends IDomain> Select createFindByIdStmt(SyncSession session, Class<T> domainClass, Object id) {
         final TableMeta<T> table;
         table = session.tableMeta(domainClass);
 
@@ -79,13 +100,7 @@ public class SyncBaseDao implements BaseDao {
                     .where(table.id().equalLiteral(id))
                     .asQuery();
         }
-        return session.selectOne(stmt, domainClass);
-    }
-
-
-    @Override
-    public void flush() {
-        this.sessionContext.currentSession().flush();
+        return stmt;
     }
 
 

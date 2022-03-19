@@ -1,6 +1,8 @@
 package io.army.boot;
 
-import io.army.*;
+import io.army.DataAccessException_0;
+import io.army.DomainUpdateException;
+import io.army.ErrorCode;
 import io.army.bean.ObjectWrapper;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
@@ -13,6 +15,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.session.GenericSession;
 import io.army.session.GenericSessionFactory;
+import io.army.session.InsertRowsNotMatchException;
+import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.GenericSimpleStmt;
 import io.army.stmt.SimpleStmt;

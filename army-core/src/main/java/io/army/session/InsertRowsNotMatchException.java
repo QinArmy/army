@@ -1,5 +1,6 @@
-package io.army;
+package io.army.session;
 
+import io.army.ErrorCode;
 import io.army.dialect.InsertException;
 
 public class InsertRowsNotMatchException extends InsertException {

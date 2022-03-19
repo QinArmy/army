@@ -1,7 +1,7 @@
 package io.army.boot.reactive;
 
-import io.army.NoCurrentSessionException;
 import io.army.reactive.GenericReactiveApiSession;
+import io.army.session.NoCurrentSessionException;
 import reactor.core.publisher.Mono;
 
 interface CurrentSessionContext {

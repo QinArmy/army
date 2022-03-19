@@ -1,6 +1,6 @@
 package io.army.sync;
 
-import io.army.SessionException;
+import io.army.session.SessionException;
 
 import java.io.Flushable;
 

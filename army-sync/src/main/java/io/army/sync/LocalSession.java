@@ -2,8 +2,6 @@ package io.army.sync;
 
 import io.army.ArmyException;
 import io.army.DuplicationSessionTransaction;
-import io.army.SessionCloseFailureException;
-import io.army.SessionException;
 import io.army.cache.SessionCache;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
@@ -15,6 +13,9 @@ import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 import io.army.session.ChildInsertException;
 import io.army.session.ExecutorExecutionException;
+import io.army.session.SessionCloseFailureException;
+import io.army.session.SessionException;
+import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.StmtExecutor;
@@ -283,16 +284,62 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @Override
     public long update(final Update update, final Visible visible) {
-        if (update instanceof _BatchDml) {
-
+        try {
+            if (update instanceof _BatchDml) {
+                throw _Exceptions.unexpectedStatement(update);
+            }
+            //1. assert session status
+            assertSession(true, visible);
+            //2. parse statement to stmt
+            final SimpleStmt stmt;
+            stmt = (SimpleStmt) this.sessionFactory.dialect.update(update, visible);
+            //3. execute stmt
+            final Transaction tx = this.transaction;
+            final long affectedRows;
+            affectedRows = this.stmtExecutor.update(stmt, tx == null ? 0 : tx.nextTimeout());
+            //4. assert optimistic lock
+            if (affectedRows < 1 && stmt.hasOptimistic()) {
+                throw _Exceptions.optimisticLock(affectedRows);
+            }
+            return affectedRows;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", Update.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) update).clear();
         }
-        assertSession(true, visible);
-        return 0;
     }
 
     @Override
     public long delete(Delete delete, Visible visible) {
-        return 0;
+        try {
+            if (delete instanceof _BatchDml) {
+                throw _Exceptions.unexpectedStatement(delete);
+            }
+            //1. assert session status
+            assertSession(true, visible);
+            //2. parse statement to stmt
+            final SimpleStmt stmt;
+            stmt = (SimpleStmt) this.sessionFactory.dialect.delete(delete, visible);
+            //3. execute stmt
+            final Transaction tx = this.transaction;
+            final long affectedRows;
+            affectedRows = this.stmtExecutor.update(stmt, tx == null ? 0 : tx.nextTimeout());
+            //4. assert optimistic lock
+            if (affectedRows < 1 && stmt.hasOptimistic()) {
+                throw _Exceptions.optimisticLock(affectedRows);
+            }
+            return affectedRows;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", Delete.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) delete).clear();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -316,13 +363,51 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     }
 
     @Override
-    public List<Long> batchUpdate(Update update, Visible visible) {
-        return null;
+    public List<Long> batchUpdate(final Update update, final Visible visible) {
+        try {
+            if (!(update instanceof _BatchDml)) {
+                throw _Exceptions.unexpectedStatement(update);
+            }
+            //1. assert session status
+            assertSession(true, visible);
+            //2. parse statement to stmt
+            final BatchStmt stmt;
+            stmt = (BatchStmt) this.sessionFactory.dialect.update(update, visible);
+            //3. execute stmt
+            final Transaction tx = this.transaction;
+            return this.stmtExecutor.batchUpdate(stmt, tx == null ? 0 : tx.nextTimeout());
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", Update.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) update).clear();
+        }
     }
 
     @Override
-    public List<Long> batchDelete(Delete delete, Visible visible) {
-        return null;
+    public List<Long> batchDelete(final Delete delete, final Visible visible) {
+        try {
+            if (!(delete instanceof _BatchDml)) {
+                throw _Exceptions.unexpectedStatement(delete);
+            }
+            //1. assert session status
+            assertSession(true, visible);
+            //2. parse statement to stmt
+            final BatchStmt stmt;
+            stmt = (BatchStmt) this.sessionFactory.dialect.delete(delete, visible);
+            //3. execute stmt
+            final Transaction tx = this.transaction;
+            return this.stmtExecutor.batchUpdate(stmt, tx == null ? 0 : tx.nextTimeout());
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", Delete.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) delete).clear();
+        }
     }
 
     @Override

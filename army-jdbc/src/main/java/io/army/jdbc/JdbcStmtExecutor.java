@@ -30,6 +30,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -72,10 +74,72 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     }
 
     @Override
-    public final int update(Stmt stmt, int txTimeout) {
-        return 0;
+    public final long update(final SimpleStmt stmt, final int timeout) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
+
+            bindParameter(statement, stmt.paramGroup());
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+            final long affectedRows;
+            if (this.factory.useLargeUpdate) {
+                affectedRows = statement.executeLargeUpdate();
+            } else {
+                affectedRows = statement.executeUpdate();
+            }
+            return affectedRows;
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
     }
 
+    @Override
+    public List<Long> batchUpdate(final BatchStmt stmt, final int timeout) throws DataAccessException {
+
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
+            final List<List<ParamValue>> paramGroupList = stmt.groupList();
+
+            for (List<ParamValue> group : paramGroupList) {
+                bindParameter(statement, group);
+                statement.addBatch();
+            }
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            final int groupSize = paramGroupList.size();
+            final List<Long> batchList = new ArrayList<>(groupSize);
+            final boolean optimistic = stmt.hasOptimistic();
+            if (this.factory.useLargeUpdate) {
+                final long[] batchAffectedRows;
+                batchAffectedRows = statement.executeLargeBatch();
+                long rows;
+                for (int i = 0; i < batchAffectedRows.length; i++) {
+                    rows = batchAffectedRows[i];
+                    if (optimistic && rows < 1) {
+                        throw _Exceptions.batchOptimisticLock(i, rows);
+                    }
+                    batchList.add(rows);
+                }
+            } else {
+                final int[] batchAffectedRows;
+                batchAffectedRows = statement.executeBatch();
+                for (int i = 0, rows; i < batchAffectedRows.length; i++) {
+                    rows = batchAffectedRows[i];
+                    if (optimistic && rows < 1) {
+                        throw _Exceptions.batchOptimisticLock(i, rows);
+                    }
+                    batchList.add((long) rows);
+                }
+            }
+            if (batchList.size() != groupSize) {
+                throw _Exceptions.batchCountNotMatch(groupSize, batchList.size());
+            }
+            return Collections.unmodifiableList(batchList);
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -135,7 +199,37 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     public final List<Map<String, Object>> selectAsMap(SimpleStmt stmt, int timeout
             , Supplier<Map<String, Object>> mapConstructor, Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException {
-        return null;
+        final JdbcExecutorFactory factory = this.factory;
+        final String sql = stmt.sql();
+
+        if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
+                || factory.sqlLogShow) {
+            getLogger().info(SQL_LOG_FORMAT, sql);
+        }
+        final List<Selection> selectionList = stmt.selectionList();
+        try (PreparedStatement statement = this.conn.prepareStatement(sql)) {
+
+            bindParameter(statement, stmt.paramGroup());
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                final List<Map<String, Object>> list = listConstructor.get();
+                Map<String, Object> rowMap;
+                while (resultSet.next()) {
+                    rowMap = mapConstructor.get();
+                    for (Selection selection : selectionList) {
+                        rowMap.put(selection.alias(), getColumnValue(resultSet, selection));
+                    }
+                    list.add(rowMap);
+                }
+                return list;
+            }
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
+
     }
 
     @Override
@@ -168,8 +262,31 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     @Override
     public final void executeBatch(final List<String> stmtList) throws DataAccessException {
         try (Statement statement = this.conn.createStatement()) {
-            for (String sql : stmtList) {
+
+            final JdbcExecutorFactory factory = this.factory;
+            final StringBuilder builder;
+            if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
+                    || factory.sqlLogShow) {
+                builder = new StringBuilder();
+            } else {
+                builder = null;
+            }
+            final int size = stmtList.size();
+            String sql;
+            for (int i = 0; i < size; i++) {
+                sql = stmtList.get(i);
                 statement.addBatch(sql);
+                if (builder == null) {
+                    continue;
+                }
+                if (i > 0) {
+                    builder.append(" ; ");
+                }
+                builder.append(sql);
+
+            }
+            if (builder != null) {
+                getLogger().info(SQL_LOG_FORMAT, builder);
             }
             final int[] batch;
             batch = statement.executeBatch();
@@ -186,6 +303,11 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     @Override
     public final void execute(String stmt) throws DataAccessException {
         try (Statement statement = this.conn.createStatement()) {
+            final JdbcExecutorFactory factory = this.factory;
+            if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
+                    || factory.sqlLogShow) {
+                getLogger().info(SQL_LOG_FORMAT, stmt);
+            }
             statement.executeUpdate(stmt);
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);
@@ -517,15 +639,6 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     private ArmyException parentChildRowsNotMatch(long parentRows, long childRows) {
         String m = String.format("Parent insert/update rows[%s] and child insert/update rows[%s] not match."
                 , parentRows, childRows);
-        throw new ArmyException(m);
-    }
-
-    private static ArmyException childInsertStmtIdParamError() {
-        return new ArmyException("Child insert id param error.");
-    }
-
-    private static ArmyException pairInsertStmtError() {
-        String m = String.format("stmt's child stmt is %s", ChildInsertStmt.class.getName());
         throw new ArmyException(m);
     }
 

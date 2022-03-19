@@ -1,5 +1,8 @@
-package io.army;
+package io.army.session;
 
+
+import io.army.ArmyRuntimeException;
+import io.army.ErrorCode;
 
 public final class OptimisticLockException extends ArmyRuntimeException {
 

@@ -1,5 +1,6 @@
 package io.army.example.service.sync;
 
+import io.army.domain.IDomain;
 import io.army.example.dao.sync.dao.BaseDao;
 import io.army.example.domain.Domain;
 import io.army.example.service.BaseService;
@@ -9,6 +10,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service("syncBaseService")
 @Profile(BaseService.SYNC)
@@ -36,6 +39,13 @@ public class SyncBaseServiceImpl implements SyncBaseService {
     public <T extends Domain> T findById(Class<T> domainClass, Object id) {
         return this.baseDao.findById(domainClass, id);
     }
+
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
+    @Override
+    public Map<String, Object> findByIdAsMap(Class<? extends IDomain> domainClass, Object id) {
+        return this.baseDao.findByIdAsMap(domainClass, id);
+    }
+
 
     protected BaseDao getBaseDao() {
         return this.baseDao;
