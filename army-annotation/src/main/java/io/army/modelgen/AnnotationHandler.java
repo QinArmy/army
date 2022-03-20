@@ -46,7 +46,6 @@ final class AnnotationHandler {
             if (domain.getNestingKind() != NestingKind.TOP_LEVEL) {
                 continue;
             }
-
             if (domain.getAnnotation(Inheritance.class) != null) {
                 parentDomain = null;
                 fieldMap = getParentFieldMap(domain);
@@ -95,7 +94,7 @@ final class AnnotationHandler {
     private List<TypeElement> getMappedList(final TypeElement tableElement, final TypeElement[] outParent) {
         TypeElement superElement = tableElement, parentElement = null;
         List<TypeElement> mappedList = null;
-        for (TypeMirror superMirror = superElement.getSuperclass(); ; ) {
+        for (TypeMirror superMirror = superElement.getSuperclass(); ; superMirror = superElement.getSuperclass()) {
             if (superMirror instanceof NoType) {
                 break;
             }
@@ -119,7 +118,7 @@ final class AnnotationHandler {
                 mappedList.add(tableElement);
             }
             mappedList.add(superElement);
-        }
+        }//for
 
         if (mappedList == null) {
             mappedList = Collections.singletonList(tableElement);

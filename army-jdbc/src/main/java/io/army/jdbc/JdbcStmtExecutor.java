@@ -1,7 +1,6 @@
 package io.army.jdbc;
 
 import io.army.ArmyException;
-import io.army.ArmyKeys;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.codec.FieldCodec;
@@ -145,15 +144,9 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     @Override
     public final <T> List<T> select(final SimpleStmt stmt, final int timeout, final Class<T> resultClass
             , final Supplier<List<T>> listConstructor) {
-        final JdbcExecutorFactory factory = this.factory;
-        final String sql = stmt.sql();
 
-        if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
-                || factory.sqlLogShow) {
-            getLogger().info(SQL_LOG_FORMAT, sql);
-        }
         final List<Selection> selectionList = stmt.selectionList();
-        try (PreparedStatement statement = this.conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
 
             bindParameter(statement, stmt.paramGroup());
             if (timeout > 0) {
@@ -199,15 +192,9 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     public final List<Map<String, Object>> selectAsMap(SimpleStmt stmt, int timeout
             , Supplier<Map<String, Object>> mapConstructor, Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException {
-        final JdbcExecutorFactory factory = this.factory;
-        final String sql = stmt.sql();
 
-        if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
-                || factory.sqlLogShow) {
-            getLogger().info(SQL_LOG_FORMAT, sql);
-        }
         final List<Selection> selectionList = stmt.selectionList();
-        try (PreparedStatement statement = this.conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
 
             bindParameter(statement, stmt.paramGroup());
             if (timeout > 0) {
@@ -262,31 +249,8 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     @Override
     public final void executeBatch(final List<String> stmtList) throws DataAccessException {
         try (Statement statement = this.conn.createStatement()) {
-
-            final JdbcExecutorFactory factory = this.factory;
-            final StringBuilder builder;
-            if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
-                    || factory.sqlLogShow) {
-                builder = new StringBuilder();
-            } else {
-                builder = null;
-            }
-            final int size = stmtList.size();
-            String sql;
-            for (int i = 0; i < size; i++) {
-                sql = stmtList.get(i);
-                statement.addBatch(sql);
-                if (builder == null) {
-                    continue;
-                }
-                if (i > 0) {
-                    builder.append(" ; ");
-                }
-                builder.append(sql);
-
-            }
-            if (builder != null) {
-                getLogger().info(SQL_LOG_FORMAT, builder);
+            for (String stmt : stmtList) {
+                statement.addBatch(stmt);
             }
             final int[] batch;
             batch = statement.executeBatch();
@@ -303,11 +267,6 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     @Override
     public final void execute(String stmt) throws DataAccessException {
         try (Statement statement = this.conn.createStatement()) {
-            final JdbcExecutorFactory factory = this.factory;
-            if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
-                    || factory.sqlLogShow) {
-                getLogger().info(SQL_LOG_FORMAT, stmt);
-            }
             statement.executeUpdate(stmt);
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);
@@ -431,14 +390,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         } else {
             resultSetType = Statement.RETURN_GENERATED_KEYS;
         }
-        final JdbcExecutorFactory factory = this.factory;
-        final String sql = stmt.sql();
-
-        if ((factory.sqlLogDynamic && factory.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE))
-                || factory.sqlLogShow) {
-            getLogger().info(SQL_LOG_FORMAT, sql);
-        }
-        try (PreparedStatement statement = this.conn.prepareStatement(sql, resultSetType)) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql(), resultSetType)) {
 
             bindParameter(statement, stmt.paramGroup());
 

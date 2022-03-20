@@ -15,6 +15,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class Stmts {
 
@@ -122,6 +123,15 @@ public abstract class Stmts {
             return Collections.emptyList();
         }
 
+        @Override
+        public String printSql(Function<String, String> function) {
+            return function.apply(this.sql);
+        }
+
+        @Override
+        public String toString() {
+            return this.sql;
+        }
 
     }// MinSimpleStmt
 
@@ -147,6 +157,16 @@ public abstract class Stmts {
             return this.child;
         }
 
+        @Override
+        public String printSql(final Function<String, String> function) {
+            return String.format("parent sql:\n%s\n%s"
+                    , function.apply(this.parent.sql()), function.apply(this.child.sql()));
+        }
+
+        @Override
+        public String toString() {
+            return String.format("parent sql:\n%s\n%s", this.parent.sql(), this.child.sql());
+        }
     }
 
 
@@ -184,6 +204,15 @@ public abstract class Stmts {
             return Collections.emptyList();
         }
 
+        @Override
+        public String printSql(Function<String, String> function) {
+            return function.apply(this.sql);
+        }
+
+        @Override
+        public String toString() {
+            return this.sql;
+        }
     }//MinDml
 
     private static final class MinBatchDmlStmt implements BatchStmt {
@@ -215,6 +244,15 @@ public abstract class Stmts {
             return this.hasOptimistic;
         }
 
+        @Override
+        public String printSql(Function<String, String> function) {
+            return function.apply(this.sql);
+        }
+
+        @Override
+        public String toString() {
+            return this.sql;
+        }
     }//MinBatchDmlStmt
 
     private static final class SelectStmt implements SimpleStmt {
@@ -251,6 +289,15 @@ public abstract class Stmts {
             return this.selectionList;
         }
 
+        @Override
+        public String printSql(Function<String, String> function) {
+            return function.apply(this.sql);
+        }
+
+        @Override
+        public String toString() {
+            return this.sql;
+        }
     }//SelectStmt
 
     private static final class PostStmt implements GeneratedKeyStmt {
@@ -312,6 +359,17 @@ public abstract class Stmts {
         @Override
         public List<Selection> selectionList() {
             return Collections.emptyList();
+        }
+
+
+        @Override
+        public String printSql(Function<String, String> function) {
+            return function.apply(this.sql);
+        }
+
+        @Override
+        public String toString() {
+            return this.sql;
         }
 
     }//PostStmt

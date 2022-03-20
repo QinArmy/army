@@ -1,8 +1,6 @@
 package io.army.stmt;
 
-import io.army.bean.ObjectWrapper;
 import io.army.codec.StatementType;
-import io.army.lang.Nullable;
 
 
 public interface GenericSimpleStmt extends Stmt {
@@ -16,9 +14,5 @@ public interface GenericSimpleStmt extends Stmt {
         throw new UnsupportedOperationException();
     }
 
-    @Nullable
-    default ObjectWrapper domainWrapper() {
-        return null;
-    }
 
 }

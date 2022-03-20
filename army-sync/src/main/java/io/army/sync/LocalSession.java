@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 final class LocalSession extends _AbstractSyncSession implements Session {
@@ -147,6 +148,11 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             //2. parse statement to stmt
             final SimpleStmt stmt;
             stmt = this.sessionFactory.dialect.select(select, visible);
+
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
             //3. execute stmt
             final Transaction tx = this.transaction;
             return this.stmtExecutor.select(stmt, tx == null ? 0 : tx.nextTimeout(), resultClass, listConstructor);
@@ -169,6 +175,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             //2. parse statement to stmt
             final SimpleStmt stmt;
             stmt = this.sessionFactory.dialect.select(select, visible);
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
             //3. execute stmt
             final Transaction tx = this.transaction;
             final int timeout = tx == null ? 0 : tx.nextTimeout();
@@ -215,6 +225,11 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             final Stmt stmt;
             stmt = this.sessionFactory.dialect.insert(insert, visible);
 
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
+
             //3. execute stmt
             final Transaction tx = this.transaction;
             final long affectedRows;
@@ -248,6 +263,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     @Override
     public <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor
             , Visible visible) {
+
         throw new UnsupportedOperationException();
     }
 
@@ -293,6 +309,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             //2. parse statement to stmt
             final SimpleStmt stmt;
             stmt = (SimpleStmt) this.sessionFactory.dialect.update(update, visible);
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
             //3. execute stmt
             final Transaction tx = this.transaction;
             final long affectedRows;
@@ -323,6 +343,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             //2. parse statement to stmt
             final SimpleStmt stmt;
             stmt = (SimpleStmt) this.sessionFactory.dialect.delete(delete, visible);
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
             //3. execute stmt
             final Transaction tx = this.transaction;
             final long affectedRows;
@@ -373,6 +397,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             //2. parse statement to stmt
             final BatchStmt stmt;
             stmt = (BatchStmt) this.sessionFactory.dialect.update(update, visible);
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
             //3. execute stmt
             final Transaction tx = this.transaction;
             return this.stmtExecutor.batchUpdate(stmt, tx == null ? 0 : tx.nextTimeout());
@@ -397,6 +425,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             //2. parse statement to stmt
             final BatchStmt stmt;
             stmt = (BatchStmt) this.sessionFactory.dialect.delete(delete, visible);
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
             //3. execute stmt
             final Transaction tx = this.transaction;
             return this.stmtExecutor.batchUpdate(stmt, tx == null ? 0 : tx.nextTimeout());

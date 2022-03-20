@@ -1,5 +1,6 @@
 package io.army;
 
+@Deprecated
 public class DataAccessException_0 extends ArmyRuntimeException {
 
 

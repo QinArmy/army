@@ -1,11 +1,13 @@
 package io.army.boot.reactive;
 
-import io.army.stmt.*;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.PairStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.jdbd.stmt.PreparedStatement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.function.Function;
 
 final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQLExecutor {
@@ -149,44 +151,6 @@ final class UpdateSQLExecutorImpl extends SQLExecutorSupport implements UpdateSQ
 //            flux = Flux.error(createUnSupportedSQLWrapperException(stmt, "batchUpdate"));
 //        }
         return Flux.empty();
-    }
-
-    /**
-     * @param executeFunction {@link PreparedStatement}'s execute update method ,must be below:
-     * @param <N>             result typed of update rows ,must be  {@link Integer} or {@link Long}
-     * @return {@code Mono<Integer> or Mono<Long>}
-     * @see #doExecuteUpdate(InnerGenericRmSession, SimpleStmt, Function)
-     */
-    private <N extends Number> Flux<N> doParentBatchUpdate(InnerGenericRmSession session
-            , PairBatchStmt childSQLWrapper, Function<PreparedStatement, Flux<N>> executeFunction
-            , List<N> childList) {
-
-//        final BatchSimpleStmt childWrapper = childSQLWrapper.childStmt();
-//        return // 1. execute parent update sql.
-//                doExecuteBatchUpdate(session, childSQLWrapper.parentStmt(), executeFunction)
-//                        .collectList()
-//                        // 2. assert parent updated rows and child match
-//                        .flatMap(parentList -> assertParentChildBatchUpdateMatch(parentList, childList, childWrapper))
-//                        .flatMapMany(Flux::fromIterable)
-//                ;
-        return Flux.empty();
-    }
-
-
-    private <N extends Number> Mono<List<N>> assertParentChildBatchUpdateMatch(List<N> parentRowsList
-            , List<N> childRowsList, BatchStmt childWrapper) {
-        if (parentRowsList.size() != childRowsList.size()) {
-            return Mono.error(createParentBatchUpdateNotMatchException(parentRowsList.size()
-                    , childRowsList.size(), childWrapper));
-        }
-        final int size = parentRowsList.size();
-        for (int i = 0; i < size; i++) {
-            if (!parentRowsList.get(i).equals(childRowsList.get(i))) {
-                return Mono.error(createParentUpdateNotMatchException(parentRowsList.get(i)
-                        , childRowsList.get(i), childWrapper));
-            }
-        }
-        return Mono.just(childRowsList);
     }
 
 

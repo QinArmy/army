@@ -6,7 +6,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
-import io.army.example.domain.User_;
+import io.army.example.pill.domain.User_;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;

@@ -10,6 +10,7 @@ import io.army.dialect._AbstractFieldValuesGenerator;
 import io.army.dialect._DialectEnvironment;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
+import io.army.env.MyKey;
 import io.army.generator._FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -52,8 +53,13 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
     protected final boolean supportSessionCache;
 
-    private final ZoneOffset zoneOffset;
+    protected final ZoneOffset zoneOffset;
 
+    private final boolean sqlLogDynamic;
+
+    private final boolean sqlLogShow;
+
+    private final boolean sqlLogFormat;
 
     protected AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
@@ -76,6 +82,10 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
 
         this.supportSessionCache = env.get(ArmyKeys.sessionCache, Boolean.class, Boolean.TRUE);
         this.fieldValuesGenerator = new FieldValuesGeneratorImpl(this.zoneOffset, this.fieldGeneratorMap);
+
+        this.sqlLogDynamic = env.getOrDefault(MyKey.SQL_LOG_DYNAMIC);
+        this.sqlLogShow = env.getOrDefault(MyKey.SQL_LOG_SHOW);
+        this.sqlLogFormat = env.getOrDefault(MyKey.SQL_LOG_FORMAT);
     }
 
 
@@ -170,6 +180,35 @@ public abstract class AbstractSessionFactory implements GenericSessionFactory, _
     @Override
     public final boolean equals(Object obj) {
         return obj == this;
+    }
+
+
+    @Nullable
+    public final Function<String, String> getSqlFormat() {
+        Function<String, String> function;
+        if (this.sqlLogDynamic) {
+            if (!this.env.getOrDefault(MyKey.SQL_LOG_SHOW)) {
+                function = null;
+            } else if (this.env.getOrDefault(MyKey.SQL_LOG_FORMAT)) {
+                function = this::formatSql;
+            } else {
+                function = this::noFormatSql;
+            }
+        } else if (this.sqlLogFormat) {
+            function = this::formatSql;
+        } else {
+            function = this::noFormatSql;
+        }
+        return function;
+    }
+
+
+    private String formatSql(String sql) {
+        return sql;
+    }
+
+    private String noFormatSql(String sql) {
+        return sql;
     }
 
 

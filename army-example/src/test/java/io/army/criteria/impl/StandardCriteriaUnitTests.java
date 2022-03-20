@@ -1,15 +1,15 @@
 package io.army.criteria.impl;
 
-import io.army.bank.domain.user.ChinaProvince;
-import io.army.bank.domain.user.ChinaRegion;
 import io.army.criteria.*;
 import io.army.dialect.Dialect;
-import io.army.example.domain.ChinaProvince_;
-import io.army.example.domain.ChinaRegion_;
-import io.army.example.domain.Person_;
-import io.army.example.domain.User_;
-import io.army.example.struct.IdentityType;
-import io.army.example.struct.UserType;
+import io.army.example.bank.domain.user.ChinaProvince;
+import io.army.example.bank.domain.user.ChinaProvince_;
+import io.army.example.bank.domain.user.ChinaRegion;
+import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.example.pill.domain.Person_;
+import io.army.example.pill.domain.User_;
+import io.army.example.pill.struct.IdentityType;
+import io.army.example.pill.struct.UserType;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import org.slf4j.Logger;

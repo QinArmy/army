@@ -10,7 +10,7 @@ spring:
   profiles:
     active: sync,mysql
 army:
-  example:
+  pill:
     ddl:
       mode: UPDATE
     current:
@@ -19,7 +19,13 @@ army:
     sql:
       log:
         show: true
-    jdbc:
-      large:
-        update: false
+  bank:
+    ddl:
+      mode: UPDATE
+    current:
+      session:
+        context: io.army.boot.sync.SpringSessionContext
+    sql:
+      log:
+        show: true
 

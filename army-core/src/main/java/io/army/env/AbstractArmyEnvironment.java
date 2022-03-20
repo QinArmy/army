@@ -57,6 +57,18 @@ public abstract class AbstractArmyEnvironment implements ArmyConfigurableArmyEnv
     }
 
     @Override
+    public final <T> T get(MyKey<T> key) {
+        //TODO
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final <T> T getOrDefault(MyKey<T> key) {
+        //TODO
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public final <T> List<T> getPropertyList(String key, Class<T[]> targetArrayType) {
         return getPropertyList(key, targetArrayType, Collections.emptyList());
     }

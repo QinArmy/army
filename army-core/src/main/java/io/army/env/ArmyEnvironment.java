@@ -51,6 +51,11 @@ public interface ArmyEnvironment {
 
     boolean isOnDuration(String key);
 
+    @Nullable
+    <T> T get(MyKey<T> key);
+
+    <T> T getOrDefault(MyKey<T> key);
+
     /**
      * Return the property value associated with the given key,
      * or {@code null} if the key cannot be resolved.
@@ -60,6 +65,7 @@ public interface ArmyEnvironment {
      * @see #get(String, Class)
      * @see #getNonNull(String)
      */
+    @Deprecated
     @Nullable
     String get(String key);
 
@@ -72,6 +78,7 @@ public interface ArmyEnvironment {
      * @see #getNonNull(String)
      * @see #get(String, Class)
      */
+    @Deprecated
     String get(String key, String defaultValue);
 
     /**
@@ -83,8 +90,10 @@ public interface ArmyEnvironment {
      * @see #getNonNull(String, Class)
      */
     @Nullable
+    @Deprecated
     <T> T get(String key, Class<T> targetType);
 
+    @Deprecated
     <T> T getNonNull(String key, Class<T> resultClass);
 
 
@@ -98,6 +107,7 @@ public interface ArmyEnvironment {
      * @return a  list
      * @see #getNonNull(String, Class)
      */
+    @Deprecated
     <T> List<T> getPropertyList(String key, Class<T[]> targetArrayType);
 
     /**
@@ -110,6 +120,7 @@ public interface ArmyEnvironment {
      * @return a  list
      * @see #getNonNull(String, Class)
      */
+    @Deprecated
     <T> List<T> getPropertyList(String key, Class<T[]> targetArrayType, List<T> defaultList);
 
     /**
@@ -146,6 +157,7 @@ public interface ArmyEnvironment {
      * @param defaultValue the default value to return if no value is found
      * @see #getNonNull(String, Class)
      */
+    @Deprecated
     <T> T get(String key, Class<T> targetType, T defaultValue);
 
     /**

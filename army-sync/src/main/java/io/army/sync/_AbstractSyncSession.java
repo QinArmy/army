@@ -15,6 +15,8 @@ import java.util.function.Supplier;
 
 public abstract class _AbstractSyncSession implements SyncSession {
 
+    protected static final String SQL_LOG_FORMAT = "army will execute sql:\n{}";
+
     protected _AbstractSyncSession() {
     }
 

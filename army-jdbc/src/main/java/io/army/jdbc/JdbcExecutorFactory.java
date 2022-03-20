@@ -1,9 +1,9 @@
 package io.army.jdbc;
 
-import io.army.ArmyKeys;
 import io.army.Database;
 import io.army.codec.JsonCodec;
 import io.army.env.ArmyEnvironment;
+import io.army.env.SyncKey;
 import io.army.mapping.MappingEnvironment;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -36,10 +36,6 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     final MappingEnvironment mapEnv;
 
-    final boolean sqlLogDynamic;
-
-    final boolean sqlLogShow;
-
     final boolean useLargeUpdate;
 
 
@@ -53,10 +49,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
         this.env = executorEnv.environment();
         this.mapEnv = new JdbcMappingEnvironment(serverMeta, executorEnv);
-        this.sqlLogDynamic = this.env.get(ArmyKeys.SQL_LOG_DYNAMIC, Boolean.class, Boolean.FALSE);
-        this.sqlLogShow = this.env.get(ArmyKeys.SQL_LOG_SHOW, Boolean.class, Boolean.FALSE);
-
-        this.useLargeUpdate = this.env.get(ArmyKeys.JDBC_LARGE_UPDATE, Boolean.class, Boolean.FALSE);
+        this.useLargeUpdate = this.env.getOrDefault(SyncKey.JDBC_LARGE_UPDATE);
     }
 
     @Override

@@ -1,8 +1,13 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    example:
+    pill:
       primary:
-        url: jdbc:mysql://localhost:3306/army_test
+        url: jdbc:mysql://localhost:3306/army_pill
+        username: army_w
+        password: army123
+    bank:
+      primary:
+        url: jdbc:mysql://localhost:3306/army_bank
         username: army_w
         password: army123

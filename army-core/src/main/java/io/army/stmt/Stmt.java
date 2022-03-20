@@ -1,12 +1,17 @@
 package io.army.stmt;
 
+import java.util.function.Function;
+
 /**
  * @see SimpleStmt
  * @see PairStmt
  * @see BatchStmt
- * @see PairBatchStmt
  */
 public interface Stmt {
 
+    String printSql(Function<String, String> function);
+
+    @Override
+    String toString();
 
 }

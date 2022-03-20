@@ -65,6 +65,24 @@ public final class SpringArmyEnvironment implements ArmyEnvironment {
     }
 
     @Override
+    public <T> T get(MyKey<T> key) {
+        return this.env.getProperty(this.prefix + key.name, key.javaType);
+    }
+
+    @Override
+    public <T> T getOrDefault(final MyKey<T> key) {
+        T value;
+        value = this.env.getProperty(this.prefix + key.name, key.javaType);
+        if (value == null) {
+            value = key.defaultValue;
+            if (value == null) {
+                throw new IllegalArgumentException(String.format("%s no default value.", key.name));
+            }
+        }
+        return value;
+    }
+
+    @Override
     public String get(String key) {
         return this.env.getProperty(this.prefix + key);
     }
