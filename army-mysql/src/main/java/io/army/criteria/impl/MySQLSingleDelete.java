@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
@@ -269,7 +268,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
         }
 
         if (this instanceof BatchDelete) {
-            final List<ReadWrapper> wrapperList = ((BatchDelete<C>) this).wrapperList;
+            final List<?> wrapperList = ((BatchDelete<C>) this).wrapperList;
             if (CollectionUtils.isEmpty(wrapperList)) {
                 throw _Exceptions.batchParamEmpty();
             }
@@ -327,7 +326,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
             Statement.BatchParamClause<C, Delete.DeleteSpec>>
             implements MySQLDelete.BatchSinglePartitionSpec<C>, MySQLDelete.BatchSingleWhereAndSpec<C> {
 
-        private List<ReadWrapper> wrapperList;
+        private List<?> wrapperList;
 
         private BatchDelete(CommandBlock commandBlock, CriteriaContext criteriaContext) {
             super(commandBlock, criteriaContext);

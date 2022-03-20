@@ -1,7 +1,7 @@
 package io.army.example.service.reactive;
 
+import io.army.common.Domain;
 import io.army.domain.IDomain;
-import io.army.example.domain.Domain;
 import io.army.example.service.BaseService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;

@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ReadWrapper;
 import io.army.criteria.Delete;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._BatchDml;
@@ -117,7 +116,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
             implements Delete.StandardBatchWhereAndSpec<C>, Delete.StandardBatchWhereSpec<C>
             , Statement.BatchParamClause<C, Delete.DeleteSpec>, Delete.StandardBatchDeleteSpec<C>, _BatchDml {
 
-        private List<ReadWrapper> wrapperList;
+        private List<?> wrapperList;
 
         private BatchDelete(@Nullable C criteria) {
             super(criteria);
@@ -147,7 +146,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
         }
 
         @Override
-        public List<ReadWrapper> wrapperList() {
+        public List<?> paramList() {
             return this.wrapperList;
         }
 

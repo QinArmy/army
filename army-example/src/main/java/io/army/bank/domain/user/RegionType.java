@@ -1,4 +1,4 @@
-package io.army.example.domain;
+package io.army.bank.domain.user;
 
 import io.army.struct.CodeEnum;
 

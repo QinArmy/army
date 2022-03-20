@@ -1,4 +1,4 @@
-package io.army.example.domain;
+package io.army.common;
 
 
 import java.util.Objects;

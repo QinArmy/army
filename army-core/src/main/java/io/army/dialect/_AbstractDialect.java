@@ -86,7 +86,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SimpleStmt singleStmt;
             singleStmt = handleDialectUpdate(update, visible);
             if (update instanceof _BatchDml) {
-                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) update).wrapperList());
+                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) update).paramList());
             } else {
                 stmt = singleStmt;
             }
@@ -96,7 +96,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SimpleStmt singleStmt;
             singleStmt = handleStandardUpdate((_SingleUpdate) update, visible);
             if (update instanceof _BatchDml) {
-                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) update).wrapperList());
+                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) update).paramList());
             } else {
                 stmt = singleStmt;
             }
@@ -116,7 +116,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SimpleStmt singleStmt;
             singleStmt = handleDialectDelete(delete, visible);
             if (delete instanceof _BatchDml) {
-                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) delete).wrapperList());
+                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) delete).paramList());
             } else {
                 stmt = singleStmt;
             }
@@ -125,7 +125,7 @@ public abstract class _AbstractDialect implements _Dialect {
             final SimpleStmt simpleStmt;
             simpleStmt = this.handleStandardDelete((_SingleDelete) delete, visible);
             if (delete instanceof _BatchDml) {
-                stmt = Stmts.batchDml(simpleStmt, ((_BatchDml) delete).wrapperList());
+                stmt = Stmts.batchDml(simpleStmt, ((_BatchDml) delete).paramList());
             } else {
                 stmt = simpleStmt;
             }

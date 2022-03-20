@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Predicate;
@@ -411,7 +410,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
             , MySQLDelete.BatchMultiDeleteSpec<C> {
 
 
-        private List<ReadWrapper> wrapperList;
+        private List<?> wrapperList;
 
         private BatchDelete(@Nullable C criteria) {
             super(criteria);
@@ -475,7 +474,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         }
 
         @Override
-        public final List<ReadWrapper> wrapperList() {
+        public final List<?> paramList() {
             prepared();
             return this.wrapperList;
         }

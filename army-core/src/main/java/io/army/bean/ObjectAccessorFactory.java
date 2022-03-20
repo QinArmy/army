@@ -49,6 +49,16 @@ public abstract class ObjectAccessorFactory {
         return new BeanWriterAccessor(getBeanAccessors(beanClass));
     }
 
+    public static ReadAccessor readOnlyForInstance(final Object instance) {
+        final ReadAccessor accessor;
+        if (instance instanceof Map) {
+            accessor = MapReadAccessor.INSTANCE;
+        } else {
+            accessor = forBean(instance.getClass());
+        }
+        return accessor;
+    }
+
     public static Object createBean(final Class<?> beanClass) {
         try {
             return beanClass.getConstructor().newInstance();
@@ -93,8 +103,14 @@ public abstract class ObjectAccessorFactory {
             for (Method method : clazz.getDeclaredMethods()) {
                 methodName = method.getName();
                 if (methodName.startsWith("set")) {
+                    if (method.getParameterCount() != 1) {
+                        continue;
+                    }
                     methodType = WRITE_METHOD;
                 } else if (methodName.startsWith("get")) {
+                    if (method.getParameterCount() != 0 || method.getReturnType() == void.class) {
+                        continue;
+                    }
                     methodType = READ_METHOD;
                 } else {
                     continue;

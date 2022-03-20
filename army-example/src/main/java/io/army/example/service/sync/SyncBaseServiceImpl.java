@@ -1,8 +1,8 @@
 package io.army.example.service.sync;
 
+import io.army.common.Domain;
 import io.army.domain.IDomain;
 import io.army.example.dao.sync.dao.BaseDao;
-import io.army.example.domain.Domain;
 import io.army.example.service.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

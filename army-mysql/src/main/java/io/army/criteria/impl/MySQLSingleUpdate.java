@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._IndexHint;
@@ -598,7 +597,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
             , MySQLUpdate.BatchSingleWhereSpec<C>, MySQLUpdate.BatchSingleWhereAndSpec<C>
             , MySQLUpdate.BatchOrderBySpec<C>, Statement.BatchParamClause<C, UpdateSpec>, _BatchDml {
 
-        private List<ReadWrapper> wrapperList;
+        private List<?> wrapperList;
 
         private BatchUpdate(@Nullable C criteria) {
             super(criteria);
@@ -627,7 +626,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         }
 
         @Override
-        public final List<ReadWrapper> wrapperList() {
+        public final List<?> paramList() {
             return this.wrapperList;
         }
 

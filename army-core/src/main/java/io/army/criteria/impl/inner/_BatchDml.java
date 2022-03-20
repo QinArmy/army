@@ -1,7 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.bean.ReadWrapper;
-
 import java.util.List;
 
 /**
@@ -15,7 +13,7 @@ public interface _BatchDml extends _Statement {
     /**
      * @return a unmodifiable list
      */
-    List<ReadWrapper> wrapperList();
+    List<?> paramList();
 
 
     /**

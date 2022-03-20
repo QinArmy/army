@@ -1,10 +1,10 @@
 package io.army.example.dao.sync.dao;
 
+import io.army.common.Domain;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
-import io.army.example.domain.Domain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;

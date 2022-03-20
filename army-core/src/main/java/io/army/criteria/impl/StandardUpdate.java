@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ReadWrapper;
 import io.army.criteria.Statement;
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner._BatchDml;
@@ -119,7 +118,7 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
             , Update.StandardBatchWhereSpec<C>, Update.StandardBatchWhereAndSpec<C>
             , Statement.BatchParamClause<C, Update.UpdateSpec>, _BatchDml {
 
-        private List<ReadWrapper> wrapperList;
+        private List<?> wrapperList;
 
         private BatchUpdate(@Nullable C criteria) {
             super(criteria);
@@ -148,7 +147,7 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         }
 
         @Override
-        public List<ReadWrapper> wrapperList() {
+        public List<?> paramList() {
             return this.wrapperList;
         }
 

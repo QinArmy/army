@@ -1,7 +1,7 @@
 package io.army.example.service;
 
+import io.army.common.Domain;
 import io.army.domain.IDomain;
-import io.army.example.domain.Domain;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;

@@ -135,16 +135,36 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableList(wrapperList);
     }
 
-    static List<ReadWrapper> paramList(List<?> beanList) {
-        final List<ReadWrapper> wrapperList = new ArrayList<>(beanList.size());
-        for (Object bean : beanList) {
-            wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(bean));
+    static List<Object> paramList(final List<?> paramList) {
+        final int size = paramList.size();
+        if (size == 0) {
+            throw new CriteriaException("Batch dml parameter list must not empty.");
+        }
+        final Object firstParam = paramList.get(0);
+        if (firstParam == null) {
+            throw new NullPointerException("Batch parameter must non-null.");
+        }
+        final boolean isMap = firstParam instanceof Map;
+        final Class<?> paramJavaType = firstParam.getClass();
+        final List<Object> wrapperList = new ArrayList<>(size);
+        for (Object param : paramList) {
+            if (param == null) {
+                throw new NullPointerException("Batch parameter must non-null.");
+            }
+            if (isMap) {
+                if (!(param instanceof Map)) {
+                    throw new CriteriaException("Batch parameter must be same java type.");
+                }
+            } else if (param.getClass() != paramJavaType) {
+                throw new CriteriaException("Batch parameter must be same java type.");
+            }
+            wrapperList.add(param);
         }
         return Collections.unmodifiableList(wrapperList);
     }
 
 
-    static List<ReadWrapper> paramList(Function<String, Object> function, String keyName) {
+    static List<?> paramList(Function<String, Object> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (!(value instanceof List)) {

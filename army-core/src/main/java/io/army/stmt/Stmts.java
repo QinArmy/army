@@ -1,7 +1,8 @@
 package io.army.stmt;
 
 import io.army.bean.ObjectAccessor;
-import io.army.bean.ReadWrapper;
+import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.ReadAccessor;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NamedParam;
 import io.army.criteria.NonNullNamedParam;
@@ -56,14 +57,18 @@ public abstract class Stmts {
         return new PairStmtImpl(parent, child);
     }
 
-    public static BatchStmt batchDml(SimpleStmt stmt, List<ReadWrapper> wrapperList) {
+    public static BatchStmt batchDml(SimpleStmt stmt, List<?> paramList) {
         final List<ParamValue> paramGroup = stmt.paramGroup();
         final int paramSize = paramGroup.size();
-        final List<List<ParamValue>> groupList = new ArrayList<>(wrapperList.size());
+        final List<List<ParamValue>> groupList = new ArrayList<>(paramList.size());
+        final ReadAccessor accessor;
+        accessor = ObjectAccessorFactory.readOnlyForInstance(paramList.get(0));
 
         NamedParam namedParam = null;
-        for (ReadWrapper wrapper : wrapperList) {
-            final List<ParamValue> group = new ArrayList<>(paramSize);
+        List<ParamValue> group;
+        Object value;
+        for (Object paramObject : paramList) {
+            group = new ArrayList<>(paramSize);
 
             for (ParamValue param : paramGroup) {
                 if (!(param instanceof NamedParam)) {
@@ -71,15 +76,13 @@ public abstract class Stmts {
                     continue;
                 }
                 namedParam = ((NamedParam) param);
-                final Object value = wrapper.get(namedParam.name());
+                value = accessor.get(paramObject, namedParam.name());
                 if (value == null && param instanceof NonNullNamedParam) {
                     throw _Exceptions.nonNullNamedParam((NonNullNamedParam) param);
                 }
                 group.add(ParamValue.build(param.paramMeta(), value));
             }
-
             groupList.add(group);
-
         }
         if (namedParam == null) {
             throw new CriteriaException("Not found any named parameter in batch statement.");

@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Predicate;
@@ -621,7 +620,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
             , MySQLUpdate.BatchMultiIndexHintJoinSpec<C>, MySQLUpdate.BatchIndexJoinJoinSpec<C>
             , MySQLUpdate.BatchMultiUpdateSpec<C>, _BatchDml {
 
-        private List<ReadWrapper> wrapperList;
+        private List<?> wrapperList;
 
         private BatchUpdate(@Nullable C criteria) {
             super(criteria);
@@ -685,7 +684,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         }
 
         @Override
-        public final List<ReadWrapper> wrapperList() {
+        public final List<?> paramList() {
             return this.wrapperList;
         }
 

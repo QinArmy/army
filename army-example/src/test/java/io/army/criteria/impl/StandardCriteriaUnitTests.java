@@ -1,8 +1,13 @@
 package io.army.criteria.impl;
 
+import io.army.bank.domain.user.ChinaProvince;
+import io.army.bank.domain.user.ChinaRegion;
 import io.army.criteria.*;
 import io.army.dialect.Dialect;
-import io.army.example.domain.*;
+import io.army.example.domain.ChinaProvince_;
+import io.army.example.domain.ChinaRegion_;
+import io.army.example.domain.Person_;
+import io.army.example.domain.User_;
 import io.army.example.struct.IdentityType;
 import io.army.example.struct.UserType;
 import io.army.stmt.BatchStmt;

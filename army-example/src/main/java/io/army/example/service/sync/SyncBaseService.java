@@ -1,7 +1,7 @@
 package io.army.example.service.sync;
 
+import io.army.common.Domain;
 import io.army.domain.IDomain;
-import io.army.example.domain.Domain;
 import io.army.lang.Nullable;
 
 import java.util.Map;
