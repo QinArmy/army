@@ -1,5 +1,8 @@
-package io.army;
+package io.army.session;
 
+
+import io.army.DataAccessException_0;
+import io.army.ErrorCode;
 
 public final class NonUniqueException extends DataAccessException_0 {
 

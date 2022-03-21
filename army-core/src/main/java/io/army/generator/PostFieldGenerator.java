@@ -1,5 +1,5 @@
 package io.army.generator;
 
-@Deprecated
+//@Deprecated
 public interface PostFieldGenerator extends _FieldGenerator {
 }

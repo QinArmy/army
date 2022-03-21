@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Table(name = "person_certificate", comment = "bank person certificate")
 @DiscriminatorValue(CertificateType.Constant.PERSON)
-public class PersonCertificate extends Certificate {
+public class PersonCertificate extends Certificate<PersonCertificate> {
 
     @Column(updateMode = UpdateMode.IMMUTABLE, comment = "person user birthday")
     private LocalDate birthday;

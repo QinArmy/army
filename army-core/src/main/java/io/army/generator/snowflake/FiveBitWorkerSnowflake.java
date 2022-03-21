@@ -1,24 +1,23 @@
 package io.army.generator.snowflake;
 
+import java.math.BigInteger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
  *
  */
-public final class FiveBitWorkerSnowflake extends AbstractSnowflake {
+public final class FiveBitWorkerSnowflake implements _Snowflake {
 
 
     private static final ConcurrentMap<String, FiveBitWorkerSnowflake> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public synchronized static FiveBitWorkerSnowflake build(final long startTime, final Worker worker) {
-        return INSTANCE_MAP.computeIfAbsent(
-                String.valueOf(startTime) + worker.getDataCenterId() + worker.getWorkerId()
-                , k -> new FiveBitWorkerSnowflake(startTime, worker.getDataCenterId(), worker.getWorkerId()));
+        return null;
     }
 
-    public FiveBitWorkerSnowflake(long startTime, long workerId, long dataCenterId) {
-        super(startTime, workerId, dataCenterId);
+    public FiveBitWorkerSnowflake() {
+
     }
 
     @Override
@@ -26,4 +25,38 @@ public final class FiveBitWorkerSnowflake extends AbstractSnowflake {
         return 5L;
     }
 
+    @Override
+    public long next() {
+        return 0;
+    }
+
+    @Override
+    public String nextAsString() {
+        return null;
+    }
+
+    @Override
+    public String nextAsString(long suffixNumber) {
+        return null;
+    }
+
+    @Override
+    public BigInteger next(long suffixNumber) {
+        return null;
+    }
+
+    @Override
+    public long getWorkerId() {
+        return 0;
+    }
+
+    @Override
+    public long getDataCenterId() {
+        return 0;
+    }
+
+    @Override
+    public long getStartTime() {
+        return 0;
+    }
 }

@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.generator.PreFieldGenerator;
+import io.army.generator.FieldGenerator;
 
 import java.util.Map;
 
@@ -12,7 +12,7 @@ public interface GeneratorMeta extends Meta {
 
     /**
      * @return prop name or empty.
-     * @see PreFieldGenerator#DEPEND_FIELD_NAME
+     * @see FieldGenerator#DEPEND_FIELD_NAME
      */
     @Deprecated
     String dependFieldName();

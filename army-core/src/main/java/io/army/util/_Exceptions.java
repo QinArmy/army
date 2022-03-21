@@ -9,7 +9,6 @@ import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
-import io.army.generator.PostFieldGenerator;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -394,11 +393,9 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
+    @Deprecated
     public static MetaException autoIdErrorJavaType(PrimaryFieldMeta<?> field) {
-        String m;
-        m = String.format("%s don't support java type[%s],%s", PostFieldGenerator.class.getName()
-                , field.javaType().getName(), field);
-        throw new MetaException(m);
+        throw new UnsupportedOperationException();
     }
 
     public static TransactionException transactionTimeout(long resetMillis) {

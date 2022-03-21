@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.annotation.*;
 import io.army.domain.IDomain;
-import io.army.generator.PreFieldGenerator;
+import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.mapping.CodeEnumType;
 import io.army.mapping.MappingType;
@@ -49,7 +49,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
             this.fieldMeta = fieldMeta;
             this.params = CollectionUtils.unmodifiableMap(params);
 
-            this.dependPropName = this.params.getOrDefault(PreFieldGenerator.DEPEND_FIELD_NAME, "");
+            this.dependPropName = this.params.getOrDefault(FieldGenerator.DEPEND_FIELD_NAME, "");
         }
 
         @Override
@@ -272,9 +272,9 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         try {
             final Class<?> clazz;
             clazz = Class.forName(className);
-            if (PreFieldGenerator.class.isAssignableFrom(clazz)) {
+            if (FieldGenerator.class.isAssignableFrom(clazz)) {
                 String m = String.format("%s generator[%s] isn't %s type."
-                        , fieldMeta, className, PreFieldGenerator.class.getName());
+                        , fieldMeta, className, FieldGenerator.class.getName());
                 throw new MetaException(m);
             }
             return clazz;

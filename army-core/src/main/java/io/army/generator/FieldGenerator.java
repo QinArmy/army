@@ -6,7 +6,7 @@ import io.army.meta.GeneratorMeta;
 
 /**
  * this interface create value for the mapping property of Entity when persist a entity before persistence.
- * if you want creation before persistence ,use {@link PostFieldGenerator}
+ * if you want creation before persistence.
  * <p>
  * there is two ways for implementation of MultiGenerator:
  * <pre>
@@ -45,9 +45,10 @@ import io.army.meta.GeneratorMeta;
  * </p>
  *
  * @see io.army.annotation.Generator
+ * @see FieldGeneratorFactory
  * @since Army 1.0
  */
-public interface PreFieldGenerator extends _FieldGenerator {
+public interface FieldGenerator {
 
     /**
      * @see GeneratorMeta#dependFieldName()
@@ -55,7 +56,7 @@ public interface PreFieldGenerator extends _FieldGenerator {
     String DEPEND_FIELD_NAME = "dependFieldName";
 
 
-    Object next(FieldMeta<?> fieldMeta, ReadWrapper domain) throws GeneratorException;
+    Object next(FieldMeta<?> field, ReadWrapper domain) throws GeneratorException;
 
 
 }

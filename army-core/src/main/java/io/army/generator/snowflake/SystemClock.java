@@ -6,30 +6,35 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public class SystemClock {
+final class SystemClock {
 
-    private static class Holder {
+    private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor(runnable -> {
+        Thread thread = new Thread(runnable, SystemClock.class.getName());
+        thread.setDaemon(true);
+        return thread;
+    });
 
-        private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor(runnable -> {
-            Thread thread = new Thread(runnable, "SystemClock");
-            thread.setDaemon(true);
-            return thread;
-        });
+    static final SystemClock INSTANCE;
 
-        private static final SystemClock INSTANCE = new SystemClock();
-
+    static {
+        final SystemClock clock = new SystemClock();
+        INSTANCE = clock;
+        SCHEDULER.scheduleAtFixedRate(clock::updateNow, 1L, 1L, TimeUnit.MILLISECONDS);
     }
 
-    private final AtomicLong now;
+    static long now() {
+        return INSTANCE.nowMills.get();
+    }
+
+    private final AtomicLong nowMills;
 
     private SystemClock() {
-        this.now = new AtomicLong(System.currentTimeMillis());
-        Holder.SCHEDULER.scheduleAtFixedRate(
-                () -> now.set(System.currentTimeMillis()), 1L, 1L, TimeUnit.MILLISECONDS);
+        this.nowMills = new AtomicLong(System.currentTimeMillis());
+
     }
 
-    public static long now() {
-        return Holder.INSTANCE.now.get();
+    private void updateNow() {
+        this.nowMills.set(System.currentTimeMillis());
     }
 
 

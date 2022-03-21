@@ -1,14 +1,13 @@
 package io.army.example.bank.domain.user;
 
-import io.army.annotation.Column;
-import io.army.annotation.Inheritance;
-import io.army.annotation.Table;
-import io.army.annotation.UpdateMode;
+import io.army.annotation.*;
 import io.army.example.common.BaseVersionDomain;
 
 import java.time.LocalDateTime;
 
-@Table(name = "u_user", comment = "bank user")
+@Table(name = "u_user"
+        , indexes = {@Index(name = "uni_user_no", fieldList = "userNo", unique = true)}
+        , comment = "bank user")
 @Inheritance("userType")
 @SuppressWarnings("unchecked")
 public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
@@ -16,14 +15,20 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
     @Column
     private BankUserType userType;
 
+    @Column(nullable = false, precision = 40, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner user number")
+    private String userNo;
+
     @Column(precision = 50, comment = "user nick name")
     private String nickName;
 
-    @Column(updateMode = UpdateMode.IMMUTABLE, comment = "user certificate table id")
+    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "user certificate table id")
     private Long certificateId;
 
     @Column(updateMode = UpdateMode.ONLY_NULL, comment = "user register complete time")
     private LocalDateTime completeTime;
+
+    @Column(updateMode = UpdateMode.IMMUTABLE, comment = "partner user id for person user")
+    private Long partnerUserId;
 
 
     public final BankUserType getUserType() {
@@ -32,6 +37,15 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
 
     public final T setUserType(BankUserType userType) {
         this.userType = userType;
+        return (T) this;
+    }
+
+    public String getUserNo() {
+        return userNo;
+    }
+
+    public T setUserNo(String userNo) {
+        this.userNo = userNo;
         return (T) this;
     }
 
@@ -63,5 +77,12 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
         return this;
     }
 
+    public Long getPartnerUserId() {
+        return partnerUserId;
+    }
 
+    public T setPartnerUserId(Long partnerUserId) {
+        this.partnerUserId = partnerUserId;
+        return (T) this;
+    }
 }

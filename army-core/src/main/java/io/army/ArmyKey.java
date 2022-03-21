@@ -1,7 +1,7 @@
 package io.army;
 
 import io.army.generator.snowflake.FiveBitWorkerSnowflake;
-import io.army.generator.snowflake.Snowflake;
+import io.army.generator.snowflake._Snowflake;
 
 @Deprecated
 public interface ArmyKey {
@@ -42,7 +42,7 @@ public interface ArmyKey {
     String WORKER_FORMAT = "army.single.%s.workerId";
 
     /**
-     * (optional) Specifies the implementation class name of {@link Snowflake}
+     * (optional) Specifies the implementation class name of {@link _Snowflake}
      * , if absent the default is {@link FiveBitWorkerSnowflake}.
      */
     String SNOWFLAKE_CLASS = "army.snowflake.class";

@@ -9,10 +9,20 @@ import java.time.LocalDate;
 
 @Table(name = "enterprise_certificate", comment = "bank enterprise certificate")
 @DiscriminatorValue(CertificateType.Constant.ENTERPRISE)
-public class EnterpriseCertificate extends Certificate {
+public class EnterpriseCertificate extends Certificate<EnterpriseCertificate> {
 
-    @Column(updateMode = UpdateMode.IMMUTABLE, comment = "enterprise user register day")
+    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "enterprise user register day")
     private LocalDate registerDay;
+
+
+    public LocalDate getRegisterDay() {
+        return registerDay;
+    }
+
+    public EnterpriseCertificate setRegisterDay(LocalDate registerDay) {
+        this.registerDay = registerDay;
+        return this;
+    }
 
 
 }

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.annotation.*;
 import io.army.dialect.Constant;
 import io.army.domain.IDomain;
-import io.army.generator.PreFieldGenerator;
+import io.army.generator.FieldGenerator;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -514,7 +514,7 @@ abstract class TableMetaUtils {
                 continue;
             }
             String depend;
-            depend = generatorMeta.params().get(PreFieldGenerator.DEPEND_FIELD_NAME);
+            depend = generatorMeta.params().get(FieldGenerator.DEPEND_FIELD_NAME);
             int level = 0;
             for (FieldMeta<?> dependField; StringUtils.hasText(depend); ) {
                 dependField = propNameToFieldMeta.get(depend);
@@ -528,7 +528,7 @@ abstract class TableMetaUtils {
                 if (generatorMeta == null) {
                     break;
                 }
-                depend = generatorMeta.params().get(PreFieldGenerator.DEPEND_FIELD_NAME);
+                depend = generatorMeta.params().get(FieldGenerator.DEPEND_FIELD_NAME);
             }
             levelList.add(new Pair<>(fieldMeta, level));
         }

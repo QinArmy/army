@@ -1,11 +1,11 @@
 package io.army.sync;
 
-import io.army.NonUniqueException;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
+import io.army.session.NonUniqueException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
