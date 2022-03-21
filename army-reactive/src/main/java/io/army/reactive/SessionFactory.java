@@ -1,22 +1,20 @@
 package io.army.reactive;
 
-import io.army.session.DialectSessionFactory;
+import io.army.session.GenericSessionFactory;
 import io.army.session.SessionException;
 import reactor.core.publisher.Mono;
 
-public interface SessionFactory extends GenericReactiveApiSessionFactory, DialectSessionFactory {
-
-    @Override
-    ProxyReactiveSession proxySession();
-
-    ReactiveSessionBuilder builder();
+public interface SessionFactory extends GenericSessionFactory {
 
 
-    interface ReactiveSessionBuilder {
+    SessionBuilder builder();
 
-        ReactiveSessionBuilder currentSession(boolean current);
+    Mono<Void> close();
 
-        ReactiveSessionBuilder readOnly(boolean readOnly);
+
+    interface SessionBuilder {
+
+        SessionBuilder readonly(boolean readonly);
 
         Mono<Session> build() throws SessionException;
     }

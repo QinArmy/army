@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 /**
  * @since 1.0
  */
-public interface Update extends Statement {
+public interface Update extends NarrowDmlStatement {
 
 
     interface UpdateSpec {

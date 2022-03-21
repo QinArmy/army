@@ -15,4 +15,23 @@ public class InvestPartnerUser extends BankUser<InvestPartnerUser> {
     private Long cityId;
 
 
+    public final Long getLegalPersonId() {
+        return legalPersonId;
+    }
+
+    public final InvestPartnerUser setLegalPersonId(Long legalPersonId) {
+        this.legalPersonId = legalPersonId;
+        return this;
+    }
+
+    public final Long getCityId() {
+        return cityId;
+    }
+
+    public final InvestPartnerUser setCityId(Long cityId) {
+        this.cityId = cityId;
+        return this;
+    }
+
+
 }

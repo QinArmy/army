@@ -74,9 +74,10 @@ public abstract class SyncBaseDao implements BaseDao {
 
         final Select stmt;
         if (table instanceof ChildTableMeta) {
-            final ParentTableMeta<?> parent = ((ChildTableMeta<T>) table).parentMeta();
+            final ChildTableMeta<T> child = (ChildTableMeta<T>) table;
+            final ParentTableMeta<?> parent = child.parentMeta();
             stmt = SQLs.query()
-                    .select(SQLs.childGroup((ChildTableMeta<? extends Domain>) table, "c", "p"))
+                    .select(SQLs.childGroup(child, "c", "p"))
                     .from(table, "c")
                     .join(parent, "p").on(table.id().equal(parent.id()))
                     .where(table.id().equalLiteral(id))

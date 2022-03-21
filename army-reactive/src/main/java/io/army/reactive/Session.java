@@ -4,46 +4,39 @@ import io.army.lang.Nullable;
 import io.army.session.SessionException;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
-import io.army.tx.NoSessionTransactionException;
-import io.army.tx.reactive.ReactiveTransaction;
 import reactor.core.publisher.Mono;
 
 /**
  * @see SessionFactory
  */
-public interface Session extends SingleDatabaseReactiveSession, GenericReactiveApiSession {
+public interface Session extends ReactiveSession {
 
-    @Override
-    SessionFactory sessionFactory();
-
-    // @Override
-    ReactiveTransaction sessionTransaction() throws NoSessionTransactionException;
 
     Mono<Void> close() throws SessionException;
 
     /**
-     * @throws CannotCreateTransactionException throw when session already have {@link ReactiveTransaction}
+     * @throws CannotCreateTransactionException throw when session already have {@link Transaction}
      */
-    SessionTransactionBuilder builder() throws CannotCreateTransactionException;
+    TransactionBuilder builder() throws SessionException;
 
-    interface SessionTransactionBuilder {
+    interface TransactionBuilder {
 
-        SessionTransactionBuilder readOnly(boolean readOnly);
+        TransactionBuilder readOnly(boolean readOnly);
 
-        SessionTransactionBuilder isolation(Isolation isolation);
+        TransactionBuilder isolation(Isolation isolation);
 
-        SessionTransactionBuilder timeout(int seconds);
+        TransactionBuilder timeout(int seconds);
 
-        SessionTransactionBuilder name(@Nullable String txName);
+        TransactionBuilder name(@Nullable String txName);
 
         /**
          * @throws CannotCreateTransactionException throw when
          *                                          <ul>
          *                                              <li>not specified {@link Isolation}</li>
          *                                              <li>{@link Session#isReadonlySession()} equals {@code true} but,specified transaction readOnly</li>
-         *                                              <li>session already have {@link ReactiveTransaction}</li>
+         *                                              <li>session already have {@link Transaction}</li>
          *                                          </ul>
          */
-        ReactiveTransaction build() throws CannotCreateTransactionException;
+        Transaction build() throws SessionException;
     }
 }

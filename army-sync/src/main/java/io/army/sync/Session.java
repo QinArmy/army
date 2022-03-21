@@ -3,7 +3,6 @@ package io.army.sync;
 import io.army.lang.Nullable;
 import io.army.session.SessionException;
 import io.army.tx.Isolation;
-import io.army.tx.Transaction;
 import io.army.tx.TransactionException;
 
 /**

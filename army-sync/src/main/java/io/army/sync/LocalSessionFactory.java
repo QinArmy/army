@@ -18,7 +18,7 @@ import java.util.Objects;
 /**
  * This class is a implementation of {@link SessionFactory}
  */
-final class LocalSessionFactory extends AbstractSessionFactory implements SessionFactory {
+final class LocalSessionFactory extends _AbstractSessionFactory implements SessionFactory {
 
     final ExecutorFactory executorFactory;
 

@@ -6,6 +6,8 @@ import io.army.annotation.Table;
 import io.army.annotation.UpdateMode;
 import io.army.example.common.BaseVersionDomain;
 
+import java.time.LocalDateTime;
+
 @Table(name = "u_user", comment = "bank user")
 @Inheritance("userType")
 @SuppressWarnings("unchecked")
@@ -19,6 +21,9 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
 
     @Column(updateMode = UpdateMode.IMMUTABLE, comment = "user certificate table id")
     private Long certificateId;
+
+    @Column(updateMode = UpdateMode.ONLY_NULL, comment = "user register complete time")
+    private LocalDateTime completeTime;
 
 
     public final BankUserType getUserType() {
@@ -47,6 +52,15 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
     public final T setNickName(String nickName) {
         this.nickName = nickName;
         return (T) this;
+    }
+
+    public final LocalDateTime getCompleteTime() {
+        return completeTime;
+    }
+
+    public final BankUser<T> setCompleteTime(LocalDateTime completeTime) {
+        this.completeTime = completeTime;
+        return this;
     }
 
 

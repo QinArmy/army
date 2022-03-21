@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 /**
  * @since 1.0
  */
-public interface Insert extends Statement {
+public interface Insert extends DmlStatement {
 
 
     /*################################## blow interfaces  ##################################*/

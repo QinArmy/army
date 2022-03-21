@@ -31,14 +31,6 @@ public abstract class ObjectAccessorFactory {
     private static final ConcurrentMap<Class<?>, FactoryReference> ACCESSOR_CACHE = new ConcurrentHashMap<>();
 
 
-    public ObjectWrapper createWriter(Object bean) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static ObjectWrapper forBeanPropertyAccess(Object target) {
-        throw new UnsupportedOperationException();
-    }
-
 
     public static ReadWrapper forReadonlyAccess(Object target) {
         throw new UnsupportedOperationException();

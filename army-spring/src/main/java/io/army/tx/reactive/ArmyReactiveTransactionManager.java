@@ -3,9 +3,9 @@ package io.army.tx.reactive;
 
 import io.army.reactive.Session;
 import io.army.reactive.SessionFactory;
+import io.army.reactive.Transaction;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.reactive.AbstractReactiveTransactionManager;
@@ -97,12 +97,6 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
     @Override
     protected Mono<Void> doSetRollbackOnly(TransactionSynchronizationManager synchronizationManager
             , GenericReactiveTransaction status) throws TransactionException {
-        ArmyTransactionObject txObject = (ArmyTransactionObject) status.getTransaction();
-        if (txObject.session == null || !txObject.session.hasTransaction()) {
-            return Mono.error(new NoTransactionException("cannot rollbackOnly,no transaction"));
-        }
-        txObject.session.sessionTransaction()
-                .markRollbackOnly();
         return Mono.empty();
     }
 
@@ -160,12 +154,12 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
         ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
         return txObject.reset(session)
                 .flatMap(sessionAfterRest -> this.createSessionTransaction(sessionAfterRest, definition))
-                .flatMap(ReactiveTransaction::start)
+                .flatMap(Transaction::start)
                 ;
 
     }
 
-    private Mono<ReactiveTransaction> createSessionTransaction(Session session
+    private Mono<Transaction> createSessionTransaction(Session session
             , TransactionDefinition definition) {
 //        return session.builder()
 //                .isolation(SpringUtils.convertTotArmyIsolation(definition.getIsolationLevel()))

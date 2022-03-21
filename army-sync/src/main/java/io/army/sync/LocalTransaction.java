@@ -5,7 +5,7 @@ import io.army.tx.*;
 
 import java.util.List;
 
-final class LocalTransaction extends AbstractGenericTransaction implements Transaction {
+final class LocalTransaction extends _AbstractGenericTransaction implements Transaction {
 
     final LocalSession session;
 
