@@ -25,7 +25,6 @@ import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -195,7 +194,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> void save(final T domain, final NullHandleMode mode) {
+    public <T extends IDomain> void save(final T domain, final NullHandleMode mode, final Visible visible) {
         final TableMeta<T> table;
         table = (TableMeta<T>) this.sessionFactory.tableMeta(domain.getClass());
         if (table == null) {
@@ -208,167 +207,40 @@ final class LocalSession extends _AbstractSyncSession implements Session {
                 .insertInto(table)
                 .value(domain)
                 .asInsert();
-        this.insert(stmt, Visible.ONLY_VISIBLE);
+
+        this.insert(stmt, visible);
     }
 
+
     @Override
-    public long insert(final Insert insert, final Visible visible) {
-        try {
-            //1. assert session status
-            assertSession(true, visible);
-            assertSessionForChildInsert((_Insert) insert);
-
-            //2. parse statement to stmt
-            if (insert instanceof _SubQueryInsert && this.dontSupportSubQueryInsert) {
-                throw _Exceptions.dontSupportSubQueryInsert(this);
-            }
-            final Stmt stmt;
-            stmt = this.sessionFactory.dialect.insert(insert, visible);
-
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
-
-            //3. execute stmt
-            final Transaction tx = this.transaction;
-            final long affectedRows;
-            affectedRows = this.stmtExecutor.insert(stmt, tx == null ? 0 : tx.nextTimeout());
-
-            //4. validate value insert affected rows
-            if (insert instanceof _ValuesInsert
-                    && affectedRows != ((_ValuesInsert) insert).domainList().size()) {
-                String m = String.format("value list size is %s,but affected %s rows."
-                        , ((_ValuesInsert) insert).domainList().size(), affectedRows);
-                throw new ExecutorExecutionException(m);
-            }
-            return affectedRows;
-        } catch (ChildInsertException e) {
-            final Transaction tx = this.transaction;
-            if (tx != null) {
-                tx.markRollbackOnly();
-            }
-            throw e;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", Insert.class.getName());
-            throw _Exceptions.unknownError(m, e);
-        } finally {
-            ((_Statement) insert).clear();
+    public long update(final DmlStatement dml, final Visible visible) {
+        final long affectedRows;
+        if (dml instanceof Insert) {
+            affectedRows = this.insert((Insert) dml, visible);
+        } else if (dml instanceof NarrowDmlStatement) {
+            affectedRows = this.dmlUpdate((NarrowDmlStatement) dml, visible);
+        } else {
+            throw _Exceptions.unexpectedStatement(dml);
         }
+        return affectedRows;
     }
 
-
     @Override
-    public <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor
-            , Visible visible) {
-
+    public <R> List<R> returningUpdate(final DmlStatement dml, final Class<R> resultClass
+            , final Supplier<List<R>> listConstructor, final Visible visible) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-        return null;
+    public List<Map<String, Object>> returningUpdateAsMap(final DmlStatement dml
+            , final Supplier<Map<String, Object>> mapConstructor
+            , final Supplier<List<Map<String, Object>>> listConstructor, final Visible visible) {
+        throw new UnsupportedOperationException();
     }
 
-    @Override
-    public <R> List<R> returningUpdate(Update update, Class<R> resultClass
-            , Supplier<List<R>> listConstructor, Visible visible) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-        return null;
-    }
-
-    @Override
-    public <R> List<R> returningDelete(Delete delete, Class<R> resultClass
-            , Supplier<List<R>> listConstructor, Visible visible) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-        return null;
-    }
-
-
-    @Override
-    public long update(final Update update, final Visible visible) {
-        try {
-            if (update instanceof _BatchDml) {
-                throw _Exceptions.unexpectedStatement(update);
-            }
-            //1. assert session status
-            assertSession(true, visible);
-            //2. parse statement to stmt
-            final SimpleStmt stmt;
-            stmt = (SimpleStmt) this.sessionFactory.dialect.update(update, visible);
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
-            //3. execute stmt
-            final Transaction tx = this.transaction;
-            final long affectedRows;
-            affectedRows = this.stmtExecutor.update(stmt, tx == null ? 0 : tx.nextTimeout());
-            //4. assert optimistic lock
-            if (affectedRows < 1 && stmt.hasOptimistic()) {
-                throw _Exceptions.optimisticLock(affectedRows);
-            }
-            return affectedRows;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", Update.class.getName());
-            throw _Exceptions.unknownError(m, e);
-        } finally {
-            ((_Statement) update).clear();
-        }
-    }
-
-    @Override
-    public long delete(Delete delete, Visible visible) {
-        try {
-            if (delete instanceof _BatchDml) {
-                throw _Exceptions.unexpectedStatement(delete);
-            }
-            //1. assert session status
-            assertSession(true, visible);
-            //2. parse statement to stmt
-            final SimpleStmt stmt;
-            stmt = (SimpleStmt) this.sessionFactory.dialect.delete(delete, visible);
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
-            //3. execute stmt
-            final Transaction tx = this.transaction;
-            final long affectedRows;
-            affectedRows = this.stmtExecutor.update(stmt, tx == null ? 0 : tx.nextTimeout());
-            //4. assert optimistic lock
-            if (affectedRows < 1 && stmt.hasOptimistic()) {
-                throw _Exceptions.optimisticLock(affectedRows);
-            }
-            return affectedRows;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", Delete.class.getName());
-            throw _Exceptions.unknownError(m, e);
-        } finally {
-            ((_Statement) delete).clear();
-        }
-    }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public <T extends IDomain> void batchSave(final List<T> domainList, final NullHandleMode mode) {
+    public <T extends IDomain> void batchSave(final List<T> domainList, final NullHandleMode mode, final Visible visible) {
         final Class<T> domainClass;
         domainClass = (Class<T>) domainList.get(0).getClass();
         final TableMeta<T> table;
@@ -383,20 +255,26 @@ final class LocalSession extends _AbstractSyncSession implements Session {
                 .insertInto(table)
                 .values(domainList)
                 .asInsert();
-        this.insert(stmt, Visible.ONLY_VISIBLE);
+        this.insert(stmt, visible);
     }
 
     @Override
-    public List<Long> batchUpdate(final Update update, final Visible visible) {
+    public List<Long> batchUpdate(final NarrowDmlStatement dml, final Visible visible) {
         try {
-            if (!(update instanceof _BatchDml)) {
-                throw _Exceptions.unexpectedStatement(update);
+            if (!(dml instanceof _BatchDml)) {
+                throw _Exceptions.unexpectedStatement(dml);
             }
             //1. assert session status
             assertSession(true, visible);
             //2. parse statement to stmt
             final BatchStmt stmt;
-            stmt = (BatchStmt) this.sessionFactory.dialect.update(update, visible);
+            if (dml instanceof Update) {
+                stmt = (BatchStmt) this.sessionFactory.dialect.update((Update) dml, visible);
+            } else if (dml instanceof Delete) {
+                stmt = (BatchStmt) this.sessionFactory.dialect.delete((Delete) dml, visible);
+            } else {
+                throw _Exceptions.unexpectedStatement(dml);
+            }
             final Function<String, String> sqlFormat;
             if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
                 LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
@@ -410,37 +288,21 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             String m = String.format("Army execute %s occur error.", Update.class.getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
-            ((_Statement) update).clear();
+            ((_Statement) dml).clear();
         }
     }
 
+
     @Override
-    public List<Long> batchDelete(final Delete delete, final Visible visible) {
-        try {
-            if (!(delete instanceof _BatchDml)) {
-                throw _Exceptions.unexpectedStatement(delete);
-            }
-            //1. assert session status
-            assertSession(true, visible);
-            //2. parse statement to stmt
-            final BatchStmt stmt;
-            stmt = (BatchStmt) this.sessionFactory.dialect.delete(delete, visible);
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
-            //3. execute stmt
-            final Transaction tx = this.transaction;
-            return this.stmtExecutor.batchUpdate(stmt, tx == null ? 0 : tx.nextTimeout());
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", Delete.class.getName());
-            throw _Exceptions.unknownError(m, e);
-        } finally {
-            ((_Statement) delete).clear();
-        }
+    public MultiResult multiStmt(List<Statement> statementList, Visible visible) {
+        throw new UnsupportedOperationException();
     }
+
+    @Override
+    public MultiResult call(CallableStatement callable) {
+        throw new UnsupportedOperationException();
+    }
+
 
     @Override
     public boolean closed() {
@@ -545,6 +407,94 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     }
 
 
+    private long insert(final Insert insert, final Visible visible) {
+        try {
+            //1. assert session status
+            assertSession(true, visible);
+            assertSessionForChildInsert((_Insert) insert);
+
+            //2. parse statement to stmt
+            if (insert instanceof _SubQueryInsert && this.dontSupportSubQueryInsert) {
+                throw _Exceptions.dontSupportSubQueryInsert(this);
+            }
+            final Stmt stmt;
+            stmt = this.sessionFactory.dialect.insert(insert, visible);
+
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
+
+            //3. execute stmt
+            final Transaction tx = this.transaction;
+            final long affectedRows;
+            affectedRows = this.stmtExecutor.insert(stmt, tx == null ? 0 : tx.nextTimeout());
+
+            //4. validate value insert affected rows
+            if (insert instanceof _ValuesInsert
+                    && affectedRows != ((_ValuesInsert) insert).domainList().size()) {
+                String m = String.format("value list size is %s,but affected %s rows."
+                        , ((_ValuesInsert) insert).domainList().size(), affectedRows);
+                throw new ExecutorExecutionException(m);
+            }
+            return affectedRows;
+        } catch (ChildInsertException e) {
+            final Transaction tx = this.transaction;
+            if (tx != null) {
+                tx.markRollbackOnly();
+            }
+            throw e;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", Insert.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) insert).clear();
+        }
+    }
+
+    private long dmlUpdate(final NarrowDmlStatement dml, final Visible visible) {
+        try {
+            if (dml instanceof _BatchDml) {
+                throw _Exceptions.unexpectedStatement(dml);
+            }
+            //1. assert session status
+            assertSession(true, visible);
+            //2. parse statement to stmt
+            final SimpleStmt stmt;
+            if (dml instanceof Update) {
+                stmt = (SimpleStmt) this.sessionFactory.dialect.update((Update) dml, visible);
+            } else if (dml instanceof Delete) {
+                stmt = (SimpleStmt) this.sessionFactory.dialect.delete((Delete) dml, visible);
+            } else {
+                throw _Exceptions.unexpectedStatement(dml);
+            }
+
+            final Function<String, String> sqlFormat;
+            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
+            //3. execute stmt
+            final Transaction tx = this.transaction;
+            final long affectedRows;
+            affectedRows = this.stmtExecutor.update(stmt, tx == null ? 0 : tx.nextTimeout());
+            //4. assert optimistic lock
+            if (affectedRows < 1 && stmt.hasOptimistic()) {
+                throw _Exceptions.optimisticLock(affectedRows);
+            }
+            return affectedRows;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", Delete.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) dml).clear();
+        }
+    }
+
+
     /**
      * @see #insert(Insert, Visible)
      */
@@ -568,10 +518,6 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     }
 
-    /**
-     * @see #insert(Insert, Visible)
-     * @see #returningInsert(Insert, Class, Supplier, Visible)
-     */
     private void assertSessionForChildInsert(final _Insert insert) {
         final TableMeta<?> table;
         table = insert.table();

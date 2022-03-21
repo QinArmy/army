@@ -137,6 +137,9 @@ public interface ReactiveSession extends GenericSession {
 
     MultiResult multiStmt(List<Statement> statementList, Visible visible);
 
+    MultiResult call(CallableStatement callable);
+
+
     Mono<Void> flush() throws SessionException;
 
 

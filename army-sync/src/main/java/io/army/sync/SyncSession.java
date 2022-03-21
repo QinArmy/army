@@ -108,121 +108,58 @@ public interface SyncSession extends GenericSession {
 
     <T extends IDomain> void save(T domain);
 
+    <T extends IDomain> void save(T domain, Visible visible);
+
     <T extends IDomain> void save(T domain, NullHandleMode mode);
 
-    long insert(Insert insert);
+    <T extends IDomain> void save(T domain, NullHandleMode mode, Visible visible);
 
-    long insert(Insert insert, Visible visible);
+    long update(DmlStatement dml);
 
-    <R> List<R> returningInsert(Insert insert, Class<R> resultClass);
+    long update(DmlStatement dml, Visible visible);
 
-    <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor);
+    <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass);
 
-    <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible);
+    <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Visible visible);
 
-    <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
+    <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor);
 
-    List<Map<String, Object>> returningInsertAsMap(Insert insert);
+    <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
-    List<Map<String, Object>> returningInsertAsMap(Insert insert, Visible visible);
+    List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml);
 
-    List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+    List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Visible visible);
+
+    List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor);
 
-    List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+    List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
-    long update(Update update);
-
-    long update(Update update, Visible visible);
-
-    /**
-     * @param <R> representing returning result Java Type.
-     */
-    <R> List<R> returningUpdate(Update update, Class<R> resultClass);
-
-    /**
-     * @param <R> representing returning result Java Type.
-     */
-    <R> List<R> returningUpdate(Update update, Class<R> resultClass, Supplier<List<R>> listConstructor);
-
-    /**
-     * @param <R> representing returning result Java Type.
-     */
-    <R> List<R> returningUpdate(Update update, Class<R> resultClass, Visible visible);
-
-    /**
-     * @param <R> representing returning result Java Type.
-     */
-    <R> List<R> returningUpdate(Update update, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
-
-    List<Map<String, Object>> returningUpdateAsMap(Update update);
-
-    List<Map<String, Object>> returningUpdateAsMap(Update update, Visible visible);
-
-    List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor);
-
-    List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
-
-    long delete(Delete delete);
-
-    long delete(Delete delete, Visible visible);
-
-    /**
-     * @param <R> representing returning result Java Type.
-     */
-    <R> List<R> returningDelete(Delete delete, Class<R> resultClass);
-
-    /**
-     * @param <R> representing returning result Java Type.
-     */
-    <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Supplier<List<R>> listConstructor);
-
-    /**
-     * @param <R> representing returning result Java Type.
-     */
-    <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Visible visible);
-
-    /**
-     * @param <R> representing returning result Java Type.
-     */
-    <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
-
-    List<Map<String, Object>> returningDeleteAsMap(Delete delete);
-
-    List<Map<String, Object>> returningDeleteAsMap(Delete delete, Visible visible);
-
-    List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor);
-
-    List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
     <T extends IDomain> void batchSave(List<T> domainList);
 
+    <T extends IDomain> void batchSave(List<T> domainList, Visible visible);
+
     <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode);
 
-    /**
-     * @return a unmodifiable list
-     */
-    List<Long> batchUpdate(Update update);
+    <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode, Visible visible);
 
     /**
      * @return a unmodifiable list
      */
-    List<Long> batchUpdate(Update update, Visible visible);
+    List<Long> batchUpdate(NarrowDmlStatement dml);
 
     /**
      * @return a unmodifiable list
      */
-    List<Long> batchDelete(Delete delete);
+    List<Long> batchUpdate(NarrowDmlStatement dml, Visible visible);
 
-    /**
-     * @return a unmodifiable list
-     */
-    List<Long> batchDelete(Delete delete, Visible visible);
+    MultiResult multiStmt(List<Statement> statementList);
+
+    MultiResult multiStmt(List<Statement> statementList, Visible visible);
+
+    MultiResult call(CallableStatement callable);
 
     void flush() throws SessionException;
 

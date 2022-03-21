@@ -128,133 +128,80 @@ public abstract class _AbstractSyncSession implements SyncSession {
 
     @Override
     public final <T extends IDomain> void save(T domain) {
-        this.save(domain, NullHandleMode.INSERT_DEFAULT);
+        this.save(domain, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final long insert(Insert insert) {
-        return this.insert(insert, Visible.ONLY_VISIBLE);
+    public final <T extends IDomain> void save(T domain, Visible visible) {
+        this.save(domain, NullHandleMode.INSERT_DEFAULT, visible);
     }
 
     @Override
-    public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass) {
-        return this.returningInsert(insert, resultClass, ArrayList::new, Visible.ONLY_VISIBLE);
+    public final <T extends IDomain> void save(T domain, NullHandleMode mode) {
+        this.save(domain, mode, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor) {
-        return this.returningInsert(insert, resultClass, listConstructor, Visible.ONLY_VISIBLE);
+    public final long update(DmlStatement dml) {
+        return this.update(dml, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Visible visible) {
-        return this.returningInsert(insert, resultClass, ArrayList::new, visible);
+    public final <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass) {
+        return this.returningUpdate(dml, resultClass, ArrayList::new, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final List<Map<String, Object>> returningInsertAsMap(Insert insert) {
-        return this.returningInsertAsMap(insert, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
+    public final <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Visible visible) {
+        return this.returningUpdate(dml, resultClass, ArrayList::new, visible);
     }
 
     @Override
-    public final List<Map<String, Object>> returningInsertAsMap(Insert insert, Visible visible) {
-        return this.returningInsertAsMap(insert, HashMap::new, ArrayList::new, visible);
+    public final <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor) {
+        return this.returningUpdate(dml, resultClass, listConstructor, Visible.ONLY_VISIBLE);
+    }
+
+
+    @Override
+    public final List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml) {
+        return this.returningUpdateAsMap(dml, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+    public final List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Visible visible) {
+        return this.returningUpdateAsMap(dml, HashMap::new, ArrayList::new, visible);
+    }
+
+    @Override
+    public final List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor) {
-        return this.returningInsertAsMap(insert, mapConstructor, listConstructor, Visible.ONLY_VISIBLE);
-    }
-
-
-    @Override
-    public final <R> List<R> returningUpdate(Update update, Class<R> resultClass) {
-        return this.returningUpdate(update, resultClass, ArrayList::new, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> List<R> returningUpdate(Update update, Class<R> resultClass, Supplier<List<R>> listConstructor) {
-        return this.returningUpdate(update, resultClass, listConstructor, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> List<R> returningUpdate(Update update, Class<R> resultClass, Visible visible) {
-        return this.returningUpdate(update, resultClass, ArrayList::new, visible);
-    }
-
-    @Override
-    public final List<Map<String, Object>> returningUpdateAsMap(Update update) {
-        return this.returningUpdateAsMap(update, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final List<Map<String, Object>> returningUpdateAsMap(Update update, Visible visible) {
-        return this.returningUpdateAsMap(update, HashMap::new, ArrayList::new, visible);
-    }
-
-    @Override
-    public final List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor) {
-        return this.returningUpdateAsMap(update, mapConstructor, listConstructor, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final long update(Update update) {
-        return this.update(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final List<Long> batchUpdate(Update update) {
-        return this.batchUpdate(update, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final long delete(Delete delete) {
-        return this.delete(delete, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> List<R> returningDelete(Delete delete, Class<R> resultClass) {
-        return this.returningDelete(delete, resultClass, ArrayList::new, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Supplier<List<R>> listConstructor) {
-        return this.returningDelete(delete, resultClass, listConstructor, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Visible visible) {
-        return this.returningDelete(delete, resultClass, ArrayList::new, visible);
-    }
-
-    @Override
-    public final List<Map<String, Object>> returningDeleteAsMap(Delete delete) {
-        return this.returningDeleteAsMap(delete, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final List<Map<String, Object>> returningDeleteAsMap(Delete delete, Visible visible) {
-        return this.returningDeleteAsMap(delete, HashMap::new, ArrayList::new, visible);
-    }
-
-    @Override
-    public final List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor) {
-        return this.returningDeleteAsMap(delete, mapConstructor, listConstructor, Visible.ONLY_VISIBLE);
+        return this.returningUpdateAsMap(dml, mapConstructor, listConstructor, Visible.ONLY_VISIBLE);
     }
 
     @Override
     public final <T extends IDomain> void batchSave(List<T> domainList) {
-        this.batchSave(domainList, NullHandleMode.INSERT_DEFAULT);
+        this.batchSave(domainList, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final List<Long> batchDelete(Delete delete) {
-        return this.batchDelete(delete, Visible.ONLY_VISIBLE);
+    public final <T extends IDomain> void batchSave(List<T> domainList, Visible visible) {
+        this.batchSave(domainList, NullHandleMode.INSERT_DEFAULT, visible);
     }
 
+    @Override
+    public final <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode) {
+        this.batchSave(domainList, mode, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final List<Long> batchUpdate(NarrowDmlStatement dml) {
+        return this.batchUpdate(dml, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final MultiResult multiStmt(List<Statement> statementList) {
+        return this.multiStmt(statementList, Visible.ONLY_VISIBLE);
+    }
 
     @Override
     public final int hashCode() {

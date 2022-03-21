@@ -147,6 +147,11 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
+    public MultiResult call(CallableStatement callable) {
+        return null;
+    }
+
+    @Override
     public Mono<Void> flush() throws SessionException {
         return null;
     }

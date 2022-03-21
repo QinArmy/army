@@ -417,75 +417,47 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             return this.session.selectAsMap(select, mapConstructor, listConstructor, visible);
         }
 
+
         @Override
-        public <T extends IDomain> void save(T domain, NullHandleMode mode) {
-            this.session.save(domain, mode);
+        public <T extends IDomain> void save(T domain, NullHandleMode mode, Visible visible) {
+            this.session.save(domain, mode, visible);
         }
 
         @Override
-        public long insert(Insert insert, Visible visible) {
-            return this.session.insert(insert, visible);
+        public long update(DmlStatement dml, Visible visible) {
+            return this.session.update(dml, visible);
         }
 
         @Override
-        public <R> List<R> returningInsert(Insert insert, Class<R> resultClass, Supplier<List<R>> listConstructor
+        public <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor
                 , Visible visible) {
-            return this.session.returningInsert(insert, resultClass, listConstructor, visible);
+            return this.session.returningUpdate(dml, resultClass, listConstructor, visible);
         }
 
         @Override
-        public List<Map<String, Object>> returningInsertAsMap(Insert insert, Supplier<Map<String, Object>> mapConstructor
+        public List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor
                 , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-            return this.session.returningInsertAsMap(insert, mapConstructor, listConstructor, visible);
+            return this.session.returningUpdateAsMap(dml, mapConstructor, listConstructor, visible);
         }
 
         @Override
-        public long update(Update update, Visible visible) {
-            return this.session.update(update, visible);
+        public <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode, Visible visible) {
+            this.session.batchSave(domainList, mode, visible);
         }
 
         @Override
-        public <R> List<R> returningUpdate(Update update, Class<R> resultClass, Supplier<List<R>> listConstructor
-                , Visible visible) {
-            return this.session.returningUpdate(update, resultClass, listConstructor, visible);
+        public List<Long> batchUpdate(NarrowDmlStatement dml, Visible visible) {
+            return this.session.batchUpdate(dml, visible);
         }
 
         @Override
-        public List<Map<String, Object>> returningUpdateAsMap(Update update, Supplier<Map<String, Object>> mapConstructor
-                , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-            return this.session.returningUpdateAsMap(update, mapConstructor, listConstructor, visible);
+        public MultiResult multiStmt(List<Statement> statementList, Visible visible) {
+            return this.session.multiStmt(statementList, visible);
         }
 
         @Override
-        public long delete(Delete delete, Visible visible) {
-            return this.session.delete(delete, visible);
-        }
-
-        @Override
-        public <R> List<R> returningDelete(Delete delete, Class<R> resultClass, Supplier<List<R>> listConstructor
-                , Visible visible) {
-            return this.session.returningDelete(delete, resultClass, listConstructor, visible);
-        }
-
-        @Override
-        public List<Map<String, Object>> returningDeleteAsMap(Delete delete, Supplier<Map<String, Object>> mapConstructor
-                , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-            return this.session.returningDeleteAsMap(delete, mapConstructor, listConstructor, visible);
-        }
-
-        @Override
-        public <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode) {
-            this.session.batchSave(domainList, mode);
-        }
-
-        @Override
-        public List<Long> batchUpdate(Update update, Visible visible) {
-            return this.session.batchUpdate(update, visible);
-        }
-
-        @Override
-        public List<Long> batchDelete(Delete delete, Visible visible) {
-            return this.session.batchDelete(delete, visible);
+        public MultiResult call(CallableStatement callable) {
+            return this.session.call(callable);
         }
 
         @Override
