@@ -283,7 +283,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     private final PrimaryFieldMeta<T> primaryField;
 
 
-    private final List<FieldMeta<T>> generatorChain;
+    private final List<FieldMeta<?>> generatorChain;
 
     private DefaultTableMeta(final Class<T> domainClass) {
         Objects.requireNonNull(domainClass, "javaType required");
@@ -420,7 +420,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
 
     @Override
-    public final List<FieldMeta<T>> generatorChain() {
+    public final List<FieldMeta<?>> fieldChain() {
         return this.generatorChain;
     }
 

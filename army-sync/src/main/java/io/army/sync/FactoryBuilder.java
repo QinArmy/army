@@ -5,8 +5,8 @@ import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;
-import io.army.generator._FieldGenerator;
-import io.army.meta.FieldMeta;
+import io.army.generator.FieldGeneratorFactory;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.session.SessionFactoryException;
 
@@ -90,7 +90,7 @@ public interface FactoryBuilder {
      * Optional.
      * </p>
      */
-    FactoryBuilder fieldGenerator(Map<FieldMeta<?>, _FieldGenerator> generatorMap);
+    FactoryBuilder fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory);
 
 
     /**
@@ -101,7 +101,7 @@ public interface FactoryBuilder {
     SessionFactory build() throws SessionFactoryException;
 
     static FactoryBuilder builder() {
-        return new LocalFactoryBuilder();
+        return new LocalSessioinFactoryBuilder();
     }
 
 

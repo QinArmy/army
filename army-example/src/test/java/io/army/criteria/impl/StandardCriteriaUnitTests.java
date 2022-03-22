@@ -352,12 +352,12 @@ public class StandardCriteriaUnitTests {
     }
 
 
-    private List<ChinaRegion> createRegionList() {
-        List<ChinaRegion> domainList = new ArrayList<>();
-        ChinaRegion region;
+    private List<ChinaRegion<?>> createRegionList() {
+        List<ChinaRegion<?>> domainList = new ArrayList<>();
+        ChinaRegion<?> region;
 
         for (int i = 0; i < 2; i++) {
-            region = new ChinaRegion();
+            region = new ChinaRegion<>();
             region.setId((long) i);
             region.setName("江湖" + i);
             domainList.add(region);

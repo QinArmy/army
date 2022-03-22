@@ -36,9 +36,10 @@ public class BankSyncUserDao extends BankSyncBaseDao implements BankUserDao {
                 .leftJoin(BankUser_.T, "pu").on(SQLs.field("p", BankUser_.id).equal(SQLs.field("pu", BankUser_.partnerUserId)))
                 .leftJoin(Certificate_.T, "c").on(Certificate_.id.equal(SQLs.field("pu", BankUser_.certificateId)))
                 .leftJoin(BankAccount_.T, "a").on(BankAccount_.userId.equal(SQLs.field("pu", BankUser_.id)))
-                .where(SQLs.field("p", BankUser_.userNo).equal("partnerNo"))
-                .and(Certificate_.certificateNo.equal("certificateNo"))
+                .where(SQLs.field("p", BankUser_.userNo).equal(partnerNo))
+                .and(Certificate_.certificateNo.equal(certificateNo))
                 .and(Certificate_.certificateType.equalLiteral(CertificateType.PERSON))
+                .limit(1)
                 .asQuery();
 
         return this.sessionContext.currentSession().selectOne(stmt, PersonAccountStatesBean.class);

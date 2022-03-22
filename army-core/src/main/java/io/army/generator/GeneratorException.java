@@ -1,17 +1,18 @@
 package io.army.generator;
 
-import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
+import io.army.ArmyException;
+import io.army.lang.Nullable;
 
-public class GeneratorException extends ArmyRuntimeException {
+public class GeneratorException extends ArmyException {
 
-    private static final long serialVersionUID = 3690450509486176645L;
 
-    public GeneratorException(ErrorCode errorCode, String format, Object... args) {
-        super(errorCode, format, args);
+    public GeneratorException(String message) {
+        super(message);
     }
 
-    public GeneratorException(ErrorCode errorCode, Throwable cause, String format, Object... args) {
-        super(errorCode, cause, format, args);
+    public GeneratorException(String message, @Nullable Throwable cause) {
+        super(message, cause);
     }
+
+
 }

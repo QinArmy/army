@@ -6,7 +6,7 @@ import io.army.annotation.Table;
 
 @Table(name = "china_province", comment = "china province")
 @DiscriminatorValue(RegionType.Constant.PROVINCE)
-public class ChinaProvince extends ChinaRegion {
+public class ChinaProvince extends ChinaRegion<ChinaProvince> {
 
     @Column(precision = 50, comment = "china provincial capital")
     private String provincialCapital;

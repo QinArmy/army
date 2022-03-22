@@ -1,31 +1,22 @@
 package io.army.generator.snowflake;
 
 
-import io.army.bean.ArmyBean;
+import java.util.function.Consumer;
 
 /**
  *
  */
-public interface SnowflakeClient extends ArmyBean {
+public interface SnowflakeClient {
 
-    /**
-     * @throws SnowflakeWorkerException when assign failure
-     */
-    void askAssignWorker() throws SnowflakeWorkerException;
-
-    void heartbeat() throws SnowflakeWorkerException;
 
     /**
      * provide to {@link SnowflakeGenerator} to register itself.
+     *
      * @return the {@link Worker} that assigned by snowflake server
      */
-     boolean registerGenerator(SnowflakeGenerator generator) throws SnowflakeWorkerException;
+    boolean registerGenerator(SnowflakeGenerator generator, Consumer<Worker> workerConsumer)
+            throws SnowflakeWorkerException;
 
-     Worker currentWorker();
+    Worker currentWorker();
 
-
-    enum Action {
-        ASSGIN, HEARTNEAT, REVOKE
-
-    }
 }

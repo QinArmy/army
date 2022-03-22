@@ -32,6 +32,10 @@ public interface FieldMeta<T extends IDomain> extends GenericField<T> {
     @Nullable
     GeneratorMeta generator();
 
+    @Nullable
+    FieldMeta<?> dependField();
+
+
     /**
      * (Optional) The columnSize for a decimal (exact numeric)
      * column. (Applies only if a decimal column is used.)

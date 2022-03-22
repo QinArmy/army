@@ -1,10 +1,25 @@
 package io.army.example.common;
 
 import io.army.domain.IDomain;
+import io.army.generator.FieldGenerator;
+import io.army.generator.snowflake.SnowflakeGenerator;
 
 import java.util.Objects;
 
 public abstract class Domain extends Criteria implements IDomain {
+
+
+    protected static final String SNOWFLAKE = "io.army.generator.snowflake.SnowflakeGenerator";
+
+    protected static final String START_TIME = SnowflakeGenerator.START_TIME;
+
+    protected static final String startTime = "1647957568404";
+
+    protected static final String DEPEND = FieldGenerator.DEPEND_FIELD_NAME;
+
+    protected static final String DATE = "date";
+
+    protected static final String TRUE = "true";
 
 
     public abstract Object getId();

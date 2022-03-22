@@ -12,11 +12,13 @@ public class PersonAccountStatesBean implements BankFieldAccessBean {
 
     public Long certificateId;
 
-    private CertificateType certificateType;
+    public CertificateType certificateType;
 
-    private String certificateNo;
+    public String certificateNo;
 
     public Long userId;
+
+    public String userNo;
 
     public BankUserType userType;
 

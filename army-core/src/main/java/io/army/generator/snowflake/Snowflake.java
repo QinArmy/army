@@ -1,74 +1,68 @@
 package io.army.generator.snowflake;
 
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.SignStyle;
-import java.util.Arrays;
-import java.util.Locale;
+import java.lang.ref.SoftReference;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static java.time.temporal.ChronoField.*;
+public final class Snowflake {
 
-public final class Snowflake implements _Snowflake {
+    private static final ConcurrentMap<Snowflake, SnowflakeReference> INSTANCE_MAP = new ConcurrentHashMap<>();
 
-    private static final ConcurrentMap<Snowflake, Snowflake> INSTANCE_MAP = new ConcurrentHashMap<>();
-
-    private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
-            .appendValue(YEAR, 4, 10, SignStyle.NEVER)
-            .appendValue(MONTH_OF_YEAR, 2)
-            .appendValue(DAY_OF_MONTH, 2)
-            .toFormatter(Locale.ENGLISH);
 
     // private static final Logger LOG = LoggerFactory.getLogger(Snowflake.class);
 
-    public static Snowflake create(final long startTime, final long workerId, final long dataCenterId
-            , final long workerBits) {
+    public static synchronized Snowflake create(final long startTime, final long dataCenterId, final long workerId) {
         if (startTime < 0) {
             throw new IllegalArgumentException("startTime must great than or equals 0");
         }
-        if (workerBits < 1 || workerBits > 9) {
-            throw new IllegalArgumentException("workerBits must in [1,9]");
-        }
-        final long maxWorkerId, maxDataCenterId;
-        maxWorkerId = ~(-1L << workerBits);
-        maxDataCenterId = ~(-1L << (WORKER_BIT_SIZE - workerBits));
-
-        if (workerId > maxWorkerId || workerId < 0) {
-            String m = String.format("Worker id[%s] couldn't be greater than %s or less than 0", workerId, maxWorkerId);
-            throw new IllegalArgumentException(m);
-        }
-
-        if (dataCenterId > maxDataCenterId || dataCenterId < 0) {
+        if (dataCenterId > MAX_DATA_CENTER_ID || dataCenterId < 0) {
             String m = String.format("Data center id[%s] couldn't be greater than %s or less than 0"
-                    , dataCenterId, maxDataCenterId);
+                    , dataCenterId, MAX_DATA_CENTER_ID);
             throw new IllegalArgumentException(m);
         }
-        final Snowflake newInstance, oldInstance;
-        newInstance = new Snowflake(startTime, workerBits, dataCenterId, workerId);
-        oldInstance = INSTANCE_MAP.putIfAbsent(newInstance, newInstance);
-        return oldInstance == null ? newInstance : oldInstance;
+        if (workerId > MAX_WORKER_ID || workerId < 0) {
+            String m = String.format("Worker id[%s] couldn't be greater than %s or less than 0"
+                    , workerId, MAX_WORKER_ID);
+            throw new IllegalArgumentException(m);
+        }
+
+        final Snowflake newInstance, currentInstance;
+        newInstance = new Snowflake(startTime, dataCenterId, workerId);
+
+        final SnowflakeReference reference;
+        reference = INSTANCE_MAP.computeIfAbsent(newInstance, SnowflakeReference::new);
+        currentInstance = reference.get();
+        if (currentInstance == null) {
+            INSTANCE_MAP.put(newInstance, new SnowflakeReference(newInstance));
+        }
+        return currentInstance == null ? newInstance : currentInstance;
     }
 
 
-    private final long startTime;
+    /** bit number of worker(dataCenterId + workerId) */
+    public static final byte WORKER_BIT_SIZE = 10;
 
-    /**
-     *
-     */
-    private final long workerId;
+    /** bit number of sequence id */
+    public static final byte SEQUENCE_BITS = 12;
 
-    /**
-     *
-     */
-    private final long dataCenterId;
+    /** bit number that timestamp left shift */
+    public static final byte TIMESTAMP_LEFT_SHIFT = WORKER_BIT_SIZE + SEQUENCE_BITS;
 
-    private final long workerBits;
+    /** max value of sequence */
+    public static final short SEQUENCE_MASK = ~(-1 << SEQUENCE_BITS);
 
-    private final long dataCenterIdShift;
+    public static final byte DATA_CENTER_SHIFT = SEQUENCE_BITS + 5;
+
+    public static final byte MAX_WORKER_ID = ~(-1 << 5);
+
+    public static final byte MAX_DATA_CENTER_ID = MAX_WORKER_ID;
+
+    public final long startTime;
+
+    public final long workerId;
+
+    public final long dataCenterId;
 
     /** (0~4095) */
     private long sequence = 0L;
@@ -76,21 +70,18 @@ public final class Snowflake implements _Snowflake {
     private long lastTimestamp;
 
 
-    private Snowflake(final long startTime, final long workerBits, final long dataCenterId, final long workerId) {
+    private Snowflake(final long startTime, final long dataCenterId, final long workerId) {
         this.startTime = startTime;
         this.workerId = workerId;
         this.dataCenterId = dataCenterId;
-        this.workerBits = workerBits;
 
-        this.dataCenterIdShift = SEQUENCE_BITS + workerBits;
         this.lastTimestamp = SystemClock.now();
     }
 
-    @Override
     public long next() {
         synchronized (this) {
             long timestamp;
-            timestamp = SystemClock.now();
+            timestamp = System.currentTimeMillis();
             final long lastTimestamp = this.lastTimestamp;
 
             if (timestamp < lastTimestamp) {
@@ -103,16 +94,22 @@ public final class Snowflake implements _Snowflake {
                 sequence = 0L;
             } else if ((sequence = (++sequence) & SEQUENCE_MASK) == 0) {
                 // block util then millis
-                timestamp = SystemClock.now();
-                while (timestamp <= lastTimestamp) {
-                    timestamp = SystemClock.now();
+                timestamp = System.currentTimeMillis();
+                if (timestamp <= lastTimestamp) {
+                    try {
+                        this.wait(1L);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    timestamp = System.currentTimeMillis();
+
                 }
                 sequence = (++sequence) & SEQUENCE_MASK;
             }
             this.lastTimestamp = timestamp;
             this.sequence = sequence;
             return ((timestamp - this.startTime) << TIMESTAMP_LEFT_SHIFT)
-                    | (this.dataCenterId << this.dataCenterIdShift)
+                    | (this.dataCenterId << DATA_CENTER_SHIFT)
                     | (this.workerId << SEQUENCE_BITS)
                     | sequence;
         }
@@ -122,52 +119,8 @@ public final class Snowflake implements _Snowflake {
 
 
     @Override
-    public BigInteger next(long suffixNumber) {
-        return new BigInteger(nextAsString(suffixNumber));
-    }
-
-
-    @Override
-    public String nextAsString(final long suffixNumber) {
-        if (suffixNumber < 0) {
-            throw new IllegalArgumentException("suffixNumber must non-negative");
-        }
-        final String suffix;
-        suffix = suffixWithZero(suffixNumber);
-        final StringBuilder builder = new StringBuilder(27 + suffix.length());
-        builder.append(LocalDateTime.now().format(FORMATTER));
-
-        final long nextSequence;
-        nextSequence = this.next();
-        return builder
-                .append(nextSequence)
-                .append(suffix)
-                .toString();
-    }
-
-    @Override
-    public String nextAsString() {
-        return Long.toString(next());
-    }
-
-    @Override
-    public long getWorkerId() {
-        return workerId;
-    }
-
-    @Override
-    public long getDataCenterId() {
-        return dataCenterId;
-    }
-
-    @Override
-    public long getStartTime() {
-        return startTime;
-    }
-
-    @Override
     public int hashCode() {
-        return Objects.hash(this.startTime, this.workerBits, this.dataCenterId, this.workerId);
+        return Objects.hash(this.startTime, this.dataCenterId, this.workerId);
     }
 
     @Override
@@ -178,7 +131,6 @@ public final class Snowflake implements _Snowflake {
         } else if (obj instanceof Snowflake) {
             final Snowflake s = (Snowflake) obj;
             match = s.startTime == this.startTime
-                    && s.workerBits == this.workerBits
                     && s.dataCenterId == this.dataCenterId
                     && s.workerId == this.workerId;
         } else {
@@ -187,16 +139,11 @@ public final class Snowflake implements _Snowflake {
         return match;
     }
 
-    @Override
-    public long getWorkerBits() {
-        return this.workerBits;
-    }
 
     @Override
     public String toString() {
-        return String.format("[%s workerBits:%s,startTime:%s,dataCenterId:%s,workerId:%s]"
+        return String.format("[%s startTime:%s,dataCenterId:%s,workerId:%s]"
                 , Snowflake.class.getName()
-                , this.workerBits
                 , this.startTime
                 , this.dataCenterId
                 , this.workerId);
@@ -210,7 +157,7 @@ public final class Snowflake implements _Snowflake {
         if (offset <= 5L) {
             try {
                 this.wait(offset << 1L);
-                timestamp = SystemClock.now();
+                timestamp = System.currentTimeMillis();
                 if (timestamp < lastTimestamp) {
                     throw clockMovedBackwards(offset);
                 }
@@ -223,20 +170,29 @@ public final class Snowflake implements _Snowflake {
         return timestamp;
     }
 
-    private String suffixWithZero(long number) {
-        String str = Long.toString(number % 10_0000);
-        if (str.length() < 5) {
-            char[] chars = new char[5 - str.length()];
-            Arrays.fill(chars, '0');
-            str = new String(chars) + str;
-        }
-        return str;
-    }
 
     private static IllegalStateException clockMovedBackwards(long offset) {
         String m = String.format("Clock moved backwards. Refusing to generate id for %d milliseconds", offset);
         return new IllegalStateException(m);
     }
+
+
+    private static final class SnowflakeReference extends SoftReference<Snowflake> {
+
+        private SnowflakeReference(Snowflake referent) {
+            super(referent);
+        }
+
+        @Override
+        public void clear() {
+            final Snowflake referent = this.get();
+            if (referent != null) {
+                INSTANCE_MAP.remove(referent, this);
+            }
+            super.clear();
+        }
+
+    }//SnowflakeReference
 
 
 }

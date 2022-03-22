@@ -1,51 +1,62 @@
 package io.army.generator.snowflake;
 
-import io.army.util._Assert;
+import java.util.Objects;
 
 public final class Worker {
 
     public static final Worker ZERO = new Worker(0, 0);
 
-    private final long dataCenterId;
 
-    private final long workerId;
+    public static Worker create(final long dataCenterId, final long workerId) {
+        Worker worker;
+        if (dataCenterId == 0L && workerId == 0L) {
+            worker = ZERO;
+        } else if (dataCenterId < 0L || dataCenterId > Snowflake.MAX_DATA_CENTER_ID) {
+            String m = String.format("dataCenterId must in [0,%s]", Snowflake.MAX_DATA_CENTER_ID);
+            throw new IllegalArgumentException(m);
+        } else if (workerId < 0L || workerId > Snowflake.MAX_WORKER_ID) {
+            String m = String.format("workerId must in [0,%s]", Snowflake.MAX_WORKER_ID);
+            throw new IllegalArgumentException(m);
+        } else {
+            worker = new Worker(dataCenterId, workerId);
+        }
+        return worker;
+    }
 
-    public Worker(long dataCenterId, long workerId) {
-        _Assert.isTrue(dataCenterId >= 0 && dataCenterId <= 1024, "dataCenterId must belong [0,1024].");
-        _Assert.isTrue(workerId >= 0 && workerId <= 1024, "workerId must belong [0,1024].");
+    public final long dataCenterId;
 
+    public final long workerId;
+
+    private Worker(final long dataCenterId, final long workerId) {
         this.dataCenterId = dataCenterId;
         this.workerId = workerId;
     }
 
-    public long getDataCenterId() {
-        return dataCenterId;
-    }
-
-    public long getWorkerId() {
-        return workerId;
-    }
-
     @Override
     public int hashCode() {
-        return Long.hashCode(dataCenterId) + Long.hashCode(workerId);
+        return Objects.hash(this.dataCenterId, this.workerId);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
+    public boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof Worker) {
+            final Worker w = (Worker) obj;
+            match = w.dataCenterId == this.dataCenterId
+                    && w.workerId == this.workerId;
+        } else {
+            match = false;
         }
-        if (!(obj instanceof Worker)) {
-            return false;
-        }
-        Worker w = (Worker) obj;
-        return this.dataCenterId == w.dataCenterId
-                && this.workerId == w.workerId;
+        return match;
     }
 
     @Override
     public String toString() {
-        return String.format("dataCenterId:%s,workerId:%s .",dataCenterId,workerId);
+        return String.format("[%ss hash:%s,dataCenterId:%s,workerId:%s]"
+                , System.identityHashCode(this), Worker.class.getName(), dataCenterId, workerId);
     }
+
+
 }

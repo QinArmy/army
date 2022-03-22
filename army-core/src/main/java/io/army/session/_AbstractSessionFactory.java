@@ -4,14 +4,15 @@ import io.army.ArmyException;
 import io.army.ArmyKey;
 import io.army.ArmyKeys;
 import io.army.bean.ObjectAccessor;
+import io.army.bean.ReadWrapper;
 import io.army.codec.JsonCodec;
-import io.army.dialect.FieldGenerator;
+import io.army.dialect.FieldValueGenerator;
 import io.army.dialect._AbstractFieldValuesGenerator;
 import io.army.dialect._DialectEnvironment;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.env.MyKey;
-import io.army.generator._FieldGenerator;
+import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
@@ -41,13 +42,13 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected final Map<Class<?>, TableMeta<?>> tableMap;
 
-    protected final Map<FieldMeta<?>, _FieldGenerator> fieldGeneratorMap;
+    protected final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
 
     protected final Function<ArmyException, RuntimeException> exceptionFunction;
 
     protected final SubQueryInsertMode subQueryInsertMode;
 
-    protected final FieldGenerator fieldValuesGenerator;
+    protected final FieldValueGenerator fieldValuesGenerator;
 
     protected final boolean readonly;
 
@@ -124,7 +125,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     @Nullable
     @Override
-    public final _FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta) {
+    public final FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta) {
         return this.fieldGeneratorMap.get(fieldMeta);
     }
 
@@ -157,7 +158,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     }
 
     @Override
-    public final FieldGenerator fieldValuesGenerator() {
+    public final FieldValueGenerator fieldValuesGenerator() {
         return this.fieldValuesGenerator;
     }
 
@@ -238,10 +239,10 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
         private final ZoneOffset zoneOffset;
 
-        private final Map<FieldMeta<?>, _FieldGenerator> fieldGeneratorMap;
+        private final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
 
         private FieldValuesGeneratorImpl(@Nullable ZoneOffset zoneOffset
-                , Map<FieldMeta<?>, _FieldGenerator> fieldGeneratorMap) {
+                , Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap) {
             this.zoneOffset = zoneOffset;
             this.fieldGeneratorMap = fieldGeneratorMap;
         }
@@ -253,10 +254,16 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         }
 
         @Override
-        protected void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor) {
-            //TODO no-op
+        protected void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor, ReadWrapper wrapper) {
+            final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap = this.fieldGeneratorMap;
+            FieldGenerator generator;
+            for (FieldMeta<?> field : table.fieldList()) {
+                generator = fieldGeneratorMap.get(field);
+                accessor.set(domain, field.fieldName(), generator.next(field, wrapper));
+            }
         }
 
     }// FieldValuesGeneratorImpl
+
 
 }

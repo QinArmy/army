@@ -3,6 +3,7 @@ package io.army.dialect;
 
 import io.army.Database;
 import io.army.bean.ObjectAccessor;
+import io.army.bean.ReadWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -64,7 +65,7 @@ public abstract class _MockDialects {
         }
 
         @Override
-        public FieldGenerator fieldValuesGenerator() {
+        public FieldValueGenerator fieldValuesGenerator() {
             return MockDomainValuesGenerator.INSTANCE;
         }
 
@@ -147,12 +148,12 @@ public abstract class _MockDialects {
         }
 
         @Override
-        protected void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor) {
-            for (FieldMeta<?> field : table.generatorChain()) {
+        protected void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor, ReadWrapper readWrapper) {
+            for (FieldMeta<?> field : table.fieldChain()) {
                 accessor.set(domain, field.fieldName(), null);
             }
             if (table instanceof ChildTableMeta) {
-                for (FieldMeta<?> field : ((ChildTableMeta<?>) table).parentMeta().generatorChain()) {
+                for (FieldMeta<?> field : ((ChildTableMeta<?>) table).parentMeta().fieldChain()) {
                     accessor.set(domain, field.fieldName(), null);
                 }
             }

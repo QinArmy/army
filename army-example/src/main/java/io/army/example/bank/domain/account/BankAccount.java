@@ -1,9 +1,6 @@
 package io.army.example.bank.domain.account;
 
-import io.army.annotation.Column;
-import io.army.annotation.Index;
-import io.army.annotation.Table;
-import io.army.annotation.UpdateMode;
+import io.army.annotation.*;
 import io.army.example.bank.domain.user.BankUserType;
 import io.army.example.common.BaseVersionDomain;
 
@@ -14,10 +11,16 @@ import java.math.BigDecimal;
         , comment = "bank user account")
 public class BankAccount extends BaseVersionDomain<BankAccount> {
 
+    @Column
+    @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})
+    private Long id;
+
     @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "account type")
     private AccountType accountType;
 
     @Column(nullable = false, precision = 40, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner account number")
+    @Generator(value = SNOWFLAKE, params = {
+            @Param(name = START_TIME, value = startTime), @Param(name = DEPEND, value = "userId")})
     private String accountNo;
 
     @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "user id of account")
@@ -84,6 +87,16 @@ public class BankAccount extends BaseVersionDomain<BankAccount> {
 
     public final BankAccount setFrozenAmount(BigDecimal frozenAmount) {
         this.frozenAmount = frozenAmount;
+        return this;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public BankAccount setId(Long id) {
+        this.id = id;
         return this;
     }
 

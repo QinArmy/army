@@ -10,6 +10,10 @@ import io.army.example.common.BaseVersionDomain;
 @SuppressWarnings("unchecked")
 public class Certificate<T extends Certificate<T>> extends BaseVersionDomain<T> {
 
+    @Column
+    @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})
+    private Long id;
+
 
     @Column(nullable = false)
     private CertificateType certificateType;
@@ -45,6 +49,17 @@ public class Certificate<T extends Certificate<T>> extends BaseVersionDomain<T> 
 
     public T setSubjectName(String subjectName) {
         this.subjectName = subjectName;
+        return (T) this;
+    }
+
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public T setId(Long id) {
+        this.id = id;
         return (T) this;
     }
 

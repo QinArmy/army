@@ -1,7 +1,9 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
+import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
+import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
@@ -73,14 +75,18 @@ public abstract class _DmlUtils {
     }
 
 
-    static void appendStandardValueInsert(final _ValueInsertContext context, final @Nullable FieldGenerator generator) {
+    static void appendStandardValueInsert(final _ValueInsertContext context, final @Nullable FieldValueGenerator generator) {
         final _Dialect dialect = context.dialect();
+        final ObjectAccessor accessor = context.domainAccessor();
+
         final _InsertBlock block;
         final _SqlContext blockContext;
         final TableMeta<?> domainTable;
+        final BeanReadWrapper readWrapper;
         if (generator == null) {
             // child table;
             domainTable = null;
+            readWrapper = null;
             block = context.childBlock();
             assert block != null;
             blockContext = block.getContext();
@@ -88,6 +94,8 @@ public abstract class _DmlUtils {
             // parent table or simple table
             final _InsertBlock childBlock = context.childBlock();
             domainTable = childBlock == null ? context.table() : childBlock.table();
+            readWrapper = new BeanReadWrapper(accessor);
+            ;
             block = context;
             blockContext = context;
         }
@@ -125,7 +133,6 @@ public abstract class _DmlUtils {
         final Map<FieldMeta<?>, _Expression> expMap = context.commonExpMap();
         final boolean mockEnvironment = dialect instanceof _MockDialects;
         final NullHandleMode nullHandleMode = context.nullHandle();
-        final ObjectAccessor accessor = context.domainAccessor();
         final boolean migration = context.migration();
 
         _Expression expression;
@@ -135,7 +142,13 @@ public abstract class _DmlUtils {
         for (IDomain domain : domainList) {
             if (generator != null) {
                 //only non-child table
-                generator.generate(domainTable, domain, accessor, migration);
+                readWrapper.domain = domain; // update domain value
+                if (migration) {
+                    generator.validate(domainTable, domain, accessor);
+                } else {
+                    generator.generate(domainTable, domain, accessor, readWrapper);
+                }
+
             }
             if (batch > 0) {
                 builder.append(Constant.SPACE_COMMA);
@@ -274,7 +287,7 @@ public abstract class _DmlUtils {
 
     static void appendInsertFields(final TableMeta<?> domainTable, final Set<FieldMeta<?>> fieldSet) {
 
-        fieldSet.addAll(domainTable.generatorChain());
+        fieldSet.addAll(domainTable.fieldChain());
 
         fieldSet.add(domainTable.id());
         if (domainTable instanceof ParentTableMeta) {
@@ -327,6 +340,38 @@ public abstract class _DmlUtils {
         }
 
     }
+
+    private static final class BeanReadWrapper implements ReadWrapper {
+
+        private final ObjectAccessor accessor;
+
+        private BeanReadWrapper(ObjectAccessor accessor) {
+            this.accessor = accessor;
+        }
+
+        private IDomain domain;
+
+        @Override
+        public boolean isReadable(String propertyName) {
+            return this.accessor.isReadable(propertyName);
+        }
+
+        @Override
+        public Object get(String propertyName) throws ObjectAccessException {
+            return this.accessor.get(this.domain, propertyName);
+        }
+
+        @Override
+        public Class<?> getWrappedClass() {
+            return this.accessor.getAccessedType();
+        }
+
+        @Override
+        public ObjectAccessor getObjectAccessor() {
+            return this.accessor;
+        }
+
+    }//BeanReadWrapper
 
 
 }

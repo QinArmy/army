@@ -10,7 +10,8 @@ import io.army.codec.JsonCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
-import io.army.generator._FieldGenerator;
+import io.army.generator.FieldGeneratorFactory;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
@@ -35,9 +36,9 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 
-final class LocalFactoryBuilder extends FactoryBuilderSupport implements FactoryBuilder {
+final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements FactoryBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LocalFactoryBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LocalSessioinFactoryBuilder.class);
 
     Map<TableMeta<?>, DomainAdvice> domainAdviceMap = Collections.emptyMap();
 
@@ -95,7 +96,8 @@ final class LocalFactoryBuilder extends FactoryBuilderSupport implements Factory
     }
 
     @Override
-    public FactoryBuilder fieldGenerator(Map<FieldMeta<?>, _FieldGenerator> generatorMap) {
+    public FactoryBuilder fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory) {
+        this.fieldGeneratorFactory = factory;
         return this;
     }
 

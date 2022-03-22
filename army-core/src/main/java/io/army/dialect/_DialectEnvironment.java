@@ -12,7 +12,7 @@ public interface _DialectEnvironment {
 
     ZoneOffset zoneOffset();
 
-    FieldGenerator fieldValuesGenerator();
+    FieldValueGenerator fieldValuesGenerator();
 
 
     default JsonCodec jsonCodec() {

@@ -1,8 +1,5 @@
 package io.army;
 
-import io.army.generator.snowflake.FiveBitWorkerSnowflake;
-import io.army.generator.snowflake._Snowflake;
-
 @Deprecated
 public interface ArmyKey {
 

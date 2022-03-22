@@ -1,5 +1,7 @@
 package io.army;
 
+import io.army.lang.Nullable;
+
 public class ArmyException extends RuntimeException {
 
 
@@ -7,7 +9,7 @@ public class ArmyException extends RuntimeException {
         super(message);
     }
 
-    public ArmyException(String message, Throwable cause) {
+    public ArmyException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 

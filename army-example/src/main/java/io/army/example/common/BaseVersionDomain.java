@@ -10,9 +10,6 @@ import java.time.LocalDateTime;
 public abstract class BaseVersionDomain<T extends BaseVersionDomain<T>> extends VersionDomain {
 
     @Column
-    private Long id;
-
-    @Column
     private LocalDateTime createTime;
 
     @Column
@@ -24,15 +21,6 @@ public abstract class BaseVersionDomain<T extends BaseVersionDomain<T>> extends 
     @Column
     private Boolean visible;
 
-    @Override
-    public final Long getId() {
-        return id;
-    }
-
-    public final T setId(Long id) {
-        this.id = id;
-        return (T) this;
-    }
 
     public final LocalDateTime getCreateTime() {
         return createTime;

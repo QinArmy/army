@@ -11,16 +11,13 @@ import java.time.LocalDate;
 @DiscriminatorValue(BankUserType.Constant.PERSON)
 public class Person extends BankUser<Person> {
 
-    @Column(updateMode = UpdateMode.IMMUTABLE, comment = "the user id that user form.")
-    private Long fromPartnerId;
-
     @Column(updateMode = UpdateMode.IMMUTABLE, comment = "the user type that user form.")
     private BankUserType fromPartnerType;
 
-    @Column(updateMode = UpdateMode.IMMUTABLE, comment = "user birthday")
+    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "user birthday")
     private LocalDate birthday;
 
-    @Column(precision = 20, comment = "user phone number")
+    @Column(nullable = false, precision = 20, comment = "user phone number")
     private String phone;
 
 
@@ -39,15 +36,6 @@ public class Person extends BankUser<Person> {
 
     public final Person setPhone(String phone) {
         this.phone = phone;
-        return this;
-    }
-
-    public final Long getFromPartnerId() {
-        return fromPartnerId;
-    }
-
-    public final Person setFromPartnerId(Long fromPartnerId) {
-        this.fromPartnerId = fromPartnerId;
         return this;
     }
 

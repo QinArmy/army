@@ -504,7 +504,7 @@ abstract class TableMetaUtils {
     }
 
 
-    static <T extends IDomain> List<FieldMeta<T>> createGeneratorChain(
+    static <T extends IDomain> List<FieldMeta<?>> createGeneratorChain(
             final Map<String, FieldMeta<T>> propNameToFieldMeta) throws MetaException {
 
         final List<Pair<FieldMeta<T>, Integer>> levelList = new ArrayList<>(4);
@@ -533,7 +533,7 @@ abstract class TableMetaUtils {
             levelList.add(new Pair<>(fieldMeta, level));
         }
 
-        final List<FieldMeta<T>> generatorChain;
+        final List<FieldMeta<?>> generatorChain;
         switch (levelList.size()) {
             case 0:
                 generatorChain = Collections.emptyList();

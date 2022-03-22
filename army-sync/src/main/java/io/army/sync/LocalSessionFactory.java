@@ -32,7 +32,7 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
     private boolean closed;
 
 
-    LocalSessionFactory(LocalFactoryBuilder builder) throws SessionFactoryException {
+    LocalSessionFactory(LocalSessioinFactoryBuilder builder) throws SessionFactoryException {
         super(builder);
 
         this.executorFactory = Objects.requireNonNull(builder.executorFactory);

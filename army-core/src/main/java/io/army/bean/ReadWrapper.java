@@ -34,4 +34,6 @@ public interface ReadWrapper {
      */
     Class<?> getWrappedClass();
 
+    ObjectAccessor getObjectAccessor();
+
 }

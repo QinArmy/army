@@ -1,455 +1,189 @@
 package io.army.generator.snowflake;
 
-import io.army.ArmyKey;
-import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
 import io.army.annotation.Param;
-import io.army.bean.ArmyBean;
 import io.army.bean.ReadWrapper;
-import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
-import io.army.generator._FieldGenerator;
-import io.army.lang.Nullable;
+import io.army.generator.FieldGeneratorUtils;
+import io.army.generator.GeneratorException;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
-import io.army.session.GenericSessionFactory;
-import io.army.util.ReflectionUtils;
-import io.army.util.StringUtils;
-import io.army.util._Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.SignStyle;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
+
+import static java.time.temporal.ChronoField.*;
 
 
 /**
- * <p>
- * blow options :
- *     <ul>
- *         <li>{@link _Snowflake } implementation class name</li>
- *         <li>{@link SnowflakeClient } instance</li>
- *         <li> snowflake default start time</li>
- *     </ul>
- * </p>
- * <p>
- * <p>
- *
- * @see _Snowflake
  * @see SnowflakeClient
  */
-public final class SnowflakeGenerator implements FieldGenerator, ArmyBean {
+public final class SnowflakeGenerator implements FieldGenerator {
 
-    /*################################## blow static properties ##################################*/
+    public static SnowflakeGenerator create(final FieldMeta<?> field, final SnowflakeClient client) {
+        final GeneratorMeta meta;
+        meta = field.generator();
+        if (meta == null) {
+            throw FieldGeneratorUtils.noGeneratorMeta(field);
+        }
+        final Map<String, String> paramMap;
+        paramMap = meta.params();
+        final long startTime;
+        try {
+            startTime = Long.parseLong(paramMap.get(START_TIME));
+            if (startTime < 0L) {
+                String m = String.format("%s parameter %s must non-negative.", field, START_TIME);
+                throw new MetaException(m);
+            }
+        } catch (IllegalArgumentException | NullPointerException e) {
+            String m = String.format("%s parameter %s config error.", field, START_TIME);
+            throw new MetaException(m, e);
 
-    private static final Logger LOG = LoggerFactory.getLogger(SnowflakeGenerator.class);
+        }
+        final Class<?> javaType = field.javaType();
+        if (javaType != Long.class && javaType != BigInteger.class && javaType != String.class) {
+            throw FieldGeneratorUtils.dontSupportJavaType(SnowflakeGenerator.class, field);
+        }
+        final FieldMeta<?> dependField;
+        dependField = field.dependField();
+        if (dependField != null) {
+            if (dependField.javaType() != Long.class) {
+                String m = String.format("%s couldn't depend java type %s", field, Long.class.getName());
+                throw new MetaException(m);
+            }
+
+            if (javaType == Long.class) {
+                String m = String.format("%s java type is %s,couldn't depend any depend field."
+                        , field, Long.class.getName());
+                throw new MetaException(m);
+            }
+        }
+        return INSTANCE_MAP.computeIfAbsent(startTime, time -> {
+            final Worker worker;
+            worker = client.currentWorker();
+            final Snowflake snowflake;
+            snowflake = Snowflake.create(time, worker.dataCenterId, worker.workerId);
+            final SnowflakeGenerator generator = new SnowflakeGenerator(snowflake);
+            client.registerGenerator(generator, generator::updateWorker);
+            return generator;
+        });
+
+    }
+
+
+    private static final ConcurrentMap<Long, SnowflakeGenerator> INSTANCE_MAP = new ConcurrentHashMap<>();
+
 
     /**
      * @see Param
      */
     public static final String START_TIME = "startTime";
 
-    /**
-     * {@link #defaultSnowflake}'s default start time
-     */
-    public static final long DEFAULT_START_TIME_OF_DEFAULT = 1580302248761L;
+    public static final String DATE = "date";
 
 
-    /**
-     * @see #defaultSnowflake
-     */
-    private static final AtomicReference<_Snowflake> DEFAULT_SNOWFLAKE_HOLDER = new AtomicReference<>(null);
+    private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
+            .appendValue(YEAR, 4, 10, SignStyle.NEVER)
+            .appendValue(MONTH_OF_YEAR, 2)
+            .appendValue(DAY_OF_MONTH, 2)
+            .toFormatter(Locale.ENGLISH);
 
-    /**
-     *
-     */
-    private static final AtomicReference<Method> SNOWFLAKE_BUILDER = new AtomicReference<>(null);
-
-    /**
-     *
-     */
-    private static final AtomicReference<SnowflakeClient> SNOWFLAKE_CLIENT = new AtomicReference<>(null);
-
-    /**
-     * @see #doGetStartTime(ArmyEnvironment, FieldMeta)
-     * @see #getDefaultStartTime()
-     */
-    private static final AtomicLong DEFAULT_START_TIME = new AtomicLong(-1);
-
-    /**
-     * @see #build(FieldMeta, GenericSessionFactory)
-     */
-    private static final ConcurrentMap<Long, SnowflakeGenerator> INSTANCE_HOLDER = new ConcurrentHashMap<>();
-
-    /**
-     * @see #getDefaultSnowflake()
-     * @see #DEFAULT_SNOWFLAKE_HOLDER
-     */
-    private static _Snowflake defaultSnowflake;
+    public final long startTime;
 
 
-    /*################################## blow static method ##################################*/
+    private Snowflake snowflake;
 
-    /**
-     * @see _FieldGenerator
-     */
-    public static SnowflakeGenerator build(FieldMeta<?> fieldMeta, GenericSessionFactory sessionFactory) {
-        SnowflakeGenerator generator = INSTANCE_HOLDER.computeIfAbsent(
-                doGetStartTime(sessionFactory.environment(), fieldMeta)
-                , key -> new SnowflakeGenerator(createSnowflake(sessionFactory, fieldMeta)));
-        generator.registerGenerator(sessionFactory);
-        return generator;
-    }
-
-    /**
-     * @see _FieldGenerator
-     */
-    public static boolean isSupported(Class<?> dependType) {
-        return dependType == Long.class
-                || dependType == Long.TYPE
-                || dependType == String.class
-                || dependType == BigInteger.class
-                ;
-    }
-
-    public static _Snowflake getDefaultSnowflake() {
-        if (defaultSnowflake == null) {
-            doUpdateDefaultSnowflake(Worker.ZERO, false);
-        }
-        return defaultSnowflake;
-    }
-
-
-    public static long getDefaultStartTime() {
-        long statTime = DEFAULT_START_TIME.get();
-        _Assert.state(statTime >= 0, "start time not init");
-        return statTime;
-    }
-
-
-    /**
-     * @see _Snowflake#next()
-     */
-    public static long next() {
-        return getDefaultSnowflake().next();
-    }
-
-    /**
-     * @see _Snowflake#nextAsString()
-     */
-    public static String nextAsString() {
-        return getDefaultSnowflake().nextAsString();
-    }
-
-    /**
-     * @see _Snowflake#next(long)
-     */
-    public static BigInteger next(long suffixNumber) {
-        return getDefaultSnowflake().next(suffixNumber);
-    }
-
-    /**
-     * @see _Snowflake#nextAsString(long)
-     */
-    public static String nextAsString(long suffixNumber) {
-        return getDefaultSnowflake().nextAsString(suffixNumber);
-    }
-
-
-    /*################################## blow package static method ##################################*/
-
-    /**
-     * package instance method for {@link AbstractSnowflakeClient}
-     */
-    static void updateDefaultSnowflake() {
-        SnowflakeClient client = SNOWFLAKE_CLIENT.get();
-        _Assert.state(client != null, "SnowflakeClient not init.");
-
-        doUpdateDefaultSnowflake(client.currentWorker(), true);
-    }
-
-
-    static boolean isMatchWorker(Worker worker, @Nullable _Snowflake snowflake) {
-        return snowflake != null
-                && worker.getDataCenterId() == snowflake.getDataCenterId()
-                && worker.getWorkerId() == snowflake.getWorkerId();
-    }
-
-    /*################################## blow private static method ##################################*/
-
-    private static _Snowflake createSnowflake(GenericSessionFactory sessionFactory, FieldMeta<?> fieldMeta) {
-
-        SnowflakeClient client = getSnowflakeClient(sessionFactory);
-        final long startTime = doGetStartTime(sessionFactory.environment(), fieldMeta);
-
-        final Method method = getSnowflakeBuilder(sessionFactory.environment());
-        _Snowflake snowflake = (_Snowflake) ReflectionUtils.invokeMethod(method, null, startTime, client.currentWorker());
-        if (snowflake == null) {
-            throw new IllegalStateException(String.format("method[%s] return null", method));
-        }
-        return snowflake;
-    }
-
-    private static long doGetStartTime(ArmyEnvironment env, FieldMeta<?> fieldMeta) {
-        GeneratorMeta generatorMeta = fieldMeta.generator();
-
-        if (generatorMeta == null) {
-            throw new MetaException("FieldMeta[%s] GeneratorMeta is null,meta error.");
-        }
-
-        long startTime = -1;
-        String startTimeText = generatorMeta.params().get(START_TIME);
-        if (!StringUtils.isEmpty(startTimeText)) {
-            startTime = Long.parseLong(startTimeText);
-            if (startTime < 0 || startTime > SystemClock.now()) {
-                throw new IllegalStateException(String.format
-                        ("mapping field[%s] generator start time error[%s]", fieldMeta, startTime));
-            }
-        }
-        if (startTime < 0) {
-            startTime = doGetDefaultSnowflakeStartTime(env);
-        }
-        return startTime;
-    }
-
-    private static long doGetDefaultSnowflakeStartTime(ArmyEnvironment env) {
-        long startTime = DEFAULT_START_TIME.get();
-        if (startTime >= 0) {
-            return startTime;
-        }
-        startTime = env.get(ArmyKey.SNOWFLAKE_DEFAULT_TIME, Long.class
-                , DEFAULT_START_TIME_OF_DEFAULT);
-        if (startTime < 0 || startTime > SystemClock.now()) {
-            throw new IllegalStateException(String.format("default snowflake start time[%s] config error", startTime));
-        }
-
-        if (DEFAULT_START_TIME.compareAndSet(-1, startTime)) {
-            LOG.info("default snowflake start time is {}", DEFAULT_START_TIME.get());
-        }
-        return DEFAULT_START_TIME.get();
-    }
-
-    private static SnowflakeClient getSnowflakeClient(GenericSessionFactory sessionFactory) {
-        SnowflakeClient client = SNOWFLAKE_CLIENT.get();
-        if (client != null) {
-            return client;
-        }
-        ArmyEnvironment env = sessionFactory.environment();
-        String beanName = env.getNonNull(ArmyKey.SNOWFLAKE_CLIENT_NAME);
-        client = env.getBean(beanName, SnowflakeClient.class);
-
-        if (client == null) {
-            boolean singleApplication = env.get(
-                    String.format(ArmyKey.SINGLE_APPLICATION, sessionFactory.name())
-                    , Boolean.class, Boolean.TRUE);
-            if (singleApplication) {
-                client = SingleApplicationSnowflakeClient.build(sessionFactory);
-                client.askAssignWorker();
-            }
-        }
-        if (client == null) {
-            throw new SnowflakeWorkerException("not found %s .", SnowflakeClient.class.getName());
-        }
-
-        SNOWFLAKE_CLIENT.compareAndSet(null, client);
-        client = SNOWFLAKE_CLIENT.get();
-        return client;
-    }
-
-
-    private static Method getSnowflakeBuilder(ArmyEnvironment env) {
-        Method method = SNOWFLAKE_BUILDER.get();
-        if (method != null) {
-            return method;
-        }
-        final String className = env.get(ArmyKey.SNOWFLAKE_CLASS
-                , FiveBitWorkerSnowflake.class.getName());
-        try {
-            Class<?> snowflakeClass = Class.forName(className);
-            if (!_Snowflake.class.isAssignableFrom(snowflakeClass)) {
-                throw new ArmyRuntimeException(ErrorCode.META_ERROR, "snowflakeClass[%s] isn't %s type.", className);
-            }
-            method = ReflectionUtils.findMethod(snowflakeClass, "build", long.class, Worker.class);
-            if (method == null
-                    || !Modifier.isPublic(method.getModifiers())
-                    || !Modifier.isStatic(method.getModifiers())
-                    || !snowflakeClass.isAssignableFrom(method.getReturnType())) {
-                throw new IllegalStateException(String.format("snowflake implementation[%s] class no build method"
-                        , snowflakeClass.getName()));
-            }
-            if (SNOWFLAKE_BUILDER.compareAndSet(null, method)) {
-                LOG.info("snowflake implementation class is {}", className);
-            }
-            return SNOWFLAKE_BUILDER.get();
-        } catch (ClassNotFoundException e) {
-            throw new ArmyRuntimeException(ErrorCode.META_ERROR, "not found snowflakeClass[%s]", className);
-        }
-    }
-
-    private static void doUpdateDefaultSnowflake(Worker worker, boolean clientInvoker) {
-        final _Snowflake oldSnowflake = DEFAULT_SNOWFLAKE_HOLDER.get();
-
-        long startTime = DEFAULT_START_TIME.get();
-        if (startTime < 0 && clientInvoker) {
-            throw new IllegalStateException("default stat time not init.");
-        }
-
-        if (isMatchWorker(worker, oldSnowflake)
-                && startTime == oldSnowflake.getStartTime()) {
-            return;
-        }
-        if (startTime < 0) {
-            startTime = DEFAULT_START_TIME_OF_DEFAULT;
-        }
-
-        _Snowflake newSnowflake;
-        final Method method = SNOWFLAKE_BUILDER.get();
-        if (method == null) {
-            newSnowflake = FiveBitWorkerSnowflake.build(startTime, worker);
-        } else {
-            newSnowflake = (_Snowflake) ReflectionUtils.invokeMethod(
-                    method, null, startTime, worker);
-            _Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
-        }
-
-        if (DEFAULT_SNOWFLAKE_HOLDER.compareAndSet(oldSnowflake, newSnowflake)) {
-            LOG.info("default snowflake singleUpdate,worker[{}],Snowflake[{}]", worker, newSnowflake.getClass().getName());
-        }
-        // other thread maybe delay read new value
-        defaultSnowflake = DEFAULT_SNOWFLAKE_HOLDER.get();
-    }
-
-    /*################################## blow instance properties ##################################*/
-
-    private final AtomicReference<_Snowflake> snowflakeHolder = new AtomicReference<>(null);
-
-    private _Snowflake snowflake;
-
-
-    private SnowflakeGenerator(_Snowflake snowflake) {
+    private SnowflakeGenerator(Snowflake snowflake) {
         this.snowflake = snowflake;
-        snowflakeHolder.set(this.snowflake);
+        this.startTime = snowflake.startTime;
     }
-
-    /*################################## blow interface method ##################################*/
 
     @Override
-    public Object next(FieldMeta<?> field, ReadWrapper domain) {
-        Object identifier;
-
-        if (field.javaType() == Long.class) {
-            identifier = snowflake.next();
-        } else if (field.javaType() == String.class) {
-            if (field.precision() >= 0 && field.precision() <= 19) {
-                identifier = snowflake.nextAsString();
+    public Object next(final FieldMeta<?> field, final ReadWrapper domain) throws GeneratorException {
+        final Class<?> javaType = field.javaType();
+        final Object nextSequence;
+        if (javaType == Long.class) {
+            nextSequence = this.snowflake.next();
+        } else if (javaType == BigInteger.class) {
+            final FieldMeta<?> dependField;
+            dependField = field.dependField();
+            if (dependField == null) {
+                nextSequence = BigInteger.valueOf(this.snowflake.next());
             } else {
-                identifier = nextAsStringWithDepend(field, domain);
+                nextSequence = new BigInteger(this.nextAsString(field, dependField, domain));
             }
-        } else if (field.javaType() == BigInteger.class) {
-            identifier = new BigInteger(nextAsStringWithDepend(field, domain));
-        } else {
-            throw new IllegalArgumentException(String.format("SnowflakeGenerator unsupported java type[%s]"
-                    , field.javaType().getName()));
-        }
-        return identifier;
-    }
-
-    public final _Snowflake getSnowflake() {
-        return this.snowflake;
-    }
-
-    private String nextAsStringWithDepend(FieldMeta<?> fieldMeta, ReadWrapper entityWrapper) {
-        GeneratorMeta generatorMeta = fieldMeta.generator();
-        _Assert.notNull(generatorMeta, "paramMeta must have generator");
-
-        String dependOnProp = generatorMeta.dependFieldName();
-        if (!StringUtils.hasText(dependOnProp)) {
-            return snowflake.nextAsString();
-        }
-        _Assert.isTrue(entityWrapper.isReadable(dependOnProp)
-                , () -> String.format("paramMeta[%s.%s] depend not readable"
-                        , fieldMeta.javaType().getName(), fieldMeta.fieldName()));
-
-        Object dependValue = entityWrapper.get(dependOnProp);
-
-        long longValue;
-        if (dependValue instanceof Number) {
-            longValue = ((Number) dependValue).longValue();
-        } else if (dependValue instanceof String) {
-            longValue = tryConvertToLong((String) dependValue);
-        } else {
-            throw createNotSupportDependException(dependValue);
-        }
-        return snowflake.nextAsString(longValue);
-    }
-
-
-    /*################################## blow private method ##################################*/
-
-    private long tryConvertToLong(String dependValue) {
-        try {
-            String text = dependValue;
-            if (text.length() > 5) {
-                text = text.substring(text.length() - 5);
+        } else if (javaType == String.class) {
+            final FieldMeta<?> dependField;
+            dependField = field.dependField();
+            if (dependField == null) {
+                nextSequence = Long.toString(this.snowflake.next());
+            } else {
+                nextSequence = this.nextAsString(field, dependField, domain);
             }
-            return Long.parseLong(text);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(String.format(
-                    "depend value[%s] cannot convert to long.", dependValue));
-        }
-    }
-
-    private IllegalArgumentException createNotSupportDependException(@Nullable Object dependValue) {
-        String type;
-        if (dependValue == null) {
-            type = null;
         } else {
-            type = dependValue.getClass().getName();
+            throw FieldGeneratorUtils.dontSupportJavaType(SnowflakeGenerator.class, field);
         }
-        return new IllegalArgumentException(String.format("%s cannot support depend type[%s]"
-                , SnowflakeGenerator.class.getName(), type));
+        return nextSequence;
     }
 
-    /**
-     * @see SnowflakeClient#registerGenerator(SnowflakeGenerator)
-     */
-    private void registerGenerator(GenericSessionFactory sessionFactory) {
-        SnowflakeClient client = getSnowflakeClient(sessionFactory);
-        for (int i = 0; !client.registerGenerator(this); i++) {
-            updateSnowflake();
-            _Assert.state(i <= 10, "SnowflakeGenerator register count exception");
+
+    private String nextAsString(final FieldMeta<?> field, FieldMeta<?> dependField, final ReadWrapper domain)
+            throws GeneratorException {
+        final Object dependValue;
+        dependValue = domain.get(dependField.fieldName());
+        if (!(dependValue instanceof Long)) {
+            String m = String.format("%s depend field %s value isn't %s type."
+                    , field, dependField, Long.class.getName());
+            throw new GeneratorException(m);
+        }
+        final String suffix;
+        suffix = suffixWithZero((Long) dependValue);
+        final StringBuilder builder;
+
+        GeneratorMeta meta;
+        meta = field.generator();
+        assert meta != null;
+        if ("true".equals(meta.params().get(DATE))) {
+            builder = new StringBuilder(27 + suffix.length());
+            builder.append(LocalDateTime.now().format(FORMATTER));
+        } else {
+            builder = new StringBuilder(19 + suffix.length());
+        }
+        final long nextSequence;
+        nextSequence = this.snowflake.next();
+        return builder
+                .append(nextSequence)
+                .append(suffix)
+                .toString();
+    }
+
+    private void updateWorker(final Worker worker) {
+        synchronized (this) {
+            final Snowflake snowflake = this.snowflake;
+            if (worker.dataCenterId == snowflake.dataCenterId && worker.workerId == snowflake.workerId) {
+                return;
+            }
+            this.snowflake = Snowflake.create(this.startTime, worker.dataCenterId, worker.workerId);
         }
     }
 
-    /**
-     * package instance method for {@link AbstractSnowflakeClient}
-     */
-    void updateSnowflake() {
-        SnowflakeClient client = SNOWFLAKE_CLIENT.get();
-        _Assert.state(client != null, "SnowflakeClient not init");
 
-        final _Snowflake oldSnowflake = snowflakeHolder.get();
-        final Worker worker = client.currentWorker();
-
-        if (isMatchWorker(worker, oldSnowflake)) {
-            return;
+    private static String suffixWithZero(long number) {
+        String str = Long.toString(number % 10_0000);
+        if (str.length() < 5) {
+            char[] chars = new char[5 - str.length()];
+            Arrays.fill(chars, '0');
+            str = new String(chars) + str;
         }
-
-        final Method method = SNOWFLAKE_BUILDER.get();
-
-        _Assert.state(method != null, "SnowflakeGenerator not init");
-        _Snowflake newSnowflake = (_Snowflake) ReflectionUtils.invokeMethod(method, null
-                , oldSnowflake.getStartTime(), worker);
-
-        _Assert.state(newSnowflake != null, () -> String.format("method[%s] return null", method));
-        snowflakeHolder.compareAndSet(oldSnowflake, newSnowflake);
-        this.snowflake = snowflakeHolder.get();
+        return str;
     }
 
 

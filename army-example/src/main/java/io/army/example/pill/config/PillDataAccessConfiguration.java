@@ -5,7 +5,9 @@ import io.army.boot.sync.LocalSessionFactoryBean;
 import io.army.datasource.DataSourceRole;
 import io.army.datasource.sync.DruidDataSourceUtils;
 import io.army.example.common.BaseService;
+import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.example.pill.service.sync.PillSyncBaseService;
+import io.army.generator.FieldGeneratorFactory;
 import io.army.sync.SessionFactory;
 import io.army.tx.sync.ArmyTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,6 +38,11 @@ public class PillDataAccessConfiguration implements EnvironmentAware {
     }
 
     @Bean
+    public FieldGeneratorFactory pillFieldGeneratorFactory() {
+        return new SimpleFieldGeneratorFactory();
+    }
+
+    @Bean
     public LocalSessionFactoryBean pillSyncSessionFactory(@Qualifier("pillDataSource") DataSource dataSource) {
         final List<String> packageList = new ArrayList<>(2);
         packageList.add("io.army.example.pill.domain");
@@ -44,7 +51,8 @@ public class PillDataAccessConfiguration implements EnvironmentAware {
         return new LocalSessionFactoryBean()
                 .setFactoryName("pill")
                 .setDataSource(dataSource)
-                .setPackagesToScan(packageList);
+                .setPackagesToScan(packageList)
+                .setFieldGeneratorFactory(pillFieldGeneratorFactory());
     }
 
     @Bean(PillSyncBaseService.TX_MANAGER)

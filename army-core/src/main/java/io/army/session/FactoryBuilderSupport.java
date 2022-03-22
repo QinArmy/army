@@ -6,12 +6,10 @@ import io.army.codec.FieldCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
-import io.army.generator._FieldGenerator;
+import io.army.generator.FieldGenerator;
+import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.SchemaMeta;
-import io.army.meta.ServerMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 
 import java.time.ZoneOffset;
 import java.util.*;
@@ -32,7 +30,9 @@ public abstract class FactoryBuilderSupport {
     protected SchemaMeta schemaMeta = _SchemaMetaFactory.getSchema("", "");
     protected Function<ArmyException, RuntimeException> exceptionFunction;
 
-    protected Map<FieldMeta<?>, _FieldGenerator> generatorMap = Collections.emptyMap();
+    protected Map<FieldMeta<?>, FieldGenerator> generatorMap = Collections.emptyMap();
+
+    protected FieldGeneratorFactory fieldGeneratorFactory;
 
     protected Collection<FactoryAdvice> factoryAdvices;
 
@@ -67,7 +67,47 @@ public abstract class FactoryBuilderSupport {
             }
             throw new SessionFactoryException(m);
         }
+
+        final FieldGeneratorFactory generatorFactory = this.fieldGeneratorFactory;
+        List<FieldMeta<?>> fieldChain;
+        GeneratorMeta meta;
+
+        final Map<FieldMeta<?>, FieldGenerator> generatorMap = new HashMap<>();
+        FieldGenerator generator;
+        for (TableMeta<?> table : tableMetaMap.values()) {
+            fieldChain = table.fieldChain();
+            if (fieldChain.size() == 0) {
+                continue;
+            }
+            for (FieldMeta<?> field : fieldChain) {
+                meta = field.generator();
+                assert meta != null;
+                if (generatorFactory == null) {
+                    throw notSpecifiedFieldGeneratorFactory(field);
+                }
+                generator = generatorFactory.get(field);
+                if (!meta.javaType().isInstance(generator)) {
+                    throw fieldGeneratorTypeError(meta, generator);
+                }
+                generatorMap.put(field, generator);
+            }
+        }
+        if (generatorMap.size() > 0) {
+            this.generatorMap = Collections.unmodifiableMap(generatorMap);
+        }
         this.tableMap = tableMetaMap;
+    }
+
+    private SessionFactoryException fieldGeneratorTypeError(GeneratorMeta meta, @Nullable FieldGenerator generator) {
+        String m = String.format("%s %s type %s isn't %s."
+                , meta.field(), FieldGenerator.class.getName(), generator, meta.javaType().getName());
+        throw new SessionFactoryException(m);
+    }
+
+    private SessionFactoryException notSpecifiedFieldGeneratorFactory(FieldMeta<?> field) {
+        String m = String.format("%s has %s ,but not specified %s."
+                , field, GeneratorMeta.class.getName(), FieldGeneratorFactory.class.getName());
+        throw new SessionFactoryException(m);
     }
 
 

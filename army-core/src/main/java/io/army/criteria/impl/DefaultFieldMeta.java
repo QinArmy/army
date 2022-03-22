@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._Selection;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
+import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingType;
@@ -336,6 +337,30 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
     @Override
     public final GeneratorMeta generator() {
         return this.generatorMeta;
+    }
+
+    @Override
+    public final FieldMeta<?> dependField() {
+        final GeneratorMeta meta;
+        meta = this.generatorMeta;
+        final String fieldName;
+        if (meta == null || (fieldName = meta.params().get(FieldGenerator.DEPEND_FIELD_NAME)) == null) {
+            return null;
+        }
+        FieldMeta<?> field;
+        field = this.table.fieldNameToFields.get(fieldName);
+        if (field == null) {
+            if (this.table instanceof ChildTableMeta) {
+                final DefaultTableMeta<?> parent;
+                parent = (DefaultTableMeta<?>) ((ChildTableMeta<?>) this.table).parentMeta();
+                field = parent.fieldNameToFields.get(fieldName);
+            }
+        }
+        if (field == null) {
+            String m = String.format("%s %s meta error.", this, GeneratorMeta.class.getName());
+            throw new MetaException(m);
+        }
+        return field;
     }
 
     @Override

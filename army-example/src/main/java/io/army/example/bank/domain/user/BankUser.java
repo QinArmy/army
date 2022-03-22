@@ -13,9 +13,16 @@ import java.time.LocalDateTime;
 public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
 
     @Column
+    @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})
+    private Long id;
+
+    @Column
     private BankUserType userType;
 
     @Column(nullable = false, precision = 40, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner user number")
+    @Generator(value = SNOWFLAKE, params = {
+            @Param(name = START_TIME, value = startTime)
+            , @Param(name = DEPEND, value = "partnerUserId")})
     private String userNo;
 
     @Column(precision = 50, comment = "user nick name")
@@ -27,7 +34,7 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
     @Column(updateMode = UpdateMode.ONLY_NULL, comment = "user register complete time")
     private LocalDateTime completeTime;
 
-    @Column(updateMode = UpdateMode.IMMUTABLE, comment = "partner user id for person user")
+    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "partner user id for person user,0 representing bank self.")
     private Long partnerUserId;
 
 
@@ -83,6 +90,16 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
 
     public T setPartnerUserId(Long partnerUserId) {
         this.partnerUserId = partnerUserId;
+        return (T) this;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public T setId(Long id) {
+        this.id = id;
         return (T) this;
     }
 }

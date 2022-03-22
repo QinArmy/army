@@ -1,17 +1,18 @@
 package io.army.example.bank.domain.user;
 
-import io.army.annotation.Column;
-import io.army.annotation.Inheritance;
-import io.army.annotation.Table;
-import io.army.annotation.UpdateMode;
+import io.army.annotation.*;
 import io.army.example.common.BaseVersionDomain;
 
 import java.math.BigDecimal;
 
 @Table(name = "china_region", comment = "china region")
 @Inheritance("regionType")
-public class ChinaRegion extends BaseVersionDomain<ChinaRegion> {
+@SuppressWarnings("unchecked")
+public class ChinaRegion<T extends ChinaRegion<T>> extends BaseVersionDomain<T> {
 
+    @Column
+    @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})
+    private Long id;
 
     @Column
     private RegionType regionType;
@@ -26,42 +27,49 @@ public class ChinaRegion extends BaseVersionDomain<ChinaRegion> {
     @Column(updateMode = UpdateMode.IMMUTABLE, comment = "china region parent level id")
     private Long parentId;
 
+    @Override
+    public Long getId() {
+        return id;
+    }
 
-    public final RegionType getRegionType() {
+    public T setId(Long id) {
+        this.id = id;
+        return (T) this;
+    }
+
+    public RegionType getRegionType() {
         return regionType;
     }
 
-    public final ChinaRegion setRegionType(RegionType regionType) {
+    public T setRegionType(RegionType regionType) {
         this.regionType = regionType;
-        return this;
+        return (T) this;
     }
 
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
-    public final ChinaRegion setName(String name) {
+    public T setName(String name) {
         this.name = name;
-        return this;
+        return (T) this;
     }
 
-    public final BigDecimal getRegionGdp() {
+    public BigDecimal getRegionGdp() {
         return regionGdp;
     }
 
-    public final ChinaRegion setRegionGdp(BigDecimal regionGdp) {
+    public T setRegionGdp(BigDecimal regionGdp) {
         this.regionGdp = regionGdp;
-        return this;
+        return (T) this;
     }
 
-    public final Long getParentId() {
+    public Long getParentId() {
         return parentId;
     }
 
-    public final ChinaRegion setParentId(Long parentId) {
+    public T setParentId(Long parentId) {
         this.parentId = parentId;
-        return this;
+        return (T) this;
     }
-
-
 }

@@ -59,7 +59,7 @@ public interface TableMeta<T extends IDomain> extends TableItem, Meta {
      */
     UniqueFieldMeta<T> getUniqueField(String fieldName);
 
-    List<FieldMeta<T>> generatorChain();
+    List<FieldMeta<?>> fieldChain();
 
     @Override
     boolean equals(Object o);

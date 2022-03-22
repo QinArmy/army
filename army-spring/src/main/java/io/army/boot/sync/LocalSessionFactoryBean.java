@@ -3,10 +3,11 @@ package io.army.boot.sync;
 
 import io.army.env.ArmyEnvironment;
 import io.army.env.SpringArmyEnvironment;
+import io.army.generator.FieldGeneratorFactory;
+import io.army.lang.Nullable;
 import io.army.sync.FactoryBuilder;
 import io.army.sync.SessionFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,9 +25,7 @@ import java.util.List;
  * @since 1.0
  */
 public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
-        , InitializingBean, BeanNameAware, ApplicationContextAware, DisposableBean {
-
-    private String beanName;
+        , InitializingBean, ApplicationContextAware, DisposableBean {
 
     private String catalog = "";
 
@@ -42,15 +41,13 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     private List<String> packageList;
 
+    private FieldGeneratorFactory fieldGeneratorFactory;
+
+    private String fieldGeneratorFactoryBean;
+
     private SessionFactory sessionFactory;
 
     private ApplicationContext applicationContext;
-
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
 
 
     @Override
@@ -60,6 +57,8 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     @Override
     public void afterPropertiesSet() {
+
+
         this.sessionFactory = FactoryBuilder.builder()
                 .name(this.factoryName)
                 .datasource(this.getDataSource())
@@ -67,8 +66,8 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
                 .environment(this.getArmyEnvironment(factoryName))
 
                 .schema(this.catalog, this.schema)
+                .fieldGeneratorFactory(this.getFieldGeneratorFactory())
                 .build();
-
     }
 
 
@@ -130,6 +129,15 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
         return this;
     }
 
+    public LocalSessionFactoryBean setFieldGeneratorFactory(FieldGeneratorFactory fieldGeneratorFactory) {
+        this.fieldGeneratorFactory = fieldGeneratorFactory;
+        return this;
+    }
+
+    public LocalSessionFactoryBean setFieldGeneratorFactoryBean(String fieldGeneratorFactoryBean) {
+        this.fieldGeneratorFactoryBean = fieldGeneratorFactoryBean;
+        return this;
+    }
 
     /*################################## blow private method ##################################*/
 
@@ -153,6 +161,18 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
             armyEnvironment = new SpringArmyEnvironment(factoryName, this.applicationContext.getEnvironment());
         }
         return armyEnvironment;
+    }
+
+    @Nullable
+    private FieldGeneratorFactory getFieldGeneratorFactory() {
+        FieldGeneratorFactory fieldGeneratorFactory = this.fieldGeneratorFactory;
+        if (fieldGeneratorFactory == null) {
+            String beanName = this.fieldGeneratorFactoryBean;
+            if (beanName != null) {
+                fieldGeneratorFactory = this.applicationContext.getBean(beanName, FieldGeneratorFactory.class);
+            }
+        }
+        return fieldGeneratorFactory;
     }
 
 

@@ -5,6 +5,8 @@ import io.army.boot.sync.LocalSessionFactoryBean;
 import io.army.datasource.DataSourceRole;
 import io.army.datasource.sync.DruidDataSourceUtils;
 import io.army.example.bank.service.BankSyncBaseService;
+import io.army.example.common.SimpleFieldGeneratorFactory;
+import io.army.generator.FieldGeneratorFactory;
 import io.army.sync.SessionFactory;
 import io.army.tx.sync.ArmyTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,11 +34,17 @@ public class BankDataAccessConfiguration implements EnvironmentAware {
     }
 
     @Bean
+    public FieldGeneratorFactory bankFieldGeneratorFactory() {
+        return new SimpleFieldGeneratorFactory();
+    }
+
+    @Bean
     public LocalSessionFactoryBean bankSyncSessionFactory(@Qualifier("bankDataSource") DataSource dataSource) {
         return new LocalSessionFactoryBean()
                 .setFactoryName("bank")
                 .setDataSource(dataSource)
-                .setPackagesToScan(Collections.singletonList("io.army.example.bank.domain"));
+                .setPackagesToScan(Collections.singletonList("io.army.example.bank.domain"))
+                .setFieldGeneratorFactoryBean("bankFieldGeneratorFactory");
     }
 
     @Bean(BankSyncBaseService.TX_MANAGER)
