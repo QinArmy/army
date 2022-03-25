@@ -30,6 +30,13 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
     public boolean supportSavePoints() {
         return false;
     }
+
+    @Override
+    public boolean isReactive() {
+        return true;
+    }
+
+
     /*################################## blow InnerReactiveApiSessionFactory method ##################################*/
 
 

@@ -3,6 +3,7 @@ package io.army.example.common;
 import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
 import io.army.generator.snowflake.SnowflakeGenerator;
+import org.springframework.lang.Nullable;
 
 import java.util.Objects;
 
@@ -22,6 +23,7 @@ public abstract class Domain extends Criteria implements IDomain {
     protected static final String TRUE = "true";
 
 
+    @Nullable
     public abstract Object getId();
 
     @Override

@@ -21,29 +21,29 @@ public class Person extends BankUser<Person> {
     private String phone;
 
 
-    public final LocalDate getBirthday() {
+    public LocalDate getBirthday() {
         return birthday;
     }
 
-    public final Person setBirthday(LocalDate birthday) {
+    public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
-        return this;
+        //return this;
     }
 
-    public final String getPhone() {
+    public String getPhone() {
         return phone;
     }
 
-    public final Person setPhone(String phone) {
+    public Person setPhone(String phone) {
         this.phone = phone;
         return this;
     }
 
-    public final BankUserType getFromPartnerType() {
+    public BankUserType getFromPartnerType() {
         return fromPartnerType;
     }
 
-    public final Person setFromPartnerType(BankUserType fromPartnerType) {
+    public Person setFromPartnerType(BankUserType fromPartnerType) {
         this.fromPartnerType = fromPartnerType;
         return this;
     }

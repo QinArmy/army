@@ -8,6 +8,8 @@ public class PersonAccountStatesBean implements BankFieldAccessBean {
 
     public Long partnerUserId;
 
+    public String partnerNo;
+
     public BankUserType partnerUserType;
 
     public Long certificateId;

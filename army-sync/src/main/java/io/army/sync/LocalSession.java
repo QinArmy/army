@@ -2,15 +2,17 @@ package io.army.sync;
 
 import io.army.ArmyException;
 import io.army.DuplicationSessionTransaction;
-import io.army.cache.SessionCache;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect._Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
+import io.army.proxy._CacheBlock;
+import io.army.proxy._SessionCache;
 import io.army.session.ChildInsertException;
 import io.army.session.ExecutorExecutionException;
 import io.army.session.SessionCloseFailureException;
@@ -20,7 +22,7 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.StmtExecutor;
 import io.army.tx.*;
-import io.army.util.GenericCriteria;
+import io.army.util.Criteria;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +42,9 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     final StmtExecutor stmtExecutor;
 
-    private final SessionCache sessionCache;
-
     final boolean readonly;
+
+    private final _SessionCache sessionCache;
 
     private boolean onlySupportVisible;
 
@@ -63,12 +65,8 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         this.stmtExecutor = builder.stmtExecutor;
         assert this.stmtExecutor != null;
         this.readonly = builder.readonly;
-//        if (sessionFactory.supportSessionCache()) {
-//            this.sessionCache = this.sessionFactory.createSessionCache(this);
-//        } else {
-//            this.sessionCache = null;
-//        }
-        this.sessionCache = null;
+
+        this.sessionCache = this.sessionFactory.sessionCacheFactory.createCache();
     }
 
     @Override
@@ -106,35 +104,68 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @Nullable
     @Override
-    public <T extends IDomain> T get(TableMeta<T> table, final Object id, Visible visible) {
-        T actualReturn;
-        if (this.sessionCache != null) {
-            // try obtain cache
-            actualReturn = this.sessionCache.getDomain(table, id);
-            if (actualReturn != null) {
-                return actualReturn;
-            }
+    public <R extends IDomain> R get(final TableMeta<R> table, final Object id, final Visible visible) {
+        if (!this.sessionFactory.tableMap.containsKey(table.javaType())) {
+            throw _Exceptions.tableDontBelongOf(table, this.sessionFactory);
         }
-
+        final _SessionCache sessionCache = this.sessionCache;
+        R domain;
+        domain = sessionCache.get(table, id);
+        if (domain != null) {
+            return domain;
+        }
         // 1. create sql
-        Select select = GenericCriteria.createSelectDomainById(table, id);
-        // 2. execute sql
-        T domain = this.selectOne(select, table.javaType(), visible);
-
-        if (domain != null && this.sessionCache != null) {
-            // 3. cache
-            actualReturn = this.sessionCache.cacheDomainById(table, domain);
-        } else {
-            actualReturn = domain;
+        final Select stmt;
+        stmt = Criteria.createSelectDomainById(table, id);
+        //2. get proxy class;
+        final Class<? extends R> proxyClass;
+        proxyClass = this.sessionFactory.sessionCacheFactory.getProxyClass(table);
+        // 3. execute stmt
+        domain = this.selectOne(stmt, proxyClass, visible);
+        if (domain != null) {
+            if (domain.getClass() != proxyClass) {
+                String m = String.format("%s error implementation.", this.stmtExecutor.getClass().getName());
+                throw new IllegalStateException(m);
+            }
+            //4. add to session cache
+            domain = sessionCache.putIfAbsent(table, domain);
         }
-        return actualReturn;
+        return domain;
     }
 
 
     @Override
     public <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
             , final Visible visible) {
-        return null;
+        if (!this.sessionFactory.uniqueCache) {
+            throw _Exceptions.dontSupportUniqueCache(this.sessionFactory);
+        }
+        if (!this.sessionFactory.tableMap.containsKey(table.javaType())) {
+            throw _Exceptions.tableDontBelongOf(table, this.sessionFactory);
+        }
+        final _SessionCache sessionCache = this.sessionCache;
+        R domain;
+        domain = sessionCache.get(table, field, value);
+        if (domain != null) {
+            return domain;
+        }
+        // 1. create sql
+        final Select stmt;
+        stmt = Criteria.createSelectDomainByUnique(table, field, value);
+        //2. get proxy class;
+        final Class<? extends R> proxyClass;
+        proxyClass = this.sessionFactory.sessionCacheFactory.getProxyClass(table);
+        // 3. execute stmt
+        domain = this.selectOne(stmt, proxyClass, visible);
+        if (domain != null) {
+            if (domain.getClass() != proxyClass) {
+                String m = String.format("%s error implementation.", this.stmtExecutor.getClass().getName());
+                throw new IllegalStateException(m);
+            }
+            //4. add to session cache
+            domain = sessionCache.putIfAbsent(table, domain);
+        }
+        return domain;
     }
 
 
@@ -240,7 +271,9 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
 
     @SuppressWarnings("unchecked")
-    public <T extends IDomain> void batchSave(final List<T> domainList, final NullHandleMode mode, final Visible visible) {
+    @Override
+    public <T extends IDomain> void batchSave(final List<T> domainList, final NullHandleMode mode
+            , final Visible visible) {
         final Class<T> domainClass;
         domainClass = (Class<T>) domainList.get(0).getClass();
         final TableMeta<T> table;
@@ -319,6 +352,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
                 throw new TransactionNotCloseException("Transaction not end.");
             }
             this.stmtExecutor.close();
+            this.sessionCache.clearOnSessionCLose();
             this.closed = true;
         } catch (SessionException e) {
             throw e;
@@ -351,25 +385,27 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @Override
     public void flush() throws SessionException {
-//        if (this.sessionCache == null) {
-//            return;
-//        }
-//        final boolean readOnly = this.isReadonlySession();
-//        for (DomainUpdateAdvice advice : this.sessionCache.updateAdvices()) {
-//            if (!advice.hasUpdate()) {
-//                continue;
-//            }
-//            if (readOnly) {
-//                throw new ReadOnlySessionException("Session is read only,can't update Domain cache.");
-//            }
-////            int updateRows;
-////           // updateRows = update(CacheDomainUpdate.build(advice), Visible.ONLY_VISIBLE);
-////            if (updateRows != 1) {
-////                throw new OptimisticLockException("TableMeta[%s] maybe updated by other transaction."
-////                        , advice.readonlyWrapper().tableMeta());
-////            }
-//            advice.updateFinish();
-//        }
+        final StmtExecutor stmtExecutor = this.stmtExecutor;
+        final _Dialect dialect = this.sessionFactory.dialect;
+        final Transaction tx = this.transaction;
+        SimpleStmt stmt;
+        long affectedRows;
+        Update update;
+        for (_CacheBlock block : this.sessionCache.getChangedList()) {
+            update = block.statement();
+            stmt = (SimpleStmt) dialect.update(update, Visible.ONLY_VISIBLE);
+            affectedRows = stmtExecutor.update(stmt, tx == null ? 0 : tx.nextTimeout());
+            if (affectedRows == 1L) {
+                block.success();
+                ((_Statement) update).clear();
+                continue;
+            }
+            if (stmt.hasOptimistic()) {
+                throw _Exceptions.optimisticLock(affectedRows);
+            }
+            throw _Exceptions.notMatchRow(this, ((_SingleUpdate) update).table(), block.id());
+        }
+
     }
 
 
@@ -578,7 +614,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         }
 
         @Override
-        public Transaction build() throws TransactionException {
+        public Transaction build() throws SessionException {
             if (this.isolation == null) {
                 String m = String.format("No specified %s,couldn't create transaction.", Isolation.class.getName());
                 throw new CannotCreateTransactionException(m);

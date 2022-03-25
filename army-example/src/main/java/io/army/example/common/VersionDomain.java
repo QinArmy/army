@@ -1,6 +1,8 @@
 package io.army.example.common;
 
 
+import org.springframework.lang.Nullable;
+
 import java.util.Objects;
 
 public abstract class VersionDomain extends Domain {
@@ -27,6 +29,7 @@ public abstract class VersionDomain extends Domain {
         return match;
     }
 
+    @Nullable
     public abstract Integer getVersion();
 
 

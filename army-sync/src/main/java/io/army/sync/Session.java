@@ -3,7 +3,6 @@ package io.army.sync;
 import io.army.lang.Nullable;
 import io.army.session.SessionException;
 import io.army.tx.Isolation;
-import io.army.tx.TransactionException;
 
 /**
  * @see SessionFactory
@@ -29,7 +28,7 @@ public interface Session extends SyncSession, AutoCloseable {
 
         TransactionBuilder timeout(int timeoutSeconds);
 
-        Transaction build() throws TransactionException;
+        Transaction build() throws SessionException;
 
     }
 

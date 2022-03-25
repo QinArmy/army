@@ -26,6 +26,12 @@ public interface TableMeta<T extends IDomain> extends TableItem, Meta {
     PrimaryFieldMeta<T> id();
 
     @Nullable
+    FieldMeta<? super T> version();
+
+    @Nullable
+    FieldMeta<? super T> visible();
+
+    @Nullable
     FieldMeta<? super T> discriminator();
 
     int discriminatorValue();

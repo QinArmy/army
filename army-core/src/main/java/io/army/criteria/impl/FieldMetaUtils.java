@@ -272,7 +272,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         try {
             final Class<?> clazz;
             clazz = Class.forName(className);
-            if (FieldGenerator.class.isAssignableFrom(clazz)) {
+            if (!FieldGenerator.class.isAssignableFrom(clazz)) {
                 String m = String.format("%s generator[%s] isn't %s type."
                         , fieldMeta, className, FieldGenerator.class.getName());
                 throw new MetaException(m);

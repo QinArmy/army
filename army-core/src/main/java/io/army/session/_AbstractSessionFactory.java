@@ -1,7 +1,6 @@
 package io.army.session;
 
 import io.army.ArmyException;
-import io.army.ArmyKey;
 import io.army.ArmyKeys;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
@@ -40,7 +39,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected final SchemaMeta schemaMeta;
 
-    protected final Map<Class<?>, TableMeta<?>> tableMap;
+    public final Map<Class<?>, TableMeta<?>> tableMap;
 
     protected final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
 
@@ -56,11 +55,14 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected final ZoneOffset zoneOffset;
 
+    public final boolean uniqueCache;
+
     private final boolean sqlLogDynamic;
 
     private final boolean sqlLogShow;
 
     private final boolean sqlLogFormat;
+
 
     protected _AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
@@ -84,6 +86,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         this.supportSessionCache = env.get(ArmyKeys.sessionCache, Boolean.class, Boolean.TRUE);
         this.fieldValuesGenerator = new FieldValuesGeneratorImpl(this.zoneOffset, this.fieldGeneratorMap);
 
+        this.uniqueCache = support.uniqueCache;
         this.sqlLogDynamic = env.getOrDefault(MyKey.SQL_LOG_DYNAMIC);
         this.sqlLogShow = env.getOrDefault(MyKey.SQL_LOG_SHOW);
         this.sqlLogFormat = env.getOrDefault(MyKey.SQL_LOG_FORMAT);
@@ -93,6 +96,11 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     @Override
     public final String name() {
         return this.name;
+    }
+
+    @Override
+    public final boolean uniqueCache() {
+        return this.uniqueCache;
     }
 
     @Override
@@ -140,17 +148,6 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     public final boolean readonly() {
         return this.readonly;
     }
-
-    @Override
-    public boolean showSQL() {
-        return env.get(String.format(ArmyKey.SHOW_SQL, this.name), Boolean.class, Boolean.FALSE);
-    }
-
-    @Override
-    public boolean formatSQL() {
-        return env.get(String.format(ArmyKey.FORMAT_SQL, this.name), Boolean.class, Boolean.FALSE);
-    }
-
 
     @Override
     public final Function<ArmyException, RuntimeException> exceptionFunction() {

@@ -1,11 +1,11 @@
 package io.army.sync;
 
 import io.army.ArmyKeys;
-import io.army.cache.SessionCacheFactory;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
+import io.army.proxy._SessionCacheFactory;
 import io.army.session.*;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.StmtExecutor;
@@ -24,10 +24,10 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
 
     final _Dialect dialect;
 
-    private final SessionCacheFactory sessionCacheFactory;
+    final _SessionCacheFactory sessionCacheFactory;
+
 
     private final SessionContext sessionContext;
-
 
     private boolean closed;
 
@@ -39,7 +39,13 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
         this.dialect = _DialectFactory.createDialect(this);
         this.sessionContext = getCurrentSessionContext();
         //this.sessionCacheFactory = SessionCacheFactory.build(this);
-        this.sessionCacheFactory = null;
+        this.sessionCacheFactory = _SessionCacheFactory.create(this);
+    }
+
+
+    @Override
+    public boolean isReactive() {
+        return false;
     }
 
 
@@ -102,7 +108,6 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
 
 
     /*################################## blow private method ##################################*/
-
 
 
     private void destroyArmyBeans() {

@@ -1,6 +1,7 @@
 package io.army.util;
 
 import io.army.ArmyException;
+import io.army.DdlMode;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Statement;
@@ -9,6 +10,7 @@ import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
+import io.army.env.MyKey;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -425,5 +427,20 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new DataAccessException(m);
     }
 
+    public static IllegalArgumentException tableDontBelongOf(TableMeta<?> table, GenericSessionFactory sessionFactory) {
+        String m = String.format("%s isn't belong of %s", table, sessionFactory);
+        return new IllegalArgumentException(m);
+    }
+
+    public static SessionException dontSupportUniqueCache(GenericSessionFactory sessionFactory) {
+        String m = String.format("%s don't support unique cache,because %s is %s."
+                , sessionFactory, MyKey.DDL_MODE.name, DdlMode.NONE);
+        return new SessionUsageException(m);
+    }
+
+    public static NotMatchRowException notMatchRow(GenericSession session, TableMeta<?> table, Object id) {
+        String m = String.format("%s update failure,not found match row for %s and id %s.", session, table, id);
+        return new NotMatchRowException(m);
+    }
 
 }

@@ -172,7 +172,7 @@ public interface Statement {
         WA and(Function<C, IPredicate> function);
 
         /**
-         * @see Expression#ifEqual(Object)
+         * @see Expression#ifEqual(Supplier)
          */
         WA ifAnd(@Nullable IPredicate predicate);
 

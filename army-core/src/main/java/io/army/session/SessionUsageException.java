@@ -14,8 +14,8 @@ public class SessionUsageException extends SessionException {
         super(cause, format, args);
     }
 
-    public SessionUsageException(String format, Object... args) {
-        super(format);
+    public SessionUsageException(String message) {
+        super(message);
     }
 
 

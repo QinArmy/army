@@ -1,10 +1,13 @@
 package io.army.env;
 
+import io.army.DdlMode;
 import io.army.lang.Nullable;
 
 public class MyKey<T> {
 
     public static final MyKey<Boolean> READ_ONLY = new MyKey<>("readonly", Boolean.class, Boolean.FALSE);
+
+    public static final MyKey<DdlMode> DDL_MODE = new MyKey<>("ddl.mode", DdlMode.class, DdlMode.VALIDATE_UNIQUE);
 
     public static final MyKey<String> ZONE_OFFSET_ID = new MyKey<>("zone.offset.id", String.class, null);
 

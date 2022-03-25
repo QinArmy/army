@@ -1,8 +1,8 @@
 package io.army.util;
 
 import io.army.lang.NonNull;
+import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
-import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Modifier;
 
@@ -25,6 +25,12 @@ public abstract class _ClassUtils extends org.springframework.util.ClassUtils {
 
     public static boolean isPresent(String className, @Nullable ClassLoader classLoader) {
         return org.springframework.util.ClassUtils.isPresent(className, classLoader);
+    }
+
+
+    @Nullable
+    public static String safeClassName(@Nullable Object value) {
+        return value == null ? null : value.getClass().getName();
     }
 
 

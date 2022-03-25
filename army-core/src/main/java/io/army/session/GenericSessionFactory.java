@@ -47,9 +47,10 @@ public interface GenericSessionFactory {
 
     boolean readonly();
 
-    boolean showSQL();
 
-    boolean formatSQL();
+    boolean isReactive();
+
+    boolean uniqueCache();
 
 
     Function<ArmyException, RuntimeException> exceptionFunction();

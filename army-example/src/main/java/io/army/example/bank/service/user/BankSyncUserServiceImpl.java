@@ -8,7 +8,6 @@ import io.army.example.bank.domain.user.Person;
 import io.army.example.bank.domain.user.PersonCertificate;
 import io.army.example.bank.service.BankExceptions;
 import io.army.example.bank.service.BankSyncBaseService;
-import io.army.example.bank.service.result.RegisterResult;
 import io.army.example.bank.web.form.PersonRegisterForm;
 import io.army.example.common.CommonUtils;
 import io.army.example.common.Gender;
@@ -18,14 +17,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 @Service("bankSyncUserService")
 public class BankSyncUserServiceImpl extends BankSyncBaseService implements BankSyncUserService {
 
     private BankUserDao userDao;
 
-    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
     @Override
-    public RegisterResult personRegister(final PersonRegisterForm form) {
+    public Map<String, Object> personRegister(final PersonRegisterForm form) {
         final String partnerNo, certificateNo;
         partnerNo = form.getPartnerUserNo();
         certificateNo = form.getCertificateNo();
@@ -45,10 +48,22 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
         final Person user;
         user = createPersonUser(statesBean, form, certificate);
         this.userDao.save(certificate);
-        this.userDao.save(createPersonAccount(user, form.getAccountType()));
+        final BankAccount account;
+        account = createPersonAccount(user, form.getAccountType());
+        this.userDao.save(account);
 
+        final Map<String, Object> result = new HashMap<>();
 
-        return null;
+        result.put("userNo", user.getUserNo());
+        result.put("userType", user.getUserType());
+        result.put("accountNo", account.getAccountNo());
+        result.put("accountType", account.getAccountType());
+
+        result.put("partnerNo", statesBean.partnerNo);
+        result.put("requestTime", user.getCreateTime());
+        result.put("completionTime", user.getCreateTime());
+
+        return Collections.unmodifiableMap(result);
     }
 
 
@@ -79,7 +94,7 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
                 .setFromPartnerType(statesBean.partnerUserType)
 
                 .setCertificateId(certificate.getId())
-                .setBirthday(certificate.getBirthday())
+                //.setBirthday(certificate.getBirthday())
                 ;
     }
 

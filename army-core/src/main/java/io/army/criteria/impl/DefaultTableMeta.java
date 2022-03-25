@@ -355,6 +355,33 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return this.primaryField;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public final FieldMeta<? super T> version() {
+        final FieldMeta<? super T> field;
+        if (this instanceof ChildTableMeta) {
+            final DefaultTableMeta<? super T> parent;
+            parent = (DefaultTableMeta<? super T>) ((ChildTableMeta<T>) this).parentMeta();
+            field = parent.fieldNameToFields.get(_MetaBridge.VERSION);
+        } else {
+            field = this.fieldNameToFields.get(_MetaBridge.VERSION);
+        }
+        return field;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public final FieldMeta<? super T> visible() {
+        final FieldMeta<? super T> field;
+        if (this instanceof ChildTableMeta) {
+            final DefaultTableMeta<? super T> parent;
+            parent = (DefaultTableMeta<? super T>) ((ChildTableMeta<T>) this).parentMeta();
+            field = parent.fieldNameToFields.get(_MetaBridge.VISIBLE);
+        } else {
+            field = this.fieldNameToFields.get(_MetaBridge.VISIBLE);
+        }
+        return field;
+    }
 
     @Override
     public final List<IndexMeta<T>> indexList() {

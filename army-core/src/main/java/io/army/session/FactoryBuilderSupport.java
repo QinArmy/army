@@ -40,6 +40,8 @@ public abstract class FactoryBuilderSupport {
 
     protected ZoneOffset zoneOffset;
 
+    protected boolean uniqueCache;
+
 
     /*################################## blow non-setter fields ##################################*/
 
