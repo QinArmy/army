@@ -114,7 +114,8 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
 
     }
 
-    private <T extends IDomain> void compareIndex(_TableInfo tableInfo, TableMeta<T> table, _TableResult.Builder tableBuilder) {
+    private <T extends IDomain> void compareIndex(_TableInfo tableInfo, TableMeta<T> table
+            , _TableResult.Builder tableBuilder) {
 
         final Map<String, _IndexInfo> indexMap = tableInfo.indexMap();
         _IndexInfo indexInfo;

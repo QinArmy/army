@@ -1,4 +1,4 @@
-package io.army.example.bank.service;
+package io.army.example.bank.service.sync;
 
 import io.army.domain.IDomain;
 import io.army.example.common.BaseDao;
@@ -22,7 +22,7 @@ public class BankSyncBaseService implements SyncBaseService {
     public static final String TX_MANAGER = "bankSyncTransactionManager";
 
 
-    private BaseDao baseDao;
+    protected BaseDao baseDao;
 
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)

@@ -1,30 +1,36 @@
-package io.army.example.bank.service.user;
+package io.army.example.bank.service.sync.user;
 
 import io.army.example.bank.ban.PersonAccountStatesBean;
+import io.army.example.bank.dao.sync.user.BankAccountDao;
 import io.army.example.bank.dao.sync.user.BankUserDao;
 import io.army.example.bank.domain.account.AccountType;
 import io.army.example.bank.domain.account.BankAccount;
-import io.army.example.bank.domain.user.Person;
-import io.army.example.bank.domain.user.PersonCertificate;
+import io.army.example.bank.domain.user.*;
 import io.army.example.bank.service.BankExceptions;
-import io.army.example.bank.service.BankSyncBaseService;
+import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.bank.web.form.PersonRegisterForm;
+import io.army.example.common.BaseService;
 import io.army.example.common.CommonUtils;
 import io.army.example.common.Gender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service("bankSyncUserService")
+@Profile(BaseService.SYNC)
 public class BankSyncUserServiceImpl extends BankSyncBaseService implements BankSyncUserService {
 
     private BankUserDao userDao;
+
+    private BankAccountDao accountDao;
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
     @Override
@@ -34,7 +40,7 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
         certificateNo = form.getCertificateNo();
 
         final PersonAccountStatesBean statesBean;
-        statesBean = userDao.getPersonAccountStates(partnerNo, certificateNo, form.getCertificateType());
+        statesBean = this.accountDao.getPersonAccountStates(partnerNo, certificateNo, form.getCertificateType());
         if (statesBean == null) {
             throw BankExceptions.partnerNotExists(partnerNo);
         }
@@ -43,14 +49,14 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
         }
         final PersonCertificate certificate;
         certificate = createPersonCertificate(form);
-        this.userDao.save(certificate);
+        this.baseDao.save(certificate);
 
         final Person user;
         user = createPersonUser(statesBean, form, certificate);
-        this.userDao.save(certificate);
+        this.baseDao.save(certificate);
         final BankAccount account;
         account = createPersonAccount(user, form.getAccountType());
-        this.userDao.save(account);
+        this.baseDao.save(account);
 
         final Map<String, Object> result = new HashMap<>();
 
@@ -67,11 +73,44 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
     }
 
 
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_UNCOMMITTED)
+    @Override
+    public Map<String, Object> partnerRegisterRequest() {
+        final LocalDateTime now = LocalDateTime.now();
+        final RegisterRecord r;
+        r = new RegisterRecord()
+                .setPartnerId(0L)
+                .setStatus(RecordStatus.CREATED)
+                .setDeadline(now.plusMinutes(30));
+
+        this.baseDao.save(r);
+        final Captcha captcha;
+        captcha = new Captcha()
+                .setCaptcha(CommonUtils.randomCaptcha())
+                .setPartnerId(r.getPartnerId())
+                .setRequestNo(r.getRequestNo())
+                .setDeadline(now.plusMinutes(10));
+
+        this.baseDao.save(captcha);
+
+        final Map<String, Object> result = new HashMap<>(4);
+        result.put("requestNo", r.getRequestNo());
+        result.put("captcha", captcha.getCaptcha());
+        return Collections.unmodifiableMap(result);
+    }
+
+
+    /*################################## blow setter method ##################################*/
+
     @Autowired
     public void setUserDao(@Qualifier("bankSyncUserDao") BankUserDao userDao) {
         this.userDao = userDao;
     }
 
+    @Autowired
+    public void setAccountDao(@Qualifier("bankSyncAccountDao") BankAccountDao accountDao) {
+        this.accountDao = accountDao;
+    }
 
     private static PersonCertificate createPersonCertificate(PersonRegisterForm form) {
         final String certificateNo;

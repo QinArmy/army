@@ -19,7 +19,7 @@ public final class SimpleFieldGeneratorFactory implements FieldGeneratorFactory 
         if (meta == null) {
             throw FieldGeneratorUtils.noGeneratorMeta(field);
         }
-        final Class<?> javaType = field.javaType();
+        final Class<?> javaType = meta.javaType();
         final FieldGenerator fieldGenerator;
         if (javaType == SnowflakeGenerator.class) {
             fieldGenerator = SnowflakeGenerator.create(field, SingleJvmSnowflakeClient.INSTANCE);

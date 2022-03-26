@@ -412,8 +412,6 @@ abstract class TableMetaUtils {
     }
 
 
-
-
     private static Stack<Class<?>> superMappingClassStack(Class<?> topMappedClass) throws MetaException {
         Stack<Class<?>> stack = new Stack<>();
 
@@ -503,24 +501,24 @@ abstract class TableMetaUtils {
         return new MetaException(m);
     }
 
-
-    static <T extends IDomain> List<FieldMeta<?>> createGeneratorChain(
-            final Map<String, FieldMeta<T>> propNameToFieldMeta) throws MetaException {
+    static <T extends IDomain> List<FieldMeta<?>> createGeneratorChain(final Map<String, FieldMeta<T>> nameToField)
+            throws MetaException {
 
         final List<Pair<FieldMeta<T>, Integer>> levelList = new ArrayList<>(4);
-        for (FieldMeta<T> fieldMeta : propNameToFieldMeta.values()) {
-            GeneratorMeta generatorMeta = fieldMeta.generator();
+        for (FieldMeta<T> field : nameToField.values()) {
+
+            GeneratorMeta generatorMeta = field.generator();
             if (generatorMeta == null) {
                 continue;
             }
-            String depend;
-            depend = generatorMeta.params().get(FieldGenerator.DEPEND_FIELD_NAME);
+            String dependName;
+            dependName = generatorMeta.params().get(FieldGenerator.DEPEND_FIELD_NAME);
             int level = 0;
-            for (FieldMeta<?> dependField; StringUtils.hasText(depend); ) {
-                dependField = propNameToFieldMeta.get(depend);
+            for (FieldMeta<?> dependField; dependName != null; ) {
+                dependField = nameToField.get(dependName);
                 if (dependField == null) {
-                    String m = String.format("Not found dependent field[%s] in domain[%s]"
-                            , depend, fieldMeta.tableMeta());
+                    String m = String.format("%s depend %s,but not found dependent field[%s] in %s"
+                            , field, dependName, dependName, field.tableMeta());
                     throw new MetaException(m);
                 }
                 level++;
@@ -528,9 +526,9 @@ abstract class TableMetaUtils {
                 if (generatorMeta == null) {
                     break;
                 }
-                depend = generatorMeta.params().get(FieldGenerator.DEPEND_FIELD_NAME);
+                dependName = generatorMeta.params().get(FieldGenerator.DEPEND_FIELD_NAME);
             }
-            levelList.add(new Pair<>(fieldMeta, level));
+            levelList.add(new Pair<>(field, level));
         }
 
         final List<FieldMeta<?>> generatorChain;
@@ -833,9 +831,6 @@ abstract class TableMetaUtils {
         }
 
     }
-
-
-
 
 
 }

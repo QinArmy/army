@@ -10,8 +10,8 @@ import java.math.BigDecimal;
 @SuppressWarnings("unchecked")
 public class ChinaRegion<T extends ChinaRegion<T>> extends BaseVersionDomain<T> {
 
-    @Column
     @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})
+    @Column
     private Long id;
 
     @Column

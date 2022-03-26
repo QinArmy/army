@@ -1,9 +1,6 @@
 package io.army.example.bank.domain.user;
 
-import io.army.annotation.Column;
-import io.army.annotation.Index;
-import io.army.annotation.Table;
-import io.army.annotation.UpdateMode;
+import io.army.annotation.*;
 import io.army.example.common.BaseVersionDomain;
 
 import java.time.LocalDateTime;
@@ -12,17 +9,23 @@ import java.time.LocalDateTime;
         , comment = "user register request record")
 public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
 
+    @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})
     @Column
     private Long id;
 
-    @Column(nullable = false, comment = "record handle status")
+    @Column(nullable = false, defaultValue = "0", comment = "record handle status")
     private RecordStatus status;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "partner user id")
+    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE
+            , comment = "partner user id,0 representing bank self,@see u_user table")
     private Long partnerId;
 
+    @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime), @Param(name = DEPEND, value = "partnerId")})
     @Column(precision = 30, nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner request number")
     private String requestNo;
+
+    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "deadline,reject handle request after this")
+    private LocalDateTime deadline;
 
     @Column(insertable = false, updateMode = UpdateMode.ONLY_NULL, comment = "record handle time")
     private LocalDateTime handleTime;
@@ -83,6 +86,15 @@ public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
 
     public RegisterRecord setHandleTime(LocalDateTime handleTime) {
         this.handleTime = handleTime;
+        return this;
+    }
+
+    public LocalDateTime getDeadline() {
+        return deadline;
+    }
+
+    public RegisterRecord setDeadline(LocalDateTime deadline) {
+        this.deadline = deadline;
         return this;
     }
 

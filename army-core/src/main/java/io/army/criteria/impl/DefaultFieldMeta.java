@@ -163,7 +163,8 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
 
     private final boolean codec;
 
-    private DefaultFieldMeta(final TableMeta<T> table, final Field field) throws MetaException {
+    private DefaultFieldMeta(final TableMeta<T> table, final Field field)
+            throws MetaException {
         Objects.requireNonNull(table);
         Objects.requireNonNull(field);
 

@@ -1,6 +1,8 @@
 package io.army.bean;
 
 
+import io.army.proxy.ArmyProxy;
+
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,14 +32,10 @@ public abstract class ObjectAccessorFactory {
 
     private static final ConcurrentMap<Class<?>, FactoryReference> ACCESSOR_CACHE = new ConcurrentHashMap<>();
 
-
-
-    public static ReadWrapper forReadonlyAccess(Object target) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    public static ObjectAccessor forBean(final Class<?> beanClass) {
+    public static ObjectAccessor forBean(Class<?> beanClass) {
+        while (ArmyProxy.class.isAssignableFrom(beanClass)) {
+            beanClass = beanClass.getSuperclass();
+        }
         return new BeanWriterAccessor(getBeanAccessors(beanClass));
     }
 

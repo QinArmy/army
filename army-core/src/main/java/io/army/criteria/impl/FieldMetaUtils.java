@@ -63,11 +63,6 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         }
 
         @Override
-        public String dependFieldName() {
-            return dependPropName;
-        }
-
-        @Override
         public Map<String, String> params() {
             return params;
         }

@@ -95,7 +95,6 @@ public abstract class _DmlUtils {
             final _InsertBlock childBlock = context.childBlock();
             domainTable = childBlock == null ? context.table() : childBlock.table();
             readWrapper = new BeanReadWrapper(accessor);
-            ;
             block = context;
             blockContext = context;
         }

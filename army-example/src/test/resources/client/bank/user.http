@@ -1,0 +1,5 @@
+### partnerRegisterRequest
+GET http://localhost:8080/bank/user/partnerRegisterRequest?content=json
+
+
+

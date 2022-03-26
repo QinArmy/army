@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.SignStyle;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -89,6 +88,8 @@ public final class SnowflakeGenerator implements FieldGenerator {
 
     public static final String DATE = "date";
 
+    public static final String SUFFIX_LENGTH = "suffixLength";
+
 
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(YEAR, 4, 10, SignStyle.NEVER)
@@ -113,21 +114,9 @@ public final class SnowflakeGenerator implements FieldGenerator {
         if (javaType == Long.class) {
             nextSequence = this.snowflake.next();
         } else if (javaType == BigInteger.class) {
-            final FieldMeta<?> dependField;
-            dependField = field.dependField();
-            if (dependField == null) {
-                nextSequence = BigInteger.valueOf(this.snowflake.next());
-            } else {
-                nextSequence = new BigInteger(this.nextAsString(field, dependField, domain));
-            }
+            nextSequence = new BigInteger(this.nextAsString(field, domain));
         } else if (javaType == String.class) {
-            final FieldMeta<?> dependField;
-            dependField = field.dependField();
-            if (dependField == null) {
-                nextSequence = Long.toString(this.snowflake.next());
-            } else {
-                nextSequence = this.nextAsString(field, dependField, domain);
-            }
+            nextSequence = this.nextAsString(field, domain);
         } else {
             throw FieldGeneratorUtils.dontSupportJavaType(SnowflakeGenerator.class, field);
         }
@@ -135,34 +124,47 @@ public final class SnowflakeGenerator implements FieldGenerator {
     }
 
 
-    private String nextAsString(final FieldMeta<?> field, FieldMeta<?> dependField, final ReadWrapper domain)
+    private String nextAsString(final FieldMeta<?> field, final ReadWrapper domain)
             throws GeneratorException {
-        final Object dependValue;
-        dependValue = domain.get(dependField.fieldName());
-        if (!(dependValue instanceof Long)) {
-            String m = String.format("%s depend field %s value isn't %s type."
-                    , field, dependField, Long.class.getName());
-            throw new GeneratorException(m);
-        }
-        final String suffix;
-        suffix = suffixWithZero((Long) dependValue);
-        final StringBuilder builder;
 
         GeneratorMeta meta;
         meta = field.generator();
         assert meta != null;
-        if ("true".equals(meta.params().get(DATE))) {
-            builder = new StringBuilder(27 + suffix.length());
-            builder.append(LocalDateTime.now().format(FORMATTER));
-        } else {
-            builder = new StringBuilder(19 + suffix.length());
+        final Map<String, String> paramMap = meta.params();
+        final FieldMeta<?> dependField;
+        dependField = field.dependField();
+
+        String suffix = null;
+        if (dependField != null) {
+            suffix = getSuffix(field, dependField, paramMap, domain);
         }
-        final long nextSequence;
-        nextSequence = this.snowflake.next();
-        return builder
-                .append(nextSequence)
-                .append(suffix)
-                .toString();
+
+        final String snowSequence;
+        snowSequence = Long.toString(this.snowflake.next());
+        final boolean hasDate;
+        hasDate = "true".equals(meta.params().get(DATE));
+        final String sequence;
+        if (suffix == null && !hasDate) {
+            sequence = snowSequence;
+        } else {
+            final StringBuilder builder;
+            if (hasDate && suffix != null) {
+                builder = new StringBuilder(suffix.length() + 8 + snowSequence.length());
+            } else if (hasDate) {
+                builder = new StringBuilder(8 + snowSequence.length());
+            } else {
+                builder = new StringBuilder(suffix.length() + snowSequence.length());
+            }
+            if (hasDate) {
+                builder.append(LocalDateTime.now().format(FORMATTER));
+            }
+            builder.append(snowSequence);
+            if (suffix != null) {
+                builder.append(suffix);
+            }
+            sequence = builder.toString();
+        }
+        return sequence;
     }
 
     private void updateWorker(final Worker worker) {
@@ -176,14 +178,71 @@ public final class SnowflakeGenerator implements FieldGenerator {
     }
 
 
-    private static String suffixWithZero(long number) {
-        String str = Long.toString(number % 10_0000);
-        if (str.length() < 5) {
-            char[] chars = new char[5 - str.length()];
-            Arrays.fill(chars, '0');
-            str = new String(chars) + str;
+    private static String suffixWithZero(final int expectedLength, final String dependValue) {
+        final int length = dependValue.length();
+        final String suffix;
+        if (length == expectedLength) {
+            suffix = dependValue;
+        } else if (length > expectedLength) {
+            suffix = dependValue.substring(length - expectedLength);
+        } else {
+            final char[] charArray = new char[expectedLength];
+            final int boundary = expectedLength - length;
+            for (int i = 0; i < boundary; i++) {
+                charArray[i] = '0';
+            }
+            final char[] valueChars = dependValue.toCharArray();
+            System.arraycopy(valueChars, 0, charArray, boundary, valueChars.length);
+            suffix = new String(charArray);
+
         }
-        return str;
+        return suffix;
+    }
+
+
+    private static String getSuffix(FieldMeta<?> field, FieldMeta<?> dependField, Map<String, String> paramMap
+            , ReadWrapper domain) {
+        final int length;
+        length = getSuffixLength(field, paramMap);
+        final Object dependValue;
+        dependValue = domain.get(dependField.fieldName());
+        final String suffix;
+        if (dependValue instanceof Long) {
+            suffix = suffixWithZero(length, Long.toString((Long) dependValue));
+        } else if (dependValue instanceof String) {
+            suffix = suffixWithZero(length, (String) dependValue);
+        } else if (dependValue instanceof Integer) {
+            suffix = suffixWithZero(length, Integer.toString((Integer) dependValue));
+        } else if (dependValue instanceof BigInteger) {
+            suffix = suffixWithZero(length, dependValue.toString());
+        } else {
+            String m = String.format("%s depend field %s not in [%s,%s,%s,%s]."
+                    , field, dependField, Long.class.getName(), String.class.getName()
+                    , Integer.class.getName(), BigInteger.class.getName());
+            throw new GeneratorException(m);
+        }
+        return suffix;
+    }
+
+    private static int getSuffixLength(FieldMeta<?> field, Map<String, String> paramMap) {
+        final String suffixLengthText;
+        suffixLengthText = paramMap.get(SUFFIX_LENGTH);
+        final int length;
+        if (suffixLengthText == null) {
+            length = 5;
+        } else {
+            try {
+                length = Integer.parseInt(suffixLengthText);
+            } catch (NumberFormatException e) {
+                String m = String.format("%s %s[%s] error.", field, SUFFIX_LENGTH, suffixLengthText);
+                throw new GeneratorException(m, e);
+            }
+            if (length < 1 || length > 19) {
+                String m = String.format("%s %s[%s] error.", field, SUFFIX_LENGTH, suffixLengthText);
+                throw new GeneratorException(m);
+            }
+        }
+        return length;
     }
 
 

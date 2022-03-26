@@ -158,6 +158,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
 
+    public static ArmyException generatorFieldIsNull(FieldMeta<?> field) {
+        return new ArmyException(String.format("%s has generator but value is null.", field));
+    }
+
     public static CriteriaException nonNullExpression(FieldMeta<?> field) {
         return new CriteriaException(String.format("Value expression must be non-null for %s", field));
     }

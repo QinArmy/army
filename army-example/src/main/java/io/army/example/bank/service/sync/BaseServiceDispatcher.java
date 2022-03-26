@@ -1,4 +1,4 @@
-package io.army.example.pill.service.sync;
+package io.army.example.bank.service.sync;
 
 import io.army.domain.IDomain;
 import io.army.example.common.BaseService;
@@ -12,34 +12,35 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-@Component("pillBaseServiceAdapter")
+@Component("baseServiceDispatcher")
 @Profile(BaseService.SYNC)
-public class PillBaseServiceAdapter implements BaseService {
+public class BaseServiceDispatcher implements BaseService {
 
-    private SyncBaseService baseService;
+    protected SyncBaseService baseService;
 
     @Override
     public <T extends Domain> Mono<T> get(Class<T> domainClass, Object id) {
-        return Mono.defer(() -> Mono.justOrEmpty(getBaseService().get(domainClass, id)));
+        return Mono.defer(() -> Mono.justOrEmpty(this.getBaseService().get(domainClass, id)));
     }
 
     @Override
     public <T extends Domain> Mono<Void> save(T domain) {
         return Mono.defer(() -> {
-            getBaseService().save(domain);
+            this.getBaseService().save(domain);
             return Mono.empty();
         });
     }
 
     @Override
     public <T extends Domain> Mono<T> findById(Class<T> domainClass, Object id) {
-        return Mono.defer(() -> Mono.justOrEmpty(getBaseService().findById(domainClass, id)));
+        return Mono.defer(() -> Mono.justOrEmpty(this.getBaseService().findById(domainClass, id)));
     }
 
     @Override
     public Mono<Map<String, Object>> findByIdAsMap(Class<? extends IDomain> domainClass, Object id) {
-        return Mono.defer(() -> Mono.justOrEmpty(getBaseService().findByIdAsMap(domainClass, id)));
+        return Mono.defer(() -> Mono.justOrEmpty(this.getBaseService().findByIdAsMap(domainClass, id)));
     }
+
 
     protected SyncBaseService getBaseService() {
         return this.baseService;
@@ -47,7 +48,7 @@ public class PillBaseServiceAdapter implements BaseService {
 
 
     @Autowired
-    public void setBaseService(@Qualifier("pillSyncBaseService") SyncBaseService baseService) {
+    public void setBaseService(@Qualifier("bankSyncBaseService") SyncBaseService baseService) {
         this.baseService = baseService;
     }
 

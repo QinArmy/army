@@ -5,6 +5,7 @@ import io.army.lang.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 final class IndexInfoImpl implements _IndexInfo {
 
@@ -23,7 +24,7 @@ final class IndexInfoImpl implements _IndexInfo {
     private final List<String> columnList;
 
     private IndexInfoImpl(IndexInfoBuilder builder) {
-        this.indexName = builder.indexName;
+        this.indexName = builder.indexName.toLowerCase(Locale.ROOT);
         this.indexType = builder.indexType;
         this.unique = builder.unique;
         this.ascList = Collections.unmodifiableList(builder.ascList);
@@ -70,6 +71,11 @@ final class IndexInfoImpl implements _IndexInfo {
     }
 
     private static final class IndexInfoBuilder implements _IndexInfo.Builder {
+
+        @Override
+        public String name() {
+            return this.indexName;
+        }
 
         private String indexName;
 

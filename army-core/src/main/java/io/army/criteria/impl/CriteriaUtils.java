@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
@@ -127,13 +126,6 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableList(list);
     }
 
-    static List<ReadWrapper> paramMaps(List<Map<String, Object>> mapList) {
-        final List<ReadWrapper> wrapperList = new ArrayList<>(mapList.size());
-        for (Map<String, Object> map : mapList) {
-            wrapperList.add(ObjectAccessorFactory.forReadonlyAccess(map));
-        }
-        return Collections.unmodifiableList(wrapperList);
-    }
 
     static List<Object> paramList(final List<?> paramList) {
         final int size = paramList.size();

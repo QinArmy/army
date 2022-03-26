@@ -4,7 +4,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import io.army.boot.sync.LocalSessionFactoryBean;
 import io.army.datasource.DataSourceRole;
 import io.army.datasource.sync.DruidDataSourceUtils;
-import io.army.example.bank.service.BankSyncBaseService;
+import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.sync.SessionFactory;

@@ -39,9 +39,9 @@ public class TestController implements InitializingBean, ApplicationContextAware
         final Environment env = context.getEnvironment();
 
         if (env.acceptsProfiles(Profiles.of(BaseService.SYNC))) {
-            this.baseService = context.getBean(BaseService.class, "pillBaseServiceAdapter");
+            this.baseService = context.getBean("pillBaseServiceAdapter", BaseService.class);
         } else {
-            this.baseService = context.getBean(BaseService.class, "pillBaseService");
+            this.baseService = context.getBean("pillBaseService", BaseService.class);
         }
     }
 

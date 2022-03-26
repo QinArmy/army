@@ -191,15 +191,20 @@ final class JdbcMetaExecutor implements MetaExecutor {
         final String tableName = tableBuilder.name();
         try (ResultSet resultSet = metaData.getIndexInfo(catalog, schema, tableName, unique, false)) {
             Boolean asc;
-            for (String ascStr, indexName, lastIndexName = null; resultSet.next(); ) {
+            String lastIndexName = null;
+            for (String ascStr, indexName; resultSet.next(); ) {
                 if (!tableName.equals(resultSet.getString("TABLE_NAME"))) {
                     throw new DataAccessException(String.format("Table[%s] not match.", tableName));
                 }
+
                 indexName = resultSet.getString("INDEX_NAME");
                 if (lastIndexName == null) {
                     builder.name(indexName);
-                    lastIndexName = indexName;
+                } else if (!lastIndexName.equals(indexName)) {
+                    tableBuilder.appendIndex(builder.buildAndClear());
+                    builder.name(indexName);
                 }
+                lastIndexName = indexName;
                 ascStr = resultSet.getString("ASC_OR_DESC");
                 if (ascStr == null) {
                     asc = null;
@@ -212,18 +217,16 @@ final class JdbcMetaExecutor implements MetaExecutor {
                             , ascStr, tableName, indexName);
                     throw new DataAccessException(m);
                 }
-
-                if (indexName.equals(lastIndexName)) {
-                    builder.appendColumn(resultSet.getString("COLUMN_NAME"), asc);
-                } else {
-                    builder.unique(!resultSet.getBoolean("NON_UNIQUE"));
-                    tableBuilder.appendIndex(builder.buildAndClear());
-                    lastIndexName = null;
-                }
+                builder.unique(!resultSet.getBoolean("NON_UNIQUE"));
+                builder.appendColumn(resultSet.getString("COLUMN_NAME"), asc);
 
             }//for
 
-        }
+            if (lastIndexName != null && lastIndexName.equals(builder.name())) {
+                tableBuilder.appendIndex(builder.buildAndClear());
+            }
+
+        }//try
 
 
     }

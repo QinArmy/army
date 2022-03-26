@@ -13,9 +13,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.env.MyKey;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.SchemaMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.util.TimeUtils;
 import io.army.util._Assert;
 
@@ -40,8 +38,6 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     protected final SchemaMeta schemaMeta;
 
     public final Map<Class<?>, TableMeta<?>> tableMap;
-
-    protected final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
 
     protected final Function<ArmyException, RuntimeException> exceptionFunction;
 
@@ -76,7 +72,6 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         this.schemaMeta = Objects.requireNonNull(support.schemaMeta);
         this.tableMap = Objects.requireNonNull(support.tableMap);
         this.exceptionFunction = exceptionFunction(support.exceptionFunction);
-        this.fieldGeneratorMap = Objects.requireNonNull(support.generatorMap);
 
         this.subQueryInsertMode = env.get(ArmyKeys.SUBQUERY_INSERT_MODE, SubQueryInsertMode.class, SubQueryInsertMode.ONLY_MIGRATION);
         this.readonly = env.get(ArmyKeys.READ_ONLY, Boolean.class, Boolean.FALSE);
@@ -84,7 +79,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         this.zoneOffset = support.zoneOffset;
 
         this.supportSessionCache = env.get(ArmyKeys.sessionCache, Boolean.class, Boolean.TRUE);
-        this.fieldValuesGenerator = new FieldValuesGeneratorImpl(this.zoneOffset, this.fieldGeneratorMap);
+        this.fieldValuesGenerator = new FieldValuesGeneratorImpl(this.zoneOffset, support.generatorMap);
 
         this.uniqueCache = support.uniqueCache;
         this.sqlLogDynamic = env.getOrDefault(MyKey.SQL_LOG_DYNAMIC);
@@ -129,12 +124,6 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     @Override
     public final <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
         return (TableMeta<T>) this.tableMap.get(domainClass);
-    }
-
-    @Nullable
-    @Override
-    public final FieldGenerator fieldGenerator(FieldMeta<?> fieldMeta) {
-        return this.fieldGeneratorMap.get(fieldMeta);
     }
 
 
@@ -240,6 +229,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
         private FieldValuesGeneratorImpl(@Nullable ZoneOffset zoneOffset
                 , Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap) {
+            Objects.requireNonNull(fieldGeneratorMap);
             this.zoneOffset = zoneOffset;
             this.fieldGeneratorMap = fieldGeneratorMap;
         }
@@ -254,8 +244,17 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         protected void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor, ReadWrapper wrapper) {
             final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap = this.fieldGeneratorMap;
             FieldGenerator generator;
-            for (FieldMeta<?> field : table.fieldList()) {
+            if (table instanceof ChildTableMeta) {
+                final ParentTableMeta<?> parent = ((ChildTableMeta<?>) table).parentMeta();
+                for (FieldMeta<?> field : parent.fieldChain()) {
+                    generator = fieldGeneratorMap.get(field);
+                    assert generator != null;
+                    accessor.set(domain, field.fieldName(), generator.next(field, wrapper));
+                }
+            }
+            for (FieldMeta<?> field : table.fieldChain()) {
                 generator = fieldGeneratorMap.get(field);
+                assert generator != null;
                 accessor.set(domain, field.fieldName(), generator.next(field, wrapper));
             }
         }

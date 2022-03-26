@@ -23,6 +23,9 @@ public interface _IndexInfo {
 
     interface Builder {
 
+        @Nullable
+        String name();
+
         Builder name(String name);
 
         Builder type(String type);

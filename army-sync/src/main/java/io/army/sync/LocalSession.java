@@ -5,7 +5,6 @@ import io.army.DuplicationSessionTransaction;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect._Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -385,25 +384,16 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @Override
     public void flush() throws SessionException {
-        final StmtExecutor stmtExecutor = this.stmtExecutor;
-        final _Dialect dialect = this.sessionFactory.dialect;
-        final Transaction tx = this.transaction;
-        SimpleStmt stmt;
         long affectedRows;
         Update update;
+        TableMeta<?> table;
         for (_CacheBlock block : this.sessionCache.getChangedList()) {
             update = block.statement();
-            stmt = (SimpleStmt) dialect.update(update, Visible.ONLY_VISIBLE);
-            affectedRows = stmtExecutor.update(stmt, tx == null ? 0 : tx.nextTimeout());
-            if (affectedRows == 1L) {
-                block.success();
-                ((_Statement) update).clear();
-                continue;
+            table = ((_SingleUpdate) update).table();
+            affectedRows = this.dmlUpdate(update, Visible.ONLY_VISIBLE);
+            if (affectedRows != 1) {
+                throw _Exceptions.notMatchRow(this, table, block.id());
             }
-            if (stmt.hasOptimistic()) {
-                throw _Exceptions.optimisticLock(affectedRows);
-            }
-            throw _Exceptions.notMatchRow(this, ((_SingleUpdate) update).table(), block.id());
         }
 
     }
@@ -420,8 +410,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     /*################################## blow package method ##################################*/
 
     void clearChangedCache(final LocalTransaction transaction) {
-
-        //TODO
+        if (this.transaction != transaction) {
+            throw new IllegalArgumentException("not match transaction");
+        }
+        this.sessionCache.clearChangedOnRollback();
     }
 
     void endTransaction(final LocalTransaction transaction) {
