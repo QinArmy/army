@@ -294,10 +294,6 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("Not found from clause.");
     }
 
-    public static CriteriaException firstTableHasJoinClause() {
-        String m = String.format("From clause first %s must no join clause.", TableItem.class.getName());
-        return new CriteriaException(m);
-    }
 
     public static CriteriaException firstTableHasOnClause() {
         String m = String.format("From clause first %s must no on clause.", TableItem.class.getName());
@@ -351,6 +347,11 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException namedParamInNonBatch(NamedParam param) {
         String m = String.format("Couldn't exist named parameter[%s] in non-batch statement.", param.name());
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException nonScalarSubQuery(SubQuery subQuery) {
+        String m = String.format("Expression right value[%s] is non-scalar sub query.", subQuery.getClass().getName());
         return new CriteriaException(m);
     }
 
@@ -446,5 +447,6 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("%s update failure,not found match row for %s and id %s.", session, table, id);
         return new NotMatchRowException(m);
     }
+
 
 }

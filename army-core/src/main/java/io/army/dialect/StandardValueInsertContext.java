@@ -3,6 +3,8 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
+import io.army.criteria.NamedParam;
+import io.army.criteria.NonNullNamedParam;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
@@ -15,9 +17,8 @@ import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -39,6 +40,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
         }
     }
 
+
     final boolean migration;
 
     final SingleTableMeta<?> table;
@@ -52,6 +54,9 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     final List<IDomain> domainList;
 
     final NullHandleMode nullHandleMode;
+
+    //@see io.army.dialect._DmlUtils.appendStandardValueInsert,for parse comment expression
+    IDomain currentDomain;
 
     private final PrimaryFieldMeta<?> returnId;
 
@@ -193,7 +198,25 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
 
-    private static final class ChildBlock implements _InsertBlock, _SqlContext {
+    @Override
+    List<ParamValue> createParamList() {
+        return new ProxyList(this::handleNamedParam);
+    }
+
+    private ParamValue handleNamedParam(final NamedParam namedParam) {
+        final IDomain domain = this.currentDomain;
+        assert domain != null;
+        this.currentDomain = null; //clear for next
+        final Object value;
+        value = this.domainAccessor.get(domain, namedParam.name());
+        if (value == null && namedParam instanceof NonNullNamedParam) {
+            throw _Exceptions.nonNullNamedParam((NonNullNamedParam) namedParam);
+        }
+        return ParamValue.build(namedParam.paramMeta(), value);
+    }
+
+
+    private static final class ChildBlock extends _BaseSqlContext implements _InsertBlock, _SqlContext {
 
         private final ChildTableMeta<?> table;
 
@@ -201,11 +224,9 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
 
         private final StandardValueInsertContext parentContext;
 
-        private final StringBuilder sqlBuilder = new StringBuilder();
-
-        private final List<ParamValue> paramList = new ArrayList<>();
-
-        private ChildBlock(ChildTableMeta<?> table, List<FieldMeta<?>> fieldList, StandardValueInsertContext parentContext) {
+        private ChildBlock(ChildTableMeta<?> table, List<FieldMeta<?>> fieldList
+                , StandardValueInsertContext parentContext) {
+            super(parentContext.dialect, parentContext.visible);
             this.table = table;
             this.fieldList = fieldList;
             this.parentContext = parentContext;
@@ -238,30 +259,157 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
             throw _Exceptions.unknownColumn(null, field);
         }
 
-
         @Override
-        public _Dialect dialect() {
-            return this.parentContext.dialect;
+        public Stmt build() {
+            throw new UnsupportedOperationException("child block don't support");
         }
 
         @Override
-        public StringBuilder sqlBuilder() {
-            return this.sqlBuilder;
+        List<ParamValue> createParamList() {
+            // here,now this.parentContext is null.
+            return new ProxyList(this::handleNamedParam);
+        }
+
+        private ParamValue handleNamedParam(NamedParam namedParam) {
+            return this.parentContext.handleNamedParam(namedParam);
+        }
+
+
+    }//ChildBlock
+
+    private static final class ProxyList implements List<ParamValue> {
+
+        private final List<ParamValue> paramList = new ArrayList<>();
+
+        private final Function<NamedParam, ParamValue> function;
+
+        private ProxyList(Function<NamedParam, ParamValue> function) {
+            this.function = function;
         }
 
         @Override
-        public void appendParam(ParamValue paramValue) {
-            this.sqlBuilder.append(Constant.SPACE)
-                    .append(Constant.PLACEHOLDER);
-            this.paramList.add(paramValue);
+        public int size() {
+            return this.paramList.size();
         }
 
         @Override
-        public Visible visible() {
-            return this.parentContext.visible;
+        public boolean isEmpty() {
+            return this.paramList.isEmpty();
         }
 
-    }
+        @Override
+        public boolean contains(Object o) {
+            return this.paramList.contains(o);
+        }
+
+        @Override
+        public Iterator<ParamValue> iterator() {
+            return this.paramList.iterator();
+        }
+
+        @Override
+        public Object[] toArray() {
+            return this.paramList.toArray();
+        }
+
+        @SuppressWarnings("all")
+        @Override
+        public <T> T[] toArray(T[] a) {
+            return this.paramList.toArray(a);
+        }
+
+        @Override
+        public boolean add(final ParamValue paramValue) {
+            final ParamValue actual;
+            if (paramValue instanceof NamedParam) {
+                actual = this.function.apply((NamedParam) paramValue);
+            } else {
+                actual = paramValue;
+            }
+            return this.paramList.add(actual);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            return this.paramList.remove(o);
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            return this.paramList.containsAll(c);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends ParamValue> c) {
+            return this.paramList.addAll(c);
+        }
+
+        @Override
+        public boolean addAll(int index, Collection<? extends ParamValue> c) {
+            return this.paramList.addAll(index, c);
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            return this.paramList.removeAll(c);
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            return this.paramList.retainAll(c);
+        }
+
+        @Override
+        public void clear() {
+            this.paramList.clear();
+        }
+
+        @Override
+        public ParamValue get(int index) {
+            return this.paramList.get(index);
+        }
+
+        @Override
+        public ParamValue set(int index, ParamValue element) {
+            return this.paramList.set(index, element);
+        }
+
+        @Override
+        public void add(int index, ParamValue element) {
+            this.paramList.add(index, element);
+        }
+
+        @Override
+        public ParamValue remove(int index) {
+            return this.paramList.remove(index);
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            return this.paramList.indexOf(o);
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            return this.paramList.lastIndexOf(o);
+        }
+
+        @Override
+        public ListIterator<ParamValue> listIterator() {
+            return this.paramList.listIterator();
+        }
+
+        @Override
+        public ListIterator<ParamValue> listIterator(int index) {
+            return this.paramList.listIterator(index);
+        }
+
+        @Override
+        public List<ParamValue> subList(int fromIndex, int toIndex) {
+            return this.paramList.subList(fromIndex, toIndex);
+        }
+
+    }//ProxyList
 
 
 }

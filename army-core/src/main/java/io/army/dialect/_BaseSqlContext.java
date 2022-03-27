@@ -8,6 +8,8 @@ import java.util.List;
 
 public abstract class _BaseSqlContext implements _StmtContext {
 
+    static final String SPACE_PLACEHOLDER = " ?";
+
     protected final _Dialect dialect;
 
     protected final Visible visible;
@@ -20,7 +22,12 @@ public abstract class _BaseSqlContext implements _StmtContext {
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
-        this.paramList = new ArrayList<>();
+        if (this instanceof _InsertBlock) {
+            this.paramList = createParamList();
+        } else {
+            this.paramList = new ArrayList<>();
+        }
+
     }
 
     protected _BaseSqlContext(_BaseSqlContext outerContext) {
@@ -29,7 +36,6 @@ public abstract class _BaseSqlContext implements _StmtContext {
         this.sqlBuilder = outerContext.sqlBuilder;
         this.paramList = outerContext.paramList;
     }
-
 
 
     @Override
@@ -45,13 +51,18 @@ public abstract class _BaseSqlContext implements _StmtContext {
 
     @Override
     public final void appendParam(ParamValue paramValue) {
-        this.sqlBuilder.append(" ?");
+        this.sqlBuilder.append(SPACE_PLACEHOLDER);
         this.paramList.add(paramValue);
     }
 
     @Override
     public final Visible visible() {
         return this.visible;
+    }
+
+
+    List<ParamValue> createParamList() {
+        return new ArrayList<>();
     }
 
 

@@ -51,6 +51,11 @@ final class PostgreDdl extends _DdlDialect {
     }
 
     @Override
+    protected void appendPostGenerator(FieldMeta<?> field, StringBuilder builder) {
+
+    }
+
+    @Override
     protected void appendTableOption(TableMeta<?> table, StringBuilder builder) {
 
     }

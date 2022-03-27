@@ -16,6 +16,7 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.ParamValue;
+import io.army.stmt.StrictParamValue;
 import io.army.util.ArrayUtils;
 import io.army.util.CollectionUtils;
 import io.army.util._Exceptions;
@@ -75,7 +76,7 @@ public abstract class _DmlUtils {
     }
 
 
-    static void appendStandardValueInsert(final _ValueInsertContext context, final @Nullable FieldValueGenerator generator) {
+    static void appendStandardValueInsert(final StandardValueInsertContext context, final @Nullable FieldValueGenerator generator) {
         final _Dialect dialect = context.dialect();
         final ObjectAccessor accessor = context.domainAccessor();
 
@@ -162,7 +163,8 @@ public abstract class _DmlUtils {
                     assert field != null;
                     builder.append(Constant.SPACE)
                             .append(context.discriminatorValue());
-                } else if ((expression = expMap.get(field)) != null) {
+                } else if ((expression = expMap.get(field)) != null) { // common expression have validated
+                    context.currentDomain = domain;
                     expression.appendSql(blockContext); // common append to block context
                 } else if ((value = accessor.get(domain, field.fieldName())) != null) {
                     final MappingType mappingType = field.mappingType();
@@ -172,26 +174,22 @@ public abstract class _DmlUtils {
                     } else {
                         blockContext.appendParam(ParamValue.build(field, value)); // parameter append block context
                     }
+                } else if (field instanceof PrimaryFieldMeta
+                        && table instanceof ChildTableMeta
+                        && ((ChildTableMeta<?>) table).parentMeta().id().generatorType() == GeneratorType.POST) {
+                    blockContext.appendParam(new DelayIdParamValue(field, domain, accessor)); // parameter append block context
+                } else if (field.generatorType() == GeneratorType.PRECEDE) {
+                    if (mockEnvironment) {
+                        builder.append(Constant.SPACE_NULL);
+                    } else {
+                        throw _Exceptions.generatorFieldIsNull(field);
+                    }
                 } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
                     builder.append(Constant.SPACE_DEFAULT);
                 } else if (field.nullable()) {
                     builder.append(Constant.SPACE_NULL);
-                } else if ((generatorType = field.generatorType()) == null) {
-                    throw _Exceptions.nonNullField(field);
-                } else if (generatorType == GeneratorType.PRECEDE) {
-                    if (mockEnvironment) {
-                        builder.append(Constant.SPACE_NULL);
-                    } else {
-                        throw _Exceptions.nonNullField(field);
-                    }
-                } else if (generatorType != GeneratorType.POST) {
-                    throw _Exceptions.unexpectedEnum(generatorType);
-                } else if (!(field instanceof PrimaryFieldMeta)) {
-                    throw new MetaException(String.format("%s generatorType error.", field));
-                } else if (generator == null) {
-                    throw new MetaException(String.format("%s insertable() method error.", field));
                 } else {
-                    blockContext.appendParam(new DelayIdParamValue(field, domain, accessor)); // parameter append block context
+                    throw _Exceptions.nonNullField(field);
                 }
                 index++;
             }
@@ -287,8 +285,11 @@ public abstract class _DmlUtils {
     static void appendInsertFields(final TableMeta<?> domainTable, final Set<FieldMeta<?>> fieldSet) {
 
         fieldSet.addAll(domainTable.fieldChain());
-
-        fieldSet.add(domainTable.id());
+        final FieldMeta<?> idField;
+        idField = domainTable.id();
+        if (idField.insertable()) {
+            fieldSet.add(idField);
+        }
         if (domainTable instanceof ParentTableMeta) {
             fieldSet.add(((ParentTableMeta<?>) domainTable).discriminator());
         }
@@ -309,7 +310,7 @@ public abstract class _DmlUtils {
 
     }
 
-    private static final class DelayIdParamValue implements ParamValue {
+    private static final class DelayIdParamValue implements StrictParamValue {
 
         private final ParamMeta paramMeta;
 

@@ -353,19 +353,21 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
         final long insertRows;
         insertRows = this.executeInsert(stmt.parentStmt(), timeout);
-
-        final long restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime);
-        if (restMills < 1L) {
-            String m = "Parent insert completion,but timeout,so no time insert child.";
-            throw new ChildInsertException(m, _Exceptions.timeout(timeout, restMills));
-        }
         final int restSeconds;
-        if ((restMills % 1000L) == 0) {
-            restSeconds = (int) (restMills / 1000L);
+        if (timeout > 0) {
+            final long restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime);
+            if (restMills < 1L) {
+                String m = "Parent insert completion,but timeout,so no time insert child.";
+                throw new ChildInsertException(m, _Exceptions.timeout(timeout, restMills));
+            }
+            if ((restMills % 1000L) == 0) {
+                restSeconds = (int) (restMills / 1000L);
+            } else {
+                restSeconds = (int) (restMills / 1000L) + 1;
+            }
         } else {
-            restSeconds = (int) (restMills / 1000L) + 1;
+            restSeconds = 0;
         }
-
         try {
             final long childRows;
             childRows = this.executeInsert(stmt.childStmt(), restSeconds);

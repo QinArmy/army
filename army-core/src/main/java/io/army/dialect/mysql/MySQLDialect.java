@@ -127,7 +127,8 @@ abstract class MySQLDialect extends _AbstractDialect {
 
     @Override
     public boolean supportSavePoint() {
-        return false;
+        // always true,MySQL support save point.
+        return true;
     }
 
     @Override
@@ -136,10 +137,6 @@ abstract class MySQLDialect extends _AbstractDialect {
         return true;
     }
 
-    @Override
-    public Dialect dialect() {
-        return null;
-    }
 
     @Override
     public String defaultFuncName() {

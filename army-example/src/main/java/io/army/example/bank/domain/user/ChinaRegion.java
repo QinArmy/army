@@ -5,26 +5,29 @@ import io.army.example.common.BaseVersionDomain;
 
 import java.math.BigDecimal;
 
-@Table(name = "china_region", comment = "china region")
+@Table(name = "china_region", indexes = {
+        @Index(name = "uni_name_region_type", fieldList = {"name", "regionType"}, unique = true)
+        , @Index(name = "inx_parent_id", fieldList = "parentId")}
+        , comment = "china region")
 @Inheritance("regionType")
 @SuppressWarnings("unchecked")
 public class ChinaRegion<T extends ChinaRegion<T>> extends BaseVersionDomain<T> {
 
-    @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})
+    @Generator(type = GeneratorType.POST)
     @Column
     private Long id;
 
     @Column
     private RegionType regionType;
 
-    @Column(precision = 20, comment = "china region name")
+    @Column(precision = 20, nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "china region name")
     private String name;
 
-    @Column(precision = 14, scale = 2, comment = "china region GDP")
+    @Column(precision = 16, scale = 2, defaultValue = "0.00", nullable = false, comment = "china region GDP")
     private BigDecimal regionGdp;
 
 
-    @Column(updateMode = UpdateMode.IMMUTABLE, comment = "china region parent level id")
+    @Column(nullable = false, defaultValue = "0", updateMode = UpdateMode.IMMUTABLE, comment = "china region parent level id")
     private Long parentId;
 
     @Override

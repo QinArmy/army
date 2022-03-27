@@ -12,9 +12,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-@Component("baseServiceDispatcher")
+@Component("bankBaseServiceAdapter")
 @Profile(BaseService.SYNC)
-public class BaseServiceDispatcher implements BaseService {
+public class BankBaseServiceAdapter implements BaseService {
 
     protected SyncBaseService baseService;
 

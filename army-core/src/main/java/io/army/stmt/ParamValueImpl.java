@@ -4,7 +4,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.util._Assert;
 
-final class ParamValueImpl implements ParamValue {
+final class ParamValueImpl implements StrictParamValue {
 
     private final ParamMeta paramMeta;
 

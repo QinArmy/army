@@ -1,9 +1,9 @@
 package io.army.example.bank.service.sync;
 
 import io.army.domain.IDomain;
-import io.army.example.common.BaseDao;
 import io.army.example.common.BaseService;
 import io.army.example.common.Domain;
+import io.army.example.common.SyncBaseDao;
 import io.army.example.common.SyncBaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,7 +22,7 @@ public class BankSyncBaseService implements SyncBaseService {
     public static final String TX_MANAGER = "bankSyncTransactionManager";
 
 
-    protected BaseDao baseDao;
+    protected SyncBaseDao baseDao;
 
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
@@ -50,12 +50,12 @@ public class BankSyncBaseService implements SyncBaseService {
     }
 
 
-    protected BaseDao getBaseDao() {
+    protected SyncBaseDao getBaseDao() {
         return this.baseDao;
     }
 
     @Autowired
-    public void setBaseDao(@Qualifier("bankSyncBaseDao") BaseDao baseDao) {
+    public void setBaseDao(@Qualifier("bankSyncBaseDao") SyncBaseDao baseDao) {
         this.baseDao = baseDao;
     }
 

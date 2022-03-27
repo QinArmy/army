@@ -65,8 +65,6 @@ public interface _Dialect {
     }
 
 
-    boolean isKeyWord(String identifier);
-
     boolean supportZone();
 
     boolean supportOnlyDefault();

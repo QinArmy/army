@@ -314,6 +314,11 @@ final class MySQLDdl extends _DdlDialect {
     }
 
     @Override
+    protected void appendPostGenerator(FieldMeta<?> field, StringBuilder builder) {
+        builder.append(" AUTO_INCREMENT");
+    }
+
+    @Override
     protected void appendTableOption(final TableMeta<?> table, final StringBuilder builder) {
         builder.append(" ENGINE = InnoDB CHARACTER SET  = 'utf8mb4'");
         appendComment(table.comment(), builder);

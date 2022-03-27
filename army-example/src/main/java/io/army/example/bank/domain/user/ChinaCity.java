@@ -9,7 +9,7 @@ import io.army.annotation.Table;
 public class ChinaCity extends ChinaRegion<ChinaCity> {
 
 
-    @Column(precision = 30, comment = "city mayor name")
+    @Column(precision = 30, defaultValue = "''", nullable = false, comment = "city mayor name")
     private String mayorName;
 
 

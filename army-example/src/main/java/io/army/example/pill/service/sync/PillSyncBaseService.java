@@ -1,9 +1,9 @@
 package io.army.example.pill.service.sync;
 
 import io.army.domain.IDomain;
-import io.army.example.common.BaseDao;
 import io.army.example.common.BaseService;
 import io.army.example.common.Domain;
+import io.army.example.common.SyncBaseDao;
 import io.army.example.common.SyncBaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,7 +20,7 @@ public class PillSyncBaseService implements SyncBaseService {
 
     public static final String TX_MANAGER = "pillSyncTransactionManager";
 
-    private BaseDao baseDao;
+    private SyncBaseDao baseDao;
 
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
@@ -48,12 +48,12 @@ public class PillSyncBaseService implements SyncBaseService {
     }
 
 
-    protected BaseDao getBaseDao() {
+    protected SyncBaseDao getBaseDao() {
         return this.baseDao;
     }
 
     @Autowired
-    public void setBaseDao(@Qualifier("pillSyncBaseDao") BaseDao baseDao) {
+    public void setBaseDao(@Qualifier("pillSyncBaseDao") SyncBaseDao baseDao) {
         this.baseDao = baseDao;
     }
 

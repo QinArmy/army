@@ -10,7 +10,7 @@ public interface ParamValue {
     @Nullable
     Object value();
 
-    static ParamValue build(ParamMeta paramMeta, @Nullable Object value) {
+    static StrictParamValue build(ParamMeta paramMeta, @Nullable Object value) {
         return new ParamValueImpl(paramMeta, value);
     }
 }

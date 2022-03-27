@@ -1,7 +1,7 @@
 package io.army.example.bank.service.sync.user;
 
 import io.army.example.bank.service.reactive.user.BankUserService;
-import io.army.example.bank.service.sync.BaseServiceDispatcher;
+import io.army.example.bank.service.sync.BankBaseServiceAdapter;
 import io.army.example.bank.web.form.PersonRegisterForm;
 import io.army.example.common.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Component("bankUserServiceAdapter")
 @Profile(BaseService.SYNC)
-public class BankUserServiceAdapter extends BaseServiceDispatcher implements BankUserService {
+public class BankUserServiceAdapterBank extends BankBaseServiceAdapter implements BankUserService {
 
     private BankSyncUserService userService;
 

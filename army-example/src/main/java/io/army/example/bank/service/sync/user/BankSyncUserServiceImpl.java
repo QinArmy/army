@@ -99,6 +99,11 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
         return Collections.unmodifiableMap(result);
     }
 
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
+    @Override
+    public Map<String, Object> enterpriseRegister() {
+        return null;
+    }
 
     /*################################## blow setter method ##################################*/
 

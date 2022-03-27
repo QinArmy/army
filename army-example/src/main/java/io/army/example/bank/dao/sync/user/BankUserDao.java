@@ -1,8 +1,8 @@
 package io.army.example.bank.dao.sync.user;
 
-import io.army.example.common.BaseDao;
+import io.army.example.common.SyncBaseDao;
 
-public interface BankUserDao extends BaseDao {
+public interface BankUserDao extends SyncBaseDao {
 
 
 }

@@ -13,5 +13,7 @@ public interface BankSyncUserService extends SyncBaseService {
 
     Map<String, Object> partnerRegisterRequest();
 
+    Map<String, Object> enterpriseRegister();
+
 
 }

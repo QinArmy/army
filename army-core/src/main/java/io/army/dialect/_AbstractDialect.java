@@ -305,12 +305,6 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
     @Override
-    public final boolean isKeyWord(final String identifier) {
-        return this.keyWordSet.contains(identifier);
-    }
-
-
-    @Override
     public final String quoteIfNeed(final String identifier) {
         final String safeIdentifier;
         if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
@@ -323,7 +317,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
     @Override
     public final StringBuilder quoteIfNeed(final String identifier, final StringBuilder builder) {
-        if (this.keyWordSet.contains(identifier)) {
+        if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
             builder.append(this.identifierQuote)
                     .append(identifier)
                     .append(this.identifierQuote);
@@ -331,6 +325,11 @@ public abstract class _AbstractDialect implements _Dialect {
             builder.append(identifier);
         }
         return builder;
+    }
+
+    @Override
+    public Dialect dialect() {
+        return null;
     }
 
 

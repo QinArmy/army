@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.annotation.GeneratorType;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
@@ -125,6 +126,9 @@ public abstract class _DdlDialect implements DdlDialect {
                     .append(defaultValue);
         }
 
+        if (field.generatorType() == GeneratorType.POST) {
+            appendPostGenerator(field, builder);
+        }
         appendComment(field.comment(), builder);
 
     }
@@ -133,9 +137,12 @@ public abstract class _DdlDialect implements DdlDialect {
         this.errorMsgList.add(String.format("%s start with white space.", field));
     }
 
+
     protected abstract void dataType(FieldMeta<?> field, SqlType type, StringBuilder builder);
 
     protected abstract void appendTableOption(final TableMeta<?> table, final StringBuilder builder);
+
+    protected abstract void appendPostGenerator(final FieldMeta<?> field, final StringBuilder builder);
 
     protected final void precision(final FieldMeta<?> field, SqlType type
             , final long max, final long defaultValue, final StringBuilder builder) {

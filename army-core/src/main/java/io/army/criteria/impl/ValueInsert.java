@@ -5,7 +5,6 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util.CollectionUtils;
@@ -72,10 +71,10 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
         final Expression exp;
         if (paramOrExp == null) {
             exp = SQLs.nullWord();
+        } else if (paramOrExp instanceof SubQuery && !(paramOrExp instanceof ScalarExpression)) {
+            throw _Exceptions.nonScalarSubQuery((SubQuery) paramOrExp);
         } else if (paramOrExp instanceof Expression) {
             exp = (Expression) paramOrExp;
-        } else if (field.mappingType() instanceof _ArmyNoInjectionMapping) {
-            exp = SQLs.literal(field, paramOrExp);
         } else {
             exp = SQLs.param(field, paramOrExp);
         }
@@ -87,12 +86,12 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
     }
 
     @Override
-    public final SR set(FieldMeta<? super T> field, Function<C, Object> function) {
+    public final SR setExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function) {
         return this.set(field, function.apply(this.criteria));
     }
 
     @Override
-    public final SR set(FieldMeta<? super T> field, Supplier<Object> supplier) {
+    public final SR setExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier) {
         return this.set(field, supplier.get());
     }
 

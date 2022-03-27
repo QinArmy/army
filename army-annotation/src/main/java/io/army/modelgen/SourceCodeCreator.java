@@ -500,7 +500,7 @@ final class SourceCodeCreator {
                 .append("){\n")
                 .append(MEMBER_PRE)
                 .append("\t\t")
-                .append("String m = String.format(\"Domain[%s] field count[%s] error,please check you whether add new field or not,if yes then you must recompile.\",\n")
+                .append("String m = String.format(\"Domain[%s] field count[%s] error,please check you whether create(delete) field or not,if yes then you must recompile.\",\n")
                 .append(MEMBER_PRE)
                 .append("\t\t\t\t ")
                 .append(simpleClassName)

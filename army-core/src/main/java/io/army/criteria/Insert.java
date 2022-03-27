@@ -64,9 +64,9 @@ public interface Insert extends DmlStatement {
 
         SR set(FieldMeta<? super T> field, @Nullable Object paramOrExp);
 
-        SR set(FieldMeta<? super T> field, Function<C, Object> paramOrExp);
+        SR setExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function);
 
-        SR set(FieldMeta<? super T> field, Supplier<Object> paramOrExp);
+        SR setExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier);
 
         SR setDefault(FieldMeta<? super T> field);
 
