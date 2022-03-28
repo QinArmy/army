@@ -5,10 +5,7 @@ import io.army.criteria.Insert;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
-import io.army.example.bank.domain.user.ChinaCity;
-import io.army.example.bank.domain.user.ChinaCity_;
-import io.army.example.bank.domain.user.ChinaProvince_;
-import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.example.bank.domain.user.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
@@ -56,6 +53,18 @@ public class BankSyncRegionDao extends BankSyncBaseDao implements BankRegionDao 
                 .values(domainList)
                 .asInsert();
         this.sessionContext.currentSession().update(stmt);
+    }
+
+    @Override
+    public Long getRegionId(final String regionName, final RegionType regionType) {
+        final Select stmt;
+        stmt = SQLs.query()
+                .select(ChinaRegion_.id)
+                .from(ChinaRegion_.T, "t")
+                .where(ChinaRegion_.name.equalLiteral(regionName))
+                .and(ChinaRegion_.regionType.equalLiteral(regionType))
+                .asQuery();
+        return this.sessionContext.currentSession().selectOne(stmt, Long.class);
     }
 
 

@@ -1,14 +1,13 @@
 package io.army.session;
 
 
-import io.army.ArmyRuntimeException;
-import io.army.ErrorCode;
+import io.army.ArmyException;
 
-public final class OptimisticLockException extends ArmyRuntimeException {
+public final class OptimisticLockException extends ArmyException {
 
 
-    public OptimisticLockException(String format, Object... args) {
-        super(ErrorCode.OPTIMISTIC_LOCK, format, args);
+    public OptimisticLockException(String message) {
+        super(message);
     }
 
 }

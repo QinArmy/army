@@ -1,4 +1,4 @@
-package io.army.example.bank.ban;
+package io.army.example.bank.bean;
 
 import io.army.bean.FieldAccessBean;
 

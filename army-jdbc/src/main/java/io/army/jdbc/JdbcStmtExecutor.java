@@ -3,6 +3,7 @@ package io.army.jdbc;
 import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.PairBean;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.Selection;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -155,28 +157,42 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
             try (ResultSet resultSet = statement.executeQuery()) {
                 final ObjectAccessor accessor;
                 final Selection singleSelection;
-                if (selectionList.size() == 1) {
-                    accessor = null;
+                final Constructor<T> constructor;
+                final int selectionSize = selectionList.size();
+                if (selectionSize == 1) {
                     singleSelection = selectionList.get(0);
+                    constructor = null;
+                    accessor = null;
+                } else if (selectionSize == 2 && PairBean.class.isAssignableFrom(resultClass)) {
+                    singleSelection = null;
+                    accessor = null;
+                    constructor = ObjectAccessorFactory.getPairConstructor(resultClass);
                 } else {
                     singleSelection = null;
+                    constructor = ObjectAccessorFactory.getConstructor(resultClass);
                     accessor = ObjectAccessorFactory.forBean(resultClass);
                 }
-                for (Object bean, columnValue; resultSet.next(); ) {
-                    if (accessor == null) {
+                T bean;
+                for (Object columnValue; resultSet.next(); ) {
+                    if (selectionSize == 1) {
                         columnValue = getColumnValue(resultSet, singleSelection);
                         if (columnValue != null && !resultClass.isInstance(columnValue)) {
                             throw _Exceptions.expectedTypeAndResultNotMatch(singleSelection, resultClass);
                         }
                         list.add((T) columnValue);
-                        continue;
+                    } else if (accessor == null) {
+                        columnValue = getColumnValue(resultSet, selectionList.get(0));
+                        bean = ObjectAccessorFactory.createPair(constructor, columnValue
+                                , getColumnValue(resultSet, selectionList.get(1)));
+                        list.add(bean);
+                    } else {
+                        bean = ObjectAccessorFactory.createBean(constructor);
+                        for (Selection selection : selectionList) {
+                            columnValue = getColumnValue(resultSet, selection);
+                            accessor.set(bean, selection.alias(), columnValue);
+                        }
+                        list.add(bean);
                     }
-                    bean = ObjectAccessorFactory.createBean(resultClass);
-                    for (Selection selection : selectionList) {
-                        columnValue = getColumnValue(resultSet, selection);
-                        accessor.set(bean, selection.alias(), columnValue);
-                    }
-                    list.add((T) bean);
                 }
             }
             return list;

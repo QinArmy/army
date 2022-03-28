@@ -1,6 +1,6 @@
-package io.army.example.bank.ban;
+package io.army.example.bank.bean;
 
-import io.army.example.bank.domain.account.AccountType;
+import io.army.example.bank.domain.account.BankAccountType;
 import io.army.example.bank.domain.user.BankUserType;
 import io.army.example.bank.domain.user.CertificateType;
 
@@ -28,7 +28,7 @@ public class PersonAccountStatesBean implements BankFieldAccessBean {
 
     public String accountNo;
 
-    public AccountType accountType;
+    public BankAccountType accountType;
 
 
 }

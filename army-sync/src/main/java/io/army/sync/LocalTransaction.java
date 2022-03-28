@@ -79,7 +79,7 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
             this.status = TransactionStatus.FAILED_COMMIT;
             throw e;
         } finally {
-            if (this.status != TransactionStatus.COMMITTING) {
+            if (this.status == TransactionStatus.COMMITTED) {// end when only COMMITTED,because rollback
                 session.endTransaction(this);
             }
         }
@@ -91,6 +91,7 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
         switch (this.status) {
             case ACTIVE:
             case COMMITTING:// flush failure.
+            case FAILED_COMMIT:
             case MARKED_ROLLBACK: {
                 this.status = TransactionStatus.ROLLING_BACK;
                 final LocalSession session = this.session;
@@ -106,6 +107,7 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
                     throw e;
                 } finally {
                     if (this.status != TransactionStatus.ROLLING_BACK) {
+                        //TODO validate
                         session.endTransaction(this);
                     }
                 }

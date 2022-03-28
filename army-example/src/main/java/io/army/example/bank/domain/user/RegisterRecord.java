@@ -13,6 +13,10 @@ public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
     @Column
     private Long id;
 
+    @Column(insertable = false, updateMode = UpdateMode.ONLY_NULL
+            , comment = "user id ,primary key of u_user table,when register success.")
+    private Long userId;
+
     @Column(nullable = false, defaultValue = "0", comment = "record handle status")
     private RecordStatus status;
 
@@ -32,6 +36,7 @@ public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
 
     @Column(insertable = false, updateMode = UpdateMode.ONLY_NULL, comment = "record completion time")
     private LocalDateTime completionTime;
+
 
 
     @Override
@@ -95,6 +100,15 @@ public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
 
     public RegisterRecord setDeadline(LocalDateTime deadline) {
         this.deadline = deadline;
+        return this;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public RegisterRecord setUserId(Long userId) {
+        this.userId = userId;
         return this;
     }
 

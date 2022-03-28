@@ -1,6 +1,6 @@
 package io.army.example.bank;
 
-import io.army.example.bank.ban.BankCode;
+import io.army.example.bank.bean.BankCode;
 
 public class BankException extends RuntimeException {
 

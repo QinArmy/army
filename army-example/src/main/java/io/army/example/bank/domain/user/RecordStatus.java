@@ -6,8 +6,8 @@ public enum RecordStatus implements CodeEnum {
 
     CREATED((byte) 0),
     HANDLING((byte) 10),
-    FAILURE((byte) 30),
-    SUCCESS((byte) 40);
+    FAILURE((byte) 20),
+    SUCCESS((byte) 30);
 
 
     private final byte code;

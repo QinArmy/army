@@ -1,6 +1,6 @@
 package io.army.example.bank.web.form;
 
-import io.army.example.bank.domain.account.AccountType;
+import io.army.example.bank.domain.account.BankAccountType;
 import io.army.example.bank.domain.user.CertificateType;
 import io.army.example.common.Criteria;
 
@@ -25,7 +25,7 @@ public final class PersonRegisterForm extends Criteria {
     private String phone;
 
     @NotNull
-    private AccountType accountType;
+    private BankAccountType accountType;
 
     @NotEmpty
     private String captcha;
@@ -78,11 +78,11 @@ public final class PersonRegisterForm extends Criteria {
         this.partnerUserNo = partnerUserNo;
     }
 
-    public AccountType getAccountType() {
+    public BankAccountType getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(AccountType accountType) {
+    public void setAccountType(BankAccountType accountType) {
         this.accountType = accountType;
     }
 }

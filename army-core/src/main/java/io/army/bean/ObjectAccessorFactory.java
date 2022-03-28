@@ -4,10 +4,7 @@ package io.army.bean;
 import io.army.proxy.ArmyProxy;
 
 import java.lang.ref.SoftReference;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,12 +46,42 @@ public abstract class ObjectAccessorFactory {
         return accessor;
     }
 
-    public static Object createBean(final Class<?> beanClass) {
+    public static <T> T createBean(final Constructor<T> constructor) {
         try {
-            return beanClass.getConstructor().newInstance();
-        } catch (InstantiationException | NoSuchMethodException
-                | InvocationTargetException | IllegalAccessException e) {
-            String m = String.format("%s don't declared public default constructor.", beanClass.getName());
+            return constructor.newInstance();
+        } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
+            String m = String.format("%s don't declared public default constructor."
+                    , constructor.getDeclaringClass().getName());
+            throw new ObjectAccessException(m, e);
+        }
+    }
+
+    public static <T> Constructor<T> getConstructor(final Class<T> beanClass) {
+        try {
+            return beanClass.getConstructor();
+        } catch (NoSuchMethodException e) {
+            String m = String.format("%s don't declared public default constructor."
+                    , beanClass.getName());
+            throw new ObjectAccessException(m, e);
+        }
+    }
+
+    public static <T> Constructor<T> getPairConstructor(final Class<T> beanClass) {
+        try {
+            return beanClass.getConstructor(Object.class, Object.class);
+        } catch (NoSuchMethodException e) {
+            String m = String.format("%s don't declared public %s constructor."
+                    , beanClass.getName(), PairBean.class.getName());
+            throw new ObjectAccessException(m, e);
+        }
+    }
+
+    public static <T> T createPair(Constructor<T> constructor, Object first, Object second) {
+        try {
+            return constructor.newInstance(first, second);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            String m = String.format("%s don't declared public default constructor."
+                    , constructor.getDeclaringClass().getName());
             throw new ObjectAccessException(m, e);
         }
     }

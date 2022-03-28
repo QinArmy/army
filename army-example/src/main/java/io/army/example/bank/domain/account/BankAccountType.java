@@ -2,7 +2,7 @@ package io.army.example.bank.domain.account;
 
 import io.army.struct.CodeEnum;
 
-public enum AccountType implements CodeEnum {
+public enum BankAccountType implements CodeEnum {
 
     BANK(Constant.BANK),
     PARTNER(Constant.PARTNER),
@@ -12,7 +12,7 @@ public enum AccountType implements CodeEnum {
 
     private final short code;
 
-    AccountType(short code) {
+    BankAccountType(short code) {
         this.code = code;
     }
 

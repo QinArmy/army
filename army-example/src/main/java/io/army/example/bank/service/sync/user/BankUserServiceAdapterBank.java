@@ -2,6 +2,7 @@ package io.army.example.bank.service.sync.user;
 
 import io.army.example.bank.service.reactive.user.BankUserService;
 import io.army.example.bank.service.sync.BankBaseServiceAdapter;
+import io.army.example.bank.web.form.EnterpriseRegisterForm;
 import io.army.example.bank.web.form.PersonRegisterForm;
 import io.army.example.common.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +26,18 @@ public class BankUserServiceAdapterBank extends BankBaseServiceAdapter implement
     }
 
     @Override
-    public Mono<Map<String, Object>> partnerRegisterRequest() {
-        return Mono.defer(() -> Mono.just(this.userService.partnerRegisterRequest()));
+    public Mono<Map<String, Object>> registerRequest(String partnerNo) {
+        return Mono.defer(() -> Mono.just(this.userService.registerRequest(partnerNo)));
     }
 
     @Override
     public Mono<Map<String, Object>> nextCaptcha(String requestNo) {
         return Mono.defer(() -> Mono.just(this.userService.nextCaptcha(requestNo)));
+    }
+
+    @Override
+    public Mono<Map<String, Object>> partnerRegister(EnterpriseRegisterForm form) {
+        return Mono.defer(() -> Mono.just(this.userService.partnerRegister(form)));
     }
 
     @Autowired

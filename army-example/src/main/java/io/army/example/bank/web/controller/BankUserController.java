@@ -1,6 +1,7 @@
 package io.army.example.bank.web.controller;
 
 import io.army.example.bank.service.reactive.user.BankUserService;
+import io.army.example.bank.web.form.EnterpriseRegisterForm;
 import io.army.example.common.BaseService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -42,14 +43,19 @@ public class BankUserController implements InitializingBean, ApplicationContextA
         }
     }
 
-    @RequestMapping(value = "partnerRegisterRequest", method = RequestMethod.GET)
-    public Mono<Map<String, Object>> partnerRegisterRequest() {
-        return this.userService.partnerRegisterRequest();
+    @RequestMapping(value = "registerRequest", method = RequestMethod.GET)
+    public Mono<Map<String, Object>> registerRequest(@RequestParam(value = "partnerNo", required = false) String partnerNo) {
+        return this.userService.registerRequest(partnerNo);
     }
 
     @RequestMapping(value = "nextCaptcha", method = RequestMethod.GET)
     public Mono<Map<String, Object>> nextCaptcha(@RequestParam("requestNo") String requestNo) {
         return this.userService.nextCaptcha(requestNo);
+    }
+
+    @RequestMapping(value = "partnerRegister", method = RequestMethod.POST)
+    public Mono<Map<String, Object>> partnerRegister(EnterpriseRegisterForm form) {
+        return this.userService.partnerRegister(form);
     }
 
 

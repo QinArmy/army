@@ -112,7 +112,9 @@ final class SessionCache implements _SessionCache {
         old = wrapperMap.putIfAbsent(id, w);
         final T result;
         if (old == null) {
-            doUniqueMapping(table, domain, wrapperMap, accessor, w);
+            if (this.cacheFactory.uniqueCache) {
+                doUniqueMapping(table, domain, wrapperMap, accessor, w);
+            }
             result = (T) w.domain;
         } else {
             result = (T) old.domain;
@@ -124,8 +126,13 @@ final class SessionCache implements _SessionCache {
     public List<_CacheBlock> getChangedList() {
         List<_CacheBlock> list = null;
         Map<String, Boolean> changedFieldMap;
+        Wrapper w;
         for (Map.Entry<TableMeta<?>, Map<Object, Wrapper>> entry : this.cacheMap.entrySet()) {
-            for (Wrapper w : entry.getValue().values()) {
+            for (Map.Entry<Object, Wrapper> e : entry.getValue().entrySet()) {
+                if (e.getKey() instanceof UniqueKey) {
+                    continue;
+                }
+                w = e.getValue();
                 changedFieldMap = w.changedMap;
                 if (changedFieldMap.size() == 0) {
                     continue;

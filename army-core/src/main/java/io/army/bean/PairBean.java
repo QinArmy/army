@@ -1,4 +1,4 @@
-package io.army.util;
+package io.army.bean;
 
 public interface PairBean {
 

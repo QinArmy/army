@@ -7,7 +7,9 @@ import io.army.example.common.BaseVersionDomain;
 import java.math.BigDecimal;
 
 @Table(name = "a_account"
-        , indexes = {@Index(name = "uni_account_no", fieldList = "accountNo", unique = true)}
+        , indexes = {
+        @Index(name = "uni_account_no", fieldList = "accountNo", unique = true)
+        , @Index(name = "uni_user_id_account_type", fieldList = {"userId", "accountType"}, unique = true)}
         , comment = "bank user account")
 public class BankAccount extends BaseVersionDomain<BankAccount> {
 
@@ -16,7 +18,7 @@ public class BankAccount extends BaseVersionDomain<BankAccount> {
     private Long id;
 
     @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "account type")
-    private AccountType accountType;
+    private BankAccountType accountType;
 
     @Column(nullable = false, precision = 40, updateMode = UpdateMode.IMMUTABLE, comment = "provide to partner account number")
     @Generator(value = SNOWFLAKE, params = {
@@ -36,11 +38,11 @@ public class BankAccount extends BaseVersionDomain<BankAccount> {
     private BigDecimal frozenAmount;
 
 
-    public final AccountType getAccountType() {
+    public final BankAccountType getAccountType() {
         return accountType;
     }
 
-    public final BankAccount setAccountType(AccountType accountType) {
+    public final BankAccount setAccountType(BankAccountType accountType) {
         this.accountType = accountType;
         return this;
     }

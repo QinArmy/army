@@ -388,9 +388,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             update = block.statement();
             table = ((_SingleUpdate) update).table();
             affectedRows = this.dmlUpdate(update, Visible.ONLY_VISIBLE);
-            if (affectedRows != 1) {
+            if (affectedRows != 1L) {
                 throw _Exceptions.notMatchRow(this, table, block.id());
             }
+            block.success();
         }
 
     }
@@ -512,7 +513,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", Delete.class.getName());
+            String m = String.format("Army execute %s occur error.", dml.getClass().getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
             ((_Statement) dml).clear();

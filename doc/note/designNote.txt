@@ -81,8 +81,8 @@
 ,所以只能在 这三者的这一层抽象处理异常就好。
 (2) 可以省去不必要的 try catch
 
-22. 为什么 io.army.util.PairBean 和 io.army.util.TripleBean 接口 不设计 任何方法?
-(1) 防止 开发者将 io.army.util.PairBean 和 io.army.util.TripleBean 接口 作为 dao 和 service 的返回值
+22. 为什么 io.army.bean.PairBean 和 io.army.util.TripleBean 接口 不设计 任何方法?
+(1) 防止 开发者将 io.army.bean.PairBean 和 io.army.util.TripleBean 接口 作为 dao 和 service 的返回值
 ,这样会破坏开发者项目的整体结构设计.
 
 23. 为什么 MySQLDateType 不支持 LONGBLOB ,LONGTEXT ?

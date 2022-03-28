@@ -20,6 +20,10 @@ public enum BankUserType implements CodeEnum {
         return this.code;
     }
 
+    public final boolean isPartner() {
+        return this == INVEST_PARTNER || this == BORROW_PARTNER;
+    }
+
 
     interface Constant {
 

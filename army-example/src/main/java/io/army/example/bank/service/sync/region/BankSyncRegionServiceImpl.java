@@ -3,6 +3,7 @@ package io.army.example.bank.service.sync.region;
 import io.army.example.bank.dao.sync.region.BankRegionDao;
 import io.army.example.bank.domain.user.ChinaCity;
 import io.army.example.bank.domain.user.ChinaProvince;
+import io.army.example.bank.domain.user.RegionType;
 import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.common.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,11 @@ public class BankSyncRegionServiceImpl extends BankSyncBaseService implements Ba
         return list;
     }
 
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
+    @Override
+    public Long getRegionId(String regionName, RegionType regionType) {
+        return this.regionDao.getRegionId(regionName, regionType);
+    }
 
     @Autowired
     public void setRegionDao(@Qualifier("bankSyncRegionDao") BankRegionDao regionDao) {

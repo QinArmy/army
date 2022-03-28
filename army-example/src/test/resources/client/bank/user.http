@@ -1,8 +1,13 @@
-### partnerRegisterRequest
-GET http://localhost:8080/bank/user/partnerRegisterRequest?content=json
+### registerRequest
+GET http://localhost:8080/bank/user/registerRequest?content=json&partnerNo=227808534908108800000
 
 ### nextCaptcha
 GET http://localhost:8080/bank/user/nextCaptcha?content=json&requestNo=184729215172608100000
 
+### partnerRegister
+POST http://localhost:8080/bank/user/partnerRegister
+Content-Type: application/x-www-form-urlencoded
+
+content=json&requestNo=227719836283699300000&captcha=15071&name=pill&phone=19999991111&userType=INVEST_PARTNER&registerDay=2022-01-01&certificateNo=464353454365546&creditCode=435353453&city=杭州市&legalPerson=zoro&legalPersonCertificateNo=520223199009233457
 
 
