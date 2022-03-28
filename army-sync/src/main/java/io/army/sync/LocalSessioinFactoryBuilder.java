@@ -10,6 +10,7 @@ import io.army.codec.JsonCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
+import io.army.env.MyKey;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -148,6 +149,7 @@ final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements
             }
             //4. create SessionFactoryImpl instance
             this.executorFactory = executorFactory;
+            this.ddlMode = env.getOrDefault(MyKey.DDL_MODE);
             final LocalSessionFactory sessionFactory;
             sessionFactory = new LocalSessionFactory(this);
             if (LOG.isDebugEnabled()) {
@@ -220,7 +222,7 @@ final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements
     /**
      * @see #build()
      */
-    private static void initializingFactory(LocalSessionFactory sessionFactory) throws SessionFactoryException {
+    private void initializingFactory(LocalSessionFactory sessionFactory) throws SessionFactoryException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing {}", sessionFactory);
         }
@@ -228,7 +230,7 @@ final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements
         final ArmyEnvironment env = sessionFactory.environment();
         // initializing schema
         final DdlMode ddlMode;
-        ddlMode = env.get(ArmyKeys.DDL_MODE, DdlMode.class, DdlMode.VALIDATE);
+        ddlMode = this.ddlMode;
         switch (ddlMode) {
             case NONE:
                 // no-op

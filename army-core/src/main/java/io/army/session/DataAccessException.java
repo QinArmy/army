@@ -1,6 +1,7 @@
 package io.army.session;
 
 import io.army.ArmyException;
+import io.army.lang.Nullable;
 
 public class DataAccessException extends ArmyException {
 
@@ -8,7 +9,7 @@ public class DataAccessException extends ArmyException {
         super(message);
     }
 
-    public DataAccessException(String message, Throwable cause) {
+    public DataAccessException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 

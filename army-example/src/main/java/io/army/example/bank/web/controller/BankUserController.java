@@ -10,6 +10,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -44,6 +45,11 @@ public class BankUserController implements InitializingBean, ApplicationContextA
     @RequestMapping(value = "partnerRegisterRequest", method = RequestMethod.GET)
     public Mono<Map<String, Object>> partnerRegisterRequest() {
         return this.userService.partnerRegisterRequest();
+    }
+
+    @RequestMapping(value = "nextCaptcha", method = RequestMethod.GET)
+    public Mono<Map<String, Object>> nextCaptcha(@RequestParam("requestNo") String requestNo) {
+        return this.userService.nextCaptcha(requestNo);
     }
 
 

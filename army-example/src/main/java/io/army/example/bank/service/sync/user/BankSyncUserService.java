@@ -1,5 +1,6 @@
 package io.army.example.bank.service.sync.user;
 
+import io.army.example.bank.web.form.EnterpriseRegisterForm;
 import io.army.example.bank.web.form.PersonRegisterForm;
 import io.army.example.common.SyncBaseService;
 
@@ -13,7 +14,9 @@ public interface BankSyncUserService extends SyncBaseService {
 
     Map<String, Object> partnerRegisterRequest();
 
-    Map<String, Object> enterpriseRegister();
+    Map<String, Object> partnerRegister(EnterpriseRegisterForm form);
+
+    Map<String, Object> nextCaptcha(String requestNo);
 
 
 }

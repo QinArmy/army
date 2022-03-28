@@ -15,7 +15,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.session.*;
-import io.army.sharding.RouteContext;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
@@ -109,10 +108,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static ArmyException databaseRouteError(int databaseIndex, RouteContext factory) {
-        String m = String.format("database index[%s] and Factory[%s] not match.", databaseIndex, factory);
-        return new ArmyException(m);
-    }
+
 
     public static CriteriaException noTableRoute(_Statement stmt, DialectSessionFactory factory) {
         String m = String.format("Not found table route in %s.Factory %s", stmt, factory);
@@ -438,7 +434,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static SessionException dontSupportUniqueCache(GenericSessionFactory sessionFactory) {
-        String m = String.format("%s don't support unique cache,because %s is %s."
+        String m = String.format("%s don't support unique cache,because config %s is %s."
                 , sessionFactory, MyKey.DDL_MODE.name, DdlMode.NONE);
         return new SessionUsageException(m);
     }

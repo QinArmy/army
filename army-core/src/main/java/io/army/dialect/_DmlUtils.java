@@ -180,7 +180,7 @@ public abstract class _DmlUtils {
                     blockContext.appendParam(new DelayIdParamValue(field, domain, accessor)); // parameter append block context
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {
                     if (mockEnvironment) {
-                        builder.append(Constant.SPACE_NULL);
+                        builder.append("mock:{generator}");
                     } else {
                         throw _Exceptions.generatorFieldIsNull(field);
                     }

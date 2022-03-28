@@ -12,4 +12,6 @@ public interface BankUserService extends BaseService {
 
     Mono<Map<String, Object>> partnerRegisterRequest();
 
+    Mono<Map<String, Object>> nextCaptcha(String requestNo);
+
 }

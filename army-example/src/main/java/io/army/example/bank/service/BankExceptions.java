@@ -20,4 +20,9 @@ public abstract class BankExceptions {
         return new BankException(m, BankCode.ACCOUNT_DUPLICATION);
     }
 
+    public static BankException invalidRequestNo(String requestNo) {
+        String m = String.format("RequestNo[%s] is invalid", requestNo);
+        return new BankException(m, BankCode.REQUEST_NO_INVALID);
+    }
+
 }

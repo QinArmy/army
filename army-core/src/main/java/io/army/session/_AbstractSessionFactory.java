@@ -2,6 +2,7 @@ package io.army.session;
 
 import io.army.ArmyException;
 import io.army.ArmyKeys;
+import io.army.DdlMode;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
 import io.army.codec.JsonCodec;
@@ -81,7 +82,9 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         this.supportSessionCache = env.get(ArmyKeys.sessionCache, Boolean.class, Boolean.TRUE);
         this.fieldValuesGenerator = new FieldValuesGeneratorImpl(this.zoneOffset, support.generatorMap);
 
-        this.uniqueCache = support.uniqueCache;
+        final DdlMode ddlMode = support.ddlMode;
+        assert ddlMode != null;
+        this.uniqueCache = ddlMode != DdlMode.NONE;
         this.sqlLogDynamic = env.getOrDefault(MyKey.SQL_LOG_DYNAMIC);
         this.sqlLogShow = env.getOrDefault(MyKey.SQL_LOG_SHOW);
         this.sqlLogFormat = env.getOrDefault(MyKey.SQL_LOG_FORMAT);

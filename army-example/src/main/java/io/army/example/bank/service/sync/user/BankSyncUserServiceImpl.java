@@ -8,6 +8,7 @@ import io.army.example.bank.domain.account.BankAccount;
 import io.army.example.bank.domain.user.*;
 import io.army.example.bank.service.BankExceptions;
 import io.army.example.bank.service.sync.BankSyncBaseService;
+import io.army.example.bank.web.form.EnterpriseRegisterForm;
 import io.army.example.bank.web.form.PersonRegisterForm;
 import io.army.example.common.BaseService;
 import io.army.example.common.CommonUtils;
@@ -73,7 +74,7 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
     }
 
 
-    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_UNCOMMITTED) //don't need read,so READ_UNCOMMITTED
     @Override
     public Map<String, Object> partnerRegisterRequest() {
         final LocalDateTime now = LocalDateTime.now();
@@ -93,16 +94,26 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
 
         this.baseDao.save(captcha);
 
-        final Map<String, Object> result = new HashMap<>(4);
-        result.put("requestNo", r.getRequestNo());
-        result.put("captcha", captcha.getCaptcha());
-        return Collections.unmodifiableMap(result);
+        return captchaResult(captcha);
     }
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
     @Override
-    public Map<String, Object> enterpriseRegister() {
+    public Map<String, Object> partnerRegister(EnterpriseRegisterForm form) {
         return null;
+    }
+
+    @Transactional(value = TX_MANAGER, isolation = Isolation.READ_UNCOMMITTED)
+    @Override
+    public Map<String, Object> nextCaptcha(final String requestNo) {
+        final Captcha captcha;
+        captcha = this.baseDao.getByUnique(Captcha.class, "requestNo", requestNo);
+        if (captcha == null) {
+            throw BankExceptions.invalidRequestNo(requestNo);
+        }
+        captcha.setCaptcha(CommonUtils.randomCaptcha())
+                .setDeadline(LocalDateTime.now().plusMinutes(10));
+        return captchaResult(captcha);
     }
 
     /*################################## blow setter method ##################################*/
@@ -158,6 +169,14 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
                 .setUserId(user.getId())
                 .setAccountType(accountType);
 
+    }
+
+    private static Map<String, Object> captchaResult(Captcha captcha) {
+        final Map<String, Object> result = new HashMap<>(6);
+        result.put("requestNo", captcha.getRequestNo());
+        result.put("captcha", captcha.getCaptcha());
+        result.put("deadline", captcha.getDeadline());
+        return Collections.unmodifiableMap(result);
     }
 
 

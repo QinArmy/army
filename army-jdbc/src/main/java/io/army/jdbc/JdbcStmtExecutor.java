@@ -37,7 +37,6 @@ import java.util.function.Supplier;
 
 abstract class JdbcStmtExecutor implements StmtExecutor {
 
-    static final String SQL_LOG_FORMAT = "army-jdbc will execute sql:\n{}";
 
     final JdbcExecutorFactory factory;
 

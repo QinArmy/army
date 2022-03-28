@@ -1,5 +1,7 @@
 package io.army.session;
 
+import io.army.lang.Nullable;
+
 public abstract class SessionException extends DataAccessException {
 
     public SessionException(String message) {
@@ -11,7 +13,7 @@ public abstract class SessionException extends DataAccessException {
         super(format, cause);
     }
 
-    public SessionException(String message, Throwable cause) {
+    public SessionException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 

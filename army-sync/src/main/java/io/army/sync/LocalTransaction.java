@@ -1,5 +1,6 @@
 package io.army.sync;
 
+import io.army.session.CannotCreateTransactionException;
 import io.army.session.DataAccessException;
 import io.army.tx.*;
 

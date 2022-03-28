@@ -1,7 +1,5 @@
 package io.army.jdbc;
 
-
-import com.mysql.cj.MysqlType;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
@@ -16,10 +14,7 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -72,7 +67,7 @@ final class MySQLExecutor extends JdbcStmtExecutor {
                 if (!(nonNull instanceof BigInteger || nonNull instanceof BigDecimal)) {
                     throw beforeBindReturnError(sqlDataType, nonNull);
                 }
-                stmt.setObject(index, nonNull, MysqlType.BIGINT_UNSIGNED);
+                stmt.setObject(index, nonNull, com.mysql.cj.MysqlType.BIGINT_UNSIGNED);
             }
             break;
             case DECIMAL:
@@ -87,17 +82,29 @@ final class MySQLExecutor extends JdbcStmtExecutor {
                 break;
             case TIME: {
                 final LocalTime value = (LocalTime) nonNull;
-                stmt.setObject(index, value, MysqlType.TIME);
+                if (this.factory.useSetObjectMethod) {
+                    stmt.setObject(index, value, com.mysql.cj.MysqlType.TIME);
+                } else {
+                    stmt.setTime(index, Time.valueOf(value));
+                }
             }
             break;
             case DATE: {
                 final LocalDate value = (LocalDate) nonNull;
-                stmt.setObject(index, value, MysqlType.DATE);
+                if (this.factory.useSetObjectMethod) {
+                    stmt.setObject(index, value, com.mysql.cj.MysqlType.DATE);
+                } else {
+                    stmt.setDate(index, Date.valueOf(value));
+                }
             }
             break;
             case DATETIME: {
                 final LocalDateTime value = (LocalDateTime) nonNull;
-                stmt.setObject(index, value, MysqlType.DATETIME);
+                if (this.factory.useSetObjectMethod) {
+                    stmt.setObject(index, value, com.mysql.cj.MysqlType.DATETIME);
+                } else {
+                    stmt.setTimestamp(index, Timestamp.valueOf(value));
+                }
             }
             break;
             case CHAR:

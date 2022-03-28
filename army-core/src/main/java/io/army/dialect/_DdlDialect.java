@@ -98,7 +98,7 @@ public abstract class _DdlDialect implements DdlDialect {
                 dialect.safeObjectName(table.tableName(), builder)
                         .append(" ADD COLUMN (\n\t");
             }
-
+            //TODO 新增的 时间类型列应该有默认值,否则 mysql 会以 00000-00-00 作为默认值.
             this.columnDefinition(field, builder);
         }
         builder.append("\n)");

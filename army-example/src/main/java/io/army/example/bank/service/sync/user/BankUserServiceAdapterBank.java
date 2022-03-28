@@ -29,6 +29,11 @@ public class BankUserServiceAdapterBank extends BankBaseServiceAdapter implement
         return Mono.defer(() -> Mono.just(this.userService.partnerRegisterRequest()));
     }
 
+    @Override
+    public Mono<Map<String, Object>> nextCaptcha(String requestNo) {
+        return Mono.defer(() -> Mono.just(this.userService.nextCaptcha(requestNo)));
+    }
+
     @Autowired
     public void setUserService(@Qualifier("bankSyncUserService") BankSyncUserService userService) {
         this.userService = userService;

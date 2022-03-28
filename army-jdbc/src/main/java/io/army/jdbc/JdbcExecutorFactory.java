@@ -20,9 +20,17 @@ import java.time.ZoneOffset;
 
 final class JdbcExecutorFactory implements ExecutorFactory {
 
-    static JdbcExecutorFactory create(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env) {
-        return new JdbcExecutorFactory(dataSource, serverMeta, env);
+    static JdbcExecutorFactory create(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env
+            , int methodFlag) {
+        return new JdbcExecutorFactory(dataSource, serverMeta, env, methodFlag);
     }
+
+    static final byte SET_OBJECT_METHOD = 1;
+
+    static final byte EXECUTE_LARGE_UPDATE_METHOD = 2;
+
+    static final byte EXECUTE_LARGE_BATCH_METHOD = 4;
+
 
     private final DataSource dataSource;
 
@@ -38,10 +46,15 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     final boolean useLargeUpdate;
 
+    final boolean useSetObjectMethod;
+
+    final boolean useExecuteLargeBatch;
+
 
     boolean closed;
 
-    private JdbcExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment executorEnv) {
+    private JdbcExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment executorEnv
+            , final int methodFlag) {
         this.dataSource = dataSource;
         this.serverMeta = serverMeta;
         this.database = serverMeta.database();
@@ -49,12 +62,27 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
         this.env = executorEnv.environment();
         this.mapEnv = new JdbcMappingEnvironment(serverMeta, executorEnv);
-        this.useLargeUpdate = this.env.getOrDefault(SyncKey.JDBC_LARGE_UPDATE);
+
+        if (this.env.getOrDefault(SyncKey.JDBC_FORBID_V18)) {
+            this.useLargeUpdate = false;
+            this.useSetObjectMethod = false;
+            this.useExecuteLargeBatch = false;
+        } else {
+            this.useLargeUpdate = (methodFlag & EXECUTE_LARGE_UPDATE_METHOD) != 0;
+            this.useSetObjectMethod = (methodFlag & SET_OBJECT_METHOD) != 0;
+            this.useExecuteLargeBatch = (methodFlag & EXECUTE_LARGE_BATCH_METHOD) != 0;
+        }
+
     }
 
     @Override
     public ServerMeta serverMeta() {
         return this.serverMeta;
+    }
+
+    @Override
+    public MappingEnvironment mappingEnvironment() {
+        return this.mapEnv;
     }
 
     @Override

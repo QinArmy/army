@@ -5,7 +5,7 @@ import io.army.example.common.Domain;
 
 import java.time.LocalDateTime;
 
-@Table(name = "captcha", immutable = true
+@Table(name = "captcha"
         , indexes = @Index(name = "uni_request_no", fieldList = "requestNo", unique = true)
         , comment = "safe captcha for user register request")
 public class Captcha extends Domain {
@@ -17,15 +17,17 @@ public class Captcha extends Domain {
     @Column
     private LocalDateTime createTime;
 
+    @Column
+    private LocalDateTime updateTime;
+
     @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE
             , comment = "partner user id,@see table u_user,0 representing bank self")
     private Long partnerId;
 
-    @Column(precision = 5, nullable = false, updateMode = UpdateMode.IMMUTABLE
-            , comment = "provide to terminate user captcha")
+    @Column(precision = 5, nullable = false, comment = "provide to terminate user captcha")
     private String captcha;
 
-    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "deadline,invalid after this")
+    @Column(nullable = false, comment = "deadline,invalid after this")
     private LocalDateTime deadline;
 
     @Column(precision = 30, nullable = false, updateMode = UpdateMode.IMMUTABLE
@@ -76,6 +78,15 @@ public class Captcha extends Domain {
 
     public Captcha setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
+        return this;
+    }
+
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public Captcha setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
         return this;
     }
 

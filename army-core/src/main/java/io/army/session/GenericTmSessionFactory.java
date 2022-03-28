@@ -1,9 +1,6 @@
 package io.army.session;
 
 import io.army.Database;
-import io.army.criteria.NotFoundRouteException;
-import io.army.meta.TableMeta;
-import io.army.sharding.DatabaseRoute;
 
 import java.util.List;
 
@@ -29,5 +26,4 @@ public interface GenericTmSessionFactory extends GenericSessionFactory {
      */
     int tableCountPerDatabase();
 
-    DatabaseRoute dataSourceRoute(TableMeta<?> tableMeta) throws NotFoundRouteException;
 }

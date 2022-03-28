@@ -6,6 +6,7 @@ import io.army.tx.Isolation;
 import io.army.tx.TransactionException;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.UnexpectedRollbackException;
 
 public abstract class SpringUtils {
 
@@ -34,7 +35,7 @@ public abstract class SpringUtils {
 
     public static org.springframework.transaction.TransactionException convertTransactionException(
             TransactionException ex) {
-        throw new UnsupportedOperationException();
+        return new UnexpectedRollbackException(ex.getMessage(), ex);
     }
 
 

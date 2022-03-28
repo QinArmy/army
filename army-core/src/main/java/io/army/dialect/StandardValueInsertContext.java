@@ -204,6 +204,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
     private ParamValue handleNamedParam(final NamedParam namedParam) {
+        //this.currentDomain @see io.army.dialect._DmlUtils.appendStandardValueInsert
         final IDomain domain = this.currentDomain;
         assert domain != null;
         this.currentDomain = null; //clear for next
