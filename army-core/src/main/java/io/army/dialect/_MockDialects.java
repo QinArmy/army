@@ -9,8 +9,8 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.util.TimeUtils;
 import io.army.util._Exceptions;
+import io.army.util._TimeUtils;
 
 import java.time.ZoneOffset;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +61,7 @@ public abstract class _MockDialects {
 
         @Override
         public ZoneOffset zoneOffset() {
-            return TimeUtils.systemZoneOffset();
+            return _TimeUtils.systemZoneOffset();
         }
 
         @Override
@@ -144,7 +144,7 @@ public abstract class _MockDialects {
 
         @Override
         protected ZoneOffset zoneOffset() {
-            return TimeUtils.systemZoneOffset();
+            return _TimeUtils.systemZoneOffset();
         }
 
         @Override

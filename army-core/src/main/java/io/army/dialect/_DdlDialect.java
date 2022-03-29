@@ -4,7 +4,7 @@ import io.army.annotation.GeneratorType;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
-import io.army.util.StringUtils;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -121,7 +121,7 @@ public abstract class _DdlDialect implements DdlDialect {
         }
 
         final String defaultValue = field.defaultValue();
-        if (StringUtils.hasText(defaultValue) && checkDefaultComplete(field, defaultValue)) {
+        if (_StringUtils.hasText(defaultValue) && checkDefaultComplete(field, defaultValue)) {
             builder.append(" DEFAULT ")
                     .append(defaultValue);
         }
@@ -321,7 +321,7 @@ public abstract class _DdlDialect implements DdlDialect {
             }
             final String type;
             type = index.type();
-            if (StringUtils.hasText(type)) {
+            if (_StringUtils.hasText(type)) {
                 builder.append(" USING ");
                 dialect.quoteIfNeed(index.type(), builder);
             }

@@ -1,7 +1,6 @@
 package io.army.session;
 
 import io.army.ArmyException;
-import io.army.ArmyKeys;
 import io.army.DdlMode;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
@@ -11,12 +10,12 @@ import io.army.dialect._AbstractFieldValuesGenerator;
 import io.army.dialect._DialectEnvironment;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
-import io.army.env.MyKey;
+import io.army.env.ArmyKey;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.util.TimeUtils;
 import io.army.util._Assert;
+import io.army.util._TimeUtils;
 
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -27,6 +26,8 @@ import java.util.function.Function;
 
 /**
  * a abstract GenericSessionFactoryAdvice
+ *
+ * @since 1.0
  */
 public abstract class _AbstractSessionFactory implements GenericSessionFactory, _DialectEnvironment {
 
@@ -48,8 +49,6 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected final boolean readonly;
 
-    protected final boolean supportSessionCache;
-
     protected final ZoneOffset zoneOffset;
 
     public final boolean uniqueCache;
@@ -63,7 +62,8 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected _AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
-        final ArmyEnvironment env = Objects.requireNonNull(support.environment);
+        final ArmyEnvironment env = support.environment;
+        assert env != null;
 
         if (FACTORY_MAP.putIfAbsent(name, Boolean.TRUE) != null) {
             throw new SessionFactoryException(String.format("factory name[%s] duplication", name));
@@ -74,20 +74,18 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         this.tableMap = Objects.requireNonNull(support.tableMap);
         this.exceptionFunction = exceptionFunction(support.exceptionFunction);
 
-        this.subQueryInsertMode = env.get(ArmyKeys.SUBQUERY_INSERT_MODE, SubQueryInsertMode.class, SubQueryInsertMode.ONLY_MIGRATION);
-        this.readonly = env.get(ArmyKeys.READ_ONLY, Boolean.class, Boolean.FALSE);
+        this.subQueryInsertMode = env.getOrDefault(ArmyKey.SUBQUERY_INSERT_MODE);
+        this.readonly = env.getOrDefault(ArmyKey.READ_ONLY);
 
         this.zoneOffset = support.zoneOffset;
-
-        this.supportSessionCache = env.get(ArmyKeys.sessionCache, Boolean.class, Boolean.TRUE);
         this.fieldValuesGenerator = new FieldValuesGeneratorImpl(this.zoneOffset, support.generatorMap);
 
         final DdlMode ddlMode = support.ddlMode;
         assert ddlMode != null;
         this.uniqueCache = ddlMode != DdlMode.NONE;
-        this.sqlLogDynamic = env.getOrDefault(MyKey.SQL_LOG_DYNAMIC);
-        this.sqlLogShow = env.getOrDefault(MyKey.SQL_LOG_SHOW);
-        this.sqlLogFormat = env.getOrDefault(MyKey.SQL_LOG_FORMAT);
+        this.sqlLogDynamic = env.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
+        this.sqlLogShow = env.getOrDefault(ArmyKey.SQL_LOG_SHOW);
+        this.sqlLogFormat = env.getOrDefault(ArmyKey.SQL_LOG_FORMAT);
     }
 
 
@@ -109,7 +107,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     @Override
     public final ZoneOffset zoneOffset() {
         final ZoneOffset zoneOffset = this.zoneOffset;
-        return zoneOffset == null ? TimeUtils.systemZoneOffset() : zoneOffset;
+        return zoneOffset == null ? _TimeUtils.systemZoneOffset() : zoneOffset;
     }
 
     @Override
@@ -128,13 +126,6 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     public final <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
         return (TableMeta<T>) this.tableMap.get(domainClass);
     }
-
-
-    @Override
-    public final boolean supportSessionCache() {
-        return this.supportSessionCache;
-    }
-
 
     @Override
     public final boolean readonly() {
@@ -175,15 +166,17 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     @Nullable
     public final Function<String, String> getSqlFormat() {
-        Function<String, String> function;
+        final Function<String, String> function;
         if (this.sqlLogDynamic) {
-            if (!this.env.getOrDefault(MyKey.SQL_LOG_SHOW)) {
+            if (!this.env.getOrDefault(ArmyKey.SQL_LOG_SHOW)) {
                 function = null;
-            } else if (this.env.getOrDefault(MyKey.SQL_LOG_FORMAT)) {
+            } else if (this.env.getOrDefault(ArmyKey.SQL_LOG_FORMAT)) {
                 function = this::formatSql;
             } else {
                 function = this::noFormatSql;
             }
+        } else if (!this.sqlLogShow) {
+            function = null;
         } else if (this.sqlLogFormat) {
             function = this::formatSql;
         } else {
@@ -240,7 +233,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         @Override
         protected ZoneOffset zoneOffset() {
             final ZoneOffset zoneOffset = this.zoneOffset;
-            return zoneOffset == null ? TimeUtils.systemZoneOffset() : zoneOffset;
+            return zoneOffset == null ? _TimeUtils.systemZoneOffset() : zoneOffset;
         }
 
         @Override

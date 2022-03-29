@@ -11,7 +11,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -27,8 +27,8 @@ final class TableContext {
     final Map<TableMeta<?>, String> tableToSafeAlias;
 
     private TableContext(Map<String, TableItem> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias) {
-        this.aliasToTable = CollectionUtils.unmodifiableMap(aliasToTable);
-        this.tableToSafeAlias = CollectionUtils.unmodifiableMap(tableToSafeAlias);
+        this.aliasToTable = _CollectionUtils.unmodifiableMap(aliasToTable);
+        this.tableToSafeAlias = _CollectionUtils.unmodifiableMap(tableToSafeAlias);
     }
 
 

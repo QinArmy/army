@@ -14,7 +14,6 @@ import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util.ArrayUtils;
-import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.Field;
@@ -168,7 +167,10 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
         Objects.requireNonNull(table);
         Objects.requireNonNull(field);
 
-        _Assert.isAssignable(field.getDeclaringClass(), table.javaType());
+        if (!table.javaType().isAssignableFrom(field.getDeclaringClass())) {
+            String m = String.format("%s isn't belong to %s.", field, table.javaType());
+            throw new MetaException(m);
+        }
 
         this.table = (DefaultTableMeta<T>) table;
         this.fieldName = field.getName();

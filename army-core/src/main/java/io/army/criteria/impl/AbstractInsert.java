@@ -13,7 +13,7 @@ import io.army.meta.TableMeta;
 import io.army.stmt.PairStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ abstract class AbstractInsert<T extends IDomain, C, IR>
         if (fields.size() == 0) {
             throw new CriteriaException("fields must be not empty.");
         }
-        this.fieldList = CollectionUtils.unmodifiableList(new ArrayList<>(fields));
+        this.fieldList = _CollectionUtils.unmodifiableList(new ArrayList<>(fields));
         return (IR) this;
     }
 

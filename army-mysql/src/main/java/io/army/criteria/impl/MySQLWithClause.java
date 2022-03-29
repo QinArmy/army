@@ -4,7 +4,7 @@ import io.army.criteria.Cte;
 import io.army.criteria.SubQuery;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,13 +40,13 @@ abstract class MySQLWithClause<C, WE> implements MySQLQuery.WithClause<C, WE> {
 
     @Override
     public final WE with(Supplier<List<Cte>> supplier) {
-        this.cteList = CollectionUtils.asUnmodifiableList(supplier.get());
+        this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
         return this.afterWithClause();
     }
 
     @Override
     public final WE with(Function<C, List<Cte>> function) {
-        this.cteList = CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
+        this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
         return this.afterWithClause();
     }
 

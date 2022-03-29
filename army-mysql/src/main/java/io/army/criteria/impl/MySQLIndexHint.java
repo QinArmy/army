@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLModifier;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.lang.Nullable;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ final class MySQLIndexHint implements _IndexHint {
         }
         this.command = command;
         this.purpose = purpose;
-        this.indexNameList = CollectionUtils.asUnmodifiableList(indexNameList);
+        this.indexNameList = _CollectionUtils.asUnmodifiableList(indexNameList);
     }
 
 

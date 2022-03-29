@@ -13,7 +13,7 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
@@ -71,7 +71,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         }
         this.hintList = hintList;
         this.modifierList = modifiers;
-        this.tableList = CollectionUtils.asUnmodifiableList(tableList);
+        this.tableList = _CollectionUtils.asUnmodifiableList(tableList);
         this.usingSyntax = false;
         return this;
     }
@@ -81,7 +81,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         if (this.tableList != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.tableList = CollectionUtils.asUnmodifiableList(tableList);
+        this.tableList = _CollectionUtils.asUnmodifiableList(tableList);
         this.usingSyntax = false;
         return this;
     }
@@ -97,7 +97,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         }
         this.hintList = hintList;
         this.modifierList = modifiers;
-        this.tableList = CollectionUtils.asUnmodifiableList(tableList);
+        this.tableList = _CollectionUtils.asUnmodifiableList(tableList);
         this.usingSyntax = true;
         return this;
     }
@@ -107,14 +107,14 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
         if (this.tableList != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.tableList = CollectionUtils.asUnmodifiableList(tableList);
+        this.tableList = _CollectionUtils.asUnmodifiableList(tableList);
         this.usingSyntax = true;
         return this;
     }
 
     @Override
     public final DR from(TableMeta<?> table, String alias) {
-        if (CollectionUtils.isEmpty(this.tableList)) {
+        if (_CollectionUtils.isEmpty(this.tableList)) {
             throw _Exceptions.castCriteriaApi();
         }
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(table, alias));
@@ -123,7 +123,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
     @Override
     public final DP from(TableMeta<?> table) {
-        if (CollectionUtils.isEmpty(this.tableList)) {
+        if (_CollectionUtils.isEmpty(this.tableList)) {
             throw _Exceptions.castCriteriaApi();
         }
         return this.createPartitionJoinSpec(table);
@@ -132,7 +132,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
     @Override
     public final <T extends TableItem> DR from(Supplier<T> supplier, String alias) {
-        if (CollectionUtils.isEmpty(this.tableList)) {
+        if (_CollectionUtils.isEmpty(this.tableList)) {
             throw _Exceptions.castCriteriaApi();
         }
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
@@ -141,7 +141,7 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
     @Override
     public final <T extends TableItem> DR from(Function<C, T> function, String alias) {
-        if (CollectionUtils.isEmpty(this.tableList)) {
+        if (_CollectionUtils.isEmpty(this.tableList)) {
             throw _Exceptions.castCriteriaApi();
         }
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
@@ -287,18 +287,18 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
     @Override
     final void onAsDelete() {
-        if (CollectionUtils.isEmpty(this.hintList)) {
+        if (_CollectionUtils.isEmpty(this.hintList)) {
             this.hintList = Collections.emptyList();
         }
-        if (CollectionUtils.isEmpty(this.modifierList)) {
+        if (_CollectionUtils.isEmpty(this.modifierList)) {
             this.modifierList = Collections.emptyList();
         }
-        if (CollectionUtils.isEmpty(this.tableList)) {
+        if (_CollectionUtils.isEmpty(this.tableList)) {
             throw new CriteriaException("tableList must not empty in multi-table delete clause.");
         }
         this.noActionPartitionBlock = null;
         if (this instanceof BatchDelete) {
-            if (CollectionUtils.isEmpty(((BatchDelete<C>) this).wrapperList)) {
+            if (_CollectionUtils.isEmpty(((BatchDelete<C>) this).wrapperList)) {
                 throw _Exceptions.batchParamEmpty();
             }
         }
@@ -508,13 +508,13 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
         @Override
         public MultiDeleteSpec<C> with(Supplier<List<Cte>> supplier) {
-            this.cteList = CollectionUtils.asUnmodifiableList(supplier.get());
+            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
             return this;
         }
 
         @Override
         public MultiDeleteSpec<C> with(Function<C, List<Cte>> function) {
-            this.cteList = CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
+            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
             return this;
         }
 
@@ -581,13 +581,13 @@ abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C
 
         @Override
         public BatchMultiDeleteSpec<C> with(Supplier<List<Cte>> supplier) {
-            this.cteList = CollectionUtils.asUnmodifiableList(supplier.get());
+            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
             return this;
         }
 
         @Override
         public BatchMultiDeleteSpec<C> with(Function<C, List<Cte>> function) {
-            this.cteList = CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
+            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
             return this;
         }
 

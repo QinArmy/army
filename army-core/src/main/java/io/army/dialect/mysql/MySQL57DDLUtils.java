@@ -2,7 +2,7 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.DDLUtils;
 import io.army.sqltype.MySqlType;
-import io.army.util.StringUtils;
+import io.army.util._StringUtils;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -36,7 +36,7 @@ abstract class MySQL57DDLUtils extends DDLUtils {
 
     static String tableCharset(String charset) {
         String actualCharset = charset;
-        if (!StringUtils.hasText(actualCharset)) {
+        if (!_StringUtils.hasText(actualCharset)) {
             actualCharset = "UTF8MB4";
         }
         return actualCharset;

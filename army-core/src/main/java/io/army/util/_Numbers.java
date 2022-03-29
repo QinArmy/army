@@ -3,9 +3,9 @@ package io.army.util;
 
 import java.math.BigInteger;
 
-public abstract class Numbers {
+public abstract class _Numbers {
 
-    protected Numbers() {
+    protected _Numbers() {
         throw new UnsupportedOperationException();
     }
 

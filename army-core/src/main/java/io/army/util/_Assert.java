@@ -11,11 +11,11 @@ import java.util.List;
 /**
  * @since 1.0
  */
-public abstract class _Assert extends org.springframework.util.Assert {
+public abstract class _Assert {
 
 
     public static String assertHasText(@Nullable String text, String message) {
-        if (!StringUtils.hasText(text)) {
+        if (!_StringUtils.hasText(text)) {
             throw new IllegalArgumentException(message);
         }
         return text;

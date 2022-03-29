@@ -6,9 +6,9 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
-import io.army.util.Numbers;
-import io.army.util.TimeUtils;
 import io.army.util._Exceptions;
+import io.army.util._Numbers;
+import io.army.util._TimeUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -223,20 +223,20 @@ public abstract class _Literals {
             literal = nonNull.toString();
         } else if (nonNull instanceof BigInteger) {
             final BigInteger v = (BigInteger) nonNull;
-            if (v.compareTo(BigInteger.ZERO) < 0 || v.compareTo(Numbers.MAX_UNSIGNED_LONG) > 0) {
+            if (v.compareTo(BigInteger.ZERO) < 0 || v.compareTo(_Numbers.MAX_UNSIGNED_LONG) > 0) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toString();
         } else if (nonNull instanceof BigDecimal) {
             final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
-            if (v.scale() != 0 || v.compareTo(new BigDecimal(Numbers.MAX_UNSIGNED_LONG)) > 0) {
+            if (v.scale() != 0 || v.compareTo(new BigDecimal(_Numbers.MAX_UNSIGNED_LONG)) > 0) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             literal = v.toPlainString();
         } else if (nonNull instanceof String) {
             try {
                 final BigInteger v = new BigInteger((String) nonNull);
-                if (v.compareTo(BigInteger.ZERO) < 0 || v.compareTo(Numbers.MAX_UNSIGNED_LONG) > 0) {
+                if (v.compareTo(BigInteger.ZERO) < 0 || v.compareTo(_Numbers.MAX_UNSIGNED_LONG) > 0) {
                     throw _Exceptions.valueOutRange(sqlType, nonNull);
                 }
             } catch (NumberFormatException e) {
@@ -287,10 +287,10 @@ public abstract class _Literals {
     public static String time(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
         final String text;
         if (nonNull instanceof LocalTime) {
-            text = ((LocalTime) nonNull).format(TimeUtils.getTimeFormatter(getTimeTypeScale(paramMeta)));
+            text = ((LocalTime) nonNull).format(_TimeUtils.getTimeFormatter(getTimeTypeScale(paramMeta)));
         } else if (nonNull instanceof String) {
             try {
-                LocalTime.parse((String) nonNull, TimeUtils.getTimeFormatter(6));
+                LocalTime.parse((String) nonNull, _TimeUtils.getTimeFormatter(6));
             } catch (DateTimeException e) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
@@ -304,10 +304,10 @@ public abstract class _Literals {
     public static String timeWithZone(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
         final String text;
         if (nonNull instanceof OffsetTime) {
-            text = ((OffsetTime) nonNull).format(TimeUtils.getOffsetTimeFormatter(getTimeTypeScale(paramMeta)));
+            text = ((OffsetTime) nonNull).format(_TimeUtils.getOffsetTimeFormatter(getTimeTypeScale(paramMeta)));
         } else if (nonNull instanceof String) {
             try {
-                OffsetTime.parse((String) nonNull, TimeUtils.getOffsetTimeFormatter(6));
+                OffsetTime.parse((String) nonNull, _TimeUtils.getOffsetTimeFormatter(6));
             } catch (DateTimeException e) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
@@ -337,10 +337,10 @@ public abstract class _Literals {
     public static String datetime(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
         final String text;
         if (nonNull instanceof LocalDateTime) {
-            text = ((LocalDateTime) nonNull).format(TimeUtils.getDatetimeFormatter(getTimeTypeScale(paramMeta)));
+            text = ((LocalDateTime) nonNull).format(_TimeUtils.getDatetimeFormatter(getTimeTypeScale(paramMeta)));
         } else if (nonNull instanceof String) {
             try {
-                LocalDateTime.parse((String) nonNull, TimeUtils.getDatetimeFormatter(6));
+                LocalDateTime.parse((String) nonNull, _TimeUtils.getDatetimeFormatter(6));
             } catch (DateTimeException e) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
@@ -354,14 +354,14 @@ public abstract class _Literals {
 
     public static String dateTimeWithZone(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
         final String text;
-        final DateTimeFormatter formatter = TimeUtils.getDatetimeOffsetFormatter(getTimeTypeScale(paramMeta));
+        final DateTimeFormatter formatter = _TimeUtils.getDatetimeOffsetFormatter(getTimeTypeScale(paramMeta));
         if (nonNull instanceof OffsetDateTime) {
             text = ((OffsetDateTime) nonNull).format(formatter);
         } else if (nonNull instanceof ZonedDateTime) {
             text = ((ZonedDateTime) nonNull).format(formatter);
         } else if (nonNull instanceof String) {
             try {
-                OffsetDateTime.parse((String) nonNull, TimeUtils.getDatetimeOffsetFormatter(6));
+                OffsetDateTime.parse((String) nonNull, _TimeUtils.getDatetimeOffsetFormatter(6));
             } catch (DateTimeException e) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }

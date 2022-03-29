@@ -7,8 +7,8 @@ import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.stmt.SimpleStmt;
 import io.army.util.ArrayUtils;
-import io.army.util.CollectionUtils;
 import io.army.util._Assert;
+import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -160,7 +160,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     public final OR ifOrderBy(Supplier<List<SortItem>> supplier) {
         final List<SortItem> supplierResult;
         supplierResult = supplier.get();
-        if (!CollectionUtils.isEmpty(supplierResult)) {
+        if (!_CollectionUtils.isEmpty(supplierResult)) {
             this.orderBy(supplierResult);
         }
         this.afterOrderBy();
@@ -171,7 +171,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     public final OR ifOrderBy(Function<C, List<SortItem>> function) {
         final List<SortItem> supplierResult;
         supplierResult = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(supplierResult)) {
+        if (!_CollectionUtils.isEmpty(supplierResult)) {
             this.orderBy(supplierResult);
         }
         this.afterOrderBy();
@@ -439,7 +439,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
 
     final boolean hasOrderBy() {
-        return !CollectionUtils.isEmpty(this.orderByList);
+        return !_CollectionUtils.isEmpty(this.orderByList);
     }
 
     final Q asQueryAndQuery() {

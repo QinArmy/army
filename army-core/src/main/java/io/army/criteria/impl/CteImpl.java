@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Cte;
 import io.army.criteria.SubQuery;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +28,7 @@ final class CteImpl implements Cte {
 
     private CteImpl(String name, List<String> columnList, SubQuery subQuery) {
         this.name = name;
-        this.columnList = CollectionUtils.asUnmodifiableList(columnList);
+        this.columnList = _CollectionUtils.asUnmodifiableList(columnList);
         this.subQuery = subQuery;
     }
 

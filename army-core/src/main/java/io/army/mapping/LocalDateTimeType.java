@@ -4,7 +4,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-import io.army.util.TimeUtils;
+import io.army.util._TimeUtils;
 
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
@@ -57,7 +57,7 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
             value = (LocalDateTime) nonNull;
         } else if (nonNull instanceof String) {
             try {
-                value = LocalDateTime.parse((String) nonNull, TimeUtils.getDatetimeFormatter(6));
+                value = LocalDateTime.parse((String) nonNull, _TimeUtils.getDatetimeFormatter(6));
             } catch (DateTimeException e) {
                 throw valueOutRange(sqlType, nonNull, e);
             }

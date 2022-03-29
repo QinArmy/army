@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
+import io.army.lang.NonNull;
 import io.army.meta.SchemaMeta;
-import io.army.util.StringUtils;
-import org.springframework.lang.NonNull;
+import io.army.util._StringUtils;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +20,7 @@ public abstract class _SchemaMetaFactory {
         Objects.requireNonNull(catalog, "catalog required");
         Objects.requireNonNull(schema, "schema required");
 
-        final String key = StringUtils.toLowerCase(catalog + "." + schema);
+        final String key = _StringUtils.toLowerCase(catalog + "." + schema);
         return SCHEMA_META_HOLDER.computeIfAbsent(key, k -> new SchemaMetaImpl(catalog, schema));
     }
 
@@ -32,8 +32,8 @@ public abstract class _SchemaMetaFactory {
         private final String schema;
 
         SchemaMetaImpl(final String catalog, final String schema) {
-            this.catalog = StringUtils.toLowerCase(catalog);
-            this.schema = StringUtils.toLowerCase(schema);
+            this.catalog = _StringUtils.toLowerCase(catalog);
+            this.schema = _StringUtils.toLowerCase(schema);
         }
 
         @NonNull

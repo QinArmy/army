@@ -30,8 +30,6 @@ public interface GenericSessionFactory {
     <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
 
 
-    boolean supportSessionCache();
-
     boolean supportSavePoints();
 
     /**

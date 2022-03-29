@@ -3,8 +3,8 @@ package io.army.dialect.mysql;
 import io.army.dialect.Constant;
 import io.army.dialect._Literals;
 import io.army.sqltype.SqlType;
-import io.army.util.StringUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 import io.qinarmy.util.BufferUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -59,7 +59,7 @@ abstract class MySQLLiterals extends _Literals {
             value = bitSet(sqlType, nonNull, true);
         } else if (nonNull instanceof String) {
             final String v = (String) nonNull;
-            if (!StringUtils.isBinary(v)) {
+            if (!_StringUtils.isBinary(v)) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             value = v;

@@ -8,7 +8,7 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -268,7 +268,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             switch (lock) {
                 case FOR_UPDATE:
                 case SHARE:
-                    this.ofTableList = CollectionUtils.asUnmodifiableList(tableList);
+                    this.ofTableList = _CollectionUtils.asUnmodifiableList(tableList);
                     break;
                 case LOCK_IN_SHARE_MODE:
                     break;
@@ -284,7 +284,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (this.lock != null) {
             final List<TableMeta<?>> list;
             list = function.apply(this.criteria);
-            if (!CollectionUtils.isEmpty(list)) {
+            if (!_CollectionUtils.isEmpty(list)) {
                 this.of(list);
             }
         }
@@ -296,7 +296,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (this.lock != null) {
             final List<TableMeta<?>> list;
             list = supplier.get();
-            if (!CollectionUtils.isEmpty(list)) {
+            if (!_CollectionUtils.isEmpty(list)) {
                 this.of(list);
             }
         }
@@ -643,7 +643,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
                 , MySQL80SimpleQuery<C, Q> query) {
             super(joinType, table, alias);
             this.query = query;
-            this.partitionList = CollectionUtils.unmodifiableList(partitionList);
+            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
         }
 
         @Override

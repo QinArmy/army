@@ -2,7 +2,7 @@ package io.army.schema;
 
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +32,7 @@ final class TableResultImpl implements _TableResult {
         if (newFieldList == null) {
             this.newFieldList = Collections.emptyList();
         } else {
-            this.newFieldList = CollectionUtils.unmodifiableList(newFieldList);
+            this.newFieldList = _CollectionUtils.unmodifiableList(newFieldList);
         }
         this.comment = builder.comment;
 
@@ -40,21 +40,21 @@ final class TableResultImpl implements _TableResult {
         if (fieldResultList == null) {
             this.fieldResultList = Collections.emptyList();
         } else {
-            this.fieldResultList = CollectionUtils.unmodifiableList(fieldResultList);
+            this.fieldResultList = _CollectionUtils.unmodifiableList(fieldResultList);
         }
 
         final List<String> newIndexList = builder.newIndexList;
         if (newIndexList == null) {
             this.newIndexList = Collections.emptyList();
         } else {
-            this.newIndexList = CollectionUtils.unmodifiableList(newIndexList);
+            this.newIndexList = _CollectionUtils.unmodifiableList(newIndexList);
         }
 
         final List<String> changeIndexList = builder.changeIndexList;
         if (changeIndexList == null) {
             this.changeIndexList = Collections.emptyList();
         } else {
-            this.changeIndexList = CollectionUtils.unmodifiableList(changeIndexList);
+            this.changeIndexList = _CollectionUtils.unmodifiableList(changeIndexList);
         }
 
     }

@@ -12,8 +12,8 @@ import io.army.schema._FieldResult;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.struct.TextEnum;
-import io.army.util.StringUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -145,7 +145,7 @@ final class MySQLDdl extends _DdlDialect {
             dialect.quoteIfNeed(indexMeta.name(), builder);
 
             final String indexType = indexMeta.type();
-            if (StringUtils.hasText(indexType)) {
+            if (_StringUtils.hasText(indexType)) {
                 builder.append(" USING ");
                 dialect.quoteIfNeed(indexType, builder);
             }

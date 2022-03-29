@@ -14,7 +14,7 @@ import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -74,16 +74,16 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     @Override
     public final UP update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
             , TableMeta<? extends IDomain> table) {
-        this.hintList = CollectionUtils.asUnmodifiableList(hints.get());
-        this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         return this.createPartitionJoinBlock(table);
     }
 
     @Override
     public final UT update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
             , TableMeta<? extends IDomain> table, String tableAlias) {
-        this.hintList = CollectionUtils.asUnmodifiableList(hints.get());
-        this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.criteriaContext.onFirstBlock(new FirstBlock(table, tableAlias));
         return (UT) this;
     }
@@ -102,8 +102,8 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     @Override
     public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
             , Supplier<T> supplier, String alias) {
-        this.hintList = CollectionUtils.asUnmodifiableList(hints.get());
-        this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
         return (US) this;
     }
@@ -117,8 +117,8 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     @Override
     public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
             , Function<C, T> function, String alias) {
-        this.hintList = CollectionUtils.asUnmodifiableList(hints.get());
-        this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
@@ -199,7 +199,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         if (this.command != null) {
             final List<String> indexList;
             indexList = function.apply(this.criteria);
-            if (!CollectionUtils.isEmpty(indexList)) {
+            if (!_CollectionUtils.isEmpty(indexList)) {
                 this.useIndex(indexList);
             }
         }
@@ -211,7 +211,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         if (this.command != null) {
             final List<String> indexList;
             indexList = function.apply(this.criteria);
-            if (!CollectionUtils.isEmpty(indexList)) {
+            if (!_CollectionUtils.isEmpty(indexList)) {
                 this.ignoreIndex(indexList);
             }
         }
@@ -223,7 +223,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
         if (this.command != null) {
             final List<String> indexList;
             indexList = function.apply(this.criteria);
-            if (!CollectionUtils.isEmpty(indexList)) {
+            if (!_CollectionUtils.isEmpty(indexList)) {
                 this.forceIndex(indexList);
             }
         }
@@ -366,26 +366,26 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     @Override
     final void doOnAsUpdate() {
         this.noActionPartitionBlock = null;
-        if (CollectionUtils.isEmpty(this.hintList)) {
+        if (_CollectionUtils.isEmpty(this.hintList)) {
             this.hintList = Collections.emptyList();
         }
-        if (CollectionUtils.isEmpty(this.modifierList)) {
+        if (_CollectionUtils.isEmpty(this.modifierList)) {
             this.modifierList = Collections.emptyList();
         }
 
         if (this instanceof BatchUpdate) {
-            if (CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
+            if (_CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
                 throw _Exceptions.batchParamEmpty();
             }
         }
 
         if (this instanceof _MySQLWithClause) {
             if (this instanceof SimpleWithAndUpdate
-                    && CollectionUtils.isEmpty(((SimpleWithAndUpdate<C>) this).cteList)) {
+                    && _CollectionUtils.isEmpty(((SimpleWithAndUpdate<C>) this).cteList)) {
                 ((SimpleWithAndUpdate<C>) this).cteList = Collections.emptyList();
             }
             if (this instanceof BatchWithAndUpdate
-                    && CollectionUtils.isEmpty(((BatchWithAndUpdate<C>) this).cteList)) {
+                    && _CollectionUtils.isEmpty(((BatchWithAndUpdate<C>) this).cteList)) {
                 ((BatchWithAndUpdate<C>) this).cteList = Collections.emptyList();
             }
 
@@ -446,7 +446,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     private UT addIndexHint(final MySQLIndexHint.Command command, final boolean forJoin
             , final List<String> indexNames) {
 
-        if (CollectionUtils.isEmpty(indexNames)) {
+        if (_CollectionUtils.isEmpty(indexNames)) {
             throw new CriteriaException("index hint clause index name list must not empty.");
         }
         final _TableBlock block;
@@ -498,7 +498,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
                     this.partitionList = partitionList;
                     break;
                 default:
-                    this.partitionList = CollectionUtils.unmodifiableList(partitionList);
+                    this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
             }
         }
 
@@ -717,13 +717,13 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         @Override
         public MultiUpdateSpec<C> with(Supplier<List<Cte>> supplier) {
-            this.cteList = CollectionUtils.asUnmodifiableList(supplier.get());
+            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
             return this;
         }
 
         @Override
         public MultiUpdateSpec<C> with(Function<C, List<Cte>> function) {
-            this.cteList = CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
+            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
             return this;
         }
 
@@ -791,13 +791,13 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
         @Override
         public BatchMultiUpdateSpec<C> with(Supplier<List<Cte>> supplier) {
-            this.cteList = CollectionUtils.asUnmodifiableList(supplier.get());
+            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
             return this;
         }
 
         @Override
         public BatchMultiUpdateSpec<C> with(Function<C, List<Cte>> function) {
-            this.cteList = CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
+            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
             return this;
         }
 

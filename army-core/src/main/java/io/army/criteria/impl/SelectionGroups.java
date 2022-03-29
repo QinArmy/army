@@ -7,7 +7,7 @@ import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.meta.*;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -56,7 +56,7 @@ abstract class SelectionGroups {
 
         private TableFieldGroup(String tableAlias, List<FieldMeta<T>> fieldList) {
             this.tableAlias = tableAlias;
-            this.fieldList = CollectionUtils.asUnmodifiableList(fieldList);
+            this.fieldList = _CollectionUtils.asUnmodifiableList(fieldList);
         }
 
         private TableFieldGroup(TableMeta<T> table, String tableAlias) {
@@ -278,7 +278,7 @@ abstract class SelectionGroups {
         @Override
         public final void appendSql(final _SqlContext context) {
             final List<Selection> selectionList = this.selectionList;
-            if (CollectionUtils.isEmpty(selectionList)) {
+            if (_CollectionUtils.isEmpty(selectionList)) {
                 //here bug.
                 throw new CriteriaException("DerivedSelectionGroup no selection.");
             }

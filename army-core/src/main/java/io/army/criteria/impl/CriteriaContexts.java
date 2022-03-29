@@ -10,7 +10,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -279,7 +279,7 @@ abstract class CriteriaContexts {
                 aliasToField.clear();
             }
             this.onClear();
-            return CollectionUtils.unmodifiableList(tableBlockList);
+            return _CollectionUtils.unmodifiableList(tableBlockList);
         }
 
         abstract void doOnAddBlock(_TableBlock block);
@@ -512,14 +512,14 @@ abstract class CriteriaContexts {
         @Override
         void onClear() {
             final List<DerivedGroup> groupList = this.groupList;
-            if (!CollectionUtils.isEmpty(groupList)) {
+            if (!_CollectionUtils.isEmpty(groupList)) {
                 for (DerivedGroup group : groupList) {
                     String m = String.format("DerivedGroup[%s] is invalid.", group.tableAlias());
                     throw new CriteriaException(m);
                 }
             }
             final Map<String, Map<String, RefSelection>> aliasToRefSelection = this.aliasToRefSelection;
-            if (!CollectionUtils.isEmpty(aliasToRefSelection)) {
+            if (!_CollectionUtils.isEmpty(aliasToRefSelection)) {
                 String m = String.format("Derived tables%s is invalid.", aliasToRefSelection.keySet());
                 throw new CriteriaException(m);
             }

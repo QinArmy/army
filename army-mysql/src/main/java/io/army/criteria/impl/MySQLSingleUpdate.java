@@ -12,7 +12,7 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -79,8 +79,8 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         final List<Hint> hintList;
         hintList = hints.get();
         assert hintList != null;
-        this.hintList = CollectionUtils.asUnmodifiableList(hintList);
-        this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.table = table;
         return (UP) this;
     }
@@ -95,8 +95,8 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         hintList = hints.get();
         assert hintList != null;
 
-        this.hintList = CollectionUtils.asUnmodifiableList(hintList);
-        this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;
@@ -134,7 +134,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         if (this.table == null || this.partitionList != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.partitionList = CollectionUtils.asUnmodifiableList(partitionNameList);
+        this.partitionList = _CollectionUtils.asUnmodifiableList(partitionNameList);
         return (PR) this;
     }
 
@@ -152,7 +152,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     public final PR ifPartition(Supplier<List<String>> supplier) {
         final List<String> list;
         list = supplier.get();
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.partition(list);
         }
         return (PR) this;
@@ -162,7 +162,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     public final PR ifPartition(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.partition(list);
         }
         return (PR) this;
@@ -255,7 +255,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     public final UR ifUseIndex(Function<C, List<String>> function) {
         final List<String> indexList;
         indexList = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(indexList)) {
+        if (!_CollectionUtils.isEmpty(indexList)) {
             this.useIndex(indexList);
         }
         return (UR) this;
@@ -265,7 +265,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     public final UR ifIgnoreIndex(Function<C, List<String>> function) {
         final List<String> indexList;
         indexList = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(indexList)) {
+        if (!_CollectionUtils.isEmpty(indexList)) {
             this.ignoreIndex(indexList);
         }
         return (UR) this;
@@ -275,7 +275,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     public final UR ifForceIndex(Function<C, List<String>> function) {
         final List<String> indexList;
         indexList = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(indexList)) {
+        if (!_CollectionUtils.isEmpty(indexList)) {
             this.forceIndex(indexList);
         }
         return (UR) this;
@@ -299,7 +299,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         if (this.command != null) {
             final List<String> list;
             list = function.apply(this.criteria);
-            if (!CollectionUtils.isEmpty(list)) {
+            if (!_CollectionUtils.isEmpty(list)) {
                 this.forOrderBy(list);
             }
         }
@@ -330,7 +330,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
     @Override
     public final OR orderBy(List<SortItem> sortItemList) {
-        this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
+        this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
         return (OR) this;
     }
 
@@ -356,8 +356,8 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     public final OR ifOrderBy(Supplier<List<SortItem>> supplier) {
         final List<SortItem> sortItemList;
         sortItemList = supplier.get();
-        if (!CollectionUtils.isEmpty(sortItemList)) {
-            this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
+        if (!_CollectionUtils.isEmpty(sortItemList)) {
+            this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
         }
         return (OR) this;
     }
@@ -366,8 +366,8 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     public final OR ifOrderBy(Function<C, List<SortItem>> function) {
         final List<SortItem> sortItemList;
         sortItemList = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(sortItemList)) {
-            this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
+        if (!_CollectionUtils.isEmpty(sortItemList)) {
+            this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
         }
         return (OR) this;
     }
@@ -417,28 +417,28 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         if (this.table == null || this.tableAlias == null) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (CollectionUtils.isEmpty(this.hintList)) {
+        if (_CollectionUtils.isEmpty(this.hintList)) {
             this.hintList = Collections.emptyList();
         }
-        if (CollectionUtils.isEmpty(this.modifierList)) {
+        if (_CollectionUtils.isEmpty(this.modifierList)) {
             this.modifierList = Collections.emptyList();
         }
-        if (CollectionUtils.isEmpty(this.partitionList)) {
+        if (_CollectionUtils.isEmpty(this.partitionList)) {
             this.partitionList = Collections.emptyList();
         }
         final List<MySQLIndexHint> indexHintList = this.indexHintList;
-        if (CollectionUtils.isEmpty(indexHintList)) {
+        if (_CollectionUtils.isEmpty(indexHintList)) {
             this.indexHintList = Collections.emptyList();
         } else {
-            this.indexHintList = CollectionUtils.unmodifiableList(indexHintList);
+            this.indexHintList = _CollectionUtils.unmodifiableList(indexHintList);
         }
         this.command = null;
-        if (CollectionUtils.isEmpty(this.orderByList)) {
+        if (_CollectionUtils.isEmpty(this.orderByList)) {
             this.orderByList = Collections.emptyList();
         }
 
         if (this instanceof BatchUpdate) {
-            if (CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
+            if (_CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
                 throw _Exceptions.batchParamEmpty();
             }
 
@@ -446,12 +446,12 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
         if (this instanceof _MySQLWithClause) {
             if (this instanceof SimpleWithAndUpdate) {
-                if (CollectionUtils.isEmpty(((SimpleWithAndUpdate<C>) this).cteList)) {
+                if (_CollectionUtils.isEmpty(((SimpleWithAndUpdate<C>) this).cteList)) {
                     ((SimpleWithAndUpdate<C>) this).cteList = Collections.emptyList();
                 }
             }
             if (this instanceof BatchWithAndUpdate) {
-                if (CollectionUtils.isEmpty(((BatchWithAndUpdate<C>) this).cteList)) {
+                if (_CollectionUtils.isEmpty(((BatchWithAndUpdate<C>) this).cteList)) {
                     ((BatchWithAndUpdate<C>) this).cteList = Collections.emptyList();
                 }
             }
@@ -658,13 +658,13 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
         @Override
         public SingleUpdateSpec<C> with(Supplier<List<Cte>> supplier) {
-            this.cteList = CollectionUtils.asUnmodifiableList(supplier.get());
+            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
             return this;
         }
 
         @Override
         public SingleUpdateSpec<C> with(Function<C, List<Cte>> function) {
-            this.cteList = CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
+            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
             return this;
         }
 
@@ -730,13 +730,13 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
         @Override
         public BatchSingleUpdateSpec<C> with(Supplier<List<Cte>> supplier) {
-            this.cteList = CollectionUtils.asUnmodifiableList(supplier.get());
+            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
             return this;
         }
 
         @Override
         public BatchSingleUpdateSpec<C> with(Function<C, List<Cte>> function) {
-            this.cteList = CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
+            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
             return this;
         }
 

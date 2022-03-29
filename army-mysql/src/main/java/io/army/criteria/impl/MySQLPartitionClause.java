@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +58,7 @@ abstract class MySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause
     public final PR ifPartition(Supplier<List<String>> supplier) {
         final List<String> list;
         list = supplier.get();
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.partition(list);
         }
         return (PR) this;
@@ -68,7 +68,7 @@ abstract class MySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause
     public final PR ifPartition(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.partition(list);
         }
         return (PR) this;

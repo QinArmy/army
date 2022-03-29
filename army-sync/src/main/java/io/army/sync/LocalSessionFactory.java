@@ -1,8 +1,8 @@
 package io.army.sync;
 
-import io.army.ArmyKeys;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
+import io.army.env.SyncKey;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.proxy._SessionCacheFactory;
@@ -32,7 +32,7 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
     private boolean closed;
 
 
-    LocalSessionFactory(LocalSessioinFactoryBuilder builder) throws SessionFactoryException {
+    LocalSessionFactory(LocalSessionFactoryBuilder builder) throws SessionFactoryException {
         super(builder);
 
         this.executorFactory = Objects.requireNonNull(builder.executorFactory);
@@ -126,7 +126,7 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
     @Nullable
     private SessionContext getCurrentSessionContext() {
         final String className;
-        className = this.env.get(ArmyKeys.CURRENT_SESSION_CONTEXT);
+        className = this.env.get(SyncKey.SESSION_CONTEXT);
         if (className == null) {
             return null;
         }

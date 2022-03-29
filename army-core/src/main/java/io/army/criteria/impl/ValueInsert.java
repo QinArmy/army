@@ -7,8 +7,8 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
 import io.army.util._Assert;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -180,11 +180,11 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        if (CollectionUtils.isEmpty(this.domainList)) {
+        if (_CollectionUtils.isEmpty(this.domainList)) {
             throw _Exceptions.castCriteriaApi();
         }
         final Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
-        if (CollectionUtils.isEmpty(commonExpMap)) {
+        if (_CollectionUtils.isEmpty(commonExpMap)) {
             this.commonExpMap = Collections.emptyMap();
         } else {
             this.commonExpMap = Collections.unmodifiableMap(commonExpMap);

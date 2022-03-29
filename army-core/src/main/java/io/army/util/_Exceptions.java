@@ -10,7 +10,7 @@ import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
-import io.army.env.MyKey;
+import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -435,7 +435,7 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static SessionException dontSupportUniqueCache(GenericSessionFactory sessionFactory) {
         String m = String.format("%s don't support unique cache,because config %s is %s."
-                , sessionFactory, MyKey.DDL_MODE.name, DdlMode.NONE);
+                , sessionFactory, ArmyKey.DDL_MODE.name, DdlMode.NONE);
         return new SessionUsageException(m);
     }
 

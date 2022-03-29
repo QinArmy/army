@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -58,7 +58,7 @@ abstract class StandardUpdate<C, UR, WR, WA, SR> extends SingleUpdate<C, WR, WA,
         if (this.table == null || this.tableAlias == null) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (this instanceof BatchUpdate && CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
+        if (this instanceof BatchUpdate && _CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
             throw _Exceptions.castCriteriaApi();
         }
     }

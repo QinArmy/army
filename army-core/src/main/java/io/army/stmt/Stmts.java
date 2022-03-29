@@ -9,7 +9,7 @@ import io.army.criteria.NonNullNamedParam;
 import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.meta.PrimaryFieldMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -100,7 +100,7 @@ public abstract class Stmts {
 
         private MinSimpleStmt(String sql, List<ParamValue> paramGroup) {
             this.sql = sql;
-            this.paramGroup = CollectionUtils.unmodifiableList(paramGroup);
+            this.paramGroup = _CollectionUtils.unmodifiableList(paramGroup);
         }
 
         @Override
@@ -180,7 +180,7 @@ public abstract class Stmts {
 
         private MinDmlStmt(String sql, List<ParamValue> paramGroup, boolean hasOptimistic) {
             this.sql = sql;
-            this.paramGroup = CollectionUtils.unmodifiableList(paramGroup);
+            this.paramGroup = _CollectionUtils.unmodifiableList(paramGroup);
             this.hasOptimistic = hasOptimistic;
         }
 
@@ -265,8 +265,8 @@ public abstract class Stmts {
 
         private SelectStmt(String sql, List<ParamValue> paramGroup, List<Selection> selectionList) {
             this.sql = sql;
-            this.paramGroup = CollectionUtils.unmodifiableList(paramGroup);
-            this.selectionList = CollectionUtils.unmodifiableList(selectionList);
+            this.paramGroup = _CollectionUtils.unmodifiableList(paramGroup);
+            this.selectionList = _CollectionUtils.unmodifiableList(selectionList);
         }
 
         @Override

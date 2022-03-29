@@ -6,7 +6,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen.ArmyMetaModelDomainProcessor;
 import io.army.modelgen._MetaBridge;
-import io.army.util.StringUtils;
+import io.army.util._StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -65,7 +65,7 @@ public abstract class _TableMetaFactory {
             final Map<Class<?>, TableMeta<?>> tableMetaMap = new HashMap<>();
             final String jarProtocol = "jar", fileProtocol = "file";
             for (String basePackage : basePackages) {
-                if (!StringUtils.hasText(basePackage)) {
+                if (!_StringUtils.hasText(basePackage)) {
                     throw new IllegalArgumentException("basePackage must have text.");
                 }
                 //1. convert base package
@@ -94,7 +94,7 @@ public abstract class _TableMetaFactory {
                         throw new IllegalArgumentException(m);
                     }
                     stream.map(buffer -> readJavaClassFile(buffer, schemaMeta)) // read java class file and get class name if match.
-                            .filter(StringUtils::hasText) // if empty string ,not domain class
+                            .filter(_StringUtils::hasText) // if empty string ,not domain class
                             .map(_TableMetaFactory::getOrCreateTableMeta)// get or create table meta
                             .forEach(tableMeta -> {
                                 final Class<?> domainClass = tableMeta.javaType();
@@ -465,9 +465,9 @@ public abstract class _TableMetaFactory {
         if (isTableAnn) {
             final boolean catalogMatch, schemaMatch;
             catalogMatch = (catalog == null && targetCatalog.isEmpty())
-                    || targetCatalog.equals(StringUtils.toLowerCase(catalog));
+                    || targetCatalog.equals(_StringUtils.toLowerCase(catalog));
             schemaMatch = (schema == null && targetSchema.isEmpty())
-                    || targetSchema.equals(StringUtils.toLowerCase(schema));
+                    || targetSchema.equals(_StringUtils.toLowerCase(schema));
             match = catalogMatch && schemaMatch;
         } else {
             match = false;

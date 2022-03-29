@@ -5,8 +5,8 @@ import io.army.criteria.WithElement;
 import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.util.CollectionUtils;
 import io.army.util._Assert;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
@@ -59,7 +59,7 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends JoinableDml<C, JT, JS, WR,
         this.noActionTableBlock = null;
         this.noActionTablePartBlock = null;
         final List<_Predicate> predicateList = this.predicateList;
-        if (CollectionUtils.isEmpty(predicateList)) {
+        if (_CollectionUtils.isEmpty(predicateList)) {
             throw _Exceptions.dmlNoWhereClause();
         }
         this.predicateList = Collections.unmodifiableList(predicateList);

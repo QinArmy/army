@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -56,8 +56,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList) {
-        this.hintList = CollectionUtils.asUnmodifiableList(hints);
-        this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints);
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         return this.select(selectPartList);
     }
 
@@ -137,7 +137,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     @Override
     public final <S extends SelectItem> SR select(List<S> selectPartList) {
         final List<S> selectParts;
-        selectParts = CollectionUtils.asUnmodifiableList(selectPartList);
+        selectParts = _CollectionUtils.asUnmodifiableList(selectPartList);
 
         this.criteriaContext.selectList(selectParts);// notify context
 
@@ -514,7 +514,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     public final GR ifGroupBy(Supplier<List<SortItem>> supplier) {
         final List<SortItem> list;
         list = supplier.get();
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.groupBy(list);
         }
         return (GR) this;
@@ -524,7 +524,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     public final GR ifGroupBy(Function<C, List<SortItem>> function) {
         final List<SortItem> list;
         list = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.groupBy(list);
         }
         return (GR) this;
@@ -532,7 +532,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final HR having(final List<IPredicate> predicateList) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
+        if (!_CollectionUtils.isEmpty(this.groupByList)) {
             final int size = predicateList.size();
             switch (size) {
                 case 0:
@@ -554,7 +554,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final HR having(IPredicate predicate) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
+        if (!_CollectionUtils.isEmpty(this.groupByList)) {
             this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
         return (HR) this;
@@ -562,7 +562,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final HR having(IPredicate predicate1, IPredicate predicate2) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
+        if (!_CollectionUtils.isEmpty(this.groupByList)) {
             this.havingList = ArrayUtils.asUnmodifiableList((OperationPredicate) predicate1
                     , (OperationPredicate) predicate2);
         }
@@ -571,7 +571,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final HR having(Supplier<List<IPredicate>> supplier) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
+        if (!_CollectionUtils.isEmpty(this.groupByList)) {
             this.having(supplier.get());
         }
         return (HR) this;
@@ -579,7 +579,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final HR having(Function<C, List<IPredicate>> function) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
+        if (!_CollectionUtils.isEmpty(this.groupByList)) {
             this.having(function.apply(this.criteria));
         }
         return (HR) this;
@@ -587,7 +587,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final HR ifHaving(@Nullable IPredicate predicate) {
-        if (predicate != null && !CollectionUtils.isEmpty(this.groupByList)) {
+        if (predicate != null && !_CollectionUtils.isEmpty(this.groupByList)) {
             this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
         return (HR) this;
@@ -595,10 +595,10 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final HR ifHaving(Supplier<List<IPredicate>> supplier) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
+        if (!_CollectionUtils.isEmpty(this.groupByList)) {
             final List<IPredicate> list;
             list = supplier.get();
-            if (!CollectionUtils.isEmpty(list)) {
+            if (!_CollectionUtils.isEmpty(list)) {
                 this.having(list);
             }
         }
@@ -607,10 +607,10 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
     @Override
     public final HR ifHaving(Function<C, List<IPredicate>> function) {
-        if (!CollectionUtils.isEmpty(this.groupByList)) {
+        if (!_CollectionUtils.isEmpty(this.groupByList)) {
             final List<IPredicate> list;
             list = function.apply(this.criteria);
-            if (!CollectionUtils.isEmpty(list)) {
+            if (!_CollectionUtils.isEmpty(list)) {
                 this.having(list);
             }
         }
@@ -670,19 +670,19 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
         // hint list
         final List<Hint> hintList = this.hintList;
-        if (CollectionUtils.isEmpty(hintList)) {
+        if (_CollectionUtils.isEmpty(hintList)) {
             this.hintList = Collections.emptyList();
         } else {
             this.hintList = Collections.unmodifiableList(hintList);
         }
 
         // modifier list
-        if (CollectionUtils.isEmpty(this.modifierList)) {
+        if (_CollectionUtils.isEmpty(this.modifierList)) {
             this.modifierList = Collections.emptyList();
         }
         // selection list
         final List<? extends SelectItem> selectPartList = this.selectPartList;
-        if (CollectionUtils.isEmpty(selectPartList)) {
+        if (_CollectionUtils.isEmpty(selectPartList)) {
             throw _Exceptions.selectListIsEmpty();
         }
         if (this instanceof ScalarSubQuery
@@ -692,10 +692,10 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
 
         // group by and having
         final List<? extends SortItem> groupByList = this.groupByList;
-        if (CollectionUtils.isEmpty(groupByList)) {
+        if (_CollectionUtils.isEmpty(groupByList)) {
             this.groupByList = Collections.emptyList();
             this.hintList = Collections.emptyList();
-        } else if (CollectionUtils.isEmpty(this.havingList)) {
+        } else if (_CollectionUtils.isEmpty(this.havingList)) {
             this.havingList = Collections.emptyList();
         }
         this.noActionTableBlock = null;
@@ -721,7 +721,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, WR, AR, GR, H
     }
 
     final boolean hasGroupBy() {
-        return !CollectionUtils.isEmpty(this.groupByList);
+        return !_CollectionUtils.isEmpty(this.groupByList);
     }
 
 

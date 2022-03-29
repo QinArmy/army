@@ -11,10 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Simple factory facade for obtaining {@link ObjectWrapper} instances,
- * in particular for {@link ObjectWrapper} instances. Conceals the actual
- * target implementation classes then their extended public signature.
- *
  * @since 1.0
  */
 public abstract class ObjectAccessorFactory {
@@ -27,7 +23,7 @@ public abstract class ObjectAccessorFactory {
 
     private static final byte READ_METHOD = 2;
 
-    private static final ConcurrentMap<Class<?>, FactoryReference> ACCESSOR_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, BeanAccessorsReference> ACCESSOR_CACHE = new ConcurrentHashMap<>();
 
     public static ObjectAccessor forBean(Class<?> beanClass) {
         while (ArmyProxy.class.isAssignableFrom(beanClass)) {
@@ -88,7 +84,7 @@ public abstract class ObjectAccessorFactory {
 
 
     private static BeanAccessors getBeanAccessors(final Class<?> beanClass) {
-        final FactoryReference reference;
+        final BeanAccessorsReference reference;
         reference = ACCESSOR_CACHE.get(beanClass);
         BeanAccessors accessors = null;
         if (reference != null) {
@@ -102,7 +98,7 @@ public abstract class ObjectAccessorFactory {
         } else {
             accessors = createMethodAccessors(beanClass);
         }
-        ACCESSOR_CACHE.put(beanClass, new FactoryReference(beanClass, accessors));
+        ACCESSOR_CACHE.put(beanClass, new BeanAccessorsReference(accessors));
         return accessors;
     }
 
@@ -197,19 +193,21 @@ public abstract class ObjectAccessorFactory {
     }
 
 
-    private static final class FactoryReference extends SoftReference<BeanAccessors> {
+    private static final class BeanAccessorsReference extends SoftReference<BeanAccessors> {
 
-        private final Class<?> beanClass;
-
-        private FactoryReference(Class<?> beanClass, BeanAccessors accessors) {
+        private BeanAccessorsReference(BeanAccessors accessors) {
             super(accessors);
-            this.beanClass = beanClass;
         }
 
         @Override
         public void clear() {
+            final BeanAccessors accessors;
+            accessors = get();
             super.clear();
-            ACCESSOR_CACHE.remove(this.beanClass, this);
+            if (accessors != null) {
+                ACCESSOR_CACHE.remove(accessors.beanClass, this);
+            }
+
         }
 
     }//AccessorReference

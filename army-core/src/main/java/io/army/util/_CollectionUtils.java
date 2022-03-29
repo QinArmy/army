@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class CollectionUtils extends io.qinarmy.util.CollectionUtils {
+public abstract class _CollectionUtils extends io.qinarmy.util.CollectionUtils {
 
     public static <T> List<T> asUnmodifiableList(final Collection<T> collection) {
         final List<T> list;

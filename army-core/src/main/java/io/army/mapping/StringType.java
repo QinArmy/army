@@ -6,7 +6,7 @@ import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.type.LongString;
-import io.army.util.TimeUtils;
+import io.army.util._TimeUtils;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -98,15 +98,15 @@ public final class StringType extends AbstractMappingType {
         } else if (nonNull instanceof LocalDate) {
             value = nonNull.toString();
         } else if (nonNull instanceof LocalDateTime) {
-            value = ((LocalDateTime) nonNull).format(TimeUtils.getDatetimeFormatter(6));
+            value = ((LocalDateTime) nonNull).format(_TimeUtils.getDatetimeFormatter(6));
         } else if (nonNull instanceof LocalTime) {
-            value = ((LocalTime) nonNull).format(TimeUtils.getTimeFormatter(6));
+            value = ((LocalTime) nonNull).format(_TimeUtils.getTimeFormatter(6));
         } else if (nonNull instanceof OffsetDateTime) {
-            value = ((OffsetDateTime) nonNull).format(TimeUtils.getDatetimeOffsetFormatter(6));
+            value = ((OffsetDateTime) nonNull).format(_TimeUtils.getDatetimeOffsetFormatter(6));
         } else if (nonNull instanceof ZonedDateTime) {
-            value = ((ZonedDateTime) nonNull).format(TimeUtils.getDatetimeOffsetFormatter(6));
+            value = ((ZonedDateTime) nonNull).format(_TimeUtils.getDatetimeOffsetFormatter(6));
         } else if (nonNull instanceof OffsetTime) {
-            value = ((OffsetTime) nonNull).format(TimeUtils.getOffsetTimeFormatter(6));
+            value = ((OffsetTime) nonNull).format(_TimeUtils.getOffsetTimeFormatter(6));
         } else if (nonNull instanceof YearMonth || nonNull instanceof Year) {
             value = nonNull.toString();
         } else {

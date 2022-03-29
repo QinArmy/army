@@ -5,8 +5,8 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.util.CollectionUtils;
 import io.army.util._Assert;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -596,21 +596,21 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
         }
         final List<SetLeftItem> targetParts = this.leftList;
         final List<SetRightItem> valueParts = this.rightList;
-        if (CollectionUtils.isEmpty(targetParts)) {
+        if (_CollectionUtils.isEmpty(targetParts)) {
             throw _Exceptions.updateFieldListEmpty();
         }
         if (targetParts.size() != valueParts.size()) {
             // no bug ,never here
             throw new IllegalStateException("target and value size not match.");
         }
-        this.leftList = CollectionUtils.unmodifiableList(targetParts);
-        this.rightList = CollectionUtils.unmodifiableList(valueParts);
+        this.leftList = _CollectionUtils.unmodifiableList(targetParts);
+        this.rightList = _CollectionUtils.unmodifiableList(valueParts);
 
         final List<_Predicate> predicates = this.predicateList;
-        if (CollectionUtils.isEmpty(predicates)) {
+        if (_CollectionUtils.isEmpty(predicates)) {
             throw _Exceptions.dmlNoWhereClause();
         }
-        this.predicateList = CollectionUtils.unmodifiableList(predicates);
+        this.predicateList = _CollectionUtils.unmodifiableList(predicates);
 
         this.onAsUpdate();
         this.prepared = true;

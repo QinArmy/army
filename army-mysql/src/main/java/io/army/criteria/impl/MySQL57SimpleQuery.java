@@ -8,7 +8,7 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
@@ -425,7 +425,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
                 , List<String> partitionList, MySQL57SimpleQuery<C, Q> query) {
             super(joinType, table, alias);
             this.query = query;
-            this.partitionList = CollectionUtils.unmodifiableList(partitionList);
+            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
         }
 
         @Override

@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.WithElement;
 import io.army.criteria.impl.inner._MultiUpdate;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends JoinableUpdate<C, JT, 
     @Override
     final void onAsUpdate() {
         final List<_TableBlock> tableBlockList = this.tableBlockList;
-        if (CollectionUtils.isEmpty(tableBlockList)) {
+        if (_CollectionUtils.isEmpty(tableBlockList)) {
             throw new CriteriaException("multi-table table block list must not empty.");
         }
         this.tableBlockList = this.criteriaContext.clear();

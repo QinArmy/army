@@ -13,9 +13,9 @@ import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util.CollectionUtils;
-import io.army.util.StringUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -47,7 +47,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         private PreGeneratorMetaImpl(FieldMeta<?> fieldMeta, Class<?> javaType, Map<String, String> params) {
             this.javaType = javaType;
             this.fieldMeta = fieldMeta;
-            this.params = CollectionUtils.unmodifiableMap(params);
+            this.params = _CollectionUtils.unmodifiableMap(params);
 
             this.dependPropName = this.params.getOrDefault(FieldGenerator.DEPEND_FIELD_NAME, "");
         }
@@ -197,10 +197,10 @@ abstract class FieldMetaUtils extends TableMetaUtils {
     static String columnComment(final Column column, FieldMeta<?> fieldMeta, final boolean isDiscriminator) {
         String comment = column.comment();
         if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName()) || isDiscriminator) {
-            if (!StringUtils.hasText(comment)) {
+            if (!_StringUtils.hasText(comment)) {
                 comment = commentManagedByArmy(fieldMeta);
             }
-        } else if (!StringUtils.hasText(comment)) {
+        } else if (!_StringUtils.hasText(comment)) {
             String m = String.format("Domain[%s] column[%s] isn't reserved properties or discriminator, so must have common"
                     , fieldMeta.tableMeta().javaType().getName()
                     , fieldMeta.columnName());
@@ -260,7 +260,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
      * @see #columnGeneratorMeta(Generator, FieldMeta, boolean)
      */
     private static Class<?> loadPreGeneratorClass(FieldMeta<?> fieldMeta, final String className) {
-        if (!StringUtils.hasText(className)) {
+        if (!_StringUtils.hasText(className)) {
             String m = String.format("%s generator no class name", fieldMeta);
             throw new MetaException(m);
         }

@@ -11,9 +11,9 @@ import java.util.TimeZone;
 /**
  *
  */
-public abstract class TimeUtils extends io.qinarmy.util.TimeUtils {
+public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
 
-    protected TimeUtils() {
+    protected _TimeUtils() {
         throw new UnsupportedOperationException();
     }
 

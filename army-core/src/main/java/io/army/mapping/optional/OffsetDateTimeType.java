@@ -6,7 +6,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
-import io.army.util.TimeUtils;
+import io.army.util._TimeUtils;
 
 import java.time.DateTimeException;
 import java.time.OffsetDateTime;
@@ -61,7 +61,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
             value = ((ZonedDateTime) nonNull).toOffsetDateTime();
         } else if (nonNull instanceof String) {
             try {
-                value = OffsetDateTime.parse((String) nonNull, TimeUtils.getDatetimeOffsetFormatter(6));
+                value = OffsetDateTime.parse((String) nonNull, _TimeUtils.getDatetimeOffsetFormatter(6));
             } catch (DateTimeException e) {
                 throw valueOutRange(sqlType, nonNull, e);
             }

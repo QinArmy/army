@@ -9,8 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util.AnnotationUtils;
-import io.army.util.StringUtils;
+import io.army.util._StringUtils;
 import io.qinarmy.util.Pair;
 
 import java.lang.reflect.Field;
@@ -80,7 +79,7 @@ abstract class TableMetaUtils {
 
     static String tableName(Table table, Class<? extends IDomain> domainClass) {
         final String name = table.name();
-        if (!StringUtils.hasText(name)) {
+        if (!_StringUtils.hasText(name)) {
             String m = String.format("Domain[%s] table name required", domainClass.getName());
             throw new MetaException(m);
         }
@@ -89,7 +88,7 @@ abstract class TableMetaUtils {
 
     static String tableComment(Table table, Class<? extends IDomain> domainClass) {
         final String comment = table.comment();
-        if (!StringUtils.hasText(comment)) {
+        if (!_StringUtils.hasText(comment)) {
             String m = String.format("Domain[%s] no tableMeta comment", domainClass.getName());
             throw new MetaException(m);
         }
@@ -333,13 +332,13 @@ abstract class TableMetaUtils {
 
 
     static String columnName(final Column column, final Field field) throws MetaException {
-        final String customColumnName = StringUtils.toLowerCase(column.name()), fieldName = field.getName();
+        final String customColumnName = _StringUtils.toLowerCase(column.name()), fieldName = field.getName();
         final String columnName;
         if (customColumnName.isEmpty()) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
         } else if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
-            if (StringUtils.hasText(customColumnName) && !customColumnName.equals(columnName)) {
+            if (_StringUtils.hasText(customColumnName) && !customColumnName.equals(columnName)) {
                 String m = String.format("Mapped class[%s] reserved filed[%s] column name must use default value.",
                         field.getDeclaringClass().getName(), fieldName);
                 throw new MetaException(m);
@@ -417,7 +416,7 @@ abstract class TableMetaUtils {
 
         for (Class<?> superClass = topMappedClass; superClass != null;
              superClass = superClass.getSuperclass()) {
-            if (AnnotationUtils.getAnnotation(superClass, MappedSuperclass.class) != null) {
+            if (superClass.getAnnotation(MappedSuperclass.class) != null) {
                 stack.push(superClass);
             } else {
                 break;
@@ -481,7 +480,7 @@ abstract class TableMetaUtils {
             } catch (NoSuchFieldException e) {
                 continue;
             }
-            Column column = AnnotationUtils.getAnnotation(field, Column.class);
+            Column column = field.getAnnotation(Column.class);
             if (column == null) {
                 String m = String.format("tableMeta[%s] not found primary column definition", tableMeta.tableName());
                 throw new MetaException(m);

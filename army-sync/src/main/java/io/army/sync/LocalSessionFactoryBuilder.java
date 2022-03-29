@@ -10,7 +10,8 @@ import io.army.codec.JsonCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
-import io.army.env.MyKey;
+import io.army.env.ArmyKey;
+import io.army.env.SyncKey;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -24,9 +25,9 @@ import io.army.sync.executor.ExecutorEnvironment;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.MetaExecutor;
-import io.army.util.CollectionUtils;
-import io.army.util.StringUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,9 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 
-final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements FactoryBuilder {
+final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements FactoryBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LocalSessioinFactoryBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LocalSessionFactoryBuilder.class);
 
     Map<TableMeta<?>, DomainAdvice> domainAdviceMap = Collections.emptyMap();
 
@@ -52,7 +53,7 @@ final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements
 
     @Override
     public FactoryBuilder name(String sessionFactoryName) {
-        if (!StringUtils.hasText(sessionFactoryName)) {
+        if (!_StringUtils.hasText(sessionFactoryName)) {
             throw new IllegalArgumentException("sessionFactoryName must have text.");
         }
         this.name = sessionFactoryName;
@@ -110,7 +111,7 @@ final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements
 
     @Override
     public FactoryBuilder packagesToScan(List<String> packageList) {
-        this.packagesToScan = CollectionUtils.asUnmodifiableList(packageList);
+        this.packagesToScan = _CollectionUtils.asUnmodifiableList(packageList);
         return this;
     }
 
@@ -125,16 +126,8 @@ final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements
 
         try {
             final ArmyEnvironment env = Objects.requireNonNull(this.environment);
-            final String offsetId;
-            offsetId = env.get(ArmyKeys.ZONE_OFFSET_ID);
-            if (offsetId == null) {
-                this.zoneOffset = null;
-            } else {
-                this.zoneOffset = ZoneOffset.of(offsetId);
-            }
             //1. scan table meta
             this.scanSchema();
-
 
             //2. create ExecutorFactory
             final ExecutorFactory executorFactory;
@@ -149,7 +142,8 @@ final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements
             }
             //4. create SessionFactoryImpl instance
             this.executorFactory = executorFactory;
-            this.ddlMode = env.getOrDefault(MyKey.DDL_MODE);
+            this.ddlMode = env.getOrDefault(ArmyKey.DDL_MODE);
+            initializingZoneOffset(env);
             final LocalSessionFactory sessionFactory;
             sessionFactory = new LocalSessionFactory(this);
             if (LOG.isDebugEnabled()) {
@@ -390,7 +384,7 @@ final class LocalSessioinFactoryBuilder extends FactoryBuilderSupport implements
     private static ExecutorProvider getExecutorProvider(final ArmyEnvironment env) {
 
         final Class<?> providerClass;
-        final String className = env.get(ArmyKeys.executorProvider, String.class, "io.army.jdbc.JdbcExecutorProvider");
+        final String className = env.getOrDefault(SyncKey.EXECUTOR_PROVIDER);
         try {
             providerClass = Class.forName(className);
         } catch (Exception e) {

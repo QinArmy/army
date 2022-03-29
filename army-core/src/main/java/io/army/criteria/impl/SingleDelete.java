@@ -4,8 +4,8 @@ import io.army.criteria.Delete;
 import io.army.criteria.WithElement;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleDelete;
-import io.army.util.CollectionUtils;
 import io.army.util._Assert;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -44,11 +44,11 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
 
         final List<_Predicate> predicates = this.predicateList;
 
-        if (CollectionUtils.isEmpty(predicates)) {
+        if (_CollectionUtils.isEmpty(predicates)) {
             throw _Exceptions.dmlNoWhereClause();
         }
 
-        this.predicateList = CollectionUtils.unmodifiableList(predicates);
+        this.predicateList = _CollectionUtils.unmodifiableList(predicates);
 
         this.onAsDelete();
         this.prepared = true;

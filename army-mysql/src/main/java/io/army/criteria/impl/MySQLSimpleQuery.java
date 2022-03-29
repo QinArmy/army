@@ -9,7 +9,7 @@ import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -108,7 +108,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     public final FT ifUseIndex(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.useIndex(list);
         }
         return (FT) this;
@@ -118,7 +118,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     public final FT ifIgnoreIndex(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.ignoreIndex(list);
         }
         return (FT) this;
@@ -128,7 +128,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     public final FT ifForceIndex(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.forceIndex(list);
         }
         return (FT) this;
@@ -350,7 +350,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         if (!(block instanceof MySQLFirstBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (CollectionUtils.isEmpty(indexNames)) {
+        if (_CollectionUtils.isEmpty(indexNames)) {
             throw new CriteriaException("index name list must not empty.");
         }
         final MySQLFirstBlock<C, OR> tableBlock = (MySQLFirstBlock<C, OR>) block;

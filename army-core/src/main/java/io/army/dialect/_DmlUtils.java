@@ -18,7 +18,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.stmt.ParamValue;
 import io.army.stmt.StrictParamValue;
 import io.army.util.ArrayUtils;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -266,7 +266,7 @@ public abstract class _DmlUtils {
 
     static void assertUpdateSetAndWhereClause(_Update update) {
         final List<? extends SetLeftItem> fieldList = update.fieldList();
-        if (CollectionUtils.isEmpty(fieldList)) {
+        if (_CollectionUtils.isEmpty(fieldList)) {
             throw new CriteriaException("update must have set clause.");
         }
         final List<? extends SetRightItem> valueExpList = update.valueExpList();
@@ -276,7 +276,7 @@ public abstract class _DmlUtils {
                     , fieldList.size(), valueExpList.size());
             throw new CriteriaException(m);
         }
-        if (CollectionUtils.isEmpty(update.predicateList())) {
+        if (_CollectionUtils.isEmpty(update.predicateList())) {
             throw new CriteriaException("update must have where clause.");
         }
     }

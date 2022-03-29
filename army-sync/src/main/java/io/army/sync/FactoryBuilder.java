@@ -101,7 +101,7 @@ public interface FactoryBuilder {
     SessionFactory build() throws SessionFactoryException;
 
     static FactoryBuilder builder() {
-        return new LocalSessioinFactoryBuilder();
+        return new LocalSessionFactoryBuilder();
     }
 
 

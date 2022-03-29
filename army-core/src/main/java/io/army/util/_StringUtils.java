@@ -5,9 +5,9 @@ import io.army.modelgen._MetaBridge;
 
 import java.util.Locale;
 
-public abstract class StringUtils extends org.springframework.util.StringUtils {
+public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
 
-    protected StringUtils() {
+    protected _StringUtils() {
         throw new UnsupportedOperationException();
     }
 

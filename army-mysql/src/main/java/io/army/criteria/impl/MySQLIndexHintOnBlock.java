@@ -6,7 +6,7 @@ import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -98,7 +98,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     public final IC ifUseIndex(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.getCriteriaContext().criteria());
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.useIndex(list);
         }
         return (IC) this;
@@ -108,7 +108,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     public final IC ifIgnoreIndex(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.getCriteriaContext().criteria());
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.ignoreIndex(list);
         }
         return (IC) this;
@@ -118,7 +118,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     public final IC ifForceIndex(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.getCriteriaContext().criteria());
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.forceIndex(list);
         }
         return (IC) this;
@@ -189,7 +189,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
         if (indexHintList == null) {
             indexHintList = Collections.emptyList();
         } else {
-            indexHintList = CollectionUtils.asUnmodifiableList(indexHintList);
+            indexHintList = _CollectionUtils.asUnmodifiableList(indexHintList);
         }
         return indexHintList;
     }
@@ -220,7 +220,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
         if (this.indexHintCommand != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (CollectionUtils.isEmpty(indexNames)) {
+        if (_CollectionUtils.isEmpty(indexNames)) {
             throw new CriteriaException("index name list must not empty.");
         }
         List<MySQLIndexHint> indexHintList = this.indexHintList;

@@ -10,7 +10,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -99,8 +99,8 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
             this.fieldList = fieldList;
             this.valueExpList = valueExpList;
         } else {
-            this.fieldList = CollectionUtils.unmodifiableList(parenFields);
-            this.valueExpList = CollectionUtils.unmodifiableList(parentValues);
+            this.fieldList = _CollectionUtils.unmodifiableList(parenFields);
+            this.valueExpList = _CollectionUtils.unmodifiableList(parentValues);
         }
         this.childSetClause = new ChildSetBlock(childTable, update.tableAlias(), fields, values, this);
     }
@@ -158,8 +158,8 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
                 , List<SetLeftItem> fieldList, List<SetRightItem> valueExpList
                 , StandardUpdateContext parentContext) {
             super(table, tableAlias, parentContext);
-            this.fieldList = CollectionUtils.unmodifiableList(fieldList);
-            this.valueExpList = CollectionUtils.unmodifiableList(valueExpList);
+            this.fieldList = _CollectionUtils.unmodifiableList(fieldList);
+            this.valueExpList = _CollectionUtils.unmodifiableList(valueExpList);
             this.parentContext = parentContext;
         }
 

@@ -11,7 +11,7 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
 import io.army.util.ArrayUtils;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
@@ -80,10 +80,10 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
     @Override
     public final PR partition(List<String> partitionNameList) {
-        if (CollectionUtils.isEmpty(partitionNameList)) {
+        if (_CollectionUtils.isEmpty(partitionNameList)) {
             throw new CriteriaException("partitionNameList must not empty.");
         }
-        this.partitionList = CollectionUtils.asUnmodifiableList(partitionNameList);
+        this.partitionList = _CollectionUtils.asUnmodifiableList(partitionNameList);
         return (PR) this;
     }
 
@@ -101,7 +101,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     public final PR ifPartition(Supplier<List<String>> supplier) {
         final List<String> list;
         list = supplier.get();
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.partition(list);
         }
         return (PR) this;
@@ -111,7 +111,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     public final PR ifPartition(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!_CollectionUtils.isEmpty(list)) {
             this.partition(list);
         }
         return (PR) this;
@@ -137,7 +137,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
     @Override
     public final OR orderBy(List<SortItem> sortItemList) {
-        this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
+        this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
         return (OR) this;
     }
 
@@ -163,8 +163,8 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     public final OR ifOrderBy(Supplier<List<SortItem>> supplier) {
         final List<SortItem> sortItemList;
         sortItemList = supplier.get();
-        if (!CollectionUtils.isEmpty(sortItemList)) {
-            this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
+        if (!_CollectionUtils.isEmpty(sortItemList)) {
+            this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
         }
         return (OR) this;
     }
@@ -173,8 +173,8 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     public final OR ifOrderBy(Function<C, List<SortItem>> function) {
         final List<SortItem> sortItemList;
         sortItemList = function.apply(this.criteria);
-        if (!CollectionUtils.isEmpty(sortItemList)) {
-            this.orderByList = CollectionUtils.asUnmodifiableList(sortItemList);
+        if (!_CollectionUtils.isEmpty(sortItemList)) {
+            this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
         }
         return (OR) this;
     }
@@ -254,14 +254,14 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     @Override
     final void onAsDelete() {
         final List<String> partitionList = this.partitionList;
-        if (CollectionUtils.isEmpty(partitionList)) {
+        if (_CollectionUtils.isEmpty(partitionList)) {
             this.partitionList = Collections.emptyList();
         } else {
             this.partitionList = partitionList;
         }
 
         final List<SortItem> orderByList = this.orderByList;
-        if (CollectionUtils.isEmpty(orderByList)) {
+        if (_CollectionUtils.isEmpty(orderByList)) {
             this.orderByList = Collections.emptyList();
         } else {
             this.orderByList = orderByList;
@@ -269,7 +269,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
         if (this instanceof BatchDelete) {
             final List<?> wrapperList = ((BatchDelete<C>) this).wrapperList;
-            if (CollectionUtils.isEmpty(wrapperList)) {
+            if (_CollectionUtils.isEmpty(wrapperList)) {
                 throw _Exceptions.batchParamEmpty();
             }
         }
@@ -425,12 +425,12 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
             if (hintList == Collections.EMPTY_LIST) {
                 this.hintList = hintList;
             } else {
-                this.hintList = CollectionUtils.asUnmodifiableList(hintList);
+                this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
             }
             if (modifierList == Collections.EMPTY_LIST) {
                 this.modifierList = modifierList;
             } else {
-                this.modifierList = CollectionUtils.asUnmodifiableList(modifierList);
+                this.modifierList = _CollectionUtils.asUnmodifiableList(modifierList);
             }
             this.table = table;
         }
@@ -534,13 +534,13 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
         @Override
         public final WE with(Supplier<List<Cte>> supplier) {
-            this.cteList = CollectionUtils.asUnmodifiableList(supplier.get());
+            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
             return (WE) this;
         }
 
         @Override
         public final WE with(Function<C, List<Cte>> function) {
-            this.cteList = CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
+            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
             return (WE) this;
         }
 
@@ -573,8 +573,8 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
             final List<Hint> hintList;
             hintList = hints.get();
             assert hintList != null;
-            this.hintList = CollectionUtils.asUnmodifiableList(hintList);
-            this.modifierList = CollectionUtils.asUnmodifiableList(modifiers);
+            this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
+            this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
             return this;
         }
 

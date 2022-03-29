@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +28,7 @@ final class AndPredicate extends OperationPredicate {
         for (IPredicate p : rights) {
             rightList.add((OperationPredicate) p);
         }
-        return new AndPredicate(left, CollectionUtils.unmodifiableList(rightList));
+        return new AndPredicate(left, _CollectionUtils.unmodifiableList(rightList));
     }
 
 

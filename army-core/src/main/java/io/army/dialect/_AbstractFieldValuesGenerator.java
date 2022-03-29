@@ -7,7 +7,7 @@ import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util.TimeUtils;
+import io.army.util._TimeUtils;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -82,7 +82,7 @@ public abstract class _AbstractFieldValuesGenerator implements FieldValueGenerat
             , final ObjectAccessor accessor) {
         final Class<?> javaType = field.javaType();
         if (javaType == LocalDateTime.class) {
-            LocalDateTime value = now.withOffsetSameInstant(TimeUtils.systemZoneOffset()).toLocalDateTime();
+            LocalDateTime value = now.withOffsetSameInstant(_TimeUtils.systemZoneOffset()).toLocalDateTime();
             accessor.set(domain, field.fieldName(), value);
         } else if (javaType == OffsetDateTime.class) {
             accessor.set(domain, field.fieldName(), now);

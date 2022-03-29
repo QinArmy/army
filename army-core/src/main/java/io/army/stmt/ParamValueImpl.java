@@ -2,7 +2,6 @@ package io.army.stmt;
 
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
-import io.army.util._Assert;
 
 final class ParamValueImpl implements StrictParamValue {
 
@@ -11,8 +10,6 @@ final class ParamValueImpl implements StrictParamValue {
     private final Object value;
 
     ParamValueImpl(ParamMeta paramMeta, @Nullable Object value) {
-        _Assert.notNull(paramMeta, "paramMeta required");
-
         this.paramMeta = paramMeta;
         this.value = value;
     }

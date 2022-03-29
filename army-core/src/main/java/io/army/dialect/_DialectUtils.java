@@ -5,8 +5,8 @@ import io.army.criteria.CriteriaException;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util.StringUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.Collection;
 
@@ -73,7 +73,7 @@ public abstract class _DialectUtils {
         if (table instanceof SimpleTableMeta && table.immutable()) {
             throw _Exceptions.immutableTable(table);
         }
-        if (!StringUtils.hasText(tableAlias)) {
+        if (!_StringUtils.hasText(tableAlias)) {
             throw new CriteriaException("Alias of table or sub query must has text.");
         }
         if (tableAlias.startsWith(Constant.FORBID_ALIAS)) {
@@ -84,7 +84,7 @@ public abstract class _DialectUtils {
     }
 
     public static void validateTableAlias(final String tableAlias) {
-        if (!StringUtils.hasText(tableAlias)) {
+        if (!_StringUtils.hasText(tableAlias)) {
             throw new CriteriaException("Alias of table or sub query must has text.");
         }
         if (tableAlias.startsWith(Constant.FORBID_ALIAS)) {

@@ -2,7 +2,7 @@ package io.army.meta;
 
 
 import io.army.domain.IDomain;
-import org.springframework.lang.Nullable;
+import io.army.lang.Nullable;
 
 public interface IndexFieldMeta<T extends IDomain> extends FieldMeta<T> {
 

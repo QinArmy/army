@@ -4,7 +4,7 @@ import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.meta.TableMeta;
-import io.army.util.CollectionUtils;
+import io.army.util._CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +23,7 @@ final class MySQLFirstBlock<C, OR> extends OnClauseTableBlock<C, OR> implements 
      */
     MySQLFirstBlock(TableMeta<?> table, String alias, List<String> partitionList, OR stmt) {
         super(_JoinType.NONE, table, alias);
-        this.partitionList = CollectionUtils.unmodifiableList(partitionList);
+        this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
         this.stmt = stmt;
     }
 

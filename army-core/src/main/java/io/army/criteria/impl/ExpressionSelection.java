@@ -15,7 +15,7 @@ final class ExpressionSelection implements _Selection {
     private final String alias;
 
     ExpressionSelection(_Expression expression, String alias) {
-        _Assert.hasText(alias, "alias required for Selection");
+        _Assert.assertHasText(alias, "alias required for Selection");
         this.expression = expression;
         this.alias = alias;
     }

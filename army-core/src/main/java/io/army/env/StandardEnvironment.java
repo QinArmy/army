@@ -1,135 +1,65 @@
 package io.army.env;
 
-import io.army.bean.ArmyBean;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.MapPropertySource;
+import io.qinarmy.env.convert.Converter;
+import io.qinarmy.env.convert.ConverterManager;
+import io.qinarmy.env.convert.ImmutableConverterManager;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-public class StandardEnvironment extends AbstractArmyEnvironment {
+public final class StandardEnvironment implements ArmyEnvironment {
 
-    protected final Environment env;
-
-    protected final ConcurrentMap<String, ArmyBean> beanMap = new ConcurrentHashMap<>();
-
-
-    public StandardEnvironment() {
-        this(new org.springframework.core.env.StandardEnvironment());
+    public static StandardEnvironment from(Map<String, String> map) {
+        final ConverterManager converterManager;
+        converterManager = ImmutableConverterManager.create(consumer -> {
+        });
+        return new StandardEnvironment(converterManager, map);
     }
 
-    StandardEnvironment(Environment env) {
-        this.env = env;
+    public static StandardEnvironment create(ConverterManager converterManager, Map<String, String> map) {
+        return new StandardEnvironment(converterManager, map);
     }
 
 
-    @Override
-    public final boolean containsProperty(String key) {
-        return env.containsProperty(key);
-    }
+    private final ConverterManager converterManager;
 
-    @Override
-    public final String get(String key) {
-        return env.getProperty(key);
-    }
+    private final Map<String, String> map;
 
-    @Override
-    public final String get(String key, String defaultValue) {
-        return env.getProperty(key, defaultValue);
+    private StandardEnvironment(ConverterManager converterManager, Map<String, String> map) {
+        this.converterManager = converterManager;
+        this.map = Collections.unmodifiableMap(new HashMap<>(map));
     }
-
-    @Override
-    public final <T> T get(String key, Class<T> targetType) {
-        return env.getProperty(key, targetType);
-    }
-
-    @Override
-    public <T> T getNonNull(String key, Class<T> resultClass) {
-        return null;
-    }
-
-    @Override
-    public final <T> T get(String key, Class<T> targetType, T defaultValue) {
-        return env.getProperty(key, targetType, defaultValue);
-    }
-
-    @Override
-    public final String getNonNull(String key) throws IllegalStateException {
-        return env.getRequiredProperty(key);
-    }
-
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends ArmyBean> T getBean(String name, Class<T> beanClass) {
-        ArmyBean armyBean = this.beanMap.get(name);
-        return beanClass.isInstance(armyBean) ? (T) armyBean : null;
-    }
-
-    @Override
-    public <T extends ArmyBean> T getRequiredBean(String name, Class<T> beanClass) throws BeansException {
-        T t = getBean(name, beanClass);
-        if (t == null) {
-            throw new BeansException("NoSuchBean name[%s],Class[%s]", name, beanClass.getName());
+    public <T> T get(ArmyKey<T> key) {
+        final String textValue;
+        textValue = this.map.get(key.name);
+        final Class<T> javaType = key.javaType;
+        if (textValue != null && javaType == String.class) {
+            return (T) textValue;
         }
-        return t;
-    }
-
-    @Override
-    public Map<String, ArmyBean> getAllBean() {
-        return Collections.unmodifiableMap(this.beanMap);
-    }
-
-    /*################################## blow io.army.env.ArmyConfigurableArmyEnvironment method ##################################*/
-
-    @Override
-    public final void addFirst(String name, Map<String, Object> propertyMap) {
-        obtainConfigurableEnvironment().getPropertySources().addFirst(new MapPropertySource(name, propertyMap));
-    }
-
-    @Override
-    public final void addLast(String name, Map<String, Object> propertyMap) {
-        obtainConfigurableEnvironment().getPropertySources().addLast(new MapPropertySource(name, propertyMap));
-    }
-
-    @Override
-    public final void addBefore(String name, Map<String, Object> propertyMap, String relativePropertyMapName) {
-        obtainConfigurableEnvironment().getPropertySources()
-                .addBefore(relativePropertyMapName, new MapPropertySource(name, propertyMap));
-    }
-
-    @Override
-    public final void addAfter(String name, Map<String, Object> propertyMap, String relativePropertyMapName) {
-        obtainConfigurableEnvironment().getPropertySources()
-                .addAfter(relativePropertyMapName, new MapPropertySource(name, propertyMap));
-    }
-
-    @Override
-    public void addBean(String beanName, ArmyBean bean) {
-        if (this.beanMap.putIfAbsent(beanName, bean) != null) {
-            throw new IllegalStateException(String.format("ArmyBean[%s] already exists.", beanName));
+        final Converter<T> converter;
+        converter = this.converterManager.getConverter(javaType);
+        if (converter == null) {
+            String m = String.format("Not found %s for key[%s]", Converter.class.getName(), key.name);
+            throw new IllegalStateException(m);
         }
+        return converter.convert(textValue);
     }
 
     @Override
-    public void addAllBean(Map<String, ArmyBean> beanMap) {
-        for (Map.Entry<String, ArmyBean> e : beanMap.entrySet()) {
-            addBean(e.getKey(), e.getValue());
+    public <T> T getOrDefault(ArmyKey<T> key) {
+        final T defaultValue;
+        defaultValue = key.defaultValue;
+        if (defaultValue == null) {
+            String m = String.format("%s %s no default value.", ArmyKey.class.getName(), key.name);
+            throw new IllegalArgumentException(m);
         }
-    }
-
-    @Override
-    public void addBeansIfNotExists(Map<String, ArmyBean> beanMap) {
-        for (Map.Entry<String, ArmyBean> e : beanMap.entrySet()) {
-            this.beanMap.putIfAbsent(e.getKey(), e.getValue());
-        }
-    }
-
-    protected ConfigurableEnvironment obtainConfigurableEnvironment() {
-        return (ConfigurableEnvironment) this.env;
+        final T value;
+        value = get(key);
+        return value == null ? defaultValue : value;
     }
 
 
