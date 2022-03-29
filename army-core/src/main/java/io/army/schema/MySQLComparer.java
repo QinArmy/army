@@ -1,9 +1,9 @@
 package io.army.schema;
 
-import io.army.Database;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
+import io.army.session.Database;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 

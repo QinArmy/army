@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.ArmyException;
-import io.army.Database;
 import io.army.criteria.*;
 import io.army.criteria.impl._SQLCounselor;
 import io.army.criteria.impl.inner.*;
@@ -10,6 +9,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
+import io.army.session.Database;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;

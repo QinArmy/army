@@ -2,7 +2,7 @@ package io.army.reactive;
 
 import io.army.criteria.*;
 import io.army.domain.IDomain;
-import io.army.session.NonUniqueException;
+import io.army.util._Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -164,8 +164,9 @@ public abstract class _AbstractReactiveSession implements ReactiveSession {
             case 1:
                 mono = Mono.just(list.get(0));
                 break;
-            default:
-                mono = Mono.error(new NonUniqueException("select result[%s] more than 1.", list.size()));
+            default: {
+                mono = Mono.error(_Exceptions.nonUnique(list));
+            }
         }
         return mono;
     }

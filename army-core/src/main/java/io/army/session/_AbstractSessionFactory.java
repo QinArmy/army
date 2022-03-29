@@ -1,7 +1,6 @@
 package io.army.session;
 
 import io.army.ArmyException;
-import io.army.DdlMode;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
 import io.army.codec.JsonCodec;

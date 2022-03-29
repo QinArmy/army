@@ -1,7 +1,6 @@
 package io.army.dialect.mysql;
 
 
-import io.army.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._MockDialects;
@@ -11,6 +10,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
+import io.army.session.Database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;

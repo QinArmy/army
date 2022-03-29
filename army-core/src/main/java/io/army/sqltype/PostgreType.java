@@ -1,8 +1,8 @@
 package io.army.sqltype;
 
-import io.army.Database;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping.MappingType;
+import io.army.session.Database;
 
 /**
  * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>

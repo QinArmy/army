@@ -7,6 +7,9 @@ import java.util.*;
 
 public abstract class ArrayUtils {
 
+    protected ArrayUtils() {
+        throw new UnsupportedOperationException();
+    }
 
     @NonNull
     @SafeVarargs
@@ -74,15 +77,6 @@ public abstract class ArrayUtils {
         return list;
     }
 
-    @NonNull
-    public static <T> List<T> asList(@Nullable T... addElements) {
-        if (addElements == null) {
-            return new ArrayList<>(0);
-        }
-        List<T> list = new ArrayList<>(addElements.length);
-        Collections.addAll(list, addElements);
-        return list;
-    }
 
     @SafeVarargs
     @SuppressWarnings("varargs")
@@ -94,41 +88,4 @@ public abstract class ArrayUtils {
         return Collections.unmodifiableList(asList(collection, addElements));
     }
 
-    public static Map<Integer, Integer> asUnmodifiableMap(int[] array) {
-        Map<Integer, Integer> map;
-        switch (array.length) {
-            case 0:
-                map = Collections.emptyMap();
-                break;
-            case 1:
-                map = Collections.singletonMap(0, array[0]);
-                break;
-            default:
-                map = new HashMap<>((int) (array.length / 0.75f));
-                for (int i = 0; i < array.length; i++) {
-                    map.put(i, array[i]);
-                }
-                map = Collections.unmodifiableMap(map);
-        }
-        return map;
-    }
-
-    public static Map<Integer, Long> asUnmodifiableMap(long[] array) {
-        Map<Integer, Long> map;
-        switch (array.length) {
-            case 0:
-                map = Collections.emptyMap();
-                break;
-            case 1:
-                map = Collections.singletonMap(0, array[0]);
-                break;
-            default:
-                map = new HashMap<>((int) (array.length / 0.75f));
-                for (int i = 0; i < array.length; i++) {
-                    map.put(i, array[i]);
-                }
-                map = Collections.unmodifiableMap(map);
-        }
-        return map;
-    }
 }

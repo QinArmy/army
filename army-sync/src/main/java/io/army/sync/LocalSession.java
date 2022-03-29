@@ -1,7 +1,6 @@
 package io.army.sync;
 
 import io.army.ArmyException;
-import io.army.DuplicationSessionTransaction;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.*;

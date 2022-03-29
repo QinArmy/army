@@ -1,7 +1,6 @@
 package io.army.session;
 
 import io.army.ArmyException;
-import io.army.DdlMode;
 import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.criteria.impl._SchemaMetaFactory;

@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.Database;
+import io.army.session.Database;
 
 import java.time.ZoneId;
 

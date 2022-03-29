@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.Database;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.dialect.Dialect;
+import io.army.session.Database;
 import io.army.util._Exceptions;
 
 abstract class MySQLUtils {

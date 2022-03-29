@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.Database;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
@@ -10,6 +9,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
+import io.army.session.Database;
 import io.army.util._Exceptions;
 
 import java.util.List;

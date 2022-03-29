@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.Database;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.mysql._MySQL57Query;
 import io.army.criteria.mysql.MySQL57Query;
@@ -8,6 +7,7 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.session.Database;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 

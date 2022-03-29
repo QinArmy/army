@@ -7,10 +7,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.CodeEnumType;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.GeneratorMeta;
-import io.army.meta.MetaException;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util._CollectionUtils;
@@ -18,6 +15,7 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,15 +39,11 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
         private final Map<String, String> params;
 
-        private final String dependPropName;
-
 
         private PreGeneratorMetaImpl(FieldMeta<?> fieldMeta, Class<?> javaType, Map<String, String> params) {
             this.javaType = javaType;
             this.fieldMeta = fieldMeta;
             this.params = _CollectionUtils.unmodifiableMap(params);
-
-            this.dependPropName = this.params.getOrDefault(FieldGenerator.DEPEND_FIELD_NAME, "");
         }
 
         @Override
@@ -96,7 +90,10 @@ abstract class FieldMetaUtils extends TableMetaUtils {
             String m = String.format("%s insertable error.", field);
             throw new MetaException(m);
         }
-
+        final Class<?> javaType = field.javaType();
+        if (javaType != Integer.class && javaType != Long.class && javaType != BigInteger.class) {
+            throw _Exceptions.autoIdErrorJavaType((PrimaryFieldMeta<?>) field);
+        }
     }
 
     static GeneratorMeta columnGeneratorMeta(Generator generator, FieldMeta<?> fieldMeta, boolean isDiscriminator) {

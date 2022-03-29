@@ -1,12 +1,12 @@
 package io.army.mapping.mysql;
 
-import io.army.Database;
 import io.army.dialect.Constant;
 import io.army.mapping.AbstractMappingType;
 import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping.TextEnumType;
 import io.army.meta.ServerMeta;
+import io.army.session.Database;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;

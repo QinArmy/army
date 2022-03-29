@@ -1,9 +1,9 @@
 package io.army.dialect.mysql;
 
-import io.army.Database;
 import io.army.dialect._Dialect;
 import io.army.dialect._DialectEnvironment;
 import io.army.meta.ServerMeta;
+import io.army.session.Database;
 import io.army.util._Exceptions;
 
 public abstract class _MySQLDialectFactory {

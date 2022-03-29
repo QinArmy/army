@@ -1,8 +1,6 @@
 package io.army.sync;
 
 import io.army.ArmyException;
-import io.army.ArmyKeys;
-import io.army.DdlMode;
 import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
@@ -19,6 +17,7 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
+import io.army.session.DdlMode;
 import io.army.session.FactoryBuilderSupport;
 import io.army.session.SessionFactoryException;
 import io.army.sync.executor.ExecutorEnvironment;
@@ -394,7 +393,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
 
         if (!ExecutorProvider.class.isAssignableFrom(providerClass)) {
             String m = String.format("%s value[%s] isn' the implementation of %s ."
-                    , ArmyKeys.executorProvider, providerClass.getName(), ExecutorProvider.class.getName());
+                    , SyncKey.EXECUTOR_PROVIDER, providerClass.getName(), ExecutorProvider.class.getName());
             throw new SessionFactoryException(m);
         }
 

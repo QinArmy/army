@@ -6,6 +6,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 import io.army.session.NonUniqueException;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,8 +53,10 @@ public abstract class _AbstractSyncSession implements SyncSession {
             case 0:
                 result = null;
                 break;
-            default:
-                throw new NonUniqueException("select result[%s] more than 1.", list.size());
+            default: {
+                String m = String.format("select result[%s] more than 1.", list.size());
+                throw new NonUniqueException(m);
+            }
         }
         return result;
     }
@@ -89,7 +92,7 @@ public abstract class _AbstractSyncSession implements SyncSession {
                 result = null;
                 break;
             default:
-                throw new NonUniqueException("select result[%s] more than 1.", list.size());
+                throw _Exceptions.nonUnique(list);
         }
         return result;
     }

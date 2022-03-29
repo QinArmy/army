@@ -1,6 +1,6 @@
 package io.army.sqltype;
 
-import io.army.Database;
+import io.army.session.Database;
 
 public enum MySqlType implements SqlType {
 

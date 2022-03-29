@@ -1,27 +1,25 @@
 package io.army.util;
 
 import io.army.ArmyException;
-import io.army.DdlMode;
+import io.army.annotation.Generator;
+import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._Update;
-import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
-import io.army.tx.TransactionException;
 import io.army.tx.TransactionTimeOutException;
 import io.qinarmy.util.ExceptionUtils;
 import io.qinarmy.util.UnexpectedEnumException;
+
+import java.util.List;
 
 
 public abstract class _Exceptions extends ExceptionUtils {
@@ -53,17 +51,6 @@ public abstract class _Exceptions extends ExceptionUtils {
         throw new TransactionTimeOutException(m);
     }
 
-    public static ArmyException notSupportDialectMode(Dialect dialect, ServerMeta serverMeta) {
-        String m;
-        m = String.format("%s isn't supported by %s", dialect, serverMeta);
-        throw new ArmyException(m);
-    }
-
-    public static CriteriaException unknownTableAlias(String tableAlias) {
-        String m = String.format("Unknown table alias[%s].", tableAlias);
-        return new CriteriaException(m);
-    }
-
     public static CriteriaException tableAliasDuplication(String tableAlias) {
         String m = String.format("Table alias[%s] duplication", tableAlias);
         return new CriteriaException(m);
@@ -83,49 +70,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
-    public static CriteriaException unknownField(FieldMeta<?> fieldMeta) {
-        return new CriteriaException(String.format("Unknown %s", fieldMeta));
-    }
-
-    public static CriteriaException notMatchInsertField(_ValuesInsert insert, FieldMeta<?> fieldMeta) {
-        String m = String.format("Not match %s for %s in Statement %s", fieldMeta, insert.table(), insert);
-        return new CriteriaException(m);
-    }
 
     public static CriteriaException unknownStatement(Statement stmt, _Dialect dialect) {
         String m = String.format("Unknown %s in %s", stmt.getClass().getName(), dialect);
         return new CriteriaException(m);
     }
 
-    public static CriteriaException tableNotMatch(TableMeta<?> tableMeta1, TableMeta<?> tableMeta2) {
-        String m = String.format("%s and %s not match", tableMeta1, tableMeta2);
-        return new CriteriaException(m);
-    }
-
-
-    public static CriteriaException databaseRouteError(_Statement stmt, DialectSessionFactory factory) {
-        String m = String.format("%s database route and %s not match.", stmt, factory);
-        return new CriteriaException(m);
-    }
-
-
-
-    public static CriteriaException noTableRoute(_Statement stmt, DialectSessionFactory factory) {
-        String m = String.format("Not found table route in %s.Factory %s", stmt, factory);
-        return new CriteriaException(m);
-    }
-
-    public static IllegalStateException nonPrepared(_Statement statement) {
-        return new IllegalStateException(String.format("%s not prepared", statement));
-    }
-
-    public static CriteriaException noUpdateField(Update update) {
-        return new CriteriaException(String.format("%s no any update field", update.getClass().getName()));
-    }
-
-    public static IllegalStateException updateFieldExpNotMatch() {
-        return new IllegalStateException("Field and value expression count not match.");
-    }
 
     public static CriteriaException immutableField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s is immutable.", field));
@@ -158,10 +108,6 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new ArmyException(String.format("%s has generator but value is null.", field));
     }
 
-    public static CriteriaException nonNullExpression(FieldMeta<?> field) {
-        return new CriteriaException(String.format("Value expression must be non-null for %s", field));
-    }
-
 
     public static CriteriaException nonNullNamedParam(NonNullNamedParam param) {
         String m = String.format("%s[%s] must be non-null.", NonNullNamedParam.class.getName(), param.name());
@@ -171,43 +117,6 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException nonInsertableField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
-
-    public static CriteriaException unknownTableType(TableMeta<?> table) {
-        return new CriteriaException(String.format("%s is unknown type.", table));
-    }
-
-    public static CriteriaException routeKeyValueError(TableMeta<?> table, int databaseIndex, int factoryDatabase) {
-        String m = String.format("%s route database[%s] and primary statement database[%s] not match."
-                , table, databaseIndex, factoryDatabase);
-        return new CriteriaException(m);
-    }
-
-    public static CriteriaException notSupportSharding(TableMeta<?> table) {
-        return new CriteriaException(String.format("%s not support sharding.", table));
-    }
-
-    public static CriteriaException notSupportDatabaseSharding(TableMeta<?> table) {
-        return new CriteriaException(String.format("%s not support database sharding.", table));
-    }
-
-    public static CriteriaException notSupportTableSharding(TableMeta<?> table) {
-        return new CriteriaException(String.format("%s not support table sharding.", table));
-    }
-
-
-    public static CriteriaException tableIndexAmbiguity(_Statement stmt, final int tableRoute
-            , final int predicateTableIndex) {
-        return new CriteriaException(String.format("%s table route[%s] and where clause table route[%s] ambiguity."
-                , stmt.getClass().getName(), tableRoute, predicateTableIndex));
-    }
-
-
-    public CriteriaException setClauseSizeError(_Update update) {
-        String m = String.format("%s set clause target size[%s] and value size[%s] not match."
-                , update, update.fieldList().size(), update.valueExpList().size());
-        return new CriteriaException(m);
-    }
-
 
     public static MetaException dontSupportOnlyDefault(_Dialect dialect) {
         return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
@@ -236,11 +145,6 @@ public abstract class _Exceptions extends ExceptionUtils {
                 , field.tableMeta(), field, QualifiedField.class.getName()));
     }
 
-    public static CriteriaException javaTypeUnsupportedByMapping(MappingType type, Object nonNull) {
-        return new CriteriaException(String.format("%s is unsupported by %s.", nonNull.getClass(), type.getClass()));
-    }
-
-
     public static CriteriaException selectListIsEmpty() {
         return new CriteriaException("select list must not empty");
     }
@@ -248,10 +152,6 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException ScalarSubQuerySelectionError() {
         String m = String.format("%s selection size must equals one.", ScalarSubQuery.class.getName());
         return new CriteriaException(m);
-    }
-
-    public static CriteriaException onClauseIsEmpty() {
-        return new CriteriaException("on clause must not empty");
     }
 
     public static CriteriaException castCriteriaApi() {
@@ -272,11 +172,6 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("Update statement field must not empty.");
     }
 
-    public static CriteriaException fieldAndValueSizeNotMatch(int fieldSize, int valueSize) {
-        String m = String.format("Update statement set clause fieldList size[%s] and valueList size[%s] not match."
-                , fieldSize, valueSize);
-        return new CriteriaException(m);
-    }
 
     public static CriteriaException dmlNoWhereClause() {
         return new CriteriaException("Update/Delete statement no where clause,reject create.");
@@ -290,11 +185,6 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("Not found from clause.");
     }
 
-
-    public static CriteriaException firstTableHasOnClause() {
-        String m = String.format("From clause first %s must no on clause.", TableItem.class.getName());
-        return new CriteriaException(m);
-    }
 
     public static ArmyException notServerVersion(ServerMeta meta) {
         String m = String.format("Currently,army don't support server[%s] yet.", meta);
@@ -395,15 +285,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new NotSupportNonVisibleException(m);
     }
 
-
-    @Deprecated
     public static MetaException autoIdErrorJavaType(PrimaryFieldMeta<?> field) {
-        throw new UnsupportedOperationException();
+        String m = String.format("%s %s %s type don't support java type %s"
+                , field, Generator.class.getName(), GeneratorType.POST, field.javaType().getName());
+        return new MetaException(m);
     }
 
-    public static TransactionException transactionTimeout(long resetMillis) {
-        return new TransactionTimeOutException(String.format("transaction timeout,reset %s", resetMillis));
-    }
 
     public static ArmyException expectedTypeAndResultNotMatch(Selection selection, Class<?> resultType) {
         String m = String.format("expected type %s and query result mapping type %s not match."
@@ -442,6 +329,11 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static NotMatchRowException notMatchRow(GenericSession session, TableMeta<?> table, Object id) {
         String m = String.format("%s update failure,not found match row for %s and id %s.", session, table, id);
         return new NotMatchRowException(m);
+    }
+
+    public static NonUniqueException nonUnique(List<?> list) {
+        String m = String.format("select result[%s] more than 1.", list.size());
+        return new NonUniqueException(m);
     }
 
 

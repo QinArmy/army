@@ -1,7 +1,6 @@
 package io.army.sync.executor;
 
 import io.army.session.DataAccessException;
-import io.army.session.Executor;
 import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
@@ -11,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public interface StmtExecutor extends Executor {
+public interface StmtExecutor {
 
 
     /**

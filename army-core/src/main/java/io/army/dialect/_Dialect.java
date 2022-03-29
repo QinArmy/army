@@ -1,9 +1,9 @@
 package io.army.dialect;
 
-import io.army.Database;
 import io.army.criteria.*;
 import io.army.meta.ParamMeta;
 import io.army.schema._SchemaResult;
+import io.army.session.Database;
 import io.army.session.DialectSessionFactory;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;

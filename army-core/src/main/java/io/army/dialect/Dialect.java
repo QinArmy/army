@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 
-import io.army.Database;
+import io.army.session.Database;
 
 public enum Dialect {
 

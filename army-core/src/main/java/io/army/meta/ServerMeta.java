@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.Database;
+import io.army.session.Database;
 
 public interface ServerMeta {
 
