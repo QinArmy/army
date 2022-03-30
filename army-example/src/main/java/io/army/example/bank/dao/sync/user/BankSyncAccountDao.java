@@ -71,7 +71,7 @@ public class BankSyncAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .where(RegisterRecord_.requestNo.equalLiteral(requestNo))
                 .and(Certificate_.certificateNo.equal(certificateNo))
                 .and(Certificate_.certificateType.equalLiteral(certificateType))
-                .and(BankUser_.userType.equalLiteral(BankUserType.INVEST_PARTNER))
+                .and(BankUser_.userType.equalLiteral(BankUserType.PARTNER))
                 .and(BankAccount_.accountType.equalLiteral(BankAccountType.PARTNER))
                 .asQuery();
         return this.sessionContext.currentSession().selectOneAsMap(stmt);

@@ -292,8 +292,8 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
             certificate = createPartnerCertificate(form);
             this.userDao.save(certificate);
         }
-        final InvestPartnerUser u;
-        u = new InvestPartnerUser()
+        final PartnerUser u;
+        u = new PartnerUser()
 
                 .setCertificateId(certificate.getId())
                 .setNickName(form.getName())

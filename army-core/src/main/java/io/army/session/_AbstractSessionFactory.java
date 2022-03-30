@@ -34,7 +34,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected final String name;
 
-    protected final ArmyEnvironment env;
+    public final ArmyEnvironment env;
 
     protected final SchemaMeta schemaMeta;
 
@@ -52,11 +52,13 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     public final boolean uniqueCache;
 
-    private final boolean sqlLogDynamic;
+    public final boolean sqlLogDynamic;
 
     private final boolean sqlLogShow;
 
     private final boolean sqlLogFormat;
+
+    public final boolean sqlLogDebug;
 
 
     protected _AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
@@ -82,9 +84,11 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         final DdlMode ddlMode = support.ddlMode;
         assert ddlMode != null;
         this.uniqueCache = ddlMode != DdlMode.NONE;
+
         this.sqlLogDynamic = env.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
         this.sqlLogShow = env.getOrDefault(ArmyKey.SQL_LOG_SHOW);
         this.sqlLogFormat = env.getOrDefault(ArmyKey.SQL_LOG_FORMAT);
+        this.sqlLogDebug = env.getOrDefault(ArmyKey.SQL_LOG_DEBUG);
     }
 
 
@@ -164,7 +168,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
 
     @Nullable
-    public final Function<String, String> getSqlFormat() {
+    public final Function<String, String> getSqlFormatter() {
         final Function<String, String> function;
         if (this.sqlLogDynamic) {
             if (!this.env.getOrDefault(ArmyKey.SQL_LOG_SHOW)) {

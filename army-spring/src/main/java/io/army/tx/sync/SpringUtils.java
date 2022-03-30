@@ -2,9 +2,7 @@ package io.army.tx.sync;
 
 import io.army.session.SessionException;
 import io.army.tx.Isolation;
-import io.army.tx.TransactionException;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.UnexpectedRollbackException;
+import org.springframework.transaction.*;
 
 public abstract class SpringUtils {
 
@@ -20,15 +18,29 @@ public abstract class SpringUtils {
     }
 
 
+    public static org.springframework.transaction.TransactionException wrapTransactionError(
+            final io.army.tx.TransactionException ex) {
 
-    public static org.springframework.transaction.TransactionException convertTransactionException(
-            TransactionException ex) {
-        return new UnexpectedRollbackException(ex.getMessage(), ex);
+        final org.springframework.transaction.TransactionException e;
+        if (ex instanceof io.army.tx.CannotCreateTransactionException) {
+            e = new CannotCreateTransactionException(ex.getMessage(), ex);
+        } else if (ex instanceof io.army.tx.TransactionSystemException) {
+            e = new TransactionSystemException(ex.getMessage(), ex);
+        } else if (ex instanceof io.army.tx.IllegalTransactionStateException) {
+            e = new IllegalTransactionStateException(ex.getMessage(), ex);
+        } else if (ex instanceof io.army.tx.TransactionTimeOutException) {
+            e = new TransactionTimedOutException(ex.getMessage(), ex);
+        } else {
+            e = new TransactionException(ex.getMessage(), ex) {
+
+            };
+        }
+        return e;
     }
 
 
     public static Isolation toArmyIsolation(final int springIsolation) {
-        Isolation isolation;
+        final Isolation isolation;
         switch (springIsolation) {
             case TransactionDefinition.ISOLATION_DEFAULT:
                 isolation = Isolation.DEFAULT;

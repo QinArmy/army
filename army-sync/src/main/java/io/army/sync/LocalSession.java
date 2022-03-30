@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
+import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -174,10 +175,8 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             final SimpleStmt stmt;
             stmt = this.sessionFactory.dialect.select(select, visible);
 
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
+            printSqlIfNeed(stmt);
+
             //3. execute stmt
             final Transaction tx = this.transaction;
             return this.stmtExecutor.select(stmt, tx == null ? 0 : tx.nextTimeout(), resultClass, listConstructor);
@@ -200,10 +199,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             //2. parse statement to stmt
             final SimpleStmt stmt;
             stmt = this.sessionFactory.dialect.select(select, visible);
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
+            printSqlIfNeed(stmt);
             //3. execute stmt
             final Transaction tx = this.transaction;
             final int timeout = tx == null ? 0 : tx.nextTimeout();
@@ -303,10 +299,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             } else {
                 throw _Exceptions.unexpectedStatement(dml);
             }
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
+            printSqlIfNeed(stmt);
             //3. execute stmt
             final Transaction tx = this.transaction;
             return this.stmtExecutor.batchUpdate(stmt, tx == null ? 0 : tx.nextTimeout());
@@ -343,8 +336,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             return;
         }
         try {
-            if (this.transaction != null) {
-                throw new TransactionNotCloseException("Transaction not end.");
+            final Transaction tx = this.transaction;
+            if (tx != null) {
+                String m = String.format("%s %s not end.", this, tx);
+                throw new TransactionNotCloseException(m);
             }
             this.stmtExecutor.close();
             this.sessionCache.clearOnSessionCLose();
@@ -408,7 +403,8 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     void clearChangedCache(final LocalTransaction transaction) {
         if (this.transaction != transaction) {
-            throw new IllegalArgumentException("not match transaction");
+            String m = String.format("%s and %s not match.", transaction, this.transaction);
+            throw new IllegalArgumentException(m);
         }
         this.sessionCache.clearChangedOnRollback();
     }
@@ -421,7 +417,6 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         switch (status) {
             case ROLLED_BACK:
             case COMMITTED:
-            case FAILED_COMMIT:
             case FAILED_ROLLBACK:
                 this.transaction = null;
                 break;
@@ -445,10 +440,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             final Stmt stmt;
             stmt = this.sessionFactory.dialect.insert(insert, visible);
 
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
+            printSqlIfNeed(stmt);
 
             //3. execute stmt
             final Transaction tx = this.transaction;
@@ -479,6 +471,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         }
     }
 
+
     private long dmlUpdate(final NarrowDmlStatement dml, final Visible visible) {
         try {
             if (dml instanceof _BatchDml) {
@@ -496,10 +489,8 @@ final class LocalSession extends _AbstractSyncSession implements Session {
                 throw _Exceptions.unexpectedStatement(dml);
             }
 
-            final Function<String, String> sqlFormat;
-            if ((sqlFormat = this.sessionFactory.getSqlFormat()) != null) {
-                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
-            }
+            printSqlIfNeed(stmt);
+
             //3. execute stmt
             final Transaction tx = this.transaction;
             final long affectedRows;
@@ -549,6 +540,20 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         if (table instanceof ChildTableMeta && this.transaction == null) {
             throw _Exceptions.childDmlNoTransaction(this, (ChildTableMeta<?>) table);
         }
+    }
+
+    private void printSqlIfNeed(final Stmt stmt) {
+        final LocalSessionFactory sessionFactory = this.sessionFactory;
+        final Function<String, String> sqlFormat;
+        if ((sqlFormat = sessionFactory.getSqlFormatter()) != null) {
+            if ((sessionFactory.sqlLogDynamic && sessionFactory.env.getOrDefault(ArmyKey.SQL_LOG_DEBUG))
+                    || sessionFactory.sqlLogDebug) {
+                LOG.debug(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            } else {
+                LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
+            }
+        }
+
     }
 
 

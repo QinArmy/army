@@ -90,7 +90,14 @@ public interface SyncSession extends GenericSession {
     <R> List<R> select(Select select, Class<R> resultClass, Visible visible);
 
     /**
-     * @param <R> representing select result Java Type.
+     * @param resultClass probably below type.
+     *                    <ul>
+     *                         <li>simple java type,eg: {@code java.lang.String} , {@code java.lange.Long}</li>
+     *                         <li>java bean</li>
+     *                         <li>{@link io.army.bean.FieldAccessBean}</li>
+     *                         <li>{@link io.army.bean.PairBean}</li>
+     *                    </ul>
+     * @param <R>         representing select result Java Type.
      */
     <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
@@ -124,6 +131,16 @@ public interface SyncSession extends GenericSession {
 
     <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor);
 
+    /**
+     * @param resultClass probably below java type.
+     *                    <ul>
+     *                         <li>simple java type,eg: {@link java.lang.String} , {@link java.lang.Long}</li>
+     *                         <li>java bean</li>
+     *                         <li>{@link io.army.bean.FieldAccessBean}</li>
+     *                         <li>{@link io.army.bean.PairBean}</li>
+     *                    </ul>
+     * @param <R>         java type of result element
+     */
     <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
     List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml);

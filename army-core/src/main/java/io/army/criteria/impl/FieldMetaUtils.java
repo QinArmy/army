@@ -239,7 +239,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
                 comment = "update time";
                 break;
             case _MetaBridge.VERSION:
-                comment = "version for optimistic lock";
+                comment = "version that's update counter of row";
                 break;
             case _MetaBridge.VISIBLE:
                 comment = "visible for logic delete";

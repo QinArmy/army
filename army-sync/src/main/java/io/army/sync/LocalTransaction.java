@@ -1,6 +1,5 @@
 package io.army.sync;
 
-import io.army.session.CannotCreateTransactionException;
 import io.army.session.DataAccessException;
 import io.army.tx.*;
 
@@ -29,11 +28,6 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
     }
 
     @Override
-    public boolean nonActive() {
-        return false;
-    }
-
-    @Override
     public boolean rollbackOnly() {
         return false;
     }
@@ -41,8 +35,7 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
     @Override
     public void start() throws TransactionException {
         if (this.status != TransactionStatus.NOT_ACTIVE) {
-            String m = String.format("transaction status[%s] isn't %s,can't start transaction."
-                    , this.status, TransactionStatus.NOT_ACTIVE);
+            String m = String.format("%s status isn't %s,can't start transaction.", this, TransactionStatus.NOT_ACTIVE);
             throw new IllegalTransactionStateException(m);
         }
         try {
@@ -52,7 +45,8 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
             session.stmtExecutor.executeBatch(stmtList);
             this.status = TransactionStatus.ACTIVE;
         } catch (DataAccessException e) {
-            throw new CannotCreateTransactionException("start transaction failure", e);
+            String m = String.format("%s start failure.", this);
+            throw new TransactionSystemException(m, e);
         }
 
     }
@@ -60,21 +54,19 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
     @Override
     public void commit() throws TransactionException {
         if (this.status != TransactionStatus.ACTIVE) {
-            String m = String.format("transaction status[%s] isn't %s,can't commit transaction."
-                    , this.status, TransactionStatus.NOT_ACTIVE);
+            String m;
+            m = String.format("%s status isn't %s,can't commit transaction.", this, TransactionStatus.NOT_ACTIVE);
             throw new IllegalTransactionStateException(m);
         }
         this.status = TransactionStatus.COMMITTING;
         final LocalSession session = this.session;
         try {
-            if (!this.readonly) {
-                session.flush();
-            }
             session.stmtExecutor.execute("COMMIT");
             this.status = TransactionStatus.COMMITTED;
         } catch (DataAccessException e) {
             this.status = TransactionStatus.FAILED_COMMIT;
-            throw new TransactionFailureException("army commit transaction failure.", e);
+            String m = String.format("%s commit failure.", this);
+            throw new TransactionSystemException(m, e);
         } catch (Throwable e) {
             this.status = TransactionStatus.FAILED_COMMIT;
             throw e;
@@ -101,7 +93,8 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
                     this.status = TransactionStatus.ROLLED_BACK;
                 } catch (DataAccessException e) {
                     this.status = TransactionStatus.FAILED_ROLLBACK;
-                    throw new TransactionFailureException("army rollback transaction failure.", e);
+                    String m = String.format("%s roll back failure", this);
+                    throw new TransactionSystemException(m, e);
                 } catch (Throwable e) {
                     this.status = TransactionStatus.FAILED_ROLLBACK;
                     throw e;
@@ -114,8 +107,8 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
             }
             break;
             default: {
-                String m = String.format("transaction status[%s] not in [%s,%s],can't rollback transaction."
-                        , this.status, TransactionStatus.ACTIVE, TransactionStatus.MARKED_ROLLBACK);
+                String m = String.format("%s status not in [%s,%s],can't rollback transaction."
+                        , this, TransactionStatus.ACTIVE, TransactionStatus.MARKED_ROLLBACK);
                 throw new IllegalTransactionStateException(m);
             }
         }
@@ -130,13 +123,14 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
             throw new ReadOnlyTransactionException(m);
         }
         if (this.status != TransactionStatus.ACTIVE) {
-            throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't create save point."
-                    , this.status, TransactionStatus.ACTIVE);
+            String m = String.format("%s status isn't %s,can't create save point.", this, TransactionStatus.ACTIVE);
+            throw new IllegalTransactionStateException(m);
         }
         try {
             return this.session.stmtExecutor.createSavepoint();
         } catch (DataAccessException e) {
-            throw new TransactionSystemException("army create save point occur error.", e);
+            String m = String.format("%s create save point occur error.", this);
+            throw new TransactionSystemException(m, e);
         }
 
     }
@@ -149,14 +143,15 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
                 try {
                     this.session.stmtExecutor.rollbackToSavepoint(savepoint);
                 } catch (DataAccessException e) {
-                    throw new TransactionFailureException("army rollback transaction to save point failure.", e);
+                    String m = String.format("%s rollback to save point failure.", this);
+                    throw new TransactionSystemException(m, e);
                 }
             }
             break;
             default: {
                 String m;
-                m = String.format("transaction status[%s] not in [%s,%s],can't rollback transaction to save point."
-                        , this.status, TransactionStatus.ACTIVE, TransactionStatus.MARKED_ROLLBACK);
+                m = String.format("%s status not in [%s,%s],can't rollback transaction to save point."
+                        , this, TransactionStatus.ACTIVE, TransactionStatus.MARKED_ROLLBACK);
                 throw new IllegalTransactionStateException(m);
             }
         }
@@ -165,13 +160,14 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
     @Override
     public void releaseSavePoint(final Object savepoint) throws TransactionException {
         if (this.status != TransactionStatus.ACTIVE) {
-            throw new IllegalTransactionStateException("transaction status[%s] isn't %s,can't release save point."
-                    , this.status, TransactionStatus.ACTIVE);
+            String m = String.format("%s status isn't %s,can't release save point.", this, TransactionStatus.ACTIVE);
+            throw new IllegalTransactionStateException(m);
         }
         try {
             this.session.stmtExecutor.releaseSavepoint(savepoint);
         } catch (DataAccessException e) {
-            throw new TransactionSystemException("army release save point occur error.", e);
+            String m = String.format("%s release save point occur error.", this);
+            throw new TransactionSystemException(m, e);
         }
     }
 
@@ -183,26 +179,12 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
                 this.status = TransactionStatus.MARKED_ROLLBACK;
                 break;
             default: {
-                String m = String.format("transaction status[%s] can't mark roll back only."
-                        , this.status);
+                String m = String.format("%s  can't mark roll back only.", this);
                 throw new IllegalTransactionStateException(m);
             }
         }
 
     }
-
-
-    @Override
-    public boolean transactionEnded() {
-        return TransactionStatus.END_STATUS_SET.contains(this.status);
-    }
-
-
-
-    /*################################## blow package method ##################################*/
-
-
-    /*################################## blow private method ##################################*/
 
 
 }

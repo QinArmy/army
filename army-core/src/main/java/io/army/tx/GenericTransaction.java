@@ -17,7 +17,6 @@ public interface GenericTransaction {
 
     Enum<?> status();
 
-    boolean nonActive();
 
     /**
      * @return the next query timeout limit in seconds; zero means there is no limit
@@ -29,5 +28,4 @@ public interface GenericTransaction {
 
     void markRollbackOnly() throws TransactionException;
 
-    boolean transactionEnded();
 }

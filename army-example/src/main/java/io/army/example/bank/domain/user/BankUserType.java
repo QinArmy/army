@@ -6,8 +6,7 @@ public enum BankUserType implements CodeEnum {
 
     BANK(Constant.BANK),
     PERSON(Constant.PERSON),
-    INVEST_PARTNER(Constant.INVEST_PARTNER),
-    BORROW_PARTNER(Constant.BORROW_PARTNER);
+    PARTNER(Constant.PARTNER);
 
     private final byte code;
 
@@ -21,7 +20,7 @@ public enum BankUserType implements CodeEnum {
     }
 
     public final boolean isPartner() {
-        return this == INVEST_PARTNER || this == BORROW_PARTNER;
+        return this == PARTNER;
     }
 
 
@@ -31,9 +30,7 @@ public enum BankUserType implements CodeEnum {
 
         byte PERSON = 10;
 
-        byte INVEST_PARTNER = 20;
-
-        byte BORROW_PARTNER = 30;
+        byte PARTNER = 20;
 
     }
 

@@ -30,10 +30,6 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
         return null;
     }
 
-    @Override
-    public boolean nonActive() {
-        return false;
-    }
 
     @Override
     public boolean rollbackOnly() {
@@ -45,10 +41,6 @@ final class LocalTransaction extends _AbstractGenericTransaction implements Tran
 
     }
 
-    @Override
-    public boolean transactionEnded() {
-        return false;
-    }
 
     @Override
     public Mono<Void> commit() {
