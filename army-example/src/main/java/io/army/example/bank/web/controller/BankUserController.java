@@ -2,6 +2,7 @@ package io.army.example.bank.web.controller;
 
 import io.army.example.bank.service.reactive.user.BankUserService;
 import io.army.example.bank.web.form.EnterpriseRegisterForm;
+import io.army.example.bank.web.form.PersonRegisterForm;
 import io.army.example.common.BaseService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -9,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -54,8 +56,13 @@ public class BankUserController implements InitializingBean, ApplicationContextA
     }
 
     @RequestMapping(value = "partnerRegister", method = RequestMethod.POST)
-    public Mono<Map<String, Object>> partnerRegister(EnterpriseRegisterForm form) {
+    public Mono<Map<String, Object>> partnerRegister(@Validated EnterpriseRegisterForm form) {
         return this.userService.partnerRegister(form);
+    }
+
+    @RequestMapping(value = "personRegister", method = RequestMethod.POST)
+    public Mono<Map<String, Object>> personRegister(@Validated PersonRegisterForm form) {
+        return this.userService.personRegister(form);
     }
 
 

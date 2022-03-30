@@ -13,7 +13,7 @@ army:
   pill:
     ddl:
       mode: UPDATE
-    current:
+    sync:
       session:
         context: io.army.boot.sync.SpringSessionContext
     sql:
@@ -22,7 +22,7 @@ army:
   bank:
     ddl:
       mode: UPDATE
-    current:
+    sync:
       session:
         context: io.army.boot.sync.SpringSessionContext
     sql:

@@ -7,10 +7,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
-public class EnterpriseRegisterForm {
+public class EnterpriseRegisterForm extends RegisterForm {
 
-    @NotEmpty
-    private String requestNo;
 
     @NotEmpty
     private String name;
@@ -40,18 +38,7 @@ public class EnterpriseRegisterForm {
     @NotEmpty
     private String legalPersonCertificateNo;
 
-    @NotEmpty
-    private String captcha;
 
-
-    public String getRequestNo() {
-        return requestNo;
-    }
-
-    public EnterpriseRegisterForm setRequestNo(String requestNo) {
-        this.requestNo = requestNo;
-        return this;
-    }
 
     public String getName() {
         return name;
@@ -77,15 +64,6 @@ public class EnterpriseRegisterForm {
 
     public EnterpriseRegisterForm setUserType(BankUserType userType) {
         this.userType = userType;
-        return this;
-    }
-
-    public String getCaptcha() {
-        return captcha;
-    }
-
-    public EnterpriseRegisterForm setCaptcha(String captcha) {
-        this.captcha = captcha;
         return this;
     }
 

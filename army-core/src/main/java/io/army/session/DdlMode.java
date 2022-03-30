@@ -7,4 +7,5 @@ public enum DdlMode {
     VALIDATE,
     DROP_CREATE,
     UPDATE,
+
 }

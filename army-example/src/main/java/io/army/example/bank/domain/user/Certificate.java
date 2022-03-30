@@ -4,7 +4,7 @@ import io.army.annotation.*;
 import io.army.example.common.BaseVersionDomain;
 
 @Table(name = "uer_certificate"
-        , indexes = {@Index(name = "uni_certificate_no_type", fieldList = {"certificateNo", "certificateType"})}
+        , indexes = {@Index(name = "uni_certificate_no_type", fieldList = {"certificateNo", "certificateType"}, unique = true)}
         , comment = "bank user certificate")
 @Inheritance("certificateType")
 @SuppressWarnings("unchecked")

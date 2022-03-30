@@ -6,7 +6,9 @@ import io.army.example.common.BaseVersionDomain;
 import java.time.LocalDateTime;
 
 @Table(name = "u_user"
-        , indexes = {@Index(name = "uni_user_no", fieldList = "userNo", unique = true)}
+        , indexes = {
+        @Index(name = "uni_user_no", fieldList = "userNo", unique = true)
+        , @Index(name = "inx_certificate_id", fieldList = "certificateId")}
         , comment = "bank user")
 @Inheritance("userType")
 @SuppressWarnings("unchecked")
@@ -36,6 +38,9 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
 
     @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "partner user id for person user,0 representing bank self.")
     private Long partnerUserId;
+
+    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "r_register_record primary key")
+    private Long registerRecordId;
 
 
     public final BankUserType getUserType() {
@@ -102,4 +107,16 @@ public class BankUser<T extends BankUser<T>> extends BaseVersionDomain<T> {
         this.id = id;
         return (T) this;
     }
+
+
+    public Long getRegisterRecordId() {
+        return registerRecordId;
+    }
+
+    public T setRegisterRecordId(Long registerRecordId) {
+        this.registerRecordId = registerRecordId;
+        return (T) this;
+    }
+
+
 }

@@ -167,7 +167,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
         Objects.requireNonNull(table);
         Objects.requireNonNull(field);
 
-        if (!table.javaType().isAssignableFrom(field.getDeclaringClass())) {
+        if (!field.getDeclaringClass().isAssignableFrom(table.javaType())) {
             String m = String.format("%s isn't belong to %s.", field, table.javaType());
             throw new MetaException(m);
         }

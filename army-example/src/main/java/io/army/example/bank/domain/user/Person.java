@@ -25,9 +25,9 @@ public class Person extends BankUser<Person> {
         return birthday;
     }
 
-    public void setBirthday(LocalDate birthday) {
+    public Person setBirthday(LocalDate birthday) {
         this.birthday = birthday;
-        //return this;
+        return this;
     }
 
     public String getPhone() {

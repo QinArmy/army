@@ -2,12 +2,11 @@ package io.army.example.bank.web.form;
 
 import io.army.example.bank.domain.account.BankAccountType;
 import io.army.example.bank.domain.user.CertificateType;
-import io.army.example.common.Criteria;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-public final class PersonRegisterForm extends Criteria {
+public final class PersonRegisterForm extends RegisterForm {
 
     @NotNull
     private String partnerUserNo;
@@ -27,8 +26,6 @@ public final class PersonRegisterForm extends Criteria {
     @NotNull
     private BankAccountType accountType;
 
-    @NotEmpty
-    private String captcha;
 
     public String getName() {
         return name;
@@ -62,13 +59,6 @@ public final class PersonRegisterForm extends Criteria {
         this.phone = phone;
     }
 
-    public String getCaptcha() {
-        return captcha;
-    }
-
-    public void setCaptcha(String captcha) {
-        this.captcha = captcha;
-    }
 
     public String getPartnerUserNo() {
         return partnerUserNo;

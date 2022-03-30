@@ -8,6 +8,7 @@ import io.army.generator.GeneratorException;
 import io.army.meta.FieldMeta;
 import io.army.meta.GeneratorMeta;
 import io.army.meta.MetaException;
+import io.army.util._ClassUtils;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -216,8 +217,9 @@ public final class SnowflakeGenerator implements FieldGenerator {
         } else if (dependValue instanceof BigInteger) {
             suffix = suffixWithZero(length, dependValue.toString());
         } else {
-            String m = String.format("%s depend field %s not in [%s,%s,%s,%s]."
-                    , field, dependField, Long.class.getName(), String.class.getName()
+            String m = String.format("%s depend field %s type %s not in [%s,%s,%s,%s]."
+                    , field, dependField, _ClassUtils.safeClassName(dependValue)
+                    , Long.class.getName(), String.class.getName()
                     , Integer.class.getName(), BigInteger.class.getName());
             throw new GeneratorException(m);
         }

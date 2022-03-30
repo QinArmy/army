@@ -1,7 +1,11 @@
 package io.army.dialect;
 
+import io.army.criteria.NamedParam;
 import io.army.criteria.Visible;
+import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
+import io.army.stmt.StrictParamValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,9 +54,15 @@ public abstract class _BaseSqlContext implements _StmtContext {
 
 
     @Override
-    public final void appendParam(ParamValue paramValue) {
-        this.sqlBuilder.append(SPACE_PLACEHOLDER);
-        this.paramList.add(paramValue);
+    public final void appendParam(final ParamValue paramValue) {
+        if (this instanceof _InsertBlock
+                && !(paramValue instanceof StrictParamValue || paramValue instanceof NamedParam)) {
+            this.valueInsertAppendParam(paramValue);
+        } else {
+            this.sqlBuilder.append(SPACE_PLACEHOLDER);
+            this.paramList.add(paramValue);
+        }
+
     }
 
     @Override
@@ -63,6 +73,23 @@ public abstract class _BaseSqlContext implements _StmtContext {
 
     List<ParamValue> createParamList() {
         return new ArrayList<>();
+    }
+
+    private void valueInsertAppendParam(final ParamValue paramValue) {
+        final ParamMeta paramMeta = paramValue.paramMeta();
+        if (paramMeta.mappingType() instanceof _ArmyNoInjectionMapping) {
+            final Object value;
+            value = paramValue.value();
+            if (value == null) {
+                this.sqlBuilder.append(Constant.SPACE_NULL);
+            } else {
+                this.sqlBuilder.append(Constant.SPACE)
+                        .append(this.dialect.literal(paramMeta, value));
+            }
+        } else {
+            this.sqlBuilder.append(SPACE_PLACEHOLDER);
+            this.paramList.add(paramValue);
+        }
     }
 
 

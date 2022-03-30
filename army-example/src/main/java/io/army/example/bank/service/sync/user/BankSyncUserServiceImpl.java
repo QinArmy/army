@@ -1,12 +1,14 @@
 package io.army.example.bank.service.sync.user;
 
-import io.army.example.bank.bean.PersonAccountStatesBean;
+import io.army.example.bank.BankException;
+import io.army.example.bank.bean.BankCode;
 import io.army.example.bank.dao.sync.user.BankAccountDao;
 import io.army.example.bank.dao.sync.user.BankUserDao;
 import io.army.example.bank.domain.account.BankAccount;
 import io.army.example.bank.domain.account.BankAccountType;
 import io.army.example.bank.domain.user.*;
 import io.army.example.bank.service.BankExceptions;
+import io.army.example.bank.service.InvalidRequestNoException;
 import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.bank.service.sync.region.BankSyncRegionService;
 import io.army.example.bank.web.form.EnterpriseRegisterForm;
@@ -15,6 +17,8 @@ import io.army.example.common.BaseService;
 import io.army.example.common.CommonUtils;
 import io.army.example.common.Gender;
 import io.army.example.common.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
@@ -32,6 +36,8 @@ import java.util.Map;
 @Profile(BaseService.SYNC)
 public class BankSyncUserServiceImpl extends BankSyncBaseService implements BankSyncUserService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(BankSyncUserServiceImpl.class);
+
     private BankUserDao userDao;
 
     private BankAccountDao accountDao;
@@ -41,41 +47,68 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
     @Override
     public Map<String, Object> personRegister(final PersonRegisterForm form) {
-        final String partnerNo, certificateNo;
-        partnerNo = form.getPartnerUserNo();
+        final String requestNo, certificateNo;
+        requestNo = form.getRequestNo();
         certificateNo = form.getCertificateNo();
 
-        final PersonAccountStatesBean statesBean;
-        statesBean = this.accountDao.getPersonAccountStates(partnerNo, certificateNo, form.getCertificateType());
-        if (statesBean == null) {
-            throw BankExceptions.partnerNotExists(partnerNo);
+        final RegisterRecord record;
+        record = this.baseDao.getByUnique(RegisterRecord.class, REQUEST_NO, requestNo);
+        if (record == null) {
+            throw BankExceptions.invalidRequestNo(requestNo);
         }
-        if (statesBean.userId != null) {
-            throw BankExceptions.duplicationAccount(partnerNo, statesBean.userNo);
+        final Captcha captcha;
+        captcha = this.baseDao.getByUnique(Captcha.class, REQUEST_NO, requestNo);
+        if (captcha == null) {
+            throw BankExceptions.invalidRequestNo(requestNo);
         }
-        final PersonCertificate certificate;
-        certificate = createPersonCertificate(form);
-        this.baseDao.save(certificate);
-
-        final Person user;
-        user = createPersonUser(statesBean, form, certificate);
-        this.baseDao.save(certificate);
-        final BankAccount account;
-        account = createPersonAccount(user, form.getAccountType());
-        this.baseDao.save(account);
-
-        final Map<String, Object> result = new HashMap<>();
-
-        result.put("userNo", user.getUserNo());
-        result.put("userType", user.getUserType());
-        result.put("accountNo", account.getAccountNo());
-        result.put("accountType", account.getAccountType());
-
-        result.put("partnerNo", statesBean.partnerNo);
-        result.put("requestTime", user.getCreateTime());
-        result.put("completionTime", user.getCreateTime());
-
-        return Collections.unmodifiableMap(result);
+        Map<String, Object> result;
+        // below don't invoke other Transactional method. so try cache.
+        try {
+            switch (record.getStatus()) {
+                case CREATED: {
+                    final LocalDateTime now = LocalDateTime.now();
+                    if (now.isAfter(record.getDeadline())) {
+                        throw BankExceptions.registerRecordDeadline(requestNo, record.getDeadline());
+                    }
+                    if (now.isAfter(captcha.getDeadline()) || !captcha.getCaptcha().equals(form.getCaptcha())) {
+                        throw BankExceptions.errorCaptcha(requestNo, form.getCaptcha());
+                    }
+                    if (this.userDao.isExists(certificateNo, form.getCertificateType(), BankUserType.PERSON)) {
+                        throw BankExceptions.duplicationUser(BankUserType.PERSON);
+                    }
+                    result = handlePersonRegister(record, form);
+                }
+                break;
+                case SUCCESS: {
+                    result = this.accountDao.getRegisterUserInfo(requestNo);
+                    if (result == null) {
+                        // deleted
+                        throw BankExceptions.invalidRequestNo(requestNo);
+                    }
+                }
+                break;
+                case FAILURE:
+                    result = createRecordFailureMap(record);
+                    break;
+                default:
+                    throw BankExceptions.unexpectedEnum(record.getStatus());
+            }
+            return Collections.unmodifiableMap(result);
+        } catch (InvalidRequestNoException e) {
+            throw e;
+        } catch (BankException e) {
+            record.setStatus(RecordStatus.FAILURE)
+                    .setBankCode(e.bankCode)
+                    .setFailureMessage(e.getMessage());
+            result = createRecordFailureMap(record);
+        } catch (RuntimeException e) {
+            LOG.error("person register unknown error.", e);
+            record.setStatus(RecordStatus.FAILURE)
+                    .setBankCode(BankCode.UNKNOWN_ERROR)
+                    .setFailureMessage(e.getMessage());
+            result = createRecordFailureMap(record);
+        }
+        return result;
     }
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
@@ -137,7 +170,7 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
                     throw BankExceptions.errorCaptcha(requestNo, form.getCaptcha());
                 }
                 if (this.userDao.isExists(form.getCertificateNo(), CertificateType.ENTERPRISE, form.getUserType())) {
-                    throw BankExceptions.duplicationPartner(form.getUserType());
+                    throw BankExceptions.duplicationUser(form.getUserType());
                 }
                 resultMap = handlePartnerRegister(r, form);
             }
@@ -191,56 +224,60 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
         this.regionService = regionService;
     }
 
-    private static PersonCertificate createPersonCertificate(PersonRegisterForm form) {
-        final String certificateNo;
-        certificateNo = form.getCertificateNo();
-        return new PersonCertificate()
-                .setCertificateNo(form.getCertificateNo())
-                .setGender(Gender.fromCertificateNo(certificateNo))
-                .setNation("")
-                .setSubjectName(form.getName())
-                .setBirthday(CommonUtils.birthdayFrom(certificateNo))
-                ;
-    }
 
-    private static Person createPersonUser(PersonAccountStatesBean statesBean, PersonRegisterForm form
-            , PersonCertificate certificate) {
-        return new Person()
-                .setPartnerUserId(statesBean.partnerUserId)
+    private Map<String, Object> handlePersonRegister(RegisterRecord record, PersonRegisterForm form) {
+        final String partnerNo = form.getPartnerUserNo();
+        final Pair<Long, BankUserType> partnerPair;
+        partnerPair = this.userDao.getUserPair(partnerNo);
+        if (partnerPair == null) {
+            throw BankExceptions.partnerNotExists(partnerNo);
+        }
+        if (!record.getPartnerId().equals(partnerPair.first)) {
+            throw BankExceptions.partnerNotExists(partnerNo);
+        }
+
+        PersonCertificate certificate;
+        certificate = this.userDao.getCertificate(form.getCertificateNo()
+                , form.getCertificateType(), PersonCertificate.class);
+        if (certificate == null) {
+            certificate = createPersonCertificate(form);
+            this.baseDao.save(certificate);
+        }
+        final Person user;
+        user = new Person()
+                .setPartnerUserId(partnerPair.first)
                 .setPhone(form.getPhone())
                 .setNickName(form.getPhone())
-                .setFromPartnerType(statesBean.partnerUserType)
-
+                .setFromPartnerType(partnerPair.second)
                 .setCertificateId(certificate.getId())
-                //.setBirthday(certificate.getBirthday())
-                ;
-    }
+                .setBirthday(certificate.getBirthday())
+                .setRegisterRecordId(record.getId());
+        this.baseDao.save(user);
 
-    private static BankAccount createPersonAccount(final Person user, final BankAccountType accountType) {
-        switch (accountType) {
-            case LENDER:
-            case BORROWER:
-                //no-op
-                break;
-            default: {
-                String m = String.format("%s don't support person user", accountType);
-                throw new IllegalArgumentException(m);
-            }
-        }
-        return new BankAccount()
-                .setUserType(user.getUserType())
+        final BankAccount account;
+        account = createPersonAccount(user, form.getAccountType())
+                .setRegisterRecordId(record.getId());
+        this.baseDao.save(account);
+
+        final LocalDateTime now = LocalDateTime.now();
+        record.setStatus(RecordStatus.SUCCESS)
                 .setUserId(user.getId())
-                .setAccountType(accountType);
+                .setHandleTime(now)
+                .setCompletionTime(now);
 
-    }
+        final Map<String, Object> result = new HashMap<>();
 
-    private static Map<String, Object> captchaResult(Captcha captcha) {
-        final Map<String, Object> result = new HashMap<>(6);
-        result.put("requestNo", captcha.getRequestNo());
-        result.put("captcha", captcha.getCaptcha());
-        result.put("deadline", captcha.getDeadline());
+        result.put("userNo", user.getUserNo());
+        result.put("userType", user.getUserType());
+        result.put("accountNo", account.getAccountNo());
+        result.put("accountType", account.getAccountType());
+
+        result.put("partnerNo", partnerNo);
+        result.put("requestTime", user.getCreateTime());
+        result.put("completionTime", user.getCreateTime());
         return Collections.unmodifiableMap(result);
     }
+
 
     private Map<String, Object> handlePartnerRegister(RegisterRecord r, EnterpriseRegisterForm form) {
         final Long cityId;
@@ -316,6 +353,55 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
                 .setSubjectName(form.getName())
 
                 .setLegalPersonCertificateId(legalPersonCertificate.getId());
+    }
+
+
+    private static PersonCertificate createPersonCertificate(PersonRegisterForm form) {
+        final String certificateNo;
+        certificateNo = form.getCertificateNo();
+        return new PersonCertificate()
+                .setCertificateNo(certificateNo)
+                .setGender(Gender.fromCertificateNo(certificateNo))
+                .setNation("")
+                .setSubjectName(form.getName())
+                .setBirthday(CommonUtils.birthdayFrom(certificateNo))
+                ;
+    }
+
+
+    private static BankAccount createPersonAccount(final Person user, final BankAccountType accountType) {
+        switch (accountType) {
+            case LENDER:
+            case BORROWER:
+                //no-op
+                break;
+            default: {
+                String m = String.format("%s don't support person user", accountType);
+                throw new IllegalArgumentException(m);
+            }
+        }
+        return new BankAccount()
+                .setUserType(user.getUserType())
+                .setUserId(user.getId())
+                .setAccountType(accountType);
+
+    }
+
+    private static Map<String, Object> captchaResult(Captcha captcha) {
+        final Map<String, Object> result = new HashMap<>(6);
+        result.put("requestNo", captcha.getRequestNo());
+        result.put("captcha", captcha.getCaptcha());
+        result.put("deadline", captcha.getDeadline());
+        return Collections.unmodifiableMap(result);
+    }
+
+    private static Map<String, Object> createRecordFailureMap(RegisterRecord record) {
+        assert record.getStatus() == RecordStatus.FAILURE;
+        final Map<String, Object> result = new HashMap<>(6);
+        result.put("code", record.getBankCode());
+        result.put("message", record.getFailureMessage());
+        result.put("requestNo", record.getRequestNo());
+        return Collections.unmodifiableMap(result);
     }
 
 

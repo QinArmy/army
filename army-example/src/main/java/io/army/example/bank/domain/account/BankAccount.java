@@ -37,6 +37,9 @@ public class BankAccount extends BaseVersionDomain<BankAccount> {
     @Column(nullable = false, precision = 14, scale = 2, defaultValue = "0.00", comment = "frozen account of account")
     private BigDecimal frozenAmount;
 
+    @Column(nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "r_register_record primary key")
+    private Long registerRecordId;
+
 
     public final BankAccountType getAccountType() {
         return accountType;
@@ -99,6 +102,15 @@ public class BankAccount extends BaseVersionDomain<BankAccount> {
 
     public BankAccount setId(Long id) {
         this.id = id;
+        return this;
+    }
+
+    public Long getRegisterRecordId() {
+        return registerRecordId;
+    }
+
+    public BankAccount setRegisterRecordId(Long registerRecordId) {
+        this.registerRecordId = registerRecordId;
         return this;
     }
 

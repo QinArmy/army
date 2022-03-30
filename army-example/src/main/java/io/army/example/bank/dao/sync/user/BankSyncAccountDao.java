@@ -3,7 +3,6 @@ package io.army.example.bank.dao.sync.user;
 import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.SQLs;
-import io.army.example.bank.bean.PersonAccountStatesBean;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
 import io.army.example.bank.domain.account.BankAccountType;
 import io.army.example.bank.domain.account.BankAccount_;
@@ -19,37 +18,35 @@ public class BankSyncAccountDao extends BankSyncBaseDao implements BankAccountDa
 
 
     @Override
-    public PersonAccountStatesBean getPersonAccountStates(final String partnerNo, final String certificateNo
-            , final CertificateType certificateType) {
+    public Map<String, Object> getRegisterUserInfo(final String requestNo) {
+
         final Select stmt;
         stmt = SQLs.query()
                 .select(list -> {
-                    //due to selectionList depend on criteria context,so you couldn't create selectionList before SQLs.query().
-                    //because SQLs.field("pu", BankUser_.id) depend criteria context
-                    list.add(SQLs.field("p", BankUser_.id).as("partnerUserId"));
-                    list.add(SQLs.field("p", BankUser_.userType).as("partnerUserType"));
-
-                    list.add(Certificate_.id.as("certificateId"));
-                    list.add(Certificate_.certificateType);
-                    list.add(Certificate_.certificateNo);
-
-                    list.add(SQLs.field("pu", BankUser_.id).as("userId"));
-                    list.add(SQLs.field("pu", BankUser_.userType));
-                    list.add(BankAccount_.id.as("accountId"));
+                    // due to SQLs.field("u", BankUser_.userNo) need criteria context,so couldn't create selection list
+                    // before SQLs.query().
+                    list.add(SQLs.field("u", BankUser_.userNo));
+                    list.add(SQLs.field("u", BankUser_.userType));
+                    list.add(BankAccount_.accountNo);
                     list.add(BankAccount_.accountType);
-                })
-                .from(BankUser_.T, "p")
-                .leftJoin(BankUser_.T, "pu").on(SQLs.field("p", BankUser_.id).equal(SQLs.field("pu", BankUser_.partnerUserId)))
-                .leftJoin(Certificate_.T, "c").on(Certificate_.id.equal(SQLs.field("pu", BankUser_.certificateId)))
-                .leftJoin(BankAccount_.T, "a").on(BankAccount_.userId.equal(SQLs.field("pu", BankUser_.id)))
-                .where(SQLs.field("p", BankUser_.userNo).equal(partnerNo))
-                .and(Certificate_.certificateNo.equal(certificateNo))
-                .and(Certificate_.certificateType.equalLiteral(CertificateType.PERSON))
-                .limit(1)
-                .asQuery();
 
-        return this.sessionContext.currentSession().selectOne(stmt, PersonAccountStatesBean.class);
+                    list.add(SQLs.field("pu", BankUser_.userNo));
+                    list.add(RegisterRecord_.createTime.as("requestTime"));
+                    list.add(RegisterRecord_.handleTime);
+                    list.add(RegisterRecord_.completionTime);
+
+                })
+                .from(RegisterRecord_.T, "r")
+                .join(BankUser_.T, "pu").on(RegisterRecord_.partnerId.equal(SQLs.field("pu", BankUser_.id)))
+                .join(BankUser_.T, "u").on(RegisterRecord_.userId.equal(SQLs.field("u", BankUser_.id)))
+                .join(BankAccount_.T, "a").on(BankAccount_.userId.equal(SQLs.field("u", BankUser_.id)))
+                .where(RegisterRecord_.requestNo.equal(requestNo))
+                .and(RegisterRecord_.id.equal(SQLs.field("u", BankUser_.registerRecordId)))
+                .and(RegisterRecord_.id.equal(BankAccount_.registerRecordId))
+                .asQuery();
+        return this.sessionContext.currentSession().selectOneAsMap(stmt);
     }
+
 
     @Override
     public Map<String, Object> getPartnerAccountStatus(String requestNo, String certificateNo

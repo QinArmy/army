@@ -10,11 +10,13 @@ public enum BankCode implements CodeEnum {
     CAPTCHA_NOT_MATCH(441, "captcha not match"),
     REGION_NOT_EXISTS(442, "region not exists"),
 
-    RECORD_FAILED(540, "record have failed"),
+    UNKNOWN_ERROR(540, "unknown error"),
+    RECORD_FAILED(541, "record have failed"),
+
     PARTNER_NOT_EXISTS(1001, "partner not exits"),
 
     ACCOUNT_DUPLICATION(2001, "account not exits"),
-    PARTNER_DUPLICATION(2002, "partner user duplication"),
+    USER_DUPLICATION(2002, "partner user duplication"),
 
     REQUEST_OUT_DEADLINE(3001, "request out deadline");
 

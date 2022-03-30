@@ -1,6 +1,7 @@
 package io.army.example.bank.domain.user;
 
 import io.army.annotation.*;
+import io.army.example.bank.bean.BankCode;
 import io.army.example.common.BaseVersionDomain;
 
 import java.time.LocalDateTime;
@@ -37,6 +38,11 @@ public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
     @Column(insertable = false, updateMode = UpdateMode.ONLY_NULL, comment = "record completion time")
     private LocalDateTime completionTime;
 
+    @Column(insertable = false, updateMode = UpdateMode.ONLY_NULL, comment = "error code")
+    private BankCode bankCode;
+
+    @Column(precision = 125, insertable = false, updateMode = UpdateMode.ONLY_NULL, comment = "error message")
+    private String failureMessage;
 
 
     @Override
@@ -109,6 +115,24 @@ public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
 
     public RegisterRecord setUserId(Long userId) {
         this.userId = userId;
+        return this;
+    }
+
+    public BankCode getBankCode() {
+        return bankCode;
+    }
+
+    public RegisterRecord setBankCode(BankCode bankCode) {
+        this.bankCode = bankCode;
+        return this;
+    }
+
+    public String getFailureMessage() {
+        return failureMessage;
+    }
+
+    public RegisterRecord setFailureMessage(String failureMessage) {
+        this.failureMessage = failureMessage;
         return this;
     }
 

@@ -21,6 +21,8 @@ public class BankSyncBaseService implements SyncBaseService {
 
     public static final String TX_MANAGER = "bankSyncTransactionManager";
 
+    protected static final String REQUEST_NO = "requestNo";
+
 
     protected SyncBaseDao baseDao;
 

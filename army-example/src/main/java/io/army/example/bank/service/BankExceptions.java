@@ -2,6 +2,7 @@ package io.army.example.bank.service;
 
 import io.army.example.bank.BankException;
 import io.army.example.bank.bean.BankCode;
+import io.army.example.bank.domain.account.BankAccountType;
 import io.army.example.bank.domain.user.BankUserType;
 
 import java.time.LocalDateTime;
@@ -18,14 +19,15 @@ public abstract class BankExceptions {
         return new BankException(m, BankCode.PARTNER_NOT_EXISTS);
     }
 
-    public static BankException duplicationAccount(String partnerNo, String userNo) {
-        String m = String.format("Partner[%s] user[%s] exists", partnerNo, userNo);
+    public static BankException duplicationAccount(String partnerNo, String userNo, BankAccountType accountType) {
+        String m = String.format("Partner[%s] user[%s] %s[%s]exists"
+                , partnerNo, userNo, BankAccountType.class.getName(), accountType);
         return new BankException(m, BankCode.ACCOUNT_DUPLICATION);
     }
 
-    public static BankException duplicationPartner(BankUserType userType) {
-        String m = String.format("Partner user type[%s] duplication", userType);
-        return new BankException(m, BankCode.PARTNER_DUPLICATION);
+    public static BankException duplicationUser(BankUserType userType) {
+        String m = String.format("user type[%s] duplication", userType);
+        return new BankException(m, BankCode.USER_DUPLICATION);
     }
 
     public static BankException regionNotExists(String requestNo, String region) {
@@ -38,9 +40,9 @@ public abstract class BankExceptions {
         return new BankException(m, BankCode.RECORD_FAILED);
     }
 
-    public static BankException invalidRequestNo(String requestNo) {
+    public static InvalidRequestNoException invalidRequestNo(String requestNo) {
         String m = String.format("RequestNo[%s] is invalid", requestNo);
-        return new BankException(m, BankCode.REQUEST_NO_INVALID);
+        return new InvalidRequestNoException(m, BankCode.REQUEST_NO_INVALID, requestNo);
     }
 
     public static BankException errorCaptcha(String requestNo, String captcha) {
