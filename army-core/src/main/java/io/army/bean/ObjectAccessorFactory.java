@@ -1,6 +1,7 @@
 package io.army.bean;
 
 
+import io.army.lang.Nullable;
 import io.army.proxy.ArmyProxy;
 
 import java.lang.ref.SoftReference;
@@ -72,7 +73,7 @@ public abstract class ObjectAccessorFactory {
         }
     }
 
-    public static <T> T createPair(Constructor<T> constructor, Object first, Object second) {
+    public static <T> T createPair(Constructor<T> constructor, @Nullable Object first, @Nullable Object second) {
         try {
             return constructor.newInstance(first, second);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {

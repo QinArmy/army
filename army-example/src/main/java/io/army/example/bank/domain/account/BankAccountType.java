@@ -5,10 +5,13 @@ import io.army.struct.CodeEnum;
 public enum BankAccountType implements CodeEnum {
 
     BANK(Constant.BANK),
-    PARTNER(Constant.PARTNER),
-    GUARANTOR(Constant.GUARANTOR),
     LENDER(Constant.LENDER),
-    BORROWER(Constant.BORROWER);
+    BORROWER(Constant.BORROWER),
+    PARTNER(Constant.PARTNER),
+    LENDER_BUSINESS(Constant.LENDER_BUSINESS),
+    BORROWER_BUSINESS(Constant.BORROWER_BUSINESS),
+    GUARANTOR(Constant.GUARANTOR);
+
 
     private final short code;
 
@@ -24,10 +27,12 @@ public enum BankAccountType implements CodeEnum {
     interface Constant {
 
         short BANK = 0;
-        short PARTNER = 100;
-        short GUARANTOR = 200;
-        short LENDER = 300;
-        short BORROWER = 400;
+        short LENDER = 100;
+        short BORROWER = 200;
+        short PARTNER = 300;
+        short LENDER_BUSINESS = 400;
+        short BORROWER_BUSINESS = 500;
+        short GUARANTOR = 600;
 
     }
 

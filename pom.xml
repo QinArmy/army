@@ -21,6 +21,7 @@
         <module>army-jdbd</module>
         <module>army-annotation</module>
         <module>army-example</module>
+        <module>army-jdbs</module>
     </modules>
 
     <properties>
@@ -101,6 +102,11 @@
             <dependency>
                 <groupId>io.army</groupId>
                 <artifactId>army-spring</artifactId>
+                <version>${army.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.army</groupId>
+                <artifactId>army-mysql</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>

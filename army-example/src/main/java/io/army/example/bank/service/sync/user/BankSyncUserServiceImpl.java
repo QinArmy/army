@@ -13,10 +13,7 @@ import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.bank.service.sync.region.BankSyncRegionService;
 import io.army.example.bank.web.form.EnterpriseRegisterForm;
 import io.army.example.bank.web.form.PersonRegisterForm;
-import io.army.example.common.BaseService;
-import io.army.example.common.CommonUtils;
-import io.army.example.common.Gender;
-import io.army.example.common.Pair;
+import io.army.example.common.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +40,13 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
     private BankAccountDao accountDao;
 
     private BankSyncRegionService regionService;
+
+    @Override
+    public void afterPropertiesSet() {
+        super.afterPropertiesSet();
+        this.userDao = BeanUtils.getDao("bankSync%sUserDao", BankUserDao.class, this.applicationContext);
+        this.accountDao = BeanUtils.getDao("bankSync%sAccountDao", BankAccountDao.class, this.applicationContext);
+    }
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
     @Override
@@ -150,7 +154,7 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
     public Map<String, Object> partnerRegister(final EnterpriseRegisterForm form) {
         final String requestNo = form.getRequestNo();
         final RegisterRecord r;
-        r = this.baseDao.getByUnique(RegisterRecord.class, "requestNo", requestNo);
+        r = this.baseDao.getByUnique(RegisterRecord.class, REQUEST_NO, requestNo);
         if (r == null || r.getPartnerId() != 0L) {
             throw BankExceptions.invalidRequestNo(requestNo);
         }
@@ -162,15 +166,15 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
                     throw BankExceptions.registerRecordDeadline(requestNo, r.getDeadline());
                 }
                 final Captcha captcha;
-                captcha = this.baseDao.getByUnique(Captcha.class, "requestNo", requestNo);
+                captcha = this.baseDao.getByUnique(Captcha.class, REQUEST_NO, requestNo);
                 if (captcha == null) {
                     throw BankExceptions.invalidRequestNo(requestNo);
                 }
                 if (!captcha.getCaptcha().equals(form.getCaptcha()) || now.isAfter(captcha.getDeadline())) {
                     throw BankExceptions.errorCaptcha(requestNo, form.getCaptcha());
                 }
-                if (this.userDao.isExists(form.getCertificateNo(), CertificateType.ENTERPRISE, form.getUserType())) {
-                    throw BankExceptions.duplicationUser(form.getUserType());
+                if (this.userDao.isExists(form.getCertificateNo(), CertificateType.ENTERPRISE, BankUserType.PARTNER)) {
+                    throw BankExceptions.duplicationUser(BankUserType.PARTNER);
                 }
                 resultMap = handlePartnerRegister(r, form);
             }
@@ -209,15 +213,6 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
 
     /*################################## blow setter method ##################################*/
 
-    @Autowired
-    public void setUserDao(@Qualifier("bankSyncUserDao") BankUserDao userDao) {
-        this.userDao = userDao;
-    }
-
-    @Autowired
-    public void setAccountDao(@Qualifier("bankSyncAccountDao") BankAccountDao accountDao) {
-        this.accountDao = accountDao;
-    }
 
     @Autowired
     public void setRegionService(@Qualifier("bankSyncRegionService") BankSyncRegionService regionService) {
@@ -298,32 +293,37 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
                 .setCertificateId(certificate.getId())
                 .setNickName(form.getName())
                 .setCityId(cityId)
-                .setPartnerUserId(0L);
+                .setPartnerUserId(0L)
+                .setRegisterRecordId(r.getId());
 
         this.userDao.save(u);
 
-        final BankAccount a;
-        a = new BankAccount()
+        final Long userId;
+        userId = u.getId();
+        final BankAccount account;
+        account = new BankAccount()
 
-                .setUserId(u.getId())
+                .setUserId(userId)
                 .setUserType(u.getUserType())
-                .setAccountType(BankAccountType.PARTNER);
-        this.accountDao.save(a);
+                .setAccountType(BankAccountType.PARTNER)
+                .setRegisterRecordId(r.getId());
+
+        this.accountDao.save(account);
 
         final LocalDateTime now = LocalDateTime.now();
         r.setStatus(RecordStatus.SUCCESS)
                 .setHandleTime(now)
                 .setCompletionTime(now)
-                .setUserId(u.getId());
+                .setUserId(userId);
 
         final Map<String, Object> map = new HashMap<>();
 
         map.put("requestNo", r.getRequestNo());
         map.put("userNo", u.getId());
         map.put("userType", u.getUserType());
-        map.put("accountNo", a.getAccountNo());
+        map.put("accountNo", account.getAccountNo());
 
-        map.put("accountType", a.getAccountType());
+        map.put("accountType", account.getAccountType());
         return Collections.unmodifiableMap(map);
     }
 

@@ -27,7 +27,8 @@ abstract class CodeEnumHelper {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Enum<T> & CodeEnum> Map<Integer, ? extends CodeEnum> createCodeMap(final Class<?> javaType) {
+    private static <T extends Enum<T> & CodeEnum> Map<Integer, ? extends CodeEnum> createCodeMap(final Class<?> javaType)
+            throws IllegalArgumentException {
         if (!javaType.isEnum() || !CodeEnum.class.isAssignableFrom(javaType)) {
             String m = String.format("%s isn't %s enum.", javaType.getName(), CodeEnum.class.getName());
             throw new IllegalArgumentException(m);

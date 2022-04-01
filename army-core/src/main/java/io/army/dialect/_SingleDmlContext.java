@@ -83,8 +83,10 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
             this.sqlBuilder
                     .append(Constant.SPACE)
                     .append(this.safeTableAlias)
-                    .append(Constant.POINT)
-                    .append(this.dialect.safeObjectName(field.columnName()));
+                    .append(Constant.POINT);
+
+            this.dialect.safeObjectName(field.columnName(), this.sqlBuilder);
+
         } else {
             final ChildBlock childBlock = childBlock();
             if (childBlock == null || belongOf != childBlock.table) {
@@ -95,8 +97,10 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 this.sqlBuilder
                         .append(Constant.SPACE)
                         .append(childBlock.safeTableAlias)
-                        .append(Constant.POINT)
-                        .append(this.dialect.safeObjectName(field.columnName()));
+                        .append(Constant.POINT);
+
+                this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+
             } else {
                 //non multi-table update,so convert child table filed as sub query.
                 childColumnFromSubQuery(this, childBlock, field);
@@ -167,15 +171,15 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 sqlBuilder
                         .append(Constant.SPACE)
                         .append(this.safeTableAlias)
-                        .append(Constant.POINT)
-                        .append(dialect.safeObjectName(field.columnName()));
+                        .append(Constant.POINT);
+                dialect.safeObjectName(field.columnName(), sqlBuilder);
             } else if (belongOf == this.parentContext.table) {// field is parent table column.
                 if (this.parentContext.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
                     sqlBuilder
                             .append(Constant.SPACE)
                             .append(this.parentContext.safeTableAlias)
-                            .append(Constant.POINT)
-                            .append(dialect.safeObjectName(field.columnName()));
+                            .append(Constant.POINT);
+                    dialect.safeObjectName(field.columnName(), sqlBuilder);
                 } else {
                     //non multi-table update,so convert parent filed as sub query.
                     parentColumnFromSubQuery(this, field);
@@ -242,13 +246,14 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
                 .append(Constant.SPACE)
 
                 .append(childSafeTableAlias)
-                .append(Constant.POINT)
-                .append(dialect.safeObjectName(childField.columnName()))
+                .append(Constant.POINT);
 
+        dialect.safeObjectName(childField.columnName(), sqlBuilder)
                 .append(Constant.SPACE)
                 .append(Constant.SPACE_FROM)
-                .append(Constant.SPACE)
-                .append(dialect.safeTableName(childTable.tableName()));
+                .append(Constant.SPACE);
+
+        dialect.safeObjectName(childTable.tableName(), sqlBuilder);
 
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(Constant.SPACE)
@@ -296,13 +301,15 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
                 //below target parent column
                 .append(parentSafeTable)
-                .append(Constant.POINT)
-                .append(dialect.safeObjectName(parentField.columnName()))
+                .append(Constant.POINT);
+
+        dialect.safeObjectName(parentField.columnName(), sqlBuilder)
 
                 .append(Constant.SPACE)
                 .append(Constant.SPACE_FROM)
-                .append(Constant.SPACE)
-                .append(dialect.safeTableName(parentTable.tableName()));
+                .append(Constant.SPACE);
+
+        dialect.safeObjectName(parentTable.tableName(), sqlBuilder);
 
 
         if (dialect.tableAliasAfterAs()) {
@@ -335,8 +342,9 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
                 //below parent table discriminator
                 .append(parentSafeTable)
-                .append(Constant.POINT)
-                .append(dialect.safeObjectName(discriminator.columnName()))
+                .append(Constant.POINT);
+
+        dialect.safeObjectName(discriminator.columnName(), sqlBuilder)
 
                 .append(Constant.SPACE_EQUAL_SPACE)
 

@@ -50,16 +50,6 @@ abstract class MySQLDialect extends _AbstractDialect {
     }
 
     @Override
-    public final String safeTableName(String tableName) {
-        return this.quoteIfNeed(tableName);
-    }
-
-    @Override
-    public final String safeObjectName(String columnName) {
-        return this.quoteIfNeed(columnName);
-    }
-
-    @Override
     public final StringBuilder safeObjectName(final String objectName, final StringBuilder builder) {
         if (this.keyWordSet.contains(objectName)) {
             builder.append(IDENTIFIER_QUOTE)
@@ -71,16 +61,10 @@ abstract class MySQLDialect extends _AbstractDialect {
         return builder;
     }
 
-
     @Override
     protected final boolean supportTableOnly() {
         // MySQL don't support only before table name.
         return false;
-    }
-
-    @Override
-    public void clearForDDL() {
-
     }
 
 
@@ -139,8 +123,8 @@ abstract class MySQLDialect extends _AbstractDialect {
 
 
     @Override
-    public String defaultFuncName() {
-        return null;
+    public final String defaultFuncName() {
+        return "DEFAULT";
     }
 
     @Override
@@ -345,10 +329,13 @@ abstract class MySQLDialect extends _AbstractDialect {
         final StringBuilder builder = context.sqlBuilder()
                 .append(Constant.DELETE_SPACE);
 
-        builder.append(this.quoteIfNeed(childTable.tableName()))// child table name
-                .append(Constant.SPACE_COMMA)
-                .append(Constant.SPACE)
-                .append(this.quoteIfNeed(parentTable.tableName()))// parent table name
+        final String safeParentTableAlias, safeChildTableAlias;
+        safeChildTableAlias = childBlock.safeTableAlias();
+        safeParentTableAlias = context.safeTableAlias();
+
+        builder.append(safeChildTableAlias)// child table name
+                .append(Constant.SPACE_COMMA_SPACE)
+                .append(safeParentTableAlias)// parent table name
                 .append(Constant.SPACE_FROM);
 
         //2. child join parent
@@ -357,7 +344,6 @@ abstract class MySQLDialect extends _AbstractDialect {
         //3. where clause
         this.dmlWhereClause(context);
 
-        final String safeParentTableAlias = context.safeTableAlias();
 
         //3.2 append discriminator for child
         this.discriminator(childTable, safeParentTableAlias, context);

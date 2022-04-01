@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unchecked")
 abstract class MySQLMultiDelete<C, DR, DP, JT, IT, WR, WA> extends MultiDelete<C, JT, JT, WR, WA> implements _MySQLMultiDelete
         , MySQLDelete, MySQLQuery.MySQLJoinClause<C, JT, JT, IT>, MySQLDelete.MultiDeleteClause<C, DR, DP>
         , MySQLDelete.MultiDeleteFromClause<C, DR, DP>, MySQLDelete.MultiDeleteUsingClause<C, DR, DP> {

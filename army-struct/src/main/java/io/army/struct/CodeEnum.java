@@ -48,7 +48,7 @@ public interface CodeEnum {
     }
 
 
-    static <T extends Enum<T> & CodeEnum> Map<Integer, T> getInstanceMap(Class<T> clazz) throws CodeEnumException {
+    static <T extends Enum<T> & CodeEnum> Map<Integer, T> getInstanceMap(Class<T> clazz) throws IllegalArgumentException {
         return CodeEnumHelper.getMap(clazz);
     }
 

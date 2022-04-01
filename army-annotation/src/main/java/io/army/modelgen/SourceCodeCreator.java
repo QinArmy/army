@@ -460,12 +460,21 @@ final class SourceCodeCreator {
                     .append(".class);\n")
                     .append(MEMBER_PRE)
                     .append('\t')
-                    .append(_MetaBridge.TABLE_META)
-                    .append(" = (")
+                    .append("@SuppressWarnings(\"unchecked\")\n")
+                    .append(MEMBER_PRE)
+                    .append('\t')
                     .append(tableMetaName)
                     .append('<')
                     .append(domainName)
-                    .append(">)temp;\n\n");
+                    .append("> tempMeta = (")
+                    .append(tableMetaName)
+                    .append('<')
+                    .append(domainName)
+                    .append(">)temp;\n")
+                    .append(MEMBER_PRE)
+                    .append('\t')
+                    .append(_MetaBridge.TABLE_META)
+                    .append(" = tempMeta;\n\n");
 
         } else {
             builder.append(_MetaBridge.TABLE_META)

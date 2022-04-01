@@ -4,17 +4,20 @@ import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
-import io.army.example.bank.domain.account.BankAccountType;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
+import io.army.example.common.BaseService;
+import io.army.example.common.BeanUtils;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Repository("bankSyncAccountDao")
-public class BankSyncAccountDao extends BankSyncBaseDao implements BankAccountDao {
+@Repository("bankSyncStandardAccountDao")
+@Profile({BaseService.SYNC, BeanUtils.STANDARD})
+public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDao {
 
 
     @Override
@@ -66,13 +69,14 @@ public class BankSyncAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .select(selectionList)
                 .from(RegisterRecord_.T, "r")
                 .join(BankUser_.T, "u").on(BankUser_.id.equal(RegisterRecord_.userId))
-                .join(BankAccount_.T, "a").on(BankAccount_.userId.equal(BankUser_.id))
+                .join(BankAccount_.T, "a").on(BankUser_.id.equal(BankAccount_.userId))
                 .join(Certificate_.T, "c").on(Certificate_.id.equal(BankUser_.certificateId))
-                .where(RegisterRecord_.requestNo.equalLiteral(requestNo))
+                .where(RegisterRecord_.requestNo.equal(requestNo))
                 .and(Certificate_.certificateNo.equal(certificateNo))
                 .and(Certificate_.certificateType.equalLiteral(certificateType))
                 .and(BankUser_.userType.equalLiteral(BankUserType.PARTNER))
-                .and(BankAccount_.accountType.equalLiteral(BankAccountType.PARTNER))
+                .and(BankUser_.registerRecordId.equal(RegisterRecord_.id))
+                .and(BankAccount_.registerRecordId.equal(RegisterRecord_.id))
                 .asQuery();
         return this.sessionContext.currentSession().selectOneAsMap(stmt);
     }

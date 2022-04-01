@@ -3,9 +3,13 @@ package io.army.example.bank.dao.sync.region;
 import io.army.criteria.Expression;
 import io.army.criteria.Insert;
 import io.army.criteria.Select;
+import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
 import io.army.example.bank.domain.user.*;
+import io.army.example.common.BaseService;
+import io.army.example.common.BeanUtils;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
@@ -13,13 +17,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@Repository("bankSyncRegionDao")
-public class BankSyncRegionDao extends BankSyncBaseDao implements BankRegionDao {
+@Repository("bankSyncMySQL57RegionDao")
+@Profile({BaseService.SYNC, BeanUtils.MY_SQL57})
+public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
 
     @Override
     public List<Map<String, Object>> findAllCity() {
         final Select stmt;
-        stmt = SQLs.query()
+        stmt = MySQLs.query()
                 .select(list -> {
                     list.add(SQLs.field("p_of_city", ChinaRegion_.name));
                     list.add(ChinaCity_.mayorName);
@@ -34,12 +39,11 @@ public class BankSyncRegionDao extends BankSyncBaseDao implements BankRegionDao 
         return this.sessionContext.currentSession().selectAsMap(stmt);
     }
 
-
     @Override
-    public void batchSaveProvincialCapital(final List<ChinaCity> domainList) {
+    public void batchSaveProvincialCapital(List<ChinaCity> domainList) {
 
         final Supplier<Expression> provinceIdSubQuery;
-        provinceIdSubQuery = () -> SQLs.scalarSubQuery()
+        provinceIdSubQuery = () -> MySQLs.scalarSubQuery()
                 .select(ChinaProvince_.id)
                 .from(ChinaProvince_.T, "p")
                 .join(ChinaRegion_.T, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
@@ -56,9 +60,9 @@ public class BankSyncRegionDao extends BankSyncBaseDao implements BankRegionDao 
     }
 
     @Override
-    public Long getRegionId(final String regionName, final RegionType regionType) {
+    public Long getRegionId(String regionName, RegionType regionType) {
         final Select stmt;
-        stmt = SQLs.query()
+        stmt = MySQLs.query()
                 .select(ChinaRegion_.id)
                 .from(ChinaRegion_.T, "t")
                 .where(ChinaRegion_.name.equalLiteral(regionName))

@@ -86,7 +86,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     private MySQL80SimpleQuery(@Nullable C criteria) {
-        super(CriteriaContexts.primaryContext(criteria));
+        super(CriteriaContexts.queryContext(criteria));
     }
 
     @Override

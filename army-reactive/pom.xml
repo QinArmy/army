@@ -24,16 +24,6 @@
             <groupId>io.jdbd</groupId>
             <artifactId>jdbd-spi</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.jdbd</groupId>
-            <artifactId>jdbd-mysql</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jdbd</groupId>
-            <artifactId>jdbd-postgre</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>

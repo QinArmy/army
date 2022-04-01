@@ -2,9 +2,8 @@ package io.army;
 
 import io.army.lang.Nullable;
 
-/**
- *
- */
+
+@Deprecated
 public class ArmyRuntimeException extends RuntimeException implements IArmyExpression {
 
     private static final long serialVersionUID = -3428509683218688609L;

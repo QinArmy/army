@@ -20,7 +20,7 @@ public class ChinaRegion<T extends ChinaRegion<T>> extends BaseVersionDomain<T> 
     @Column
     private RegionType regionType;
 
-    @Column(precision = 20, nullable = false, updateMode = UpdateMode.IMMUTABLE, comment = "china region name")
+    @Column(precision = 20, nullable = false, comment = "china region name")
     private String name;
 
     @Column(precision = 16, scale = 2, defaultValue = "0.00", nullable = false, comment = "china region GDP")

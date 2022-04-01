@@ -1,6 +1,5 @@
 package io.army.example.bank.web.form;
 
-import io.army.example.bank.domain.user.BankUserType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotEmpty;
@@ -9,15 +8,11 @@ import java.time.LocalDate;
 
 public class EnterpriseRegisterForm extends RegisterForm {
 
-
     @NotEmpty
     private String name;
 
     @NotEmpty
     private String phone;
-
-    @NotNull
-    private BankUserType userType;
 
     @NotEmpty
     private String certificateNo;
@@ -39,7 +34,6 @@ public class EnterpriseRegisterForm extends RegisterForm {
     private String legalPersonCertificateNo;
 
 
-
     public String getName() {
         return name;
     }
@@ -58,16 +52,6 @@ public class EnterpriseRegisterForm extends RegisterForm {
         return this;
     }
 
-    public BankUserType getUserType() {
-        return userType;
-    }
-
-    public EnterpriseRegisterForm setUserType(BankUserType userType) {
-        this.userType = userType;
-        return this;
-    }
-
-
     public String getCertificateNo() {
         return certificateNo;
     }
@@ -83,25 +67,6 @@ public class EnterpriseRegisterForm extends RegisterForm {
 
     public EnterpriseRegisterForm setCreditCode(String creditCode) {
         this.creditCode = creditCode;
-        return this;
-    }
-
-    public String getLegalPerson() {
-        return legalPerson;
-    }
-
-    public EnterpriseRegisterForm setLegalPerson(String legalPerson) {
-        this.legalPerson = legalPerson;
-        return this;
-    }
-
-
-    public String getLegalPersonCertificateNo() {
-        return legalPersonCertificateNo;
-    }
-
-    public EnterpriseRegisterForm setLegalPersonCertificateNo(String legalPersonCertificateNo) {
-        this.legalPersonCertificateNo = legalPersonCertificateNo;
         return this;
     }
 
@@ -123,5 +88,21 @@ public class EnterpriseRegisterForm extends RegisterForm {
         return this;
     }
 
+    public String getLegalPerson() {
+        return legalPerson;
+    }
 
+    public EnterpriseRegisterForm setLegalPerson(String legalPerson) {
+        this.legalPerson = legalPerson;
+        return this;
+    }
+
+    public String getLegalPersonCertificateNo() {
+        return legalPersonCertificateNo;
+    }
+
+    public EnterpriseRegisterForm setLegalPersonCertificateNo(String legalPersonCertificateNo) {
+        this.legalPersonCertificateNo = legalPersonCertificateNo;
+        return this;
+    }
 }

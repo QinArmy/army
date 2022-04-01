@@ -13,7 +13,6 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Boolean> READ_ONLY = new ArmyKey<>("readonly", Boolean.class, Boolean.FALSE);
 
-
     public static final ArmyKey<DdlMode> DDL_MODE = new ArmyKey<>("ddl.mode", DdlMode.class, DdlMode.VALIDATE_UNIQUE);
 
     public static final ArmyKey<String> ZONE_OFFSET_ID = new ArmyKey<>("zone.offset.id", String.class, null);

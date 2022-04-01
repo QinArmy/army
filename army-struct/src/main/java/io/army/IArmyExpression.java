@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 /**
  * @since 1.0
  */
+@Deprecated
 public interface IArmyExpression {
 
     @NonNull

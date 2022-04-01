@@ -380,7 +380,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
         @Override
         public MySQLDelete.SinglePartitionSpec<C> deleteFrom(SingleTableMeta<? extends IDomain> table) {
-            return new SimpleDelete<>(new CommandBlock(table), CriteriaContexts.primaryContext(this.criteria));
+            return new SimpleDelete<>(new CommandBlock(table), CriteriaContexts.singleDmlContext(this.criteria));
         }
 
     }// SingleDeleteSpecImpl
@@ -407,7 +407,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
         @Override
         public MySQLDelete.SinglePartitionSpec<C> from(SingleTableMeta<? extends IDomain> table) {
             final CommandBlock commandBlock = new CommandBlock(hintList, modifierList, table);
-            return new SimpleDelete<>(commandBlock, CriteriaContexts.primaryContext(this.criteria));
+            return new SimpleDelete<>(commandBlock, CriteriaContexts.singleDmlContext(this.criteria));
         }
 
     } // SimpleDeleteFromClause
@@ -466,7 +466,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
         @Override
         public MySQLDelete.BatchSinglePartitionSpec<C> deleteFrom(SingleTableMeta<? extends IDomain> table) {
-            return new BatchDelete<>(new CommandBlock(table), CriteriaContexts.primaryContext(this.criteria));
+            return new BatchDelete<>(new CommandBlock(table), CriteriaContexts.singleDmlContext(this.criteria));
         }
 
     }// BatchSinglePartitionSpecImpl
@@ -492,7 +492,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
         @Override
         public MySQLDelete.BatchSinglePartitionSpec<C> from(SingleTableMeta<? extends IDomain> table) {
             final CommandBlock commandBlock = new CommandBlock(this.hintList, this.modifierList, table);
-            return new BatchDelete<>(commandBlock, CriteriaContexts.primaryContext(this.criteria));
+            return new BatchDelete<>(commandBlock, CriteriaContexts.singleDmlContext(this.criteria));
         }
 
     } // BatchDeleteFromClause
@@ -515,7 +515,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
         private SingleDelete80Clause(@Nullable C criteria) {
             this.criteria = criteria;
-            this.criteriaContext = CriteriaContexts.primaryContext(criteria);
+            this.criteriaContext = CriteriaContexts.singleDmlContext(criteria);
             CriteriaContextStack.setContextStack(this.criteriaContext);
 
         }

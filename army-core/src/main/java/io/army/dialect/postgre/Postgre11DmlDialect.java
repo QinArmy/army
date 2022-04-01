@@ -28,10 +28,6 @@ class Postgre11DmlDialect extends _AbstractDialect {
         return false;
     }
 
-    @Override
-    public void clearForDDL() {
-
-    }
 
     @Override
     protected final boolean supportTableOnly() {

@@ -547,7 +547,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         final Function<String, String> sqlFormat;
         if ((sqlFormat = sessionFactory.getSqlFormatter()) != null) {
             if ((sessionFactory.sqlLogDynamic && sessionFactory.env.getOrDefault(ArmyKey.SQL_LOG_DEBUG))
-                    || sessionFactory.sqlLogDebug) {
+                    || (!sessionFactory.sqlLogDynamic && sessionFactory.sqlLogDebug)) {
                 LOG.debug(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));
             } else {
                 LOG.info(SQL_LOG_FORMAT, stmt.printSql(sqlFormat));

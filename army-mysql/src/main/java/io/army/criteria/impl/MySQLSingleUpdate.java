@@ -66,7 +66,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     private long rowCount;
 
     private MySQLSingleUpdate(@Nullable C criteria) {
-        super(CriteriaContexts.primaryContext(criteria));
+        super(CriteriaContexts.singleDmlContext(criteria));
 
     }
 

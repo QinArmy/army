@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.meta.ParamMeta;
 import io.army.schema._SchemaResult;
 import io.army.session.Database;
-import io.army.session.DialectSessionFactory;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
@@ -38,31 +37,16 @@ public interface _Dialect {
     }
 
 
-    /**
-     * performance after {@link DialectSessionFactory}  initializing .
-     */
-    void clearForDDL();
-
     boolean supportInsertReturning();
-
-
-    @Deprecated
-    default String safeTableName(String tableName) {
-        throw new UnsupportedOperationException();
-    }
 
 
     default StringBuilder safeObjectName(String tableName, StringBuilder builder) {
         return builder;
     }
-
-    /**
-     * design for standard statement.
-     */
-    @Deprecated
-    default String safeObjectName(String columnName) {
-        throw new UnsupportedOperationException();
-    }
+//
+//    default String safeObjectName(String objectName){
+//        throw new UnsupportedOperationException();
+//    }
 
 
     boolean supportZone();

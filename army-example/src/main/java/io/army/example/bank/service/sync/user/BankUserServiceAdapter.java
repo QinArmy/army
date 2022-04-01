@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Component("bankUserServiceAdapter")
 @Profile(BaseService.SYNC)
-public class BankUserServiceAdapterBank extends BankBaseServiceAdapter implements BankUserService {
+public class BankUserServiceAdapter extends BankBaseServiceAdapter implements BankUserService {
 
     private BankSyncUserService userService;
 

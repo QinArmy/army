@@ -68,7 +68,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
     }
 
 
-    private <T extends IDomain> Select createFindByIdStmt(SyncSession session, Class<T> domainClass, Object id) {
+    protected <T extends IDomain> Select createFindByIdStmt(SyncSession session, Class<T> domainClass, Object id) {
         final TableMeta<T> table;
         table = session.tableMeta(domainClass);
 

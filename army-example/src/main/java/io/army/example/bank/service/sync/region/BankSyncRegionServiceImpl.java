@@ -6,8 +6,7 @@ import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.RegionType;
 import io.army.example.bank.service.sync.BankSyncBaseService;
 import io.army.example.common.BaseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import io.army.example.common.BeanUtils;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
@@ -24,6 +23,12 @@ public class BankSyncRegionServiceImpl extends BankSyncBaseService implements Ba
 
     private BankRegionDao regionDao;
 
+    @Override
+    public void afterPropertiesSet() {
+        super.afterPropertiesSet();
+        this.regionDao = BeanUtils.getDao("bankSync%sRegionDao", BankRegionDao.class, this.applicationContext);
+    }
+
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED)
     @Override
     public List<Map<String, Object>> createRegionIfNotExists() {
@@ -32,7 +37,7 @@ public class BankSyncRegionServiceImpl extends BankSyncBaseService implements Ba
         list = regionDao.findAllCity();
         if (list.size() == 0) {
             regionDao.batchSave(createProvinces());
-            regionDao.batchSaveProvincialCapital(createCities());
+            regionDao.batchSaveProvincialCapital(createProvincialCapitals());
 
             list = regionDao.findAllCity();
         }
@@ -43,11 +48,6 @@ public class BankSyncRegionServiceImpl extends BankSyncBaseService implements Ba
     @Override
     public Long getRegionId(String regionName, RegionType regionType) {
         return this.regionDao.getRegionId(regionName, regionType);
-    }
-
-    @Autowired
-    public void setRegionDao(@Qualifier("bankSyncRegionDao") BankRegionDao regionDao) {
-        this.regionDao = regionDao;
     }
 
 
@@ -329,7 +329,7 @@ public class BankSyncRegionServiceImpl extends BankSyncBaseService implements Ba
         return list;
     }
 
-    private List<ChinaCity> createCities() {
+    private List<ChinaCity> createProvincialCapitals() {
         final List<ChinaCity> list = new ArrayList<>(34);
         ChinaCity c;
 

@@ -4,13 +4,17 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
 import io.army.example.bank.domain.user.*;
+import io.army.example.common.BaseService;
+import io.army.example.common.BeanUtils;
 import io.army.example.common.Pair;
 import io.army.meta.ChildTableMeta;
 import io.army.sync.SyncSession;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-@Repository("bankSyncUserDao")
-public class BankSyncUserDao extends BankSyncBaseDao implements BankUserDao {
+@Repository("bankSyncStandardUserDao")
+@Profile({BaseService.SYNC, BeanUtils.STANDARD})
+public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
 
 
     @Override

@@ -727,14 +727,16 @@ public abstract class _AbstractDialect implements _Dialect {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
+        String columnName;
         for (GenericField<?> field : conditionFields) {
-            final char[] safeColumnAlias = dialect.safeObjectName(field.columnName()).toCharArray();
+            columnName = field.columnName();
             sqlBuilder
                     .append(Constant.SPACE_AND_SPACE)
                     .append(Constant.SPACE)
                     .append(safeTableAlias)
-                    .append(Constant.POINT)
-                    .append(safeColumnAlias);
+                    .append(Constant.POINT);
+
+            dialect.safeObjectName(columnName, sqlBuilder);
 
             switch (field.updateMode()) {
                 case ONLY_NULL:
@@ -748,8 +750,9 @@ public abstract class _AbstractDialect implements _Dialect {
                             .append(dialect.defaultFuncName())
                             .append(Constant.SPACE_LEFT_BRACKET)
                             .append(safeTableAlias)
-                            .append(Constant.POINT)
-                            .append(safeColumnAlias)
+                            .append(Constant.POINT);
+
+                    dialect.safeObjectName(columnName, sqlBuilder)
                             .append(Constant.SPACE_RIGHT_BRACKET);
                 }
                 break;
@@ -852,7 +855,7 @@ public abstract class _AbstractDialect implements _Dialect {
                 sqlBuilder.append(safeTableAlias)
                         .append(Constant.POINT);
             }
-            sqlBuilder.append(dialect.safeObjectName(field.columnName()))
+            dialect.safeObjectName(field.columnName(), sqlBuilder)
                     .append(Constant.SPACE_EQUAL);
 
             if (!field.nullable() && ((_Expression) valuePart).isNullableValue()) {
@@ -1096,8 +1099,10 @@ public abstract class _AbstractDialect implements _Dialect {
         final StringBuilder sqlBuilder = context.sqlBuilder;
         // 1. UPDATE clause
         sqlBuilder.append(Constant.UPDATE_SPACE)
-                .append(Constant.SPACE)
-                .append(dialect.safeTableName(table.tableName()));
+                .append(Constant.SPACE);
+
+        dialect.safeObjectName(table.tableName(), sqlBuilder);
+
 
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(Constant.SPACE_AS_SPACE);
@@ -1144,8 +1149,9 @@ public abstract class _AbstractDialect implements _Dialect {
 
         // 1. DELETE clause
         sqlBuilder.append(Constant.DELETE_FROM_SPACE)
-                .append(Constant.SPACE)
-                .append(dialect.safeTableName(table.tableName()));
+                .append(Constant.SPACE);
+
+        dialect.safeObjectName(table.tableName(), sqlBuilder);
 
         if (dialect.tableAliasAfterAs()) {
             sqlBuilder.append(Constant.SPACE_AS_SPACE);
