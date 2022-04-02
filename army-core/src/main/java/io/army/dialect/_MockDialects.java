@@ -4,6 +4,8 @@ package io.army.dialect;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
 import io.army.domain.IDomain;
+import io.army.env.ArmyEnvironment;
+import io.army.env.StandardEnvironment;
 import io.army.mapping.MappingEnvironment;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -14,6 +16,7 @@ import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -51,8 +54,11 @@ public abstract class _MockDialects {
 
     private static final class MockEnvironment extends _MockDialects implements _DialectEnvironment {
 
+        private final ArmyEnvironment env;
+
         private MockEnvironment(ServerMeta serverMeta) {
             super(serverMeta);
+            this.env = StandardEnvironment.from(Collections.emptyMap());
         }
 
         @Override
@@ -73,6 +79,11 @@ public abstract class _MockDialects {
         @Override
         public MappingEnvironment mappingEnvironment() {
             return null;
+        }
+
+        @Override
+        public ArmyEnvironment environment() {
+            return this.env;
         }
 
     }//MockEnvironment

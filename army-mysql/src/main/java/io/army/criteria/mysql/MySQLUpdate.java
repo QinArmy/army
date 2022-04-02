@@ -34,10 +34,10 @@ public interface MySQLUpdate extends Update {
 
     interface SingleUpdateClause<UR, UP> {
 
-        UP update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+        UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , TableMeta<? extends IDomain> table);
 
-        UR update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+        UR update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , TableMeta<? extends IDomain> table, String tableAlias);
 
         UP update(TableMeta<? extends IDomain> table);
@@ -287,22 +287,22 @@ public interface MySQLUpdate extends Update {
 
     interface MultiUpdateClause<C, UP, UT, US> {
 
-        UP update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+        UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , TableMeta<? extends IDomain> table);
 
-        UT update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+        UT update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , TableMeta<? extends IDomain> table, String tableAlias);
 
         UP update(TableMeta<? extends IDomain> table);
 
         UT update(TableMeta<? extends IDomain> table, String tableAlias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Supplier<T> supplier, String alias);
 
         <T extends TableItem> US update(Supplier<T> tablePart, String alias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Function<C, T> tablePart, String alias);
 
         <T extends TableItem> US update(Function<C, T> tablePart, String alias);

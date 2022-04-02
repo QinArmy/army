@@ -59,6 +59,11 @@ final class MySQLIndexHint implements _IndexHint {
             return this.words;
         }
 
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", Command.class.getName(), this.name());
+        }
+
 
     }//Command
 
@@ -77,6 +82,12 @@ final class MySQLIndexHint implements _IndexHint {
         @Override
         public final String render() {
             return this.words;
+        }
+
+
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", Purpose.class.getName(), this.name());
         }
 
     }// Purpose

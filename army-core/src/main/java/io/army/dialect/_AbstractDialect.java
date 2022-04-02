@@ -31,7 +31,6 @@ import java.util.*;
  */
 public abstract class _AbstractDialect implements _Dialect {
 
-    protected static final char[] UPDATE = new char[]{'U', 'P', 'D', 'A', 'T', 'E'};
 
 
     private static final Collection<String> FORBID_SET_FIELD = ArrayUtils.asUnmodifiableList(

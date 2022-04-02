@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.Dialect;
@@ -60,7 +61,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
 
     private List<Hint> hintList;
 
-    private List<SQLModifier> modifierList;
+    private List<MySQLModifier> modifierList;
 
     private JP noActionPartitionBlock;
 
@@ -72,7 +73,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+    public final UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , TableMeta<? extends IDomain> table) {
         this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
@@ -80,7 +81,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final UT update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+    public final UT update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , TableMeta<? extends IDomain> table, String tableAlias) {
         this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
@@ -100,7 +101,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
@@ -115,7 +116,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
@@ -349,7 +350,7 @@ abstract class MySQLMultiUpdate<C, UP, UT, US, JT, JS, JP, WR, WA, SR, IR> exten
     }
 
     @Override
-    public final List<SQLModifier> modifierList() {
+    public final List<MySQLModifier> modifierList() {
         return this.modifierList;
     }
 

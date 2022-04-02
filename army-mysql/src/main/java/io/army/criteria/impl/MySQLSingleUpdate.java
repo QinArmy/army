@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.Dialect;
@@ -49,7 +50,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
     private List<Hint> hintList;
 
-    private List<SQLModifier> modifierList;
+    private List<MySQLModifier> modifierList;
 
     private TableMeta<?> table;
 
@@ -71,7 +72,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+    public final UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , TableMeta<? extends IDomain> table) {
         if (this.hintList != null || this.modifierList != null || this.table != null) {
             throw _Exceptions.castCriteriaApi();
@@ -86,7 +87,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     }
 
     @Override
-    public final UR update(Supplier<List<Hint>> hints, List<SQLModifier> modifiers
+    public final UR update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , TableMeta<? extends IDomain> table, String tableAlias) {
         if (this.hintList != null || this.modifierList != null || this.table != null) {
             throw _Exceptions.castCriteriaApi();
@@ -513,7 +514,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     }
 
     @Override
-    public final List<SQLModifier> modifierList() {
+    public final List<MySQLModifier> modifierList() {
         return this.modifierList;
     }
 
