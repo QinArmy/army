@@ -12,7 +12,6 @@ Army 设计哲学 : Don't create new world,just mapping real world.
 
 初始成员:马军玲(花名:索隆),刘彬(花名:安西教练)
 
-新成员加入准则: 所有已在成员一致同意。
 
 Army 拥有以下几个特性:
 
