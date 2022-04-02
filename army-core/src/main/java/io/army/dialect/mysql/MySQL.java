@@ -7,26 +7,29 @@ import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.ParentTableMeta;
+import io.army.meta.ServerMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-abstract class MySQLDialect extends _AbstractDialect {
+class MySQL extends _AbstractDialect {
+
 
     protected static final char IDENTIFIER_QUOTE = '`';
 
 
-    MySQLDialect(_DialectEnvironment environment) {
-        super(environment);
+    MySQL(_DialectEnvironment environment, Dialect dialect) {
+        super(environment, dialect);
     }
+
 
     @Override
     public final List<String> startTransaction(final Isolation isolation, final boolean readonly) {
@@ -94,20 +97,16 @@ abstract class MySQLDialect extends _AbstractDialect {
     }
 
     @Override
-    public boolean singleDeleteHasTableAlias() {
+    public final boolean singleDeleteHasTableAlias() {
+        //always false ,MySQL single delete don't support table alias.
         return false;
     }
 
     @Override
-    public boolean hasRowKeywords() {
+    public final boolean hasRowKeywords() {
         return false;
     }
 
-
-    @Override
-    public String showSQL(Stmt stmt) {
-        return null;
-    }
 
     @Override
     public boolean supportSavePoint() {
@@ -280,7 +279,7 @@ abstract class MySQLDialect extends _AbstractDialect {
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         // 1. UPDATE clause
-        sqlBuilder.append(Constant.UPDATE_SPACE);
+        sqlBuilder.append(Constant.UPDATE);
 
         //2. child join parent
         this.appendChildJoinParent(childBlock, context);
@@ -369,6 +368,22 @@ abstract class MySQLDialect extends _AbstractDialect {
             default:
                 throw _Exceptions.unexpectedEnum(lockMode);
         }
+    }
+
+    @Override
+    protected final Set<String> createKeyWordSet(final ServerMeta meta) {
+        final Set<String> keyWordSet;
+        switch (meta.major()) {
+            case 5:
+                keyWordSet = MySQLDialectUtils.create57KeywordsSet();
+                break;
+            case 8:
+                keyWordSet = MySQLDialectUtils.create80KeywordsSet();
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("unsupported MySQL version[%s]", meta.version()));
+        }
+        return keyWordSet;
     }
 
     /*################################## blow private method ##################################*/

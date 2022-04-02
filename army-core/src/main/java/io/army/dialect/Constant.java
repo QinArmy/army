@@ -16,7 +16,7 @@ public interface Constant {
 
     String SELECT = "SELECT";
 
-    String UPDATE_SPACE = "UPDATE ";
+    String UPDATE = "UPDATE";
 
     String DELETE_SPACE = "DELETE ";
 

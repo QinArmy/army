@@ -67,7 +67,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
     private MySQLSingleUpdate(@Nullable C criteria) {
         super(CriteriaContexts.singleDmlContext(criteria));
-
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override

@@ -45,11 +45,14 @@ public abstract class _AbstractDialect implements _Dialect {
 
     protected final boolean identifierCaseSensitivity;
 
-    protected _AbstractDialect(_DialectEnvironment environment) {
+    protected final Dialect dialect;
+
+    protected _AbstractDialect(_DialectEnvironment environment, Dialect dialect) {
         this.environment = environment;
+        this.dialect = dialect;
         this.identifierQuote = identifierQuote();
         this.identifierCaseSensitivity = this.identifierCaseSensitivity();
-        this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet());
+        this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(environment.serverMeta()));
     }
 
     /*################################## blow DML batchInsert method ##################################*/
@@ -79,29 +82,28 @@ public abstract class _AbstractDialect implements _Dialect {
     public final Stmt update(final Update update, final Visible visible) {
         update.prepared();
         _DmlUtils.assertUpdateSetAndWhereClause((_Update) update);
-        final Stmt stmt;
-        if (update instanceof _DialectStatement) {
-            // assert implementation class is legal
-            assertDialectUpdate(update);
-            final SimpleStmt singleStmt;
-            singleStmt = handleDialectUpdate(update, visible);
-            if (update instanceof _BatchDml) {
-                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) update).paramList());
-            } else {
-                stmt = singleStmt;
-            }
-        } else if (update instanceof _SingleUpdate) {
+        final SimpleStmt simpleStmt;
+        if (!(update instanceof _DialectStatement)) {
             // assert implementation is standard implementation.
             _SQLCounselor.assertStandardUpdate(update);
-            final SimpleStmt singleStmt;
-            singleStmt = handleStandardUpdate((_SingleUpdate) update, visible);
-            if (update instanceof _BatchDml) {
-                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) update).paramList());
-            } else {
-                stmt = singleStmt;
-            }
+            simpleStmt = handleStandardUpdate((_SingleUpdate) update, visible);
+        } else if (update instanceof _SingleUpdate) {
+            // assert implementation class is legal
+            assertDialectUpdate(update);
+            final _SingleUpdateContext context;
+            context = StandardUpdateContext.create((_SingleUpdate) update, this, visible);
+            simpleStmt = dialectSingleUpdate(context, (_SingleUpdate) update);
+        } else if (update instanceof _MultiUpdate) {
+            assertDialectUpdate(update);
+            simpleStmt = dialectSingleUpdate(null, null);
         } else {
             throw _Exceptions.unknownStatement(update, this);
+        }
+        final Stmt stmt;
+        if (update instanceof _BatchDml) {
+            stmt = Stmts.batchDml(simpleStmt, ((_BatchDml) update).paramList());
+        } else {
+            stmt = simpleStmt;
         }
         return stmt;
     }
@@ -328,8 +330,8 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
     @Override
-    public Dialect dialect() {
-        return null;
+    public final Dialect dialect() {
+        return this.dialect;
     }
 
 
@@ -338,13 +340,18 @@ public abstract class _AbstractDialect implements _Dialect {
         return this.environment.serverMeta().database();
     }
 
+    @Override
+    public final String toString() {
+        return String.format("[%s dialect:%s,hash:%s]"
+                , this.getClass().getName(), this.dialect(), System.identityHashCode(this));
+    }
 
     /*################################## blow protected template method ##################################*/
 
     /*################################## blow multiInsert template method ##################################*/
 
 
-    protected abstract Set<String> createKeyWordSet();
+    protected abstract Set<String> createKeyWordSet(ServerMeta meta);
 
 
     protected abstract boolean supportTableOnly();
@@ -400,7 +407,7 @@ public abstract class _AbstractDialect implements _Dialect {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt handleDialectUpdate(Update update, Visible visible) {
+    protected SimpleStmt dialectSingleUpdate(_SingleUpdateContext context, _SingleUpdate update) {
         throw new UnsupportedOperationException();
     }
 
@@ -1098,7 +1105,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final SingleTableMeta<?> table = context.table;
         final StringBuilder sqlBuilder = context.sqlBuilder;
         // 1. UPDATE clause
-        sqlBuilder.append(Constant.UPDATE_SPACE)
+        sqlBuilder.append(Constant.UPDATE)
                 .append(Constant.SPACE);
 
         dialect.safeObjectName(table.tableName(), sqlBuilder);
@@ -1171,11 +1178,6 @@ public abstract class _AbstractDialect implements _Dialect {
             this.visiblePredicate(table, context.safeTableAlias, context);
         }
         return context.build();
-    }
-
-
-    private static void blocksVisible(List<_TableBlock> blockList, _SqlContext context) {
-
     }
 
 

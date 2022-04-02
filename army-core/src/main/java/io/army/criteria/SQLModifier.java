@@ -7,4 +7,7 @@ public interface SQLModifier {
      */
     String render();
 
+    @Override
+    String toString();
+
 }

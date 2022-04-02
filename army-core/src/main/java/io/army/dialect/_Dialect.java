@@ -72,8 +72,6 @@ public interface _Dialect {
     }
 
 
-    String showSQL(Stmt stmt);
-
     boolean supportSavePoint();
 
     boolean setClauseTableAlias();

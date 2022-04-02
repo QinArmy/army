@@ -5,6 +5,7 @@ import io.army.annotation.Generator;
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._DialectStatement;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
@@ -241,6 +242,17 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException dialectAndModifierNotMatch(Dialect dialect, SQLModifier modifier) {
+        String m = String.format("%s and %s not match.", dialect, modifier);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException commandAndModifierNotMatch(_DialectStatement statement, SQLModifier modifier) {
+        String m = String.format("%s and %s not match.", statement.getClass().getName(), modifier);
+        return new CriteriaException(m);
+    }
+
+
     public static IllegalArgumentException stmtDontSupportDialect(Dialect mode) {
         return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
     }
@@ -334,6 +346,18 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static NonUniqueException nonUnique(List<?> list) {
         String m = String.format("select result[%s] more than 1.", list.size());
         return new NonUniqueException(m);
+    }
+
+
+    public static IllegalArgumentException dialectDatabaseNotMatch(Dialect dialect, ServerMeta meta) {
+        String m = String.format("ArmyKey %s %s database not match with server %s", ArmyKey.DIALECT, dialect, meta);
+        return new IllegalArgumentException(m);
+    }
+
+    public static IllegalArgumentException dialectVersionNotCompatibility(Dialect dialect, ServerMeta meta) {
+        String m = String.format("ArmyKey %s %s version not compatibility with server %s"
+                , ArmyKey.DIALECT, dialect, meta);
+        return new IllegalArgumentException(m);
     }
 
 

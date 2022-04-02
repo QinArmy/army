@@ -4,6 +4,7 @@ package io.army.dialect;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
 import io.army.domain.IDomain;
+import io.army.mapping.MappingEnvironment;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
@@ -69,6 +70,10 @@ public abstract class _MockDialects {
             return MockDomainValuesGenerator.INSTANCE;
         }
 
+        @Override
+        public MappingEnvironment mappingEnvironment() {
+            return null;
+        }
 
     }//MockEnvironment
 

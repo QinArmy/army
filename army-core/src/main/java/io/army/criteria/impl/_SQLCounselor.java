@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.util._ClassUtils;
 
 public abstract class _SQLCounselor {
 
@@ -21,29 +22,31 @@ public abstract class _SQLCounselor {
 
     public static void assertStandardUpdate(Update update) {
         if (!(update instanceof StandardUpdate)) {
-            String m = String.format("%s isn't instance of %s"
-                    , update.getClass().getName(), StandardUpdate.class.getName());
-            throw new CriteriaException(m);
+            throw instanceNotMatch(update, StandardUpdate.class);
         }
 
     }
 
     public static void assertStandardDelete(Delete delete) {
         if (!(delete instanceof StandardDelete)) {
-            throw new CriteriaException(String.format("%s isn't instance of %s", delete.getClass().getName()
-                    , StandardDelete.class.getName()));
+            throw instanceNotMatch(delete, StandardDelete.class);
         }
     }
 
     public static void assertStandardInsert(Insert insert) {
         if (!(insert instanceof StandardValueInsert)) {
-            String m = String.format("%s isn't instance of %s", insert, StandardValueInsert.class.getName());
-            throw new CriteriaException(m);
+            throw instanceNotMatch(insert, StandardValueInsert.class);
         }
     }
 
     public static void assertCet(Cte cte) {
 
+    }
+
+    protected static CriteriaException instanceNotMatch(Statement statement, Class<?> statementClass) {
+        String m = String.format("%s isn't instance of %s"
+                , _ClassUtils.safeClassName(statement), statementClass.getName());
+        throw new CriteriaException(m);
     }
 
 

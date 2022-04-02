@@ -5,7 +5,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._DialectEnvironment;
 import io.army.meta.ParamMeta;
-import io.army.stmt.Stmt;
+import io.army.meta.ServerMeta;
 import io.army.tx.Isolation;
 
 import java.util.List;
@@ -13,8 +13,8 @@ import java.util.Set;
 
 class Postgre11DmlDialect extends _AbstractDialect {
 
-    Postgre11DmlDialect(_DialectEnvironment environment) {
-        super(environment);
+    Postgre11DmlDialect(_DialectEnvironment environment, Dialect dialect) {
+        super(environment, dialect);
     }
 
 
@@ -81,10 +81,6 @@ class Postgre11DmlDialect extends _AbstractDialect {
         return false;
     }
 
-    @Override
-    public String showSQL(Stmt stmt) {
-        return null;
-    }
 
     @Override
     public boolean supportSavePoint() {
@@ -96,10 +92,6 @@ class Postgre11DmlDialect extends _AbstractDialect {
         return false;
     }
 
-    @Override
-    public Dialect dialect() {
-        return null;
-    }
 
     @Override
     public String defaultFuncName() {
@@ -112,7 +104,7 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
-    protected Set<String> createKeyWordSet() {
+    protected Set<String> createKeyWordSet(ServerMeta meta) {
         return null;
     }
 
