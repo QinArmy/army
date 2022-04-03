@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 public interface MySQL80Query extends MySQLQuery {
 
 
-    interface With80Spec<C, Q extends Query> extends MySQLQuery.WithClause<C, Select80Spec<C, Q>>
+    interface With80Spec<C, Q extends Query> extends WithCteClause<C, Select80Spec<C, Q>>
             , Select80Spec<C, Q> {
 
 

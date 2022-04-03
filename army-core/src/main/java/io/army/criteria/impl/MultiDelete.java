@@ -48,7 +48,7 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends JoinableDml<C, JT, JS, WR,
     @Override
     public final Delete asDelete() {
         _Assert.nonPrepared(this.prepared);
-
+        this.validateBeforeClearContext();
         this.tableBlockList = this.criteriaContext.clear();
         if (this instanceof WithElement) {
             CriteriaContextStack.pop(this.criteriaContext);
@@ -90,6 +90,10 @@ abstract class MultiDelete<C, JT, JS, WR, WA> extends JoinableDml<C, JT, JS, WR,
     abstract void onAsDelete();
 
     abstract void onClear();
+
+    void validateBeforeClearContext() {
+        // no-op
+    }
 
     @Override
     final JT getNoActionTableBlock() {

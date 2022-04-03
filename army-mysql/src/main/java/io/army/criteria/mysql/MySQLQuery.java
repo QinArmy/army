@@ -10,25 +10,7 @@ import java.util.function.Supplier;
 
 public interface MySQLQuery extends Query, DialectStatement {
 
-    interface WithClause<C, WE> {
 
-        WE with(String cteName, Supplier<SubQuery> supplier);
-
-        WE with(String cteName, Function<C, SubQuery> function);
-
-        WE with(Supplier<List<Cte>> supplier);
-
-        WE with(Function<C, List<Cte>> function);
-
-        WE withRecursive(String cteName, Supplier<SubQuery> supplier);
-
-        WE withRecursive(String cteName, Function<C, SubQuery> function);
-
-        WE withRecursive(Supplier<List<Cte>> supplier);
-
-        WE withRecursive(Function<C, List<Cte>> function);
-
-    }
 
     interface MySQLFromClause<C, FT, FS, FP> extends Statement.FromClause<C, FT, FS> {
 
@@ -42,19 +24,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <JS> on clause,see {@link Query.OnClause}
      * @param <JP> partition clause, see {@link MySQLQuery.PartitionClause}
      */
-    interface MySQLJoinClause<C, JT, JS, JP> extends Statement.JoinClause<C, JT, JS> {
-
-        JT straightJoin(TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS straightJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias);
-
-        JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias);
-
-        <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias);
+    interface MySQLJoinClause<C, JT, JS, JP> extends DialectStatement.DialectJoinClause<C, JT, JS> {
 
         JP leftJoin(TableMeta<?> table);
 

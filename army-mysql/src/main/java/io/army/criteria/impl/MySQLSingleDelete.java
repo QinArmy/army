@@ -1,9 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.Dialect;
@@ -29,27 +31,35 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, WR, WA>
+abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, WE, WR, WA>
         implements Query.OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLQuery.PartitionClause<C, PR>
-        , _MySQLSingleDelete {
+        , _MySQLSingleDelete, MySQLDelete.SingleDeleteClause<C, DR>, MySQLDelete.SingleDeleteFromClause<DR> {
 
     static <C> MySQLDelete.SingleDeleteSpec<C> simple57(@Nullable C criteria) {
-        return new SingleDeleteSpecImpl<>(criteria);
+        final SimpleDelete<C, Void> delete;
+        delete = new SimpleDelete<>(criteria);
+        return delete;
     }
 
     static <C> MySQLDelete.BatchSingleDeleteSpec<C> batch57(@Nullable C criteria) {
-        return new BatchSingleDeleteSpecImpl<>(criteria);
+        final BatchDelete<C, Void> delete;
+        delete = new BatchDelete<>(criteria);
+        return delete;
     }
 
     static <C> MySQLDelete.SingleDelete80Spec<C> simple80(@Nullable C criteria) {
-        return new SingleDelete80SpecImpl<>(criteria);
+        return new SimpleDelete80<>(criteria);
     }
 
     static <C> MySQLDelete.BatchSingleDelete80Spec<C> batch80(@Nullable C criteria) {
-        return new BatchDelete80SpecImpl<>(criteria);
+        return new BatchDelete80<>(criteria);
     }
 
-    private final CommandBlock commandBlock;
+    private List<Hint> hintList;
+
+    private List<MySQLModifier> modifierList;
+
+    private SingleTableMeta<? extends IDomain> table;
 
     private List<String> partitionList;
 
@@ -58,12 +68,42 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
     private long rowCount = -1L;
 
 
-    private MySQLSingleDelete(CommandBlock commandBlock, CriteriaContext criteriaContext) {
-        super(criteriaContext);
-        this.commandBlock = commandBlock;
-        if (!(this instanceof _MySQLWithClause)) {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+    private MySQLSingleDelete(@Nullable C criteria) {
+        super(CriteriaContexts.singleDmlContext(criteria));
+        CriteriaContextStack.setContextStack(this.criteriaContext);
+    }
+
+
+    @Override
+    public final MySQLDelete.SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        return this;
+    }
+
+    @Override
+    public final MySQLDelete.SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers) {
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.apply(this.criteria));
+        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        return this;
+    }
+
+    @Override
+    public final DR deleteFrom(SingleTableMeta<? extends IDomain> table) {
+        if (this.table != null) {
+            throw _Exceptions.castCriteriaApi();
         }
+        this.table = table;
+        return (DR) this;
+    }
+
+    @Override
+    public final DR from(SingleTableMeta<? extends IDomain> table) {
+        if (this.table != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.table = table;
+        return (DR) this;
     }
 
     @Override
@@ -221,17 +261,19 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
     @Override
     public final List<Hint> hintList() {
-        return this.commandBlock.hintList;
+        return this.hintList;
     }
 
     @Override
-    public final List<SQLModifier> modifierList() {
-        return this.commandBlock.modifierList;
+    public final List<MySQLModifier> modifierList() {
+        return this.modifierList;
     }
 
     @Override
     public final SingleTableMeta<?> table() {
-        return this.commandBlock.table;
+        final SingleTableMeta<?> table = this.table;
+        assert table != null;
+        return table;
     }
 
     @Override
@@ -253,6 +295,15 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
     @Override
     final void onAsDelete() {
+        if (this.hintList == null) {
+            this.hintList = Collections.emptyList();
+        }
+        if (this.modifierList == null) {
+            this.modifierList = Collections.emptyList();
+        }
+        if (this.table == null) {
+            throw _Exceptions.castCriteriaApi();
+        }
         final List<String> partitionList = this.partitionList;
         if (_CollectionUtils.isEmpty(partitionList)) {
             this.partitionList = Collections.emptyList();
@@ -268,7 +319,7 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
         }
 
         if (this instanceof BatchDelete) {
-            final List<?> wrapperList = ((BatchDelete<C>) this).wrapperList;
+            final List<?> wrapperList = ((BatchDelete<C, ?>) this).wrapperList;
             if (_CollectionUtils.isEmpty(wrapperList)) {
                 throw _Exceptions.batchParamEmpty();
             }
@@ -279,12 +330,13 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
     @Override
     final void onClear() {
+        this.hintList = null;
         this.partitionList = null;
         this.orderByList = null;
         this.rowCount = -1L;
 
         if (this instanceof BatchDelete) {
-            ((BatchDelete<C>) this).wrapperList = null;
+            ((BatchDelete<C, ?>) this).wrapperList = null;
         }
     }
 
@@ -300,36 +352,41 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
 
     /*################################## blow inner class ##################################*/
 
-    private static class SimpleDelete<C> extends MySQLSingleDelete<
+    private static class SimpleDelete<C, WE> extends MySQLSingleDelete<
             C,
+            WE,
+            MySQLDelete.SinglePartitionSpec<C>,
             MySQLDelete.SingleWhereSpec<C>,
             MySQLDelete.OrderBySpec<C>,
             MySQLDelete.SingleWhereAndSpec<C>,
             MySQLDelete.LimitSpec<C>,
             Delete.DeleteSpec>
-            implements MySQLDelete.SinglePartitionSpec<C>, MySQLDelete.SingleWhereAndSpec<C> {
+            implements MySQLDelete.SinglePartitionSpec<C>, MySQLDelete.SingleWhereAndSpec<C>
+            , MySQLDelete.SingleDeleteSpec<C> {
 
-        private SimpleDelete(CommandBlock commandBlock, CriteriaContext criteriaContext) {
-            super(commandBlock, criteriaContext);
+        private SimpleDelete(@Nullable C criteria) {
+            super(criteria);
 
         }
 
-
     }//SimpleDelete
 
-    private static class BatchDelete<C> extends MySQLSingleDelete<
+    private static class BatchDelete<C, WE> extends MySQLSingleDelete<
             C,
+            WE,
+            MySQLDelete.BatchSinglePartitionSpec<C>,
             MySQLDelete.BatchSingleWhereSpec<C>,
             MySQLDelete.BatchOrderBySpec<C>,
             MySQLDelete.BatchSingleWhereAndSpec<C>,
             MySQLDelete.BatchLimitSpec<C>,
             Statement.BatchParamClause<C, Delete.DeleteSpec>>
-            implements MySQLDelete.BatchSinglePartitionSpec<C>, MySQLDelete.BatchSingleWhereAndSpec<C> {
+            implements MySQLDelete.BatchSinglePartitionSpec<C>, MySQLDelete.BatchSingleWhereAndSpec<C>
+            , MySQLDelete.BatchSingleDeleteSpec<C>, _BatchDml {
 
         private List<?> wrapperList;
 
-        private BatchDelete(CommandBlock commandBlock, CriteriaContext criteriaContext) {
-            super(commandBlock, criteriaContext);
+        private BatchDelete(@Nullable C criteria) {
+            super(criteria);
 
         }
 
@@ -355,303 +412,23 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
             return this;
         }
 
+        @Override
+        public final List<?> paramList() {
+            return this.wrapperList;
+        }
+
     }//BatchDelete
 
 
-    /**
-     * @see #simple57(Object)
-     */
-    private static final class SingleDeleteSpecImpl<C> implements MySQLDelete.SingleDeleteSpec<C> {
+    private static final class SimpleDelete80<C> extends SimpleDelete<C, MySQLDelete.SingleDeleteSpec<C>>
+            implements _MySQLWithClause, MySQLDelete.SingleDelete80Spec<C> {
 
-        private final C criteria;
+        private boolean recursive;
 
-        private SingleDeleteSpecImpl(@Nullable C criteria) {
-            this.criteria = criteria;
-        }
+        private List<Cte> cteList;
 
-        @Override
-        public MySQLDelete.SingleDeleteFromClause<MySQLDelete.SinglePartitionSpec<C>> delete(Supplier<List<Hint>> hints
-                , List<SQLModifier> modifiers) {
-            final List<Hint> hintList;
-            hintList = hints.get();
-            assert hintList != null;
-            return new SimpleDeleteFromClause<>(hintList, modifiers, this.criteria);
-        }
-
-        @Override
-        public MySQLDelete.SinglePartitionSpec<C> deleteFrom(SingleTableMeta<? extends IDomain> table) {
-            return new SimpleDelete<>(new CommandBlock(table), CriteriaContexts.singleDmlContext(this.criteria));
-        }
-
-    }// SingleDeleteSpecImpl
-
-
-    /**
-     * @see SingleDeleteSpecImpl#delete(Supplier, List)
-     */
-    private static final class SimpleDeleteFromClause<C>
-            implements MySQLDelete.SingleDeleteFromClause<MySQLDelete.SinglePartitionSpec<C>> {
-
-        private final List<Hint> hintList;
-
-        private final List<SQLModifier> modifierList;
-
-        private final C criteria;
-
-        private SimpleDeleteFromClause(List<Hint> hintList, List<SQLModifier> modifierList, @Nullable C criteria) {
-            this.hintList = hintList;
-            this.modifierList = modifierList;
-            this.criteria = criteria;
-        }
-
-        @Override
-        public MySQLDelete.SinglePartitionSpec<C> from(SingleTableMeta<? extends IDomain> table) {
-            final CommandBlock commandBlock = new CommandBlock(hintList, modifierList, table);
-            return new SimpleDelete<>(commandBlock, CriteriaContexts.singleDmlContext(this.criteria));
-        }
-
-    } // SimpleDeleteFromClause
-
-
-    private static final class CommandBlock {
-
-        private final List<Hint> hintList;
-
-        private final List<SQLModifier> modifierList;
-
-        private final SingleTableMeta<?> table;
-
-        private CommandBlock(List<Hint> hintList, List<SQLModifier> modifierList, SingleTableMeta<?> table) {
-            if (hintList == Collections.EMPTY_LIST) {
-                this.hintList = hintList;
-            } else {
-                this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
-            }
-            if (modifierList == Collections.EMPTY_LIST) {
-                this.modifierList = modifierList;
-            } else {
-                this.modifierList = _CollectionUtils.asUnmodifiableList(modifierList);
-            }
-            this.table = table;
-        }
-
-        private CommandBlock(SingleTableMeta<?> table) {
-            this.table = table;
-            this.hintList = Collections.emptyList();
-            this.modifierList = Collections.emptyList();
-        }
-
-    }// CommandBlock
-
-
-    /**
-     * @see #batch57(Object)
-     */
-    private static final class BatchSingleDeleteSpecImpl<C> implements MySQLDelete.BatchSingleDeleteSpec<C> {
-
-        private final C criteria;
-
-        private BatchSingleDeleteSpecImpl(@Nullable C criteria) {
-            this.criteria = criteria;
-        }
-
-
-        @Override
-        public MySQLDelete.SingleDeleteFromClause<MySQLDelete.BatchSinglePartitionSpec<C>> delete(Supplier<List<Hint>> hints, List<SQLModifier> modifiers) {
-            final List<Hint> hintList;
-            hintList = hints.get();
-            assert hintList != null;
-            return new BatchDeleteFromClause<>(hintList, modifiers, this.criteria);
-        }
-
-        @Override
-        public MySQLDelete.BatchSinglePartitionSpec<C> deleteFrom(SingleTableMeta<? extends IDomain> table) {
-            return new BatchDelete<>(new CommandBlock(table), CriteriaContexts.singleDmlContext(this.criteria));
-        }
-
-    }// BatchSinglePartitionSpecImpl
-
-    /**
-     * @see BatchSingleDeleteSpecImpl#delete(Supplier, List)
-     */
-    private static final class BatchDeleteFromClause<C>
-            implements MySQLDelete.SingleDeleteFromClause<MySQLDelete.BatchSinglePartitionSpec<C>> {
-
-        private final C criteria;
-
-        private final List<Hint> hintList;
-
-        private final List<SQLModifier> modifierList;
-
-        private BatchDeleteFromClause(List<Hint> hintList, List<SQLModifier> modifierList, @Nullable C criteria) {
-            this.hintList = hintList;
-            this.modifierList = modifierList;
-            this.criteria = criteria;
-        }
-
-        @Override
-        public MySQLDelete.BatchSinglePartitionSpec<C> from(SingleTableMeta<? extends IDomain> table) {
-            final CommandBlock commandBlock = new CommandBlock(this.hintList, this.modifierList, table);
-            return new BatchDelete<>(commandBlock, CriteriaContexts.singleDmlContext(this.criteria));
-        }
-
-    } // BatchDeleteFromClause
-
-
-    private static abstract class SingleDelete80Clause<C, WE, DR> implements MySQLQuery.WithClause<C, WE>
-            , MySQLDelete.SingleDeleteClause<DR>, MySQLDelete.SingleDeleteFromClause<DR> {
-
-        private final C criteria;
-
-        final CriteriaContext criteriaContext;
-
-        boolean recursive;
-
-        List<Cte> cteList;
-
-        List<Hint> hintList;
-
-        List<SQLModifier> modifierList;
-
-        private SingleDelete80Clause(@Nullable C criteria) {
-            this.criteria = criteria;
-            this.criteriaContext = CriteriaContexts.singleDmlContext(criteria);
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-
-        }
-
-        @Override
-        public final WE with(String cteName, Supplier<SubQuery> supplier) {
-            this.cteList = Collections.singletonList(CteImpl.create(cteName, supplier.get()));
-            return (WE) this;
-        }
-
-        @Override
-        public final WE with(String cteName, Function<C, SubQuery> function) {
-            this.cteList = Collections.singletonList(CteImpl.create(cteName, function.apply(this.criteria)));
-            return (WE) this;
-        }
-
-        @Override
-        public final WE with(Supplier<List<Cte>> supplier) {
-            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
-            return (WE) this;
-        }
-
-        @Override
-        public final WE with(Function<C, List<Cte>> function) {
-            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
-            return (WE) this;
-        }
-
-        @Override
-        public final WE withRecursive(String cteName, Supplier<SubQuery> supplier) {
-            this.recursive = true;
-            return this.with(cteName, supplier);
-        }
-
-        @Override
-        public final WE withRecursive(String cteName, Function<C, SubQuery> function) {
-            this.recursive = true;
-            return this.with(cteName, function);
-        }
-
-        @Override
-        public final WE withRecursive(Supplier<List<Cte>> supplier) {
-            this.recursive = true;
-            return this.with(supplier);
-        }
-
-        @Override
-        public final WE withRecursive(Function<C, List<Cte>> function) {
-            this.recursive = true;
-            return this.with(function);
-        }
-
-        @Override
-        public final MySQLDelete.SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<SQLModifier> modifiers) {
-            final List<Hint> hintList;
-            hintList = hints.get();
-            assert hintList != null;
-            this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
-            this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
-            return this;
-        }
-
-        @Override
-        public final DR deleteFrom(SingleTableMeta<? extends IDomain> table) {
-            return createDelete(new CommandBlock(table));
-        }
-
-        @Override
-        public final DR from(SingleTableMeta<? extends IDomain> table) {
-            final List<Hint> hintList = this.hintList;
-            final List<SQLModifier> modifierList = this.modifierList;
-            if (hintList == null || modifierList == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            return createDelete(new CommandBlock(hintList, modifierList, table));
-        }
-
-        abstract DR createDelete(CommandBlock block);
-
-    }//MySQLSingleDelete80Clause
-
-    private static final class SingleDelete80SpecImpl<C> extends SingleDelete80Clause<
-            C,
-            MySQLDelete.SingleDeleteSpec<C>,
-            MySQLDelete.SinglePartitionSpec<C>>
-            implements MySQLDelete.SingleDelete80Spec<C> {
-
-
-        private SingleDelete80SpecImpl(@Nullable C criteria) {
+        private SimpleDelete80(@Nullable C criteria) {
             super(criteria);
-        }
-
-        @Override
-        MySQLDelete.SinglePartitionSpec<C> createDelete(final CommandBlock block) {
-            List<Cte> cteList = this.cteList;
-            if (cteList == null) {
-                cteList = Collections.emptyList();
-            }
-            return new SimpleDelete80<>(block, this.recursive, cteList, this.criteriaContext);
-        }
-
-    }//SingleDelete80SpecImpl
-
-    private static final class BatchDelete80SpecImpl<C> extends SingleDelete80Clause<
-            C,
-            MySQLDelete.BatchSingleDeleteSpec<C>,
-            MySQLDelete.BatchSinglePartitionSpec<C>>
-            implements MySQLDelete.BatchSingleDelete80Spec<C> {
-
-        private BatchDelete80SpecImpl(@Nullable C criteria) {
-            super(criteria);
-        }
-
-        @Override
-        MySQLDelete.BatchSinglePartitionSpec<C> createDelete(CommandBlock block) {
-            List<Cte> cteList = this.cteList;
-            if (cteList == null) {
-                cteList = Collections.emptyList();
-            }
-            return new BatchDelete80<>(block, this.recursive, cteList, this.criteriaContext);
-        }
-
-    }//BatchDelete80SpecImpl
-
-
-    private static final class SimpleDelete80<C> extends SimpleDelete<C> implements _MySQLWithClause {
-
-        private final boolean recursive;
-
-        private final List<Cte> cteList;
-
-        private SimpleDelete80(CommandBlock commandBlock, boolean recursive, List<Cte> cteList
-                , CriteriaContext criteriaContext) {
-            super(commandBlock, criteriaContext);
-            this.recursive = recursive;
-            this.cteList = cteList;
         }
 
         @Override
@@ -662,22 +439,26 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
         @Override
         public List<Cte> cteList() {
             return this.cteList;
+        }
+
+        @Override
+        void doWithCte(boolean recursive, List<Cte> cteList) {
+            this.recursive = recursive;
+            this.cteList = cteList;
         }
 
     }//SimpleDelete80
 
 
-    private static final class BatchDelete80<C> extends BatchDelete<C> implements _MySQLWithClause {
+    private static final class BatchDelete80<C> extends BatchDelete<C, MySQLDelete.BatchSingleDeleteSpec<C>>
+            implements _MySQLWithClause, MySQLDelete.BatchSingleDelete80Spec<C> {
 
-        private final boolean recursive;
+        private boolean recursive;
 
-        private final List<Cte> cteList;
+        private List<Cte> cteList;
 
-        private BatchDelete80(CommandBlock commandBlock, boolean recursive, List<Cte> cteList
-                , CriteriaContext criteriaContext) {
-            super(commandBlock, criteriaContext);
-            this.recursive = recursive;
-            this.cteList = cteList;
+        private BatchDelete80(@Nullable C criteria) {
+            super(criteria);
         }
 
         @Override
@@ -688,6 +469,12 @@ abstract class MySQLSingleDelete<C, PR, WR, WA, OR, LR> extends SingleDelete<C, 
         @Override
         public List<Cte> cteList() {
             return this.cteList;
+        }
+
+        @Override
+        void doWithCte(boolean recursive, List<Cte> cteList) {
+            this.recursive = recursive;
+            this.cteList = cteList;
         }
 
     }//BatchDelete80

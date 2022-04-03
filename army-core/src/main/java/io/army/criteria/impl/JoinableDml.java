@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Statement;
+import io.army.criteria.DialectStatement;
 import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._Dml;
 import io.army.criteria.impl.inner._TableBlock;
@@ -21,7 +21,7 @@ import java.util.function.Supplier;
  * </p>
  */
 abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
-        implements Statement.JoinClause<C, JT, JS>, _Dml {
+        implements DialectStatement.DialectJoinClause<C, JT, JS>, _Dml {
 
 
     JoinableDml(CriteriaContext criteriaContext) {
@@ -223,6 +223,46 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
         return this.ifAddOnBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
     }
 
+
+    @Override
+    public final JT straightJoin(TableMeta<?> table, String tableAlias) {
+        final JT block;
+        block = this.createTableBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
+        final JS block;
+        block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
+        final JS block;
+        block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias) {
+        return this.ifAddTableBlock(predicate, _JoinType.STRAIGHT_JOIN, table, alias);
+    }
+
+    @Override
+    public final <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias) {
+        return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
+    }
+
+    @Override
+    public final <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias) {
+        return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
+    }
+
     abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
 
     abstract JS createOnBlock(_JoinType joinType, TableItem tableItem, String alias);
@@ -239,7 +279,7 @@ abstract class JoinableDml<C, JT, JS, WR, WA> extends DmlWhereClause<C, WR, WA>
     /*################################## blow private method ##################################*/
 
 
-    final <T extends TableItem> JS ifAddOnBlock(_JoinType joinType, @Nullable TableItem tableItem, String alias) {
+    final JS ifAddOnBlock(_JoinType joinType, @Nullable TableItem tableItem, String alias) {
         final JS block;
         if (tableItem == null) {
             block = getNoActionOnBlock();

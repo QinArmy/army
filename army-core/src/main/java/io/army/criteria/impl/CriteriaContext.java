@@ -13,9 +13,11 @@ interface CriteriaContext {
 
     void selectList(List<? extends SelectItem> selectPartList);
 
+    boolean containsTable(String tableAlias);
+
     <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field);
 
-     DerivedField ref(String subQueryAlias, String derivedFieldName);
+    DerivedField ref(String subQueryAlias, String derivedFieldName);
 
     Expression ref(String selectionAlias);
 
@@ -30,17 +32,11 @@ interface CriteriaContext {
     VarExpression var(String name) throws CriteriaException;
 
 
-    default void onAddBlock(_TableBlock block) {
-        throw new UnsupportedOperationException();
-    }
+    void onAddBlock(_TableBlock block);
 
-    default void onFirstBlock(_TableBlock block) {
-        throw new UnsupportedOperationException();
-    }
+    void onFirstBlock(_TableBlock block);
 
-    default _TableBlock firstBlock() {
-        throw new UnsupportedOperationException();
-    }
+    _TableBlock firstBlock();
 
     @Nullable
     <C> C criteria();

@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unchecked")
 abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         C,
         Q,
@@ -91,13 +92,13 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     public final Select80Spec<C, Q> with(String cteName, Supplier<SubQuery> supplier) {
-        this.cteList = Collections.singletonList(CteImpl.create(cteName, supplier.get()));
+        this.cteList = Collections.singletonList(SQLs.cte(cteName, supplier));
         return this;
     }
 
     @Override
     public final Select80Spec<C, Q> with(String cteName, Function<C, SubQuery> function) {
-        this.cteList = Collections.singletonList(CteImpl.create(cteName, function.apply(this.criteria)));
+        this.cteList = Collections.singletonList(SQLs.cte(cteName, function.apply(this.criteria)));
         return this;
     }
 

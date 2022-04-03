@@ -7,8 +7,10 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
+import io.army.util._CollectionUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -416,8 +418,8 @@ public abstract class SQLs extends StandardFunctions {
         return CriteriaContextStack.peek().qualifiedField(tableAlias, field);
     }
 
-    public static DerivedField ref(String subQueryAlias, String derivedFieldName) {
-        return CriteriaContextStack.peek().ref(subQueryAlias, derivedFieldName);
+    public static DerivedField ref(String derivedTable, String derivedFieldName) {
+        return CriteriaContextStack.peek().ref(derivedTable, derivedFieldName);
     }
 
 
@@ -478,6 +480,43 @@ public abstract class SQLs extends StandardFunctions {
     public static SelectionGroup derivedGroup(String subQueryAlias, List<String> derivedFieldNameList) {
         return SelectionGroups.buildDerivedGroup(subQueryAlias, derivedFieldNameList);
     }
+
+    public static Cte cte(String name, Supplier<SubQuery> supplier) {
+        final SubQuery subQuery;
+        subQuery = supplier.get();
+        assert subQuery != null;
+        return new CteImpl(name, subQuery);
+    }
+
+    public static Cte cte(String name, List<String> columnNameList, Supplier<SubQuery> supplier) {
+        final SubQuery subQuery;
+        subQuery = supplier.get();
+        assert subQuery != null;
+        return new CteImpl(name, columnNameList, subQuery);
+    }
+
+    public static <C> Cte cte(String name, Function<C, SubQuery> function) {
+        final SubQuery subQuery;
+        subQuery = function.apply(CriteriaContextStack.getCriteria());
+        assert subQuery != null;
+        return new CteImpl(name, subQuery);
+    }
+
+    public static <C> Cte cte(String name, List<String> columnNameList, Function<C, SubQuery> function) {
+        final SubQuery subQuery;
+        subQuery = function.apply(CriteriaContextStack.getCriteria());
+        assert subQuery != null;
+        return new CteImpl(name, columnNameList, subQuery);
+    }
+
+    /**
+     * package method
+     */
+    static <C> Cte cte(String name, SubQuery subQuery) {
+        return new CteImpl(name, subQuery);
+    }
+
+
 
 
     /*################################## blow sql key word operate method ##################################*/
@@ -634,6 +673,44 @@ public abstract class SQLs extends StandardFunctions {
             return this.second;
         }
     }//BetweenPair
+
+    static final class CteImpl implements Cte {
+
+        private final String name;
+
+        private final List<String> columnNameList;
+
+        private final SubQuery subQuery;
+
+        private CteImpl(String name, SubQuery subQuery) {
+            this.name = name;
+            this.columnNameList = Collections.emptyList();
+            this.subQuery = subQuery;
+        }
+
+
+        private CteImpl(String name, List<String> columnNameList, SubQuery subQuery) {
+            this.name = name;
+            this.columnNameList = _CollectionUtils.asUnmodifiableList(columnNameList);
+            this.subQuery = subQuery;
+        }
+
+        @Override
+        public String name() {
+            return this.name;
+        }
+
+        @Override
+        public List<String> columnNameList() {
+            return this.columnNameList;
+        }
+
+        @Override
+        public SubQuery subQuery() {
+            return this.subQuery;
+        }
+
+    }//CteImpl
 
 
 }

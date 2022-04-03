@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 
+@SuppressWarnings("unchecked")
 abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, IT, WR, AR, GR, HR, OR, LR, UR, SP>
         extends SimpleQuery<C, Q, SR, FT, FS, JT, JS, WR, AR, GR, HR, OR, LR, UR, SP>
         implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, IT>
@@ -381,7 +382,12 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         }
 
 
-    }
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", MySQLLock.class.getName(), this.name());
+        }
+
+    }//MySQLLock
 
     enum MySQLLockOption implements SQLModifier {
 
@@ -399,7 +405,12 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
             return this.words;
         }
 
-    }
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", MySQLLockOption.class.getName(), this.name());
+        }
+
+    }//MySQLLockOption
 
 
 }

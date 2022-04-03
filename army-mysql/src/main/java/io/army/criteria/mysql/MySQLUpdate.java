@@ -47,7 +47,7 @@ public interface MySQLUpdate extends Update {
     }
 
 
-    interface SingleWithAndUpdateSpec<C> extends MySQLQuery.WithClause<C, MySQLUpdate.SingleUpdateSpec<C>>
+    interface SingleWithAndUpdateSpec<C> extends DialectStatement.WithCteClause<C, SingleUpdateSpec<C>>
             , MySQLUpdate.SingleUpdateSpec<C> {
 
     }
@@ -142,7 +142,7 @@ public interface MySQLUpdate extends Update {
 
     /*################################## blow batch single-table update spec ##################################*/
 
-    interface BatchSingleWithAndUpdateSpec<C> extends MySQLQuery.WithClause<C, MySQLUpdate.BatchSingleUpdateSpec<C>>
+    interface BatchSingleWithAndUpdateSpec<C> extends DialectStatement.WithCteClause<C, BatchSingleUpdateSpec<C>>
             , MySQLUpdate.BatchSingleUpdateSpec<C> {
 
     }
@@ -309,7 +309,7 @@ public interface MySQLUpdate extends Update {
     }
 
 
-    interface WithAndMultiUpdateSpec<C> extends MySQLQuery.WithClause<C, MySQLUpdate.MultiUpdateSpec<C>>
+    interface WithAndMultiUpdateSpec<C> extends DialectStatement.WithCteClause<C, MultiUpdateSpec<C>>
             , MySQLUpdate.MultiUpdateSpec<C> {
 
     }
@@ -439,7 +439,7 @@ public interface MySQLUpdate extends Update {
 
     /*################################## blow batch multi-table update spec ##################################*/
 
-    interface BatchWithAndMultiUpdateSpec<C> extends MySQLQuery.WithClause<C, MySQLUpdate.BatchMultiUpdateSpec<C>>
+    interface BatchWithAndMultiUpdateSpec<C> extends DialectStatement.WithCteClause<C, BatchMultiUpdateSpec<C>>
             , MySQLUpdate.BatchMultiUpdateSpec<C> {
 
     }

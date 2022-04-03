@@ -65,7 +65,7 @@ abstract class CriteriaContextStack {
         if (stack == null) {
             throw noContextStack();
         }
-        return stack.rootContext().criteria();
+        return stack.peek().criteria();
     }
 
     static void clearContextStack(final CriteriaContext rootContext) {

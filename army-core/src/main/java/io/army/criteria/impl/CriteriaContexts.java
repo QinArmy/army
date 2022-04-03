@@ -30,13 +30,9 @@ abstract class CriteriaContexts {
         return new InsertContext(criteria);
     }
 
-    @Deprecated
-    static <C> CriteriaContext primaryContext(@Nullable C criteria) {
-        throw new UnsupportedOperationException();
-    }
 
-    static <C> CriteriaContext multiDeleteContext(@Nullable C criteria) {
-        throw new UnsupportedOperationException();
+    static <C> CriteriaContext multiDmlContext(@Nullable C criteria) {
+        return new MultiDmlContext(criteria);
     }
 
     static CriteriaContext singleDmlContext(@Nullable Object criteria) {
@@ -98,17 +94,9 @@ abstract class CriteriaContexts {
         return new CriteriaException(m);
     }
 
-
-    private static CriteriaException valueInsertDontSupport() {
-        return new CriteriaException("Value insert statement context don't support this operation.");
-    }
-
-    private static CriteriaException singleDmlDontSupport() {
-        return new CriteriaException("Single table syntax dml statement context don't support this operation.");
-    }
-
-    private static CriteriaException unionQueryDontSupport() {
-        return new CriteriaException("Union query statement context don't support this operation.");
+    private static CriteriaException nonJoinable(String operation) {
+        String m = String.format("Non-joinable context don't support %s operation", operation);
+        throw new CriteriaException(m);
     }
 
 
@@ -127,7 +115,6 @@ abstract class CriteriaContexts {
             this.criteria = leftContext.criteria;
             this.varMap = leftContext.varMap;
         }
-
 
         @Override
         public final VarExpression createVar(String name, ParamMeta paramMeta) throws CriteriaException {
@@ -171,6 +158,10 @@ abstract class CriteriaContexts {
             super(criteria);
         }
 
+        @Override
+        public final boolean containsTable(String tableAlias) {
+            return this.aliasToBlock.containsKey(tableAlias);
+        }
 
         @Override
         public final void onAddBlock(final _TableBlock block) {
@@ -336,39 +327,68 @@ abstract class CriteriaContexts {
 
     }
 
-    /**
-     * @see #insertContext(Object)
-     */
-    private static final class InsertContext extends AbstractContext {
 
-        private InsertContext(@Nullable Object criteria) {
+    private static abstract class NonJoinableContext extends AbstractContext {
+
+        private NonJoinableContext(@Nullable Object criteria) {
             super(criteria);
         }
 
+
         @Override
-        public void selectList(List<? extends SelectItem> selectPartList) {
-            // here bug.
-            throw new UnsupportedOperationException("Value insert statement not support.");
+        public final void selectList(List<? extends SelectItem> selectPartList) {
+            throw nonJoinable("selectList");
         }
 
         @Override
-        public <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
-            throw valueInsertDontSupport();
+        public final boolean containsTable(String tableAlias) {
+            throw nonJoinable("containsTable");
         }
 
         @Override
-        public DerivedField ref(String subQueryAlias, String derivedFieldName) {
-            throw valueInsertDontSupport();
+        public final <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
+            throw nonJoinable("field");
         }
 
         @Override
-        public Expression ref(String selectionAlias) {
-            throw valueInsertDontSupport();
+        public final DerivedField ref(String subQueryAlias, String derivedFieldName) {
+            throw nonJoinable("ref(derivedTable,derivedFieldName)");
         }
 
         @Override
-        public List<_TableBlock> clear() {
+        public final Expression ref(String selectionAlias) {
+            throw nonJoinable("ref(selectionAlias)");
+        }
+
+        @Override
+        public final void onAddBlock(_TableBlock block) {
+            throw nonJoinable("onAddBlock");
+        }
+
+        @Override
+        public final void onFirstBlock(_TableBlock block) {
+            throw nonJoinable("onFirstBlock");
+        }
+
+        @Override
+        public final _TableBlock firstBlock() {
+            throw nonJoinable("firstBlock");
+        }
+
+        @Override
+        public final List<_TableBlock> clear() {
             return Collections.emptyList();
+        }
+
+    }//NonJoinableContext
+
+    /**
+     * @see #insertContext(Object)
+     */
+    private static final class InsertContext extends NonJoinableContext {
+
+        private InsertContext(@Nullable Object criteria) {
+            super(criteria);
         }
 
     }// InsertContext
@@ -377,42 +397,37 @@ abstract class CriteriaContexts {
     /**
      * @see #singleDmlContext(Object)
      */
-    private static final class SingleDmlContext extends AbstractContext {
+    private static final class SingleDmlContext extends NonJoinableContext {
 
         private SingleDmlContext(@Nullable Object criteria) {
             super(criteria);
         }
 
-        private SingleDmlContext(AbstractContext leftContext) {
-            super(leftContext);
+
+    }//SingleDmlContext
+
+    private static final class MultiDmlContext extends JoinableContext {
+
+        private MultiDmlContext(@Nullable Object criteria) {
+            super(criteria);
         }
 
         @Override
         public void selectList(List<? extends SelectItem> selectPartList) {
-            throw singleDmlDontSupport();
+            throw new CriteriaException("Multi-table DML don't support selectList method");
         }
 
         @Override
-        public <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
-            throw singleDmlDontSupport();
+        void doOnAddBlock(_TableBlock block) {
+            //no-op
         }
 
         @Override
-        public DerivedField ref(String subQueryAlias, String derivedFieldName) {
-            throw singleDmlDontSupport();
+        void onClear() {
+            //no-op
         }
 
-        @Override
-        public Expression ref(String selectionAlias) {
-            throw singleDmlDontSupport();
-        }
-
-        @Override
-        public List<_TableBlock> clear() {
-            return Collections.emptyList();
-        }
-
-    }//SingleDmlContext
+    }// MultiDmlContext
 
 
     private static final class SimpleQueryContext extends JoinableContext {
@@ -539,19 +554,38 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public boolean containsTable(String tableAlias) {
+            throw nonJoinable("containsTable");
+        }
+
+        @Override
         public void selectList(List<? extends SelectItem> selectPartList) {
-            //here bug.
-            throw new UnsupportedOperationException("union query don't support");
+            throw nonJoinable("selectList");
+        }
+
+        @Override
+        public void onAddBlock(_TableBlock block) {
+            throw nonJoinable("onAddBlock");
+        }
+
+        @Override
+        public void onFirstBlock(_TableBlock block) {
+            throw nonJoinable("onFirstBlock");
+        }
+
+        @Override
+        public _TableBlock firstBlock() {
+            throw nonJoinable("firstBlock");
         }
 
         @Override
         public <T extends IDomain> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
-            throw unionQueryDontSupport();
+            throw nonJoinable("field");
         }
 
         @Override
         public DerivedField ref(String subQueryAlias, String derivedFieldName) {
-            throw unionQueryDontSupport();
+            throw nonJoinable("ref(derivedTable,derivedFieldName)");
         }
 
         @Override

@@ -24,8 +24,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+/**
+ * <p>
+ * This class is an implementation of {@link _MySQLSingleUpdate}. This class extends {@link SingleUpdate}
+ * </p>
+ */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends SingleUpdate<C, WR, WA, SR>
+abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends WithCteSingleUpdate<C, WE, WR, WA, SR>
         implements Query.OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLUpdate, _MySQLSingleUpdate
         , MySQLUpdate.SingleUpdateClause<UR, UP>, MySQLQuery.PartitionClause<C, PR>
         , MySQLQuery.IndexHintClause<C, IR, UR>, MySQLQuery.IndexOrderByClause<C, UR>
@@ -33,11 +38,15 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
 
     static <C> MySQLUpdate.SingleUpdateSpec<C> simple57(@Nullable C criteria) {
-        return new SimpleUpdate<>(criteria);
+        final SimpleUpdate<C, Void> update;
+        update = new SimpleUpdate<>(criteria);
+        return update;
     }
 
     static <C> MySQLUpdate.BatchSingleUpdateSpec<C> batch57(@Nullable C criteria) {
-        return new BatchUpdate<>(criteria);
+        final BatchUpdate<C, Void> update;
+        update = new BatchUpdate<>(criteria);
+        return update;
     }
 
     static <C> MySQLUpdate.SingleWithAndUpdateSpec<C> simple80(@Nullable C criteria) {
@@ -439,7 +448,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         }
 
         if (this instanceof BatchUpdate) {
-            if (_CollectionUtils.isEmpty(((BatchUpdate<C>) this).wrapperList)) {
+            if (_CollectionUtils.isEmpty(((BatchUpdate<C, ?>) this).wrapperList)) {
                 throw _Exceptions.batchParamEmpty();
             }
 
@@ -469,7 +478,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         this.orderByList = null;
 
         if (this instanceof BatchUpdate) {
-            ((BatchUpdate<C>) this).wrapperList = null;
+            ((BatchUpdate<C, ?>) this).wrapperList = null;
         }
 
         if (this instanceof _MySQLWithClause) {
@@ -560,8 +569,9 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     }
 
 
-    private static class SimpleUpdate<C> extends MySQLSingleUpdate<
+    private static class SimpleUpdate<C, WE> extends MySQLSingleUpdate<
             C,
+            WE,// WE
             MySQLUpdate.SingleIndexHintSpec<C>,//UR
             MySQLUpdate.SinglePartitionSpec<C>,//UP
             Statement.AsClause<MySQLUpdate.SingleIndexHintSpec<C>>,//PR
@@ -582,8 +592,9 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
 
     } // SimpleUpdate
 
-    private static class BatchUpdate<C> extends MySQLSingleUpdate<
+    private static class BatchUpdate<C, WE> extends MySQLSingleUpdate<
             C,
+            WE,// WE
             MySQLUpdate.BatchSingleIndexHintSpec<C>,//UR
             MySQLUpdate.BatchSinglePartitionSpec<C>,//UP
             Statement.AsClause<MySQLUpdate.BatchSingleIndexHintSpec<C>>,//PR
@@ -634,7 +645,7 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
     }//BatchUpdate
 
 
-    private static final class SimpleWithAndUpdate<C> extends SimpleUpdate<C>
+    private static final class SimpleWithAndUpdate<C> extends SimpleUpdate<C, SingleUpdateSpec<C>>
             implements SingleWithAndUpdateSpec<C>, _MySQLWithClause {
 
         private boolean recursive;
@@ -646,68 +657,26 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         }
 
         @Override
-        public SingleUpdateSpec<C> with(String cteName, Supplier<SubQuery> supplier) {
-            this.cteList = Collections.singletonList(CteImpl.create(cteName, supplier.get()));
-            return this;
-        }
-
-        @Override
-        public SingleUpdateSpec<C> with(String cteName, Function<C, SubQuery> function) {
-            this.cteList = Collections.singletonList(CteImpl.create(cteName, function.apply(this.criteria)));
-            return this;
-        }
-
-        @Override
-        public SingleUpdateSpec<C> with(Supplier<List<Cte>> supplier) {
-            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
-            return this;
-        }
-
-        @Override
-        public SingleUpdateSpec<C> with(Function<C, List<Cte>> function) {
-            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public SingleUpdateSpec<C> withRecursive(String cteName, Supplier<SubQuery> supplier) {
-            this.recursive = true;
-            return this.with(cteName, supplier);
-        }
-
-        @Override
-        public SingleUpdateSpec<C> withRecursive(String cteName, Function<C, SubQuery> function) {
-            this.recursive = true;
-            return this.with(cteName, function);
-        }
-
-        @Override
-        public SingleUpdateSpec<C> withRecursive(Supplier<List<Cte>> supplier) {
-            this.recursive = true;
-            return this.with(supplier);
-        }
-
-        @Override
-        public SingleUpdateSpec<C> withRecursive(Function<C, List<Cte>> function) {
-            this.recursive = true;
-            return this.with(function);
-        }
-
-        @Override
         public boolean isRecursive() {
             return this.recursive;
         }
 
         @Override
         public List<Cte> cteList() {
+            prepared();
             return this.cteList;
+        }
+
+        @Override
+        void doWithCte(boolean recursive, List<Cte> cteList) {
+            this.recursive = recursive;
+            this.cteList = cteList;
         }
 
     }//SimpleWithAndUpdate
 
-    private static final class BatchWithAndUpdate<C> extends BatchUpdate<C>
+    private static final class BatchWithAndUpdate<C> extends BatchUpdate<C, BatchSingleUpdateSpec<C>>
             implements MySQLUpdate.BatchSingleWithAndUpdateSpec<C>, _MySQLWithClause {
-
 
         private boolean recursive;
 
@@ -718,61 +687,20 @@ abstract class MySQLSingleUpdate<C, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends 
         }
 
         @Override
-        public BatchSingleUpdateSpec<C> with(String cteName, Supplier<SubQuery> supplier) {
-            this.cteList = Collections.singletonList(CteImpl.create(cteName, supplier.get()));
-            return this;
-        }
-
-        @Override
-        public BatchSingleUpdateSpec<C> with(String cteName, Function<C, SubQuery> function) {
-            this.cteList = Collections.singletonList(CteImpl.create(cteName, function.apply(this.criteria)));
-            return this;
-        }
-
-        @Override
-        public BatchSingleUpdateSpec<C> with(Supplier<List<Cte>> supplier) {
-            this.cteList = _CollectionUtils.asUnmodifiableList(supplier.get());
-            return this;
-        }
-
-        @Override
-        public BatchSingleUpdateSpec<C> with(Function<C, List<Cte>> function) {
-            this.cteList = _CollectionUtils.asUnmodifiableList(function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public BatchSingleUpdateSpec<C> withRecursive(String cteName, Supplier<SubQuery> supplier) {
-            this.recursive = true;
-            return this.with(cteName, supplier);
-        }
-
-        @Override
-        public BatchSingleUpdateSpec<C> withRecursive(String cteName, Function<C, SubQuery> function) {
-            this.recursive = true;
-            return this.with(cteName, function);
-        }
-
-        @Override
-        public BatchSingleUpdateSpec<C> withRecursive(Supplier<List<Cte>> supplier) {
-            this.recursive = true;
-            return this.with(supplier);
-        }
-
-        @Override
-        public BatchSingleUpdateSpec<C> withRecursive(Function<C, List<Cte>> function) {
-            this.recursive = true;
-            return this.with(function);
-        }
-
-        @Override
         public boolean isRecursive() {
             return this.recursive;
         }
 
         @Override
         public List<Cte> cteList() {
+            prepared();
             return this.cteList;
+        }
+
+        @Override
+        void doWithCte(boolean recursive, List<Cte> cteList) {
+            this.recursive = recursive;
+            this.cteList = cteList;
         }
 
     }// BatchWithAndUpdate
