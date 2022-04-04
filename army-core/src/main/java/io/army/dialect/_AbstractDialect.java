@@ -468,7 +468,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final _Dialect dialect = context.dialect();
 
         final boolean supportTableOnly = this.supportTableOnly();
-        for (int i = 0, index; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             final _TableBlock block = tableBlockList.get(i);
             if (i > 0) {
                 builder.append(block.jointType().render());

@@ -71,6 +71,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
+    public static CriteriaException unknownTableAlias(String alias) {
+        return new CriteriaException(String.format("Unknown table alais %s", alias));
+    }
+
 
     public static CriteriaException unknownStatement(Statement stmt, _Dialect dialect) {
         String m = String.format("Unknown %s in %s", stmt.getClass().getName(), dialect);
@@ -103,6 +107,12 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException nonNullField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s is non-null.", field));
+    }
+
+    public static CriteriaException updateChildFieldWithSingleUpdate(ChildTableMeta<?> table) {
+        String m = String.format("%s is %s,you can only update parent table field in single update syntax."
+                , table, ChildTableMeta.class.getName());
+        return new CriteriaException(m);
     }
 
     public static ArmyException generatorFieldIsNull(FieldMeta<?> field) {

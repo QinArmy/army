@@ -7,7 +7,8 @@ import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.mysql.MySQLModifier;
 import io.army.dialect.*;
-import io.army.meta.ParentTableMeta;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.SimpleTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
@@ -50,7 +51,11 @@ class MySQLDialect extends MySQL {
 
     @Override
     protected SimpleStmt dialectSingleUpdate(final _SingleUpdateContext context, final _SingleUpdate update) {
-        assert context.childBlock() == null;
+        final _SetBlock childBlock = context.childBlock();
+        if (childBlock != null && childBlock.targetParts().size() > 0) {
+            throw _Exceptions.updateChildFieldWithSingleUpdate((ChildTableMeta<?>) childBlock.table());
+        }
+
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
         final _Dialect dialect = context.dialect();
         final StringBuilder sqlBuilder = context.sqlBuilder()
@@ -74,13 +79,14 @@ class MySQLDialect extends MySQL {
 
         //4. table name
         final SingleTableMeta<?> table = context.table();
+        final String safeTableAlias = context.safeTableAlias();
         sqlBuilder.append(Constant.SPACE)
                 .append(dialect.quoteIfNeed(table.tableName()));
 
         //5. partition
         this.partitionClause(stmt.partitionList(), sqlBuilder, dialect);
         //6. table alias
-        final String safeTableAlias = context.safeTableAlias();
+
         sqlBuilder.append(Constant.SPACE_AS_SPACE)
                 .append(safeTableAlias);
 
@@ -93,8 +99,12 @@ class MySQLDialect extends MySQL {
         //9. where clause
         this.dmlWhereClause(context);
         //9.1 discriminator
-        if (table instanceof ParentTableMeta) {
-            this.discriminator(table, safeTableAlias, context);
+        if (!(table instanceof SimpleTableMeta)) {
+            if (childBlock == null) {
+                this.discriminator(table, safeTableAlias, context);
+            } else {
+                this.discriminator(childBlock.table(), safeTableAlias, context);
+            }
         }
         //9.2 append condition update fields
         if (conditionFields.size() > 0) {

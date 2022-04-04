@@ -16,7 +16,7 @@ public abstract class _MySQLDialectFactory extends _DialectFactory {
         final String className = "io.army.dialect.mysql._MySQLDialects";
         final MySQL _dialect;
         if (_ClassUtils.isPresent(className, MySQL.class.getClassLoader())) {
-            _dialect = _DialectFactory.create(MySQL.class, className, environment);
+            _dialect = _DialectFactory.invokeFactoryMethod(MySQL.class, className, environment);
         } else {
             _dialect = new MySQL(environment, targetDialect(environment, Database.MySQL));
         }

@@ -226,8 +226,16 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
-    public final LR limit(Supplier<Long> supplier) {
-        this.rowCount = supplier.get();
+    public final LR limit(Supplier<Number> supplier) {
+        final Number rowCount;
+        rowCount = supplier.get();
+        if (rowCount instanceof Long) {
+            this.rowCount = (Long) rowCount;
+        } else if (rowCount instanceof Integer) {
+            this.rowCount = rowCount.longValue();
+        } else {
+            throw MySQLUtils.limitParamError();
+        }
         return (LR) this;
     }
 
@@ -238,11 +246,29 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
-    public final LR ifLimit(Supplier<Long> supplier) {
-        final Long rowCount;
+    public final LR limit(Function<String, ?> function, String keyName) {
+        final Object rowCount;
+        rowCount = function.apply(keyName);
+        if (rowCount instanceof Long) {
+            this.rowCount = (Long) rowCount;
+        } else if (rowCount instanceof Integer) {
+            this.rowCount = ((Integer) rowCount).longValue();
+        } else {
+            throw MySQLUtils.limitParamError();
+        }
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Supplier<Number> supplier) {
+        final Number rowCount;
         rowCount = supplier.get();
-        if (rowCount != null) {
-            this.rowCount = rowCount;
+        if (rowCount instanceof Long) {
+            this.rowCount = (Long) rowCount;
+        } else if (rowCount instanceof Integer) {
+            this.rowCount = rowCount.longValue();
+        } else if (rowCount != null) {
+            throw MySQLUtils.limitParamError();
         }
         return (LR) this;
     }
@@ -253,6 +279,20 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
         rowCount = function.apply(this.criteria);
         if (rowCount != null) {
             this.rowCount = rowCount;
+        }
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Function<String, ?> function, String keyName) {
+        final Object rowCount;
+        rowCount = function.apply(keyName);
+        if (rowCount instanceof Long) {
+            this.rowCount = (Long) rowCount;
+        } else if (rowCount instanceof Integer) {
+            this.rowCount = ((Integer) rowCount).longValue();
+        } else if (rowCount != null) {
+            throw MySQLUtils.limitParamError();
         }
         return (LR) this;
     }

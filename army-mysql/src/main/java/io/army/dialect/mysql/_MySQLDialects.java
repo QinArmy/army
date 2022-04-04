@@ -13,7 +13,7 @@ public abstract class _MySQLDialects extends _DialectFactory {
         throw new UnsupportedOperationException();
     }
 
-    public MySQL create(final _DialectEnvironment environment) {
+    public static MySQL create(final _DialectEnvironment environment) {
         final Dialect targetDialect;
         targetDialect = targetDialect(environment, Database.MySQL);
         final MySQL mySQL;

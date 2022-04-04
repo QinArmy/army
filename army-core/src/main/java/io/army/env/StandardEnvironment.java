@@ -36,8 +36,11 @@ public final class StandardEnvironment implements ArmyEnvironment {
     public <T> T get(ArmyKey<T> key) {
         final String textValue;
         textValue = this.map.get(key.name);
+        if (textValue == null) {
+            return null;
+        }
         final Class<T> javaType = key.javaType;
-        if (textValue != null && javaType == String.class) {
+        if (javaType == String.class) {
             return (T) textValue;
         }
         final Converter<T> converter;

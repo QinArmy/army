@@ -39,7 +39,7 @@ public enum Dialect {
         final Dialect dialect;
         switch (meta.database()) {
             case MySQL:
-                dialect = from(meta);
+                dialect = fromMySQL(meta);
                 break;
             case PostgreSQL:
             case Oracle:

@@ -9,7 +9,6 @@ import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.Dialect;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -17,7 +16,6 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -82,14 +80,11 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
 
     @Override
     public final UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
-            , TableMeta<? extends IDomain> table) {
-        if (this.hintList != null || this.modifierList != null || this.table != null) {
+            , TableMeta<?> table) {
+        if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        final List<Hint> hintList;
-        hintList = hints.get();
-        assert hintList != null;
-        this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.table = table;
         return (UP) this;
@@ -97,15 +92,11 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
 
     @Override
     public final UR update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
-            , TableMeta<? extends IDomain> table, String tableAlias) {
-        if (this.hintList != null || this.modifierList != null || this.table != null) {
+            , TableMeta<?> table, String tableAlias) {
+        if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        final List<Hint> hintList;
-        hintList = hints.get();
-        assert hintList != null;
-
-        this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.table = table;
         this.tableAlias = tableAlias;
@@ -113,13 +104,13 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final UP update(TableMeta<? extends IDomain> table) {
+    public final UP update(TableMeta<?> table) {
         this.table = table;
         return (UP) this;
     }
 
     @Override
-    public final UR update(TableMeta<? extends IDomain> table, String tableAlias) {
+    public final UR update(TableMeta<?> table, String tableAlias) {
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;
@@ -136,7 +127,11 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
 
     @Override
     public final PR partition(String partitionName1, String partitionNam2) {
-        return this.partition(Arrays.asList(partitionName1, partitionNam2));
+        if (this.table == null || this.partitionList != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
+        return (PR) this;
     }
 
     @Override
@@ -391,8 +386,16 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final LR limit(Supplier<Long> supplier) {
-        this.rowCount = supplier.get();
+    public final LR limit(Supplier<Number> supplier) {
+        final Number rowCount;
+        rowCount = supplier.get();
+        if (rowCount instanceof Long) {
+            this.rowCount = (Long) rowCount;
+        } else if (rowCount instanceof Integer) {
+            this.rowCount = rowCount.longValue();
+        } else {
+            throw MySQLUtils.limitParamError();
+        }
         return (LR) this;
     }
 
@@ -403,11 +406,29 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final LR ifLimit(Supplier<Long> supplier) {
-        final Long rowCount;
+    public final LR limit(Function<String, ?> function, String keyName) {
+        final Object rowCount;
+        rowCount = function.apply(keyName);
+        if (rowCount instanceof Long) {
+            this.rowCount = (Long) rowCount;
+        } else if (rowCount instanceof Integer) {
+            this.rowCount = ((Integer) rowCount).longValue();
+        } else {
+            throw MySQLUtils.limitParamError();
+        }
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Supplier<Number> supplier) {
+        final Number rowCount;
         rowCount = supplier.get();
-        if (rowCount != null) {
-            this.rowCount = rowCount;
+        if (rowCount instanceof Long) {
+            this.rowCount = (Long) rowCount;
+        } else if (rowCount instanceof Integer) {
+            this.rowCount = rowCount.longValue();
+        } else if (rowCount != null) {
+            throw MySQLUtils.limitParamError();
         }
         return (LR) this;
     }
@@ -423,17 +444,31 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
+    public final LR ifLimit(Function<String, ?> function, String keyName) {
+        final Object rowCount;
+        rowCount = function.apply(keyName);
+        if (rowCount instanceof Long) {
+            this.rowCount = (Long) rowCount;
+        } else if (rowCount instanceof Integer) {
+            this.rowCount = ((Integer) rowCount).longValue();
+        } else if (rowCount != null) {
+            throw MySQLUtils.limitParamError();
+        }
+        return (LR) this;
+    }
+
+    @Override
     final void onAsUpdate() {
         if (this.table == null || this.tableAlias == null) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (_CollectionUtils.isEmpty(this.hintList)) {
+        if (this.hintList == null) {
             this.hintList = Collections.emptyList();
         }
-        if (_CollectionUtils.isEmpty(this.modifierList)) {
+        if (this.modifierList == null) {
             this.modifierList = Collections.emptyList();
         }
-        if (_CollectionUtils.isEmpty(this.partitionList)) {
+        if (this.partitionList == null) {
             this.partitionList = Collections.emptyList();
         }
         final List<MySQLIndexHint> indexHintList = this.indexHintList;
@@ -453,17 +488,15 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
             }
 
         }
-
-        if (this instanceof _MySQLWithClause) {
-            if (this instanceof SimpleWithAndUpdate) {
-                if (_CollectionUtils.isEmpty(((SimpleWithAndUpdate<C>) this).cteList)) {
-                    ((SimpleWithAndUpdate<C>) this).cteList = Collections.emptyList();
-                }
+        if (this instanceof SimpleWithAndUpdate) {
+            final SimpleWithAndUpdate<C> update = (SimpleWithAndUpdate<C>) this;
+            if (update.cteList == null) {
+                update.cteList = Collections.emptyList();
             }
-            if (this instanceof BatchWithAndUpdate) {
-                if (_CollectionUtils.isEmpty(((BatchWithAndUpdate<C>) this).cteList)) {
-                    ((BatchWithAndUpdate<C>) this).cteList = Collections.emptyList();
-                }
+        } else if (this instanceof BatchWithAndUpdate) {
+            final BatchWithAndUpdate<C> update = (BatchWithAndUpdate<C>) this;
+            if (update.cteList == null) {
+                update.cteList = Collections.emptyList();
             }
         }
 
@@ -481,13 +514,10 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
             ((BatchUpdate<C, ?>) this).wrapperList = null;
         }
 
-        if (this instanceof _MySQLWithClause) {
-            if (this instanceof SimpleWithAndUpdate) {
-                ((SimpleWithAndUpdate<C>) this).cteList = null;
-            }
-            if (this instanceof BatchWithAndUpdate) {
-                ((BatchWithAndUpdate<C>) this).cteList = null;
-            }
+        if (this instanceof SimpleWithAndUpdate) {
+            ((SimpleWithAndUpdate<C>) this).cteList = null;
+        } else if (this instanceof BatchWithAndUpdate) {
+            ((BatchWithAndUpdate<C>) this).cteList = null;
         }
 
 

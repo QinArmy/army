@@ -435,9 +435,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      * <p>
      * If parameters non-null parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
      * </p>
-     *
-     * @param <O> java type of element of parameters,the element is weak weakly instance, because sql is weakly typed.
-     */
+     **/
     @Nullable
     IPredicate ifIn(Supplier<Object> collectionOrExp);
 

@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.dialect.Dialect;
@@ -23,6 +24,12 @@ abstract class MySQLUtils {
         if (statement instanceof _MySQLWithClause && dialect.version() < Dialect.MySQL80.version()) {
             throw _Exceptions.stmtDontSupportDialect(dialect);
         }
+    }
+
+    static CriteriaException limitParamError() {
+        String m = String.format("MySQL limit clause only support %s and %s."
+                , Long.class.getName(), Integer.class.getName());
+        return new CriteriaException(m);
     }
 
 

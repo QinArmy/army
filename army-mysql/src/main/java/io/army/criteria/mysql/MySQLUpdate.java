@@ -21,13 +21,17 @@ public interface MySQLUpdate extends Update {
 
         LR limit(long rowCount);
 
-        LR limit(Supplier<Long> supplier);
+        LR limit(Supplier<Number> supplier);
 
         LR limit(Function<C, Long> function);
 
-        LR ifLimit(Supplier<Long> supplier);
+        LR limit(Function<String, ?> function, String keyName);
+
+        LR ifLimit(Supplier<Number> supplier);
 
         LR ifLimit(Function<C, Long> function);
+
+        LR ifLimit(Function<String, ?> function, String keyName);
 
     }
 
@@ -35,14 +39,14 @@ public interface MySQLUpdate extends Update {
     interface SingleUpdateClause<UR, UP> {
 
         UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
-                , TableMeta<? extends IDomain> table);
+                , TableMeta<?> table);
 
         UR update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
-                , TableMeta<? extends IDomain> table, String tableAlias);
+                , TableMeta<?> table, String tableAlias);
 
-        UP update(TableMeta<? extends IDomain> table);
+        UP update(TableMeta<?> table);
 
-        UR update(TableMeta<? extends IDomain> table, String tableAlias);
+        UR update(TableMeta<?> table, String tableAlias);
 
     }
 

@@ -79,6 +79,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
     @Override
     public final void appendField(final FieldMeta<?> field) {
         final TableMeta<?> belongOf = field.tableMeta();
+        final ChildBlock childBlock;
         if (belongOf == this.table) {// field is parent table column.
             this.sqlBuilder
                     .append(Constant.SPACE)
@@ -87,25 +88,19 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
             this.dialect.safeObjectName(field.columnName(), this.sqlBuilder);
 
+        } else if ((childBlock = childBlock()) == null || belongOf != childBlock.table) {
+            throw _Exceptions.unknownColumn(null, field);
+        } else if (this.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
+            this.sqlBuilder
+                    .append(Constant.SPACE)
+                    .append(childBlock.safeTableAlias)
+                    .append(Constant.POINT);
+
+            this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+
         } else {
-            final ChildBlock childBlock = childBlock();
-            if (childBlock == null || belongOf != childBlock.table) {
-                throw _Exceptions.unknownColumn(null, field);
-            }
-            // field is child table column
-            if (this.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
-                this.sqlBuilder
-                        .append(Constant.SPACE)
-                        .append(childBlock.safeTableAlias)
-                        .append(Constant.POINT);
-
-                this.dialect.safeObjectName(field.columnName(), sqlBuilder);
-
-            } else {
-                //non multi-table update,so convert child table filed as sub query.
-                childColumnFromSubQuery(this, childBlock, field);
-            }
-
+            //non multi-table update,so convert child table filed as sub query.
+            childColumnFromSubQuery(this, childBlock, field);
         }
 
     }

@@ -39,7 +39,7 @@ public abstract class _DialectFactory {
      * </p>
      */
     @SuppressWarnings("unchecked")
-    protected static <T extends _AbstractDialect> T create(Class<T> dialectType, String className
+    protected static <T extends _AbstractDialect> T invokeFactoryMethod(Class<T> dialectType, String className
             , _DialectEnvironment environment) {
         final Class<?> clazz;
         try {

@@ -264,7 +264,15 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
 
     @Override
     final void validateBeforeClearContext() {
-        super.validateBeforeClearContext();
+        final List<String> tableAliasList = this.tableAliasList;
+        if (tableAliasList == null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        for (String tableAlias : tableAliasList) {
+            if (!this.criteriaContext.containsTable(tableAlias)) {
+                throw _Exceptions.unknownTableAlias(tableAlias);
+            }
+        }
     }
 
     @Override
