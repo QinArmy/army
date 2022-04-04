@@ -21,7 +21,7 @@ final class DualExpression extends OperationExpression {
     static <C> DualExpression functionCreate(ArmyExpression left, DualOperator operator
             , Function<C, Object> function) {
         final Object functionResult;
-        functionResult = function.apply(CriteriaContextStack.getCriteria());
+        functionResult = function.apply(CriteriaContextStack.getTopCriteria());
         assert functionResult != null;
         return create(left, operator, SQLs.nonNullParam(left, functionResult));
     }

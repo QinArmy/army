@@ -1,15 +1,23 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
+
+import java.util.List;
 
 final class SubQueryPredicate extends OperationPredicate {
 
 
     static SubQueryPredicate create(Expression operand, DualOperator operator
             , SubQueryOperator subQueryOperator, SubQuery subQuery) {
+        final List<? extends SelectItem> selectItemList;
+        selectItemList = subQuery.selectItemList();
+        if (selectItemList.size() != 1 || !(selectItemList.get(0) instanceof Selection)) {
+            String m = String.format("Operator %s %s only support column sub query."
+                    , operator.rendered(), subQueryOperator.name());
+            throw new CriteriaException(m);
+        }
         switch (subQueryOperator) {
             case ALL:
             case ANY:

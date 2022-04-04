@@ -44,6 +44,7 @@ public class MySQLCriteriaUnitTests {
                 .update(ChinaCity_.T, "t")
                 .set(ChinaCity_.name, "五指礁")
                 .where(ChinaCity_.name.equal(""))
+                .and(ChinaCity_.name.equal(map.get("name")))
                 .ifAnd(ChinaCity_.regionGdp.ifGreatEqual(map::get, "regionGdp"))
                 .orderBy(ChinaCity_.id.desc())
                 .limit(map::get, "rowCount")

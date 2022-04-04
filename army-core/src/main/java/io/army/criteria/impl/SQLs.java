@@ -256,7 +256,7 @@ public abstract class SQLs extends StandardFunctions {
      * </p>
      */
     public static <C, E> Expression optimizingParams(ParamMeta paramMeta, Function<C, Collection<E>> function) {
-        return CollectionParamExpression.optimizing(paramMeta, function.apply(CriteriaContextStack.getCriteria()));
+        return CollectionParamExpression.optimizing(paramMeta, function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
     /**
@@ -283,7 +283,7 @@ public abstract class SQLs extends StandardFunctions {
      * </p>
      */
     public static <C, E> Expression params(ParamMeta paramMeta, Function<C, Collection<E>> function) {
-        return CollectionParamExpression.strict(paramMeta, function.apply(CriteriaContextStack.getCriteria()));
+        return CollectionParamExpression.strict(paramMeta, function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
 
@@ -497,14 +497,14 @@ public abstract class SQLs extends StandardFunctions {
 
     public static <C> Cte cte(String name, Function<C, SubQuery> function) {
         final SubQuery subQuery;
-        subQuery = function.apply(CriteriaContextStack.getCriteria());
+        subQuery = function.apply(CriteriaContextStack.getTopCriteria());
         assert subQuery != null;
         return new CteImpl(name, subQuery);
     }
 
     public static <C> Cte cte(String name, List<String> columnNameList, Function<C, SubQuery> function) {
         final SubQuery subQuery;
-        subQuery = function.apply(CriteriaContextStack.getCriteria());
+        subQuery = function.apply(CriteriaContextStack.getTopCriteria());
         assert subQuery != null;
         return new CteImpl(name, columnNameList, subQuery);
     }
@@ -526,7 +526,7 @@ public abstract class SQLs extends StandardFunctions {
     }
 
     public static <C> IPredicate exists(Function<C, SubQuery> function) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, function.apply(CriteriaContextStack.getCriteria()));
+        return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
     public static IPredicate notExists(Supplier<SubQuery> supplier) {
@@ -534,7 +534,7 @@ public abstract class SQLs extends StandardFunctions {
     }
 
     public static <C> IPredicate notExists(Function<C, SubQuery> function) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(CriteriaContextStack.getCriteria()));
+        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
     static <T extends IDomain> ExpressionRow row(List<Expression> columnList) {

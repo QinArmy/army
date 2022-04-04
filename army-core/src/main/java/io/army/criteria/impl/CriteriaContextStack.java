@@ -60,7 +60,7 @@ abstract class CriteriaContextStack {
     }
 
     @Nullable
-    static <C> C getCriteria() {
+    static <C> C getTopCriteria() {
         final Stack stack = HOLDER.get();
         if (stack == null) {
             throw noContextStack();

@@ -38,7 +38,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
 
     @Override
     public final <C> IPredicate or(Function<C, List<IPredicate>> function) {
-        return OrPredicate.create(this, function.apply(CriteriaContextStack.getCriteria()));
+        return OrPredicate.create(this, function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
     @Override
