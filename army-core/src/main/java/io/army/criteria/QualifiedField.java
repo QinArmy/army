@@ -11,7 +11,7 @@ import io.army.domain.IDomain;
  * @param <T> java type domain.
  * @param <F> java type field.
  */
-public interface QualifiedField<T extends IDomain> extends GenericField<T> {
+public interface QualifiedField<T extends IDomain> extends TableField<T> {
 
     String tableAlias();
 

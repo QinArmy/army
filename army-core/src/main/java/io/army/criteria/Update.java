@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 /**
  * @since 1.0
  */
+@SuppressWarnings("unused")
 public interface Update extends NarrowDmlStatement {
 
 
@@ -49,7 +50,10 @@ public interface Update extends NarrowDmlStatement {
 
     }
 
-
+    /**
+     * @param <C>  java type of criteria object
+     * @param <SR> java type of next clause.
+     */
     interface SetClause<C, SR> {
 
         /**
@@ -94,20 +98,24 @@ public interface Update extends NarrowDmlStatement {
          */
         SR ifSetPairs(Function<C, List<ItemPair>> function);
 
-        SR setExp(FieldMeta<?> field, Function<C, Expression> function);
+        SR setExp(TableField<?> field, Function<C, ? extends Expression> function);
 
-        SR setExp(FieldMeta<?> field, Supplier<Expression> supplier);
+        SR setExp(TableField<?> field, Supplier<? extends Expression> supplier);
 
-        SR ifSetExp(FieldMeta<?> field, Function<C, Expression> function);
+        SR ifSetExp(TableField<?> field, Function<C, ? extends Expression> function);
 
     }
 
 
+    /**
+     * @param <C>  java type of criteria object
+     * @param <SR> java type of next clause.
+     */
     interface SimpleSetClause<C, SR> extends SetClause<C, SR> {
 
-        SR set(FieldMeta<?> field, @Nullable Object paramOrExp);
+        SR set(TableField<?> field, @Nullable Object paramOrExp);
 
-        SR setLiteral(FieldMeta<?> field, @Nullable Object paramOrExp);
+        SR setLiteral(TableField<?> field, @Nullable Object paramOrExp);
 
         /**
          * <p>
@@ -120,7 +128,7 @@ public interface Update extends NarrowDmlStatement {
          *
          * @param paramOrExp non-null parameter or {@link Expression}.
          */
-        SR setPlus(FieldMeta<?> field, Object paramOrExp);
+        SR setPlus(TableField<?> field, Object paramOrExp);
 
         /**
          * <p>
@@ -133,136 +141,139 @@ public interface Update extends NarrowDmlStatement {
          *
          * @param paramOrExp non-null parameter or {@link Expression}.
          */
-        SR setPlusLiteral(FieldMeta<?> field, Object paramOrExp);
+        SR setPlusLiteral(TableField<?> field, Object paramOrExp);
 
-        SR setMinus(FieldMeta<?> field, Object paramOrExp);
+        SR setMinus(TableField<?> field, Object paramOrExp);
 
-        SR setMinusLiteral(FieldMeta<?> field, Object paramOrExp);
+        SR setMinusLiteral(TableField<?> field, Object paramOrExp);
 
-        SR setMultiply(FieldMeta<?> field, Object paramOrExp);
+        SR setMultiply(TableField<?> field, Object paramOrExp);
 
-        SR setMultiplyLiteral(FieldMeta<?> field, Object paramOrExp);
+        SR setMultiplyLiteral(TableField<?> field, Object paramOrExp);
 
-        SR setDivide(FieldMeta<?> field, Object paramOrExp);
+        SR setDivide(TableField<?> field, Object paramOrExp);
 
-        SR setDivideLiteral(FieldMeta<?> field, Object paramOrExp);
+        SR setDivideLiteral(TableField<?> field, Object paramOrExp);
 
-        SR setMod(FieldMeta<?> field, Object paramOrExp);
+        SR setMod(TableField<?> field, Object paramOrExp);
 
-        SR setModLiteral(FieldMeta<?> field, Object paramOrExp);
+        SR setModLiteral(TableField<?> field, Object paramOrExp);
 
-        SR ifSet(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSet(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSet(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSet(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetLiteral(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetLiteral(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetPlus(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetPlus(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetPlus(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetPlus(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetMinus(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetMinus(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetMinus(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetMinus(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetMultiply(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetMultiply(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetMultiply(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetMultiply(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetDivide(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetDivide(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetDivide(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetDivide(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetMod(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetMod(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetMod(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetMod(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetPlusLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetPlusLiteral(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetPlusLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetPlusLiteral(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetMinusLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetMinusLiteral(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetMinusLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetMinusLiteral(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetMultiplyLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetMultiplyLiteral(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetMultiplyLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetMultiplyLiteral(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetDivideLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetDivideLiteral(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetDivideLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetDivideLiteral(TableField<?> field, Supplier<?> paramOrExp);
 
-        SR ifSetModLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName);
+        SR ifSetModLiteral(TableField<?> field, Function<String, ?> function, String keyName);
 
-        SR ifSetModLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp);
+        SR ifSetModLiteral(TableField<?> field, Supplier<?> paramOrExp);
 
     }
 
-
+    /**
+     * @param <C>  java type of criteria object
+     * @param <SR> java type of next clause.
+     */
     interface BatchSetClause<C, SR> extends SetClause<C, SR> {
 
-        SR setExp(FieldMeta<?> field, Expression value);
+        SR setExp(TableField<?> field, Expression value);
 
-        SR ifSetExp(FieldMeta<?> field, Supplier<Expression> supplier);
+        SR ifSetExp(TableField<?> field, Supplier<? extends Expression> supplier);
 
-        SR setNullable(List<FieldMeta<?>> fieldList);
+        SR setNullable(List<? extends TableField<?>> fieldList);
 
-        SR set(List<FieldMeta<?>> fieldList);
+        SR set(List<TableField<?>> fieldList);
 
-        SR set(Consumer<List<FieldMeta<?>>> consumer);
+        SR set(Consumer<List<TableField<?>>> consumer);
 
-        SR setNullable(Consumer<List<FieldMeta<?>>> consumer);
+        SR setNullable(Consumer<List<TableField<?>>> consumer);
 
-        SR set(Function<C, List<FieldMeta<?>>> function);
+        SR set(Function<C, List<TableField<?>>> function);
 
-        SR setNullable(Function<C, List<FieldMeta<?>>> function);
+        SR setNullable(Function<C, List<TableField<?>>> function);
 
-        SR set(Supplier<List<FieldMeta<?>>> supplier);
+        SR set(Supplier<List<TableField<?>>> supplier);
 
-        SR setNullable(Supplier<List<FieldMeta<?>>> supplier);
-
-        /**
-         * @see SQLs#nullableNamedParam(GenericField)
-         */
-        SR setNullable(FieldMeta<?> field);
-
-        SR set(FieldMeta<?> field);
+        SR setNullable(Supplier<List<TableField<?>>> supplier);
 
         /**
-         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#nullableNamedParam(TableField)
          */
-        SR setPlus(FieldMeta<?> field);
+        SR setNullable(TableField<?> field);
+
+        SR set(TableField<?> field);
 
         /**
-         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(TableField)
          */
-        SR setMinus(FieldMeta<?> field);
+        SR setPlus(TableField<?> field);
 
         /**
-         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(TableField)
          */
-        SR setMultiply(FieldMeta<?> field);
+        SR setMinus(TableField<?> field);
 
         /**
-         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(TableField)
          */
-        SR setDivide(FieldMeta<?> field);
+        SR setMultiply(TableField<?> field);
 
         /**
-         * @see SQLs#namedParam(GenericField)
+         * @see SQLs#namedParam(TableField)
          */
-        SR setMod(FieldMeta<?> field);
+        SR setDivide(TableField<?> field);
 
-        SR ifSet(Function<C, List<FieldMeta<?>>> function);
+        /**
+         * @see SQLs#namedParam(TableField)
+         */
+        SR setMod(TableField<?> field);
 
-        SR ifSetNullable(Function<C, List<FieldMeta<?>>> function);
+        SR ifSet(Function<C, List<TableField<?>>> function);
 
-        SR ifSet(Predicate<C> test, FieldMeta<?> field);
+        SR ifSetNullable(Function<C, List<TableField<?>>> function);
 
-        SR ifSetNullable(Predicate<C> test, FieldMeta<?> field);
+        SR ifSet(Predicate<C> test, TableField<?> field);
+
+        SR ifSetNullable(Predicate<C> test, TableField<?> field);
 
     }
 

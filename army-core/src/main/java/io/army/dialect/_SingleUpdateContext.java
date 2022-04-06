@@ -1,19 +1,15 @@
 package io.army.dialect;
 
-
+import io.army.criteria.TableField;
 import io.army.lang.Nullable;
-import io.army.meta.SingleTableMeta;
 
 public interface _SingleUpdateContext extends _UpdateContext, _SetBlock {
 
-
-    boolean multiTableUpdateChild();
-
-    @Override
-    SingleTableMeta<?> table();
-
+    /**
+     * @return safe table alias of field, {@code null} representing field is unknown filed.
+     */
     @Nullable
-    _SetBlock childBlock();
+    String safeTableAlias(TableField<?> field);
 
 
 }

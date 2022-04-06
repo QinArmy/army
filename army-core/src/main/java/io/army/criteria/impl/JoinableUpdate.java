@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -100,17 +99,17 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR setExp(FieldMeta<?> field, Function<C, Expression> function) {
+    public final SR setExp(TableField<?> field, Function<C, ? extends Expression> function) {
         return this.setExp(field, function.apply(this.criteria));
     }
 
     @Override
-    public final SR setExp(FieldMeta<?> field, Supplier<Expression> supplier) {
+    public final SR setExp(TableField<?> field, Supplier<? extends Expression> supplier) {
         return this.setExp(field, supplier.get());
     }
 
     @Override
-    public final SR ifSetExp(FieldMeta<?> field, Function<C, Expression> function) {
+    public final SR ifSetExp(TableField<?> field, Function<C, ? extends Expression> function) {
         final Expression exp;
         exp = function.apply(this.criteria);
         if (exp != null) {
@@ -122,67 +121,67 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     /*################################## blow SimpleSetClause method ##################################*/
 
     @Override
-    public final SR set(FieldMeta<?> field, @Nullable Object paramOrExp) {
+    public final SR set(TableField<?> field, @Nullable Object paramOrExp) {
         return this.setExp(field, SQLs.nullableParam(field, paramOrExp));
     }
 
     @Override
-    public final SR setLiteral(FieldMeta<?> field, @Nullable Object paramOrExp) {
+    public final SR setLiteral(TableField<?> field, @Nullable Object paramOrExp) {
         return this.setExp(field, SQLs.nullableLiteral(field, paramOrExp));
     }
 
     @Override
-    public final SR setPlus(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setPlus(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.plus(paramOrExp));
     }
 
     @Override
-    public final SR setPlusLiteral(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setPlusLiteral(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.plusLiteral(paramOrExp));
     }
 
     @Override
-    public final SR setMinus(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setMinus(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.minus(paramOrExp));
     }
 
     @Override
-    public final SR setMinusLiteral(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setMinusLiteral(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.minusLiteral(paramOrExp));
     }
 
     @Override
-    public final SR setMultiply(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setMultiply(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.multiply(paramOrExp));
     }
 
     @Override
-    public final SR setMultiplyLiteral(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setMultiplyLiteral(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.multiplyLiteral(paramOrExp));
     }
 
     @Override
-    public final SR setDivide(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setDivide(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.divide(paramOrExp));
     }
 
     @Override
-    public final SR setDivideLiteral(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setDivideLiteral(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.divideLiteral(paramOrExp));
     }
 
     @Override
-    public final SR setMod(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setMod(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.mod(paramOrExp));
     }
 
     @Override
-    public final SR setModLiteral(FieldMeta<?> field, Object paramOrExp) {
+    public final SR setModLiteral(TableField<?> field, Object paramOrExp) {
         return this.setExp(field, field.modLiteral(paramOrExp));
     }
 
     @Override
-    public final SR ifSet(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSet(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -192,7 +191,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSet(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSet(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -202,7 +201,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetLiteral(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -212,7 +211,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetLiteral(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -222,7 +221,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetPlus(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetPlus(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -232,7 +231,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetPlus(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetPlus(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -242,7 +241,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMinus(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetMinus(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -252,7 +251,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMinus(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetMinus(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -262,7 +261,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMultiply(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetMultiply(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -272,7 +271,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMultiply(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetMultiply(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -282,7 +281,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetDivide(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetDivide(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -292,7 +291,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetDivide(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetDivide(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -302,7 +301,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMod(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetMod(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -312,7 +311,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMod(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetMod(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -322,7 +321,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetPlusLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetPlusLiteral(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -332,7 +331,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetPlusLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetPlusLiteral(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -342,7 +341,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMinusLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetMinusLiteral(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -352,7 +351,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMinusLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetMinusLiteral(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -362,7 +361,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMultiplyLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetMultiplyLiteral(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -372,7 +371,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetMultiplyLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetMultiplyLiteral(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -382,7 +381,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetDivideLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetDivideLiteral(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -392,7 +391,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetDivideLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetDivideLiteral(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -402,7 +401,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetModLiteral(FieldMeta<?> field, Function<String, Object> function, String keyName) {
+    public final SR ifSetModLiteral(TableField<?> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
@@ -412,7 +411,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetModLiteral(FieldMeta<?> field, Supplier<Object> paramOrExp) {
+    public final SR ifSetModLiteral(TableField<?> field, Supplier<?> paramOrExp) {
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
@@ -424,7 +423,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     /*################################## blow BatchSetClause  method ##################################*/
 
     @Override
-    public final SR setExp(FieldMeta<?> field, Expression value) {
+    public final SR setExp(TableField<?> field, Expression value) {
         Objects.requireNonNull(value);
         this.leftList.add(field);
         this.rightList.add(value);
@@ -432,7 +431,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetExp(FieldMeta<?> field, Supplier<Expression> supplier) {
+    public final SR ifSetExp(TableField<?> field, Supplier<? extends Expression> supplier) {
         final Expression exp;
         exp = supplier.get();
         if (exp != null) {
@@ -442,13 +441,13 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR setNullable(List<FieldMeta<?>> fieldList) {
+    public final SR setNullable(List<? extends TableField<?>> fieldList) {
         if (fieldList.size() == 0) {
             throw batchSetLisEmpty();
         }
         final List<SetLeftItem> leftList = this.leftList;
         final List<SetRightItem> rightList = this.rightList;
-        for (FieldMeta<?> field : fieldList) {
+        for (TableField<?> field : fieldList) {
             leftList.add(field);
             rightList.add(SQLs.nullableNamedParam(field));
         }
@@ -456,13 +455,13 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR set(List<FieldMeta<?>> fieldList) {
+    public final SR set(List<TableField<?>> fieldList) {
         if (fieldList.size() == 0) {
             throw batchSetLisEmpty();
         }
         final List<SetLeftItem> leftList = this.leftList;
         final List<SetRightItem> rightList = this.rightList;
-        for (FieldMeta<?> field : fieldList) {
+        for (TableField<?> field : fieldList) {
             leftList.add(field);
             rightList.add(SQLs.namedParam(field));
         }
@@ -470,78 +469,78 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR set(Consumer<List<FieldMeta<?>>> consumer) {
-        final List<FieldMeta<?>> list = new ArrayList<>();
+    public final SR set(Consumer<List<TableField<?>>> consumer) {
+        final List<TableField<?>> list = new ArrayList<>();
         consumer.accept(list);
         return this.set(list);
     }
 
 
     @Override
-    public final SR setNullable(Consumer<List<FieldMeta<?>>> consumer) {
-        final List<FieldMeta<?>> list = new ArrayList<>();
+    public final SR setNullable(Consumer<List<TableField<?>>> consumer) {
+        final List<TableField<?>> list = new ArrayList<>();
         consumer.accept(list);
         return this.setNullable(list);
     }
 
     @Override
-    public final SR set(Function<C, List<FieldMeta<?>>> function) {
+    public final SR set(Function<C, List<TableField<?>>> function) {
         return this.set(function.apply(this.criteria));
     }
 
     @Override
-    public final SR setNullable(Function<C, List<FieldMeta<?>>> function) {
+    public final SR setNullable(Function<C, List<TableField<?>>> function) {
         return this.setNullable(function.apply(this.criteria));
     }
 
     @Override
-    public final SR set(Supplier<List<FieldMeta<?>>> supplier) {
+    public final SR set(Supplier<List<TableField<?>>> supplier) {
         return this.set(supplier.get());
     }
 
     @Override
-    public final SR setNullable(Supplier<List<FieldMeta<?>>> supplier) {
+    public final SR setNullable(Supplier<List<TableField<?>>> supplier) {
         return this.setNullable(supplier.get());
     }
 
     @Override
-    public final SR setNullable(FieldMeta<?> field) {
+    public final SR setNullable(TableField<?> field) {
         return this.setExp(field, SQLs.nullableNamedParam(field));
     }
 
     @Override
-    public final SR set(FieldMeta<?> field) {
+    public final SR set(TableField<?> field) {
         return this.setExp(field, SQLs.namedParam(field));
     }
 
     @Override
-    public final SR setPlus(FieldMeta<?> field) {
+    public final SR setPlus(TableField<?> field) {
         return this.setExp(field, field.plus(SQLs.namedParam(field)));
     }
 
     @Override
-    public final SR setMinus(FieldMeta<?> field) {
+    public final SR setMinus(TableField<?> field) {
         return this.setExp(field, field.minus(SQLs.namedParam(field)));
     }
 
     @Override
-    public final SR setMultiply(FieldMeta<?> field) {
+    public final SR setMultiply(TableField<?> field) {
         return this.setExp(field, field.multiply(SQLs.namedParam(field)));
     }
 
     @Override
-    public final SR setDivide(FieldMeta<?> field) {
+    public final SR setDivide(TableField<?> field) {
         return this.setExp(field, field.divide(SQLs.namedParam(field)));
     }
 
     @Override
-    public final SR setMod(FieldMeta<?> field) {
+    public final SR setMod(TableField<?> field) {
         return this.setExp(field, field.mod(SQLs.namedParam(field)));
     }
 
     @Override
-    public final SR ifSet(Function<C, List<FieldMeta<?>>> function) {
-        final List<FieldMeta<?>> fieldList;
+    public final SR ifSet(Function<C, List<TableField<?>>> function) {
+        final List<TableField<?>> fieldList;
         fieldList = function.apply(this.criteria);
         if (fieldList.size() > 0) {
             this.set(fieldList);
@@ -550,8 +549,8 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetNullable(Function<C, List<FieldMeta<?>>> function) {
-        final List<FieldMeta<?>> fieldList;
+    public final SR ifSetNullable(Function<C, List<TableField<?>>> function) {
+        final List<? extends TableField<?>> fieldList;
         fieldList = function.apply(this.criteria);
         if (fieldList.size() > 0) {
             this.setNullable(fieldList);
@@ -560,7 +559,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSet(Predicate<C> test, FieldMeta<?> field) {
+    public final SR ifSet(Predicate<C> test, TableField<?> field) {
         if (test.test(this.criteria)) {
             this.setExp(field, SQLs.namedParam(field));
         }
@@ -568,7 +567,7 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
     }
 
     @Override
-    public final SR ifSetNullable(Predicate<C> test, FieldMeta<?> field) {
+    public final SR ifSetNullable(Predicate<C> test, TableField<?> field) {
         if (test.test(this.criteria)) {
             this.setExp(field, SQLs.nullableNamedParam(field));
         }

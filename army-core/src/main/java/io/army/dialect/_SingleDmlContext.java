@@ -209,7 +209,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
 
         @Override
         public String toString() {
-            return this.parentContext instanceof _SingleUpdateContext
+            return this.parentContext instanceof _DomainUpdateContext
                     ? "single update child context"
                     : "single delete child context";
         }

@@ -37,7 +37,7 @@
 
 9. 为什么 io.army.criteria.Expression 总有一个 equalNamed(String) 方法,这个做什么的?
    1. 这个方法是为批量 dml 语句设计的,这个方法能把批量语句的 代码变得简洁.
-   2. io.army.criteria.GenericField 的 equalNamed() 也是同理.
+   2. io.army.criteria.TableField 的 equalNamed() 也是同理.
 
 10. 为什么 不支持 application 开发者重写 默认 mapping type?
    1. army 的默认 mapping 已经足够满足大多数场景.

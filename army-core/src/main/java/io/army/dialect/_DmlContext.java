@@ -5,7 +5,8 @@ import io.army.criteria.impl.inner._Update;
 
 import java.util.List;
 
-public interface _DmlContext extends _StmtContext {
+interface _DmlContext extends _StmtContext {
+
 
     /**
      * @see _Update#predicateList()

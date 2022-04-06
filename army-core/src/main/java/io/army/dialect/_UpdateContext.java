@@ -7,21 +7,13 @@ import io.army.stmt.SimpleStmt;
  * <p>
  * This interface is base interface of below:
  *     <ul>
- *         <li>{@link _SingleUpdateContext}</li>
+ *         <li>{@link _DomainUpdateContext}</li>
  *         <li>{@link _MultiUpdateContext}</li>
  *     </ul>
  * </p>
  */
-public interface _UpdateContext extends _DmlContext {
+interface _UpdateContext extends _DmlContext {
 
-
-    /**
-     * @return true : SET clause support table alias
-     */
-    @Deprecated
-    default boolean setClauseTableAlias() {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     SimpleStmt build();

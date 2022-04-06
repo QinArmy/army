@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
+import io.army.criteria.TableField;
 import io.army.domain.IDomain;
 
 /**
@@ -14,7 +14,7 @@ import io.army.domain.IDomain;
  *     </ul>
  * </p>
  */
-abstract class OperationField<T extends IDomain> extends OperationExpression implements GenericField<T> {
+abstract class OperationField<T extends IDomain> extends OperationExpression implements TableField<T> {
 
 
     @Override

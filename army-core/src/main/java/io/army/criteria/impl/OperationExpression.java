@@ -25,8 +25,8 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Selection as(final String alias) {
         final Selection selection;
-        if (this instanceof GenericField) {
-            selection = FieldSelectionImpl.create((GenericField<?>) this, alias);
+        if (this instanceof TableField) {
+            selection = FieldSelectionImpl.create((TableField<?>) this, alias);
         } else if (this instanceof DerivedField) {
             selection = CriteriaContexts.createDerivedSelection((DerivedField) this, alias);
         } else {

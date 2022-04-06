@@ -50,7 +50,7 @@ class MySQLDialect extends MySQL {
 
 
     @Override
-    protected SimpleStmt dialectSingleUpdate(final _SingleUpdateContext context, final _SingleUpdate update) {
+    protected SimpleStmt dialectSingleUpdate(final _DomainUpdateContext context, final _SingleUpdate update) {
         final _SetBlock childBlock = context.childBlock();
         if (childBlock != null && childBlock.targetParts().size() > 0) {
             throw _Exceptions.updateChildFieldWithSingleUpdate((ChildTableMeta<?>) childBlock.table());
@@ -93,7 +93,7 @@ class MySQLDialect extends MySQL {
         //7. index hint
         this.indexHintClause(stmt.indexHintList(), sqlBuilder, dialect);
         //8. set clause
-        final List<GenericField<?>> conditionFields;
+        final List<TableField<?>> conditionFields;
         conditionFields = this.setClause(true, context, context);
 
         //9. where clause

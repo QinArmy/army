@@ -61,6 +61,10 @@ public interface _Dialect {
 
     boolean hasRowKeywords();
 
+    default boolean supportRowLeftItem() {
+        return false;
+    }
+
 
     String literal(ParamMeta paramMeta, Object nonNull);
 

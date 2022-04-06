@@ -5,6 +5,10 @@ import java.util.Set;
 
 abstract class MySQLDialectUtils {
 
+    private MySQLDialectUtils() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * @return a modifiable set
      */

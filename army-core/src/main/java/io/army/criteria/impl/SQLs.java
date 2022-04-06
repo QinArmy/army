@@ -305,7 +305,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @see io.army.criteria.Update.BatchSetClause
      */
-    public static Expression nullableNamedParam(GenericField<?> field) {
+    public static Expression nullableNamedParam(TableField<?> field) {
         return NamedParamImpl.nullable(field.fieldName(), field);
     }
 
@@ -334,7 +334,7 @@ public abstract class SQLs extends StandardFunctions {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static Expression namedParam(GenericField<?> field) {
+    public static Expression namedParam(TableField<?> field) {
         return NamedParamImpl.nonNull(field.fieldName(), field);
     }
 

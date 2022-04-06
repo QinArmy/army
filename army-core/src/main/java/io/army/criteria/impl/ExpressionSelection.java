@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.GenericField;
+import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect.Constant;
@@ -28,7 +28,7 @@ final class ExpressionSelection implements _Selection {
     @Override
     public ParamMeta paramMeta() {
         ParamMeta paramMeta = this.expression.paramMeta();
-        if (paramMeta instanceof GenericField) {
+        if (paramMeta instanceof TableField) {
             // ExpressionSelection couldn't return io.army.criteria.GenericField ,avoid to statement executor
             // decode selection .
             paramMeta = paramMeta.mappingType();

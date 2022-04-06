@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.GenericField;
+import io.army.criteria.TableField;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
@@ -11,7 +11,7 @@ final class BracketsExpression extends OperationExpression {
     static Expression bracket(final Expression expression) {
         final Expression result;
         if (expression instanceof BracketsExpression
-                || expression instanceof GenericField
+                || expression instanceof TableField
                 || expression instanceof ValueExpression) {
             result = expression;
         } else {

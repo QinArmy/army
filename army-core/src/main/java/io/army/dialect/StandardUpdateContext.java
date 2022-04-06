@@ -22,7 +22,7 @@ import java.util.List;
  * This class representing standard single update context.
  * </p>
  */
-final class StandardUpdateContext extends _SingleDmlContext implements _SingleUpdateContext {
+final class StandardUpdateContext extends _SingleDmlContext implements _DomainUpdateContext {
 
     static StandardUpdateContext create(_SingleUpdate update, _Dialect dialect, final Visible visible) {
         final StandardUpdateContext context;
@@ -117,11 +117,6 @@ final class StandardUpdateContext extends _SingleDmlContext implements _SingleUp
     }
 
     /*################################## blow _SetClause method ##################################*/
-
-    @Override
-    public boolean multiTableUpdateChild() {
-        return this.multiTableUpdateChild;
-    }
 
 
     @Override

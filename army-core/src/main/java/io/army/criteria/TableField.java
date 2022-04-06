@@ -11,18 +11,20 @@ import io.army.meta.TableMeta;
 import java.lang.reflect.Field;
 
 /**
- * This interface is base interface of below interface:
+ * <p>
+ * This interface representing column of database table. This interface is base interface of below interfaces:
  * <ul>
  *     <li>{@link FieldMeta}</li>
  *      <li>{@link QualifiedField}</li>
  * </ul>
+ * </p>
  *
  * @param <T> Domain Java Type
- * @param <F> Domain property Java Type
  * @see FieldMeta
  * @see QualifiedField
  */
-public interface GenericField<T extends IDomain> extends Expression, FieldSelection, ParamMeta, SetLeftItem {
+@SuppressWarnings("unused")
+public interface TableField<T extends IDomain> extends Expression, FieldSelection, ParamMeta, SetLeftItem {
 
     TableMeta<T> tableMeta();
 
@@ -51,7 +53,7 @@ public interface GenericField<T extends IDomain> extends Expression, FieldSelect
 
 
     /**
-     * relational operate with {@code =} {@link SQLs#nullableNamedParam(GenericField)}
+     * relational operate with {@code =} {@link SQLs#nullableNamedParam(TableField)}
      */
     IPredicate equalNamed();
 

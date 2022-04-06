@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
 import io.army.criteria.NamedParam;
+import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
@@ -74,12 +74,12 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         final DualPredicate predicate;
         if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
             match = false;
-        } else if (predicate.left instanceof GenericField
-                && _MetaBridge.VERSION.equals(((GenericField<?>) predicate.left).fieldName())) {
+        } else if (predicate.left instanceof TableField
+                && _MetaBridge.VERSION.equals(((TableField<?>) predicate.left).fieldName())) {
             match = predicate.right instanceof ValueExpression
                     || predicate.right instanceof NamedParam;
-        } else if (predicate.right instanceof GenericField
-                && _MetaBridge.VERSION.equals(((GenericField<?>) predicate.right).fieldName())) {
+        } else if (predicate.right instanceof TableField
+                && _MetaBridge.VERSION.equals(((TableField<?>) predicate.right).fieldName())) {
             match = predicate.left instanceof ValueExpression
                     || predicate.left instanceof NamedParam;
 
@@ -95,13 +95,13 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
         final DualPredicate predicate;
         if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
             match = false;
-        } else if (!(predicate.left instanceof GenericField && predicate.right instanceof GenericField)) {
+        } else if (!(predicate.left instanceof TableField && predicate.right instanceof TableField)) {
             match = false;
-        } else if (_MetaBridge.ID.equals(((GenericField<?>) predicate.left).fieldName())
-                && _MetaBridge.ID.equals(((GenericField<?>) predicate.right).fieldName())) {
+        } else if (_MetaBridge.ID.equals(((TableField<?>) predicate.left).fieldName())
+                && _MetaBridge.ID.equals(((TableField<?>) predicate.right).fieldName())) {
             final TableMeta<?> leftTable, rightTable;
-            leftTable = ((GenericField<?>) predicate.left).tableMeta();
-            rightTable = ((GenericField<?>) predicate.right).tableMeta();
+            leftTable = ((TableField<?>) predicate.left).tableMeta();
+            rightTable = ((TableField<?>) predicate.right).tableMeta();
             if (leftTable instanceof ChildTableMeta) {
                 match = ((ChildTableMeta<?>) leftTable).parentMeta() == rightTable;
             } else if (rightTable instanceof ChildTableMeta) {

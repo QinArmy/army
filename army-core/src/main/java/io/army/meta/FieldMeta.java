@@ -1,7 +1,7 @@
 package io.army.meta;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.GenericField;
+import io.army.criteria.TableField;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
@@ -14,7 +14,7 @@ import java.util.List;
  * @param <T> representing Domain Java Type
  * @param <F> representing Domain property Java Type
  */
-public interface FieldMeta<T extends IDomain> extends GenericField<T> {
+public interface FieldMeta<T extends IDomain> extends TableField<T> {
 
 
     boolean primary();

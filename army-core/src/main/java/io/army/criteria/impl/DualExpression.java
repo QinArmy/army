@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.GenericField;
+import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
@@ -89,11 +89,11 @@ final class DualExpression extends OperationExpression {
             case XOR: {
                 outerBracket = true;
                 leftInnerBracket = !(left instanceof ValueExpression
-                        || left instanceof GenericField
+                        || left instanceof TableField
                         || left instanceof BracketsExpression);
 
                 rightInnerBracket = !(right instanceof ValueExpression
-                        || right instanceof GenericField
+                        || right instanceof TableField
                         || right instanceof BracketsExpression);
             }
             break;

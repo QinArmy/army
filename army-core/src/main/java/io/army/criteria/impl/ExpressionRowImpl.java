@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ExpressionRow;
-import io.army.criteria.GenericField;
 import io.army.criteria.IPredicate;
 import io.army.criteria.SubQuery;
+import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._SqlContext;
 
@@ -11,14 +11,14 @@ import java.util.List;
 
 final class ExpressionRowImpl implements ExpressionRow, _SelfDescribed {
 
-    private final List<GenericField<?>> columnList;
+    private final List<TableField<?>> columnList;
 
-    public ExpressionRowImpl(List<GenericField<?>> columnList) {
+    public ExpressionRowImpl(List<TableField<?>> columnList) {
         this.columnList = columnList;
     }
 
     @Override
-    public List<GenericField<?>> field() {
+    public List<TableField<?>> fieldList() {
         return null;
     }
 
@@ -48,7 +48,7 @@ final class ExpressionRowImpl implements ExpressionRow, _SelfDescribed {
         StringBuilder builder = new StringBuilder();
         builder.append("ROW(");
         int index = 0;
-        for (GenericField<?> fieldMeta : this.columnList) {
+        for (TableField<?> fieldMeta : this.columnList) {
             if (index > 0) {
                 builder.append(",");
             }

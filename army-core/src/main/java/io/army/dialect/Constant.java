@@ -68,6 +68,8 @@ public interface Constant {
 
     String SPACE_SET = " SET";
 
+    String SPACE_SET_SPACE = " SET ";
+
     String SPACE_LIMIT_SPACE = " LIMIT ";
 
     String SPACE_IS_NULL = " IS NULL";

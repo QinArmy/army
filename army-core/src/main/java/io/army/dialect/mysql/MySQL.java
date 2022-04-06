@@ -1,7 +1,7 @@
 package io.army.dialect.mysql;
 
-import io.army.criteria.GenericField;
 import io.army.criteria.LockMode;
+import io.army.criteria.TableField;
 import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
@@ -107,6 +107,11 @@ class MySQL extends _AbstractDialect {
         return false;
     }
 
+    @Override
+    public final boolean supportRowLeftItem() {
+        //MySQL SET clause left item don't support ROW
+        return false;
+    }
 
     @Override
     public boolean supportSavePoint() {
@@ -270,8 +275,7 @@ class MySQL extends _AbstractDialect {
      * @see _Dialect#multiTableUpdateChild()
      */
     @Override
-    protected final SimpleStmt standardChildUpdate(final _SingleUpdateContext context) {
-        assert context.multiTableUpdateChild();
+    protected final SimpleStmt standardChildUpdate(final _DomainUpdateContext context) {
 
         final _SetBlock childBlock = context.childBlock();
         assert childBlock != null;
@@ -284,7 +288,7 @@ class MySQL extends _AbstractDialect {
         //2. child join parent
         this.appendChildJoinParent(childBlock, context);
 
-        final List<GenericField<?>> childConditionFields, parentConditionFields;
+        final List<TableField<?>> childConditionFields, parentConditionFields;
         //3. set clause
         parentConditionFields = this.setClause(true, context, context);
         childConditionFields = this.setClause(false, childBlock, context);

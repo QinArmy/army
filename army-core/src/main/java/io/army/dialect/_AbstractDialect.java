@@ -4,6 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.*;
 import io.army.criteria.impl._SQLCounselor;
 import io.army.criteria.impl.inner.*;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
@@ -30,7 +31,6 @@ import java.util.*;
  * </p>
  */
 public abstract class _AbstractDialect implements _Dialect {
-
 
 
     private static final Collection<String> FORBID_SET_FIELD = ArrayUtils.asUnmodifiableList(
@@ -89,7 +89,7 @@ public abstract class _AbstractDialect implements _Dialect {
         } else if (update instanceof _SingleUpdate) {
             // assert implementation class is legal
             assertDialectUpdate(update);
-            final _SingleUpdateContext context;
+            final _DomainUpdateContext context;
             context = StandardUpdateContext.create((_SingleUpdate) update, this, visible);
             simpleStmt = dialectSingleUpdate(context, (_SingleUpdate) update);
         } else if (update instanceof _MultiUpdate) {
@@ -406,7 +406,7 @@ public abstract class _AbstractDialect implements _Dialect {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt dialectSingleUpdate(_SingleUpdateContext context, _SingleUpdate update) {
+    protected SimpleStmt dialectSingleUpdate(_DomainUpdateContext context, _SingleUpdate update) {
         throw new UnsupportedOperationException();
     }
 
@@ -422,7 +422,7 @@ public abstract class _AbstractDialect implements _Dialect {
     /**
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
      */
-    protected SimpleStmt standardChildUpdate(_SingleUpdateContext context) {
+    protected SimpleStmt standardChildUpdate(_DomainUpdateContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -727,14 +727,14 @@ public abstract class _AbstractDialect implements _Dialect {
     }
 
 
-    protected final void conditionUpdate(String safeTableAlias, List<GenericField<?>> conditionFields
+    protected final void conditionUpdate(String safeTableAlias, List<TableField<?>> conditionFields
             , _StmtContext context) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
         String columnName;
-        for (GenericField<?> field : conditionFields) {
+        for (TableField<?> field : conditionFields) {
             columnName = field.columnName();
             sqlBuilder
                     .append(Constant.SPACE_AND_SPACE)
@@ -788,8 +788,260 @@ public abstract class _AbstractDialect implements _Dialect {
 
     }
 
+    protected final List<TableField<?>> singleTableSetClause(final boolean first, final _SetClause clause) {
+        final _SqlContext context = clause.context();
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final _Dialect dialect = context.dialect();
+        final List<? extends SetLeftItem> leftItemList = clause.leftItemList();
+        final List<? extends SetRightItem> rightItemList = clause.rightItemList();
 
-    protected final List<GenericField<?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
+        if (first) {
+            sqlBuilder.append(Constant.SPACE_SET_SPACE);
+        } else {
+            sqlBuilder.append(Constant.SPACE_COMMA_SPACE);
+        }
+
+        List<TableField<?>> conditionFieldList = null;
+
+        final int itemSize = leftItemList.size();
+        SetLeftItem leftItem;
+        SetRightItem rightItem;
+        TableField<?> field;
+        _Expression expression;
+        String tableSafeAlias;
+        final boolean supportAlias, supportOnlyDefault, supportRow;
+        supportAlias = clause.supportAlias();
+        supportOnlyDefault = dialect.supportOnlyDefault();
+        supportRow = clause.supportRow();
+        for (int i = 0; i < itemSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(Constant.SPACE_COMMA_SPACE);
+            }
+            leftItem = leftItemList.get(i);
+            rightItem = rightItemList.get(i);
+            if (leftItem instanceof Row) {
+                if (!supportRow) {
+                    throw _Exceptions.dontSupportRowLeftItem(dialect.dialect());
+                }
+                if (!(rightItem instanceof SubQuery)) {
+                    throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
+                }
+                this.appendRowItem(((Row) leftItem).fieldList(), clause, conditionFieldList);
+                sqlBuilder.append(Constant.SPACE_EQUAL_SPACE);
+                dialect.subQuery((SubQuery) rightItem, context);
+                continue;
+            }
+            field = (TableField<?>) leftItem;
+            if (!(rightItem instanceof _Expression)) {
+                throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
+            }
+            if ((tableSafeAlias = clause.validateField(field)) == null) {
+                throw _Exceptions.unknownColumn(field);
+            }
+            switch (field.updateMode()) {
+                case UPDATABLE:
+                    // no-op
+                    break;
+                case IMMUTABLE:
+                    throw _Exceptions.immutableField(field.fieldMeta());
+                case ONLY_DEFAULT: {
+                    if (!supportOnlyDefault) {
+                        throw _Exceptions.dontSupportOnlyDefault(dialect);
+                    }
+                    if (conditionFieldList == null) {
+                        conditionFieldList = new ArrayList<>();
+                    }
+                    conditionFieldList.add(field);
+                }
+                break;
+                case ONLY_NULL: {
+                    if (conditionFieldList == null) {
+                        conditionFieldList = new ArrayList<>();
+                    }
+                    conditionFieldList.add(field);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+            }
+            if (supportAlias) {
+                sqlBuilder.append(tableSafeAlias)
+                        .append(Constant.POINT);
+            }
+            dialect.safeObjectName(field.columnName(), sqlBuilder)
+                    .append(Constant.SPACE_EQUAL_SPACE);
+            expression = (_Expression) rightItem;
+            if (!field.nullable() && expression.isNullableValue()) {
+                throw _Exceptions.nonNullField(field.fieldMeta());
+            }
+            expression.appendSql(context);
+
+        }
+        return Collections.emptyList();
+    }
+
+    protected final List<TableField<?>> multiTableSetClause(final _SetClause clause) {
+        final _SqlContext context = clause.context();
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final _Dialect dialect = context.dialect();
+        final List<? extends SetLeftItem> leftItemList = clause.leftItemList();
+        final List<? extends SetRightItem> rightItemList = clause.rightItemList();
+        final Set<String> tableAlisSet = new HashSet<>();
+
+        sqlBuilder.append(Constant.SPACE_SET_SPACE);
+
+        List<TableField<?>> conditionFieldList = null;
+
+        final int itemSize = leftItemList.size();
+        SetLeftItem leftItem;
+        SetRightItem rightItem;
+        TableField<?> field;
+        _Expression expression;
+        String tableSafeAlias;
+        final boolean supportAlias, supportOnlyDefault, supportRow;
+        supportAlias = clause.supportAlias();
+        supportOnlyDefault = dialect.supportOnlyDefault();
+        supportRow = clause.supportRow();
+        for (int i = 0; i < itemSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(Constant.SPACE_COMMA_SPACE);
+            }
+            leftItem = leftItemList.get(i);
+            rightItem = rightItemList.get(i);
+            if (leftItem instanceof Row) {
+                if (!supportRow) {
+                    throw _Exceptions.dontSupportRowLeftItem(dialect.dialect());
+                }
+                if (!(rightItem instanceof SubQuery)) {
+                    throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
+                }
+                this.appendRowItem(((Row) leftItem).fieldList(), clause, conditionFieldList);
+                sqlBuilder.append(Constant.SPACE_EQUAL_SPACE);
+                dialect.subQuery((SubQuery) rightItem, context);
+                continue;
+            }
+            field = (TableField<?>) leftItem;
+            if (!(rightItem instanceof _Expression)) {
+                throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
+            }
+            if ((tableSafeAlias = clause.validateField(field)) == null) {
+                throw _Exceptions.unknownColumn(field);
+            }
+            switch (field.updateMode()) {
+                case UPDATABLE:
+                    // no-op
+                    break;
+                case IMMUTABLE:
+                    throw _Exceptions.immutableField(field.fieldMeta());
+                case ONLY_DEFAULT: {
+                    if (!supportOnlyDefault) {
+                        throw _Exceptions.dontSupportOnlyDefault(dialect);
+                    }
+                    if (conditionFieldList == null) {
+                        conditionFieldList = new ArrayList<>();
+                    }
+                    conditionFieldList.add(field);
+                }
+                break;
+                case ONLY_NULL: {
+                    if (conditionFieldList == null) {
+                        conditionFieldList = new ArrayList<>();
+                    }
+                    conditionFieldList.add(field);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+            }
+
+            if (supportAlias) {
+                sqlBuilder.append(tableSafeAlias)
+                        .append(Constant.POINT);
+            }
+            dialect.safeObjectName(field.columnName(), sqlBuilder)
+                    .append(Constant.SPACE_EQUAL_SPACE);
+            expression = (_Expression) rightItem;
+            if (!field.nullable() && expression.isNullableValue()) {
+                throw _Exceptions.nonNullField(field.fieldMeta());
+            }
+            expression.appendSql(context);
+            tableAlisSet.add(clause.tableAlias(field));
+        }
+        TableMeta<?> table;
+        for (String alias : tableAlisSet) {
+            table = clause.tableOf(alias);
+
+        }
+        return Collections.emptyList();
+    }
+
+
+    /**
+     * @see #singleTableSetClause(boolean, _SetClause)
+     */
+    @Nullable
+    private List<TableField<?>> appendRowItem(final List<TableField<?>> fieldList, final _SetClause clause
+            , @Nullable List<TableField<?>> conditionFieldList) {
+        final _SqlContext context = clause.context();
+        final int size = fieldList.size();
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final _Dialect dialect = context.dialect();
+
+        final boolean supportAlias, supportOnlyDefault;
+        supportAlias = clause.supportAlias();
+        supportOnlyDefault = dialect.supportOnlyDefault();
+
+        String tableSafeAlias;
+        TableField<?> field;
+        sqlBuilder.append(Constant.SPACE_LEFT_BRACKET)
+                .append(Constant.SPACE);
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                sqlBuilder.append(Constant.SPACE_COMMA_SPACE);
+            }
+            field = fieldList.get(i);
+            if ((tableSafeAlias = clause.validateField(field)) == null) {
+                throw _Exceptions.unknownColumn(field);
+            }
+            switch (field.updateMode()) {
+                case UPDATABLE:
+                    // no-op
+                    break;
+                case IMMUTABLE:
+                    throw _Exceptions.immutableField(field.fieldMeta());
+                case ONLY_DEFAULT: {
+                    if (!supportOnlyDefault) {
+                        throw _Exceptions.dontSupportOnlyDefault(dialect);
+                    }
+                    if (conditionFieldList == null) {
+                        conditionFieldList = new ArrayList<>();
+                    }
+                    conditionFieldList.add(field);
+                }
+                break;
+                case ONLY_NULL: {
+                    if (conditionFieldList == null) {
+                        conditionFieldList = new ArrayList<>();
+                    }
+                    conditionFieldList.add(field);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+            }
+            if (supportAlias) {
+                sqlBuilder.append(tableSafeAlias)
+                        .append(Constant.POINT);
+            }
+            dialect.safeObjectName(field.columnName(), sqlBuilder);
+
+        }
+        sqlBuilder.append(Constant.SPACE_RIGHT_BRACKET);
+        return conditionFieldList;
+    }
+
+
+    protected final List<TableField<?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
 
         final List<? extends SetLeftItem> targetPartList = clause.targetParts();
         final List<? extends SetRightItem> valuePartList = clause.valueParts();
@@ -807,7 +1059,7 @@ public abstract class _AbstractDialect implements _Dialect {
         }
         final boolean supportTableAlias = dialect.setClauseTableAlias();
         final boolean hasSelfJoin = clause.hasSelfJoint();
-        final List<GenericField<?>> conditionFields = new ArrayList<>();
+        final List<TableField<?>> conditionFields = new ArrayList<>();
         for (int i = 0; i < targetCount; i++) {
             if (i > 0) {
                 sqlBuilder.append(Constant.SPACE_COMMA);
@@ -822,12 +1074,13 @@ public abstract class _AbstractDialect implements _Dialect {
                 sqlBuilder.append(Constant.SPACE_EQUAL);
                 dialect.subQuery((SubQuery) targetPart, context);
                 continue;
-            } else if (!(targetPart instanceof GenericField)) {
+            }
+            if (!(targetPart instanceof TableField)) {
                 throw _Exceptions.unknownSetTargetPart(targetPart);
             } else if (!(valuePart instanceof _Expression)) {
                 throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
             }
-            final GenericField<?> field = (GenericField<?>) targetPart;
+            final TableField<?> field = (TableField<?>) targetPart;
             switch (field.updateMode()) {
                 case UPDATABLE:
                     // no-op
@@ -880,7 +1133,7 @@ public abstract class _AbstractDialect implements _Dialect {
      * @see #setClause(boolean, _SetBlock, _UpdateContext)
      */
     private void appendRowTarget(final _SetBlock clause, final Row row
-            , List<GenericField<?>> conditionFields, final _UpdateContext context) {
+            , List<TableField<?>> conditionFields, final _UpdateContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
@@ -890,7 +1143,7 @@ public abstract class _AbstractDialect implements _Dialect {
         final boolean hasSelfJoin = clause.hasSelfJoint(), supportTableAlias = dialect.setClauseTableAlias();
         sqlBuilder.append(Constant.SPACE_LEFT_BRACKET);
         int index = 0;
-        for (GenericField<?> field : row.field()) {
+        for (TableField<?> field : row.fieldList()) {
             if (index > 0) {
                 sqlBuilder.append(Constant.SPACE_COMMA);
             }
@@ -1092,7 +1345,7 @@ public abstract class _AbstractDialect implements _Dialect {
 
     /**
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
-     * @see #standardChildUpdate(_SingleUpdateContext)
+     * @see #standardChildUpdate(_DomainUpdateContext)
      */
     private SimpleStmt standardSingleTableUpdate(final StandardUpdateContext context) {
         final _SetBlock childContext = context.childBlock();
@@ -1116,7 +1369,7 @@ public abstract class _AbstractDialect implements _Dialect {
         sqlBuilder.append(Constant.SPACE)
                 .append(context.safeTableAlias);
 
-        final List<GenericField<?>> conditionFields;
+        final List<TableField<?>> conditionFields;
         //2. set clause
         conditionFields = this.setClause(true, context, context);
         //3. where clause

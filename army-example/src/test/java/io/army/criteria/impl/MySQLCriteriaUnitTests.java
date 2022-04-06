@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.TableField;
 import io.army.criteria.Update;
 import io.army.example.bank.domain.user.ChinaCity_;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -9,8 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Supplier;
 
 public class MySQLCriteriaUnitTests {
 
@@ -32,6 +33,7 @@ public class MySQLCriteriaUnitTests {
                 .asUpdate();
         LOG.debug("MySQL single update:\n{}", stmt);
 
+
     }
 
     @Test
@@ -50,6 +52,24 @@ public class MySQLCriteriaUnitTests {
                 .limit(map::get, "rowCount")
                 .asUpdate();
         LOG.debug("MySQL single update:\n{}", stmt);
+    }
+
+    @Test
+    public void simpleBatchSingleUpdate() {
+
+        final Supplier<List<TableField<?>>> supplier = () -> {
+            List<TableField<?>> list = new ArrayList<>();
+            list.add(ChinaRegion_.name);
+            return list;
+        };
+        final Update stmt;
+        stmt = MySQLs.batchSingleUpdate()
+                .update(ChinaRegion_.T, "t")
+                .set(supplier)
+                .where(ChinaRegion_.id.equalNamed())
+                .limit(10)
+                .paramList(Collections::emptyList)
+                .asUpdate();
     }
 
 
