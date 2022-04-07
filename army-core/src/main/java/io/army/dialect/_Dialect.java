@@ -80,6 +80,10 @@ public interface _Dialect {
 
     boolean setClauseTableAlias();
 
+    default boolean setClauseSupportRow() {
+        throw new UnsupportedOperationException();
+    }
+
     Dialect dialect();
 
     String defaultFuncName();

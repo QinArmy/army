@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._IndexHint;
+import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLModifier;
@@ -55,7 +56,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
         return new BatchWithAndUpdate<>(criteria);
     }
 
-    private List<Hint> hintList;
+    private List<_MySQLHint> hintList;
 
     private List<MySQLModifier> modifierList;
 
@@ -84,7 +85,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.table = table;
         return (UP) this;
@@ -96,7 +97,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.table = table;
         this.tableAlias = tableAlias;
@@ -548,7 +549,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final List<Hint> hintList() {
+    public final List<_MySQLHint> hintList() {
         return this.hintList;
     }
 
@@ -581,7 +582,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
 
     private UR addIndexHint(MySQLIndexHint.Command command, final boolean orderBy, final List<String> indexNames) {
         if (indexNames.size() == 0) {
-            throw MySQLSyntax.indexListIsEmpty();
+            throw MySQLUtils.indexListIsEmpty();
         }
         List<MySQLIndexHint> indexHintList = this.indexHintList;
         if (indexHintList == null) {
@@ -613,7 +614,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
             Update.UpdateSpec>         //LR
             implements MySQLUpdate.SingleUpdateSpec<C>, MySQLUpdate.SinglePartitionSpec<C>
             , MySQLUpdate.SingleIndexHintSpec<C>, MySQLUpdate.SingleWhereSpec<C>, MySQLUpdate.SingleWhereAndSpec<C>
-            , MySQLUpdate.OrderBySpec<C> {
+            , MySQLUpdate.OrderBySpec<C>, MySQLUpdate.IndexOrderBySpec<C> {
 
         private SimpleUpdate(@Nullable C criteria) {
             super(criteria);

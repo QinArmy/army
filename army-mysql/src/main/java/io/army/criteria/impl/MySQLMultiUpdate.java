@@ -4,10 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.criteria.impl.inner.mysql._IndexHint;
-import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
-import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
-import io.army.criteria.impl.inner.mysql._MySQLWithClause;
+import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
@@ -60,7 +57,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         return new BatchWithAndUpdate<>(criteria);
     }
 
-    private List<Hint> hintList;
+    private List<_MySQLHint> hintList;
 
     private List<MySQLModifier> modifierList;
 
@@ -76,7 +73,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     @Override
     public final UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , TableMeta<? extends IDomain> table) {
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         return this.createPartitionJoinBlock(table);
     }
@@ -84,7 +81,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     @Override
     public final UT update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , TableMeta<? extends IDomain> table, String tableAlias) {
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.criteriaContext.onFirstBlock(new FirstBlock(table, tableAlias));
         return (UT) this;
@@ -104,7 +101,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     @Override
     public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , Supplier<T> supplier, String alias) {
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
         return (US) this;
@@ -119,7 +116,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     @Override
     public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , Function<C, T> function, String alias) {
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
+        this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
         return (US) this;
@@ -307,7 +304,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
 
     @Override
-    public final List<Hint> hintList() {
+    public final List<_MySQLHint> hintList() {
         return this.hintList;
     }
 

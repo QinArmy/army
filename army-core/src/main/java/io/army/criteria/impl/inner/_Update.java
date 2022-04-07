@@ -11,12 +11,12 @@ public interface _Update extends _Statement {
     /**
      * @return a unmodifiable list
      */
-    List<? extends SetLeftItem> fieldList();
+    List<? extends SetLeftItem> leftItemList();
 
     /**
      * @return a unmodifiable list
      */
-    List<? extends SetRightItem> valueExpList();
+    List<? extends SetRightItem> rightItemList();
 
     List<_Predicate> predicateList();
 

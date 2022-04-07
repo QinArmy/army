@@ -96,6 +96,8 @@ public interface Constant {
 
     String SPACE_QUOTE = " '";
 
+    String SPACE_AT = " @";
+
     char LEFT_BRACKET = '(';
 
     char RIGHT_BRACKET = ')';
@@ -106,15 +108,20 @@ public interface Constant {
 
     char POINT = '.';
 
-    char PLACEHOLDER = '?';
-
-
     char EMPTY_CHAR = '\0';
     char BACK_SLASH = '\\';
 
     char QUOTE = '\'';
 
     char DOUBLE_QUOTE = '"';
+
+    char AT_CHAR = '@';
+
+    char START_CHAR = '*';
+
+    char SLASH = '/';
+
+    char EQUAL = '=';
 
 
 }

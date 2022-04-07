@@ -1,7 +1,11 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Hint;
 import io.army.criteria.TableField;
 import io.army.criteria.Update;
+import io.army.criteria.Visible;
+import io.army.criteria.mysql.MySQLModifier;
+import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.ChinaCity_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
@@ -40,18 +44,27 @@ public class MySQLCriteriaUnitTests {
     public void childSingleUpdate() {
         final Map<String, Object> map = new HashMap<>();
         map.put("rowCount", 5);
-
+        map.put("name", "");
+        Supplier<List<Hint>> supplier = () -> {
+            List<Hint> list = new ArrayList<>();
+            list.add(MySQLs.qbName("qb1"));
+            list.add(MySQLs.maxExecutionTime(null));
+            return list;
+        };
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(ChinaCity_.T, "t")
-                .set(ChinaCity_.name, "五指礁")
-                .where(ChinaCity_.name.equal(""))
-                .and(ChinaCity_.name.equal(map.get("name")))
-                .ifAnd(ChinaCity_.regionGdp.ifGreatEqual(map::get, "regionGdp"))
-                .orderBy(ChinaCity_.id.desc())
+                .update(supplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), ChinaCity_.T)
+                .partition("p2", "p1").as("t")
+                .useIndex().forOrderBy(Collections.singletonList("PRIMARY"))
+                .set(ChinaRegion_.name, "五指礁")
+                .setPlusLiteral(ChinaRegion_.regionGdp, 100)
+                .where(ChinaRegion_.name.equal(""))
+                .and(ChinaRegion_.name.equal(map.get("name")))
+                .ifAnd(ChinaRegion_.regionGdp.ifGreatEqual(map::get, "regionGdp"))
+                .orderBy(ChinaRegion_.id.desc())
                 .limit(map::get, "rowCount")
                 .asUpdate();
-        LOG.debug("MySQL single update:\n{}", stmt);
+        LOG.debug("MySQL single update:\n{}", stmt.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true));
     }
 
     @Test

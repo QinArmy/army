@@ -630,13 +630,13 @@ abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, 
 
 
     @Override
-    public final List<? extends SetLeftItem> fieldList() {
+    public final List<? extends SetLeftItem> leftItemList() {
         _Assert.prepared(this.prepared);
         return this.leftList;
     }
 
     @Override
-    public final List<? extends SetRightItem> valueExpList() {
+    public final List<? extends SetRightItem> rightItemList() {
         return this.rightList;
     }
 

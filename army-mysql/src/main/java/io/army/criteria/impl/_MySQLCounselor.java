@@ -19,8 +19,9 @@ public abstract class _MySQLCounselor extends _SQLCounselor {
     }
 
     public static void assertHint(Hint hint) {
-        //TODO
-        throw new UnsupportedOperationException();
+        if (!(hint instanceof MySQLHints)) {
+            throw MySQLUtils.illegalHint(hint);
+        }
     }
 
 

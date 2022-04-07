@@ -44,7 +44,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
         super(update, dialect, visible);
 
         final SingleTableMeta<?> table = (SingleTableMeta<?>) update.table();
-        final List<? extends SetLeftItem> fieldList = update.fieldList();
+        final List<? extends SetLeftItem> fieldList = update.leftItemList();
         for (SetLeftItem part : fieldList) {
             if (!(part instanceof FieldMeta)) {
                 continue;
@@ -55,7 +55,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
             }
         }
         this.fieldList = fieldList;
-        this.valueExpList = update.valueExpList();
+        this.valueExpList = update.rightItemList();
 
         this.childSetClause = null;
     }
@@ -65,8 +65,8 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
         final SingleTableMeta<?> parentTable = childTable.parentMeta();
-        final List<? extends SetLeftItem> fieldList = update.fieldList();
-        final List<? extends SetRightItem> valueExpList = update.valueExpList();
+        final List<? extends SetLeftItem> fieldList = update.leftItemList();
+        final List<? extends SetRightItem> valueExpList = update.rightItemList();
         final int fieldCount = fieldList.size();
 
         final List<SetLeftItem> parenFields = new ArrayList<>(), fields = new ArrayList<>();

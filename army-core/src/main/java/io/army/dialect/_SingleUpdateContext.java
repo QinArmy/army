@@ -1,15 +1,17 @@
 package io.army.dialect;
 
-import io.army.criteria.TableField;
-import io.army.lang.Nullable;
+import io.army.criteria.impl.inner._SingleDml;
 
-public interface _SingleUpdateContext extends _UpdateContext, _SetBlock {
+/**
+ * <p>
+ * This interface representing dialect single table update syntax context.
+ * </p>
+ */
+public interface _SingleUpdateContext extends _UpdateContext, _SingleSetClause {
 
-    /**
-     * @return safe table alias of field, {@code null} representing field is unknown filed.
-     */
-    @Nullable
-    String safeTableAlias(TableField<?> field);
 
+    String safeTableAlias();
+
+    _SingleDml statement();
 
 }

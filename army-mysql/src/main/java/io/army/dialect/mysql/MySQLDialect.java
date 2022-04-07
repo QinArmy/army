@@ -2,14 +2,15 @@ package io.army.dialect.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._MySQLCounselor;
-import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner.mysql._IndexHint;
+import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.mysql.MySQLModifier;
 import io.army.dialect.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SimpleTableMeta;
 import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
@@ -50,20 +51,15 @@ class MySQLDialect extends MySQL {
 
 
     @Override
-    protected SimpleStmt dialectSingleUpdate(final _DomainUpdateContext context, final _SingleUpdate update) {
-        final _SetBlock childBlock = context.childBlock();
-        if (childBlock != null && childBlock.targetParts().size() > 0) {
-            throw _Exceptions.updateChildFieldWithSingleUpdate((ChildTableMeta<?>) childBlock.table());
-        }
-
-        final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
+    protected SimpleStmt dialectSingleUpdate(final _SingleUpdateContext context) {
+        final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) context.statement();
         final _Dialect dialect = context.dialect();
         final StringBuilder sqlBuilder = context.sqlBuilder()
                 //1. UPDATE key word
                 .append(Constant.UPDATE);
 
         //2. hint comment block
-        hintClause(stmt.hintList(), sqlBuilder, dialect);
+        hintClause(stmt.hintList(), sqlBuilder, context);
         //3. modifier
         for (MySQLModifier modifier : stmt.modifierList()) {
             switch (modifier) {
@@ -78,10 +74,16 @@ class MySQLDialect extends MySQL {
         }
 
         //4. table name
-        final SingleTableMeta<?> table = context.table();
+        final TableMeta<?> table = context.table();
+        final SingleTableMeta<?> targetTable;
         final String safeTableAlias = context.safeTableAlias();
-        sqlBuilder.append(Constant.SPACE)
-                .append(dialect.quoteIfNeed(table.tableName()));
+        if (table instanceof ChildTableMeta) {
+            targetTable = ((ChildTableMeta<?>) table).parentMeta();
+        } else {
+            targetTable = (SingleTableMeta<?>) table;
+        }
+        sqlBuilder.append(Constant.SPACE);
+        dialect.safeObjectName(targetTable.tableName(), sqlBuilder);
 
         //5. partition
         this.partitionClause(stmt.partitionList(), sqlBuilder, dialect);
@@ -94,25 +96,20 @@ class MySQLDialect extends MySQL {
         this.indexHintClause(stmt.indexHintList(), sqlBuilder, dialect);
         //8. set clause
         final List<TableField<?>> conditionFields;
-        conditionFields = this.setClause(true, context, context);
-
+        conditionFields = this.singleTableSetClause(true, context);
         //9. where clause
         this.dmlWhereClause(context);
         //9.1 discriminator
         if (!(table instanceof SimpleTableMeta)) {
-            if (childBlock == null) {
-                this.discriminator(table, safeTableAlias, context);
-            } else {
-                this.discriminator(childBlock.table(), safeTableAlias, context);
-            }
+            this.discriminator(table, safeTableAlias, context);
         }
         //9.2 append condition update fields
         if (conditionFields.size() > 0) {
-            this.conditionUpdate(safeTableAlias, conditionFields, context);
+            this.conditionUpdate(conditionFields, context);
         }
         //9.3 append visible
-        if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, safeTableAlias, context);
+        if (targetTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(targetTable, safeTableAlias, context);
         }
 
         //10. order by clause
@@ -128,16 +125,15 @@ class MySQLDialect extends MySQL {
     }
 
 
-    private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder
-            , final _Dialect dialect) {
+    private void hintClause(List<_MySQLHint> hintList, final StringBuilder sqlBuilder
+            , final _SqlContext context) {
         if (hintList.size() == 0) {
             return;
         }
         sqlBuilder.append(SPACE_HINT_START);
-        for (Hint hint : hintList) {
+        for (_MySQLHint hint : hintList) {
             _MySQLCounselor.assertHint(hint);
-            sqlBuilder.append(Constant.SPACE)
-                    .append(hint);
+            hint.appendSql(context);
         }
         sqlBuilder.append(SPACE_HINT_END);
     }

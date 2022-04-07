@@ -125,6 +125,11 @@ class MySQL extends _AbstractDialect {
         return true;
     }
 
+    @Override
+    public final boolean setClauseSupportRow() {
+        // MySQL SET clause don't support row
+        return false;
+    }
 
     @Override
     public final String defaultFuncName() {

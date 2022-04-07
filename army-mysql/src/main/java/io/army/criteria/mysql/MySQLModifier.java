@@ -15,7 +15,7 @@ public enum MySQLModifier implements SQLModifier {
     SQL_NO_CACHE(" SQL NO CACHE"),
     SQL_CALC_FOUND_ROWS(" SQL CALC FOUND ROWS"),
 
-    LOW_PRIORITY(" LOW PRIORITY"),                                  // update statement
+    LOW_PRIORITY(" LOW_PRIORITY"),                                  // update statement
     IGNORE(" IGNORE");                                             // update statement
 
 
