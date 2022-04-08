@@ -10,36 +10,36 @@ import io.army.stmt.StrictParamValue;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class _BaseSqlContext implements _StmtContext {
+ abstract class StmtContext implements _StmtContext {
 
-    static final String SPACE_PLACEHOLDER = " ?";
+     static final String SPACE_PLACEHOLDER = " ?";
 
-    protected final _Dialect dialect;
+     protected final ArmyDialect dialect;
 
-    protected final Visible visible;
+     protected final Visible visible;
 
-    protected final StringBuilder sqlBuilder;
+     protected final StringBuilder sqlBuilder;
 
-    protected final List<ParamValue> paramList;
+     protected final List<ParamValue> paramList;
 
-    protected _BaseSqlContext(_Dialect dialect, Visible visible) {
-        this.dialect = dialect;
-        this.visible = visible;
-        this.sqlBuilder = new StringBuilder(128);
-        if (this instanceof _InsertBlock) {
-            this.paramList = createParamList();
-        } else {
-            this.paramList = new ArrayList<>();
-        }
+     protected StmtContext(ArmyDialect dialect, Visible visible) {
+         this.dialect = dialect;
+         this.visible = visible;
+         this.sqlBuilder = new StringBuilder(128);
+         if (this instanceof _InsertBlock) {
+             this.paramList = createParamList();
+         } else {
+             this.paramList = new ArrayList<>();
+         }
 
-    }
+     }
 
-    protected _BaseSqlContext(_BaseSqlContext outerContext) {
-        this.dialect = outerContext.dialect;
-        this.visible = outerContext.visible;
-        this.sqlBuilder = outerContext.sqlBuilder;
-        this.paramList = outerContext.paramList;
-    }
+     protected StmtContext(StmtContext outerContext) {
+         this.dialect = outerContext.dialect;
+         this.visible = outerContext.visible;
+         this.sqlBuilder = outerContext.sqlBuilder;
+         this.paramList = outerContext.paramList;
+     }
 
 
     @Override

@@ -13,7 +13,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlContext, _Block {
+public abstract class _SingleDmlContext extends StmtContext implements _DmlContext, _Block {
 
     protected final SingleTableMeta<?> table;
 
@@ -26,7 +26,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
     protected final boolean multiTableUpdateChild;
 
 
-    protected _SingleDmlContext(_SingleDml dml, _Dialect dialect, Visible visible) {
+    protected _SingleDmlContext(_SingleDml dml, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
         final TableMeta<?> table = dml.table();
         final String tableAlias = dml.tableAlias();
@@ -42,6 +42,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
         this.predicateList = dml.predicateList();
         this.multiTableUpdateChild = dialect.multiTableUpdateChild();
     }
+
 
     @Override
     public final SingleTableMeta<?> table() {
@@ -59,7 +60,7 @@ public abstract class _SingleDmlContext extends _BaseSqlContext implements _DmlC
     }
 
     @Override
-    public final List<_Predicate> predicates() {
+    public final List<_Predicate> predicateList() {
         return this.predicateList;
     }
 

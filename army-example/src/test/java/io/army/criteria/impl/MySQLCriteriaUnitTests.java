@@ -3,9 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Hint;
 import io.army.criteria.TableField;
 import io.army.criteria.Update;
-import io.army.criteria.Visible;
 import io.army.criteria.mysql.MySQLModifier;
-import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.ChinaCity_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
@@ -44,27 +42,27 @@ public class MySQLCriteriaUnitTests {
     public void childSingleUpdate() {
         final Map<String, Object> map = new HashMap<>();
         map.put("rowCount", 5);
-        map.put("name", "");
+        map.put("parentId", "1");
         Supplier<List<Hint>> supplier = () -> {
             List<Hint> list = new ArrayList<>();
             list.add(MySQLs.qbName("qb1"));
-            list.add(MySQLs.maxExecutionTime(null));
+            list.add(MySQLs.orderIndex("qb1", "t", Collections.singletonList("uni_name_region_type")));
             return list;
         };
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(supplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), ChinaCity_.T)
+                .update(supplier, EnumSet.of(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), ChinaCity_.T)
                 .partition("p2", "p1").as("t")
-                .useIndex().forOrderBy(Collections.singletonList("PRIMARY"))
+                .useIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))
                 .set(ChinaRegion_.name, "五指礁")
                 .setPlusLiteral(ChinaRegion_.regionGdp, 100)
                 .where(ChinaRegion_.name.equal(""))
-                .and(ChinaRegion_.name.equal(map.get("name")))
+                .and(ChinaRegion_.parentId.equal(map.get("parentId")).or(ChinaRegion_.regionType.equalLiteral(RegionType.CITY)))
                 .ifAnd(ChinaRegion_.regionGdp.ifGreatEqual(map::get, "regionGdp"))
-                .orderBy(ChinaRegion_.id.desc())
+                .orderBy(ChinaRegion_.name.desc())
                 .limit(map::get, "rowCount")
                 .asUpdate();
-        LOG.debug("MySQL single update:\n{}", stmt.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true));
+        LOG.debug("MySQL single update:\n{}", stmt);
     }
 
     @Test

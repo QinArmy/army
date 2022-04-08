@@ -2,9 +2,9 @@ package io.army.dialect.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._MySQLCounselor;
-import io.army.criteria.impl.inner.mysql._IndexHint;
-import io.army.criteria.impl.inner.mysql._MySQLHint;
-import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
+import io.army.criteria.impl.inner._DialectStatement;
+import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLModifier;
 import io.army.dialect.*;
 import io.army.meta.ChildTableMeta;
@@ -16,8 +16,9 @@ import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
 
 import java.util.List;
+import java.util.Set;
 
-class MySQLDialect extends MySQL {
+final class MySQLDialect extends MySQL {
 
     private static final String SPACE_HINT_START = " /*+";
 
@@ -30,22 +31,22 @@ class MySQLDialect extends MySQL {
     }
 
     @Override
-    protected final void assertDialectInsert(Insert insert) {
+    protected void assertDialectInsert(Insert insert) {
         super.assertDialectInsert(insert);
     }
 
     @Override
-    protected final void assertDialectUpdate(Update update) {
+    protected void assertDialectUpdate(Update update) {
         _MySQLCounselor.assertUpdate(update);
     }
 
     @Override
-    protected final void assertDialectDelete(Delete delete) {
+    protected void assertDialectDelete(Delete delete) {
         super.assertDialectDelete(delete);
     }
 
     @Override
-    protected final void assertDialectQuery(Query query) {
+    protected void assertDialectQuery(Query query) {
         super.assertDialectQuery(query);
     }
 
@@ -61,17 +62,7 @@ class MySQLDialect extends MySQL {
         //2. hint comment block
         hintClause(stmt.hintList(), sqlBuilder, context);
         //3. modifier
-        for (MySQLModifier modifier : stmt.modifierList()) {
-            switch (modifier) {
-                case LOW_PRIORITY:
-                case IGNORE:
-                    sqlBuilder.append(modifier.render());
-                    break;
-                default:
-                    throw _Exceptions.commandAndModifierNotMatch(stmt, modifier);
-
-            }
-        }
+        this.updateModifiers(stmt.modifierSet(), sqlBuilder, stmt);
 
         //4. table name
         final TableMeta<?> table = context.table();
@@ -124,6 +115,33 @@ class MySQLDialect extends MySQL {
         return context.build();
     }
 
+    @Override
+    protected SimpleStmt dialectMultiUpdate(final _MultiUpdateContext context) {
+        final _MySQLMultiUpdate stmt = (_MySQLMultiUpdate) context.statement();
+        final StringBuilder sqlBuilder = context.sqlBuilder()
+                //1. UPDATE key word
+                .append(Constant.UPDATE);
+
+        //2. hint comment block
+        this.hintClause(stmt.hintList(), sqlBuilder, context);
+        //3. modifier
+        this.updateModifiers(stmt.modifierSet(), sqlBuilder, stmt);
+        //4. table_references (and partition ,index hint)
+        this.standardFromClause(stmt.tableBlockList(), context);
+        //5. set clause
+        final List<TableField<?>> conditionFields;
+        conditionFields = this.multiTableSetClause(context);
+        //6. where clause
+        this.dmlWhereClause(context);
+        //6.2 append condition update fields
+        if (conditionFields.size() > 0) {
+            this.conditionUpdate(conditionFields, context);
+        }
+        //6.3 append visible
+        this.multiDmlVisible(stmt.tableBlockList(), context);
+        return context.build();
+    }
+
 
     private void hintClause(List<_MySQLHint> hintList, final StringBuilder sqlBuilder
             , final _SqlContext context) {
@@ -136,6 +154,65 @@ class MySQLDialect extends MySQL {
             hint.appendSql(context);
         }
         sqlBuilder.append(SPACE_HINT_END);
+    }
+
+    private void updateModifiers(Set<MySQLModifier> modifierSet, StringBuilder builder, _DialectStatement stmt) {
+        for (MySQLModifier modifier : modifierSet) {
+            switch (modifier) {
+                case LOW_PRIORITY:
+                case IGNORE:
+                    builder.append(modifier.render());
+                    break;
+                default:
+                    throw _Exceptions.commandAndModifierNotMatch(stmt, modifier);
+
+            }
+        }
+    }
+
+
+    private void mysqlDmlTableReferences(final List<? extends _TableBlock> blockList, final _StmtContext context) {
+        final int blockSize = blockList.size();
+        if (blockSize == 0) {
+            throw new CriteriaException("No table_references");
+        }
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final _Dialect dialect = context.dialect();
+        _TableBlock block;
+        _MySQLTableBlock mySqlBlock = null;
+        TableItem tableItem;
+        TableMeta<?> table;
+        String safeTableAlias;
+        for (int i = 0; i < blockSize; i++) {
+            block = blockList.get(i);
+            if (i > 0) {
+                sqlBuilder.append(block.jointType().render());
+            }
+            tableItem = block.tableItem();
+            if (tableItem instanceof SubQuery) {
+                dialect.subQuery((SubQuery) tableItem, context);
+                sqlBuilder.append(Constant.SPACE_AS_SPACE);
+                dialect.quoteIfNeed(block.alias(), sqlBuilder);
+            } else if (tableItem instanceof TableMeta) {
+                sqlBuilder.append(Constant.SPACE);
+                table = (TableMeta<?>) tableItem;
+                dialect.safeObjectName(table.tableName(), sqlBuilder);
+                if (block instanceof _MySQLTableBlock) {
+                    mySqlBlock = (_MySQLTableBlock) block;
+                    this.partitionClause(mySqlBlock.partitionList(), sqlBuilder, dialect);
+                }
+                safeTableAlias = context.safeTableAlias(table, block.alias());
+                sqlBuilder.append(Constant.SPACE_AS_SPACE)
+                        .append(safeTableAlias);
+
+                if (mySqlBlock == block) {
+                    this.indexHintClause(mySqlBlock.indexHintList(), sqlBuilder, dialect);
+                }
+
+
+            }
+
+        }
     }
 
     private void partitionClause(final List<String> partitionList, final StringBuilder sqlBuilder

@@ -16,9 +16,7 @@ import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -58,7 +56,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
 
     private List<_MySQLHint> hintList;
 
-    private List<MySQLModifier> modifierList;
+    private Set<MySQLModifier> modifierSet;
 
     private TableMeta<?> table;
 
@@ -80,25 +78,25 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final UP update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
             , TableMeta<?> table) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
         this.table = table;
         return (UP) this;
     }
 
     @Override
-    public final UR update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final UR update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
             , TableMeta<?> table, String tableAlias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;
@@ -466,8 +464,8 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
         }
-        if (this.modifierList == null) {
-            this.modifierList = Collections.emptyList();
+        if (this.modifierSet == null) {
+            this.modifierSet = Collections.emptySet();
         }
         if (this.partitionList == null) {
             this.partitionList = Collections.emptyList();
@@ -506,7 +504,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     @Override
     final void onClear() {
         this.hintList = null;
-        this.modifierList = null;
+        this.modifierSet = null;
         this.partitionList = null;
         this.indexHintList = null;
         this.orderByList = null;
@@ -554,8 +552,8 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final List<MySQLModifier> modifierList() {
-        return this.modifierList;
+    public final Set<MySQLModifier> modifierSet() {
+        return this.modifierSet;
     }
 
     @Override

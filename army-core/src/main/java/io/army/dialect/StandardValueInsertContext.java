@@ -25,9 +25,9 @@ import java.util.function.Function;
  * This class representing standard value insert context.
  * </p>
  */
-final class StandardValueInsertContext extends _BaseSqlContext implements _ValueInsertContext {
+final class StandardValueInsertContext extends StmtContext implements _ValueInsertContext {
 
-    static StandardValueInsertContext create(_ValuesInsert insert, _Dialect dialect, Visible visible) {
+    static StandardValueInsertContext create(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
         checkCommonExpMap(insert);
         return new StandardValueInsertContext(insert, dialect, visible);
     }
@@ -63,7 +63,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     private final ChildBlock childBlock;
 
 
-    private StandardValueInsertContext(_ValuesInsert insert, _Dialect dialect, Visible visible) {
+    private StandardValueInsertContext(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
 
         this.migration = insert.isMigration();
@@ -108,6 +108,11 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     @Override
     public List<IDomain> domainList() {
         return this.domainList;
+    }
+
+    @Override
+    public String safeTableAlias(TableMeta<?> table, String alias) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -217,7 +222,7 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
     }
 
 
-    private static final class ChildBlock extends _BaseSqlContext implements _InsertBlock, _SqlContext {
+    private static final class ChildBlock extends StmtContext implements _InsertBlock, _SqlContext {
 
         private final ChildTableMeta<?> table;
 
@@ -246,6 +251,11 @@ final class StandardValueInsertContext extends _BaseSqlContext implements _Value
         @Override
         public List<FieldMeta<?>> fieldLis() {
             return this.fieldList;
+        }
+
+        @Override
+        public String safeTableAlias(TableMeta<?> table, String alias) {
+            throw new UnsupportedOperationException();
         }
 
         @Override

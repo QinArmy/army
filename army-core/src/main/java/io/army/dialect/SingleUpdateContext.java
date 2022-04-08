@@ -13,9 +13,9 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdateContext {
+final class SingleUpdateContext extends StmtContext implements _SingleUpdateContext {
 
-    static SingleUpdateContext create(_SingleUpdate update, _Dialect dialect, Visible visible) {
+    static SingleUpdateContext create(_SingleUpdate update, ArmyDialect dialect, Visible visible) {
         return new SingleUpdateContext(update, dialect, visible);
     }
 
@@ -37,11 +37,15 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
     private final _SingleUpdate statement;
 
 
-    private SingleUpdateContext(_SingleUpdate update, _Dialect dialect, Visible visible) {
+    private SingleUpdateContext(_SingleUpdate update, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
         this.table = update.table();
         this.tableAlias = update.tableAlias();
-        this.safeTableAlias = dialect.quoteIfNeed(this.tableAlias);
+        if (this.table instanceof ChildTableMeta) {
+            this.safeTableAlias = dialect.quoteIfNeed(_DialectUtils.parentAlias(this.tableAlias));
+        } else {
+            this.safeTableAlias = dialect.quoteIfNeed(this.tableAlias);
+        }
         this.leftItemList = update.leftItemList();
 
         this.rightItemList = update.rightItemList();
@@ -52,7 +56,7 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
 
 
     @Override
-    public List<_Predicate> predicates() {
+    public List<_Predicate> predicateList() {
         return this.predicateList;
     }
 
@@ -72,14 +76,22 @@ final class SingleUpdateContext extends _BaseSqlContext implements _SingleUpdate
     }
 
     @Override
-    public String validateField(TableField<?> field) {
-        final TableMeta<?> table = this.table, belongOf;
-        belongOf = field.tableMeta();
+    public String safeTableAlias(final TableMeta<?> table, final String alias) {
+        if (table != this.table || !this.tableAlias.equals(alias)) {
+            throw _Exceptions.unknownTable(table, alias);
+        }
+        return this.safeTableAlias;
+    }
+
+    @Override
+    public String validateField(final TableField<?> field) {
+        final TableMeta<?> table = this.table, fieldTable;
+        fieldTable = field.tableMeta();
         if (table instanceof ChildTableMeta) {
-            if (belongOf != ((ChildTableMeta<?>) table).parentMeta()) {
+            if (fieldTable != ((ChildTableMeta<?>) table).parentMeta()) {
                 throw _Exceptions.unknownColumn(field);
             }
-        } else if (belongOf != table) {
+        } else if (fieldTable != table) {
             throw _Exceptions.unknownColumn(field);
         } else if (field instanceof QualifiedField
                 && !this.tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {

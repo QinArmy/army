@@ -5,6 +5,7 @@ import io.army.criteria.Hint;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.session.Database;
@@ -14,11 +15,11 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-abstract class MySQLUtils {
+abstract class MySQLUtils extends CriteriaUtils {
 
     private MySQLUtils() {
-        throw new UnsupportedOperationException();
     }
 
     static Dialect defaultDialect(Statement statement) {
@@ -70,6 +71,11 @@ abstract class MySQLUtils {
     }
 
 
+    static Set<MySQLModifier> asUpdateModifierSet(Set<MySQLModifier> modifierSet) {
+        return CriteriaUtils.asModifierSet(modifierSet, MySQLUtils::assertUpdateModifier);
+    }
+
+
     static CriteriaException indexListIsEmpty() {
         return new CriteriaException("index list must not empty.");
     }
@@ -80,5 +86,19 @@ abstract class MySQLUtils {
                 , Hint.class.getName(), _ClassUtils.safeClassName(hint), MySQLHints.class.getName());
         throw new CriteriaException(m);
     }
+
+
+    private static void assertUpdateModifier(final MySQLModifier modifier) {
+        switch (modifier) {
+            case LOW_PRIORITY:
+            case IGNORE:
+                break;
+            default: {
+                String m = String.format("MySQL update syntax don't support %s .", modifier.name());
+                throw new CriteriaException(m);
+            }
+        }
+    }
+
 
 }

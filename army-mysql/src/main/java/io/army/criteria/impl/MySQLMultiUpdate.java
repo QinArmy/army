@@ -15,10 +15,7 @@ import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -59,7 +56,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
     private List<_MySQLHint> hintList;
 
-    private List<MySQLModifier> modifierList;
+    private Set<MySQLModifier> modifierSet;
 
     private JP noActionPartitionBlock;
 
@@ -71,18 +68,18 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final UP update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
             , TableMeta<? extends IDomain> table) {
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
         return this.createPartitionJoinBlock(table);
     }
 
     @Override
-    public final UT update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final UT update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
             , TableMeta<? extends IDomain> table, String tableAlias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
         this.criteriaContext.onFirstBlock(new FirstBlock(table, tableAlias));
         return (UT) this;
     }
@@ -99,10 +96,10 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
         return (US) this;
     }
@@ -114,10 +111,10 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
         this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
@@ -309,8 +306,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final List<MySQLModifier> modifierList() {
-        return this.modifierList;
+    public final Set<MySQLModifier> modifierSet() {
+        return this.modifierSet;
     }
 
 
@@ -329,8 +326,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         if (_CollectionUtils.isEmpty(this.hintList)) {
             this.hintList = Collections.emptyList();
         }
-        if (_CollectionUtils.isEmpty(this.modifierList)) {
-            this.modifierList = Collections.emptyList();
+        if (this.modifierSet == null) {
+            this.modifierSet = Collections.emptySet();
         }
 
         if (this instanceof BatchUpdate) {
@@ -358,7 +355,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     @Override
     final void onClear() {
         this.hintList = null;
-        this.modifierList = null;
+        this.modifierSet = null;
         if (this instanceof BatchUpdate) {
             ((BatchUpdate<C, WE>) this).wrapperList = null;
         }

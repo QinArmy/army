@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -38,10 +39,10 @@ public interface MySQLUpdate extends Update {
 
     interface SingleUpdateClause<UR, UP> {
 
-        UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        UP update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
                 , TableMeta<?> table);
 
-        UR update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        UR update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
                 , TableMeta<?> table, String tableAlias);
 
         UP update(TableMeta<?> table);
@@ -291,22 +292,22 @@ public interface MySQLUpdate extends Update {
 
     interface MultiUpdateClause<C, UP, UT, US> {
 
-        UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        UP update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
                 , TableMeta<? extends IDomain> table);
 
-        UT update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        UT update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
                 , TableMeta<? extends IDomain> table, String tableAlias);
 
         UP update(TableMeta<? extends IDomain> table);
 
         UT update(TableMeta<? extends IDomain> table, String tableAlias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
                 , Supplier<T> supplier, String alias);
 
         <T extends TableItem> US update(Supplier<T> tablePart, String alias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
                 , Function<C, T> tablePart, String alias);
 
         <T extends TableItem> US update(Function<C, T> tablePart, String alias);

@@ -16,7 +16,7 @@ public interface _SingleDeleteContext extends _DeleteContext, _Block {
     /**
      * @see _Update#predicateList()
      */
-    List<_Predicate> predicates();
+    List<_Predicate> predicateList();
 
     boolean multiTableUpdateChild();
 

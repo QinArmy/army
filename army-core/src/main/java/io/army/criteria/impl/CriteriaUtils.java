@@ -8,6 +8,7 @@ import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract class CriteriaUtils {
@@ -171,6 +172,37 @@ abstract class CriteriaUtils {
     @Nullable
     static <C> C getCriteria(final Query query) {
         return ((CriteriaSpec<C>) query).getCriteria();
+    }
+
+    static <T extends Enum<T> & SQLModifier> Set<T> asModifierSet(final Set<T> set, Consumer<T> consumer) {
+        final Set<T> modifierSet;
+        switch (set.size()) {
+            case 0:
+                modifierSet = Collections.emptySet();
+                break;
+            case 1: {
+                Set<T> tempSet = null;
+                for (T modifier : set) {
+                    consumer.accept(modifier);
+                    tempSet = Collections.singleton(modifier);
+                    break;
+                }
+                modifierSet = tempSet;
+            }
+            break;
+            default: {
+                Set<T> tempSet = null;
+                for (T modifier : set) {
+                    if (tempSet == null) {
+                        tempSet = EnumSet.of(modifier);
+                    } else {
+                        tempSet.add(modifier);
+                    }
+                }
+                modifierSet = Collections.unmodifiableSet(tempSet);
+            }
+        }
+        return modifierSet;
     }
 
 

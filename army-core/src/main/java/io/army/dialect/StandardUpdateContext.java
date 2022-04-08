@@ -24,7 +24,7 @@ import java.util.List;
  */
 final class StandardUpdateContext extends _SingleDmlContext implements _DomainUpdateContext {
 
-    static StandardUpdateContext create(_SingleUpdate update, _Dialect dialect, final Visible visible) {
+    static StandardUpdateContext create(_SingleUpdate update, ArmyDialect dialect, final Visible visible) {
         final StandardUpdateContext context;
         if (update.table() instanceof ChildTableMeta) {
             context = new StandardUpdateContext(dialect, update, visible);
@@ -40,7 +40,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
 
     private final ChildSetBlock childSetClause;
 
-    private StandardUpdateContext(_SingleUpdate update, _Dialect dialect, Visible visible) {
+    private StandardUpdateContext(_SingleUpdate update, ArmyDialect dialect, Visible visible) {
         super(update, dialect, visible);
 
         final SingleTableMeta<?> table = (SingleTableMeta<?>) update.table();
@@ -60,7 +60,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
         this.childSetClause = null;
     }
 
-    private StandardUpdateContext(_Dialect dialect, _SingleUpdate update, Visible visible) {
+    private StandardUpdateContext(ArmyDialect dialect, _SingleUpdate update, Visible visible) {
         super(update, dialect, visible);
 
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
@@ -120,6 +120,23 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
 
 
     @Override
+    public String safeTableAlias(final TableMeta<?> table, final String alias) {
+        final ChildSetBlock childBlock = this.childSetClause;
+        final String safeTableAlias;
+        if (childBlock == null) {
+            if (table != this.table || !this.tableAlias.equals(alias)) {
+                throw _Exceptions.unknownTable(table, alias);
+            }
+            safeTableAlias = this.safeTableAlias;
+        } else if (table == childBlock.table && childBlock.tableAlias.equals(alias)) {
+            safeTableAlias = childBlock.safeTableAlias;
+        } else {
+            throw _Exceptions.unknownTable(table, alias);
+        }
+        return safeTableAlias;
+    }
+
+    @Override
     public boolean hasSelfJoint() {
         //standard single update always false
         return false;
@@ -162,6 +179,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
         public boolean hasSelfJoint() {
             return this.parentContext.hasSelfJoint();
         }
+
 
         @Override
         public List<SetLeftItem> targetParts() {

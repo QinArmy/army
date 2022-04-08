@@ -1,17 +1,18 @@
 package io.army.dialect;
 
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 import io.army.util._Exceptions;
 
-final class UnionSubQueryContext extends _BaseSqlContext implements _UnionQueryContext, _SubQueryContext {
+final class UnionSubQueryContext extends StmtContext implements _UnionQueryContext, _SubQueryContext {
 
     static UnionSubQueryContext create(_SqlContext outerContext) {
-        return new UnionSubQueryContext((_BaseSqlContext) outerContext);
+        return new UnionSubQueryContext((StmtContext) outerContext);
     }
 
 
-    private UnionSubQueryContext(_BaseSqlContext outerContext) {
+    private UnionSubQueryContext(StmtContext outerContext) {
         super(outerContext);
     }
 
@@ -27,12 +28,17 @@ final class UnionSubQueryContext extends _BaseSqlContext implements _UnionQueryC
 
 
     @Override
-    public void appendOuterField(String tableAlias, FieldMeta<?> field) {
-        this.appendOuterField(field);
+    public void appendThisField(String tableAlias, FieldMeta<?> field) {
+        this.appendThisField(field);
     }
 
     @Override
-    public void appendOuterField(FieldMeta<?> field) {
+    public String safeTableAlias(TableMeta<?> table, String alias) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void appendThisField(FieldMeta<?> field) {
         throw new UnsupportedOperationException("Union sub query context don't support this operation.");
     }
 

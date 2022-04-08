@@ -11,6 +11,6 @@ interface _DmlContext extends _StmtContext {
     /**
      * @see _Update#predicateList()
      */
-    List<_Predicate> predicates();
+    List<_Predicate> predicateList();
 
 }

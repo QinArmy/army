@@ -75,6 +75,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("Unknown table alais %s", alias));
     }
 
+    public static CriteriaException unknownTable(TableMeta<?> table, String alias) {
+        return new CriteriaException(String.format("Unknown table %s %s ", table, alias));
+    }
+
 
     public static CriteriaException unknownStatement(Statement stmt, _Dialect dialect) {
         String m = String.format("Unknown %s in %s", stmt.getClass().getName(), dialect);

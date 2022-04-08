@@ -4,16 +4,17 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
+import io.army.util._Exceptions;
 
 final class StandardDeleteContext extends _SingleDmlContext implements _SingleDeleteContext {
 
-    static StandardDeleteContext create(_SingleDelete delete, _Dialect dialect, Visible visible) {
+    static StandardDeleteContext create(_SingleDelete delete, ArmyDialect dialect, Visible visible) {
         return new StandardDeleteContext(delete, dialect, visible);
     }
 
     final ChildBlock childBlock;
 
-    private StandardDeleteContext(_SingleDelete delete, _Dialect dialect, Visible visible) {
+    private StandardDeleteContext(_SingleDelete delete, ArmyDialect dialect, Visible visible) {
         super(delete, dialect, visible);
         final TableMeta<?> table = delete.table();
         final String tableAlias = delete.tableAlias();
@@ -23,6 +24,25 @@ final class StandardDeleteContext extends _SingleDmlContext implements _SingleDe
             this.childBlock = null;
         }
     }
+
+
+    @Override
+    public String safeTableAlias(final TableMeta<?> table, final String alias) {
+        final ChildBlock childBlock = this.childBlock;
+        final String safeTableAlias;
+        if (childBlock == null) {
+            if (table != this.table || !this.tableAlias.equals(alias)) {
+                throw _Exceptions.unknownTable(table, alias);
+            }
+            safeTableAlias = this.safeTableAlias;
+        } else if (table == childBlock.table && childBlock.tableAlias.equals(alias)) {
+            safeTableAlias = childBlock.safeTableAlias;
+        } else {
+            throw _Exceptions.unknownTable(table, alias);
+        }
+        return safeTableAlias;
+    }
+
 
     @Override
     public boolean multiTableUpdateChild() {

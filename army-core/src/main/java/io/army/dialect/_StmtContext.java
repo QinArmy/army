@@ -1,12 +1,15 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
+import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
- interface _StmtContext extends _SqlContext {
+public interface _StmtContext extends _SqlContext {
 
-     Stmt build();
+    String safeTableAlias(TableMeta<?> table, String alias);
 
-     Visible visible();
+    Stmt build();
 
- }
+    Visible visible();
+
+}
