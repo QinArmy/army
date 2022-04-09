@@ -27,23 +27,41 @@ public abstract class MySQLs80 extends MySQLSyntax {
     }
 
     public static MySQL80Query.With80Spec<Void, SubQuery> subQuery() {
-        return MySQL80SimpleQuery.subQuery(null);
+        return MySQL80SimpleQuery.subQuery(false, null);
+    }
+
+    public static MySQL80Query.With80Spec<Void, SubQuery> lateralSubQuery() {
+        return MySQL80SimpleQuery.subQuery(true, null);
     }
 
     public static <C> MySQL80Query.With80Spec<C, SubQuery> subQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.subQuery(criteria);
+        return MySQL80SimpleQuery.subQuery(false, criteria);
+    }
+
+    public static <C> MySQL80Query.With80Spec<C, SubQuery> lateralSubQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.subQuery(true, criteria);
     }
 
 
     public static MySQL80Query.With80Spec<Void, ScalarExpression> scalarSubQuery() {
-        return MySQL80SimpleQuery.scalarSubQuery(null);
+        return MySQL80SimpleQuery.scalarSubQuery(false, null);
+    }
+
+    public static MySQL80Query.With80Spec<Void, ScalarExpression> lateralScalarSubQuery() {
+        return MySQL80SimpleQuery.scalarSubQuery(true, null);
     }
 
 
     public static <C> MySQL80Query.With80Spec<C, ScalarExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.scalarSubQuery(criteria);
+        return MySQL80SimpleQuery.scalarSubQuery(false, criteria);
+    }
+
+    public static <C> MySQL80Query.With80Spec<C, ScalarExpression> lateralScalarSubQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.scalarSubQuery(true, criteria);
     }
 
 

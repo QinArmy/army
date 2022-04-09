@@ -18,6 +18,17 @@ import io.army.util._Exceptions;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * <p>
+ * This class is the implementation of {@link _Dialect} for  MySQL dialect criteria api.
+ * </p>
+ * <p>
+ * Below is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ *
+ * @since 1.0
+ */
 final class MySQLDialect extends MySQL {
 
     private static final String SPACE_HINT_START = " /*+";

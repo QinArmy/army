@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.dialect.Dialect;
@@ -16,6 +17,22 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+
+/**
+ * <p>
+ * This class is base class all the implementation of MySQL 8.0 SELECT syntax.
+ * </p>
+ * <p>
+ * Below is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ *
+ * @param <C> java type of criteria object for dynamic statement
+ * @param <Q> {@link Select} or {@link SubQuery} or {@link ScalarExpression}
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/select.html">SELECT Statement</a>
+ * @see MySQL80UnionQuery
+ * @since 1.0
+ */
 @SuppressWarnings("unchecked")
 abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         C,
@@ -47,13 +64,25 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return new SimpleSelect<>(criteria);
     }
 
-    static <C> With80Spec<C, SubQuery> subQuery(@Nullable C criteria) {
-        return new SimpleSubQuery<>(criteria);
+    static <C> With80Spec<C, SubQuery> subQuery(final boolean lateral, final @Nullable C criteria) {
+        final With80Spec<C, SubQuery> with80Spec;
+        if (lateral) {
+            with80Spec = new LateralSimpleSubQuery<>(criteria);
+        } else {
+            with80Spec = new SimpleSubQuery<>(criteria);
+        }
+        return with80Spec;
     }
 
 
-    static <C> With80Spec<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
-        return new SimpleScalarQuery<>(criteria);
+    static <C> With80Spec<C, ScalarExpression> scalarSubQuery(final boolean lateral, final @Nullable C criteria) {
+        final With80Spec<C, ScalarExpression> with80Spec;
+        if (lateral) {
+            with80Spec = new LateralSimpleScalarQuery<>(criteria);
+        } else {
+            with80Spec = new SimpleScalarQuery<>(criteria);
+        }
+        return with80Spec;
     }
 
 
@@ -88,6 +117,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private MySQL80SimpleQuery(@Nullable C criteria) {
         super(CriteriaContexts.queryContext(criteria));
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override
@@ -508,8 +538,17 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }//SimpleSubQuery
 
+    private static final class LateralSimpleSubQuery<C> extends SimpleSubQuery<C, SubQuery>
+            implements _LateralSubQuery {
 
-    private static final class SimpleScalarQuery<C> extends SimpleSubQuery<C, ScalarExpression>
+        private LateralSimpleSubQuery(@Nullable C criteria) {
+            super(criteria);
+        }
+
+    }//LateralSimpleSubQuery
+
+
+    private static class SimpleScalarQuery<C> extends SimpleSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
         private SimpleScalarQuery(@Nullable C criteria) {
@@ -517,11 +556,20 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public final ParamMeta paramMeta() {
             return ((Selection) this.selectItemList().get(0)).paramMeta();
         }
 
     }//SimpleScalarQuery
+
+    private static final class LateralSimpleScalarQuery<C> extends SimpleScalarQuery<C>
+            implements _LateralSubQuery {
+
+        private LateralSimpleScalarQuery(@Nullable C criteria) {
+            super(criteria);
+        }
+
+    }//LateralSimpleScalarQuery
 
 
     private static abstract class AbstractUnionAndQuery<C, Q extends Query> extends MySQL80SimpleQuery<C, Q> {

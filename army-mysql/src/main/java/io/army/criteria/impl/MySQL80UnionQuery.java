@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._PartQuery;
 import io.army.criteria.impl.inner._UnionQuery;
 import io.army.criteria.mysql.MySQL80Query;
@@ -14,6 +15,21 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
+/**
+ * <p>
+ * This class is base class all the implementation of MySQL 8.0 UNION clause syntax.
+ * </p>
+ * <p>
+ * Below is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ *
+ * @param <C> java type of criteria object for dynamic statement
+ * @param <Q> {@link Select} or {@link SubQuery} or {@link ScalarExpression}
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/union.html">UNION Clause</a>
+ * @see MySQL80SimpleQuery
+ * @since 1.0
+ */
 @SuppressWarnings("unchecked")
 abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
         C,
@@ -24,15 +40,23 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
         MySQL80Query.With80Spec<C, Q>>
         implements MySQL80Query, MySQL80Query.UnionOrderBy80Spec<C, Q>, _UnionQuery {
 
-    static <C, Q extends Query> UnionOrderBy80Spec<C, Q> bracketQuery(Q query) {
+    static <C, Q extends Query> UnionOrderBy80Spec<C, Q> bracketQuery(final Q query) {
         query.prepared();
         final UnionOrderBy80Spec<C, ?> spec;
         if (query instanceof Select) {
             spec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
-            spec = new BracketScalarSubQuery<>((ScalarExpression) query);
+            if (query instanceof _LateralSubQuery) {
+                spec = new LateralBracketScalarSubQuery<>((ScalarExpression) query);
+            } else {
+                spec = new BracketScalarSubQuery<>((ScalarExpression) query);
+            }
         } else if (query instanceof SubQuery) {
-            spec = new BracketSubQuery<>((SubQuery) query);
+            if (query instanceof _LateralSubQuery) {
+                spec = new LateralBracketSubQuery<>((SubQuery) query);
+            } else {
+                spec = new BracketSubQuery<>((SubQuery) query);
+            }
         } else {
             throw _Exceptions.unknownQueryType(query);
         }
@@ -45,9 +69,17 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
         if (left instanceof Select) {
             spec = new UnionSelect<>((Select) left, unionType, (Select) right);
         } else if (left instanceof ScalarSubQuery) {
-            spec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType, (ScalarExpression) right);
+            if (left instanceof _LateralSubQuery) {
+                spec = new LateralUnionScalarSubQuery<>((ScalarExpression) left, unionType, (ScalarExpression) right);
+            } else {
+                spec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType, (ScalarExpression) right);
+            }
         } else if (left instanceof SubQuery) {
-            spec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
+            if (left instanceof _LateralSubQuery) {
+                spec = new LateralUnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
+            } else {
+                spec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
+            }
         } else {
             throw _Exceptions.unknownQueryType(left);
         }
@@ -151,8 +183,17 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
 
     }//BracketSubQuery
 
+    private static final class LateralBracketSubQuery<C> extends BracketSubQuery<C, SubQuery>
+            implements _LateralSubQuery {
 
-    private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarExpression>
+        private LateralBracketSubQuery(SubQuery left) {
+            super(left);
+        }
+
+    }//LateralBracketSubQuery
+
+
+    private static class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
         private BracketScalarSubQuery(ScalarExpression left) {
@@ -160,11 +201,20 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public final ParamMeta paramMeta() {
             return this.left.paramMeta();
         }
 
     }//BracketScalarSubQuery
+
+    private static final class LateralBracketScalarSubQuery<C> extends BracketScalarSubQuery<C>
+            implements _LateralSubQuery {
+
+        private LateralBracketScalarSubQuery(ScalarExpression left) {
+            super(left);
+        }
+
+    }//LateralBracketScalarSubQuery
 
     private static final class UnionSelect<C> extends MySQL80UnionQuery<C, Select> implements Select {
 
@@ -219,8 +269,17 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
 
     }//UnionSubQuery
 
+    private static final class LateralUnionSubQuery<C> extends UnionSubQuery<C, SubQuery>
+            implements _LateralSubQuery {
 
-    private static final class UnionScalarSubQuery<C> extends UnionSubQuery<C, ScalarExpression>
+        private LateralUnionSubQuery(SubQuery left, UnionType unionType, SubQuery right) {
+            super(left, unionType, right);
+        }
+
+    }//LateralUnionSubQuery
+
+
+    private static class UnionScalarSubQuery<C> extends UnionSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
         private UnionScalarSubQuery(ScalarExpression left, UnionType unionType
@@ -229,11 +288,20 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public final ParamMeta paramMeta() {
             return this.left.paramMeta();
         }
 
     }//UnionScalarSubQuery
+
+    private static final class LateralUnionScalarSubQuery<C> extends UnionScalarSubQuery<C>
+            implements _LateralSubQuery {
+
+        private LateralUnionScalarSubQuery(ScalarExpression left, UnionType unionType, ScalarExpression right) {
+            super(left, unionType, right);
+        }
+
+    }//LateralUnionScalarSubQuery
 
 
 }

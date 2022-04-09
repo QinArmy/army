@@ -16,6 +16,14 @@ import io.army.util._Exceptions;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * <p>
+ * Below is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ *
+ * @since 1.0
+ */
 abstract class CriteriaContexts {
 
     private CriteriaContexts() {
