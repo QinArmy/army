@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMultiDelete<C, WE, JT, JT, WR, WA>
+abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMultiDelete<C, WE, JT, JT, IT, WR, WA>
         implements _MySQLMultiDelete, MySQLDelete, MySQLQuery.MySQLJoinClause<C, JT, JT, IT>
         , MySQLDelete.MultiDeleteClause<C, DR, DP>, MySQLDelete.MultiDeleteFromClause<C, DR, DP>
         , MySQLDelete.MultiDeleteUsingClause<C, DR, DP> {
@@ -204,58 +204,6 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         return this.tableAliasList;
     }
 
-    @Override
-    public final IT straightJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final IT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final IT leftJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final IT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final IT join(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.JOIN, table);
-    }
-
-    @Override
-    public final IT ifJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.JOIN, table);
-    }
-
-    @Override
-    public final IT rightJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.RIGHT_JOIN, table);
-    }
-
-    @Override
-    public final IT ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.RIGHT_JOIN, table);
-    }
-
-
-    @Override
-    public final IT fullJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.FULL_JOIN, table);
-    }
-
-    @Override
-    public final IT ifFullJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.FULL_JOIN, table);
-    }
-
-    abstract IT createPartitionOnBlock(_JoinType joinType, TableMeta<?> table);
 
     abstract IT createNoActionPartitionBlock();
 
@@ -332,10 +280,11 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         MySQLUtils.validateDialect(this, dialect);
     }
 
-    private IT ifCreatePartitionOnBlock(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
+    @Override
+    final IT ifJointTableBeforeAs(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
         final IT block;
         if (predicate.test(this.criteria)) {
-            block = this.createPartitionOnBlock(joinType, table);
+            block = this.createBlockBeforeAs(joinType, table);
         } else {
             IT noActionBlock = this.noActionPartitionBlock;
             if (noActionBlock == null) {
@@ -384,7 +333,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final MultiPartitionOnSpec<C> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
+        final MultiPartitionOnSpec<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
             return new SimplePartitionOnBlock<>(joinType, table, this);
         }
 
@@ -463,7 +412,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final BatchMultiPartitionOnSpec<C> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
+        final BatchMultiPartitionOnSpec<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
             return new BatchPartitionBlock<>(joinType, table, this);
         }
 
@@ -720,7 +669,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
 
 
     /**
-     * @see SimpleDelete#createPartitionOnBlock(_JoinType, TableMeta)
+     * @see SimpleDelete#createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class SimplePartitionOnBlock<C, WE>
             extends MySQLPartitionClause<C, MySQLDelete.MultiAsOnSpec<C>>
@@ -816,7 +765,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }//BatchOnBlockWithPartition
 
     /**
-     * @see BatchDelete#createPartitionOnBlock(_JoinType, TableMeta)
+     * @see BatchDelete#createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class BatchPartitionBlock<C, WE> extends MySQLPartitionClause<C, MySQLDelete.BatchMultiAsOnSpec<C>>
             implements MySQLDelete.BatchMultiAsOnSpec<C>, MySQLDelete.BatchMultiPartitionOnSpec<C> {

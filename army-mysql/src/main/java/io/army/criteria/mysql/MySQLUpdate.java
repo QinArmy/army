@@ -244,51 +244,6 @@ public interface MySQLUpdate extends Update {
     /*################################## blow multi-table update api interface ##################################*/
 
 
-    interface MultiIndexHintClause<C, IR> {
-
-        IR useIndex(List<String> indexNames);
-
-        IR ignoreIndex(List<String> indexNames);
-
-        IR forceIndex(List<String> indexNames);
-
-        IR useIndexForJoin(List<String> indexNames);
-
-        IR ignoreIndexForJoin(List<String> indexNames);
-
-        IR forceIndexForJoin(List<String> indexNames);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifUseIndex(Function<C, List<String>> function);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifIgnoreIndex(Function<C, List<String>> function);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifForceIndex(Function<C, List<String>> function);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifUseIndexForJoin(Function<C, List<String>> function);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifIgnoreIndexForJoin(Function<C, List<String>> function);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IR ifForceIndexForJoin(Function<C, List<String>> function);
-
-    }
 
     interface MultiUpdateClause<C, UP, UT, US> {
 

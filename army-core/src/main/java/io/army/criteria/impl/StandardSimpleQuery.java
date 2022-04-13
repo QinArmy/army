@@ -25,7 +25,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         StandardQuery.StandardJoinSpec<C, Q>,// FT
         StandardQuery.StandardJoinSpec<C, Q>,// FS
         StandardQuery.StandardOnSpec<C, Q>, // JT
-        StandardQuery.StandardOnSpec<C, Q>, // JR
+        StandardQuery.StandardOnSpec<C, Q>, // JS
+        Void,
         StandardQuery.StandardGroupBySpec<C, Q>, // WR
         StandardQuery.StandardWhereAndSpec<C, Q>, // AR
         StandardQuery.StandardHavingSpec<C, Q>, // GR

@@ -24,27 +24,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <JS> on clause,see {@link Query.OnClause}
      * @param <JP> partition clause, see {@link MySQLQuery.PartitionClause}
      */
-    interface MySQLJoinClause<C, JT, JS, JP> extends DialectStatement.DialectJoinClause<C, JT, JS> {
-
-        JP leftJoin(TableMeta<?> table);
-
-        JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        JP join(TableMeta<?> table);
-
-        JP ifJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        JP rightJoin(TableMeta<?> table);
-
-        JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        JP straightJoin(TableMeta<?> table);
-
-        JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
-
-        JP fullJoin(TableMeta<?> table);
-
-        JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table);
+    interface MySQLJoinClause<C, JT, JS, JP> extends DialectStatement.DialectJoinClause<C, JT, JS, JP> {
 
 
     }

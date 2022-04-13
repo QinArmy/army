@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<C, JT, JS, WR, WA, SR> extends JoinableDml<C, JT, JS, WR, WA>
+abstract class JoinableUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableDml<C, JT, JS, JP, WR, WA>
         implements Update, Update.UpdateSpec, Update.SimpleSetClause<C, SR>, Update.BatchSetClause<C, SR>, _Update {
 
     final CriteriaContext criteriaContext;

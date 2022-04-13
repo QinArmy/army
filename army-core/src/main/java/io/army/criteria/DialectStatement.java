@@ -31,7 +31,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface DialectJoinClause<C, JT, JS> extends Statement.JoinClause<C, JT, JS> {
+    interface DialectJoinClause<C, JT, JS, JP> extends Statement.JoinClause<C, JT, JS> {
 
         JT straightJoin(TableMeta<?> table, String tableAlias);
 
@@ -44,6 +44,26 @@ public interface DialectStatement extends Statement {
         <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias);
 
         <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias);
+
+        JP leftJoin(TableMeta<?> table);
+
+        JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        JP join(TableMeta<?> table);
+
+        JP ifJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        JP rightJoin(TableMeta<?> table);
+
+        JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        JP straightJoin(TableMeta<?> table);
+
+        JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
+
+        JP fullJoin(TableMeta<?> table);
+
+        JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table);
 
     }
 

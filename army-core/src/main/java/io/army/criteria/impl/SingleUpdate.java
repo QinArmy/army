@@ -5,7 +5,7 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
-abstract class SingleUpdate<C, WR, WA, SR> extends JoinableUpdate<C, Void, Void, WR, WA, SR>
+abstract class SingleUpdate<C, WR, WA, SR> extends JoinableUpdate<C, Void, Void, Void, WR, WA, SR>
         implements _SingleUpdate {
 
     SingleUpdate(CriteriaContext criteriaContext) {

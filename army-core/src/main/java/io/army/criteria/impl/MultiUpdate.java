@@ -14,7 +14,7 @@ import java.util.List;
  * This class is base class of multi-table update implementation.
  * </p>
  */
-abstract class MultiUpdate<C, JT, JS, WR, WA, SR> extends JoinableUpdate<C, JT, JS, WR, WA, SR>
+abstract class MultiUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableUpdate<C, JT, JS, JP, WR, WA, SR>
         implements _MultiUpdate {
 
 

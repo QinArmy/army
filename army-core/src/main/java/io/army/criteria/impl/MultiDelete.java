@@ -18,7 +18,7 @@ import java.util.List;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class MultiDelete<C, JT, JS, WR, WA> extends JoinableDml<C, JT, JS, WR, WA>
+abstract class MultiDelete<C, JT, JS, JP, WR, WA> extends JoinableDml<C, JT, JS, JP, WR, WA>
         implements Delete, Delete.DeleteSpec, _MultiDelete {
 
 

@@ -16,7 +16,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
      */
     interface StandardSelectSpec<C, Q extends Query> extends SelectClause<C, StandardFromSpec<C, Q>> {
 
@@ -30,8 +29,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardFromSpec<C, Q extends Query>
@@ -49,8 +46,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardOnSpec<C, Q extends Query> extends OnClause<C, StandardJoinSpec<C, Q>> {
@@ -66,8 +61,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardJoinSpec<C, Q extends Query>
@@ -85,8 +78,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardWhereSpec<C, Q extends Query>
@@ -103,8 +94,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardWhereAndSpec<C, Q extends Query>
@@ -121,8 +110,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardGroupBySpec<C, Q extends Query> extends GroupClause<C, StandardHavingSpec<C, Q>>
@@ -138,8 +125,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardHavingSpec<C, Q extends Query> extends HavingClause<C, StandardOrderBySpec<C, Q>>
@@ -155,8 +140,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardOrderBySpec<C, Q extends Query> extends StandardLimitSpec<C, Q>
@@ -172,8 +155,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardLimitSpec<C, Q extends Query> extends StandardLockSpec<C, Q>
@@ -193,8 +174,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardOrderByClause<C, Q extends Query> extends StandardLimitClause<C, Q>
@@ -210,8 +189,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardLimitClause<C, Q extends Query>
@@ -232,8 +209,6 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <C> java type of criteria instance used to create dynamic query.
      * @see SQLs#query(Object)
      * @see SQLs#subQuery(Object)
-     * @see SQLs#rowSubQuery(Object)
-     * @see SQLs#columnSubQuery(Object)
      * @see SQLs#scalarSubQuery(Object)
      */
     interface StandardLockSpec<C, Q extends Query> extends StandardUnionClause<C, Q> {

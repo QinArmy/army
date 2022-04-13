@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.criteria.mysql.NestedJoin;
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -32,7 +33,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
-        extends WithCteMultiUpdate<C, WE, JT, JS, WR, WA, SR>
+        extends WithCteMultiUpdate<C, WE, JT, JS, JP, WR, WA, SR>
         implements MySQLUpdate.MultiUpdateClause<C, UP, UT, US>, MySQLQuery.IndexHintClause<C, IR, UT>
         , MySQLQuery.IndexJoinClause<C, UT>, MySQLQuery.MySQLJoinClause<C, JT, JS, JP>, MySQLUpdate
         , _MySQLMultiUpdate {
@@ -248,57 +249,6 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         return (UT) this;
     }
 
-    @Override
-    public final JP straightJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JP leftJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final JP join(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.JOIN, table);
-    }
-
-    @Override
-    public final JP ifJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.JOIN, table);
-    }
-
-    @Override
-    public final JP rightJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.RIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.RIGHT_JOIN, table);
-    }
-
-
-    @Override
-    public final JP fullJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.FULL_JOIN, table);
-    }
-
-    @Override
-    public final JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifCreatePartitionOnBlock(predicate, _JoinType.FULL_JOIN, table);
-    }
-
 
     @Override
     public final List<_MySQLHint> hintList() {
@@ -315,8 +265,6 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
 
     abstract JP createNoActionPartitionBlock();
-
-    abstract JP createPartitionOnBlock(_JoinType joinType, TableMeta<?> table);
 
     abstract UP createPartitionJoinBlock(TableMeta<?> table);
 
@@ -382,10 +330,11 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
     /*################################## blow private method ##################################*/
 
-    private JP ifCreatePartitionOnBlock(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
+    @Override
+    final JP ifJointTableBeforeAs(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
         final JP block;
         if (predicate.test(this.criteria)) {
-            block = createPartitionOnBlock(joinType, table);
+            block = createBlockBeforeAs(joinType, table);
         } else {
             JP noActionPartitionBlock = this.noActionPartitionBlock;
             if (noActionPartitionBlock == null) {
@@ -529,7 +478,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        final MultiPartitionOnSpec<C> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
+        final MultiPartitionOnSpec<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
             return new SimplePartitionOnBlock<>(joinType, table, this);
         }
 
@@ -620,7 +569,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        final BatchMultiPartitionOnSpec<C> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
+        final BatchMultiPartitionOnSpec<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
             return new BatchPartitionOnBlock<>(joinType, table, this);
         }
 
@@ -851,7 +800,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }// SimpleIndexHintBlock
 
     /**
-     * @see SimpleUpdate#createPartitionOnBlock(_JoinType, TableMeta)
+     * @see SimpleUpdate#createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class SimplePartitionOnBlock<C, WE>
             extends MySQLPartitionClause<C, Statement.AsClause<MultiIndexHintOnSpec<C>>>
@@ -969,7 +918,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
 
     /**
-     * @see BatchUpdate#createPartitionOnBlock(_JoinType, TableMeta)
+     * @see BatchUpdate#createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class BatchPartitionOnBlock<C, WE>
             extends MySQLPartitionClause<C, Statement.AsClause<MySQLUpdate.BatchMultiIndexHintOnSpec<C>>>
@@ -1107,6 +1056,41 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             return this.indexHintOnSpec;
         }
     }//BatchNoActionPartitionOnBlock
+
+
+    private static final class SimpleNestedJoin<C> extends AbstractTableItemGroup<
+            C,
+            NestedJoin.UpdateIndexHintSpec<C>,
+            NestedJoin.UpdateOnSpec<C>,
+            NestedJoin.UpdatePartitionSpec<C>>
+            implements NestedJoin, NestedJoin.UpdateJoinSpec<C> {
+
+        private SimpleNestedJoin(TableItem tableItem, String alias, @Nullable C criteria) {
+            super(tableItem, alias, criteria);
+        }
+
+        @Override
+        UpdateIndexHintSpec<C> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+            return null;
+        }
+
+        @Override
+        UpdateOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+            return null;
+        }
+
+        @Override
+        UpdateIndexHintSpec<C> createNoActionTableBlock() {
+            return null;
+        }
+
+        @Override
+        UpdateOnSpec<C> createNoActionOnBlock() {
+            return null;
+        }
+
+
+    }//MySQLNestedJoin
 
 
 }

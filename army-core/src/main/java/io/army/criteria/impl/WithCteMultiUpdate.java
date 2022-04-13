@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class WithCteMultiUpdate<C, WE, JT, JS, WR, WA, SR> extends MultiUpdate<C, JT, JS, WR, WA, SR>
+abstract class WithCteMultiUpdate<C, WE, JT, JS, JP, WR, WA, SR> extends MultiUpdate<C, JT, JS, JP, WR, WA, SR>
         implements DialectStatement.WithCteClause<C, WE> {
 
     WithCteMultiUpdate(CriteriaContext criteriaContext) {

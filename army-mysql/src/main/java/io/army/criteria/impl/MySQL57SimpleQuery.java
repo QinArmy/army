@@ -204,7 +204,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final PartitionOn57Spec<C, Q> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
+    final PartitionOn57Spec<C, Q> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
         return new PartitionOnBlock<>(joinType, table, this);
     }
 
@@ -448,7 +448,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     /**
-     * @see #createPartitionOnBlock(_JoinType, TableMeta)
+     * @see #createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class PartitionOnBlock<C, Q extends Query>
             extends MySQLPartitionClause<C, MySQL57Query.As57OnSpec<C, Q>>

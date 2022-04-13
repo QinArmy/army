@@ -17,12 +17,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 
 @SuppressWarnings("unchecked")
 abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, IT, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends SimpleQuery<C, Q, SR, FT, FS, JT, JS, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends SimpleQuery<C, Q, SR, FT, FS, JT, JS, IT, WR, AR, GR, HR, OR, LR, UR, SP>
         implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, IT>
         , MySQLQuery.MySQLFromClause<C, FT, FS, FP>, MySQLQuery.IndexHintClause<C, IR, FT>
         , MySQLQuery.IndexPurposeClause<C, FT> {
@@ -191,99 +190,6 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         return (FT) this;
     }
 
-    @Override
-    public final IT straightJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final IT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTablePartition(predicate, _JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JT straightJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = createTableBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias) {
-        return this.ifJoinTable(predicate, _JoinType.STRAIGHT_JOIN, table, alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias) {
-        return this.ifJoinTablePart(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias) {
-        return this.ifJoinTablePart(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
-    }
-
-    @Override
-    public final IT leftJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final IT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTablePartition(predicate, _JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final IT join(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.JOIN, table);
-    }
-
-    @Override
-    public final IT ifJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTablePartition(predicate, _JoinType.JOIN, table);
-    }
-
-    @Override
-    public final IT rightJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.RIGHT_JOIN, table);
-    }
-
-    @Override
-    public final IT ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTablePartition(predicate, _JoinType.RIGHT_JOIN, table);
-    }
-
-
-    @Override
-    public final IT fullJoin(TableMeta<?> table) {
-        return this.createPartitionOnBlock(_JoinType.FULL_JOIN, table);
-    }
-
-    @Override
-    public final IT ifFullJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTablePartition(predicate, _JoinType.FULL_JOIN, table);
-    }
-
-
-    abstract IT createPartitionOnBlock(_JoinType joinType, TableMeta<?> table);
-
     abstract IT createNoActionPartitionBlock();
 
 
@@ -306,10 +212,11 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     /*################################## blow private method ##################################*/
 
 
-    private IT ifJointTablePartition(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
+    @Override
+    final IT ifJointTableBeforeAs(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
         final IT block;
         if (predicate.test(this.criteria)) {
-            block = this.createPartitionOnBlock(joinType, table);
+            block = this.createBlockBeforeAs(joinType, table);
         } else {
             block = createNoActionPartitionBlock();
         }

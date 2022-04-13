@@ -428,7 +428,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final PartitionOn80Spec<C, Q> createPartitionOnBlock(_JoinType joinType, TableMeta<?> table) {
+    final PartitionOn80Spec<C, Q> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
         return new PartitionOnBlock<>(joinType, table, this);
     }
 
@@ -713,7 +713,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }//IndexHintOnBlock
 
     /**
-     * @see #createPartitionOnBlock(_JoinType, TableMeta)
+     * @see #createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class PartitionOnBlock<C, Q extends Query>
             extends MySQLPartitionClause<C, MySQL80Query.AsOn80Spec<C, Q>>
