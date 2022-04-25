@@ -34,9 +34,13 @@ interface CriteriaContext {
 
     void onAddBlock(_TableBlock block);
 
-    void onFirstBlock(_TableBlock block);
+    void onNoneBlock(_TableBlock block);
 
-    _TableBlock firstBlock();
+    void onBracketBlock(_TableBlock block);
+
+    void onJoinType(_JoinType joinType);
+
+    _TableBlock lastNoneBlock();
 
     @Nullable
     <C> C criteria();

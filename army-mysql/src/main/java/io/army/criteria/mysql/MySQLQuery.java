@@ -8,13 +8,41 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+/**
+ * <p>
+ * This interface representing MySQL SELECT syntax,this interface is base interface of below:
+ * <ul>
+ *     <li>{@link MySQL57Query}</li>
+ *     <li>{@link MySQL80Query}</li>
+ * </ul>
+ * </p>
+ *
+ * @see MySQL57Query
+ * @see MySQL80Query
+ * @since 1.0
+ */
 public interface MySQLQuery extends Query, DialectStatement {
 
 
+    /**
+     * <p>
+     * This interface representing MySQL syntax from clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type.
+     * @param <FT> next clause java type
+     * @param <FS> next clause java type
+     * @param <FP> next clause java type
+     * @param <FB> next clause java type,it's sub interface of {@link LeftBracketClause}.
+     * @since 1.0
+     */
+    interface MySQLFromClause<C, FT, FS, FP, FB> extends DialectStatement.DialectFromClause<C, FT, FS, FP, FB> {
 
-    interface MySQLFromClause<C, FT, FS, FP> extends Statement.FromClause<C, FT, FS> {
-
-        FP from(TableMeta<?> table);
 
     }
 
@@ -24,8 +52,11 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <JS> on clause,see {@link Query.OnClause}
      * @param <JP> partition clause, see {@link MySQLQuery.PartitionClause}
      */
-    interface MySQLJoinClause<C, JT, JS, JP> extends DialectStatement.DialectJoinClause<C, JT, JS, JP> {
+    interface MySQLJoinClause<C, JT, JS, JP, JC, JD, JE, JF> extends DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF> {
 
+    }
+
+    interface MySQLJoinBracketClause<C, JT, JS, JP> extends DialectStatement.DialectJoinBracketClause<C, JT, JS, JP> {
 
     }
 

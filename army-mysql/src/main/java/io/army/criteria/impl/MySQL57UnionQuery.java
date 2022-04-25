@@ -21,7 +21,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
         MySQL57Query.UnionOrderBy57Spec<C, Q>,
         MySQL57Query.UnionLimit57Spec<C, Q>,
         MySQL57Query.Union57Spec<C, Q>,
-        MySQL57Query.Select57Spec<C, Q>>
+        MySQL57Query.Select57Clause<C, Q>>
         implements MySQL57Query, MySQL57Query.UnionOrderBy57Spec<C, Q>, _UnionQuery {
 
     static <C, Q extends Query> UnionOrderBy57Spec<C, Q> bracketQuery(final Q query) {
@@ -80,7 +80,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    final Select57Spec<C, Q> asQueryAndQuery(UnionType unionType) {
+    final Select57Clause<C, Q> asQueryAndQuery(UnionType unionType) {
         return MySQL57SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
 

@@ -24,9 +24,13 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         StandardQuery.StandardFromSpec<C, Q>, // SR
         StandardQuery.StandardJoinSpec<C, Q>,// FT
         StandardQuery.StandardJoinSpec<C, Q>,// FS
+        Void,                               // FP
         StandardQuery.StandardOnSpec<C, Q>, // JT
         StandardQuery.StandardOnSpec<C, Q>, // JS
-        Void,
+        Void,                               // JP
+        StandardQuery.StandardJoinSpec<C, Q>,// JC
+        Void,                               // JE
+        Void,                               // JF
         StandardQuery.StandardGroupBySpec<C, Q>, // WR
         StandardQuery.StandardWhereAndSpec<C, Q>, // AR
         StandardQuery.StandardHavingSpec<C, Q>, // GR
@@ -34,30 +38,30 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         StandardQuery.StandardLimitSpec<C, Q>, // OR
         StandardQuery.StandardLockSpec<C, Q>, // LR
         StandardQuery.StandardUnionSpec<C, Q>, // UR
-        StandardQuery.StandardSelectSpec<C, Q>> // SP
+        StandardQuery.StandardSelectClause<C, Q>> // SP
 
-        implements StandardQuery, StandardQuery.StandardSelectSpec<C, Q>, StandardQuery.StandardFromSpec<C, Q>
+        implements StandardQuery, StandardQuery.StandardSelectClause<C, Q>, StandardQuery.StandardFromSpec<C, Q>
         , StandardQuery.StandardJoinSpec<C, Q>, StandardQuery.StandardGroupBySpec<C, Q>
         , StandardQuery.StandardWhereAndSpec<C, Q>, StandardQuery.StandardHavingSpec<C, Q>
         , StandardQuery.StandardOrderBySpec<C, Q>, StandardQuery.StandardLimitSpec<C, Q>
         , StandardQuery.StandardLockSpec<C, Q>, _StandardQuery {
 
 
-    static <C> StandardSelectSpec<C, Select> query(@Nullable C criteria) {
+    static <C> StandardSelectClause<C, Select> query(@Nullable C criteria) {
         return new SimpleSelect<>(criteria);
     }
 
-    static <C> StandardSelectSpec<C, SubQuery> subQuery(@Nullable C criteria) {
+    static <C> StandardSelectClause<C, SubQuery> subQuery(@Nullable C criteria) {
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C, E> StandardSelectSpec<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
+    static <C> StandardSelectClause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(criteria);
     }
 
-
-    static <C, Q extends Query> StandardSelectSpec<C, Q> asQueryAndQuery(Q query, UnionType unionType) {
-        final StandardSelectSpec<C, ?> spec;
+    @SuppressWarnings("unchecked")
+    static <C, Q extends Query> StandardSelectClause<C, Q> asQueryAndQuery(Q query, UnionType unionType) {
+        final StandardSelectClause<C, ?> spec;
         if (query instanceof Select) {
             spec = new UnionAndSelect<>((Select) query, unionType);
         } else if (query instanceof ScalarSubQuery) {
@@ -67,7 +71,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         } else {
             throw _Exceptions.unknownQueryType(query);
         }
-        return (StandardSelectSpec<C, Q>) spec;
+        return (StandardSelectClause<C, Q>) spec;
     }
 
 
@@ -169,20 +173,20 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final StandardSelectSpec<C, Q> asQueryAndQuery(final UnionType unionType) {
+    final StandardSelectClause<C, Q> asQueryAndQuery(final UnionType unionType) {
         return StandardSimpleQuery.asQueryAndQuery(this.asQuery(), unionType);
     }
 
 
     @Override
     final StandardJoinSpec<C, Q> addFirstTableBlock(TableMeta<?> table, String tableAlias) {
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(table, tableAlias));
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(table, tableAlias));
         return this;
     }
 
     @Override
-    final StandardJoinSpec<C, Q> addFirstTablePartBlock(TableItem tableItem, String alias) {
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(tableItem, alias));
+    final StandardJoinSpec<C, Q> addNoneTableItemBlock(TableItem tableItem, String alias) {
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(tableItem, alias));
         return this;
     }
 
@@ -196,6 +200,17 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new OnBlock<>(joinType, tableItem, alias, this);
     }
 
+
+    @Override
+    final StandardJoinSpec<C, Q> createNextClauseForCross() {
+        return this;
+    }
+
+    @Override
+    final Void createNextClauseForCross(TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
     @Override
     final StandardOnSpec<C, Q> createNoActionTableBlock() {
         return new NoActionOnBlock<>(this);
@@ -206,6 +221,10 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new NoActionOnBlock<>(this);
     }
 
+    @Override
+    final StandardJoinSpec<C, Q> createNoActionClauseForCross() {
+        return this;
+    }
 
     @Override
     final Dialect defaultDialect() {
@@ -274,8 +293,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         }
 
         @Override
-        CriteriaContext getCriteriaContext() {
-            return this.query.criteriaContext;
+        C getCriteria() {
+            return this.query.criteria;
         }
 
         @Override

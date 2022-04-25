@@ -18,12 +18,14 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+
 @SuppressWarnings("unchecked")
-abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JC, JE, JF, WR, AR, GR, HR, OR, LR, UR, SP>
         extends PartQuery<C, Q, UR, OR, LR, SP> implements Query.SelectClause<C, SR>
-        , DialectStatement.DialectJoinClause<C, JT, JS, JP>, Statement.WhereClause<C, WR, AR>
+        , DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, FS, JE, JF>, Statement.WhereClause<C, WR, AR>
         , Statement.WhereAndClause<C, AR>, Query.GroupClause<C, GR>, Query.HavingClause<C, HR>, _Query
-        , Statement.FromClause<C, FT, FS> {
+        , DialectStatement.DialectFromClause<C, FT, FS, FP, JE>, DialectStatement.DialectJoinBracketClause<C, FT, FS, FP>
+        , Statement.RightBracketClause<FS> {
 
 
     private List<Hint> hintList;
@@ -43,6 +45,10 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     private JT noActionTableBlock;
 
     private JS noActionTablePartBlock;
+
+    private JC noActionCrossBlock;
+
+    private JF noActionCrossBlockBeforeAs;
 
 
     SimpleQuery(CriteriaContext criteriaContext) {
@@ -148,20 +154,34 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
 
     /*################################## blow FromSpec method ##################################*/
 
+    @Override
+    public final JE from() {
+        return (JE) this;
+    }
+
+    @Override
+    public final FP from(TableMeta<?> table) {
+        return this.createNoneBlockBeforeAs(table);
+    }
 
     @Override
     public final FT from(TableMeta<?> table, String tableAlias) {
-        return this.addFirstTableBlock(table, tableAlias);
+        final _TableBlock block;
+        block = this.createNoneTableBlock(table, tableAlias);
+        this.criteriaContext.onNoneBlock(block);
+        return (FT) this;
     }
 
     @Override
     public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
-        return this.addFirstTablePartBlock(function.apply(this.criteria), alias);
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        return (FS) this;
     }
 
     @Override
     public final <T extends TableItem> FS from(Supplier<T> supplier, String alias) {
-        return this.addFirstTablePartBlock(supplier.get(), alias);
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
+        return (FS) this;
     }
 
 
@@ -173,6 +193,11 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
         block = createTableBlock(_JoinType.LEFT_JOIN, table, tableAlias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
+    }
+
+    @Override
+    public final JP leftJoin(TableMeta<?> table) {
+        return this.createBlockBeforeAs(_JoinType.LEFT_JOIN, table);
     }
 
     @Override
@@ -192,9 +217,21 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
+    public final JE leftJoin() {
+        this.criteriaContext.onJoinType(_JoinType.LEFT_JOIN);
+        return (JE) this;
+    }
+
+    @Override
     public final JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
         return this.ifJoinTable(predicate, _JoinType.LEFT_JOIN, table, tableAlias);
     }
+
+    @Override
+    public final JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
+        return this.ifJointTableBeforeAs(predicate, _JoinType.LEFT_JOIN, table);
+    }
+
 
     @Override
     public final <T extends TableItem> JS ifLeftJoin(Supplier<T> supplier, String alias) {
@@ -207,11 +244,23 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
+    public final JE join() {
+        this.criteriaContext.onJoinType(_JoinType.JOIN);
+        return (JE) this;
+    }
+
+    @Override
     public final JT join(TableMeta<?> table, String tableAlias) {
         final JT block;
         block = createTableBlock(_JoinType.JOIN, table, tableAlias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
+    }
+
+
+    @Override
+    public final JP join(TableMeta<?> table) {
+        return this.createBlockBeforeAs(_JoinType.JOIN, table);
     }
 
     @Override
@@ -236,6 +285,11 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
+    public final JP ifJoin(Predicate<C> predicate, TableMeta<?> table) {
+        return this.ifJointTableBeforeAs(predicate, _JoinType.JOIN, table);
+    }
+
+    @Override
     public final <T extends TableItem> JS ifJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTableItem(_JoinType.JOIN, supplier.get(), alias);
     }
@@ -246,11 +300,22 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
+    public final JE rightJoin() {
+        this.criteriaContext.onJoinType(_JoinType.RIGHT_JOIN);
+        return (JE) this;
+    }
+
+    @Override
     public final JT rightJoin(TableMeta<?> table, String tableAlias) {
         final JT block;
         block = createTableBlock(_JoinType.RIGHT_JOIN, table, tableAlias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
+    }
+
+    @Override
+    public final JP rightJoin(TableMeta<?> table) {
+        return this.createBlockBeforeAs(_JoinType.RIGHT_JOIN, table);
     }
 
     @Override
@@ -275,6 +340,11 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
+    public final JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
+        return this.ifJointTableBeforeAs(predicate, _JoinType.RIGHT_JOIN, table);
+    }
+
+    @Override
     public final <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTableItem(_JoinType.RIGHT_JOIN, supplier.get(), alias);
     }
@@ -285,42 +355,83 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
-    public final JT crossJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = createTableBlock(_JoinType.CROSS_JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
+    public final JE crossJoin() {
+        this.criteriaContext.onJoinType(_JoinType.CROSS_JOIN);
+        return (JE) this;
     }
 
     @Override
-    public final <T extends TableItem> JS crossJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
+    public final JC crossJoin(TableMeta<?> table, String tableAlias) {
+        this.criteriaContext.onAddBlock(TableBlock.crossBlock(table, tableAlias));
+        return this.createNextClauseForCross();
     }
 
     @Override
-    public final <T extends TableItem> JS crossJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
+    public final JF crossJoin(TableMeta<?> table) {
+        return this.createNextClauseForCross(table);
     }
 
     @Override
-    public final JT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifJoinTable(predicate, _JoinType.CROSS_JOIN, table, tableAlias);
+    public final <T extends TableItem> FS crossJoin(Function<C, T> function, String alias) {
+        this.criteriaContext.onAddBlock(TableBlock.crossBlock(function.apply(this.criteria), alias));
+        return (FS) this;
     }
 
     @Override
-    public final <T extends TableItem> JS ifCrossJoin(Supplier<T> supplier, String alias) {
-        return this.ifJoinTableItem(_JoinType.CROSS_JOIN, supplier.get(), alias);
+    public final <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias) {
+        this.criteriaContext.onAddBlock(TableBlock.crossBlock(supplier.get(), alias));
+        return (FS) this;
     }
 
     @Override
-    public final <T extends TableItem> JS ifCrossJoin(Function<C, T> function, String alias) {
-        return this.ifJoinTableItem(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
+    public final JC ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
+        JC clause;
+        if (predicate.test(this.criteria)) {
+            this.criteriaContext.onAddBlock(TableBlock.crossBlock(table, tableAlias));
+            clause = this.createNextClauseForCross();
+        } else if ((clause = this.noActionCrossBlock) == null) {
+            clause = this.createNoActionClauseForCross();
+            this.noActionCrossBlock = clause;
+        }
+        return clause;
+    }
+
+    @Override
+    public final JF ifCrossJoin(Predicate<C> predicate, TableMeta<?> table) {
+        JF clause;
+        if (predicate.test(this.criteria)) {
+            clause = this.createNextClauseForCross(table);
+        } else if ((clause = this.noActionCrossBlockBeforeAs) == null) {
+            clause = this.createNextClauseForCross(table);
+            this.noActionCrossBlockBeforeAs = clause;
+        }
+        return clause;
+    }
+
+    @Override
+    public final <T extends TableItem> FS ifCrossJoin(Supplier<T> supplier, String alias) {
+        final T tableItem;
+        tableItem = supplier.get();
+        if (tableItem != null) {
+            this.criteriaContext.onAddBlock(TableBlock.crossBlock(tableItem, alias));
+        }
+        return (FS) this;
+    }
+
+    @Override
+    public final <T extends TableItem> FS ifCrossJoin(Function<C, T> function, String alias) {
+        final T tableItem;
+        tableItem = function.apply(this.criteria);
+        if (tableItem != null) {
+            this.criteriaContext.onAddBlock(TableBlock.crossBlock(tableItem, alias));
+        }
+        return (FS) this;
+    }
+
+    @Override
+    public final JE fullJoin() {
+        this.criteriaContext.onJoinType(_JoinType.FULL_JOIN);
+        return (JE) this;
     }
 
     @Override
@@ -329,6 +440,11 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
         block = createTableBlock(_JoinType.FULL_JOIN, table, tableAlias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
+    }
+
+    @Override
+    public final JP fullJoin(TableMeta<?> table) {
+        return this.createBlockBeforeAs(_JoinType.FULL_JOIN, table);
     }
 
     @Override
@@ -353,6 +469,11 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
+    public final JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table) {
+        return this.ifJointTableBeforeAs(predicate, _JoinType.FULL_JOIN, table);
+    }
+
+    @Override
     public final <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias) {
         return this.ifJoinTableItem(_JoinType.FULL_JOIN, supplier.get(), alias);
     }
@@ -362,6 +483,11 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
         return this.ifJoinTableItem(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
     }
 
+    @Override
+    public final JE straightJoin() {
+        this.criteriaContext.onJoinType(_JoinType.STRAIGHT_JOIN);
+        return (JE) this;
+    }
 
     @Override
     public final JT straightJoin(TableMeta<?> table, String tableAlias) {
@@ -369,6 +495,11 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
         block = createTableBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
+    }
+
+    @Override
+    public final JP straightJoin(TableMeta<?> table) {
+        return this.createBlockBeforeAs(_JoinType.STRAIGHT_JOIN, table);
     }
 
     @Override
@@ -393,6 +524,11 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
+    public final JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
+        return this.ifJointTableBeforeAs(predicate, _JoinType.STRAIGHT_JOIN, table);
+    }
+
+    @Override
     public final <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias) {
         return this.ifJoinTableItem(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
     }
@@ -403,53 +539,42 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
     }
 
     @Override
-    public final JP leftJoin(TableMeta<?> table) {
-        return this.createBlockBeforeAs(_JoinType.LEFT_JOIN, table);
+    public final DialectStatement.DialectJoinBracketClause<C, FT, FS, FP> leftBracket() {
+        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
+        return this;
     }
 
     @Override
-    public final JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.LEFT_JOIN, table);
+    public final FP leftBracket(TableMeta<?> table) {
+        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
+        return this.createNoneBlockBeforeAs(table);
     }
 
     @Override
-    public final JP join(TableMeta<?> table) {
-        return this.createBlockBeforeAs(_JoinType.JOIN, table);
+    public final FT leftBracket(final TableMeta<?> table, final String tableAlias) {
+        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
+        this.criteriaContext.onNoneBlock(this.createNoneTableBlock(table, tableAlias));
+        return (FT) this;
     }
 
     @Override
-    public final JP ifJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.JOIN, table);
+    public final <T extends TableItem> FS leftBracket(Function<C, T> function, String alias) {
+        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        return (FS) this;
     }
 
     @Override
-    public final JP rightJoin(TableMeta<?> table) {
-        return this.createBlockBeforeAs(_JoinType.RIGHT_JOIN, table);
+    public final <T extends TableItem> FS leftBracket(Supplier<T> supplier, String alias) {
+        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
+        return (FS) this;
     }
 
     @Override
-    public final JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.RIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JP straightJoin(TableMeta<?> table) {
-        return this.createBlockBeforeAs(_JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JP fullJoin(TableMeta<?> table) {
-        return this.createBlockBeforeAs(_JoinType.FULL_JOIN, table);
-    }
-
-    @Override
-    public final JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.FULL_JOIN, table);
+    public final FS rightBracket() {
+        this.criteriaContext.onBracketBlock(CriteriaUtils.rightBracketBlock());
+        return (FS) this;
     }
 
     @Override
@@ -791,6 +916,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
         }
         this.noActionTableBlock = null;
         this.noActionTablePartBlock = null;
+        this.noActionCrossBlock = null;
+        this.noActionCrossBlockBeforeAs = null;
         return this.onAsQuery(justAsQuery);
     }
 
@@ -805,9 +932,6 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
         this.predicateList = null;
         this.groupByList = null;
         this.havingList = null;
-        this.noActionTableBlock = null;
-
-        this.noActionTablePartBlock = null;
         this.onClear();
     }
 
@@ -820,19 +944,23 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, JT, JS, JP, WR, AR, G
 
     abstract void onClear();
 
+    abstract FP createNoneBlockBeforeAs(TableMeta<?> table);
 
-    abstract FT addFirstTableBlock(TableMeta<?> table, String tableAlias);
-
-    abstract FS addFirstTablePartBlock(TableItem tableItem, String alias);
-
+    abstract _TableBlock createNoneTableBlock(TableMeta<?> table, String tableAlias);
 
     abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
 
     abstract JS createOnBlock(_JoinType joinType, TableItem tableItem, String alias);
 
+    abstract JC createNextClauseForCross();
+
+    abstract JF createNextClauseForCross(TableMeta<?> table);
+
     abstract JT createNoActionTableBlock();
 
     abstract JS createNoActionOnBlock();
+
+    abstract JC createNoActionClauseForCross();
 
     JP createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
         throw _Exceptions.castCriteriaApi();

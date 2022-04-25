@@ -641,7 +641,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             if (partitionList == null) {
                 partitionList = Collections.emptyList();
             }
-            this.query.criteriaContext.onFirstBlock(new MySQLFirstBlock<>(this.table, alias, partitionList, this.query));
+            this.query.criteriaContext.onNoneBlock(new MySQLNoneBlock<>(this.table, alias, partitionList, this.query));
             return this.query;
         }
 
@@ -660,8 +660,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
         @Override
-        CriteriaContext getCriteriaContext() {
-            return this.query.criteriaContext;
+        C getCriteria() {
+            return this.query.criteria;
         }
 
         @Override
@@ -696,8 +696,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
         @Override
-        CriteriaContext getCriteriaContext() {
-            return this.query.criteriaContext;
+        C getCriteria() {
+            return this.query.criteria;
         }
 
         @Override

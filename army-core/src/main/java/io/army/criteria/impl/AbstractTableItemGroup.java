@@ -37,7 +37,7 @@ abstract class AbstractTableItemGroup<C, JT, JS, JP>
     AbstractTableItemGroup(TableItem tableItem, String alias, @Nullable C criteria) {
         this.criteria = criteria;
         this.tableBlockList = new ArrayList<>();
-        this.tableBlockList.add(TableBlock.firstBlock(tableItem, alias));
+        this.tableBlockList.add(TableBlock.noneBlock(tableItem, alias));
     }
 
     @Override

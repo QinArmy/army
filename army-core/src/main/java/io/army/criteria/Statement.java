@@ -54,19 +54,49 @@ public interface Statement {
 
         BR paramList(Function<C, List<?>> function);
 
-        BR paramList(Function<String, Object> function, String keyName);
+        BR paramList(Function<String, ?> function, String keyName);
+    }
+
+    interface RightBracketClause<R> {
+
+        R rightBracket();
+
     }
 
 
-    interface FromClause<C, FT, FS> {
+    /**
+     * <p>
+     * This interface representing from clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type.
+     * @param <FT> next clause java type
+     * @param <FS> next clause java type
+     * @param <FB> next clause java type,it's sub interface of {@link LeftBracketClause}.
+     * @since 1.0
+     */
+    interface FromClause<C, FT, FS, FB> {
+
 
         FT from(TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> FS from(Function<C, T> function, String alias);
 
         <T extends TableItem> FS from(Supplier<T> supplier, String alias);
+
+        FB from();
+
     }
 
+
+    /**
+     * @since 1.0
+     */
     interface OnClause<C, OR> {
 
         OR on(List<IPredicate> predicateList);
@@ -84,13 +114,32 @@ public interface Statement {
     }
 
 
-    interface JoinClause<C, JT, JS> {
+    /**
+     * <p>
+     * This interface representing join clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer couldn't directly use this interface.
+     * </p>
+     *
+     * @param <C>  criteria object java type
+     * @param <JT> next clause java type
+     * @param <JS> next clause java type
+     * @param <JC> next clause java type
+     * @param <JD> next clause java type
+     * @param <JE> next clause java type,it's sub interface of {@link LeftBracketClause}.
+     * @since 1.0
+     */
+    interface JoinClause<C, JT, JS, JC, JD, JE> {
 
         JT leftJoin(TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JS leftJoin(Function<C, T> function, String alias);
 
         <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias);
+
+        JE leftJoin();
 
         JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
@@ -104,6 +153,8 @@ public interface Statement {
 
         <T extends TableItem> JS join(Supplier<T> supplier, String alias);
 
+        JE join();
+
         JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JS ifJoin(Function<C, T> function, String alias);
@@ -116,23 +167,27 @@ public interface Statement {
 
         <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias);
 
+        JE rightJoin();
+
         JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias);
 
         <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias);
 
-        JT crossJoin(TableMeta<?> table, String tableAlias);
+        JC crossJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> JS crossJoin(Function<C, T> function, String alias);
+        <T extends TableItem> JD crossJoin(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS crossJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JD crossJoin(Supplier<T> supplier, String alias);
 
-        JT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+        JE crossJoin();
 
-        <T extends TableItem> JS ifCrossJoin(Function<C, T> function, String alias);
+        JC ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> JS ifCrossJoin(Supplier<T> supplier, String alias);
+        <T extends TableItem> JD ifCrossJoin(Function<C, T> function, String alias);
+
+        <T extends TableItem> JD ifCrossJoin(Supplier<T> supplier, String alias);
 
         JT fullJoin(TableMeta<?> table, String tableAlias);
 
@@ -140,11 +195,40 @@ public interface Statement {
 
         <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias);
 
+        JE fullJoin();
+
         JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JS ifFullJoin(Function<C, T> function, String alias);
 
         <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias);
+
+    }
+
+    /**
+     * <p>
+     * This interface representing a left bracket clause after key word 'FROM' or key word 'JOIN'.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type
+     * @param <JT> next clause java type
+     * @param <JS> next clause java type
+     * @since 1.0
+     */
+    interface LeftBracketClause<C, JT, JS> {
+
+        LeftBracketClause<C, JT, JS> leftBracket();
+
+        JT leftBracket(TableMeta<?> table, String tableAlias);
+
+        <T extends TableItem> JS leftBracket(Function<C, T> function, String alias);
+
+        <T extends TableItem> JS leftBracket(Supplier<T> supplier, String alias);
 
     }
 

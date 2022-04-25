@@ -9,7 +9,7 @@ import io.army.util._CollectionUtils;
 import java.util.Collections;
 import java.util.List;
 
-final class MySQLFirstBlock<C, OR> extends OnClauseTableBlock<C, OR> implements _MySQLTableBlock {
+final class MySQLNoneBlock<C, OR> extends OnClauseTableBlock<C, OR> implements _MySQLTableBlock {
 
 
     private final List<String> partitionList;
@@ -21,21 +21,21 @@ final class MySQLFirstBlock<C, OR> extends OnClauseTableBlock<C, OR> implements 
     /**
      * @param stmt the implementation of {@link CriteriaContextSpec}
      */
-    MySQLFirstBlock(TableMeta<?> table, String alias, List<String> partitionList, OR stmt) {
+    MySQLNoneBlock(TableMeta<?> table, String alias, List<String> partitionList, OR stmt) {
         super(_JoinType.NONE, table, alias);
         this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
         this.stmt = stmt;
     }
 
-    MySQLFirstBlock(TableItem tableItem, String alias, OR stmt) {
+    MySQLNoneBlock(TableItem tableItem, String alias, OR stmt) {
         super(_JoinType.NONE, tableItem, alias);
         this.partitionList = Collections.emptyList();
         this.stmt = stmt;
     }
 
     @Override
-    CriteriaContext getCriteriaContext() {
-        return ((CriteriaContextSpec) this.stmt).getCriteriaContext();
+    C getCriteria() {
+        return ((CriteriaContextSpec) this.stmt).getCriteriaContext().criteria();
     }
 
     @Override

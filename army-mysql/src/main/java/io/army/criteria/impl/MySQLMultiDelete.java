@@ -133,7 +133,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         if (_CollectionUtils.isEmpty(this.tableAliasList)) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(table, alias));
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(table, alias));
         return (DR) this;
     }
 
@@ -151,7 +151,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         if (_CollectionUtils.isEmpty(this.tableAliasList)) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
         return (DR) this;
     }
 
@@ -160,7 +160,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         if (_CollectionUtils.isEmpty(this.tableAliasList)) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (DR) this;
     }
 
@@ -564,11 +564,11 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
             final List<String> partitionList = this.partitionList;
             final TableBlock block;
             if (partitionList == null) {
-                block = TableBlock.firstBlock(this.table, alias);
+                block = TableBlock.noneBlock(this.table, alias);
             } else {
                 block = new FirstBlock(this.table, alias, partitionList);
             }
-            this.delete.criteriaContext.onFirstBlock(block);
+            this.delete.criteriaContext.onNoneBlock(block);
             return this.delete;
         }
 
@@ -598,11 +598,11 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
             final List<String> partitionList = this.partitionList;
             final TableBlock block;
             if (partitionList == null) {
-                block = TableBlock.firstBlock(this.table, alias);
+                block = TableBlock.noneBlock(this.table, alias);
             } else {
                 block = new FirstBlock(this.table, alias, partitionList);
             }
-            this.delete.criteriaContext.onFirstBlock(block);
+            this.delete.criteriaContext.onNoneBlock(block);
             return this.delete;
         }
     }// BatchPartitionJoinSpec
@@ -623,8 +623,8 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        CriteriaContext getCriteriaContext() {
-            return this.delete.criteriaContext;
+        C getCriteria() {
+            return this.delete.criteria;
         }
 
         @Override
@@ -722,8 +722,8 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final CriteriaContext getCriteriaContext() {
-            return this.delete.criteriaContext;
+        final C getCriteria() {
+            return this.delete.criteria;
         }
 
         @Override

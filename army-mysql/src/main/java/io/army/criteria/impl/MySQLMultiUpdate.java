@@ -81,7 +81,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             , TableMeta<? extends IDomain> table, String tableAlias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
-        this.criteriaContext.onFirstBlock(new FirstBlock(table, tableAlias));
+        this.criteriaContext.onNoneBlock(new FirstBlock(table, tableAlias));
         return (UT) this;
     }
 
@@ -92,7 +92,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
     @Override
     public final UT update(TableMeta<? extends IDomain> table, String tableAlias) {
-        this.criteriaContext.onFirstBlock(new FirstBlock(table, tableAlias));
+        this.criteriaContext.onNoneBlock(new FirstBlock(table, tableAlias));
         return (UT) this;
     }
 
@@ -101,13 +101,13 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
         return (US) this;
     }
 
     @Override
     public final <T extends TableItem> US update(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(supplier.get(), alias));
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
         return (US) this;
     }
 
@@ -116,13 +116,13 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
 
     @Override
     public final <T extends TableItem> US update(Function<C, T> function, String alias) {
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
 
@@ -354,7 +354,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             throw new CriteriaException("index hint clause index name list must not empty.");
         }
         final _TableBlock block;
-        block = this.criteriaContext.firstBlock();
+        block = this.criteriaContext.lastNoneBlock();
         if (!(block instanceof FirstBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -681,11 +681,11 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             final List<String> partitionList = this.partitionList;
             final _TableBlock block;
             if (partitionList == null) {
-                block = TableBlock.firstBlock(this.table, tableAlias);
+                block = TableBlock.noneBlock(this.table, tableAlias);
             } else {
                 block = new FirstBlock(table, tableAlias, partitionList);
             }
-            this.update.criteriaContext.onFirstBlock(block);
+            this.update.criteriaContext.onNoneBlock(block);
             return this.update;
         }
 
@@ -714,11 +714,11 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             final List<String> partitionList = this.partitionList;
             final _TableBlock block;
             if (partitionList == null) {
-                block = TableBlock.firstBlock(this.table, alias);
+                block = TableBlock.noneBlock(this.table, alias);
             } else {
                 block = new FirstBlock(table, alias, partitionList);
             }
-            this.update.criteriaContext.onFirstBlock(block);
+            this.update.criteriaContext.onNoneBlock(block);
             return this.update;
         }
     }// BatchPartitionJoinSpec
@@ -738,8 +738,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        CriteriaContext getCriteriaContext() {
-            return this.update.criteriaContext;
+        C getCriteria() {
+            return this.update.criteria;
         }
 
         @Override
@@ -782,8 +782,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        CriteriaContext getCriteriaContext() {
-            return this.update.criteriaContext;
+        C getCriteria() {
+            return this.update.criteria;
         }
 
         @Override
@@ -851,8 +851,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        CriteriaContext getCriteriaContext() {
-            return this.update.criteriaContext;
+        C getCriteria() {
+            return this.update.criteria;
         }
 
         @Override
@@ -900,8 +900,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        CriteriaContext getCriteriaContext() {
-            return this.update.criteriaContext;
+        C getCriteria() {
+            return this.update.criteria;
         }
 
         @Override
@@ -1062,8 +1062,10 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             C,
             NestedJoin.UpdateIndexHintSpec<C>,
             NestedJoin.UpdateOnSpec<C>,
-            NestedJoin.UpdatePartitionSpec<C>>
-            implements NestedJoin, NestedJoin.UpdateJoinSpec<C> {
+            NestedJoin.UpdatePartitionSpec<C>> implements NestedJoin, NestedJoin.UpdateJoinSpec<C> {
+
+        private NestedJoin.UpdatePartitionSpec<C> noActionPartitionBlock;
+
 
         private SimpleNestedJoin(TableItem tableItem, String alias, @Nullable C criteria) {
             super(tableItem, alias, criteria);
@@ -1071,7 +1073,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
         @Override
         UpdateIndexHintSpec<C> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
-            return null;
+            return new NestedIndexHintOnBlock<>(joinType, table, tableAlias, this);
         }
 
         @Override
@@ -1089,8 +1091,60 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             return null;
         }
 
+        @Override
+        UpdatePartitionSpec<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
+            return super.createBlockBeforeAs(joinType, table);
+        }
+
+        @Override
+        UpdatePartitionSpec<C> ifJointTableBeforeAs(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
+            return super.ifJointTableBeforeAs(predicate, joinType, table);
+        }
+
 
     }//MySQLNestedJoin
+
+
+    private static final class NestedIndexHintOnBlock<C> extends MySQLIndexHintOnBlock<
+            C,
+            NestedJoin.UpdateIndexSpec<C>,
+            NestedJoin.UpdateOnSpec<C>,
+            NestedJoin.UpdateJoinSpec<C>> implements NestedJoin.UpdateIndexHintSpec<C> {
+
+        private final SimpleNestedJoin<C> nestedJoin;
+
+        private final List<String> partitionList;
+
+        private NestedIndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias
+                , SimpleNestedJoin<C> nestedJoin) {
+            super(joinType, table, alias);
+            this.nestedJoin = nestedJoin;
+            this.partitionList = Collections.emptyList();
+        }
+
+        private NestedIndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias
+                , SimpleNestedJoin<C> nestedJoin, List<String> partitionList) {
+            super(joinType, table, alias);
+            this.nestedJoin = nestedJoin;
+            this.partitionList = partitionList;
+        }
+
+        @Override
+        public List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        C getCriteria() {
+            return this.nestedJoin.criteria;
+        }
+
+        @Override
+        NestedJoin.UpdateJoinSpec<C> endOnClause() {
+            return this.nestedJoin;
+        }
+
+    }//NestedIndexHintOnBlock
 
 
 }

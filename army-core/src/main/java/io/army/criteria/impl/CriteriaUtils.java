@@ -2,8 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._PartQuery;
-import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 
@@ -168,6 +167,14 @@ abstract class CriteriaUtils {
         return paramList((List<?>) value);
     }
 
+    static _TableBlock leftBracketBlock() {
+        return LeftBracketTableBlock.INSTANCE;
+    }
+
+    static _TableBlock rightBracketBlock() {
+        return RightBracketTableBlock.INSTANCE;
+    }
+
     @SuppressWarnings("unchecked")
     @Nullable
     static <C> C getCriteria(final Query query) {
@@ -216,5 +223,63 @@ abstract class CriteriaUtils {
         return new CriteriaException(m);
     }
 
+
+    private static final class LeftBracketTableBlock implements _TableBlock, _LeftBracketBlock {
+
+        private static final LeftBracketTableBlock INSTANCE = new LeftBracketTableBlock();
+
+        private LeftBracketTableBlock() {
+        }
+
+        @Override
+        public TableItem tableItem() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String alias() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public _JoinType jointType() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<_Predicate> predicates() {
+            throw new UnsupportedOperationException();
+        }
+
+    }//LeftBracketTableBlock
+
+    private static final class RightBracketTableBlock implements _TableBlock, _RightBracketBlock {
+
+        private static final RightBracketTableBlock INSTANCE = new RightBracketTableBlock();
+
+        private RightBracketTableBlock() {
+        }
+
+        @Override
+        public TableItem tableItem() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String alias() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public _JoinType jointType() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<_Predicate> predicates() {
+            throw new UnsupportedOperationException();
+        }
+
+    }//RightBracketTableBlock
 
 }

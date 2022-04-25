@@ -30,25 +30,34 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     @Override
     public final IR useIndex() {
-        this.setIndexHintCommand(MySQLIndexHint.Command.USER_INDEX);
+        if (this.indexHintCommand != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.indexHintCommand = MySQLIndexHint.Command.USER_INDEX;
         return (IR) this;
     }
 
     @Override
     public final IR ignoreIndex() {
-        this.setIndexHintCommand(MySQLIndexHint.Command.IGNORE_INDEX);
+        if (this.indexHintCommand != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.indexHintCommand = MySQLIndexHint.Command.IGNORE_INDEX;
         return (IR) this;
     }
 
     @Override
     public final IR forceIndex() {
-        this.setIndexHintCommand(MySQLIndexHint.Command.FORCE_INDEX);
+        if (this.indexHintCommand != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.indexHintCommand = MySQLIndexHint.Command.FORCE_INDEX;
         return (IR) this;
     }
 
     @Override
     public final IR ifUseIndex(Predicate<C> predicate) {
-        if (predicate.test(this.getCriteriaContext().criteria())) {
+        if (predicate.test(this.getCriteria())) {
             this.useIndex();
         } else {
             this.indexHintCommand = null;
@@ -58,7 +67,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     @Override
     public final IR ifIgnoreIndex(Predicate<C> predicate) {
-        if (predicate.test(this.getCriteriaContext().criteria())) {
+        if (predicate.test(this.getCriteria())) {
             this.ignoreIndex();
         } else {
             this.indexHintCommand = null;
@@ -68,7 +77,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     @Override
     public final IR ifForceIndex(Predicate<C> predicate) {
-        if (predicate.test(this.getCriteriaContext().criteria())) {
+        if (predicate.test(this.getCriteria())) {
             this.forceIndex();
         } else {
             this.indexHintCommand = null;
@@ -97,7 +106,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC ifUseIndex(Function<C, List<String>> function) {
         final List<String> list;
-        list = function.apply(this.getCriteriaContext().criteria());
+        list = function.apply(this.getCriteria());
         if (!_CollectionUtils.isEmpty(list)) {
             this.useIndex(list);
         }
@@ -107,7 +116,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC ifIgnoreIndex(Function<C, List<String>> function) {
         final List<String> list;
-        list = function.apply(this.getCriteriaContext().criteria());
+        list = function.apply(this.getCriteria());
         if (!_CollectionUtils.isEmpty(list)) {
             this.ignoreIndex(list);
         }
@@ -117,7 +126,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC ifForceIndex(Function<C, List<String>> function) {
         final List<String> list;
-        list = function.apply(this.getCriteriaContext().criteria());
+        list = function.apply(this.getCriteria());
         if (!_CollectionUtils.isEmpty(list)) {
             this.forceIndex(list);
         }
@@ -160,7 +169,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC forJoin(Function<C, List<String>> function) {
         if (this.indexHintCommand != null) {
-            this.forJoin(function.apply(this.getCriteriaContext().criteria()));
+            this.forJoin(function.apply(this.getCriteria()));
         }
         return (IC) this;
     }
@@ -168,7 +177,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC forOrderBy(Function<C, List<String>> function) {
         if (this.indexHintCommand != null) {
-            this.forOrderBy(function.apply(this.getCriteriaContext().criteria()));
+            this.forOrderBy(function.apply(this.getCriteria()));
         }
         return (IC) this;
     }
@@ -176,7 +185,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
     @Override
     public final IC forGroupBy(Function<C, List<String>> function) {
         if (this.indexHintCommand != null) {
-            this.forGroupBy(function.apply(this.getCriteriaContext().criteria()));
+            this.forGroupBy(function.apply(this.getCriteria()));
         }
         return (IC) this;
     }
@@ -192,18 +201,6 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
             indexHintList = _CollectionUtils.asUnmodifiableList(indexHintList);
         }
         return indexHintList;
-    }
-
-    /**
-     * @see #useIndex()
-     * @see #ignoreIndex()
-     * @see #forceIndex()
-     */
-    private void setIndexHintCommand(MySQLIndexHint.Command command) {
-        if (this.indexHintCommand != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.indexHintCommand = command;
     }
 
 

@@ -5,6 +5,7 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
 import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.lang.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,7 +61,7 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
 
     @Override
     public final OR on(Function<C, List<IPredicate>> function) {
-        return this.on(function.apply(this.getCriteriaContext().criteria()));
+        return this.on(function.apply(this.getCriteria()));
     }
 
     @Override
@@ -87,7 +88,8 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
         return this.alias;
     }
 
-    abstract CriteriaContext getCriteriaContext();
+    @Nullable
+    abstract C getCriteria();
 
     abstract OR endOnClause();
 

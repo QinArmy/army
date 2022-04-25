@@ -23,7 +23,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         StandardQuery.StandardUnionSpec<C, Q>, //UR
         StandardQuery.StandardLimitClause<C, Q>,//OR
         StandardQuery.StandardUnionClause<C, Q>,//LR
-        StandardQuery.StandardSelectSpec<C, Q>>// SP
+        StandardQuery.StandardSelectClause<C, Q>>// SP
         implements StandardQuery.StandardUnionSpec<C, Q>, _UnionQuery, StandardQuery {
 
     static <C, Q extends Query> StandardUnionSpec<C, Q> bracketQuery(final Q query) {
@@ -106,7 +106,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    final StandardSelectSpec<C, Q> asQueryAndQuery(UnionType unionType) {
+    final StandardSelectClause<C, Q> asQueryAndQuery(UnionType unionType) {
         return StandardSimpleQuery.asQueryAndQuery(this.asQuery(), unionType);
     }
 

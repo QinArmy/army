@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Query;
 import io.army.criteria.SQLModifier;
-import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLQuery;
@@ -14,16 +13,15 @@ import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 
 @SuppressWarnings("unchecked")
-abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, IT, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends SimpleQuery<C, Q, SR, FT, FS, JT, JS, IT, WR, AR, GR, HR, OR, LR, UR, SP>
-        implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, IT>
-        , MySQLQuery.MySQLFromClause<C, FT, FS, FP>, MySQLQuery.IndexHintClause<C, IR, FT>
+abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, JP, JC, JE, JF, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends SimpleQuery<C, Q, SR, FT, FS, FP, JT, JS, JP, JC, JE, JF, WR, AR, GR, HR, OR, LR, UR, SP>
+        implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, JP, JC, FS, JE, JF>
+        , MySQLQuery.MySQLFromClause<C, FT, FS, FP, JE>, MySQLQuery.IndexHintClause<C, IR, FT>
         , MySQLQuery.IndexPurposeClause<C, FT> {
 
     private MySQLIndexHint.Command indexHintCommand;
@@ -35,8 +33,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
 
     @Override
     public final FP from(TableMeta<?> table) {
-        return createFirstPartitionBlock(table);
+        return this.createNoneBlockBeforeAs(table);
     }
+
 
     @Override
     public final IR useIndex() {
@@ -190,31 +189,23 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         return (FT) this;
     }
 
-    abstract IT createNoActionPartitionBlock();
+    abstract JP createNoActionPartitionBlock();
 
 
     @Override
-    final FT addFirstTableBlock(TableMeta<?> table, String tableAlias) {
-        this.criteriaContext.onFirstBlock(new MySQLFirstBlock<>(table, tableAlias, this));
-        return (FT) this;
+    final _TableBlock createNoneTableBlock(TableMeta<?> table, String tableAlias) {
+        return new MySQLNoneBlock<>(table, tableAlias, this);
     }
 
-    @Override
-    final FS addFirstTablePartBlock(TableItem tableItem, String alias) {
-        Objects.requireNonNull(tableItem);
-        this.criteriaContext.onFirstBlock(TableBlock.firstBlock(tableItem, alias));
-        return (FS) this;
-    }
 
-    abstract FP createFirstPartitionBlock(TableMeta<?> table);
 
 
     /*################################## blow private method ##################################*/
 
 
     @Override
-    final IT ifJointTableBeforeAs(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
-        final IT block;
+    final JP ifJointTableBeforeAs(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
+        final JP block;
         if (predicate.test(this.criteria)) {
             block = this.createBlockBeforeAs(joinType, table);
         } else {
@@ -233,8 +224,8 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         if (this.indexHintCommand != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        final _TableBlock block = this.criteriaContext.firstBlock();
-        if (!(block instanceof MySQLFirstBlock)) {
+        final _TableBlock block = this.criteriaContext.lastNoneBlock();
+        if (!(block instanceof MySQLNoneBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
         this.indexHintCommand = command;
@@ -254,14 +245,14 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         if (this.indexHintCommand != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        final _TableBlock block = this.criteriaContext.firstBlock();
-        if (!(block instanceof MySQLFirstBlock)) {
+        final _TableBlock block = this.criteriaContext.lastNoneBlock();
+        if (!(block instanceof MySQLNoneBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
         if (_CollectionUtils.isEmpty(indexNames)) {
             throw new CriteriaException("index name list must not empty.");
         }
-        final MySQLFirstBlock<C, OR> tableBlock = (MySQLFirstBlock<C, OR>) block;
+        final MySQLNoneBlock<C, OR> tableBlock = (MySQLNoneBlock<C, OR>) block;
         List<MySQLIndexHint> indexHintList = tableBlock.indexHintList;
         if (indexHintList == null) {
             indexHintList = new ArrayList<>();

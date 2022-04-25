@@ -37,18 +37,23 @@ abstract class TableBlock implements _TableBlock {
     }
 
 
-    static TableBlock firstBlock(TableItem tableItem, String alias) {
+    static TableBlock noneBlock(TableItem tableItem, String alias) {
         Objects.requireNonNull(tableItem);
-        return new SimpleTableBlock(tableItem, alias);
+        return new SimpleTableBlock(_JoinType.NONE, tableItem, alias);
+    }
+
+    static TableBlock crossBlock(TableItem tableItem, String alias) {
+        Objects.requireNonNull(tableItem);
+        return new SimpleTableBlock(_JoinType.CROSS_JOIN, tableItem, alias);
     }
 
 
-    static class SimpleTableBlock extends TableBlock {
+    private static class SimpleTableBlock extends TableBlock {
 
         private final String alias;
 
-        SimpleTableBlock(TableItem tableItem, String alias) {
-            super(tableItem, _JoinType.NONE);
+        SimpleTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+            super(tableItem, joinType);
             this.alias = alias;
         }
 

@@ -126,7 +126,7 @@ public interface Query extends Statement {
     }
 
 
-    interface UnionClause<C, UR, SP, Q extends Query> {
+    interface UnionClause<C, Q, UR, SP> {
 
         UR bracket();
 

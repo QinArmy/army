@@ -10,6 +10,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
+import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -161,6 +162,8 @@ abstract class CriteriaContexts {
 
         Map<String, Map<String, DerivedField>> aliasToSelection;
 
+        Deque<_LeftBracketBlock> bracketStack;
+
 
         private JoinableContext(@Nullable Object criteria) {
             super(criteria);
@@ -185,28 +188,60 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void onFirstBlock(final _TableBlock block) {
+        public final void onNoneBlock(final _TableBlock block) {
             if (block.jointType() != _JoinType.NONE || block.predicates().size() > 0) {
                 throw _Exceptions.castCriteriaApi();
             }
-            final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
-            if (aliasToBlock.size() > 0) {
+            final List<_TableBlock> tableBlockList = this.tableBlockList;
+            final int size = tableBlockList.size();
+            if (size > 0 && !(tableBlockList.get(size - 1) instanceof _LeftBracketBlock)) {
                 throw _Exceptions.castCriteriaApi();
             }
-            if (aliasToBlock.putIfAbsent(block.alias(), block) != null) {
+            if (this.aliasToBlock.putIfAbsent(block.alias(), block) != null) {
                 throw _Exceptions.tableAliasDuplication(block.alias());
             }
-            this.tableBlockList.add(block);
+            tableBlockList.add(block);
             this.doOnAddBlock(block);
         }
 
         @Override
-        public final _TableBlock firstBlock() {
+        public final void onBracketBlock(final _TableBlock block) {
+            Deque<_LeftBracketBlock> bracketStack = this.bracketStack;
+            if (bracketStack == null) {
+                bracketStack = new LinkedList<>();
+                this.bracketStack = bracketStack;
+            }
+            if (block instanceof _LeftBracketBlock) {
+                bracketStack.push((_LeftBracketBlock) block);
+            } else if (!(block instanceof _RightBracketBlock)) {
+                String m;
+                m = String.format("%s isn't %s.", _ClassUtils.safeClassName(block), _RightBracketBlock.class.getName());
+                throw new IllegalArgumentException(m);
+            } else if (bracketStack.size() == 0) {
+                throw new CriteriaException("Not fond left bracket for current right bracket.");
+            } else {
+                bracketStack.pop();
+            }
+            this.tableBlockList.add(block);
+        }
+
+        @Override
+        public final void onJoinType(final _JoinType joinType) {
+            this.tableBlockList.add(joinType);
+        }
+
+        @Override
+        public final _TableBlock lastNoneBlock() {
             final List<_TableBlock> tableBlockList = this.tableBlockList;
-            if (tableBlockList.size() != 1) {
+            if (tableBlockList.size() == 0) {
                 throw _Exceptions.castCriteriaApi();
             }
-            return tableBlockList.get(0);
+            final _TableBlock block;
+            block = tableBlockList.get(tableBlockList.size() - 1);
+            if (block instanceof _NoTableBlock || block.jointType() != _JoinType.NONE) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            return block;
         }
 
 
@@ -278,6 +313,13 @@ abstract class CriteriaContexts {
                 aliasToField.clear();
             }
             this.onClear();
+
+            final Deque<_LeftBracketBlock> bracketStack = this.bracketStack;
+            if (bracketStack != null && bracketStack.size() > 0) {
+                String m = String.format("%s bracket not close in join expression clause.", bracketStack.size());
+                throw new CriteriaException(m);
+            }
+            this.bracketStack = null;
             return _CollectionUtils.unmodifiableList(tableBlockList);
         }
 
@@ -374,12 +416,22 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void onFirstBlock(_TableBlock block) {
+        public final void onNoneBlock(_TableBlock block) {
             throw nonJoinable("onFirstBlock");
         }
 
         @Override
-        public final _TableBlock firstBlock() {
+        public final void onBracketBlock(_TableBlock block) {
+            throw nonJoinable("onBracketBlock");
+        }
+
+        @Override
+        public final void onJoinType(_JoinType joinType) {
+            throw nonJoinable("onJoinType");
+        }
+
+        @Override
+        public final _TableBlock lastNoneBlock() {
             throw nonJoinable("firstBlock");
         }
 
@@ -577,13 +629,23 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void onFirstBlock(_TableBlock block) {
+        public void onNoneBlock(_TableBlock block) {
             throw nonJoinable("onFirstBlock");
         }
 
         @Override
-        public _TableBlock firstBlock() {
+        public _TableBlock lastNoneBlock() {
             throw nonJoinable("firstBlock");
+        }
+
+        @Override
+        public void onBracketBlock(_TableBlock block) {
+            throw nonJoinable("onBracketBlock");
+        }
+
+        @Override
+        public void onJoinType(_JoinType joinType) {
+            throw nonJoinable("onJoinType");
         }
 
         @Override
