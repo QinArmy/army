@@ -658,7 +658,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @since 1.0
      */
     interface Union57Spec<C, Q extends Query>
-            extends Query.UnionClause<C, UnionOrderBy57Spec<C, Q>, Select57Clause<C, Q>, Q>
+            extends QueryUnionClause<C, UnionOrderBy57Spec<C, Q>, Select57Clause<C, Q>, Q>
             , Query.QuerySpec<Q> {
 
     }

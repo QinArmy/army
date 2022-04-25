@@ -146,7 +146,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("Unknown %s type[%s].", SetLeftItem.class.getName(), target));
     }
 
-    public static CriteriaException unknownQueryType(Query query) {
+    public static CriteriaException unknownRowSetType(RowSet query) {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 

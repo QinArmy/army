@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.Select;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._PartQuery;
+import io.army.criteria.impl.inner._PartRowSet;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
@@ -30,13 +30,13 @@ final class UnionSelectContext extends StmtContext implements _UnionQueryContext
     private UnionSelectContext(Select select, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
         this.outerContext = null;
-        this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectItemList());
+        this.selectionList = _DqlUtils.flatSelectParts(((_PartRowSet) select).selectItemList());
     }
 
 
     private UnionSelectContext(Select select, _SelectContext outerContext) {
         super((StmtContext) outerContext);
-        this.selectionList = _DqlUtils.flatSelectParts(((_PartQuery) select).selectItemList());
+        this.selectionList = _DqlUtils.flatSelectParts(((_PartRowSet) select).selectItemList());
         this.outerContext = outerContext;
     }
 

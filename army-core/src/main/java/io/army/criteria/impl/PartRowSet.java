@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._PartQuery;
+import io.army.criteria.impl.inner._PartRowSet;
 import io.army.dialect.Dialect;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
@@ -9,6 +9,7 @@ import io.army.stmt.SimpleStmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,9 +18,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements CriteriaContextSpec, _PartQuery, Query
-        , Query.OrderByClause<C, OR>, Query.LimitClause<C, LR>
-        , Query.UnionClause<C, UR, SP, Q>, Query.QuerySpec<Q>, CriteriaSpec<C> {
+abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements CriteriaContextSpec, _PartRowSet, RowSet
+        , Query.OrderByClause<C, OR>, Query.LimitClause<C, LR>, Query.QueryUnionClause<C, UR, SP>, CriteriaSpec<C>
+        , Values.ValuesSpec {
+
+    static final boolean FOR_AS_ROW_SET = false;
 
     final C criteria;
 
@@ -34,7 +37,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     private boolean prepared;
 
 
-    PartQuery(CriteriaContext criteriaContext) {
+    PartRowSet(CriteriaContext criteriaContext) {
         this.criteria = criteriaContext.criteria();
         this.criteriaContext = criteriaContext;
     }
@@ -50,48 +53,76 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final UR union(Function<C, Q> function) {
-        return innerCreate(UnionType.UNION, function);
+    public final UR bracket() {
+
+        final boolean isUnionAndRowSet = this instanceof UnionAndRowSet;
+        final Q thisQuery;
+        thisQuery = this.asRowSet(isUnionAndRowSet);
+
+        final UR spec;
+        if (!isUnionAndRowSet) {
+            spec = createBracketQuery(thisQuery);
+        } else if (!(this instanceof ScalarSubQuery)) {
+            if (thisQuery != this) {
+                throw asQueryMethodError();
+            }
+            final UnionAndRowSet unionAndRowSet = (UnionAndRowSet) this;
+            spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), thisQuery);
+        } else if (!(thisQuery instanceof ScalarSubQueryExpression)) {
+            throw asQueryMethodError();
+        } else if (((ScalarSubQueryExpression) thisQuery).subQuery != this) {
+            throw asQueryMethodError();
+        } else {
+            final UnionAndRowSet unionAndRowSet = (UnionAndRowSet) this;
+            spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), thisQuery);
+        }
+        return spec;
+    }
+
+
+    @Override
+    public final UR union(Function<C, ? extends RowSet> function) {
+        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION, function.apply(this.criteria));
     }
 
     @Override
-    public final UR union(Supplier<Q> supplier) {
-        return innerCreate(UnionType.UNION, supplier);
+    public final UR union(Supplier<? extends RowSet> supplier) {
+        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION, supplier.get());
     }
 
     @Override
     public final SP union() {
-        return this.asQueryAndQuery(UnionType.UNION);
+        return this.asUnionAndRowSet(UnionType.UNION);
     }
 
     @Override
-    public final UR unionAll(Function<C, Q> function) {
-        return innerCreate(UnionType.UNION_ALL, function);
+    public final UR unionAll(Function<C, ? extends RowSet> function) {
+        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION_ALL, function.apply(this.criteria));
     }
 
     @Override
-    public final UR unionAll(Supplier<Q> supplier) {
-        return innerCreate(UnionType.UNION_ALL, supplier);
+    public final UR unionAll(Supplier<? extends RowSet> supplier) {
+        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION_ALL, supplier.get());
     }
 
     @Override
     public final SP unionAll() {
-        return this.asQueryAndQuery(UnionType.UNION_ALL);
+        return this.asUnionAndRowSet(UnionType.UNION_ALL);
     }
 
     @Override
-    public final UR unionDistinct(Function<C, Q> function) {
-        return innerCreate(UnionType.UNION_DISTINCT, function);
+    public final UR unionDistinct(Function<C, ? extends RowSet> function) {
+        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION_DISTINCT, function.apply(this.criteria));
     }
 
     @Override
-    public final UR unionDistinct(Supplier<Q> supplier) {
-        return innerCreate(UnionType.UNION_DISTINCT, supplier);
+    public final UR unionDistinct(Supplier<? extends RowSet> supplier) {
+        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION_DISTINCT, supplier.get());
     }
 
     @Override
     public final SP unionDistinct() {
-        return this.asQueryAndQuery(UnionType.UNION_DISTINCT);
+        return this.asUnionAndRowSet(UnionType.UNION_DISTINCT);
     }
 
     @Override
@@ -202,9 +233,9 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR limit(Supplier<Object> rowCount) {
-        final Object rowCountValue;
-        rowCountValue = rowCount.get();
+    public final LR limit(Supplier<? extends Number> rowCountSupplier) {
+        final Number rowCountValue;
+        rowCountValue = rowCountSupplier.get();
         if (rowCountValue instanceof Long) {
             this.rowCount = (Long) rowCountValue;
         } else if (rowCountValue instanceof Integer) {
@@ -217,7 +248,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
 
     @Override
-    public final LR limit(Function<String, Object> function, String rowCountKey) {
+    public final LR limit(Function<String, ?> function, String rowCountKey) {
         final Object rowCountValue;
         rowCountValue = function.apply(rowCountKey);
         if (rowCountValue instanceof Long) {
@@ -232,10 +263,9 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
 
     @Override
-    public final LR limit(Supplier<Object> offset, Supplier<Object> rowCount) {
-        final Object offsetValue, rowCountValue;
-        offsetValue = offset.get();
-        rowCountValue = rowCount.get();
+    public final LR limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
+        final Number offsetValue, rowCountValue;
+        offsetValue = offsetSupplier.get();
 
         if (offsetValue instanceof Long) {
             this.offset = (Long) offsetValue;
@@ -244,7 +274,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         } else {
             throw supplierReturnError(offsetValue);
         }
-
+        rowCountValue = rowCountSupplier.get();
         if (rowCountValue instanceof Long) {
             this.rowCount = (Long) rowCountValue;
         } else if (rowCountValue instanceof Integer) {
@@ -256,10 +286,9 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR limit(Function<String, Object> function, String offsetKey, String rowCountKey) {
+    public final LR limit(Function<String, ?> function, String offsetKey, String rowCountKey) {
         final Object offsetValue, rowCountValue;
         offsetValue = function.apply(offsetKey);
-        rowCountValue = function.apply(rowCountKey);
 
         if (offsetValue instanceof Long) {
             this.offset = (Long) offsetValue;
@@ -268,7 +297,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         } else {
             throw functionReturnError(offsetValue);
         }
-
+        rowCountValue = function.apply(rowCountKey);
         if (rowCountValue instanceof Long) {
             this.rowCount = (Long) rowCountValue;
         } else if (rowCountValue instanceof Integer) {
@@ -291,10 +320,9 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR ifLimit(Supplier<Object> rowCount) {
+    public final LR ifLimit(Supplier<? extends Number> rowCountSupplier) {
         final Object rowCountValue;
-        rowCountValue = rowCount.get();
-
+        rowCountValue = rowCountSupplier.get();
         if (rowCountValue instanceof Long) {
             this.rowCount = (Long) rowCountValue;
         } else if (rowCountValue instanceof Integer) {
@@ -304,11 +332,9 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR ifLimit(Supplier<Object> offset, Supplier<Object> rowCount) {
+    public final LR ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
         final Object offsetValue, rowCountValue;
-        offsetValue = offset.get();
-        rowCountValue = rowCount.get();
-
+        offsetValue = offsetSupplier.get();
         if (offsetValue instanceof Long) {
             this.offset = (Long) offsetValue;
         } else if (offsetValue instanceof Integer) {
@@ -316,7 +342,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         } else {
             return (LR) this;
         }
-
+        rowCountValue = rowCountSupplier.get();
         if (rowCountValue instanceof Long) {
             this.rowCount = (Long) rowCountValue;
         } else if (rowCountValue instanceof Integer) {
@@ -328,7 +354,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR ifLimit(Function<String, Object> function, String rowCountKey) {
+    public final LR ifLimit(Function<String, ?> function, String rowCountKey) {
         final Object rowCountValue;
         rowCountValue = function.apply(rowCountKey);
 
@@ -341,7 +367,7 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     }
 
     @Override
-    public final LR ifLimit(Function<String, Object> function, String offsetKey, String rowCountKey) {
+    public final LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey) {
         final Object offsetValue, rowCountValue;
         offsetValue = function.apply(offsetKey);
         rowCountValue = function.apply(rowCountKey);
@@ -374,12 +400,6 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         _Assert.prepared(this.prepared);
     }
 
-
-    @Override
-    public final Q asQuery() {
-        return this.innerAsQuery(true);
-    }
-
     @Override
     public final List<? extends SortItem> orderByList() {
         _Assert.prepared(this.prepared);
@@ -394,6 +414,26 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
     @Override
     public final long rowCount() {
         return this.rowCount;
+    }
+
+
+    @Override
+    public final Values asValues() {
+        final Q rowSet;
+        rowSet = this.asRowSet(FOR_AS_ROW_SET);
+        if (!(rowSet instanceof Values)) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return (Values) rowSet;
+    }
+
+    public final Q asQuery() {
+        final Q rowSet;
+        rowSet = this.asRowSet(FOR_AS_ROW_SET);
+        if (!(rowSet instanceof Query)) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return rowSet;
     }
 
     @Override
@@ -442,8 +482,17 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         return !_CollectionUtils.isEmpty(this.orderByList);
     }
 
-    final Q asQueryAndQuery() {
-        return innerAsQuery(false);
+    final Q asRowSet(final boolean justAsQuery) {
+        _Assert.nonPrepared(this.prepared);
+
+        final List<? extends SortItem> sortItemList = this.orderByList;
+        if (sortItemList == null) {
+            this.orderByList = Collections.emptyList();
+        }
+        final Q query;
+        query = internalAsRowSet(justAsQuery);
+        this.prepared = true;
+        return query;
     }
 
     void afterOrderBy() {
@@ -454,46 +503,15 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
 
     abstract void validateDialect(Dialect mode);
 
-    abstract Q internalAsQuery(boolean justAsQuery);
+    abstract Q internalAsRowSet(boolean justAsQuery);
+
+    abstract UR createBracketQuery(RowSet rowSet);
 
     abstract void internalClear();
 
-    abstract UR createUnionQuery(Q left, UnionType unionType, Q right);
+    abstract UR createUnionRowSet(RowSet left, UnionType unionType, RowSet right);
 
-    abstract SP asQueryAndQuery(UnionType unionType);
-
-    private UR innerCreate(UnionType unionType, Function<C, Q> function) {
-        final Q left, right;
-        //firstly(must),end this query
-        left = this.asQuery();
-        right = function.apply(this.criteria);
-        assert right != null;
-        right.prepared();
-        return createUnionQuery(left, unionType, right);
-    }
-
-    private UR innerCreate(UnionType unionType, Supplier<Q> supplier) {
-        final Q left, right;
-        //firstly(must),end this query
-        left = this.asQuery();
-        right = supplier.get();
-        assert right != null;
-        right.prepared();
-        return createUnionQuery(left, unionType, right);
-    }
-
-    private Q innerAsQuery(final boolean justAsQuery) {
-        _Assert.nonPrepared(this.prepared);
-
-        final List<? extends SortItem> sortItemList = this.orderByList;
-        if (sortItemList == null) {
-            this.orderByList = Collections.emptyList();
-        }
-        final Q query;
-        query = internalAsQuery(justAsQuery);
-        this.prepared = true;
-        return query;
-    }
+    abstract SP asUnionAndRowSet(UnionType unionType);
 
 
     private static CriteriaException supplierReturnError(Object value) {
@@ -506,6 +524,10 @@ abstract class PartQuery<C, Q extends Query, UR, OR, LR, SP> implements Criteria
         String m = String.format("%s return %s ,but it isn't %s or %s ."
                 , Function.class.getName(), value, Long.class.getName(), Integer.class.getName());
         return new CriteriaException(m);
+    }
+
+    private static IllegalStateException asQueryMethodError() {
+        return new IllegalStateException("onAsQuery(boolean) error");
     }
 
 

@@ -3,10 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._StandardQuery;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.Dialect;
-import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
@@ -16,35 +15,38 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
+ * <p>
+ * This class is a implementation of standard simple query.
+ * </p>
+ *
  * @see StandardUnionQuery
+ * @since 1.0
  */
 abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         C,
         Q,
         StandardQuery.StandardFromSpec<C, Q>, // SR
-        StandardQuery.StandardJoinSpec<C, Q>,// FT
-        StandardQuery.StandardJoinSpec<C, Q>,// FS
+        StandardQuery.JoinSpec<C, Q>,// FT
+        StandardQuery.JoinSpec<C, Q>,// FS
         Void,                               // FP
-        StandardQuery.StandardOnSpec<C, Q>, // JT
-        StandardQuery.StandardOnSpec<C, Q>, // JS
+        StandardQuery.StandardOnClause<C, Q>, // JT
+        StandardQuery.StandardOnClause<C, Q>, // JS
         Void,                               // JP
-        StandardQuery.StandardJoinSpec<C, Q>,// JC
-        Void,                               // JE
+        StandardQuery.JoinSpec<C, Q>,// JC
+        StandardQuery.StandardLestBracketClause<C, Q>,// JE
         Void,                               // JF
-        StandardQuery.StandardGroupBySpec<C, Q>, // WR
-        StandardQuery.StandardWhereAndSpec<C, Q>, // AR
-        StandardQuery.StandardHavingSpec<C, Q>, // GR
-        StandardQuery.StandardOrderBySpec<C, Q>, // HR
-        StandardQuery.StandardLimitSpec<C, Q>, // OR
-        StandardQuery.StandardLockSpec<C, Q>, // LR
-        StandardQuery.StandardUnionSpec<C, Q>, // UR
+        StandardQuery.GroupBySpec<C, Q>, // WR
+        StandardQuery.WhereAndSpec<C, Q>, // AR
+        StandardQuery.HavingSpec<C, Q>, // GR
+        StandardQuery.OrderBySpec<C, Q>, // HR
+        StandardQuery.LimitSpec<C, Q>, // OR
+        StandardQuery.LockSpec<C, Q>, // LR
+        StandardQuery.UnionOrderBySpec<C, Q>, // UR
         StandardQuery.StandardSelectClause<C, Q>> // SP
 
         implements StandardQuery, StandardQuery.StandardSelectClause<C, Q>, StandardQuery.StandardFromSpec<C, Q>
-        , StandardQuery.StandardJoinSpec<C, Q>, StandardQuery.StandardGroupBySpec<C, Q>
-        , StandardQuery.StandardWhereAndSpec<C, Q>, StandardQuery.StandardHavingSpec<C, Q>
-        , StandardQuery.StandardOrderBySpec<C, Q>, StandardQuery.StandardLimitSpec<C, Q>
-        , StandardQuery.StandardLockSpec<C, Q>, _StandardQuery {
+        , StandardQuery.JoinSpec<C, Q>, StandardQuery.WhereAndSpec<C, Q>, StandardQuery.HavingSpec<C, Q>
+        , StandardQuery.StandardLestBracketClause<C, Q>, _StandardQuery {
 
 
     static <C> StandardSelectClause<C, Select> query(@Nullable C criteria) {
@@ -60,7 +62,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @SuppressWarnings("unchecked")
-    static <C, Q extends Query> StandardSelectClause<C, Q> asQueryAndQuery(Q query, UnionType unionType) {
+    static <C, Q extends Query> StandardSelectClause<C, Q> unionAndQuery(Q query, UnionType unionType) {
         final StandardSelectClause<C, ?> spec;
         if (query instanceof Select) {
             spec = new UnionAndSelect<>((Select) query, unionType);
@@ -69,7 +71,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         } else if (query instanceof SubQuery) {
             spec = new UnionAndSubQuery<>((SubQuery) query, unionType);
         } else {
-            throw _Exceptions.unknownQueryType(query);
+            throw _Exceptions.unknownRowSetType(query);
         }
         return (StandardSelectClause<C, Q>) spec;
     }
@@ -100,13 +102,13 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final StandardUnionClause<C, Q> lock(LockMode lockMode) {
+    public final UnionSpec<C, Q> lock(LockMode lockMode) {
         this.lockMode = lockMode;
         return this;
     }
 
     @Override
-    public final StandardUnionClause<C, Q> lock(Function<C, LockMode> function) {
+    public final UnionSpec<C, Q> lock(Function<C, LockMode> function) {
         final LockMode lockMode;
         lockMode = function.apply(this.criteria);
         Objects.requireNonNull(lockMode);
@@ -115,7 +117,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final StandardUnionClause<C, Q> ifLock(@Nullable LockMode lockMode) {
+    public final UnionSpec<C, Q> ifLock(@Nullable LockMode lockMode) {
         if (lockMode != null) {
             this.lockMode = lockMode;
         }
@@ -123,7 +125,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final StandardUnionClause<C, Q> ifLock(Supplier<LockMode> supplier) {
+    public final UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier) {
         final LockMode lockMode;
         lockMode = supplier.get();
         if (lockMode != null) {
@@ -133,7 +135,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final StandardUnionClause<C, Q> ifLock(Function<C, LockMode> function) {
+    public final UnionSpec<C, Q> ifLock(Function<C, LockMode> function) {
         final LockMode lockMode;
         lockMode = function.apply(this.criteria);
         if (lockMode != null) {
@@ -142,69 +144,32 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return this;
     }
 
-    @Override
-    public final StandardUnionSpec<C, Q> bracket() {
-        final StandardUnionSpec<C, Q> unionSpec;
-        if (this instanceof AbstractUnionAndQuery) {
-            final AbstractUnionAndQuery<C, Q> andQuery = (AbstractUnionAndQuery<C, Q>) this;
-            final Q thisQuery = this.asQueryAndQuery();
-            if (this instanceof ScalarSubQuery) {
-                if (!(thisQuery instanceof ScalarSubQueryExpression)
-                        || ((ScalarSubQueryExpression) thisQuery).subQuery != this) {
-                    throw asQueryMethodError();
-                }
-            } else if (thisQuery != this) {
-                throw asQueryMethodError();
-            }
-            final Q right;
-            right = StandardUnionQuery.bracketQuery(thisQuery)
-                    .asQuery();
-            unionSpec = StandardUnionQuery.unionQuery(andQuery.left, andQuery.unionType, right);
-        } else {
-            unionSpec = StandardUnionQuery.bracketQuery(this.asQuery());
-        }
-        return unionSpec;
-    }
-
 
     @Override
-    final StandardUnionSpec<C, Q> createUnionQuery(final Q left, final UnionType unionType, final Q right) {
-        return StandardUnionQuery.unionQuery(left, unionType, right);
+    final StandardSelectClause<C, Q> asUnionAndRowSet(final UnionType unionType) {
+        return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 
     @Override
-    final StandardSelectClause<C, Q> asQueryAndQuery(final UnionType unionType) {
-        return StandardSimpleQuery.asQueryAndQuery(this.asQuery(), unionType);
-    }
-
-
-    @Override
-    final StandardJoinSpec<C, Q> addFirstTableBlock(TableMeta<?> table, String tableAlias) {
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(table, tableAlias));
-        return this;
+    final Void createNoneBlockBeforeAs(TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
     }
 
     @Override
-    final StandardJoinSpec<C, Q> addNoneTableItemBlock(TableItem tableItem, String alias) {
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(tableItem, alias));
-        return this;
+    final _TableBlock createNoneTableBlock(TableMeta<?> table, String tableAlias) {
+        return TableBlock.noneBlock(table, tableAlias);
     }
 
     @Override
-    final StandardOnSpec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final StandardOnClause<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return new OnBlock<>(joinType, table, tableAlias, this);
     }
 
     @Override
-    final StandardOnSpec<C, Q> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final StandardOnClause<C, Q> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
         return new OnBlock<>(joinType, tableItem, alias, this);
     }
 
-
-    @Override
-    final StandardJoinSpec<C, Q> createNextClauseForCross() {
-        return this;
-    }
 
     @Override
     final Void createNextClauseForCross(TableMeta<?> table) {
@@ -212,18 +177,18 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final StandardOnSpec<C, Q> createNoActionTableBlock() {
+    final StandardOnClause<C, Q> createNoActionTableBlock() {
         return new NoActionOnBlock<>(this);
     }
 
     @Override
-    final StandardOnSpec<C, Q> createNoActionOnBlock() {
+    final StandardOnClause<C, Q> createNoActionOnBlock() {
         return new NoActionOnBlock<>(this);
     }
 
     @Override
-    final StandardJoinSpec<C, Q> createNoActionClauseForCross() {
-        return this;
+    final void onCrossJoinTable(boolean success) {
+        //no-op
     }
 
     @Override
@@ -236,23 +201,10 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         // no-op
     }
 
-    @SuppressWarnings("unchecked")
+
     @Override
-    final Q onAsQuery(final boolean outer) {
-        final Q thisQuery, resultQuery;
-        if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
-        } else {
-            thisQuery = (Q) this;
-        }
-        if (outer && this instanceof AbstractUnionAndQuery) {
-            final AbstractUnionAndQuery<C, Q> unionAndQuery = (AbstractUnionAndQuery<C, Q>) this;
-            resultQuery = StandardUnionQuery.unionQuery(unionAndQuery.left, unionAndQuery.unionType, thisQuery)
-                    .asQuery();
-        } else {
-            resultQuery = thisQuery;
-        }
-        return resultQuery;
+    final Q onAsQuery(final boolean forUnionAndRowSet) {
+        return this.finallyAsQuery(forUnionAndRowSet);
     }
 
 
@@ -261,6 +213,16 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         this.lockMode = null;
     }
 
+    @Override
+    final UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
+        return StandardUnionQuery.bracketQuery(rowSet);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    final UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+        return StandardUnionQuery.unionQuery((Q) left, unionType, right);
+    }
 
     @Override
     public final LockMode lockMode() {
@@ -273,17 +235,17 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     /*################################## blow private inter class method ##################################*/
 
 
-    private static final class NoActionOnBlock<C, Q extends Query> extends NoActionOnClause<C, StandardJoinSpec<C, Q>>
-            implements StandardOnSpec<C, Q> {
+    private static final class NoActionOnBlock<C, Q extends Query> extends NoActionOnClause<C, JoinSpec<C, Q>>
+            implements StandardOnClause<C, Q> {
 
-        private NoActionOnBlock(StandardJoinSpec<C, Q> joinSpec) {
+        private NoActionOnBlock(JoinSpec<C, Q> joinSpec) {
             super(joinSpec);
         }
 
     }// NoActionOnBlock
 
-    private static final class OnBlock<C, Q extends Query> extends OnClauseTableBlock<C, StandardJoinSpec<C, Q>>
-            implements StandardOnSpec<C, Q> {
+    private static final class OnBlock<C, Q extends Query> extends OnClauseTableBlock<C, JoinSpec<C, Q>>
+            implements StandardOnClause<C, Q> {
 
         private final StandardSimpleQuery<C, Q> query;
 
@@ -298,7 +260,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         }
 
         @Override
-        StandardJoinSpec<C, Q> endOnClause() {
+        JoinSpec<C, Q> endOnClause() {
             return this.query;
         }
 
@@ -338,11 +300,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             return selectionMap.get(derivedFieldName);
         }
 
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            context.dialect().subQuery(this, context);
-        }
-
 
     } // SimpleSubQuery
 
@@ -356,21 +313,12 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             super(criteria);
         }
 
-        @Override
-        public Selection selection() {
-            return (Selection) this.selectItemList().get(0);
-        }
-
-        @Override
-        public ParamMeta paramMeta() {
-            return this.selection().paramMeta();
-        }
-
 
     }// SimpleScalarSubQuery
 
 
-    private static abstract class AbstractUnionAndQuery<C, Q extends Query> extends StandardSimpleQuery<C, Q> {
+    private static abstract class AbstractUnionAndQuery<C, Q extends Query> extends StandardSimpleQuery<C, Q>
+            implements UnionAndRowSet {
 
         private final Q left;
 
@@ -382,6 +330,15 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             this.unionType = unionType;
         }
 
+        @Override
+        public final RowSet leftRowSet() {
+            return this.left;
+        }
+
+        @Override
+        public final UnionType unionType() {
+            return this.unionType;
+        }
 
     }//AbstractUnionAndQuery
 
@@ -415,10 +372,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             return selectionMap.get(derivedFieldName);
         }
 
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            context.dialect().subQuery(this, context);
-        }
 
     }// UnionAndSubQuery
 
@@ -428,16 +381,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
         private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType) {
             super(left, unionType);
-        }
-
-        @Override
-        public Selection selection() {
-            return (Selection) this.selectItemList().get(0);
-        }
-
-        @Override
-        public ParamMeta paramMeta() {
-            return this.selection().paramMeta();
         }
 
 

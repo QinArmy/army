@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._LateralSubQuery;
-import io.army.criteria.impl.inner._PartQuery;
-import io.army.criteria.impl.inner._UnionQuery;
+import io.army.criteria.impl.inner._PartRowSet;
+import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
@@ -31,14 +31,14 @@ import java.util.List;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
+abstract class MySQL80UnionQuery<C, Q extends Query> extends PartRowSet<
         C,
         Q,
         MySQL80Query.UnionOrderBy80Spec<C, Q>,
         MySQL80Query.UnionLimit80Spec<C, Q>,
         MySQL80Query.Union80Spec<C, Q>,
         MySQL80Query.With80Spec<C, Q>>
-        implements MySQL80Query, MySQL80Query.UnionOrderBy80Spec<C, Q>, _UnionQuery {
+        implements MySQL80Query, MySQL80Query.UnionOrderBy80Spec<C, Q>, _UnionRowSet {
 
     static <C, Q extends Query> UnionOrderBy80Spec<C, Q> bracketQuery(final Q query) {
         query.prepared();
@@ -58,7 +58,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
                 spec = new BracketSubQuery<>((SubQuery) query);
             }
         } else {
-            throw _Exceptions.unknownQueryType(query);
+            throw _Exceptions.unknownRowSetType(query);
         }
         return (UnionOrderBy80Spec<C, Q>) spec;
     }
@@ -81,7 +81,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
                 spec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
             }
         } else {
-            throw _Exceptions.unknownQueryType(left);
+            throw _Exceptions.unknownRowSetType(left);
         }
         return (UnionOrderBy80Spec<C, Q>) spec;
     }
@@ -95,7 +95,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
 
     @Override
     public final List<? extends SelectItem> selectItemList() {
-        return ((_PartQuery) this.left).selectItemList();
+        return ((_PartRowSet) this.left).selectItemList();
     }
 
     @Override
@@ -104,7 +104,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    final Q internalAsQuery(final boolean outer) {
+    final Q internalAsRowSet(final boolean outer) {
         final Q query;
         if (this instanceof ScalarSubQuery) {
             query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
@@ -137,7 +137,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    final With80Spec<C, Q> asQueryAndQuery(UnionType unionType) {
+    final With80Spec<C, Q> asUnionAndRowSet(UnionType unionType) {
         return MySQL80SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
 

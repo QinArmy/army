@@ -12,11 +12,18 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * @see Select
- * @see Insert
- * @see Update
- * @see Delete
- * @see SubQuery
+ * <p>
+ * This interface representing sql statement,this interface is base interface of below:
+ * <ul>
+ *     <li>{@link Select}</li>
+ *     <li>{@link Insert}</li>
+ *     <li>{@link Update}</li>
+ *     <li>{@link Delete}</li>
+ *     <li>{@link SubQuery}</li>
+ *     <li>{@link Values}</li>
+ * </ul>
+ * </p>
+ *
  * @since 1.0
  */
 public interface Statement {
@@ -28,24 +35,44 @@ public interface Statement {
 
     boolean isPrepared();
 
-
-    /**
-     * @since 1.0
-     */
     String mockAsString(Dialect dialect, Visible visible, boolean beautify);
 
-    /**
-     * @since 1.0
-     */
     Stmt mockAsStmt(Dialect dialect, Visible visible);
 
 
+    /**
+     * <p>
+     * This interface representing AS clause in join expression.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <AR> next clause java type
+     * @since 1.0
+     */
     interface AsClause<AR> {
 
         AR as(String alias);
     }
 
 
+    /**
+     * <p>
+     * This interface representing bind params clause for batch update(delete).
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type.
+     * @param <BR> next clause java type
+     * @since 1.0
+     */
     interface BatchParamClause<C, BR> {
 
         BR paramList(List<?> paramList);
@@ -57,6 +84,19 @@ public interface Statement {
         BR paramList(Function<String, ?> function, String keyName);
     }
 
+    /**
+     * <p>
+     * This interface representing RIGHT BRACKET clause in join expression.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <R> next clause java type
+     * @since 1.0
+     */
     interface RightBracketClause<R> {
 
         R rightBracket();
@@ -66,7 +106,7 @@ public interface Statement {
 
     /**
      * <p>
-     * This interface representing from clause.
+     * This interface representing FROM clause.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -95,6 +135,17 @@ public interface Statement {
 
 
     /**
+     * <p>
+     * This interface representing ON clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type.
+     * @param <OR> next clause java type
      * @since 1.0
      */
     interface OnClause<C, OR> {
@@ -116,11 +167,12 @@ public interface Statement {
 
     /**
      * <p>
-     * This interface representing join clause.
+     * This interface representing JOIN clause.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
-     * Application developer couldn't directly use this interface.
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
      * @param <C>  criteria object java type
@@ -233,6 +285,20 @@ public interface Statement {
     }
 
 
+    /**
+     * <p>
+     * This interface representing WHERE clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <WR> next clause java type
+     * @param <WA> next clause java type
+     * @since 1.0
+     */
     interface WhereClause<C, WR, WA> {
 
         WR where(List<IPredicate> predicateList);
@@ -247,6 +313,19 @@ public interface Statement {
     }
 
 
+    /**
+     * <p>
+     * This interface representing AND clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <WA> next clause java type
+     * @since 1.0
+     */
     interface WhereAndClause<C, WA> {
 
         WA and(IPredicate predicate);

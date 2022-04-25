@@ -166,7 +166,7 @@ public interface MySQL80Query extends MySQLQuery {
 
 
     interface Union80Spec<C, Q extends Query>
-            extends Query.UnionClause<C, UnionOrderBy80Spec<C, Q>, With80Spec<C, Q>, Q>, Query.QuerySpec<Q> {
+            extends QueryUnionClause<C, UnionOrderBy80Spec<C, Q>, With80Spec<C, Q>, Q>, Query.QuerySpec<Q> {
 
 
     }

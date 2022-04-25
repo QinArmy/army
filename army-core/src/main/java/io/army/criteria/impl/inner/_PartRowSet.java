@@ -5,7 +5,7 @@ import io.army.criteria.SortItem;
 
 import java.util.List;
 
-public interface _PartQuery extends _Statement {
+public interface _PartRowSet extends _Statement {
 
     List<? extends SelectItem> selectItemList();
 

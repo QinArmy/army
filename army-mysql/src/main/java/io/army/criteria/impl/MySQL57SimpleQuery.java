@@ -67,7 +67,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         } else if (left instanceof SubQuery) {
             select57Spec = new UnionAndSubQuery<>((SubQuery) left, unionType, criteria);
         } else {
-            throw _Exceptions.unknownQueryType(left);
+            throw _Exceptions.unknownRowSetType(left);
         }
         return (Select57Clause<C, Q>) select57Spec;
     }
@@ -147,7 +147,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         final UnionOrderBy57Spec<C, Q> unionSpec;
         if (this instanceof AbstractUnionAndQuery) {
             final AbstractUnionAndQuery<C, Q> andQuery = (AbstractUnionAndQuery<C, Q>) this;
-            final Q thisQuery = this.asQueryAndQuery();
+            final Q thisQuery = this.asUnionAndRowSet();
             if (this instanceof ScalarSubQuery) {
                 if (!(thisQuery instanceof ScalarSubQueryExpression)
                         || ((ScalarSubQueryExpression) thisQuery).subQuery != this) {
@@ -197,7 +197,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final Select57Clause<C, Q> asQueryAndQuery(UnionType unionType) {
+    final Select57Clause<C, Q> asUnionAndRowSet(UnionType unionType) {
         return MySQL57SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
 

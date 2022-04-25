@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 
 import java.util.function.Function;
@@ -11,7 +10,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface StandardQuery extends Query, Statement {
+public interface StandardQuery extends Query, StandardStatement {
 
 
     /**
@@ -34,163 +33,307 @@ public interface StandardQuery extends Query, Statement {
 
     /**
      * <p>
-     * This interface representing from clause of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>FROM clause for standard syntax</li>
+     *          <li>the composite {@link UnionSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
     interface StandardFromSpec<C, Q extends Query>
-            extends Statement.FromClause<C, StandardJoinClause<C, Q>, StandardJoinClause<C, Q>, StandardLestBracketClause<C, Q>>
-            , StandardUnionClause<C, Q> {
+            extends Statement.FromClause<C, JoinSpec<C, Q>, JoinSpec<C, Q>, StandardLestBracketClause<C, Q>>
+            , UnionSpec<C, Q> {
 
     }
 
 
     /**
      * <p>
-     * This interface representing on clause of standard query (SELECT or Sub Query).
+     * This interface representing ON clause for standard syntax.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
-    interface StandardOnSpec<C, Q extends Query> extends OnClause<C, StandardJoinSpec<C, Q>> {
+    interface StandardOnClause<C, Q extends Query> extends OnClause<C, JoinSpec<C, Q>> {
 
 
     }
 
     /**
      * <p>
-     * This interface representing join clause of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>JOIN clause for standard syntax</li>
+     *          <li>LEFT BRACKET clause for standard syntax</li>
+     *          <li>RIGHT BRACKET clause for standard syntax</li>
+     *          <li>the composite {@link WhereSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     *     If and only if use below methods to create dynamic nested join,then you is allowed to declare this interface type variable
+     *     <ul>
+     *         <li>{@link #leftJoin()}</li>
+     *         <li>{@link #join()}</li>
+     *         <li>{@link #rightJoin()}</li>
+     *         <li>{@link #fullJoin()}</li>
+     *         <li>{@link #crossJoin()}</li>
+     *     </ul>
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
-    interface StandardJoinSpec<C, Q extends Query>
-            extends StandardJoinClause<C, Q>, StandardWhereSpec<C, Q>, LeftBracketClause<StandardJoinClause<C, Q>>
-            , RightBracketClause<StandardJoinSpec<C, Q>> {
+    interface JoinSpec<C, Q extends Query>
+            extends StandardJoinClause<C, Q>, WhereSpec<C, Q>, StandardLestBracketClause<C, Q>
+            , RightBracketClause<JoinSpec<C, Q>> {
 
     }
 
+    /**
+     * <p>
+     * This interface representing join clause for standard syntax.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
+     */
     interface StandardJoinClause<C, Q extends Query>
-            extends JoinClause<C, StandardOnSpec<C, Q>, StandardOnSpec<C, Q>, StandardJoinSpec<C, Q>, StandardJoinSpec<C, Q>> {
+            extends JoinClause<C, StandardOnClause<C, Q>, StandardOnClause<C, Q>, JoinSpec<C, Q>, JoinSpec<C, Q>, StandardLestBracketClause<C, Q>> {
 
     }
 
+    /**
+     * <p>
+     * This interface representing left bracket clause for standard syntax.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
+     */
     interface StandardLestBracketClause<C, Q extends Query>
-            extends Statement.LeftBracketClause<C, StandardJoinSpec<C, Q>, StandardJoinSpec<C, Q>> {
+            extends Statement.LeftBracketClause<C, JoinSpec<C, Q>, JoinSpec<C, Q>> {
 
     }
 
     /**
      * <p>
-     * This interface representing where clause of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>WHERE clause for standard syntax</li>
+     *          <li>the composite {@link GroupBySpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
-    interface StandardWhereSpec<C, Q extends Query>
-            extends WhereClause<C, StandardGroupBySpec<C, Q>, StandardWhereAndSpec<C, Q>>
-            , StandardGroupBySpec<C, Q> {
+    interface WhereSpec<C, Q extends Query>
+            extends WhereClause<C, GroupBySpec<C, Q>, WhereAndSpec<C, Q>>, GroupBySpec<C, Q> {
 
     }
 
     /**
      * <p>
-     * This interface representing where and clause of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>AND clause for standard syntax</li>
+     *          <li>the composite {@link GroupBySpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
-    interface StandardWhereAndSpec<C, Q extends Query>
-            extends WhereAndClause<C, StandardWhereAndSpec<C, Q>>, StandardGroupBySpec<C, Q> {
+    interface WhereAndSpec<C, Q extends Query>
+            extends WhereAndClause<C, WhereAndSpec<C, Q>>, GroupBySpec<C, Q> {
 
 
     }
 
     /**
      * <p>
-     * This interface representing group by clause of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>GROUP BY clause for standard syntax</li>
+     *          <li>the composite {@link OrderBySpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
-    interface StandardGroupBySpec<C, Q extends Query> extends GroupClause<C, StandardHavingSpec<C, Q>>
-            , StandardOrderBySpec<C, Q> {
+    interface GroupBySpec<C, Q extends Query> extends GroupClause<C, HavingSpec<C, Q>>
+            , OrderBySpec<C, Q> {
 
     }
 
     /**
      * <p>
-     * This interface representing having clause of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>HAVING clause for standard syntax</li>
+     *          <li>the composite {@link OrderBySpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
-    interface StandardHavingSpec<C, Q extends Query> extends HavingClause<C, StandardOrderBySpec<C, Q>>
-            , StandardOrderBySpec<C, Q> {
+    interface HavingSpec<C, Q extends Query> extends HavingClause<C, OrderBySpec<C, Q>>
+            , OrderBySpec<C, Q> {
 
     }
 
     /**
      * <p>
-     * This interface representing order by clause of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>ORDER BY clause for standard syntax</li>
+     *          <li>the composite {@link LimitSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
-    interface StandardOrderBySpec<C, Q extends Query> extends StandardLimitSpec<C, Q>
-            , Query.OrderByClause<C, StandardLimitSpec<C, Q>> {
+    interface OrderBySpec<C, Q extends Query> extends LimitSpec<C, Q>
+            , Query.OrderByClause<C, LimitSpec<C, Q>> {
 
     }
 
     /**
      * <p>
-     * This interface representing limit clause of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>LIMIT clause for standard syntax</li>
+     *          <li>the composite {@link LockSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
-    interface StandardLimitSpec<C, Q extends Query> extends StandardLockSpec<C, Q>
-            , Query.LimitClause<C, StandardLockSpec<C, Q>> {
+    interface LimitSpec<C, Q extends Query> extends LockSpec<C, Q>
+            , Query.LimitClause<C, LockSpec<C, Q>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>lock clause for standard syntax</li>
+     *          <li>the composite {@link UnionSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
+     */
+    interface LockSpec<C, Q extends Query> extends UnionSpec<C, Q> {
+
+        UnionSpec<C, Q> lock(LockMode lockMode);
+
+        UnionSpec<C, Q> lock(Function<C, LockMode> function);
+
+        UnionSpec<C, Q> ifLock(@Nullable LockMode lockMode);
+
+        UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier);
+
+        UnionSpec<C, Q> ifLock(Function<C, LockMode> function);
+
 
     }
 
     /**
      * <p>
-     * This interface representing order by clause(after union) of standard query (SELECT or Sub Query).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>ORDER BY clause for standard syntax</li>
+     *          <li>the composite {@link UnionLimitSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
      */
     interface UnionOrderBySpec<C, Q extends Query> extends Query.OrderByClause<C, UnionLimitSpec<C, Q>>
             , UnionLimitSpec<C, Q> {
@@ -201,8 +344,8 @@ public interface StandardQuery extends Query, Statement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>UNION clause for standard syntax</li>
-     *          <li>method {@link QuerySpec#asQuery()}</li>
+     *          <li>LIMIT clause for standard syntax</li>
+     *          <li>the composite {@link UnionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -240,32 +383,7 @@ public interface StandardQuery extends Query, Statement {
      * @since 1.0
      */
     interface UnionSpec<C, Q extends Query> extends Query.QuerySpec<Q>
-            , Query.UnionClause<C, Q, UnionOrderBySpec<C, Q>, StandardSelectClause<C, Q>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing lock clause of standard query (SELECT or Sub Query).
-     * </p>
-     *
-     * @param <C> java type of criteria instance used to create dynamic query.
-     * @see SQLs#query(Object)
-     * @see SQLs#subQuery(Object)
-     * @see SQLs#scalarSubQuery(Object)
-     */
-    interface StandardLockSpec<C, Q extends Query> extends StandardUnionClause<C, Q> {
-
-        StandardUnionClause<C, Q> lock(LockMode lockMode);
-
-        StandardUnionClause<C, Q> lock(Function<C, LockMode> function);
-
-        StandardUnionClause<C, Q> ifLock(@Nullable LockMode lockMode);
-
-        StandardUnionClause<C, Q> ifLock(Supplier<LockMode> supplier);
-
-        StandardUnionClause<C, Q> ifLock(Function<C, LockMode> function);
-
+            , QueryUnionClause<C, UnionOrderBySpec<C, Q>, StandardSelectClause<C, Q>> {
 
     }
 

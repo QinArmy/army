@@ -158,9 +158,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         //3. parse select
         final _SelectContext context;
-        if (select instanceof _UnionQuery) {
+        if (select instanceof _UnionRowSet) {
             context = UnionSelectContext.create(select, this, visible);
-            this.standardUnionQuery((_UnionQuery) select, context);
+            this.standardUnionQuery((_UnionRowSet) select, context);
         } else {
             context = SimpleSelectContext.create(select, this, visible);
             if (select instanceof StandardQuery) {
@@ -188,13 +188,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
 
         //3. parse select
-        if (select instanceof _UnionQuery) {
+        if (select instanceof _UnionRowSet) {
             if (original instanceof _UnionQueryContext) {
-                this.standardUnionQuery((_UnionQuery) select, original);
+                this.standardUnionQuery((_UnionRowSet) select, original);
             } else {
                 final UnionSelectContext context;
                 context = UnionSelectContext.create(select, (_SelectContext) original);
-                this.standardUnionQuery((_UnionQuery) select, context);
+                this.standardUnionQuery((_UnionRowSet) select, context);
             }
         } else {
             final StringBuilder builder = original.sqlBuilder();
@@ -233,13 +233,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
             builder.append(Constant.SPACE_LEFT_BRACKET);// append space left bracket before select key word
         }
         //3. parse sub query
-        if (subQuery instanceof _UnionQuery) {
+        if (subQuery instanceof _UnionRowSet) {
             if (original instanceof _SubQueryContext && original instanceof _UnionQueryContext) {
-                this.standardUnionQuery((_UnionQuery) subQuery, original);
+                this.standardUnionQuery((_UnionRowSet) subQuery, original);
             } else {
                 final UnionSubQueryContext context;
                 context = UnionSubQueryContext.create(original);
-                this.standardUnionQuery((_UnionQuery) subQuery, context);
+                this.standardUnionQuery((_UnionRowSet) subQuery, context);
             }
         } else {
             builder.append(Constant.SPACE); //append space before select key word
@@ -507,7 +507,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     /**
      * @see #select(Select, _SqlContext)
      */
-    protected final void standardUnionQuery(final _UnionQuery query, final _SqlContext context) {
+    protected final void standardUnionQuery(final _UnionRowSet query, final _SqlContext context) {
 
         query.appendSql(context);
 

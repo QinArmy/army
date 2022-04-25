@@ -4,7 +4,9 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
@@ -21,11 +23,11 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JC, JE, JF, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends PartQuery<C, Q, UR, OR, LR, SP> implements Query.SelectClause<C, SR>
+        extends PartRowSet<C, Q, UR, OR, LR, SP> implements Query.SelectClause<C, SR>
         , DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, FS, JE, JF>, Statement.WhereClause<C, WR, AR>
         , Statement.WhereAndClause<C, AR>, Query.GroupClause<C, GR>, Query.HavingClause<C, HR>, _Query
         , DialectStatement.DialectFromClause<C, FT, FS, FP, JE>, DialectStatement.DialectJoinBracketClause<C, FT, FS, FP>
-        , Statement.RightBracketClause<FS> {
+        , Statement.RightBracketClause<FS>, Query.QuerySpec<Q> {
 
 
     private List<Hint> hintList;
@@ -45,8 +47,6 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JC, J
     private JT noActionTableBlock;
 
     private JS noActionTablePartBlock;
-
-    private JC noActionCrossBlock;
 
     private JF noActionCrossBlockBeforeAs;
 
@@ -363,7 +363,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JC, J
     @Override
     public final JC crossJoin(TableMeta<?> table, String tableAlias) {
         this.criteriaContext.onAddBlock(TableBlock.crossBlock(table, tableAlias));
-        return this.createNextClauseForCross();
+        this.onCrossJoinTable(true);
+        return (JC) this;
     }
 
     @Override
@@ -385,15 +386,13 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JC, J
 
     @Override
     public final JC ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        JC clause;
         if (predicate.test(this.criteria)) {
             this.criteriaContext.onAddBlock(TableBlock.crossBlock(table, tableAlias));
-            clause = this.createNextClauseForCross();
-        } else if ((clause = this.noActionCrossBlock) == null) {
-            clause = this.createNoActionClauseForCross();
-            this.noActionCrossBlock = clause;
+            this.onCrossJoinTable(true);
+        } else {
+            this.onCrossJoinTable(false);
         }
-        return clause;
+        return (JC) this;
     }
 
     @Override
@@ -874,9 +873,27 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JC, J
         return this.havingList;
     }
 
+    public final Selection selection() {
+        if (!(this instanceof ScalarSubQuery)) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return (Selection) this.selectItemList().get(0);
+    }
+
+    public final ParamMeta paramMeta() {
+        return this.selection().paramMeta();
+    }
+
+    public final void appendSql(final _SqlContext context) {
+        if (!(this instanceof SubQuery)) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        context.dialect().rowSet(this, context);
+    }
+
 
     @Override
-    protected final Q internalAsQuery(final boolean justAsQuery) {
+    protected final Q internalAsRowSet(final boolean forUnionAndRowSet) {
         this.tableBlockList = this.criteriaContext.clear();
         if (this instanceof SubQuery || this instanceof WithElement) {
             CriteriaContextStack.pop(this.criteriaContext);
@@ -916,9 +933,27 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JC, J
         }
         this.noActionTableBlock = null;
         this.noActionTablePartBlock = null;
-        this.noActionCrossBlock = null;
         this.noActionCrossBlockBeforeAs = null;
-        return this.onAsQuery(justAsQuery);
+        return this.onAsQuery(forUnionAndRowSet);
+    }
+
+    @SuppressWarnings("unchecked")
+    final Q finallyAsQuery(final boolean forUnionAndRowSet) {
+        final Q thisQuery, resultQuery;
+        if (this instanceof ScalarSubQuery) {
+            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
+        } else {
+            thisQuery = (Q) this;
+        }
+        if (forUnionAndRowSet && this instanceof UnionAndRowSet) {
+            final UnionAndRowSet union = (UnionAndRowSet) this;
+            final Query.QuerySpec<Q> spec;
+            spec = (Query.QuerySpec<Q>) createUnionRowSet(union.leftRowSet(), union.unionType(), thisQuery);
+            resultQuery = spec.asQuery();
+        } else {
+            resultQuery = thisQuery;
+        }
+        return resultQuery;
     }
 
 
@@ -952,15 +987,13 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JC, J
 
     abstract JS createOnBlock(_JoinType joinType, TableItem tableItem, String alias);
 
-    abstract JC createNextClauseForCross();
-
     abstract JF createNextClauseForCross(TableMeta<?> table);
 
     abstract JT createNoActionTableBlock();
 
     abstract JS createNoActionOnBlock();
 
-    abstract JC createNoActionClauseForCross();
+    abstract void onCrossJoinTable(boolean success);
 
     JP createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
         throw _Exceptions.castCriteriaApi();

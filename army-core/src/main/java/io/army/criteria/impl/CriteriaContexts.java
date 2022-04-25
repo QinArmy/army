@@ -49,15 +49,15 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext unionContext(final Query leftQuery) {
+    static CriteriaContext unionContext(final RowSet leftQuery) {
         final AbstractContext leftContext = (AbstractContext) ((CriteriaContextSpec) leftQuery).getCriteriaContext();
         final CriteriaContext criteriaContext;
         if (leftQuery instanceof SimpleQuery) {
             criteriaContext = new UnionQueryContext(leftContext, ((_Query) leftQuery).selectItemList());
-        } else if (leftQuery instanceof _UnionQuery) {
+        } else if (leftQuery instanceof _UnionRowSet) {
             criteriaContext = leftContext;
         } else {
-            throw _Exceptions.unknownQueryType(leftQuery);
+            throw _Exceptions.unknownRowSetType(leftQuery);
         }
         return criteriaContext;
     }

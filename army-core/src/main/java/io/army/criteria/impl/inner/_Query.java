@@ -6,7 +6,7 @@ import io.army.criteria.SortItem;
 
 import java.util.List;
 
-public interface _Query extends _PartQuery {
+public interface _Query extends _PartRowSet {
 
     List<Hint> hintList();
 

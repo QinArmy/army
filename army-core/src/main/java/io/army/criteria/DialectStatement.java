@@ -123,5 +123,9 @@ public interface DialectStatement extends Statement {
         JP leftBracket(TableMeta<?> table);
     }
 
+    interface DialectUnionClause<C, Q extends Query, UR, SP> extends Query.QueryUnionClause<C, Q, UR, SP> {
+
+    }
+
 
 }

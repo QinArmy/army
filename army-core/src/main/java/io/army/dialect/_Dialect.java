@@ -26,7 +26,12 @@ public interface _Dialect {
 
     void select(Select select, _SqlContext original);
 
+    default void rowSet(RowSet rowSet, _SqlContext original) {
+        throw new UnsupportedOperationException();
+    }
 
+
+    @Deprecated
     void subQuery(SubQuery subQuery, _SqlContext original);
 
     List<String> startTransaction(Isolation isolation, boolean readonly);

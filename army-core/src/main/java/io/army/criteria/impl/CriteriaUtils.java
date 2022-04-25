@@ -38,11 +38,11 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableMap(selectionMap);
     }
 
-    static void assertSelectItemSizeMatch(Query left, Query right) {
+    static void assertSelectItemSizeMatch(RowSet left, RowSet right) {
         final List<? extends SelectItem> leftList, rightList;
 
-        leftList = ((_PartQuery) left).selectItemList();
-        rightList = ((_PartQuery) right).selectItemList();
+        leftList = ((_PartRowSet) left).selectItemList();
+        rightList = ((_PartRowSet) right).selectItemList();
 
         int leftSize = 0, rightSize = 0;
 

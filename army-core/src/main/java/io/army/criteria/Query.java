@@ -23,7 +23,7 @@ import java.util.function.Supplier;
  * @see ScalarSubQuery
  * @since 1.0
  */
-public interface Query extends Statement {
+public interface Query extends RowSet {
 
 
     interface QuerySpec<Q extends Query> {
@@ -112,43 +112,31 @@ public interface Query extends Statement {
 
     }
 
-    interface LockClause<C, LC> {
 
-        LC lock(SQLModifier lockMode);
+    interface UnionClause<C, UR, SP> {
+        UR bracket();
 
-        LC lock(Function<C, SQLModifier> function);
+        UR union(Function<C, ? extends RowSet> function);
 
-        LC ifLock(@Nullable SQLModifier lockMode);
+        UR union(Supplier<? extends RowSet> supplier);
 
-        LC ifLock(Supplier<SQLModifier> supplier);
+        UR unionAll(Function<C, ? extends RowSet> function);
 
-        LC ifLock(Function<C, SQLModifier> function);
+        UR unionDistinct(Function<C, ? extends RowSet> function);
+
+        UR unionAll(Supplier<? extends RowSet> supplier);
+
+        UR unionDistinct(Supplier<? extends RowSet> supplier);
     }
 
 
-    interface UnionClause<C, Q, UR, SP> {
-
-        UR bracket();
-
-        UR union(Function<C, Q> function);
-
-        UR union(Supplier<Q> supplier);
+    interface QueryUnionClause<C, UR, SP> extends UnionClause<C, UR, SP> {
 
         SP union();
 
         SP unionAll();
 
         SP unionDistinct();
-
-        UR unionAll(Function<C, Q> function);
-
-        UR unionDistinct(Function<C, Q> function);
-
-        UR unionAll(Supplier<Q> supplier);
-
-        UR unionDistinct(Supplier<Q> supplier);
-
-
     }
 
     interface OrderByClause<C, OR> {
@@ -179,25 +167,25 @@ public interface Query extends Statement {
 
         LR limit(long offset, long rowCount);
 
-        LR limit(Supplier<Object> rowCount);
+        LR limit(Supplier<? extends Number> rowCountSupplier);
 
-        LR limit(Function<String, Object> function, String rowCountKey);
+        LR limit(Function<String, ?> function, String rowCountKey);
 
-        LR limit(Supplier<Object> offset, Supplier<Object> rowCount);
+        LR limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier);
 
-        LR limit(Function<String, Object> function, String offsetKey, String rowCountKey);
+        LR limit(Function<String, ?> function, String offsetKey, String rowCountKey);
 
         LR limit(Function<C, LimitOption> function);
 
         LR ifLimit(Function<C, LimitOption> function);
 
-        LR ifLimit(Supplier<Object> rowCount);
+        LR ifLimit(Supplier<? extends Number> rowCountSupplier);
 
-        LR ifLimit(Supplier<Object> offset, Supplier<Object> rowCount);
+        LR ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier);
 
-        LR ifLimit(Function<String, Object> function, String rowCountKey);
+        LR ifLimit(Function<String, ?> function, String rowCountKey);
 
-        LR ifLimit(Function<String, Object> function, String offsetKey, String rowCountKey);
+        LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey);
 
     }
 

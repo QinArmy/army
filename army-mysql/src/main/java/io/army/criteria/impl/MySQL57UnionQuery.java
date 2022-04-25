@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._PartQuery;
-import io.army.criteria.impl.inner._UnionQuery;
+import io.army.criteria.impl.inner._PartRowSet;
+import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL57Query;
 import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
@@ -15,14 +15,14 @@ import io.army.util._Exceptions;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
-abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
+abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
         C,
         Q,
         MySQL57Query.UnionOrderBy57Spec<C, Q>,
         MySQL57Query.UnionLimit57Spec<C, Q>,
         MySQL57Query.Union57Spec<C, Q>,
         MySQL57Query.Select57Clause<C, Q>>
-        implements MySQL57Query, MySQL57Query.UnionOrderBy57Spec<C, Q>, _UnionQuery {
+        implements MySQL57Query, MySQL57Query.UnionOrderBy57Spec<C, Q>, _UnionRowSet {
 
     static <C, Q extends Query> UnionOrderBy57Spec<C, Q> bracketQuery(final Q query) {
         query.prepared();
@@ -34,7 +34,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
         } else if (query instanceof SubQuery) {
             spec = new BracketSubQuery<>((SubQuery) query);
         } else {
-            throw _Exceptions.unknownQueryType(query);
+            throw _Exceptions.unknownRowSetType(query);
         }
         return (UnionOrderBy57Spec<C, Q>) spec;
     }
@@ -50,7 +50,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
         } else if (left instanceof SubQuery) {
             spec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
         } else {
-            throw _Exceptions.unknownQueryType(left);
+            throw _Exceptions.unknownRowSetType(left);
         }
         return (UnionOrderBy57Spec<C, Q>) spec;
     }
@@ -65,7 +65,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
 
     @Override
     public final List<? extends SelectItem> selectItemList() {
-        return ((_PartQuery) this.left).selectItemList();
+        return ((_PartRowSet) this.left).selectItemList();
     }
 
     @Override
@@ -80,12 +80,12 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartQuery<
     }
 
     @Override
-    final Select57Clause<C, Q> asQueryAndQuery(UnionType unionType) {
+    final Select57Clause<C, Q> asUnionAndRowSet(UnionType unionType) {
         return MySQL57SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
 
     @Override
-    final Q internalAsQuery(boolean justAsQuery) {
+    final Q internalAsRowSet(boolean justAsQuery) {
         final Q query;
         if (this instanceof ScalarSubQuery) {
             query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);

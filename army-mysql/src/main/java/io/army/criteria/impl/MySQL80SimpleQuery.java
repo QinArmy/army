@@ -95,7 +95,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         } else if (left instanceof SubQuery) {
             with80Spec = new UnionAndSubQuery<>((SubQuery) left, unionType);
         } else {
-            throw _Exceptions.unknownQueryType(left);
+            throw _Exceptions.unknownRowSetType(left);
         }
         return (With80Spec<C, Q>) with80Spec;
     }
@@ -365,7 +365,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         final UnionOrderBy80Spec<C, Q> unionSpec;
         if (this instanceof AbstractUnionAndQuery) {
             final AbstractUnionAndQuery<C, Q> andQuery = (AbstractUnionAndQuery<C, Q>) this;
-            final Q thisQuery = this.asQueryAndQuery();
+            final Q thisQuery = this.asUnionAndRowSet();
             if (this instanceof ScalarSubQuery) {
                 if (!(thisQuery instanceof ScalarSubQueryExpression)
                         || ((ScalarSubQueryExpression) thisQuery).subQuery != this) {
@@ -397,7 +397,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final With80Spec<C, Q> asQueryAndQuery(UnionType unionType) {
+    final With80Spec<C, Q> asUnionAndRowSet(UnionType unionType) {
         return MySQL80SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
 

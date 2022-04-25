@@ -1,34 +1,25 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._PartQuery;
-import io.army.criteria.impl.inner._UnionQuery;
-import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
-import io.army.dialect._Dialect;
-import io.army.dialect._SqlContext;
-import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
-
-import java.util.List;
 
 /**
  * @see StandardSimpleQuery
  */
 @SuppressWarnings("unchecked")
-abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
+abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         C,
         Q,
-        StandardQuery.StandardUnionSpec<C, Q>, //UR
-        StandardQuery.StandardLimitClause<C, Q>,//OR
-        StandardQuery.StandardUnionClause<C, Q>,//LR
+        StandardQuery.UnionOrderBySpec<C, Q>, //UR
+        StandardQuery.UnionLimitSpec<C, Q>,//OR
+        StandardQuery.UnionSpec<C, Q>,//LR
         StandardQuery.StandardSelectClause<C, Q>>// SP
-        implements StandardQuery.StandardUnionSpec<C, Q>, _UnionQuery, StandardQuery {
+        implements StandardQuery.UnionOrderBySpec<C, Q>, StandardQuery {
 
-    static <C, Q extends Query> StandardUnionSpec<C, Q> bracketQuery(final Q query) {
+    static <C, Q extends Query> UnionOrderBySpec<C, Q> bracketQuery(final RowSet query) {
         query.prepared();
-        final StandardUnionSpec<C, ?> unionSpec;
+        final UnionOrderBySpec<C, ?> unionSpec;
         if (query instanceof Select) {
             unionSpec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
@@ -36,35 +27,53 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         } else if (query instanceof SubQuery) {
             unionSpec = new BracketSubQuery<>((SubQuery) query);
         } else {
-            throw _Exceptions.unknownQueryType(query);
+            throw _Exceptions.unknownRowSetType(query);
         }
-        return (StandardUnionSpec<C, Q>) unionSpec;
+        return (UnionOrderBySpec<C, Q>) unionSpec;
     }
 
 
-    static <C, Q extends Query> StandardUnionSpec<C, Q> unionQuery(Q left, UnionType unionType, Q right) {
+    static <C, Q extends Query> UnionOrderBySpec<C, Q> unionQuery(Q left, UnionType unionType, RowSet right) {
+        switch (unionType) {
+            case UNION:
+            case UNION_ALL:
+            case UNION_DISTINCT:
+                break;
+            default:
+                throw _Exceptions.castCriteriaApi();
+        }
         left.prepared();
         // never validate right,possibly union and select
         CriteriaUtils.assertSelectItemSizeMatch(left, right);
-        final StandardUnionSpec<C, ?> unionSpec;
+        final UnionOrderBySpec<C, ?> unionSpec;
         if (left instanceof Select) {
+            if (!(right instanceof Select)) {
+                String m = String.format("standard query api support only %s.", Select.class.getName());
+                throw new CriteriaException(m);
+            }
             unionSpec = new UnionSelect<>((Select) left, unionType, (Select) right);
         } else if (left instanceof ScalarSubQuery) {
+            if (!(right instanceof ScalarExpression)) {
+                String m;
+                m = String.format("standard scalar sub query api support only %s.", ScalarExpression.class.getName());
+                throw new CriteriaException(m);
+            }
             unionSpec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType, (ScalarExpression) right);
         } else if (left instanceof SubQuery) {
+            if (!(right instanceof SubQuery)) {
+                String m = String.format("standard sub query api support only %s.", SubQuery.class.getName());
+                throw new CriteriaException(m);
+            }
             unionSpec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
         } else {
-            throw _Exceptions.unknownQueryType(left);
+            throw _Exceptions.unknownRowSetType(left);
         }
-        return (StandardUnionSpec<C, Q>) unionSpec;
+        return (UnionOrderBySpec<C, Q>) unionSpec;
     }
 
 
-    final Q left;
-
     private StandardUnionQuery(Q left) {
-        super(CriteriaContexts.unionContext(left));
-        this.left = left;
+        super(left);
         if (this instanceof Select) {
             CriteriaContextStack.setContextStack(this.criteriaContext);
         } else {
@@ -72,65 +81,20 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         }
     }
 
+
     @Override
-    public final List<? extends SelectItem> selectItemList() {
-        return ((_PartQuery) this.left).selectItemList();
-    }
-
-
-    public final Selection selection() {
-        if (!(this instanceof ScalarSubQuery)) {
-            String m = String.format("this isn't %s instance.", ScalarSubQuery.class.getName());
-            throw new IllegalStateException(m);
-        }
-        return (Selection) ((ScalarSubQuery) this.left).selectItemList().get(0);
-    }
-
-    @Nullable
-    public final Selection selection(String derivedFieldName) {
-        if (!(this instanceof SubQuery)) {
-            String m = String.format("this isn't %s instance.", SubQuery.class.getName());
-            throw new IllegalStateException(m);
-        }
-        return ((SubQuery) this.left).selection(derivedFieldName);
+    final UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
+        return bracketQuery(rowSet);
     }
 
     @Override
-    public final StandardUnionSpec<C, Q> bracket() {
-        return bracketQuery(this.asQuery());
+    final UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+        return unionQuery((Q) left, unionType, right);
     }
 
     @Override
-    final StandardUnionSpec<C, Q> createUnionQuery(Q left, UnionType unionType, Q right) {
-        return unionQuery(left, unionType, right);
-    }
-
-    @Override
-    final StandardSelectClause<C, Q> asQueryAndQuery(UnionType unionType) {
-        return StandardSimpleQuery.asQueryAndQuery(this.asQuery(), unionType);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    final Q internalAsQuery(final boolean justAsQuery) {
-        if (this instanceof Select) {
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-        } else {
-            CriteriaContextStack.pop(this.criteriaContext);
-        }
-
-        final Q query;
-        if (this instanceof ScalarSubQuery) {
-            query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
-        } else {
-            query = (Q) this;
-        }
-        return query;
-    }
-
-    @Override
-    final void internalClear() {
-        //no-op
+    final StandardSelectClause<C, Q> asUnionAndRowSet(UnionType unionType) {
+        return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 
     @Override
@@ -144,51 +108,21 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
     }
 
 
-    private static final class BracketSelect<C> extends StandardUnionQuery<C, Select> implements Select {
+    private static final class BracketSelect<C> extends StandardUnionQuery<C, Select>
+            implements Select, BracketRowSet {
 
         private BracketSelect(Select query) {
             super(query);
         }
 
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder();
-
-            if (builder.length() == 0) {
-                builder.append(Constant.LEFT_BRACKET);
-            } else {
-                builder.append(Constant.SPACE_LEFT_BRACKET);
-            }
-            context.dialect().select(this.left, context);
-
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
-
-        }
     }//BracketSelect
 
-    private static class BracketSubQuery<C, Q extends SubQuery> extends StandardUnionQuery<C, Q> implements SubQuery {
-
+    private static class BracketSubQuery<C, Q extends SubQuery> extends StandardUnionQuery<C, Q>
+            implements SubQuery, BracketRowSet {
 
         private BracketSubQuery(Q query) {
             super(query);
         }
-
-
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder();
-
-            if (builder.length() == 0) {
-                builder.append(Constant.LEFT_BRACKET);
-            } else {
-                builder.append(Constant.SPACE_LEFT_BRACKET);
-            }
-
-            context.dialect().subQuery(this.left, context);
-
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
-        }
-
 
     }
 
@@ -198,12 +132,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
 
         private BracketScalarSubQuery(ScalarExpression query) {
             super(query);
-        }
-
-
-        @Override
-        public ParamMeta paramMeta() {
-            return this.left.paramMeta();
         }
 
     }//BracketScalarSubQuery
@@ -218,7 +146,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
      *     </ul>
      * </p>
      */
-    private static abstract class UnionQuery<C, Q extends Query> extends StandardUnionQuery<C, Q> {
+    private static abstract class UnionQuery<C, Q extends Query> extends StandardUnionQuery<C, Q>
+            implements RowSetWithUnion {
 
         final UnionType unionType;
 
@@ -230,6 +159,15 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
             this.right = right;
         }
 
+        @Override
+        public final UnionType unionType() {
+            return this.unionType;
+        }
+
+        @Override
+        public final RowSet rightRowSet() {
+            return this.right;
+        }
 
     }// UnionQuery
 
@@ -240,16 +178,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
             super(left, unionType, right);
         }
 
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final _Dialect dialect = context.dialect();
-            dialect.select(this.left, context);
-
-            context.sqlBuilder()
-                    .append(this.unionType.keyWords);
-
-            dialect.select(this.right, context);
-        }
 
     }//UnionSelect
 
@@ -258,19 +186,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
 
         private UnionSubQuery(Q left, UnionType unionType, Q right) {
             super(left, unionType, right);
-        }
-
-
-        @Override
-        public final void appendSql(_SqlContext context) {
-            final _Dialect dialect = context.dialect();
-            dialect.subQuery(this.left, context);
-
-            context.sqlBuilder()
-                    .append(Constant.SPACE)
-                    .append(this.unionType.keyWords);
-
-            dialect.subQuery(this.right, context);
         }
 
 
@@ -283,12 +198,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends PartQuery<
         private UnionScalarSubQuery(ScalarExpression left, UnionType unionType
                 , ScalarExpression right) {
             super(left, unionType, right);
-        }
-
-
-        @Override
-        public ParamMeta paramMeta() {
-            return this.left.paramMeta();
         }
 
 
