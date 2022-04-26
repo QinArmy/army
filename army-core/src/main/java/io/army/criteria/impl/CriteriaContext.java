@@ -34,7 +34,7 @@ interface CriteriaContext {
 
     void onAddBlock(_TableBlock block);
 
-    void onNoneBlock(_TableBlock block);
+    void onBlockWithoutOnClause(_TableBlock block);
 
     void onBracketBlock(_TableBlock block);
 

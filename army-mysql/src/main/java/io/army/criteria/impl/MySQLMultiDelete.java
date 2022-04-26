@@ -133,7 +133,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         if (_CollectionUtils.isEmpty(this.tableAliasList)) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(table, alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(table, alias));
         return (DR) this;
     }
 
@@ -151,7 +151,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         if (_CollectionUtils.isEmpty(this.tableAliasList)) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(supplier.get(), alias));
         return (DR) this;
     }
 
@@ -160,7 +160,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         if (_CollectionUtils.isEmpty(this.tableAliasList)) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (DR) this;
     }
 
@@ -568,7 +568,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
             } else {
                 block = new FirstBlock(this.table, alias, partitionList);
             }
-            this.delete.criteriaContext.onNoneBlock(block);
+            this.delete.criteriaContext.onBlockWithoutOnClause(block);
             return this.delete;
         }
 
@@ -602,7 +602,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
             } else {
                 block = new FirstBlock(this.table, alias, partitionList);
             }
-            this.delete.criteriaContext.onNoneBlock(block);
+            this.delete.criteriaContext.onBlockWithoutOnClause(block);
             return this.delete;
         }
     }// BatchPartitionJoinSpec

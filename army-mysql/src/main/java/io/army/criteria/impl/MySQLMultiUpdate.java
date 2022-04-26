@@ -81,7 +81,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             , TableMeta<? extends IDomain> table, String tableAlias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
-        this.criteriaContext.onNoneBlock(new FirstBlock(table, tableAlias));
+        this.criteriaContext.onBlockWithoutOnClause(new FirstBlock(table, tableAlias));
         return (UT) this;
     }
 
@@ -92,7 +92,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
     @Override
     public final UT update(TableMeta<? extends IDomain> table, String tableAlias) {
-        this.criteriaContext.onNoneBlock(new FirstBlock(table, tableAlias));
+        this.criteriaContext.onBlockWithoutOnClause(new FirstBlock(table, tableAlias));
         return (UT) this;
     }
 
@@ -101,13 +101,13 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(supplier.get(), alias));
         return (US) this;
     }
 
     @Override
     public final <T extends TableItem> US update(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(supplier.get(), alias));
         return (US) this;
     }
 
@@ -116,13 +116,13 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
 
     @Override
     public final <T extends TableItem> US update(Function<C, T> function, String alias) {
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
 
@@ -685,7 +685,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             } else {
                 block = new FirstBlock(table, tableAlias, partitionList);
             }
-            this.update.criteriaContext.onNoneBlock(block);
+            this.update.criteriaContext.onBlockWithoutOnClause(block);
             return this.update;
         }
 
@@ -718,7 +718,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             } else {
                 block = new FirstBlock(table, alias, partitionList);
             }
-            this.update.criteriaContext.onNoneBlock(block);
+            this.update.criteriaContext.onBlockWithoutOnClause(block);
             return this.update;
         }
     }// BatchPartitionJoinSpec

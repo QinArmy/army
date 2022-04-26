@@ -183,6 +183,21 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
+    /**
+     * <p>
+     * This interface representing lock FOR UPDATE and LOCK IN SHARE MODE clause in MySQL 8.0.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  java criteria object java type
+     * @param <LU> next clause java type
+     * @param <LS> next clause java type
+     * @since 1.0
+     */
     interface Lock80Clause<C, LU, LS> {
 
         LU forUpdate();
@@ -199,7 +214,21 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface Lock80LockOfOptionClause<C, LO> {
+    /**
+     * <p>
+     * This interface representing lock OF clause in MySQL 8.0.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  java criteria object java type
+     * @param <LO> next clause java type
+     * @since 1.0
+     */
+    interface Lock80OfClause<C, LO> {
 
         LO of(TableMeta<?> table);
 
@@ -212,7 +241,21 @@ public interface MySQLQuery extends Query, DialectStatement {
         LO ifOf(Supplier<List<TableMeta<?>>> supplier);
     }
 
-    interface Lock80LockOptionClause<C, LS> {
+    /**
+     * <p>
+     * This interface representing lock NOWAIT and SKIP LOCKED clause in  MySQL 8.0.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  java criteria object java type
+     * @param <LS> next clause java type
+     * @since 1.0
+     */
+    interface Lock80OptionClause<C, LS> {
 
         LS nowait();
 
@@ -221,6 +264,60 @@ public interface MySQLQuery extends Query, DialectStatement {
         LS ifNowait(Predicate<C> predicate);
 
         LS ifSkipLocked(Predicate<C> predicate);
+
+    }
+
+    /**
+     * <p>
+     * This interface representing INTO clause in  MySQL 8.0.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  java criteria object java type
+     * @param <IO> next clause java type
+     * @since 1.0
+     */
+    interface IntoClause<C, IO> {
+
+        IO into(String varName);
+
+        IO into(String varName1, String varName2);
+
+        IO into(List<String> varNameList);
+
+        IO into(Supplier<List<String>> supplier);
+
+        IO into(Function<C, List<String>> function);
+
+        IO ifInto(Supplier<List<String>> supplier);
+
+        IO ifInto(Function<C, List<String>> function);
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>INTO clause for MySQL</li>
+     *          <li>method {@link QuerySpec#asQuery()}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
+     */
+    interface IntoSpec<C, Q extends Query> extends MySQLQuery.IntoClause<C, Query.QuerySpec<Q>>, Query.QuerySpec<Q> {
 
     }
 

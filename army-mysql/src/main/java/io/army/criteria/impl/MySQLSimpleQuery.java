@@ -213,13 +213,13 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
             throw _Exceptions.castCriteriaApi();
         }
         final _TableBlock block = this.criteriaContext.lastTableBlockWithoutOnClause();
-        if (!(block instanceof MySQLNoneBlock)) {
+        if (!(block instanceof MySQLNoOnBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
         if (_CollectionUtils.isEmpty(indexNames)) {
             throw new CriteriaException("index name list must not empty.");
         }
-        final MySQLNoneBlock<C, OR> tableBlock = (MySQLNoneBlock<C, OR>) block;
+        final MySQLNoOnBlock<C, OR> tableBlock = (MySQLNoOnBlock<C, OR>) block;
         List<MySQLIndexHint> indexHintList = tableBlock.indexHintList;
         if (indexHintList == null) {
             indexHintList = new ArrayList<>();

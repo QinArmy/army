@@ -48,6 +48,29 @@ abstract class TableBlock implements _TableBlock {
     }
 
 
+    static class NoOnTableBlock extends TableBlock {
+
+        private final String alias;
+
+        public NoOnTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+            super(joinType, tableItem);
+            this.alias = alias;
+
+        }
+
+        @Override
+        public final String alias() {
+            return this.alias;
+        }
+
+        @Override
+        public final List<_Predicate> predicates() {
+            return Collections.emptyList();
+        }
+
+    }//NoOnTableBlock
+
+
     private static class SimpleTableBlock extends TableBlock {
 
         private final String alias;

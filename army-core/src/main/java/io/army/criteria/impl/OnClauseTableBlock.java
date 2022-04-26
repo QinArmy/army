@@ -14,15 +14,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement.OnClause<C, OR> {
+class OnClauseTableBlock<C, OR> extends TableBlock implements Statement.OnClause<C, OR> {
 
     final String alias;
 
     private List<_Predicate> onPredicates;
 
-    OnClauseTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final OR stmt;
+
+    OnClauseTableBlock(_JoinType joinType, TableItem tableItem, String alias, OR stmt) {
         super(joinType, tableItem);
         this.alias = alias;
+        this.stmt = stmt;
     }
 
     @Override
@@ -44,24 +47,24 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
             }
         }
         this.onPredicates = onPredicates;
-        return this.endOnClause();
+        return this.stmt;
     }
 
     @Override
     public final OR on(IPredicate predicate) {
         this.onPredicates = Collections.singletonList((_Predicate) predicate);
-        return this.endOnClause();
+        return this.stmt;
     }
 
     @Override
     public final OR on(IPredicate predicate1, IPredicate predicate2) {
         this.onPredicates = CriteriaUtils.onPredicates(predicate1, predicate2);
-        return this.endOnClause();
+        return this.stmt;
     }
 
     @Override
     public final OR on(Function<C, List<IPredicate>> function) {
-        return this.on(function.apply(this.getCriteria()));
+        return this.on(function.apply(getCriteria()));
     }
 
     @Override
@@ -89,9 +92,10 @@ abstract class OnClauseTableBlock<C, OR> extends TableBlock implements Statement
     }
 
     @Nullable
-    abstract C getCriteria();
-
-    abstract OR endOnClause();
+    @SuppressWarnings("unchecked")
+    final C getCriteria() {
+        return ((CriteriaSpec<C>) this.stmt).getCriteria();
+    }
 
 
 }

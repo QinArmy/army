@@ -24,8 +24,8 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     private MySQLIndexHint.Command indexHintCommand;
 
-    MySQLIndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias) {
-        super(joinType, table, alias);
+    MySQLIndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, OR stmt) {
+        super(joinType, table, alias, stmt);
     }
 
     @Override
@@ -57,7 +57,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     @Override
     public final IR ifUseIndex(Predicate<C> predicate) {
-        if (predicate.test(this.getCriteria())) {
+        if (predicate.test(((CriteriaSpec<C>) this.stmt).getCriteria())) {
             this.useIndex();
         } else {
             this.indexHintCommand = null;
@@ -189,7 +189,6 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
         }
         return (IC) this;
     }
-
 
 
     @Override

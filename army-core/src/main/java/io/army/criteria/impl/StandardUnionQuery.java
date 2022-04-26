@@ -92,6 +92,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 
+
     @Override
     final Dialect defaultDialect() {
         return Dialect.MySQL57;

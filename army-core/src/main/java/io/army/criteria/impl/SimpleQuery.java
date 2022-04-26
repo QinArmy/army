@@ -170,19 +170,19 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     public final FT from(TableMeta<?> table, String tableAlias) {
         final _TableBlock block;
         block = this.createTableBlockWithoutOnClause(_JoinType.NONE, table, tableAlias);
-        this.criteriaContext.onNoneBlock(block);
+        this.criteriaContext.onBlockWithoutOnClause(block);
         return (FT) this;
     }
 
     @Override
     public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (FS) this;
     }
 
     @Override
     public final <T extends TableItem> FS from(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(supplier.get(), alias));
         return (FS) this;
     }
 
@@ -411,21 +411,21 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     @Override
     public final FT leftBracket(final TableMeta<?> table, final String tableAlias) {
         this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
-        this.criteriaContext.onNoneBlock(this.createTableBlockWithoutOnClause(_JoinType.NONE, table, tableAlias));
+        this.criteriaContext.onBlockWithoutOnClause(this.createTableBlockWithoutOnClause(_JoinType.NONE, table, tableAlias));
         return (FT) this;
     }
 
     @Override
     public final <T extends TableItem> FS leftBracket(Function<C, T> function, String alias) {
         this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (FS) this;
     }
 
     @Override
     public final <T extends TableItem> FS leftBracket(Supplier<T> supplier, String alias) {
         this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
-        this.criteriaContext.onNoneBlock(TableBlock.noneBlock(supplier.get(), alias));
+        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(supplier.get(), alias));
         return (FS) this;
     }
 

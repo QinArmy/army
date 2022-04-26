@@ -3,44 +3,26 @@ package io.army.criteria.impl;
 import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
-import io.army.meta.TableMeta;
-import io.army.util._CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
 
-final class MySQLNoneBlock<C, OR> extends OnClauseTableBlock<C, OR> implements _MySQLTableBlock {
+final class MySQLNoOnBlock extends TableBlock.NoOnTableBlock implements _MySQLTableBlock {
 
 
     private final List<String> partitionList;
 
     List<MySQLIndexHint> indexHintList;
 
-    private final OR stmt;
 
-    /**
-     * @param stmt the implementation of {@link CriteriaContextSpec}
-     */
-    MySQLNoneBlock(TableMeta<?> table, String alias, List<String> partitionList, OR stmt) {
-        super(_JoinType.NONE, table, alias);
-        this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-        this.stmt = stmt;
-    }
-
-    MySQLNoneBlock(TableItem tableItem, String alias, OR stmt) {
-        super(_JoinType.NONE, tableItem, alias);
+    MySQLNoOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        super(joinType, tableItem, alias);
         this.partitionList = Collections.emptyList();
-        this.stmt = stmt;
     }
 
-    @Override
-    C getCriteria() {
-        return ((CriteriaContextSpec) this.stmt).getCriteriaContext().criteria();
-    }
-
-    @Override
-    OR endOnClause() {
-        return this.stmt;
+    MySQLNoOnBlock(_JoinType joinType, TableItem tableItem, String alias, List<String> partitionList) {
+        super(joinType, tableItem, alias);
+        this.partitionList = partitionList;
     }
 
     @Override

@@ -44,7 +44,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         MySQL80Query.IndexPurposeJoin80Spec<C, Q>,//IR
         MySQL80Query.IndexHintOn80Spec<C, Q>,    //JR
         MySQL80Query.On80Spec<C, Q>,            //JS
-        MySQL80Query.PartitionOn80Spec<C, Q>,   //IT
+        MySQL80Query.PartitionOn80Clause<C, Q>,   //IT
         MySQL80Query.GroupBy80Spec<C, Q>,       //WR
         MySQL80Query.WhereAnd80Spec<C, Q>,      //AR
         MySQL80Query.GroupByWithRollup80Spec<C, Q>,//GR
@@ -57,7 +57,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         , MySQL80Query.IndexHintJoin80Spec<C, Q>, MySQL80Query.IndexPurposeJoin80Spec<C, Q>
         , MySQL80Query.Join80Spec<C, Q>, MySQL80Query.WhereAnd80Spec<C, Q>, MySQL80Query.Having80Spec<C, Q>
         , _MySQL80Query, MySQL80Query.GroupByWithRollup80Spec<C, Q>, MySQL80Query.OrderByWithRollup80Spec<C, Q>
-        , MySQL80Query.Lock80LockOfOptionSpec<C, Q>, MySQL80Query.Lock80LockOptionSpec<C, Q> {
+        , MySQL80Query.Lock80OfSpec<C, Q>, MySQL80Query.Lock80LockOptionSpec<C, Q> {
 
 
     static <C> With80Spec<C, Select> simpleSelect(@Nullable C criteria) {
@@ -235,19 +235,19 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Lock80LockOfOptionSpec<C, Q> forUpdate() {
+    public final Lock80OfSpec<C, Q> forUpdate() {
         this.lock = MySQLLock.FOR_UPDATE;
         return this;
     }
 
     @Override
-    public final Lock80LockOfOptionSpec<C, Q> forShare() {
+    public final Lock80OfSpec<C, Q> forShare() {
         this.lock = MySQLLock.SHARE;
         return this;
     }
 
     @Override
-    public final Lock80LockOfOptionSpec<C, Q> ifForUpdate(Predicate<C> predicate) {
+    public final Lock80OfSpec<C, Q> ifForUpdate(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.lock = MySQLLock.FOR_UPDATE;
         }
@@ -255,7 +255,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Lock80LockOfOptionSpec<C, Q> ifForShare(Predicate<C> predicate) {
+    public final Lock80OfSpec<C, Q> ifForShare(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.lock = MySQLLock.SHARE;
         }
@@ -428,7 +428,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final PartitionOn80Spec<C, Q> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
+    final PartitionOn80Clause<C, Q> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
         return new PartitionOnBlock<>(joinType, table, this);
     }
 
@@ -459,7 +459,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final PartitionOn80Spec<C, Q> createNoActionPartitionBlock() {
+    final PartitionOn80Clause<C, Q> createNoActionPartitionBlock() {
         return new NoActionPartitionOnBlock<>(this);
     }
 
@@ -641,7 +641,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             if (partitionList == null) {
                 partitionList = Collections.emptyList();
             }
-            this.query.criteriaContext.onNoneBlock(new MySQLNoneBlock<>(this.table, alias, partitionList, this.query));
+            this.query.criteriaContext.onBlockWithoutOnClause(new MySQLNoOnBlock<>(this.table, alias, partitionList, this.query));
             return this.query;
         }
 
@@ -673,10 +673,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private static final class IndexHintOnBlock<C, Q extends Query> extends MySQLIndexHintOnBlock<
             C,
-            MySQL80Query.IndexPurposeOn80Spec<C, Q>,
+            IndexPurposeOn80Clause<C, Q>,
             MySQL80Query.IndexHintOn80Spec<C, Q>,
             MySQL80Query.Join80Spec<C, Q>> implements MySQL80Query.IndexHintOn80Spec<C, Q>
-            , MySQL80Query.IndexPurposeOn80Spec<C, Q> {
+            , IndexPurposeOn80Clause<C, Q> {
 
         private final List<String> partitionList;
 
@@ -717,7 +717,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
      */
     private static final class PartitionOnBlock<C, Q extends Query>
             extends MySQLPartitionClause<C, MySQL80Query.AsOn80Spec<C, Q>>
-            implements MySQL80Query.AsOn80Spec<C, Q>, MySQL80Query.PartitionOn80Spec<C, Q> {
+            implements MySQL80Query.AsOn80Spec<C, Q>, PartitionOn80Clause<C, Q> {
 
         private final _JoinType joinType;
 
@@ -763,9 +763,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private static final class NoActionIndexHintOnBlock<C, Q extends Query> extends MySQLNoActionIndexHintOnBlock<
             C,
-            MySQL80Query.IndexPurposeOn80Spec<C, Q>,
+            IndexPurposeOn80Clause<C, Q>,
             MySQL80Query.IndexHintOn80Spec<C, Q>,
-            MySQL80Query.Join80Spec<C, Q>> implements MySQL80Query.IndexPurposeOn80Spec<C, Q>
+            MySQL80Query.Join80Spec<C, Q>> implements IndexPurposeOn80Clause<C, Q>
             , MySQL80Query.IndexHintOn80Spec<C, Q> {
 
         private NoActionIndexHintOnBlock(Join80Spec<C, Q> stmt) {
@@ -777,7 +777,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private static final class NoActionPartitionOnBlock<C, Q extends Query>
             extends MySQLNoActionPartitionClause<C, MySQL80Query.AsOn80Spec<C, Q>>
-            implements MySQL80Query.PartitionOn80Spec<C, Q>, MySQL80Query.AsOn80Spec<C, Q> {
+            implements PartitionOn80Clause<C, Q>, MySQL80Query.AsOn80Spec<C, Q> {
 
         private final NoActionIndexHintOnBlock<C, Q> hintOnBlock;
 
