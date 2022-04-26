@@ -1,21 +1,23 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL57Query;
-import io.army.dialect.Constant;
 import io.army.dialect.Dialect;
-import io.army.dialect._Dialect;
-import io.army.dialect._SqlContext;
-import io.army.meta.ParamMeta;
 import io.army.session.Database;
 import io.army.util._Exceptions;
 
-import java.util.List;
-
+/**
+ * <p>
+ * This class is implementation of MySQL 5.7 union statement.
+ * </p>
+ *
+ * @param <C> java criteria object java type
+ * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+ * @since 1.0
+ */
 @SuppressWarnings("unchecked")
-abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
+abstract class MySQL57UnionQuery<C, Q extends Query> extends UnionRowSet<
         C,
         Q,
         MySQL57Query.UnionOrderBy57Spec<C, Q>,
@@ -24,7 +26,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
         MySQL57Query.Select57Clause<C, Q>>
         implements MySQL57Query, MySQL57Query.UnionOrderBy57Spec<C, Q>, _UnionRowSet {
 
-    static <C, Q extends Query> UnionOrderBy57Spec<C, Q> bracketQuery(final Q query) {
+    static <C, Q extends Query> UnionOrderBy57Spec<C, Q> bracketQuery(final RowSet query) {
         query.prepared();
         final UnionOrderBy57Spec<C, ?> spec;
         if (query instanceof Select) {
@@ -40,14 +42,31 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
     }
 
 
-    static <C, Q extends Query> UnionOrderBy57Spec<C, Q> unionQuery(Q left, UnionType unionType, Q right) {
+    static <C, Q extends Query> UnionOrderBy57Spec<C, Q> unionQuery(Q left, UnionType unionType, RowSet right) {
+        switch (unionType) {
+            case UNION:
+            case UNION_ALL:
+            case UNION_DISTINCT:
+                break;
+            default:
+                throw _Exceptions.castCriteriaApi();
+        }
         left.prepared();
         final UnionOrderBy57Spec<C, ?> spec;
         if (left instanceof Select) {
+            if (!(right instanceof Select)) {
+                throw errorRight(Select.class);
+            }
             spec = new UnionSelect<>((Select) left, unionType, (Select) right);
         } else if (left instanceof ScalarSubQuery) {
+            if (!(right instanceof ScalarExpression)) {
+                throw errorRight(ScalarSubQuery.class);
+            }
             spec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType, (ScalarExpression) right);
         } else if (left instanceof SubQuery) {
+            if (!(right instanceof SubQuery)) {
+                throw errorRight(SubQuery.class);
+            }
             spec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
         } else {
             throw _Exceptions.unknownRowSetType(left);
@@ -55,29 +74,17 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
         return (UnionOrderBy57Spec<C, Q>) spec;
     }
 
+    private static CriteriaException errorRight(Class<? extends Query> clazz) {
+        String m = String.format("MySQL 5.7 %s api UNION clause support only %s."
+                , clazz.getSimpleName(), clazz.getName());
+        throw new CriteriaException(m);
+    }
 
-    final Q left;
 
     MySQL57UnionQuery(Q left) {
-        super(CriteriaContexts.unionContext(left));
-        this.left = left;
+        super(left);
     }
 
-    @Override
-    public final List<? extends SelectItem> selectItemList() {
-        return ((_PartRowSet) this.left).selectItemList();
-    }
-
-    @Override
-    public final MySQL57Query.UnionOrderBy57Spec<C, Q> bracket() {
-        return bracketQuery(this.asQuery());
-    }
-
-
-    @Override
-    final UnionOrderBy57Spec<C, Q> createUnionQuery(Q left, UnionType unionType, Q right) {
-        return unionQuery(left, unionType, right);
-    }
 
     @Override
     final Select57Clause<C, Q> asUnionAndRowSet(UnionType unionType) {
@@ -85,19 +92,13 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
     }
 
     @Override
-    final Q internalAsRowSet(boolean justAsQuery) {
-        final Q query;
-        if (this instanceof ScalarSubQuery) {
-            query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
-        } else {
-            query = (Q) this;
-        }
-        return query;
+    final UnionOrderBy57Spec<C, Q> createBracketQuery(RowSet rowSet) {
+        return MySQL57UnionQuery.bracketQuery(rowSet);
     }
 
     @Override
-    final void internalClear() {
-        //no-op
+    final UnionOrderBy57Spec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+        return MySQL57UnionQuery.unionQuery((Q) left, unionType, right);
     }
 
     @Override
@@ -114,48 +115,23 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
 
 
     private static final class BracketSelect<C> extends MySQL57UnionQuery<C, Select>
-            implements Select {
+            implements Select, BracketRowSet {
 
         private BracketSelect(Select select) {
             super(select);
         }
 
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
-
-            context.dialect().select(this.left, context);
-
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
-
-        }
-
-    }//BracketQuery
+    }//BracketSelect
 
     private static class BracketSubQuery<C, Q extends SubQuery> extends MySQL57UnionQuery<C, Q>
-            implements SubQuery {
-
+            implements SubQuery, BracketRowSet {
 
         private BracketSubQuery(Q left) {
             super(left);
         }
 
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
-                    .append(Constant.LEFT_BRACKET);
 
-            context.dialect().subQuery(this.left, context);
-
-            builder.append(Constant.SPACE)
-                    .append(Constant.RIGHT_BRACKET);
-        }
-
-    }//
+    }//BracketSubQuery
 
 
     private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarExpression>
@@ -165,66 +141,48 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
             super(left);
         }
 
-        @Override
-        public ParamMeta paramMeta() {
-            return this.left.paramMeta();
-        }
 
     }//BracketScalarSubQuery
 
 
-    private static final class UnionSelect<C> extends MySQL57UnionQuery<C, Select>
-            implements Select {
-
-        private final UnionType unionType;
-
-        private final Select right;
-
-        private UnionSelect(Select left, UnionType unionType, Select right) {
-            super(left);
-            this.unionType = unionType;
-            this.right = right;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-
-            final _Dialect dialect = context.dialect();
-            dialect.select(this.left, context);
-
-            context.sqlBuilder()
-                    .append(Constant.SPACE)
-                    .append(this.unionType.keyWords);
-
-            dialect.select(this.right, context);
-
-        }
-
-    }//UnionSelect
-
-    private static class UnionSubQuery<C, Q extends SubQuery> extends MySQL57UnionQuery<C, Q>
-            implements SubQuery {
+    private static class UnionQuery<C, Q extends Query> extends MySQL57UnionQuery<C, Q>
+            implements RowSetWithUnion {
 
         private final UnionType unionType;
 
         private final Q right;
 
-        private UnionSubQuery(Q left, UnionType unionType, Q right) {
+        private UnionQuery(Q left, UnionType unionType, Q right) {
             super(left);
             this.unionType = unionType;
             this.right = right;
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            final _Dialect dialect = context.dialect();
-            dialect.subQuery(this.left, context);
+        public final UnionType unionType() {
+            return this.unionType;
+        }
 
-            context.sqlBuilder()
-                    .append(Constant.SPACE)
-                    .append(this.unionType.keyWords);
+        @Override
+        public final RowSet rightRowSet() {
+            return this.right;
+        }
 
-            dialect.subQuery(this.right, context);
+    }// UnionQuery
+
+    private static final class UnionSelect<C> extends UnionQuery<C, Select> implements Select {
+
+        private UnionSelect(Select left, UnionType unionType, Select right) {
+            super(left, unionType, right);
+        }
+
+    }//UnionSelect
+
+    private static class UnionSubQuery<C, Q extends SubQuery> extends UnionQuery<C, Q>
+            implements SubQuery {
+
+        private UnionSubQuery(Q left, UnionType unionType, Q right) {
+            super(left, unionType, right);
         }
 
     }//UnionSubQuery
@@ -235,11 +193,6 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends PartRowSet<
 
         private UnionScalarSubQuery(ScalarExpression left, UnionType unionType, ScalarExpression right) {
             super(left, unionType, right);
-        }
-
-        @Override
-        public ParamMeta paramMeta() {
-            return this.left.paramMeta();
         }
 
     }//UnionScalarSubQuery

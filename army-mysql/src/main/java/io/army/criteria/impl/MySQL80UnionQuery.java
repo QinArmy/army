@@ -104,7 +104,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartRowSet<
     }
 
     @Override
-    final Q internalAsRowSet(final boolean outer) {
+    final Q internalAsRowSet(final boolean fromAsQueryMethod) {
         final Q query;
         if (this instanceof ScalarSubQuery) {
             query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);

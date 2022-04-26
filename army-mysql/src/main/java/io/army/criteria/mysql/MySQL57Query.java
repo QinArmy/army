@@ -166,23 +166,6 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
-    /**
-     * <p>
-     * This interface representing PARTITION clause after key word 'CROSS JOIN' in table references for MySQL 57 syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface PartitionNoOn57Clause<C, Q extends Query> extends MySQLQuery.PartitionClause<C, AsNoOn57Clause<C, Q>> {
-
-    }
 
     /**
      * <p>
@@ -202,23 +185,6 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
-    /**
-     * <p>
-     * This interface representing AS clause after key word 'CROSS JOIN' in table references for MySQL 57 syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface AsNoOn57Clause<C, Q extends Query> extends Statement.AsClause<IndexHintNoOn57Spec<C, Q>> {
-
-    }
 
     /**
      * <p>
@@ -244,30 +210,6 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     * <ul>
-     *     <li>index hint clause</li>
-     *     <li>the composite {@link Join57Spec}</li>
-     * </ul>
-     *  after key word 'CROSS JOIN' in table references for MySQL 57 syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface IndexHintNoOn57Spec<C, Q extends Query>
-            extends MySQLQuery.IndexHintClause<C, IndexPurposeNoOn57Spec<C, Q>, IndexHintNoOn57Spec<C, Q>>
-            , Join57Spec<C, Q> {
-
-    }
 
     /**
      * <p>
@@ -291,31 +233,6 @@ public interface MySQL57Query extends MySQLQuery {
      */
     interface IndexPurposeOn57Spec<C, Q extends Query>
             extends MySQLQuery.IndexPurposeClause<C, IndexHintOn57Spec<C, Q>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing index hint clause after below methods:
-     * <ul>
-     *     <li>{@link IndexHintNoOn57Spec#useIndex()}</li>
-     *     <li>{@link IndexHintNoOn57Spec#ignoreIndex()}</li>
-     *     <li>{@link IndexHintNoOn57Spec#forceIndex()}</li>
-     * </ul>
-     * this interface is returned by {@link IndexHintNoOn57Spec}.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface IndexPurposeNoOn57Spec<C, Q extends Query>
-            extends MySQLQuery.IndexPurposeClause<C, IndexHintNoOn57Spec<C, Q>> {
 
     }
 
@@ -384,7 +301,7 @@ public interface MySQL57Query extends MySQLQuery {
      */
     interface Join57Clause<C, Q extends Query>
             extends MySQLJoinClause<C, IndexHintOn57Spec<C, Q>, On57Clause<C, Q>, PartitionOn57Clause<C, Q>
-            , IndexHintNoOn57Spec<C, Q>, Join57Spec<C, Q>, LestBracket57Clause<C, Q>, PartitionNoOn57Clause<C, Q>> {
+            , IndexHintJoin57Spec<C, Q>, Join57Spec<C, Q>, LestBracket57Clause<C, Q>, PartitionJoin57Clause<C, Q>> {
 
     }
 
@@ -658,7 +575,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @since 1.0
      */
     interface Union57Spec<C, Q extends Query>
-            extends QueryUnionClause<C, UnionOrderBy57Spec<C, Q>, Select57Clause<C, Q>, Q>
+            extends QueryUnionClause<C, UnionOrderBy57Spec<C, Q>, Select57Clause<C, Q>>
             , Query.QuerySpec<Q> {
 
     }

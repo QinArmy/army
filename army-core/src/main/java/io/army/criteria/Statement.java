@@ -8,7 +8,6 @@ import io.army.stmt.Stmt;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -193,12 +192,6 @@ public interface Statement {
 
         JE leftJoin();
 
-        JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS ifLeftJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JS ifLeftJoin(Supplier<T> supplier, String alias);
-
         JT join(TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JS join(Function<C, T> function, String alias);
@@ -206,12 +199,6 @@ public interface Statement {
         <T extends TableItem> JS join(Supplier<T> supplier, String alias);
 
         JE join();
-
-        JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS ifJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JS ifJoin(Supplier<T> supplier, String alias);
 
         JT rightJoin(TableMeta<?> table, String tableAlias);
 
@@ -221,12 +208,6 @@ public interface Statement {
 
         JE rightJoin();
 
-        JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias);
-
         JC crossJoin(TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JD crossJoin(Function<C, T> function, String alias);
@@ -235,12 +216,6 @@ public interface Statement {
 
         JE crossJoin();
 
-        JC ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JD ifCrossJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JD ifCrossJoin(Supplier<T> supplier, String alias);
-
         JT fullJoin(TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JS fullJoin(Function<C, T> function, String alias);
@@ -248,12 +223,6 @@ public interface Statement {
         <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias);
 
         JE fullJoin();
-
-        JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS ifFullJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias);
 
     }
 

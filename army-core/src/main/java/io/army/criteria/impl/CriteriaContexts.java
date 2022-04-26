@@ -231,15 +231,22 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final _TableBlock lastNoneBlock() {
+        public final _TableBlock lastTableBlockWithoutOnClause() {
             final List<_TableBlock> tableBlockList = this.tableBlockList;
             if (tableBlockList.size() == 0) {
                 throw _Exceptions.castCriteriaApi();
             }
             final _TableBlock block;
             block = tableBlockList.get(tableBlockList.size() - 1);
-            if (block instanceof _NoTableBlock || block.jointType() != _JoinType.NONE) {
+            if (block instanceof _NoTableBlock) {
                 throw _Exceptions.castCriteriaApi();
+            }
+            switch (block.jointType()) {
+                case NONE:
+                case CROSS_JOIN:
+                    break;
+                default:
+                    throw _Exceptions.castCriteriaApi();
             }
             return block;
         }
@@ -431,7 +438,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final _TableBlock lastNoneBlock() {
+        public final _TableBlock lastTableBlockWithoutOnClause() {
             throw nonJoinable("firstBlock");
         }
 
@@ -634,7 +641,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public _TableBlock lastNoneBlock() {
+        public _TableBlock lastTableBlockWithoutOnClause() {
             throw nonJoinable("firstBlock");
         }
 

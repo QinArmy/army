@@ -22,7 +22,7 @@ public class BankSyncBaseDao extends ArmySyncBaseDao {
 
     @SuppressWarnings("unchecked")
     protected final <F, S> Pair<F, S> selectAsPair(SyncSession session, Select stmt) {
-        return (Pair<F, S>) session.selectOne(stmt, Pair.class);
+        return (Pair<F, S>) session.queryOne(stmt, Pair.class);
     }
 
 

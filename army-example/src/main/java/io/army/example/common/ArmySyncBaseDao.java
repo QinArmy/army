@@ -50,7 +50,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
     public <T extends Domain> T findById(Class<T> domainClass, Object id) {
         final SyncSession session;
         session = this.sessionContext.currentSession();
-        return session.selectOne(createFindByIdStmt(session, domainClass, id), domainClass);
+        return session.queryOne(createFindByIdStmt(session, domainClass, id), domainClass);
     }
 
     @Override
@@ -59,7 +59,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
         session = this.sessionContext.currentSession();
         final Select stmt;
         stmt = createFindByIdStmt(session, domainClass, id);
-        return session.selectOneAsMap(stmt);
+        return session.queryOneAsMap(stmt);
     }
 
     @Override

@@ -481,28 +481,28 @@ public abstract class SQLs extends StandardFunctions {
         return SelectionGroups.buildDerivedGroup(subQueryAlias, derivedFieldNameList);
     }
 
-    public static Cte cte(String name, Supplier<SubQuery> supplier) {
+    public static Cte cte(String name, Supplier<? extends SubQuery> supplier) {
         final SubQuery subQuery;
         subQuery = supplier.get();
         assert subQuery != null;
         return new CteImpl(name, subQuery);
     }
 
-    public static Cte cte(String name, List<String> columnNameList, Supplier<SubQuery> supplier) {
+    public static Cte cte(String name, List<String> columnNameList, Supplier<? extends SubQuery> supplier) {
         final SubQuery subQuery;
         subQuery = supplier.get();
         assert subQuery != null;
         return new CteImpl(name, columnNameList, subQuery);
     }
 
-    public static <C> Cte cte(String name, Function<C, SubQuery> function) {
+    public static <C> Cte cte(String name, Function<C, ? extends SubQuery> function) {
         final SubQuery subQuery;
         subQuery = function.apply(CriteriaContextStack.getTopCriteria());
         assert subQuery != null;
         return new CteImpl(name, subQuery);
     }
 
-    public static <C> Cte cte(String name, List<String> columnNameList, Function<C, SubQuery> function) {
+    public static <C> Cte cte(String name, List<String> columnNameList, Function<C, ? extends SubQuery> function) {
         final SubQuery subQuery;
         subQuery = function.apply(CriteriaContextStack.getTopCriteria());
         assert subQuery != null;

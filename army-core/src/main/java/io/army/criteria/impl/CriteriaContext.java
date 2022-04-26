@@ -40,7 +40,7 @@ interface CriteriaContext {
 
     void onJoinType(_JoinType joinType);
 
-    _TableBlock lastNoneBlock();
+    _TableBlock lastTableBlockWithoutOnClause();
 
     @Nullable
     <C> C criteria();

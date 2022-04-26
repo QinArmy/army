@@ -36,7 +36,7 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
                 .join(ChinaRegion_.T, "province")
                 .on(SQLs.field("p_of_city", ChinaRegion_.parentId).equal(SQLs.field("province", ChinaRegion_.id)))
                 .asQuery();
-        return this.sessionContext.currentSession().selectAsMap(stmt);
+        return this.sessionContext.currentSession().queryAsMap(stmt);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
                 .where(ChinaRegion_.name.equalLiteral(regionName))
                 .and(ChinaRegion_.regionType.equalLiteral(regionType))
                 .asQuery();
-        return this.sessionContext.currentSession().selectOne(stmt, Long.class);
+        return this.sessionContext.currentSession().queryOne(stmt, Long.class);
     }
 
 

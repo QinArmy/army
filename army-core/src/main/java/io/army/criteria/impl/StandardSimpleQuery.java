@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 
 /**
  * <p>
- * This class is a implementation of standard simple query.
+ * This class is a implementation of {@link StandardQuery}.
  * </p>
  *
  * @see StandardUnionQuery
@@ -32,9 +32,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         StandardQuery.StandardOnClause<C, Q>, // JT
         StandardQuery.StandardOnClause<C, Q>, // JS
         Void,                               // JP
-        StandardQuery.JoinSpec<C, Q>,// JC
         StandardQuery.StandardLestBracketClause<C, Q>,// JE
-        Void,                               // JF
         StandardQuery.GroupBySpec<C, Q>, // WR
         StandardQuery.WhereAndSpec<C, Q>, // AR
         StandardQuery.HavingSpec<C, Q>, // GR
@@ -81,22 +79,13 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     StandardSimpleQuery(@Nullable C criteria) {
         super(CriteriaContexts.queryContext(criteria));
-        if (this instanceof Select) {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        } else {
-            CriteriaContextStack.push(this.criteriaContext);
-        }
+
     }
 
     StandardSimpleQuery(CriteriaContext context) {
         super(context);
-        if (!(this instanceof AbstractUnionAndQuery)) {
+        if (!(this instanceof StandardSimpleQuery.UnionAndQuery)) {
             throw new IllegalStateException("this error.");
-        }
-        if (this instanceof Select) {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        } else {
-            CriteriaContextStack.push(this.criteriaContext);
         }
 
     }
@@ -150,14 +139,26 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 
+
     @Override
-    final Void createNoneBlockBeforeAs(TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
+    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        final _TableBlock block;
+        switch (joinType) {
+            case NONE:
+                block = TableBlock.noneBlock(table, tableAlias);
+                break;
+            case CROSS_JOIN:
+                block = TableBlock.crossBlock(table, tableAlias);
+                break;
+            default:
+                throw _Exceptions.castCriteriaApi();
+        }
+        return block;
     }
 
     @Override
-    final _TableBlock createNoneTableBlock(TableMeta<?> table, String tableAlias) {
-        return TableBlock.noneBlock(table, tableAlias);
+    final Void createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
     }
 
     @Override
@@ -172,26 +173,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final Void createNextClauseForCross(TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final StandardOnClause<C, Q> createNoActionTableBlock() {
-        return new NoActionOnBlock<>(this);
-    }
-
-    @Override
-    final StandardOnClause<C, Q> createNoActionOnBlock() {
-        return new NoActionOnBlock<>(this);
-    }
-
-    @Override
-    final void onCrossJoinTable(boolean success) {
-        //no-op
-    }
-
-    @Override
     final Dialect defaultDialect() {
         return Dialect.MySQL57;
     }
@@ -203,8 +184,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final Q onAsQuery(final boolean forUnionAndRowSet) {
-        return this.finallyAsQuery(forUnionAndRowSet);
+    final Q onAsQuery(final boolean fromAsQueryMethod) {
+        return this.finallyAsQuery(fromAsQueryMethod);
     }
 
 
@@ -234,15 +215,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     /*################################## blow private inter class method ##################################*/
 
-
-    private static final class NoActionOnBlock<C, Q extends Query> extends NoActionOnClause<C, JoinSpec<C, Q>>
-            implements StandardOnClause<C, Q> {
-
-        private NoActionOnBlock(JoinSpec<C, Q> joinSpec) {
-            super(joinSpec);
-        }
-
-    }// NoActionOnBlock
 
     private static final class OnBlock<C, Q extends Query> extends OnClauseTableBlock<C, JoinSpec<C, Q>>
             implements StandardOnClause<C, Q> {
@@ -317,14 +289,14 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }// SimpleScalarSubQuery
 
 
-    private static abstract class AbstractUnionAndQuery<C, Q extends Query> extends StandardSimpleQuery<C, Q>
+    private static abstract class UnionAndQuery<C, Q extends Query> extends StandardSimpleQuery<C, Q>
             implements UnionAndRowSet {
 
         private final Q left;
 
         private final UnionType unionType;
 
-        AbstractUnionAndQuery(Q left, UnionType unionType) {
+        UnionAndQuery(Q left, UnionType unionType) {
             super(CriteriaContexts.unionAndContext(left));
             this.left = left;
             this.unionType = unionType;
@@ -340,10 +312,10 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             return this.unionType;
         }
 
-    }//AbstractUnionAndQuery
+    }//UnionAndQuery
 
 
-    private static final class UnionAndSelect<C> extends AbstractUnionAndQuery<C, Select>
+    private static final class UnionAndSelect<C> extends UnionAndQuery<C, Select>
             implements Select {
 
         private UnionAndSelect(Select left, UnionType unionType) {
@@ -353,7 +325,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     } // UnionAndSelect
 
 
-    private static class UnionAndSubQuery<C, Q extends SubQuery> extends AbstractUnionAndQuery<C, Q>
+    private static class UnionAndSubQuery<C, Q extends SubQuery> extends UnionAndQuery<C, Q>
             implements SubQuery, _SelfDescribed {
 
         private Map<String, Selection> selectionMap;

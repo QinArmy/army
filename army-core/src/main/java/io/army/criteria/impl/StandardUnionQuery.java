@@ -74,13 +74,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
     private StandardUnionQuery(Q left) {
         super(left);
-        if (this instanceof Select) {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        } else {
-            CriteriaContextStack.push(this.criteriaContext);
-        }
-    }
 
+    }
 
     @Override
     final UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {

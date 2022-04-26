@@ -19,78 +19,78 @@ public abstract class _AbstractReactiveSession implements ReactiveSession {
 
 
     @Override
-    public final <R> Mono<R> selectOne(Select select, Class<R> resultClass) {
-        return this.selectOne(select, resultClass, Visible.ONLY_VISIBLE);
+    public final <R> Mono<R> queryOne(DqlStatement statement, Class<R> resultClass) {
+        return this.queryOne(statement, resultClass, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <R> Mono<R> selectOne(Select select, Class<R> resultClass, Visible visible) {
-        return this.select(select, resultClass, visible)
+    public final <R> Mono<R> queryOne(DqlStatement statement, Class<R> resultClass, Visible visible) {
+        return this.query(statement, resultClass, visible)
                 .take(2)
                 .collectList()
                 .flatMap(this::justOne);
     }
 
     @Override
-    public final <R> Mono<Optional<R>> selectOneNullable(Select select, Class<R> resultClass) {
-        return this.selectOneNullable(select, resultClass, Visible.ONLY_VISIBLE);
+    public final <R> Mono<Optional<R>> queryOneNullable(DqlStatement statement, Class<R> resultClass) {
+        return this.queryOneNullable(statement, resultClass, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <R> Mono<Optional<R>> selectOneNullable(Select select, Class<R> resultClass, Visible visible) {
-        return this.selectNullable(select, resultClass, visible)
+    public final <R> Mono<Optional<R>> queryOneNullable(DqlStatement statement, Class<R> resultClass, Visible visible) {
+        return this.queryNullable(statement, resultClass, visible)
                 .take(2)
                 .collectList()
                 .flatMap(this::justOne);
     }
 
     @Override
-    public final Mono<Map<String, Object>> selectOneAsMap(Select select) {
-        return this.selectOneAsMap(select, HashMap::new, Visible.ONLY_VISIBLE);
+    public final Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement) {
+        return this.queryOneAsMap(statement, HashMap::new, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final Mono<Map<String, Object>> selectOneAsMap(Select select, Visible visible) {
-        return this.selectOneAsMap(select, HashMap::new, visible);
+    public final Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Visible visible) {
+        return this.queryOneAsMap(statement, HashMap::new, visible);
     }
 
     @Override
-    public final Mono<Map<String, Object>> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor) {
-        return this.selectOneAsMap(select, mapConstructor, Visible.ONLY_VISIBLE);
+    public final Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor) {
+        return this.queryOneAsMap(statement, mapConstructor, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final Mono<Map<String, Object>> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+    public final Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Visible visible) {
-        return this.selectAsMap(select, mapConstructor, visible)
+        return this.queryAsMap(statement, mapConstructor, visible)
                 .take(2)
                 .collectList()
                 .flatMap(this::justOne);
     }
 
     @Override
-    public final <R> Flux<R> select(Select select, Class<R> resultClass) {
-        return this.select(select, resultClass, Visible.ONLY_VISIBLE);
+    public final <R> Flux<R> query(DqlStatement statement, Class<R> resultClass) {
+        return this.query(statement, resultClass, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <R> Flux<Optional<R>> selectNullable(Select select, Class<R> resultClass) {
-        return this.selectNullable(select, resultClass, Visible.ONLY_VISIBLE);
+    public final <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass) {
+        return this.queryNullable(statement, resultClass, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final Flux<Map<String, Object>> selectAsMap(Select select) {
-        return this.selectAsMap(select, HashMap::new, Visible.ONLY_VISIBLE);
+    public final Flux<Map<String, Object>> queryAsMap(DqlStatement statement) {
+        return this.queryAsMap(statement, HashMap::new, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final Flux<Map<String, Object>> selectAsMap(Select select, Visible visible) {
-        return this.selectAsMap(select, HashMap::new, visible);
+    public final Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Visible visible) {
+        return this.queryAsMap(statement, HashMap::new, visible);
     }
 
     @Override
-    public final Flux<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor) {
-        return this.selectAsMap(select, mapConstructor, Visible.ONLY_VISIBLE);
+    public final Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor) {
+        return this.queryAsMap(statement, mapConstructor, Visible.ONLY_VISIBLE);
     }
 
     @Override

@@ -1,11 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQL57Query;
 import io.army.criteria.mysql.MySQL57Query;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.session.Database;
 import io.army.util._CollectionUtils;
@@ -13,12 +13,23 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+/**
+ * <p>
+ * This class is the implementation of {@link MySQL57Query}
+ * </p>
+ *
+ * @param <C> java criteria object java type
+ * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+ * @since 1.0
+ */
 abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         C,
         Q,
+        Void,                       //WE
         MySQL57Query.From57Spec<C, Q>, //SR
         MySQL57Query.IndexHintJoin57Spec<C, Q>, //FT
         MySQL57Query.Join57Spec<C, Q>,          //FS
@@ -27,9 +38,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         MySQL57Query.IndexHintOn57Spec<C, Q>,   //JT
         MySQL57Query.On57Clause<C, Q>,            //JS
         MySQL57Query.PartitionOn57Clause<C, Q>,   //JP
-        MySQL57Query.IndexHintNoOn57Spec<C, Q>,//JC
         MySQL57Query.LestBracket57Clause<C, Q>,//JE
-        MySQL57Query.PartitionNoOn57Clause<C, Q>,//JF
         MySQL57Query.GroupBy57Spec<C, Q>,       //WR
         MySQL57Query.WhereAnd57Spec<C, Q>,     //AR
         MySQL57Query.WithRollup57Spec<C, Q>,  //GR
@@ -40,8 +49,8 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         MySQL57Query.Select57Clause<C, Q>>   //SP
         implements MySQL57Query, MySQL57Query.Select57Clause<C, Q>, MySQL57Query.From57Spec<C, Q>
         , MySQL57Query.Join57Spec<C, Q>, MySQL57Query.WhereAnd57Spec<C, Q>, MySQL57Query.WithRollup57Spec<C, Q>
-        , MySQL57Query.Having57Spec<C, Q>, MySQL57Query.IndexHintJoin57Spec<C, Q>
-        , MySQL57Query.IndexPurposeJoin57Clause<C, Q>, _MySQL57Query {
+        , MySQL57Query.Having57Spec<C, Q>, MySQL57Query.IndexHintJoin57Spec<C, Q>, _MySQL57Query
+        , MySQL57Query.IndexPurposeJoin57Clause<C, Q> {
 
 
     static <C> Select57Clause<C, Select> simpleSelect(@Nullable C criteria) {
@@ -52,20 +61,20 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C, E> Select57Clause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
+    static <C> Select57Clause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(criteria);
     }
 
 
+    @SuppressWarnings("unchecked")
     static <C, Q extends Query> Select57Clause<C, Q> unionAndSelect(final Q left, final UnionType unionType) {
         final Select57Clause<C, ?> select57Spec;
-        final C criteria = CriteriaUtils.getCriteria(left);
         if (left instanceof Select) {
-            select57Spec = new UnionAndSelect<>((Select) left, unionType, criteria);
+            select57Spec = new UnionAndSelect<>((Select) left, unionType);
         } else if (left instanceof ScalarSubQuery) {
-            select57Spec = new UnionAndScalarSubQuery<>((ScalarExpression) left, unionType, criteria);
+            select57Spec = new UnionAndScalarSubQuery<>((ScalarExpression) left, unionType);
         } else if (left instanceof SubQuery) {
-            select57Spec = new UnionAndSubQuery<>((SubQuery) left, unionType, criteria);
+            select57Spec = new UnionAndSubQuery<>((SubQuery) left, unionType);
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
@@ -79,12 +88,14 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private MySQL57SimpleQuery(@Nullable C criteria) {
         super(CriteriaContexts.queryContext(criteria));
-        if (this instanceof Select) {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        } else {
-            CriteriaContextStack.push(this.criteriaContext);
-        }
 
+    }
+
+    private MySQL57SimpleQuery(CriteriaContext criteriaContext) {
+        super(criteriaContext);
+        if (!(this instanceof UnionAndQuery)) {
+            throw new IllegalStateException("this error.");
+        }
     }
 
 
@@ -142,47 +153,10 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return this.withRollup;
     }
 
-    @Override
-    public final UnionOrderBy57Spec<C, Q> bracket() {
-        final UnionOrderBy57Spec<C, Q> unionSpec;
-        if (this instanceof AbstractUnionAndQuery) {
-            final AbstractUnionAndQuery<C, Q> andQuery = (AbstractUnionAndQuery<C, Q>) this;
-            final Q thisQuery = this.asUnionAndRowSet();
-            if (this instanceof ScalarSubQuery) {
-                if (!(thisQuery instanceof ScalarSubQueryExpression)
-                        || ((ScalarSubQueryExpression) thisQuery).subQuery != this) {
-                    throw asQueryMethodError();
-                }
-            } else if (thisQuery != this) {
-                throw asQueryMethodError();
-            }
-            final Q right;
-            right = MySQL57UnionQuery.bracketQuery(thisQuery)
-                    .asQuery();
-            unionSpec = MySQL57UnionQuery.unionQuery(andQuery.left, andQuery.unionType, right);
-        } else {
-            unionSpec = MySQL57UnionQuery.bracketQuery(this.asQuery());
-        }
-        return unionSpec;
-    }
-
 
     @Override
-    final Q onAsQuery(final boolean outer) {
-        final Q thisQuery, resultQuery;
-        if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
-        } else {
-            thisQuery = (Q) this;
-        }
-        if (outer && this instanceof AbstractUnionAndQuery) {
-            final AbstractUnionAndQuery<C, Q> unionAndQuery = (AbstractUnionAndQuery<C, Q>) this;
-            resultQuery = MySQL57UnionQuery.unionQuery(unionAndQuery.left, unionAndQuery.unionType, thisQuery)
-                    .asQuery();
-        } else {
-            resultQuery = thisQuery;
-        }
-        return resultQuery;
+    final Q onAsQuery(final boolean fromAsQueryMethod) {
+        return this.finallyAsQuery(fromAsQueryMethod);
     }
 
     @Override
@@ -191,10 +165,6 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         this.lockModifier = null;
     }
 
-    @Override
-    final UnionOrderBy57Spec<C, Q> createUnionQuery(Q left, UnionType unionType, Q right) {
-        return MySQL57UnionQuery.unionQuery(left, unionType, right);
-    }
 
     @Override
     final Select57Clause<C, Q> asUnionAndRowSet(UnionType unionType) {
@@ -202,12 +172,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final PartitionJoin57Clause<C, Q> createNoneBlockBeforeAs(TableMeta<?> table) {
-        return new PartitionJoinImpl<>(table, this);
-    }
-
-    @Override
-    final PartitionOn57Clause<C, Q> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
+    final PartitionOn57Clause<C, Q> createNextClauseWithOnClause(_JoinType joinType, TableMeta<?> table) {
         return new PartitionOnBlock<>(joinType, table, this);
     }
 
@@ -223,35 +188,29 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final IndexHintNoOn57Spec<C, Q> createNextClauseForCross() {
+    final UnionOrderBy57Spec<C, Q> createBracketQuery(RowSet rowSet) {
+        return MySQL57UnionQuery.bracketQuery(rowSet);
+    }
+
+    @Override
+    final UnionOrderBy57Spec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
         return null;
     }
 
     @Override
-    final PartitionNoOn57Clause<C, Q> createNextClauseForCross(TableMeta<?> table) {
+    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return null;
     }
 
     @Override
-    final IndexHintOn57Spec<C, Q> createNoActionTableBlock() {
-        return new NoActionIndexHintOnBlock<>(this);
-    }
-
-    @Override
-    final On57Clause<C, Q> createNoActionOnBlock() {
-        return new NoActionOnBlock<>(this);
-    }
-
-
-    @Override
-    final PartitionOn57Clause<C, Q> createNoActionPartitionBlock() {
-        return new NoActionPartitionOnBlock<>(this);
-    }
-
-
-    @Override
-    final IndexHintNoOn57Spec<C, Q> createNoActionClauseForCross() {
+    final PartitionJoin57Clause<C, Q> createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
         return null;
+    }
+
+    @Override
+    final void doWithCte(boolean recursive, List<Cte> cteList) {
+        //MySQL 5.7 don't support WITH clause.
+        throw _Exceptions.castCriteriaApi();
     }
 
     @Override
@@ -285,8 +244,20 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static class SimpleSubQuery<C, Q extends SubQuery> extends MySQL57SimpleQuery<C, Q>
             implements SubQuery {
 
+        private Map<String, Selection> selectionMap;
+
         private SimpleSubQuery(@Nullable C criteria) {
             super(criteria);
+        }
+
+        @Override
+        public final Selection selection(String derivedFieldName) {
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
+                this.selectionMap = selectionMap;
+            }
+            return selectionMap.get(derivedFieldName);
         }
 
 
@@ -300,65 +271,75 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             super(criteria);
         }
 
-        @Override
-        public ParamMeta paramMeta() {
-            return ((Selection) this.selectItemList().get(0)).paramMeta();
-        }
 
     }// SimpleScalarSubQuery
 
 
-    private static abstract class AbstractUnionAndQuery<C, Q extends Query> extends MySQL57SimpleQuery<C, Q> {
+    private static abstract class UnionAndQuery<C, Q extends Query> extends MySQL57SimpleQuery<C, Q>
+            implements UnionAndRowSet {
 
         final Q left;
 
         final UnionType unionType;
 
-        private AbstractUnionAndQuery(Q left, UnionType unionType, @Nullable C criteria) {
-            super(criteria);
+        private UnionAndQuery(Q left, UnionType unionType) {
+            super(CriteriaContexts.unionAndContext(left));
             this.left = left;
             this.unionType = unionType;
         }
 
+        @Override
+        public final RowSet leftRowSet() {
+            return this.left;
+        }
+
+        @Override
+        public final UnionType unionType() {
+            return this.unionType;
+        }
 
     }//AbstractUnionAndQuery
 
-    private static final class UnionAndSelect<C> extends AbstractUnionAndQuery<C, Select> implements Select {
+    private static final class UnionAndSelect<C> extends UnionAndQuery<C, Select> implements Select {
 
-        private UnionAndSelect(Select left, UnionType unionType, @Nullable C criteria) {
-            super(left, unionType, criteria);
+        private UnionAndSelect(Select left, UnionType unionType) {
+            super(left, unionType);
         }
 
     }// UnionAndSelect
 
-    private static final class UnionAndSubQuery<C> extends AbstractUnionAndQuery<C, SubQuery> implements SubQuery {
+    private static class UnionAndSubQuery<C, Q extends SubQuery> extends UnionAndQuery<C, Q> implements SubQuery {
 
-        private UnionAndSubQuery(SubQuery left, UnionType unionType, @Nullable C criteria) {
-            super(left, unionType, criteria);
+        private Map<String, Selection> selectionMap;
+
+        private UnionAndSubQuery(Q left, UnionType unionType) {
+            super(left, unionType);
+        }
+
+        @Override
+        public final Selection selection(String derivedFieldName) {
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
+                this.selectionMap = selectionMap;
+            }
+            return selectionMap.get(derivedFieldName);
         }
 
     }// UnionAndSubQuery
 
 
-    private static final class UnionAndScalarSubQuery<C> extends AbstractUnionAndQuery<C, ScalarExpression>
+    private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType, @Nullable C criteria) {
-            super(left, unionType, criteria);
-        }
-
-        @Override
-        public ParamMeta paramMeta() {
-            return ((Selection) this.selectItemList().get(0)).paramMeta();
+        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType) {
+            super(left, unionType);
         }
 
 
     }// UnionAndScalarSubQuery
 
 
-    /**
-     * @see #createFirstPartitionBlock(TableMeta)
-     */
     private static final class PartitionJoinImpl<C, Q extends Query>
             extends MySQLPartitionClause<C, AsJoin57Clause<C, Q>>
             implements PartitionJoin57Clause<C, Q>, AsJoin57Clause<C, Q> {
@@ -466,7 +447,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     /**
-     * @see #createBlockBeforeAs(_JoinType, TableMeta)
+     * @see #createNextClauseWithOnClause(_JoinType, TableMeta)
      */
     private static final class PartitionOnBlock<C, Q extends Query>
             extends MySQLPartitionClause<C, AsOn57Clause<C, Q>>
@@ -501,54 +482,6 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     }// PartitionOnBlock
-
-    /**
-     * @see #createNoActionOnBlock()
-     */
-    private static final class NoActionOnBlock<C, Q extends Query> extends NoActionOnClause<C, MySQL57Query.Join57Spec<C, Q>>
-            implements On57Clause<C, Q> {
-
-        private NoActionOnBlock(Join57Spec<C, Q> stmt) {
-            super(stmt);
-        }
-
-    }//NoActionOnBlock
-
-    /**
-     * @see #createNoActionTableBlock()
-     */
-    private static final class NoActionIndexHintOnBlock<C, Q extends Query> extends MySQLNoActionIndexHintOnBlock<
-            C,
-            MySQL57Query.IndexPurposeOn57Spec<C, Q>,
-            MySQL57Query.IndexHintOn57Spec<C, Q>,
-            MySQL57Query.Join57Spec<C, Q>>
-            implements MySQL57Query.IndexPurposeOn57Spec<C, Q>, MySQL57Query.IndexHintOn57Spec<C, Q> {
-
-        private NoActionIndexHintOnBlock(Join57Spec<C, Q> stmt) {
-            super(stmt);
-        }
-
-    }// NoActionIndexHintOnBlock
-
-    /**
-     * @see #createNoActionPartitionBlock()
-     */
-    private static final class NoActionPartitionOnBlock<C, Q extends Query>
-            extends MySQLNoActionPartitionClause<C, AsOn57Clause<C, Q>>
-            implements PartitionOn57Clause<C, Q>, AsOn57Clause<C, Q> {
-
-        private final MySQL57Query.IndexHintOn57Spec<C, Q> hintOn57Spec;
-
-        private NoActionPartitionOnBlock(Join57Spec<C, Q> stmt) {
-            this.hintOn57Spec = new NoActionIndexHintOnBlock<>(stmt);
-        }
-
-        @Override
-        public IndexHintOn57Spec<C, Q> as(String alias) {
-            return this.hintOn57Spec;
-        }
-
-    }//NoActionPartitionOnBlock
 
 
 }

@@ -56,7 +56,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface MySQLJoinBracketClause<C, JT, JS, JP> extends DialectStatement.DialectJoinBracketClause<C, JT, JS, JP> {
+    interface MySQLJoinBracketClause<C, JT, JS, JP> extends DialectLeftBracketClause<C, JT, JS, JP> {
 
     }
 

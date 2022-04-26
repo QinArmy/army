@@ -93,7 +93,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP> extends PartRowS
 
     @SuppressWarnings("unchecked")
     @Override
-    final Q internalAsRowSet(final boolean justAsQuery) {
+    final Q internalAsRowSet(final boolean fromAsQueryMethod) {
         if (this instanceof NonPrimaryStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {

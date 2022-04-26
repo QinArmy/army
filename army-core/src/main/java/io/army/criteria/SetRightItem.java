@@ -9,7 +9,7 @@ package io.army.criteria;
  * </ul>
  * </p>
  *
- * @see Expression
+ * @since 1.0
  */
 public interface SetRightItem {
 

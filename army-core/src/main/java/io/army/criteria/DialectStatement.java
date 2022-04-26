@@ -4,25 +4,37 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public interface DialectStatement extends Statement {
 
 
+    /**
+     * <p>
+     * This interface representing WITH clause(Common Table Expressions).
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type
+     * @param <WE> next clause java type
+     */
     interface WithCteClause<C, WE> {
 
-        WE with(String cteName, Supplier<SubQuery> supplier);
+        WE with(String cteName, Supplier<? extends SubQuery> supplier);
 
-        WE with(String cteName, Function<C, SubQuery> function);
+        WE with(String cteName, Function<C, ? extends SubQuery> function);
 
         WE with(Supplier<List<Cte>> supplier);
 
         WE with(Function<C, List<Cte>> function);
 
-        WE withRecursive(String cteName, Supplier<SubQuery> supplier);
+        WE withRecursive(String cteName, Supplier<? extends SubQuery> supplier);
 
-        WE withRecursive(String cteName, Function<C, SubQuery> function);
+        WE withRecursive(String cteName, Function<C, ? extends SubQuery> function);
 
         WE withRecursive(Supplier<List<Cte>> supplier);
 
@@ -40,7 +52,7 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type.
+     * @param <C>  criteria object java type
      * @param <FT> next clause java type
      * @param <FS> next clause java type
      * @param <FP> next clause java type
@@ -83,47 +95,60 @@ public interface DialectStatement extends Statement {
 
         JE straightJoin();
 
-        JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias);
-
-        <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias);
-
         JP leftJoin(TableMeta<?> table);
-
-        JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
 
         JP join(TableMeta<?> table);
 
-        JP ifJoin(Predicate<C> predicate, TableMeta<?> table);
-
         JP rightJoin(TableMeta<?> table);
-
-        JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
 
         JP straightJoin(TableMeta<?> table);
 
-        JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
-
         JP fullJoin(TableMeta<?> table);
-
-        JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table);
 
         JF crossJoin(TableMeta<?> table);
 
-        JF ifCrossJoin(Predicate<C> predicate, TableMeta<?> table);
-
     }
 
-    interface DialectJoinBracketClause<C, JT, JS, JP> extends LeftBracketClause<C, JT, JS> {
+    /**
+     * <p>
+     * This interface representing dialect left bracket clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type
+     * @param <JT> next clause java type
+     * @param <JS> next clause java type
+     * @param <JP> next clause java type
+     * @since 1.0
+     */
+    interface DialectLeftBracketClause<C, JT, JS, JP> extends LeftBracketClause<C, JT, JS> {
 
         @Override
-        DialectJoinBracketClause<C, JT, JS, JP> leftBracket();
+        DialectLeftBracketClause<C, JT, JS, JP> leftBracket();
 
         JP leftBracket(TableMeta<?> table);
     }
 
-    interface DialectUnionClause<C, Q extends Query, UR, SP> extends Query.QueryUnionClause<C, Q, UR, SP> {
+    /**
+     * <p>
+     * This interface representing dialect union clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type
+     * @param <UR> next clause java type
+     * @param <SP> next clause java type
+     * @since 1.0
+     */
+    interface DialectUnionClause<C, UR, SP> extends Query.QueryUnionClause<C, UR, SP> {
 
     }
 

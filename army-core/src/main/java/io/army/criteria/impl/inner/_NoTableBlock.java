@@ -1,7 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.TableItem;
-
 /**
  * <p>
  * This interface representing {@link _TableBlock} without {@link io.army.criteria.TableItem}.
@@ -11,16 +9,12 @@ import io.army.criteria.TableItem;
  *     <li>{@link _LeftBracketBlock}</li>
  *     <li>{@link _RightBracketBlock}</li>
  * </ul>
+ *  Any method of {@link _NoTableBlock} always throw {@link UnsupportedOperationException}
  * </p>
  *
  * @since 1.0
  */
 public interface _NoTableBlock extends _TableBlock {
 
-    /**
-     * @throws UnsupportedOperationException always
-     */
-    @Override
-    TableItem tableItem();
 
 }

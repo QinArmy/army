@@ -7,7 +7,6 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
-import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -18,9 +17,9 @@ import java.util.function.Predicate;
 
 
 @SuppressWarnings("unchecked")
-abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, JP, JC, JE, JF, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends SimpleQuery<C, Q, SR, FT, FS, FP, JT, JS, JP, JC, JE, JF, WR, AR, GR, HR, OR, LR, UR, SP>
-        implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, JP, JC, FS, JE, JF>
+abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends WithCteSimpleQuery<C, Q, WE, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
+        implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, JP, FT, FS, JE, FP>
         , MySQLQuery.MySQLFromClause<C, FT, FS, FP, JE>, MySQLQuery.IndexHintClause<C, IR, FT>
         , MySQLQuery.IndexPurposeClause<C, FT> {
 
@@ -30,12 +29,6 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
     MySQLSimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
-
-    @Override
-    public final FP from(TableMeta<?> table) {
-        return this.createNoneBlockBeforeAs(table);
-    }
-
 
     @Override
     public final IR useIndex() {
@@ -189,30 +182,8 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         return (FT) this;
     }
 
-    abstract JP createNoActionPartitionBlock();
-
-
-    @Override
-    final _TableBlock createNoneTableBlock(TableMeta<?> table, String tableAlias) {
-        return new MySQLNoneBlock<>(table, tableAlias, this);
-    }
-
-
-
 
     /*################################## blow private method ##################################*/
-
-
-    @Override
-    final JP ifJointTableBeforeAs(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
-        final JP block;
-        if (predicate.test(this.criteria)) {
-            block = this.createBlockBeforeAs(joinType, table);
-        } else {
-            block = createNoActionPartitionBlock();
-        }
-        return block;
-    }
 
 
     /**
@@ -222,10 +193,6 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
      */
     private void setIndexHintCommand(MySQLIndexHint.Command command) {
         if (this.indexHintCommand != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final _TableBlock block = this.criteriaContext.lastNoneBlock();
-        if (!(block instanceof MySQLNoneBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
         this.indexHintCommand = command;
@@ -245,7 +212,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, SR, FT, FS, FP, IR, JT, JS, 
         if (this.indexHintCommand != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        final _TableBlock block = this.criteriaContext.lastNoneBlock();
+        final _TableBlock block = this.criteriaContext.lastTableBlockWithoutOnClause();
         if (!(block instanceof MySQLNoneBlock)) {
             throw _Exceptions.castCriteriaApi();
         }

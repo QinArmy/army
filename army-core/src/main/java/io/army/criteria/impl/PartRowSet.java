@@ -9,7 +9,6 @@ import io.army.stmt.SimpleStmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,9 +19,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements CriteriaContextSpec, _PartRowSet, RowSet
         , Query.OrderByClause<C, OR>, Query.LimitClause<C, LR>, Query.QueryUnionClause<C, UR, SP>, CriteriaSpec<C>
-        , Values.ValuesSpec {
-
-    static final boolean FOR_AS_ROW_SET = false;
+        , RowSet.RowSetSpec<Q> {
 
     final C criteria;
 
@@ -57,7 +54,7 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
 
         final boolean isUnionAndRowSet = this instanceof UnionAndRowSet;
         final Q thisQuery;
-        thisQuery = this.asRowSet(isUnionAndRowSet);
+        thisQuery = this.asRowSet(!isUnionAndRowSet);
 
         final UR spec;
         if (!isUnionAndRowSet) {
@@ -82,12 +79,12 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
 
     @Override
     public final UR union(Function<C, ? extends RowSet> function) {
-        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION, function.apply(this.criteria));
+        return this.createUnionRowSet(this.asQuery(), UnionType.UNION, function.apply(this.criteria));
     }
 
     @Override
     public final UR union(Supplier<? extends RowSet> supplier) {
-        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION, supplier.get());
+        return this.createUnionRowSet(this.asQuery(), UnionType.UNION, supplier.get());
     }
 
     @Override
@@ -97,12 +94,12 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
 
     @Override
     public final UR unionAll(Function<C, ? extends RowSet> function) {
-        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION_ALL, function.apply(this.criteria));
+        return this.createUnionRowSet(this.asQuery(), UnionType.UNION_ALL, function.apply(this.criteria));
     }
 
     @Override
     public final UR unionAll(Supplier<? extends RowSet> supplier) {
-        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION_ALL, supplier.get());
+        return this.createUnionRowSet(this.asQuery(), UnionType.UNION_ALL, supplier.get());
     }
 
     @Override
@@ -112,12 +109,12 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
 
     @Override
     public final UR unionDistinct(Function<C, ? extends RowSet> function) {
-        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION_DISTINCT, function.apply(this.criteria));
+        return this.createUnionRowSet(this.asQuery(), UnionType.UNION_DISTINCT, function.apply(this.criteria));
     }
 
     @Override
     public final UR unionDistinct(Supplier<? extends RowSet> supplier) {
-        return this.createUnionRowSet(this.asRowSet(FOR_AS_ROW_SET), UnionType.UNION_DISTINCT, supplier.get());
+        return this.createUnionRowSet(this.asQuery(), UnionType.UNION_DISTINCT, supplier.get());
     }
 
     @Override
@@ -416,24 +413,9 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
         return this.rowCount;
     }
 
-
     @Override
-    public final Values asValues() {
-        final Q rowSet;
-        rowSet = this.asRowSet(FOR_AS_ROW_SET);
-        if (!(rowSet instanceof Values)) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        return (Values) rowSet;
-    }
-
     public final Q asQuery() {
-        final Q rowSet;
-        rowSet = this.asRowSet(FOR_AS_ROW_SET);
-        if (!(rowSet instanceof Query)) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        return rowSet;
+        return this.asRowSet(true);
     }
 
     @Override
@@ -482,18 +464,6 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
         return !_CollectionUtils.isEmpty(this.orderByList);
     }
 
-    final Q asRowSet(final boolean justAsQuery) {
-        _Assert.nonPrepared(this.prepared);
-
-        final List<? extends SortItem> sortItemList = this.orderByList;
-        if (sortItemList == null) {
-            this.orderByList = Collections.emptyList();
-        }
-        final Q query;
-        query = internalAsRowSet(justAsQuery);
-        this.prepared = true;
-        return query;
-    }
 
     void afterOrderBy() {
 
@@ -503,7 +473,7 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
 
     abstract void validateDialect(Dialect mode);
 
-    abstract Q internalAsRowSet(boolean justAsQuery);
+    abstract Q internalAsRowSet(boolean fromAsQueryMethod);
 
     abstract UR createBracketQuery(RowSet rowSet);
 
@@ -512,6 +482,20 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
     abstract UR createUnionRowSet(RowSet left, UnionType unionType, RowSet right);
 
     abstract SP asUnionAndRowSet(UnionType unionType);
+
+
+    private Q asRowSet(final boolean fromAsQueryMethod) {
+        _Assert.nonPrepared(this.prepared);
+
+        final List<? extends SortItem> sortItemList = this.orderByList;
+        if (sortItemList == null) {
+            this.orderByList = Collections.emptyList();
+        }
+        final Q query;
+        query = internalAsRowSet(fromAsQueryMethod);
+        this.prepared = true;
+        return query;
+    }
 
 
     private static CriteriaException supplierReturnError(Object value) {
@@ -528,6 +512,30 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
 
     private static IllegalStateException asQueryMethodError() {
         return new IllegalStateException("onAsQuery(boolean) error");
+    }
+
+
+    /**
+     * <p>
+     * This interface representing the type that is returned by below methods:
+     * <ul>
+     *     <li> {@link DialectStatement.DialectUnionClause#union()}</li>
+     *     <li> {@link DialectStatement.DialectUnionClause#unionAll()}</li>
+     *     <li> {@link DialectStatement.DialectUnionClause#unionDistinct()}</li>
+     * </ul>
+     * </p>
+     *  <p>
+     *      This package interface
+     *  </p>
+     *
+     * @since 1.0
+     */
+    interface UnionAndRowSet extends RowSet {
+
+        RowSet leftRowSet();
+
+        UnionType unionType();
+
     }
 
 

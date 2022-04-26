@@ -37,7 +37,7 @@ public enum _JoinType implements SQLModifier, _NoTableBlock {
 
     @Override
     public final String toString() {
-        return this.name();
+        return String.format("%s.%s", _JoinType.class.getName(), this.name());
     }
 
 
@@ -53,7 +53,7 @@ public enum _JoinType implements SQLModifier, _NoTableBlock {
 
     @Override
     public final _JoinType jointType() {
-        return this;
+        throw new UnsupportedOperationException();
     }
 
     @Override

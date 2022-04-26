@@ -92,17 +92,17 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
-    public <R> Flux<R> select(Select select, Class<R> resultClass, Visible visible) {
+    public <R> Flux<R> query(DqlStatement statement, Class<R> resultClass, Visible visible) {
         return null;
     }
 
     @Override
-    public <R> Flux<Optional<R>> selectNullable(Select select, Class<R> resultClass, Visible visible) {
+    public <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass, Visible visible) {
         return null;
     }
 
     @Override
-    public Flux<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor, Visible visible) {
+    public Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible) {
         return null;
     }
 

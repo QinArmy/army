@@ -354,7 +354,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             throw new CriteriaException("index hint clause index name list must not empty.");
         }
         final _TableBlock block;
-        block = this.criteriaContext.lastNoneBlock();
+        block = this.criteriaContext.lastTableBlockWithoutOnClause();
         if (!(block instanceof FirstBlock)) {
             throw _Exceptions.castCriteriaApi();
         }

@@ -7,12 +7,11 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface Values extends RowSet {
+public interface Values extends RowSet, DerivedTable {
 
-    interface ValuesSpec {
-
-        Values asValues();
+    interface ValuesSpec extends RowSetSpec<Values> {
 
     }
+
 
 }

@@ -1,25 +1,33 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
 import io.army.criteria.Cte;
 import io.army.criteria.DialectStatement;
+import io.army.criteria.Query;
 import io.army.criteria.SubQuery;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * <p>
+ * This class is base class of the implementation {@link io.army.criteria.DialectStatement.WithCteClause}
+ * </p>
+ *
+ * @since 1.0
+ */
 @SuppressWarnings("unchecked")
-abstract class WithCteMultiDelete<C, WE, JT, JS, JP, WR, WA> extends MultiDelete<C, JT, JS, JP, WR, WA>
+abstract class WithCteSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends SimpleQuery<C, Q, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
         implements DialectStatement.WithCteClause<C, WE> {
 
 
-    WithCteMultiDelete(CriteriaContext criteriaContext) {
+    WithCteSimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
-
 
     @Override
     public final WE with(String cteName, Supplier<? extends SubQuery> supplier) {
@@ -74,8 +82,7 @@ abstract class WithCteMultiDelete<C, WE, JT, JS, JP, WR, WA> extends MultiDelete
      * @param cteList unmodified list
      */
     void doWithCte(boolean recursive, List<Cte> cteList) {
-        String m = String.format("%s don't support with clause.", this.getClass().getName());
-        throw new CriteriaException(m);
+        throw _Exceptions.castCriteriaApi();
     }
 
 

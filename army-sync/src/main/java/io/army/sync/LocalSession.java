@@ -117,7 +117,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         final Class<? extends R> proxyClass;
         proxyClass = this.sessionFactory.sessionCacheFactory.getProxyClass(table);
         // 3. execute stmt
-        domain = this.selectOne(stmt, proxyClass, visible);
+        domain = this.queryOne(stmt, proxyClass, visible);
         if (domain != null) {
             if (domain.getClass() != proxyClass) {
                 String m = String.format("%s error implementation.", this.stmtExecutor.getClass().getName());
@@ -152,7 +152,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         final Class<? extends R> proxyClass;
         proxyClass = this.sessionFactory.sessionCacheFactory.getProxyClass(table);
         // 3. execute stmt
-        domain = this.selectOne(stmt, proxyClass, visible);
+        domain = this.queryOne(stmt, proxyClass, visible);
         if (domain != null) {
             if (domain.getClass() != proxyClass) {
                 String m = String.format("%s error implementation.", this.stmtExecutor.getClass().getName());
@@ -166,14 +166,14 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
 
     @Override
-    public <R> List<R> select(final Select select, final Class<R> resultClass, final Supplier<List<R>> listConstructor
-            , final Visible visible) {
+    public <R> List<R> query(final DqlStatement statement, final Class<R> resultClass
+            , final Supplier<List<R>> listConstructor, final Visible visible) {
         try {
             //1.assert session status
             assertSession(false, visible);
             //2. parse statement to stmt
             final SimpleStmt stmt;
-            stmt = this.sessionFactory.dialect.select(select, visible);
+            stmt = this.sessionFactory.dialect.select((Select) statement, visible);
 
             printSqlIfNeed(stmt);
 
@@ -186,19 +186,19 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             String m = String.format("Army execute %s occur error.", Select.class.getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
-            ((_Statement) select).clear();
+            ((_Statement) statement).clear();
         }
     }
 
     @Override
-    public List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+    public List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
         try {
             //1.assert session status
             assertSession(false, visible);
             //2. parse statement to stmt
             final SimpleStmt stmt;
-            stmt = this.sessionFactory.dialect.select(select, visible);
+            stmt = this.sessionFactory.dialect.select((Select) statement, visible);
             printSqlIfNeed(stmt);
             //3. execute stmt
             final Transaction tx = this.transaction;
@@ -210,7 +210,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             String m = String.format("Army execute %s occur error.", Select.class.getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
-            ((_Statement) select).clear();
+            ((_Statement) statement).clear();
         }
     }
 

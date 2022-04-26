@@ -35,16 +35,16 @@ public abstract class _AbstractSyncSession implements SyncSession {
 
     @Nullable
     @Override
-    public final <R> R selectOne(Select select, Class<R> resultClass) {
-        return this.selectOne(select, resultClass, Visible.ONLY_VISIBLE);
+    public final <R> R queryOne(DqlStatement statement, Class<R> resultClass) {
+        return this.queryOne(statement, resultClass, Visible.ONLY_VISIBLE);
     }
 
 
     @Nullable
     @Override
-    public final <R> R selectOne(Select select, Class<R> resultClass, final Visible visible) {
+    public final <R> R queryOne(DqlStatement statement, Class<R> resultClass, final Visible visible) {
         final List<R> list;
-        list = this.select(select, resultClass, ArrayList::new, visible);
+        list = this.query(statement, resultClass, ArrayList::new, visible);
         final R result;
         switch (list.size()) {
             case 1:
@@ -63,26 +63,26 @@ public abstract class _AbstractSyncSession implements SyncSession {
 
 
     @Override
-    public final Map<String, Object> selectOneAsMap(Select select) {
-        return this.selectOneAsMap(select, HashMap::new, Visible.ONLY_VISIBLE);
+    public final Map<String, Object> queryOneAsMap(DqlStatement statement) {
+        return this.queryOneAsMap(statement, HashMap::new, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final Map<String, Object> selectOneAsMap(Select select, Visible visible) {
-        return this.selectOneAsMap(select, HashMap::new, visible);
+    public final Map<String, Object> queryOneAsMap(DqlStatement statement, Visible visible) {
+        return this.queryOneAsMap(statement, HashMap::new, visible);
     }
 
     @Override
-    public final Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor) {
-        return this.selectOneAsMap(select, mapConstructor, Visible.ONLY_VISIBLE);
+    public final Map<String, Object> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor) {
+        return this.queryOneAsMap(statement, mapConstructor, Visible.ONLY_VISIBLE);
     }
 
     @Nullable
     @Override
-    public final Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+    public final Map<String, Object> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Visible visible) {
         final List<Map<String, Object>> list;
-        list = this.selectAsMap(select, mapConstructor, ArrayList::new, visible);
+        list = this.queryAsMap(statement, mapConstructor, ArrayList::new, visible);
         final Map<String, Object> result;
         switch (list.size()) {
             case 1:
@@ -98,35 +98,35 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
-    public final <R> List<R> select(Select select, Class<R> resultClass) {
-        return this.select(select, resultClass, ArrayList::new, Visible.ONLY_VISIBLE);
+    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass) {
+        return this.query(statement, resultClass, ArrayList::new, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor) {
-        return this.select(select, resultClass, listConstructor, Visible.ONLY_VISIBLE);
+    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
+        return this.query(statement, resultClass, listConstructor, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <R> List<R> select(Select select, Class<R> resultClass, Visible visible) {
-        return this.select(select, resultClass, ArrayList::new, visible);
+    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, Visible visible) {
+        return this.query(statement, resultClass, ArrayList::new, visible);
     }
 
 
     @Override
-    public final List<Map<String, Object>> selectAsMap(Select select) {
-        return this.selectAsMap(select, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
+    public final List<Map<String, Object>> queryAsMap(DqlStatement statement) {
+        return this.queryAsMap(statement, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final List<Map<String, Object>> selectAsMap(Select select, Visible visible) {
-        return this.selectAsMap(select, HashMap::new, ArrayList::new, visible);
+    public final List<Map<String, Object>> queryAsMap(DqlStatement statement, Visible visible) {
+        return this.queryAsMap(statement, HashMap::new, ArrayList::new, visible);
     }
 
     @Override
-    public final List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+    public final List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor) {
-        return this.selectAsMap(select, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
+        return this.queryAsMap(statement, HashMap::new, ArrayList::new, Visible.ONLY_VISIBLE);
     }
 
     @Override

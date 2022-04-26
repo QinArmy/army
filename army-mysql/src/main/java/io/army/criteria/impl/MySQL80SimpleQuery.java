@@ -402,14 +402,14 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final Q onAsQuery(final boolean outer) {
+    final Q onAsQuery(final boolean fromAsQueryMethod) {
         final Q thisQuery, resultQuery;
         if (this instanceof ScalarSubQuery) {
             thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
         } else {
             thisQuery = (Q) this;
         }
-        if (outer && this instanceof AbstractUnionAndQuery) {
+        if (fromAsQueryMethod && this instanceof AbstractUnionAndQuery) {
             final AbstractUnionAndQuery<C, Q> unionAndQuery = (AbstractUnionAndQuery<C, Q>) this;
             resultQuery = MySQL80UnionQuery.unionQuery(unionAndQuery.left, unionAndQuery.unionType, thisQuery)
                     .asQuery();

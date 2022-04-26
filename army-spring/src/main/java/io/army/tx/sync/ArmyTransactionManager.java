@@ -416,14 +416,14 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
-            return this.session.select(select, resultClass, listConstructor, visible);
+        public <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
+            return this.session.query(statement, resultClass, listConstructor, visible);
         }
 
         @Override
-        public List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+        public List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
                 , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-            return this.session.selectAsMap(select, mapConstructor, listConstructor, visible);
+            return this.session.queryAsMap(statement, mapConstructor, listConstructor, visible);
         }
 
 

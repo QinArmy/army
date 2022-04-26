@@ -26,9 +26,8 @@ import java.util.function.Supplier;
 public interface Query extends RowSet {
 
 
-    interface QuerySpec<Q extends Query> {
+    interface QuerySpec<Q extends Query> extends RowSet.RowSetSpec<Q> {
 
-        Q asQuery();
     }
 
 

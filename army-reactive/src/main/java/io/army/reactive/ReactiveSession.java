@@ -40,60 +40,60 @@ public interface ReactiveSession extends GenericSession {
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<R> selectOne(Select select, Class<R> resultClass);
+    <R> Mono<R> queryOne(DqlStatement statement, Class<R> resultClass);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<R> selectOne(Select select, Class<R> resultClass, Visible visible);
+    <R> Mono<R> queryOne(DqlStatement statement, Class<R> resultClass, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<Optional<R>> selectOneNullable(Select select, Class<R> resultClass);
+    <R> Mono<Optional<R>> queryOneNullable(DqlStatement statement, Class<R> resultClass);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<Optional<R>> selectOneNullable(Select select, Class<R> resultClass, Visible visible);
+    <R> Mono<Optional<R>> queryOneNullable(DqlStatement statement, Class<R> resultClass, Visible visible);
 
-    Mono<Map<String, Object>> selectOneAsMap(Select select);
+    Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement);
 
-    Mono<Map<String, Object>> selectOneAsMap(Select select, Visible visible);
+    Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Visible visible);
 
-    Mono<Map<String, Object>> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor);
+    Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
 
-    Mono<Map<String, Object>> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor, Visible visible);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> Flux<R> select(Select select, Class<R> resultClass);
-
+    Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Flux<R> select(Select select, Class<R> resultClass, Visible visible);
+    <R> Flux<R> query(DqlStatement statement, Class<R> resultClass);
+
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Flux<Optional<R>> selectNullable(Select select, Class<R> resultClass);
+    <R> Flux<R> query(DqlStatement statement, Class<R> resultClass, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Flux<Optional<R>> selectNullable(Select select, Class<R> resultClass, Visible visible);
+    <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass);
+
+    /**
+     * @param <R> representing select result Java Type.
+     */
+    <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass, Visible visible);
 
 
-    Flux<Map<String, Object>> selectAsMap(Select select);
+    Flux<Map<String, Object>> queryAsMap(DqlStatement statement);
 
-    Flux<Map<String, Object>> selectAsMap(Select select, Visible visible);
+    Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Visible visible);
 
-    Flux<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor);
+    Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
 
-    Flux<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor, Visible visible);
+    Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
 
     <T extends IDomain> Mono<Void> save(T domain);
 

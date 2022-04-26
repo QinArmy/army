@@ -29,7 +29,7 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
                 .and(BankUser_.userType.equalLiteral(userType))
                 .limit(1)
                 .asQuery();
-        return this.sessionContext.currentSession().selectOne(stmt, Long.class) != null;
+        return this.sessionContext.currentSession().queryOne(stmt, Long.class) != null;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
                     .and(Certificate_.certificateType.equalLiteral(certificateType))
                     .asQuery();
         }
-        return session.selectOne(stmt, domainType);
+        return session.queryOne(stmt, domainType);
     }
 
     @Override

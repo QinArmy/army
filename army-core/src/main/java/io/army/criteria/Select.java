@@ -1,13 +1,13 @@
 package io.army.criteria;
 
-import io.army.dialect.Dialect;
-import io.army.stmt.SimpleStmt;
-
-public interface Select extends Query {
-
-
-    @Override
-    SimpleStmt mockAsStmt(Dialect dialect, Visible visible);
+/**
+ * <p>
+ * This interface representing SELECT statement.
+ * </p>
+ *
+ * @since 1.0
+ */
+public interface Select extends Query, DqlStatement {
 
 
 }

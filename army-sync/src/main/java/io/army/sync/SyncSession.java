@@ -54,40 +54,40 @@ public interface SyncSession extends GenericSession {
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R> R selectOne(Select select, Class<R> resultClass);
+    <R> R queryOne(DqlStatement statement, Class<R> resultClass);
 
     /**
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R> R selectOne(Select select, Class<R> resultClass, Visible visible);
+    <R> R queryOne(DqlStatement statement, Class<R> resultClass, Visible visible);
 
     @Nullable
-    Map<String, Object> selectOneAsMap(Select select);
+    Map<String, Object> queryOneAsMap(DqlStatement statement);
 
     @Nullable
-    Map<String, Object> selectOneAsMap(Select select, Visible visible);
+    Map<String, Object> queryOneAsMap(DqlStatement statement, Visible visible);
 
     @Nullable
-    Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor);
+    Map<String, Object> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
 
     @Nullable
-    Map<String, Object> selectOneAsMap(Select select, Supplier<Map<String, Object>> mapConstructor, Visible visible);
+    Map<String, Object> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> List<R> select(Select select, Class<R> resultClass);
+    <R> List<R> query(DqlStatement statement, Class<R> resultClass);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor);
+    <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> List<R> select(Select select, Class<R> resultClass, Visible visible);
+    <R> List<R> query(DqlStatement statement, Class<R> resultClass, Visible visible);
 
     /**
      * @param resultClass probably below type.
@@ -99,18 +99,18 @@ public interface SyncSession extends GenericSession {
      *                    </ul>
      * @param <R>         representing select result Java Type.
      */
-    <R> List<R> select(Select select, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
+    <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
 
-    List<Map<String, Object>> selectAsMap(Select select);
+    List<Map<String, Object>> queryAsMap(DqlStatement statement);
 
-    List<Map<String, Object>> selectAsMap(Select select, Visible visible);
+    List<Map<String, Object>> queryAsMap(DqlStatement statement, Visible visible);
 
 
-    List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+    List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor);
 
-    List<Map<String, Object>> selectAsMap(Select select, Supplier<Map<String, Object>> mapConstructor
+    List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
     <T extends IDomain> void save(T domain);
