@@ -10,7 +10,7 @@ public interface _Query extends _PartRowSet {
 
     List<Hint> hintList();
 
-    List<SQLModifier> modifierList();
+    List<? extends SQLModifier> modifierList();
 
 
     List<? extends _TableBlock> tableBlockList();
@@ -29,7 +29,6 @@ public interface _Query extends _PartRowSet {
      * @return a unmodifiable list
      */
     List<_Predicate> havingList();
-
 
 
 }

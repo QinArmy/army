@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-final class CollectionParamExpression extends NoNOperationExpression {
+final class CollectionParamExpression extends NonOperationExpression {
 
     static <E> CollectionParamExpression strict(ParamMeta paramMeta, Collection<E> values) {
         return create(paramMeta, values, false);

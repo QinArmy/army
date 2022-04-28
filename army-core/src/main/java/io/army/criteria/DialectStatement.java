@@ -3,6 +3,7 @@ package io.army.criteria;
 import io.army.meta.TableMeta;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -39,6 +40,30 @@ public interface DialectStatement extends Statement {
         WE withRecursive(Supplier<List<Cte>> supplier);
 
         WE withRecursive(Function<C, List<Cte>> function);
+
+    }
+
+
+    interface DialectSelectClause<C, SR> extends Query.SelectClause<C, SR> {
+
+        SR select(SQLModifier modifier, SelectItem selectItem);
+
+        SR select(SQLModifier modifier, SelectItem selectItem1, SelectItem selectItem2);
+
+        SR select(SQLModifier modifier, Consumer<List<SelectItem>> consumer);
+
+        <S extends SelectItem, M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Function<C, List<S>> function);
+
+        <S extends SelectItem, M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Supplier<List<S>> supplier);
+
+        <M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Consumer<List<SelectItem>> consumer);
+
+        <S extends SelectItem, M extends SQLModifier> SR select(List<M> modifiers, Function<C, List<S>> function);
+
+        <S extends SelectItem, M extends SQLModifier> SR select(List<M> modifiers, Supplier<List<S>> supplier);
+
+        <M extends SQLModifier> SR select(List<M> modifiers, Consumer<List<SelectItem>> consumer);
+
 
     }
 

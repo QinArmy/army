@@ -5,9 +5,12 @@ import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
+import io.army.stmt.StrictParamValue;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -159,10 +162,9 @@ public abstract class SQLs extends StandardFunctions {
     }
 
     /**
-     * package method
+     * package method that is used by army developer.
      *
      * @param value {@link Expression} or parameter
-     * @see Update.SimpleSetClause#set(FieldMeta, Object)
      */
     static Expression nullableParam(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
@@ -174,6 +176,40 @@ public abstract class SQLs extends StandardFunctions {
             resultExpression = ParamExpression.create(type.paramMeta(), value);
         }
         return resultExpression;
+    }
+
+    /**
+     * package method that is used by army developer.
+     *
+     * @param value {@link Expression} or parameter
+     */
+    static ArmyExpression nullableParam(final @Nullable Object value) {
+        final Expression expression;
+        if (value == null) {
+            expression = SQLs.nullParam();
+        } else if (value instanceof Expression) {
+            expression = (Expression) value;
+        } else {
+            expression = SQLs.param(value);
+        }
+        return (ArmyExpression) expression;
+    }
+
+    /**
+     * package method that is used by army developer.
+     *
+     * @param exp {@link Expression} or parameter
+     */
+    static ArmyExpression nonNullExp(final @Nullable Object exp) {
+        final Expression expression;
+        if (exp == null) {
+            throw _Exceptions.expressionIsNull();
+        } else if (exp instanceof Expression) {
+            expression = (Expression) exp;
+        } else {
+            expression = SQLs.param(exp);
+        }
+        return (ArmyExpression) expression;
     }
 
     /**
@@ -196,8 +232,6 @@ public abstract class SQLs extends StandardFunctions {
 
     /**
      * package method
-     *
-     * @see Update.SimpleSetClause#setLiteral(FieldMeta, Object)
      */
     static Expression nullableLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
@@ -221,6 +255,10 @@ public abstract class SQLs extends StandardFunctions {
     public static Expression param(final Object value) {
         Objects.requireNonNull(value);
         return ParamExpression.create(_MappingFactory.getDefault(value.getClass()), value);
+    }
+
+    public static Expression nullParam() {
+        return AnyTypeNull.INSTANCE;
     }
 
     /**
@@ -348,6 +386,23 @@ public abstract class SQLs extends StandardFunctions {
     }
 
     /**
+     * package method that is used by army developer.
+     *
+     * @param value {@link Expression} or parameter
+     */
+    static ArmySortItem nonNullSortItem(@Nullable Object value) {
+        final SortItem sortItem;
+        if (value == null) {
+            throw _Exceptions.expressionIsNull();
+        } else if (value instanceof SortItem) {
+            sortItem = (SortItem) value;
+        } else {
+            sortItem = SQLs.param(value);
+        }
+        return (ArmySortItem) sortItem;
+    }
+
+    /**
      * @param value {@link Expression} or parameter.
      * @see Update.SimpleSetClause#setPairs(List)
      */
@@ -393,14 +448,15 @@ public abstract class SQLs extends StandardFunctions {
 
 
     /**
-     * Only used to update set clause.
+     * @return DEFAULT expression that output key word {@code DEFAULT}.
      */
     public static Expression defaultWord() {
         return SQLs.DefaultWord.INSTANCE;
     }
 
+
     /**
-     * Only used to update set clause.
+     * @return NULL expression that output key word {@code NULL}.
      */
     public static Expression nullWord() {
         return SQLs.NullWord.INSTANCE;
@@ -556,7 +612,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @param <E> The java type The expression thant reference kwy word {@code DEFAULT}
      */
-    static final class DefaultWord<E> extends NoNOperationExpression {
+    static final class DefaultWord<E> extends NonOperationExpression {
 
         private static final DefaultWord<?> INSTANCE = new DefaultWord<>();
 
@@ -586,12 +642,10 @@ public abstract class SQLs extends StandardFunctions {
      * <p>
      * This class representing sql {@code NULL} key word.
      * </p>
-     *
-     * @param <E> The java type The expression thant reference kwy word {@code NULL}
      */
-    static final class NullWord<E> extends NoNOperationExpression {
+    static final class NullWord extends NonOperationExpression {
 
-        private static final NullWord<?> INSTANCE = new NullWord<>();
+        private static final NullWord INSTANCE = new NullWord();
 
 
         private NullWord() {
@@ -647,6 +701,32 @@ public abstract class SQLs extends StandardFunctions {
         }
 
     }//ItemPairImpl
+
+    private static final class AnyTypeNull extends NonOperationExpression
+            implements StrictParamValue, ValueExpression {
+
+        private static final AnyTypeNull INSTANCE = new AnyTypeNull();
+
+        private AnyTypeNull() {
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            return StringType.INSTANCE;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.appendParam(this);
+        }
+
+        @Override
+        public Object value() {
+            //always null
+            return null;
+        }
+
+    }//NullParam
 
 
     /**

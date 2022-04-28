@@ -18,10 +18,10 @@ import java.util.function.Supplier;
  *     </ul>
  * </p>
  */
-abstract class NoNOperationExpression implements ArmyExpression {
+abstract class NonOperationExpression implements ArmyExpression {
 
 
-    NoNOperationExpression() {
+    NonOperationExpression() {
     }
 
 

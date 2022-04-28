@@ -5,6 +5,7 @@ import io.army.annotation.Generator;
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
@@ -141,6 +142,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s no where clause.", context));
     }
 
+    public static CriteriaException expressionIsNull() {
+        String m = String.format("expression must be non-null,if you want to output NULL,than use %s.%s or %s.%s."
+                , SQLs.class.getName(), "nullWord()", SQLs.class.getName(), "nullParam()");
+        return new CriteriaException(m);
+    }
+
 
     public static CriteriaException unknownSetTargetPart(SetLeftItem target) {
         return new CriteriaException(String.format("Unknown %s type[%s].", SetLeftItem.class.getName(), target));
@@ -171,6 +178,18 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException castCriteriaApi() {
         return new CriteriaException("You couldn't cast criteria api instance");
+    }
+
+    public static CriteriaException windowNotExists(@Nullable String windowName) {
+        return new CriteriaException(String.format("Window[name : %s] not exists.", windowName));
+    }
+
+    public static CriteriaException partitionByEmpty() {
+        return new CriteriaException("PARTITION BY clause must not empty.");
+    }
+
+    public static CriteriaException orderByEmpty() {
+        return new CriteriaException("ORDER BY clause must not empty.");
     }
 
     public static CriteriaException unknownSelectItem(@Nullable SelectItem selectItem) {

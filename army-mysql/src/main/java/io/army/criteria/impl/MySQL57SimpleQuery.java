@@ -148,19 +148,21 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return this.lockModifier;
     }
 
+
     @Override
     public final boolean groupByWithRollUp() {
         return this.withRollup;
     }
 
-
     @Override
     final Q onAsQuery(final boolean fromAsQueryMethod) {
+        super.onAsQuery(fromAsQueryMethod);
         return this.finallyAsQuery(fromAsQueryMethod);
     }
 
     @Override
     final void onClear() {
+        super.onClear();
         this.withRollup = false;
         this.lockModifier = null;
     }

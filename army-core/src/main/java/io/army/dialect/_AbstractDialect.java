@@ -1340,7 +1340,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    private void standardSelectClause(List<SQLModifier> modifierList, _SqlContext context) {
+    private void standardSelectClause(List<? extends SQLModifier> modifierList, _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
                 .append(Constant.SELECT);
         switch (modifierList.size()) {

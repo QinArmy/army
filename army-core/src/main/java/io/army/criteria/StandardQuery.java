@@ -27,7 +27,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface StandardSelectClause<C, Q extends Query> extends Query.SelectClause<C, StandardFromSpec<C, Q>> {
+    interface StandardSelectClause<C, Q extends Query>
+            extends StandardStatement.SelectClauseForStandard<C, StandardFromSpec<C, Q>> {
 
     }
 

@@ -112,12 +112,47 @@ abstract class CriteriaUtils {
     }
 
 
-    static void addPredicates(List<IPredicate> predicates, List<_Predicate> predicateList) {
-        for (IPredicate predicate : predicates) {
-            predicateList.add((_Predicate) predicate);
+    static <E extends Expression> List<_Expression> asExpressionList(final List<E> expressionList) {
+        final int size = expressionList.size();
+        List<_Expression> expList;
+        switch (size) {
+            case 0:
+                throw new CriteriaException("expression list must not empty.");
+            case 1:
+                expList = Collections.singletonList((ArmyExpression) expressionList.get(0));
+                break;
+            default: {
+                expList = new ArrayList<>(size);
+                for (E exp : expressionList) {
+                    expList.add((ArmyExpression) exp);
+                }
+                expList = Collections.unmodifiableList(expList);
+            }
+
         }
+        return expList;
     }
 
+    static <S extends SortItem> List<ArmySortItem> asSortItemList(final List<S> sortItemList) {
+        final int size = sortItemList.size();
+        List<ArmySortItem> itemList;
+        switch (size) {
+            case 0:
+                throw new CriteriaException("sortItem list must not empty.");
+            case 1:
+                itemList = Collections.singletonList((ArmySortItem) sortItemList.get(0));
+                break;
+            default: {
+                itemList = new ArrayList<>(size);
+                for (S sortItem : sortItemList) {
+                    itemList.add((ArmySortItem) sortItem);
+                }
+                itemList = Collections.unmodifiableList(itemList);
+            }
+
+        }
+        return itemList;
+    }
 
     static List<_Predicate> onPredicates(IPredicate predicate1, IPredicate predicate2) {
         final List<_Predicate> list = new ArrayList<>(2);

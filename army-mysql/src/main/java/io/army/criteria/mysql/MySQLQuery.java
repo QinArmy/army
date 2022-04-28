@@ -1,9 +1,12 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.*;
+import io.army.criteria.DialectStatement;
+import io.army.criteria.Query;
+import io.army.criteria.Window;
 import io.army.meta.TableMeta;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -26,7 +29,26 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     /**
      * <p>
-     * This interface representing MySQL syntax from clause.
+     * This interface representing SELECT clause for MySQL.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type.
+     * @param <SR> next clause java type
+     * @since 1.0
+     */
+    interface MySQLSelectClause<C, SR> extends DialectStatement.DialectSelectClause<C, SR> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing FORM clause for MySQL.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -163,23 +185,8 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface WindowClause<C, WC> {
+    interface WindowClause<C, WC> extends Window.WindowClause<C, WC> {
 
-        WC window(String name, Expression partition);
-
-        WC window(String name, Expression partition, SortItem order);
-
-        WC window(NamedWindow namedWindow);
-
-        WC window(NamedWindow namedWindow1, NamedWindow namedWindow2);
-
-        WC window(Supplier<List<NamedWindow>> supplier);
-
-        WC window(Function<C, List<NamedWindow>> function);
-
-        WC ifWindow(Supplier<List<NamedWindow>> supplier);
-
-        WC ifWindow(Function<C, List<NamedWindow>> function);
 
     }
 
@@ -279,6 +286,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      *
      * @param <C>  java criteria object java type
      * @param <IO> next clause java type
+     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select-into.html">MySQL 5.7 SELECT ... INTO Statement</a>
      * @since 1.0
      */
     interface IntoClause<C, IO> {
@@ -287,15 +295,24 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         IO into(String varName1, String varName2);
 
+        IO into(String varName1, String varName2, String varName3);
+
+        /**
+         * @param varNameList non-null and non-empty list.
+         */
         IO into(List<String> varNameList);
 
+        /**
+         * @param supplier must return non-null and non-empty list.
+         */
         IO into(Supplier<List<String>> supplier);
 
+        /**
+         * @param function must return non-null and non-empty list.
+         */
         IO into(Function<C, List<String>> function);
 
-        IO ifInto(Supplier<List<String>> supplier);
-
-        IO ifInto(Function<C, List<String>> function);
+        IO into(Consumer<List<String>> consumer);
 
     }
 

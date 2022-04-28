@@ -49,14 +49,17 @@ public abstract class ArrayUtils {
     @SuppressWarnings("varargs")
     @NonNull
     public static <T> List<T> asUnmodifiableList(@Nullable T... e) {
-        final List<T> list;
+        List<T> list;
         if (e == null) {
             list = Collections.emptyList();
+        } else if (e.length == 1) {
+            list = Collections.singletonList(e[0]);
         } else {
             list = new ArrayList<>(e.length);
             Collections.addAll(list, e);
+            list = Collections.unmodifiableList(list);
         }
-        return Collections.unmodifiableList(list);
+        return list;
     }
 
     @SafeVarargs

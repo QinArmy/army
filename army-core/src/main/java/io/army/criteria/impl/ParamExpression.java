@@ -49,7 +49,7 @@ final class ParamExpression extends OperationExpression implements ValueExpressi
     }
 
 
-    static final class NullExpression extends NoNOperationExpression
+    static final class NullExpression extends NonOperationExpression
             implements _StrictParam, ValueExpression {
 
         private final ParamMeta paramMeta;

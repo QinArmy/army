@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.dialect.Dialect;
 import io.army.dialect._MockDialects;
-import io.army.lang.Nullable;
 import io.army.stmt.SimpleStmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
@@ -13,6 +12,7 @@ import io.army.util._CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -123,86 +123,75 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
     }
 
     @Override
-    public final OR orderBy(SortItem sortItem) {
-        this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
-        this.afterOrderBy();
+    public final OR orderBy(Object sortItem) {
+        this.orderByList = Collections.singletonList(SQLs.nonNullSortItem(sortItem));
+        this.onOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
-        this.orderByList = ArrayUtils.asUnmodifiableList((ArmySortItem) sortItem1, (ArmySortItem) sortItem2);
-        this.afterOrderBy();
+    public final OR orderBy(Object sortItem1, Object sortItem2) {
+        this.orderByList = ArrayUtils.asUnmodifiableList(
+                SQLs.nonNullSortItem(sortItem1),
+                SQLs.nonNullSortItem(sortItem2)
+        );
+        this.onOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        this.orderByList = ArrayUtils.asUnmodifiableList((ArmySortItem) sortItem1, (ArmySortItem) sortItem2, (ArmySortItem) sortItem3);
-        this.afterOrderBy();
+    public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
+        this.orderByList = ArrayUtils.asUnmodifiableList(
+                SQLs.nonNullSortItem(sortItem1),
+                SQLs.nonNullSortItem(sortItem2),
+                SQLs.nonNullSortItem(sortItem3)
+        );
+        this.onOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(List<SortItem> sortItemList) {
-        final int size = sortItemList.size();
-        switch (sortItemList.size()) {
-            case 0:
-                throw new CriteriaException("sortItemList must not empty.");
-            case 1:
-                this.orderByList = Collections.singletonList((ArmySortItem) sortItemList);
-                break;
-            default: {
-                final List<ArmySortItem> tempList = new ArrayList<>(size);
-                for (SortItem sortItem : sortItemList) {
-                    tempList.add((ArmySortItem) sortItem);
-                }
-                this.orderByList = Collections.unmodifiableList(tempList);
-            }
+    public final <S extends SortItem> OR orderBy(Function<C, List<S>> function) {
+        this.orderByList = CriteriaUtils.asSortItemList(function.apply(this.criteria));
+        this.onOrderBy();
+        return (OR) this;
+    }
+
+    @Override
+    public final <S extends SortItem> OR orderBy(Supplier<List<S>> supplier) {
+        this.orderByList = CriteriaUtils.asSortItemList(supplier.get());
+        this.onOrderBy();
+        return (OR) this;
+    }
+
+    @Override
+    public final OR orderBy(Consumer<List<SortItem>> consumer) {
+        final List<SortItem> sortItemList = new ArrayList<>();
+        consumer.accept(sortItemList);
+        this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
+        this.onOrderBy();
+        return (OR) this;
+    }
+
+    @Override
+    public final <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier) {
+        final List<S> sortItemList;
+        sortItemList = supplier.get();
+        if (sortItemList != null && sortItemList.size() > 0) {
+            this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
         }
-        this.afterOrderBy();
+        this.onOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Function<C, List<SortItem>> function) {
-        return this.orderBy(function.apply(this.criteria));
-    }
-
-    @Override
-    public final OR orderBy(Supplier<List<SortItem>> supplier) {
-        return this.orderBy(supplier.get());
-    }
-
-    @Override
-    public final OR ifOrderBy(@Nullable SortItem sortItem) {
-        if (sortItem != null) {
-            this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
+    public final <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function) {
+        final List<S> sortItemList;
+        sortItemList = function.apply(this.criteria);
+        if (sortItemList != null && sortItemList.size() > 0) {
+            this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
         }
-        this.afterOrderBy();
-        return (OR) this;
-    }
-
-
-    @Override
-    public final OR ifOrderBy(Supplier<List<SortItem>> supplier) {
-        final List<SortItem> supplierResult;
-        supplierResult = supplier.get();
-        if (!_CollectionUtils.isEmpty(supplierResult)) {
-            this.orderBy(supplierResult);
-        }
-        this.afterOrderBy();
-        return (OR) this;
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<C, List<SortItem>> function) {
-        final List<SortItem> supplierResult;
-        supplierResult = function.apply(this.criteria);
-        if (!_CollectionUtils.isEmpty(supplierResult)) {
-            this.orderBy(supplierResult);
-        }
-        this.afterOrderBy();
+        this.onOrderBy();
         return (OR) this;
     }
 
@@ -465,7 +454,7 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
     }
 
 
-    void afterOrderBy() {
+    void onOrderBy() {
 
     }
 

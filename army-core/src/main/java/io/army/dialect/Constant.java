@@ -56,6 +56,8 @@ public interface Constant {
 
     String SPACE_EQUAL_SPACE = " = ";
 
+    String SPACE_AS = " AS";
+
     String SPACE_AS_SPACE = " AS ";
 
     String INSERT_INTO = "INSERT INTO";
@@ -63,6 +65,8 @@ public interface Constant {
     String VALUE = "VALUE";
 
     String SPACE_VALUES = " VALUES";
+
+    String SPACE_BETWEEN = " BETWEEN";
 
     String DEFAULT = "DEFAULT";
 

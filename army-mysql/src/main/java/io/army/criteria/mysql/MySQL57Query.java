@@ -5,13 +5,17 @@ import io.army.criteria.Statement;
 
 /**
  * <p>
- * This interface representing MySQL 57 SELECT syntax.
+ * This interface representing MySQL 5.7 SELECT syntax.
  * </p>
  *
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select.html">MySQL 5.7 Select statement</a>
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/union.html">MySQL 5.7 UNION Clause</a>
  * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/join.html">MySQL 5.7 JOIN Clause</a>
- * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7  Index Hints</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select-into.html">MySQL 5.7 SELECT ... INTO Statement</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/nested-join-optimization.html">MySQL 5.7 Nested Join Optimization</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/partitioning-selection.html">MySQL 5.7 Partition Selection</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/index-hints.html">MySQL 5.7 Index Hints</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/optimizer-hints.html">MySQL 5.7 Optimizer Hints</a>
  * @since 1.0
  */
 public interface MySQL57Query extends MySQLQuery {
@@ -34,7 +38,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Select57Clause<C, Q extends Query> extends Query.SelectClause<C, From57Spec<C, Q>> {
+    interface Select57Clause<C, Q extends Query> extends MySQLSelectClause<C, From57Spec<C, Q>> {
 
     }
 
@@ -58,7 +62,7 @@ public interface MySQL57Query extends MySQLQuery {
      */
     interface From57Spec<C, Q extends Query>
             extends MySQLQuery.MySQLFromClause<C, IndexHintJoin57Spec<C, Q>, Join57Spec<C, Q>, PartitionJoin57Clause<C, Q>, LestBracket57Clause<C, Q>>
-            , Union57Spec<C, Q> {
+            , Union57Spec<C, Q>, MySQLQuery.IntoSpec<C, Q> {
 
     }
 
@@ -446,6 +450,7 @@ public interface MySQL57Query extends MySQLQuery {
 
     }
 
+
     /**
      * <p>
      * This interface representing the composite of below:
@@ -488,7 +493,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @since 1.0
      */
     interface Lock57Spec<C, Q extends Query>
-            extends MySQLQuery.LockClause<C, Union57Spec<C, Q>>, Union57Spec<C, Q> {
+            extends MySQLQuery.LockClause<C, Union57Spec<C, Q>>, Union57Spec<C, Q>, MySQLQuery.IntoSpec<C, Q> {
 
     }
 

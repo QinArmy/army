@@ -41,7 +41,7 @@ public interface Statement {
 
     /**
      * <p>
-     * This interface representing AS clause in join expression.
+     * This interface representing AS clause.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -311,6 +311,27 @@ public interface Statement {
         WA ifAnd(Supplier<IPredicate> supplier);
 
         WA ifAnd(Function<C, IPredicate> function);
+
+    }
+
+
+    interface OrderByClause<C, OR> {
+
+        OR orderBy(Object sortItem);
+
+        OR orderBy(Object sortItem1, Object sortItem2);
+
+        OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3)
+
+        <S extends SortItem> OR orderBy(Function<C, List<S>> function);
+
+        <S extends SortItem> OR orderBy(Supplier<List<S>> supplier);
+
+        OR orderBy(Consumer<List<SortItem>> consumer);
+
+        <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier);
+
+        <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function);
 
     }
 

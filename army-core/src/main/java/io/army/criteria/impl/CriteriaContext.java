@@ -42,6 +42,10 @@ interface CriteriaContext {
 
     _TableBlock lastTableBlockWithoutOnClause();
 
+    default boolean isExistWindow(String windowName) {
+        throw new UnsupportedOperationException();
+    }
+
     @Nullable
     <C> C criteria();
 

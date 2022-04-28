@@ -87,6 +87,10 @@ abstract class MySQLUtils extends CriteriaUtils {
         throw new CriteriaException(m);
     }
 
+    static CriteriaException intoVarListNotEmpty() {
+        return new CriteriaException("variable name list must not empty in MySQL INTO clause.");
+    }
+
 
     private static void assertUpdateModifier(final MySQLModifier modifier) {
         switch (modifier) {

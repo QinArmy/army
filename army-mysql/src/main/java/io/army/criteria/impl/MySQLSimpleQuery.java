@@ -7,13 +7,17 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
+import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 
 @SuppressWarnings("unchecked")
@@ -21,10 +25,11 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
         extends WithCteSimpleQuery<C, Q, WE, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
         implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, JP, FT, FS, JE, FP>
         , MySQLQuery.MySQLFromClause<C, FT, FS, FP, JE>, MySQLQuery.IndexHintClause<C, IR, FT>
-        , MySQLQuery.IndexPurposeClause<C, FT> {
+        , MySQLQuery.IndexPurposeClause<C, FT>, MySQLQuery.IntoSpec<C, Q> {
 
     private MySQLIndexHint.Command indexHintCommand;
 
+    private List<String> intoVarList;
 
     MySQLSimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
@@ -183,6 +188,84 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     }
 
 
+    @Override
+    public final QuerySpec<Q> into(String varName) {
+        this.intoVarList = Collections.singletonList(varName);
+        return this;
+    }
+
+    @Override
+    public final QuerySpec<Q> into(String varName1, String varName2) {
+        this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2);
+        return this;
+    }
+
+    @Override
+    public final QuerySpec<Q> into(String varName1, String varName2, String varName3) {
+        this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2, varName3);
+        return this;
+    }
+
+    @Override
+    public final QuerySpec<Q> into(List<String> varNameList) {
+        if (varNameList.size() == 0) {
+            throw MySQLUtils.intoVarListNotEmpty();
+        }
+        this.intoVarList = _CollectionUtils.asUnmodifiableList(varNameList);
+        return this;
+    }
+
+    @Override
+    public final QuerySpec<Q> into(Supplier<List<String>> supplier) {
+        return this.into(supplier.get());
+    }
+
+    @Override
+    public final QuerySpec<Q> into(Function<C, List<String>> function) {
+        return this.into(function.apply(this.criteria));
+    }
+
+    @Override
+    public final QuerySpec<Q> into(Consumer<List<String>> consumer) {
+        final List<String> varNameList = new ArrayList<>();
+        consumer.accept(varNameList);
+        switch (varNameList.size()) {
+            case 0:
+                throw MySQLUtils.intoVarListNotEmpty();
+            case 1:
+                this.intoVarList = Collections.singletonList(varNameList.get(0));
+                break;
+            default:
+                this.intoVarList = Collections.unmodifiableList(varNameList);
+        }
+        return this;
+    }
+
+    @Override
+    public final List<String> intoVarList() {
+        List<String> intoVarList = this.intoVarList;
+        if (intoVarList == null) {
+            intoVarList = Collections.emptyList();
+        }
+        return intoVarList;
+    }
+
+
+    @Override
+    Q onAsQuery(boolean fromAsQueryMethod) {
+        if (this.intoVarList == null) {
+            this.intoVarList = Collections.emptyList();
+        }
+        //here, couldn't invoke this.finallyAsQuery method.
+        return (Q) this;
+    }
+
+    @Override
+    void onClear() {
+        this.intoVarList = null;
+    }
+
+
     /*################################## blow private method ##################################*/
 
 
@@ -219,7 +302,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
         if (_CollectionUtils.isEmpty(indexNames)) {
             throw new CriteriaException("index name list must not empty.");
         }
-        final MySQLNoOnBlock<C, OR> tableBlock = (MySQLNoOnBlock<C, OR>) block;
+        final MySQLNoOnBlock tableBlock = (MySQLNoOnBlock) block;
         List<MySQLIndexHint> indexHintList = tableBlock.indexHintList;
         if (indexHintList == null) {
             indexHintList = new ArrayList<>();

@@ -22,18 +22,18 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends PartRowSet<C, Q, UR, OR, LR, SP> implements Query.SelectClause<C, SR>
+        extends PartRowSet<C, Q, UR, OR, LR, SP> implements StandardStatement.SelectClauseForStandard<C, SR>
         , DialectStatement.DialectJoinClause<C, JT, JS, JP, FT, FS, JE, FP>, Statement.WhereClause<C, WR, AR>
         , Statement.WhereAndClause<C, AR>, Query.GroupClause<C, GR>, Query.HavingClause<C, HR>, _Query
         , DialectStatement.DialectFromClause<C, FT, FS, FP, JE>, DialectStatement.DialectLeftBracketClause<C, FT, FS, FP>
-        , Statement.RightBracketClause<FS>, Query.QuerySpec<Q> {
+        , Statement.RightBracketClause<FS>, DialectStatement.DialectSelectClause<C, SR>, Query.QuerySpec<Q> {
 
 
     private List<Hint> hintList;
 
-    private List<SQLModifier> modifierList;
+    private List<? extends SQLModifier> modifierList;
 
-    private List<? extends SelectItem> selectPartList;
+    private List<? extends SelectItem> selectItemList;
 
     private List<_TableBlock> tableBlockList;
 
@@ -53,105 +53,129 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
         }
     }
 
+    /*################################## blow io.army.criteria.DialectStatement.DialectSelectClause method ##################################*/
 
     @Override
-    public final <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function) {
-        return this.select(hints, modifiers, function.apply(this.criteria));
+    public final SR select(SQLModifier modifier, SelectItem selectItem) {
+        return this.innerSafeSelect(modifier, Collections.singletonList(selectItem));
     }
 
     @Override
-    public final <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList) {
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints);
+    public final SR select(SQLModifier modifier, SelectItem selectItem1, SelectItem selectItem2) {
+        return this.innerSafeSelect(modifier, ArrayUtils.asUnmodifiableList(selectItem1, selectItem2));
+    }
+
+    @Override
+    public final SR select(SQLModifier modifier, Consumer<List<SelectItem>> consumer) {
+        final List<SelectItem> selectItemList = new ArrayList<>();
+        consumer.accept(selectItemList);
+        return this.innerSafeSelect(modifier, selectItemList);
+    }
+
+    @Override
+    public final <S extends SelectItem, M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Function<C, List<S>> function) {
+        return this.innerNonSafeSelect(hints.get(), modifiers, function.apply(this.criteria));
+    }
+
+    @Override
+    public final <S extends SelectItem, M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Supplier<List<S>> supplier) {
+        return this.innerNonSafeSelect(hints.get(), modifiers, supplier.get());
+    }
+
+    @Override
+    public final <M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Consumer<List<SelectItem>> consumer) {
+        List<SelectItem> selectItemList = new ArrayList<>();
+        consumer.accept(selectItemList);
+
+        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
-        return this.select(selectPartList);
+        selectItemList = Collections.unmodifiableList(selectItemList);
+
+        this.selectItemList = selectItemList;
+        this.criteriaContext.selectList(selectItemList); //notify context
+        return (SR) this;
+    }
+
+
+    @Override
+    public final <S extends SelectItem, M extends SQLModifier> SR select(List<M> modifiers, Function<C, List<S>> function) {
+        return this.innerNonSafeSelect(null, modifiers, function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectItem> SR select(SQLModifier sqlModifier, List<S> selectPartList) {
-        return this.select(Collections.emptyList(), Collections.singletonList(sqlModifier), selectPartList);
+    public final <S extends SelectItem, M extends SQLModifier> SR select(List<M> modifiers, Supplier<List<S>> supplier) {
+        return this.innerNonSafeSelect(null, modifiers, supplier.get());
     }
 
     @Override
-    public final <S extends SelectItem> SR select(List<SQLModifier> modifiers, Function<C, List<S>> function) {
-        return this.select(Collections.emptyList(), modifiers, function.apply(this.criteria));
+    public final <M extends SQLModifier> SR select(List<M> modifiers, Consumer<List<SelectItem>> consumer) {
+        return this.select(Collections::emptyList, modifiers, consumer);
+    }
+
+    /*################################## blow io.army.criteria.StandardStatement.SelectClauseForStandard method ##################################*/
+
+    @Override
+    public final SR select(@Nullable Distinct modifier, SelectItem selectItem) {
+        return this.innerSafeSelect(modifier, Collections.singletonList(selectItem));
     }
 
     @Override
-    public final <S extends SelectItem> SR select(List<SQLModifier> modifiers, Supplier<List<S>> supplier) {
-        return this.select(Collections.emptyList(), modifiers, supplier.get());
+    public final SR select(@Nullable Distinct modifier, SelectItem selectItem1, SelectItem selectItem2) {
+        return this.innerSafeSelect(modifier, ArrayUtils.asUnmodifiableList(selectItem1, selectItem2));
+    }
+
+    @Override
+    public final <S extends SelectItem> SR select(@Nullable Distinct modifier, Function<C, List<S>> function) {
+        return this.innerNonSafeSelect(modifier, function.apply(this.criteria));
+    }
+
+    @Override
+    public final <S extends SelectItem> SR select(@Nullable Distinct modifier, Supplier<List<S>> supplier) {
+        return this.innerNonSafeSelect(modifier, supplier.get());
+    }
+
+    @Override
+    public final SR select(@Nullable Distinct modifier, Consumer<List<SelectItem>> consumer) {
+        final List<SelectItem> selectItemList = new ArrayList<>();
+        consumer.accept(selectItemList);
+        return this.innerSafeSelect(modifier, Collections.unmodifiableList(selectItemList));
+    }
+
+    /*################################## blow io.army.criteria.Query.SelectClause method ##################################*/
+
+    @Override
+    public final SR select(SelectItem selectItem) {
+        return this.innerSafeSelect(null, Collections.singletonList(selectItem));
+    }
+
+    @Override
+    public final SR select(SelectItem selectItem1, SelectItem selectItem2) {
+        return this.innerSafeSelect(null, ArrayUtils.asUnmodifiableList(selectItem1, selectItem2));
+    }
+
+    @Override
+    public final SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3) {
+        return this.innerSafeSelect(null, ArrayUtils.asUnmodifiableList(selectItem1, selectItem2, selectItem3));
     }
 
     @Override
     public final <S extends SelectItem> SR select(Function<C, List<S>> function) {
-        return this.select(function.apply(this.criteria));
+        return this.innerNonSafeSelect(null, null, function.apply(this.criteria));
+    }
+
+    @Override
+    public final SR select(Consumer<List<SelectItem>> consumer) {
+        List<SelectItem> list = new ArrayList<>();
+        consumer.accept(list);
+        return this.innerSafeSelect(null, Collections.unmodifiableList(list));
     }
 
     @Override
     public final <S extends SelectItem> SR select(Supplier<List<S>> supplier) {
-        return this.select(supplier.get());
-    }
-
-    @Override
-    public final <S extends SelectItem> SR select(Consumer<List<S>> consumer) {
-        final List<S> list = new ArrayList<>();
-        consumer.accept(list);
-        return this.select(list);
-    }
-
-    @Override
-    public final SR select(SQLModifier sqlModifier, SelectItem selectItem) {
-        this.modifierList = Collections.singletonList(sqlModifier);
-        return this.select(selectItem);
-    }
-
-    @Override
-    public final SR select(SelectItem selectItem) {
-        final List<? extends SelectItem> selectPartList;
-        selectPartList = Collections.singletonList(selectItem);
-
-        this.criteriaContext.selectList(selectPartList); // notify context
-
-        this.selectPartList = selectPartList;
-        return (SR) this;
+        return this.innerNonSafeSelect(null, null, supplier.get());
     }
 
 
-    @Override
-    public final SR select(SelectItem selectItem1, SelectItem selectItem2) {
-        final List<? extends SelectItem> selectPartList;
-        selectPartList = ArrayUtils.asUnmodifiableList(selectItem1, selectItem2);
-
-        this.criteriaContext.selectList(selectPartList); // notify context
-
-        this.selectPartList = selectPartList;
-        return (SR) this;
-    }
-
-    @Override
-    public final <S extends SelectItem> SR select(List<SQLModifier> modifiers, List<S> selectPartList) {
-        return this.select(Collections.emptyList(), modifiers, selectPartList);
-    }
-
-    @Override
-    public final <S extends SelectItem> SR select(SQLModifier modifier, Consumer<List<S>> consumer) {
-        List<S> list = new ArrayList<>();
-        consumer.accept(list);
-        list = Collections.unmodifiableList(list);
-        this.criteriaContext.selectList(list); // notify context
-        this.selectPartList = list;
-        return (SR) this;
-    }
-
-    @Override
-    public final <S extends SelectItem> SR select(List<S> selectPartList) {
-        final List<S> selectParts;
-        selectParts = _CollectionUtils.asUnmodifiableList(selectPartList);
-
-        this.criteriaContext.selectList(selectParts);// notify context
-
-        this.selectPartList = selectParts;
-        return (SR) this;
-    }
 
     /*################################## blow FromSpec method ##################################*/
 
@@ -699,13 +723,13 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     }
 
     @Override
-    public final List<SQLModifier> modifierList() {
+    public final List<? extends SQLModifier> modifierList() {
         return this.modifierList;
     }
 
     @Override
     public final List<? extends SelectItem> selectItemList() {
-        final List<? extends SelectItem> selectItemList = this.selectPartList;
+        final List<? extends SelectItem> selectItemList = this.selectItemList;
         assert selectItemList != null;
         return selectItemList;
     }
@@ -755,26 +779,22 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     @Override
     protected final Q internalAsRowSet(final boolean fromAsQueryMethod) {
         this.tableBlockList = this.criteriaContext.clear();
-        if (this instanceof SubQuery || this instanceof WithElement) {
+        if (this instanceof NonPrimaryStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
 
         // hint list
-        final List<Hint> hintList = this.hintList;
-        if (_CollectionUtils.isEmpty(hintList)) {
+        if (this.hintList == null) {
             this.hintList = Collections.emptyList();
-        } else {
-            this.hintList = Collections.unmodifiableList(hintList);
         }
-
         // modifier list
-        if (_CollectionUtils.isEmpty(this.modifierList)) {
+        if (this.modifierList == null) {
             this.modifierList = Collections.emptyList();
         }
         // selection list
-        final List<? extends SelectItem> selectPartList = this.selectPartList;
+        final List<? extends SelectItem> selectPartList = this.selectItemList;
         if (_CollectionUtils.isEmpty(selectPartList)) {
             throw _Exceptions.selectListIsEmpty();
         }
@@ -818,7 +838,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     final void internalClear() {
         this.hintList = null;
         this.modifierList = null;
-        this.selectPartList = null;
+        this.selectItemList = null;
         this.tableBlockList = null;
 
         this.predicateList = null;
@@ -828,7 +848,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     }
 
     final boolean hasGroupBy() {
-        return !_CollectionUtils.isEmpty(this.groupByList);
+        final List<ArmySortItem> groupByList = this.groupByList;
+        return groupByList != null && groupByList.size() > 0;
     }
 
 
@@ -847,6 +868,43 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
 
     JP createNextClauseWithOnClause(_JoinType joinType, TableMeta<?> table) {
         throw _Exceptions.castCriteriaApi();
+    }
+
+
+    private <S extends SelectItem> SR innerNonSafeSelect(@Nullable List<Hint> hintList
+            , @Nullable List<? extends SQLModifier> modifierList, List<S> selectItemList) {
+        if (hintList != null) {
+            this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
+        }
+        if (modifierList != null) {
+            this.modifierList = _CollectionUtils.asUnmodifiableList(modifierList);
+        }
+        selectItemList = _CollectionUtils.asUnmodifiableList(selectItemList);
+        this.selectItemList = selectItemList;
+        this.criteriaContext.selectList(selectItemList); //notify context
+        return (SR) this;
+    }
+
+    private <S extends SelectItem> SR innerNonSafeSelect(@Nullable SQLModifier modifier, List<S> selectItemList) {
+        if (modifier != null) {
+            this.modifierList = Collections.singletonList(modifier);
+        }
+        this.selectItemList = _CollectionUtils.asUnmodifiableList(selectItemList);
+        this.criteriaContext.selectList(selectItemList); //notify context
+        return (SR) this;
+    }
+
+
+    /**
+     * @param selectItemList a unmodified list
+     */
+    private <S extends SelectItem> SR innerSafeSelect(@Nullable SQLModifier modifier, List<S> selectItemList) {
+        if (modifier != null) {
+            this.modifierList = Collections.singletonList(modifier);
+        }
+        this.selectItemList = selectItemList;
+        this.criteriaContext.selectList(selectItemList); //notify context
+        return (SR) this;
     }
 
 

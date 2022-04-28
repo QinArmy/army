@@ -36,33 +36,17 @@ public interface Query extends RowSet {
 
     interface SelectClause<C, SR> {
 
-        <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, Function<C, List<S>> function);
-
-        <S extends SelectItem> SR select(List<Hint> hints, List<SQLModifier> modifiers, List<S> selectPartList);
-
-        <S extends SelectItem> SR select(List<SQLModifier> modifiers, Function<C, List<S>> function);
-
-        <S extends SelectItem> SR select(List<SQLModifier> modifiers, Supplier<List<S>> supplier);
-
-        <S extends SelectItem> SR select(Function<C, List<S>> function);
-
-        <S extends SelectItem> SR select(Supplier<List<S>> supplier);
-
-        <S extends SelectItem> SR select(Consumer<List<S>> consumer);
-
-        SR select(SQLModifier modifier, SelectItem selectItem);
-
         SR select(SelectItem selectItem);
 
         SR select(SelectItem selectItem1, SelectItem selectItem2);
 
-        <S extends SelectItem> SR select(List<SQLModifier> modifiers, List<S> selectPartList);
+        SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3);
 
-        <S extends SelectItem> SR select(List<S> selectPartList);
+        <S extends SelectItem> SR select(Function<C, List<S>> function);
 
-        <S extends SelectItem> SR select(SQLModifier modifier, List<S> selectPartList);
+        SR select(Consumer<List<SelectItem>> consumer);
 
-        <S extends SelectItem> SR select(SQLModifier modifier, Consumer<List<S>> consumer);
+        <S extends SelectItem> SR select(Supplier<List<S>> supplier);
 
     }
 
@@ -136,28 +120,6 @@ public interface Query extends RowSet {
         SP unionAll();
 
         SP unionDistinct();
-    }
-
-    interface OrderByClause<C, OR> {
-
-        OR orderBy(SortItem sortItem);
-
-        OR orderBy(SortItem sortItem1, SortItem sortItem2);
-
-        OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
-
-        OR orderBy(List<SortItem> sortItemList);
-
-        OR orderBy(Function<C, List<SortItem>> function);
-
-        OR orderBy(Supplier<List<SortItem>> supplier);
-
-        OR ifOrderBy(@Nullable SortItem sortItem);
-
-        OR ifOrderBy(Supplier<List<SortItem>> supplier);
-
-        OR ifOrderBy(Function<C, List<SortItem>> function);
-
     }
 
     interface LimitClause<C, LR> {
