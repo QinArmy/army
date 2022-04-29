@@ -180,6 +180,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("You couldn't cast criteria api instance");
     }
 
+    public static CriteriaException namedWindowNoText() {
+        return new CriteriaException("named window must has text name.");
+    }
+
     public static CriteriaException windowNotExists(@Nullable String windowName) {
         return new CriteriaException(String.format("Window[name : %s] not exists.", windowName));
     }

@@ -28,10 +28,11 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R> implements _Window, Window.AsClause<AR>
-        , Window.LeftBracketClause<C, LR>, Window.PartitionByExpClause<C, PR>, Statement.OrderByClause<C, OR>
-        , Window.FrameUnitsClause<, C, FR, FC>, Window.FrameBetweenClause<C, BR, BC>, Window.FrameExpBoundClause<MA>
-        , Window.FrameBetweenAndClause<C, NR, NC>, Window.FrameNonExpBoundClause<MB>, Statement.RightBracketClause<R> {
+abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> implements _Window
+        , Window.AsClause<AR>, Window.LeftBracketClause<C, LR>, Window.PartitionByExpClause<C, PR>
+        , Statement.OrderByClause<C, OR>, Window.FrameUnitsClause<C, FR, FC>, Window.FrameBetweenClause<C, BR, BC>
+        , Window.FrameExpBoundClause<MA>, Window.FrameBetweenAndClause<C, FC, NC>, Window.FrameNonExpBoundClause<MB>
+        , Statement.RightBracketClause<R> {
 
 
     private final String windowName;
@@ -61,7 +62,13 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
     private boolean prepared;
 
 
-    private SimpleWindow(String windowName, R stmt) {
+    SimpleWindow(String windowName, CriteriaContext criteriaContext) {
+        this.windowName = windowName;
+        this.stmt = (R) this;
+        this.criteriaContext = criteriaContext;
+    }
+
+    SimpleWindow(String windowName, R stmt) {
         this.windowName = windowName;
         this.stmt = stmt;
         this.criteriaContext = ((CriteriaContextSpec) stmt).getCriteriaContext();
@@ -97,7 +104,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
     }
 
     @Override
-    public final LR ifLeftBracket(Supplier<String> supplier) {
+    public final LR leftBracketIf(Supplier<String> supplier) {
         final String windowName;
         windowName = supplier.get();
         if (windowName != null) {
@@ -107,9 +114,9 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
     }
 
     @Override
-    public final LR ifLeftBracket(Function<C, String> function) {
+    public final LR leftBracketIf(Function<C, String> function) {
         final String windowName;
-        windowName = function.apply(this.criteriaContext.criteria())
+        windowName = function.apply(this.criteriaContext.criteria());
         if (windowName != null) {
             this.leftBracket(windowName);
         }
@@ -399,13 +406,13 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
     }
 
     @Override
-    public final NR and() {
+    public final FC and() {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE || this.frameStartBound == null) {
                 throw _Exceptions.castCriteriaApi();
             }
         }
-        return (NR) this;
+        return (FC) this;
     }
 
     @Override
@@ -435,36 +442,6 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
     }
 
     @Override
-    public final MA preceding() {
-        this.bound(FrameBound.PRECEDING);
-        return (MA) this;
-    }
-
-    @Override
-    public final MA following() {
-        this.bound(FrameBound.FOLLOWING);
-        return (MA) this;
-    }
-
-    @Override
-    public final MB currentRow() {
-        this.bound(FrameBound.CURRENT_ROW);
-        return (MB) this;
-    }
-
-    @Override
-    public final MB unboundedPreceding() {
-        this.bound(FrameBound.UNBOUNDED_PRECEDING);
-        return (MB) this;
-    }
-
-    @Override
-    public final MB unboundedFollowing() {
-        this.bound(FrameBound.UNBOUNDED_FOLLOWING);
-        return (MB) this;
-    }
-
-    @Override
     public final R rightBracket() {
         _Assert.nonPrepared(this.prepared);
         if (this.refWindowName == null
@@ -479,14 +456,14 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
 
     @Override
     public final void appendSql(final _SqlContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder()
-                .append(Constant.SPACE);
+        final StringBuilder sqlBuilder = context.sqlBuilder();
 
         final _Dialect dialect = context.dialect();
 
         //1.window name
         final String windowName = this.windowName;
         if (_StringUtils.hasText(windowName)) {
+            sqlBuilder.append(Constant.SPACE);
             dialect.quoteIfNeed(windowName, sqlBuilder)
                     .append(Constant.SPACE_AS);
         }
@@ -495,6 +472,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
         //3.reference window name
         final String refWindowName = this.refWindowName;
         if (refWindowName != null) {
+            sqlBuilder.append(Constant.SPACE);
             dialect.quoteIfNeed(refWindowName, sqlBuilder);
         }
         //4.partition_clause
@@ -570,8 +548,11 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
     /**
      * @see #preceding()
      * @see #following()
+     * @see #currentRow()
+     * @see #unboundedPreceding()
+     * @see #unboundedFollowing()
      */
-    private void bound(final FrameBound bound) {
+    final void bound(final FrameBound bound) {
         if (this.frameUnits == null) {
             return;
         }
@@ -635,7 +616,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NR, NC, MA, MB, R
 
     }// FrameUnits
 
-    private enum FrameBound implements SQLModifier {
+    enum FrameBound implements SQLModifier {
 
         CURRENT_ROW(" CURRENT ROW"),
 

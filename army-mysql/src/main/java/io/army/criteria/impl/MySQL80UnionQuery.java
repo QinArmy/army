@@ -36,7 +36,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends PartRowSet<
         Q,
         MySQL80Query.UnionOrderBy80Spec<C, Q>,
         MySQL80Query.UnionLimit80Spec<C, Q>,
-        MySQL80Query.Union80Spec<C, Q>,
+        MySQL80Query.UnionSpec<C, Q>,
         MySQL80Query.With80Spec<C, Q>>
         implements MySQL80Query, MySQL80Query.UnionOrderBy80Spec<C, Q>, _UnionRowSet {
 

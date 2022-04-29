@@ -15,6 +15,7 @@ import java.util.function.Supplier;
  */
 public interface Window {
 
+
     /**
      * <p>
      * This interface representing WINDOW clause.
@@ -32,10 +33,6 @@ public interface Window {
     interface WindowClause<C, WR> {
 
         WR window(String windowName);
-
-        WR ifWindow(Supplier<String> supplier);
-
-        WR ifWindow(Function<C, String> function);
     }
 
     /**
@@ -81,9 +78,9 @@ public interface Window {
 
         NR leftBracket(Function<C, String> function);
 
-        NR ifLeftBracket(Supplier<String> supplier);
+        NR leftBracketIf(Supplier<String> supplier);
 
-        NR ifLeftBracket(Function<C, String> function);
+        NR leftBracketIf(Function<C, String> function);
 
     }
 

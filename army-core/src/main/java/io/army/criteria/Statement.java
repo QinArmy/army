@@ -96,7 +96,7 @@ public interface Statement {
      * @param <R> next clause java type
      * @since 1.0
      */
-    interface RightBracketClause<R> {
+    interface RightBracketClause<R> extends Statement.Clause {
 
         R rightBracket();
 
@@ -321,7 +321,7 @@ public interface Statement {
 
         OR orderBy(Object sortItem1, Object sortItem2);
 
-        OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3)
+        OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3);
 
         <S extends SortItem> OR orderBy(Function<C, List<S>> function);
 
@@ -332,6 +332,24 @@ public interface Statement {
         <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier);
 
         <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function);
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing any sql clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @since 1.0
+     */
+    interface Clause {
+
 
     }
 

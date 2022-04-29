@@ -185,7 +185,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface WindowClause<C, WC> extends Window.WindowClause<C, WC> {
+    interface WindowClause<C, WR> extends Window.WindowClause<C, WR> {
 
 
     }

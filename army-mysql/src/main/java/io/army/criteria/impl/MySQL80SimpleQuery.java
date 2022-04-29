@@ -11,8 +11,10 @@ import io.army.meta.TableMeta;
 import io.army.session.Database;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -21,10 +23,6 @@ import java.util.function.Supplier;
 /**
  * <p>
  * This class is base class all the implementation of MySQL 8.0 SELECT syntax.
- * </p>
- * <p>
- * Below is chinese signature:<br/>
- * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  *
  * @param <C> java type of criteria object for dynamic statement
@@ -60,7 +58,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         , MySQL80Query.JoinSpec<C, Q>, MySQL80Query.WhereAnd80Spec<C, Q>, MySQL80Query.Having80Spec<C, Q>
         , _MySQL80Query, MySQL80Query.GroupByWithRollup80Spec<C, Q>, MySQL80Query.OrderByWithRollup80Spec<C, Q>
         , MySQL80Query.Lock80OfSpec<C, Q>, MySQL80Query.Lock80LockOptionSpec<C, Q>
-        , MySQL80Query.LeftBracket80Clause<C, Q> {
+        , MySQL80Query.LeftBracket80Clause<C, Q>, MySQL80Query.WindowCommaSpec<C, Q> {
 
 
     static <C> With80Spec<C, Select> simpleSelect(@Nullable C criteria) {
@@ -109,6 +107,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private Boolean groupByWithRollup;
 
+    private List<Window> windowList;
+
     private boolean orderByWithRollup;
 
     private MySQLLock lock;
@@ -128,40 +128,62 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
      */
     @Override
     public final Having80Spec<C, Q> withRollup() {
-        if (this.hasOrderBy()) {
-            this.orderByWithRollup = true;
-        } else if (this.hasGroupBy()) {
-            if (this.groupByWithRollup == null) {
-                //@see this.afterOrderBy()
-                this.groupByWithRollup = Boolean.TRUE;
-            }
+        if (this.groupByWithRollup == null) {
+            this.groupByWithRollup = this.hasGroupBy();
         } else {
-            this.groupByWithRollup = Boolean.FALSE;
+            this.orderByWithRollup = this.hasOrderBy();
         }
         return this;
     }
 
     @Override
     public final Having80Spec<C, Q> ifWithRollup(Predicate<C> predicate) {
-        if ((this.hasOrderBy() || this.hasGroupBy()) && predicate.test(this.criteria)) {
+        if (predicate.test(this.criteria)) {
             this.withRollup();
         }
         return this;
     }
 
     @Override
-    public final WindowAsClause<C, Q> window(String windowName) {
-        return null;
+    public final WindowAsClause<C, WindowCommaSpec<C, Q>> window(final String windowName) {
+        if (!_StringUtils.hasText(windowName)) {
+            throw _Exceptions.namedWindowNoText();
+        }
+        final MySQLs80.MySQLWindow<C, WindowCommaSpec<C, Q>> window;
+        window = new MySQLs80.MySQLWindow<>(windowName, this);
+
+        List<Window> windowList = this.windowList;
+        if (windowList == null) {
+            windowList = new ArrayList<>();
+            this.windowList = windowList;
+        }
+        windowList.add(window);
+        return window;
     }
 
     @Override
-    public final WindowAsClause<C, Q> ifWindow(Supplier<String> supplier) {
-        return null;
+    public final OrderBy80Spec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function) {
+        final List<Window> windowList;
+        windowList = function.apply(this::createWindowClause);
+        if (windowList != null && windowList.size() > 0) {
+            this.windowList = _CollectionUtils.asUnmodifiableList(windowList);
+        }
+        return this;
     }
 
     @Override
-    public final WindowAsClause<C, Q> ifWindow(Function<C, String> function) {
-        return null;
+    public final OrderBy80Spec<C, Q> ifWindow(BiFunction<C, WindowBuilder<C>, List<Window>> function) {
+        final List<Window> windowList;
+        windowList = function.apply(this.criteria, this::createWindowClause);
+        if (windowList != null && windowList.size() > 0) {
+            this.windowList = _CollectionUtils.asUnmodifiableList(windowList);
+        }
+        return this;
+    }
+
+    @Override
+    public final WindowAsClause<C, WindowCommaSpec<C, Q>> comma(final String windowName) {
+        return this.window(windowName);
     }
 
     @Override
@@ -193,13 +215,13 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Union80Spec<C, Q> lockInShareMode() {
+    public final UnionSpec<C, Q> lockInShareMode() {
         this.lock = MySQLLock.LOCK_IN_SHARE_MODE;
         return this;
     }
 
     @Override
-    public final Union80Spec<C, Q> ifLockInShareMode(Predicate<C> predicate) {
+    public final UnionSpec<C, Q> ifLockInShareMode(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.lock = MySQLLock.LOCK_IN_SHARE_MODE;
         }
@@ -265,17 +287,17 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Union80Spec<C, Q> nowait() {
+    public final UnionSpec<C, Q> nowait() {
         return this.lockOption(MySQLLockOption.NOWAIT);
     }
 
     @Override
-    public final Union80Spec<C, Q> skipLocked() {
+    public final UnionSpec<C, Q> skipLocked() {
         return this.lockOption(MySQLLockOption.SKIP_LOCKED);
     }
 
     @Override
-    public final Union80Spec<C, Q> ifNowait(Predicate<C> predicate) {
+    public final UnionSpec<C, Q> ifNowait(Predicate<C> predicate) {
         if (this.lock != null && predicate.test(this.criteria)) {
             this.nowait();
         }
@@ -283,36 +305,13 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Union80Spec<C, Q> ifSkipLocked(Predicate<C> predicate) {
+    public final UnionSpec<C, Q> ifSkipLocked(Predicate<C> predicate) {
         if (this.lock != null && predicate.test(this.criteria)) {
             this.skipLocked();
         }
         return this;
     }
 
-    @Override
-    public final UnionOrderBy80Spec<C, Q> bracket() {
-        final UnionOrderBy80Spec<C, Q> unionSpec;
-        if (this instanceof AbstractUnionAndQuery) {
-            final AbstractUnionAndQuery<C, Q> andQuery = (AbstractUnionAndQuery<C, Q>) this;
-            final Q thisQuery = this.asUnionAndRowSet();
-            if (this instanceof ScalarSubQuery) {
-                if (!(thisQuery instanceof ScalarSubQueryExpression)
-                        || ((ScalarSubQueryExpression) thisQuery).subQuery != this) {
-                    throw asQueryMethodError();
-                }
-            } else if (thisQuery != this) {
-                throw asQueryMethodError();
-            }
-            final Q right;
-            right = MySQL80UnionQuery.bracketQuery(thisQuery)
-                    .asQuery();
-            unionSpec = MySQL80UnionQuery.unionQuery(andQuery.left, andQuery.unionType, right);
-        } else {
-            unionSpec = MySQL80UnionQuery.bracketQuery(this.asQuery());
-        }
-        return unionSpec;
-    }
 
     @Override
     final void onOrderBy() {
@@ -333,34 +332,21 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     final Q onAsQuery(final boolean fromAsQueryMethod) {
-        final Q thisQuery, resultQuery;
-        if (this instanceof ScalarSubQuery) {
-            thisQuery = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
-        } else {
-            thisQuery = (Q) this;
+        if (this.windowList == null) {
+            this.windowList = Collections.emptyList();
         }
-        if (fromAsQueryMethod && this instanceof AbstractUnionAndQuery) {
-            final AbstractUnionAndQuery<C, Q> unionAndQuery = (AbstractUnionAndQuery<C, Q>) this;
-            resultQuery = MySQL80UnionQuery.unionQuery(unionAndQuery.left, unionAndQuery.unionType, thisQuery)
-                    .asQuery();
-        } else {
-            resultQuery = thisQuery;
-        }
-        return resultQuery;
+        return this.finallyAsQuery(fromAsQueryMethod);
     }
 
     @Override
     final void onClear() {
         this.cteList = null;
+        this.windowList = null;
         this.lock = null;
         this.ofTableList = null;
         this.lockOption = null;
     }
 
-    @Override
-    final PartitionOn80Clause<C, Q> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
-        return new PartitionOnBlock<>(joinType, table, this);
-    }
 
     @Override
     final IndexHintOn80Spec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
@@ -368,7 +354,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final On80Spec<C, Q> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final Statement.AsClause<> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
         Objects.requireNonNull(tableItem);
         return new OnBlock<>(joinType, tableItem, alias, this);
     }
@@ -421,8 +407,12 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     /*################################## blow private method ##################################*/
 
+    private WindowAsClause<C, Window> createWindowClause(String windowName) {
+        return new MySQLs80.MySQLWindow<>(windowName, this.criteriaContext);
+    }
 
-    private Union80Spec<C, Q> lockOption(MySQLLockOption lockOption) {
+
+    private UnionSpec<C, Q> lockOption(MySQLLockOption lockOption) {
         final MySQLLock lock = this.lock;
         if (lock != null) {
             switch (lock) {
@@ -439,15 +429,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return this;
     }
 
-    private Select80Clause<C, Q> doWithCte(List<Cte> withCteList) {
-        final List<Cte> cetList = new ArrayList<>(withCteList.size());
-        for (Cte cte : withCteList) {
-            _MySQLCounselor.assertCet(cte);
-            cetList.add(cte);
-        }
-        this.cteList = cetList;
-        return this;
-    }
 
 
     /*################################## blow inner class ##################################*/
