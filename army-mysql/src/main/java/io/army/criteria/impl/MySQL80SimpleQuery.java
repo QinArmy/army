@@ -2,22 +2,21 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._LateralSubQuery;
+import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.session.Database;
+import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 
 /**
@@ -35,38 +34,38 @@ import java.util.function.Supplier;
 abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         C,
         Q,
-        MySQL80Query.Select80Clause<C, Q>,      //WE
-        MySQL80Query.From80Spec<C, Q>,// SR
-        MySQL80Query.IndexHintJoin80Spec<C, Q>, //FT
-        MySQL80Query.JoinSpec<C, Q>,          //FS
-        MySQL80Query.PartitionJoin80Clause<C, Q>, //FP
-        MySQL80Query.IndexPurposeJoin80Clause<C, Q>,//IR
-        MySQL80Query.IndexHintOn80Spec<C, Q>,    //JT
-        Statement.OnClause<C, MySQL80Query.JoinSpec<C, Q>>, //JS
-        MySQL80Query.PartitionOn80Clause<C, Q>,   //JP
-        MySQL80Query.LeftBracket80Clause<C, Q>,  //JE
-        MySQL80Query.GroupBy80Spec<C, Q>,       //WR
-        MySQL80Query.WhereAnd80Spec<C, Q>,      //AR
-        MySQL80Query.GroupByWithRollup80Spec<C, Q>,//GR
-        MySQL80Query.Window80Spec<C, Q>,     //HR
-        MySQL80Query.OrderByWithRollup80Spec<C, Q>,     //OR
-        MySQL80Query.Lock80Spec<C, Q>,       //LR
-        MySQL80Query.UnionOrderBy80Spec<C, Q>, //UR
-        MySQL80Query.With80Spec<C, Q>>       //SP
-        implements MySQL80Query, MySQL80Query.With80Spec<C, Q>, MySQL80Query.From80Spec<C, Q>
-        , MySQL80Query.IndexHintJoin80Spec<C, Q>, MySQL80Query.IndexPurposeJoin80Clause<C, Q>
-        , MySQL80Query.JoinSpec<C, Q>, MySQL80Query.WhereAnd80Spec<C, Q>, MySQL80Query.Having80Spec<C, Q>
-        , _MySQL80Query, MySQL80Query.GroupByWithRollup80Spec<C, Q>, MySQL80Query.OrderByWithRollup80Spec<C, Q>
-        , MySQL80Query.Lock80OfSpec<C, Q>, MySQL80Query.Lock80LockOptionSpec<C, Q>
-        , MySQL80Query.LeftBracket80Clause<C, Q>, MySQL80Query.WindowCommaSpec<C, Q> {
+        MySQL80Query._Select80Clause<C, Q>,      //WE
+        MySQL80Query._FromSpec<C, Q>,// SR
+        MySQL80Query._IndexHintJoinSpec<C, Q>, //FT
+        MySQL80Query._JoinSpec<C, Q>,          //FS
+        MySQL80Query._PartitionJoinClause<C, Q>, //FP
+        MySQL80Query._IndexPurposeJoin80Clause<C, Q>,//IR
+        MySQL80Query._IndexHintOnSpec<C, Q>,    //JT
+        Statement.OnClause<C, MySQL80Query._JoinSpec<C, Q>>, //JS
+        MySQL80Query._PartitionOn80Clause<C, Q>,   //JP
+        MySQL80Query._LeftBracket80Clause<C, Q>,  //JE
+        MySQL80Query._GroupBySpec<C, Q>,       //WR
+        MySQL80Query._WhereAndSpec<C, Q>,      //AR
+        MySQL80Query._GroupByWithRollupSpec<C, Q>,//GR
+        MySQL80Query._WindowSpec<C, Q>,     //HR
+        MySQL80Query._OrderByWithRollupSpec<C, Q>,     //OR
+        MySQL80Query._LockSpec<C, Q>,       //LR
+        MySQL80Query._UnionOrderBySpec<C, Q>, //UR
+        MySQL80Query._WithSpec<C, Q>>       //SP
+        implements MySQL80Query, MySQL80Query._WithSpec<C, Q>, MySQL80Query._FromSpec<C, Q>
+        , MySQL80Query._IndexHintJoinSpec<C, Q>, MySQL80Query._IndexPurposeJoin80Clause<C, Q>
+        , MySQL80Query._JoinSpec<C, Q>, MySQL80Query._WhereAndSpec<C, Q>, MySQL80Query._HavingSpec<C, Q>
+        , _MySQL80Query, MySQL80Query._GroupByWithRollupSpec<C, Q>, MySQL80Query._OrderByWithRollupSpec<C, Q>
+        , MySQL80Query._LockOfSpec<C, Q>, MySQL80Query._LockLockOptionSpec<C, Q>
+        , MySQL80Query._LeftBracket80Clause<C, Q>, MySQL80Query._WindowCommaSpec<C, Q> {
 
 
-    static <C> With80Spec<C, Select> simpleSelect(@Nullable C criteria) {
+    static <C> _WithSpec<C, Select> simpleSelect(@Nullable C criteria) {
         return new SimpleSelect<>(criteria);
     }
 
-    static <C> With80Spec<C, SubQuery> subQuery(final boolean lateral, final @Nullable C criteria) {
-        final With80Spec<C, SubQuery> with80Spec;
+    static <C> _WithSpec<C, SubQuery> subQuery(final boolean lateral, final @Nullable C criteria) {
+        final _WithSpec<C, SubQuery> with80Spec;
         if (lateral) {
             with80Spec = new LateralSimpleSubQuery<>(criteria);
         } else {
@@ -76,8 +75,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
 
-    static <C> With80Spec<C, ScalarExpression> scalarSubQuery(final boolean lateral, final @Nullable C criteria) {
-        final With80Spec<C, ScalarExpression> with80Spec;
+    static <C> _WithSpec<C, ScalarExpression> scalarSubQuery(final boolean lateral, final @Nullable C criteria) {
+        final _WithSpec<C, ScalarExpression> with80Spec;
         if (lateral) {
             with80Spec = new LateralSimpleScalarQuery<>(criteria);
         } else {
@@ -87,8 +86,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
 
-    static <C, Q extends Query> With80Spec<C, Q> unionAndSelect(final Q left, final UnionType unionType) {
-        final With80Spec<C, ?> with80Spec;
+    static <C, Q extends Query> _WithSpec<C, Q> unionAndSelect(final Q left, final UnionType unionType) {
+        final _WithSpec<C, ?> with80Spec;
         if (left instanceof Select) {
             with80Spec = new UnionAndSelect<>((Select) left, unionType);
         } else if (left instanceof ScalarSubQuery) {
@@ -98,7 +97,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
-        return (With80Spec<C, Q>) with80Spec;
+        return (_WithSpec<C, Q>) with80Spec;
     }
 
     private boolean recursive;
@@ -113,7 +112,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private MySQLLock lock;
 
-    private List<TableMeta<?>> ofTableList;
+    private List<String> ofTableList;
 
     private MySQLLockOption lockOption;
 
@@ -127,7 +126,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
      * @see #onOrderBy()
      */
     @Override
-    public final Having80Spec<C, Q> withRollup() {
+    public final _HavingSpec<C, Q> withRollup() {
         if (this.groupByWithRollup == null) {
             this.groupByWithRollup = this.hasGroupBy();
         } else {
@@ -137,7 +136,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Having80Spec<C, Q> ifWithRollup(Predicate<C> predicate) {
+    public final _HavingSpec<C, Q> ifWithRollup(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.withRollup();
         }
@@ -145,11 +144,11 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final WindowAsClause<C, WindowCommaSpec<C, Q>> window(final String windowName) {
+    public final _WindowAsClause<C, _WindowCommaSpec<C, Q>> window(final String windowName) {
         if (!_StringUtils.hasText(windowName)) {
             throw _Exceptions.namedWindowNoText();
         }
-        final MySQLs80.MySQLWindow<C, WindowCommaSpec<C, Q>> window;
+        final MySQLs80.MySQLWindow<C, _WindowCommaSpec<C, Q>> window;
         window = new MySQLs80.MySQLWindow<>(windowName, this);
 
         List<Window> windowList = this.windowList;
@@ -162,7 +161,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final OrderBy80Spec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function) {
+    public final _OrderBySpec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function) {
         final List<Window> windowList;
         windowList = function.apply(this::createWindowClause);
         if (windowList != null && windowList.size() > 0) {
@@ -172,7 +171,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final OrderBy80Spec<C, Q> ifWindow(BiFunction<C, WindowBuilder<C>, List<Window>> function) {
+    public final _OrderBySpec<C, Q> ifWindow(BiFunction<C, WindowBuilder<C>, List<Window>> function) {
         final List<Window> windowList;
         windowList = function.apply(this.criteria, this::createWindowClause);
         if (windowList != null && windowList.size() > 0) {
@@ -182,24 +181,24 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final WindowAsClause<C, WindowCommaSpec<C, Q>> comma(final String windowName) {
+    public final _WindowAsClause<C, _WindowCommaSpec<C, Q>> comma(final String windowName) {
         return this.window(windowName);
     }
 
     @Override
-    public final Lock80OfSpec<C, Q> forUpdate() {
+    public final _LockOfSpec<C, Q> forUpdate() {
         this.lock = MySQLLock.FOR_UPDATE;
         return this;
     }
 
     @Override
-    public final Lock80OfSpec<C, Q> forShare() {
+    public final _LockOfSpec<C, Q> forShare() {
         this.lock = MySQLLock.SHARE;
         return this;
     }
 
     @Override
-    public final Lock80OfSpec<C, Q> ifForUpdate(Predicate<C> predicate) {
+    public final _LockOfSpec<C, Q> ifForUpdate(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.lock = MySQLLock.FOR_UPDATE;
         }
@@ -207,7 +206,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Lock80OfSpec<C, Q> ifForShare(Predicate<C> predicate) {
+    public final _LockOfSpec<C, Q> ifForShare(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.lock = MySQLLock.SHARE;
         }
@@ -215,13 +214,13 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final UnionSpec<C, Q> lockInShareMode() {
+    public final _UnionSpec<C, Q> lockInShareMode() {
         this.lock = MySQLLock.LOCK_IN_SHARE_MODE;
         return this;
     }
 
     @Override
-    public final UnionSpec<C, Q> ifLockInShareMode(Predicate<C> predicate) {
+    public final _UnionSpec<C, Q> ifLockInShareMode(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.lock = MySQLLock.LOCK_IN_SHARE_MODE;
         }
@@ -229,75 +228,94 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Lock80LockOptionSpec<C, Q> of(TableMeta<?> table) {
-        if (this.lock != null) {
-            this.of(Collections.singletonList(table));
+    public final _LockLockOptionSpec<C, Q> of(String tableAlias) {
+        if (this.lock == null) {
+            return this;
+        }
+        return this.asOfTableAliasList(true, Collections.singletonList(tableAlias));
+    }
+
+    @Override
+    public final _LockLockOptionSpec<C, Q> of(String tableAlias1, String tableAlias2) {
+        if (this.lock == null) {
+            return this;
+        }
+        return this.asOfTableAliasList(true, ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2));
+    }
+
+    @Override
+    public final _LockLockOptionSpec<C, Q> of(String tableAlias1, String tableAlias2, String tableAlias3) {
+        if (this.lock == null) {
+            return this;
+        }
+        return this.asOfTableAliasList(true, ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3));
+    }
+
+    @Override
+    public final _LockLockOptionSpec<C, Q> of(Supplier<List<String>> supplier) {
+        if (this.lock == null) {
+            return this;
+        }
+        return this.asOfTableAliasList(false, supplier.get());
+    }
+
+    @Override
+    public final _LockLockOptionSpec<C, Q> of(Function<C, List<String>> function) {
+        if (this.lock == null) {
+            return this;
+        }
+        return this.asOfTableAliasList(false, function.apply(this.criteria));
+    }
+
+    @Override
+    public final _LockLockOptionSpec<C, Q> of(Consumer<List<String>> consumer) {
+        if (this.lock == null) {
+            return this;
+        }
+        final List<String> tableAliasList = new ArrayList<>();
+        consumer.accept(tableAliasList);
+        return this.asOfTableAliasList(true, _CollectionUtils.unmodifiableList(tableAliasList));
+    }
+
+    @Override
+    public final _LockLockOptionSpec<C, Q> ifOf(Supplier<List<String>> supplier) {
+        if (this.lock == null) {
+            return this;
+        }
+        final List<String> tableAliasList;
+        tableAliasList = supplier.get();
+        if (tableAliasList != null && tableAliasList.size() > 0) {
+            this.asOfTableAliasList(false, tableAliasList);
         }
         return this;
     }
 
     @Override
-    public final Lock80LockOptionSpec<C, Q> of(TableMeta<?> table1, TableMeta<?> table2) {
-        if (this.lock != null) {
-            this.of(Arrays.asList(table1, table2));
+    public final _LockLockOptionSpec<C, Q> ifOf(Function<C, List<String>> function) {
+        if (this.lock == null) {
+            return this;
+        }
+        final List<String> tableAliasList;
+        tableAliasList = function.apply(this.criteria);
+        if (tableAliasList != null && tableAliasList.size() > 0) {
+            this.asOfTableAliasList(false, tableAliasList);
         }
         return this;
     }
 
-    @Override
-    public final Lock80LockOptionSpec<C, Q> of(List<TableMeta<?>> tableList) {
-        final MySQLLock lock = this.lock;
-        if (lock != null) {
-            switch (lock) {
-                case FOR_UPDATE:
-                case SHARE:
-                    this.ofTableList = _CollectionUtils.asUnmodifiableList(tableList);
-                    break;
-                case LOCK_IN_SHARE_MODE:
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(lock);
-            }
-        }
-        return this;
-    }
 
     @Override
-    public final Lock80LockOptionSpec<C, Q> ifOf(Function<C, List<TableMeta<?>>> function) {
-        if (this.lock != null) {
-            final List<TableMeta<?>> list;
-            list = function.apply(this.criteria);
-            if (!_CollectionUtils.isEmpty(list)) {
-                this.of(list);
-            }
-        }
-        return this;
-    }
-
-    @Override
-    public final Lock80LockOptionSpec<C, Q> ifOf(Supplier<List<TableMeta<?>>> supplier) {
-        if (this.lock != null) {
-            final List<TableMeta<?>> list;
-            list = supplier.get();
-            if (!_CollectionUtils.isEmpty(list)) {
-                this.of(list);
-            }
-        }
-        return this;
-    }
-
-    @Override
-    public final UnionSpec<C, Q> nowait() {
+    public final _UnionSpec<C, Q> nowait() {
         return this.lockOption(MySQLLockOption.NOWAIT);
     }
 
     @Override
-    public final UnionSpec<C, Q> skipLocked() {
+    public final _UnionSpec<C, Q> skipLocked() {
         return this.lockOption(MySQLLockOption.SKIP_LOCKED);
     }
 
     @Override
-    public final UnionSpec<C, Q> ifNowait(Predicate<C> predicate) {
+    public final _UnionSpec<C, Q> ifNowait(Predicate<C> predicate) {
         if (this.lock != null && predicate.test(this.criteria)) {
             this.nowait();
         }
@@ -305,7 +323,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final UnionSpec<C, Q> ifSkipLocked(Predicate<C> predicate) {
+    public final _UnionSpec<C, Q> ifSkipLocked(Predicate<C> predicate) {
         if (this.lock != null && predicate.test(this.criteria)) {
             this.skipLocked();
         }
@@ -321,12 +339,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final UnionOrderBy80Spec<C, Q> createUnionQuery(Q left, UnionType unionType, Q right) {
-        return MySQL80UnionQuery.unionQuery(left, unionType, right);
-    }
-
-    @Override
-    final With80Spec<C, Q> asUnionAndRowSet(UnionType unionType) {
+    final _WithSpec<C, Q> asUnionAndRowSet(UnionType unionType) {
         return MySQL80SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
 
@@ -334,6 +347,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     final Q onAsQuery(final boolean fromAsQueryMethod) {
         if (this.windowList == null) {
             this.windowList = Collections.emptyList();
+        }
+        if (this.ofTableList == null) {
+            this.ofTableList = Collections.emptyList();
         }
         return this.finallyAsQuery(fromAsQueryMethod);
     }
@@ -349,34 +365,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     @Override
-    final IndexHintOn80Spec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _IndexHintOnSpec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return new IndexHintOnBlock<>(joinType, table, tableAlias, this);
-    }
-
-    @Override
-    final Statement.AsClause<> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
-        Objects.requireNonNull(tableItem);
-        return new OnBlock<>(joinType, tableItem, alias, this);
-    }
-
-    @Override
-    final PartitionJoin80Clause<C, Q> createFirstPartitionBlock(TableMeta<?> table) {
-        return new PartitionJoinImpl<>(table, this);
-    }
-
-    @Override
-    final IndexHintOn80Spec<C, Q> createNoActionTableBlock() {
-        return new NoActionIndexHintOnBlock<>(this);
-    }
-
-    @Override
-    final On80Spec<C, Q> createNoActionOnBlock() {
-        return new NoActionOnBlock<>(this);
-    }
-
-    @Override
-    final PartitionOn80Clause<C, Q> createNoActionPartitionBlock() {
-        return new NoActionPartitionOnBlock<>(this);
     }
 
     @Override
@@ -391,6 +381,30 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
     }
 
+    @Override
+    final _UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
+        return null;
+    }
+
+    @Override
+    final _UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+        return null;
+    }
+
+    @Override
+    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        return new MySQLNoOnBlock(joinType, table, tableAlias);
+    }
+
+    @Override
+    final OnClause<C, _JoinSpec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+    }
+
+    @Override
+    final _PartitionJoinClause<C, Q> createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+        return new PartitionJoinImpl<>(joinType, table, this);
+    }
 
     @Override
     public final boolean groupByWithRollUp() {
@@ -407,12 +421,49 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     /*################################## blow private method ##################################*/
 
-    private WindowAsClause<C, Window> createWindowClause(String windowName) {
+    private _WindowAsClause<C, Window> createWindowClause(String windowName) {
         return new MySQLs80.MySQLWindow<>(windowName, this.criteriaContext);
     }
 
+    private _LockLockOptionSpec<C, Q> asOfTableAliasList(final boolean unmodified
+            , final @Nullable List<String> aliasList) {
+        switch (this.lock) {
+            case SHARE:
+            case FOR_UPDATE:
+                break;
+            case LOCK_IN_SHARE_MODE:
+                throw _Exceptions.castCriteriaApi();
+            default:
+                throw _Exceptions.unexpectedEnum(lock);
+        }
+        if (aliasList == null || aliasList.size() == 0) {
+            throw MySQLUtils.lockOfTableAliasListIsEmpty();
+        }
+        final List<String> tableAliasList;
+        if (unmodified) {
+            tableAliasList = null;
+        } else {
+            tableAliasList = new ArrayList<>(aliasList.size());
+        }
+        for (String alias : aliasList) {
+            if (!this.criteriaContext.containTableAlias(alias)) {
+                String m = String.format("unknown table alias[%s] in this query block.", alias);
+                throw new CriteriaException(m);
+            }
+            if (tableAliasList != null) {
+                tableAliasList.add(alias);
+            }
+        }
+        if (tableAliasList == null) {
+            this.ofTableList = aliasList;
+        } else {
+            this.ofTableList = _CollectionUtils.unmodifiableList(tableAliasList);
+        }
+        return this;
+    }
 
-    private UnionSpec<C, Q> lockOption(MySQLLockOption lockOption) {
+
+    private _UnionSpec<C, Q> lockOption(MySQLLockOption lockOption) {
         final MySQLLock lock = this.lock;
         if (lock != null) {
             switch (lock) {
@@ -421,7 +472,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
                     this.lockOption = lockOption;
                     break;
                 case LOCK_IN_SHARE_MODE:
-                    break;
+                    throw _Exceptions.castCriteriaApi();
                 default:
                     throw _Exceptions.unexpectedEnum(lock);
             }
@@ -441,10 +492,23 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }// SimpleSelect
 
-    private static class SimpleSubQuery<C, Q extends SubQuery> extends MySQL80SimpleQuery<C, Q> implements SubQuery {
+    private static class SimpleSubQuery<C, Q extends SubQuery> extends MySQL80SimpleQuery<C, Q> implements SubQuery
+            , _SelfDescribed {
+
+        private Map<String, Selection> selectionMap;
 
         private SimpleSubQuery(@Nullable C criteria) {
             super(criteria);
+        }
+
+        @Override
+        public final Selection selection(String derivedFieldName) {
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
+                this.selectionMap = selectionMap;
+            }
+            return selectionMap.get(derivedFieldName);
         }
 
     }//SimpleSubQuery
@@ -466,11 +530,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             super(criteria);
         }
 
-        @Override
-        public final ParamMeta paramMeta() {
-            return ((Selection) this.selectItemList().get(0)).paramMeta();
-        }
-
     }//SimpleScalarQuery
 
     private static final class LateralSimpleScalarQuery<C> extends SimpleScalarQuery<C>
@@ -483,23 +542,33 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }//LateralSimpleScalarQuery
 
 
-    private static abstract class AbstractUnionAndQuery<C, Q extends Query> extends MySQL80SimpleQuery<C, Q> {
+    private static abstract class UnionAndQuery<C, Q extends Query> extends MySQL80SimpleQuery<C, Q>
+            implements UnionAndRowSet {
 
         private final Q left;
 
         private final UnionType unionType;
 
-        private AbstractUnionAndQuery(Q left, UnionType unionType) {
+        private UnionAndQuery(Q left, UnionType unionType) {
             super(CriteriaUtils.getCriteria(left));
             this.left = left;
             this.unionType = unionType;
         }
 
+        @Override
+        public final RowSet leftRowSet() {
+            return this.left;
+        }
 
-    }//AbstractUnionAndQuery
+        @Override
+        public final UnionType unionType() {
+            return this.unionType;
+        }
+
+    }//UnionAndQuery
 
 
-    private static final class UnionAndSelect<C> extends AbstractUnionAndQuery<C, Select> implements Select {
+    private static final class UnionAndSelect<C> extends UnionAndQuery<C, Select> implements Select {
 
         private UnionAndSelect(Select left, UnionType unionType) {
             super(left, unionType);
@@ -507,10 +576,23 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }//UnionAndSelect
 
-    private static class UnionAndSubQuery<C, Q extends SubQuery> extends AbstractUnionAndQuery<C, Q> implements SubQuery {
+    private static class UnionAndSubQuery<C, Q extends SubQuery> extends UnionAndQuery<C, Q>
+            implements SubQuery, _SelfDescribed {
+
+        private Map<String, Selection> selectionMap;
 
         private UnionAndSubQuery(Q left, UnionType unionType) {
             super(left, unionType);
+        }
+
+        @Override
+        public final Selection selection(String derivedFieldName) {
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
+                this.selectionMap = selectionMap;
+            }
+            return selectionMap.get(derivedFieldName);
         }
 
     }//UnionAndSubQuery
@@ -523,97 +605,62 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             super(left, unionType);
         }
 
-        @Override
-        public ParamMeta paramMeta() {
-            return ((Selection) this.selectItemList().get(0)).paramMeta();
-        }
 
     }//UnionAndScalarSubQuery
 
 
     private static final class PartitionJoinImpl<C, Q extends Query>
-            extends MySQLPartitionClause<C, AsJoin80Clause<C, Q>>
-            implements PartitionJoin80Clause<C, Q>, AsJoin80Clause<C, Q> {
+            extends MySQLPartitionClause<C, _AsJoinClause<C, Q>>
+            implements _PartitionJoinClause<C, Q>, _AsJoinClause<C, Q> {
+
+        private final _JoinType joinType;
 
         private final TableMeta<?> table;
 
         private final MySQL80SimpleQuery<C, Q> query;
 
-        private PartitionJoinImpl(TableMeta<?> table, MySQL80SimpleQuery<C, Q> query) {
+        private PartitionJoinImpl(_JoinType joinType, TableMeta<?> table, MySQL80SimpleQuery<C, Q> query) {
             super(query.criteria);
+            this.joinType = joinType;
             this.table = table;
             this.query = query;
         }
 
         @Override
-        public IndexHintJoin80Spec<C, Q> as(String alias) {
+        public _IndexHintJoinSpec<C, Q> as(final String alias) {
             Objects.requireNonNull(alias);
-            List<String> partitionList = this.partitionList;
+            final List<String> partitionList = this.partitionList;
+            final MySQLNoOnBlock block;
             if (partitionList == null) {
-                partitionList = Collections.emptyList();
+                block = new MySQLNoOnBlock(this.joinType, this.table, alias);
+            } else {
+                block = new MySQLNoOnBlock(this.joinType, this.table, alias, partitionList);
             }
-            this.query.criteriaContext.onBlockWithoutOnClause(new MySQLNoOnBlock<>(this.table, alias, partitionList, this.query));
+            this.query.criteriaContext.onBlockWithoutOnClause(block);
             return this.query;
         }
 
     }//PartitionJoinImpl
 
 
-    private static class OnBlock<C, Q extends Query> extends OnClauseTableBlock<C, JoinSpec<C, Q>>
-            implements MySQL80Query.On80Spec<C, Q> {
-
-
-        private final MySQL80SimpleQuery<C, Q> query;
-
-        private OnBlock(_JoinType joinType, TableItem tableItem, String alias, MySQL80SimpleQuery<C, Q> query) {
-            super(joinType, tableItem, alias);
-            this.query = query;
-        }
-
-        @Override
-        C getCriteria() {
-            return this.query.criteria;
-        }
-
-        @Override
-        JoinSpec<C, Q> endOnClause() {
-            return this.query;
-        }
-
-    }//OnBlock
-
     private static final class IndexHintOnBlock<C, Q extends Query> extends MySQLIndexHintOnBlock<
             C,
-            IndexPurposeOn80Clause<C, Q>,
-            MySQL80Query.IndexHintOn80Spec<C, Q>,
-            JoinSpec<C, Q>> implements MySQL80Query.IndexHintOn80Spec<C, Q>
-            , IndexPurposeOn80Clause<C, Q> {
+            _IndexPurposeOnClause<C, Q>,
+            _IndexHintOnSpec<C, Q>,
+            _JoinSpec<C, Q>> implements _IndexHintOnSpec<C, Q>
+            , _IndexPurposeOnClause<C, Q> {
 
         private final List<String> partitionList;
 
-        private final MySQL80SimpleQuery<C, Q> query;
-
         private IndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, MySQL80SimpleQuery<C, Q> query) {
-            super(joinType, table, alias);
-            this.query = query;
+            super(joinType, table, alias, query);
             this.partitionList = Collections.emptyList();
         }
 
         private IndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, List<String> partitionList
                 , MySQL80SimpleQuery<C, Q> query) {
-            super(joinType, table, alias);
-            this.query = query;
-            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-        }
-
-        @Override
-        C getCriteria() {
-            return this.query.criteria;
-        }
-
-        @Override
-        JoinSpec<C, Q> endOnClause() {
-            return this.query;
+            super(joinType, table, alias, query);
+            this.partitionList = partitionList;
         }
 
         @Override
@@ -623,12 +670,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }//IndexHintOnBlock
 
-    /**
-     * @see #createBlockBeforeAs(_JoinType, TableMeta)
-     */
+
     private static final class PartitionOnBlock<C, Q extends Query>
-            extends MySQLPartitionClause<C, AsOn80Clause<C, Q>>
-            implements AsOn80Clause<C, Q>, PartitionOn80Clause<C, Q> {
+            extends MySQLPartitionClause<C, _AsOnClause<C, Q>>
+            implements _AsOnClause<C, Q>, _PartitionOn80Clause<C, Q> {
 
         private final _JoinType joinType;
 
@@ -644,7 +689,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
         @Override
-        public IndexHintOn80Spec<C, Q> as(final String alias) {
+        public _IndexHintOnSpec<C, Q> as(final String alias) {
             Objects.requireNonNull(alias);
             final IndexHintOnBlock<C, Q> hintOnBlock;
             final List<String> partitionList = this.partitionList;
@@ -659,48 +704,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     }//PartitionOnBlock
-
-
-    private static final class NoActionOnBlock<C, Q extends Query>
-            extends NoActionOnClause<C, JoinSpec<C, Q>>
-            implements MySQL80Query.On80Spec<C, Q> {
-
-        private NoActionOnBlock(JoinSpec<C, Q> stmt) {
-            super(stmt);
-        }
-
-
-    }//NoActionOnBlock
-
-    private static final class NoActionIndexHintOnBlock<C, Q extends Query> extends MySQLNoActionIndexHintOnBlock<
-            C,
-            IndexPurposeOn80Clause<C, Q>,
-            MySQL80Query.IndexHintOn80Spec<C, Q>,
-            JoinSpec<C, Q>> implements IndexPurposeOn80Clause<C, Q>
-            , MySQL80Query.IndexHintOn80Spec<C, Q> {
-
-        private NoActionIndexHintOnBlock(JoinSpec<C, Q> stmt) {
-            super(stmt);
-        }
-
-    }// NoActionIndexHintOnBlock
-
-
-    private static final class NoActionPartitionOnBlock<C, Q extends Query>
-            extends MySQLNoActionPartitionClause<C, AsOn80Clause<C, Q>>
-            implements PartitionOn80Clause<C, Q>, AsOn80Clause<C, Q> {
-
-        private final NoActionIndexHintOnBlock<C, Q> hintOnBlock;
-
-        private NoActionPartitionOnBlock(JoinSpec<C, Q> stmt) {
-            this.hintOnBlock = new NoActionIndexHintOnBlock<>(stmt);
-        }
-
-        @Override
-        public IndexHintOn80Spec<C, Q> as(String alias) {
-            return this.hintOnBlock;
-        }
-    }//NoActionPartitionOnBlock
 
 
 }

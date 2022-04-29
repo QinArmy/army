@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 abstract class MySQLUtils extends CriteriaUtils {
 
@@ -75,9 +76,39 @@ abstract class MySQLUtils extends CriteriaUtils {
         return CriteriaUtils.asModifierSet(modifierSet, MySQLUtils::assertUpdateModifier);
     }
 
+    static List<String> asStringList(final @Nullable List<String> partitionList, Supplier<CriteriaException> supplier) {
+        if (partitionList == null) {
+            throw supplier.get();
+        }
+        final int size = partitionList.size();
+        List<String> list;
+        switch (size) {
+            case 0:
+                throw supplier.get();
+            case 1:
+                list = Collections.singletonList(partitionList.get(0));
+                break;
+            default: {
+                list = new ArrayList<>(partitionList.size());
+                list.addAll(partitionList);
+                list = Collections.unmodifiableList(list);
+            }
+
+        }
+        return list;
+    }
+
 
     static CriteriaException indexListIsEmpty() {
         return new CriteriaException("index list must not empty.");
+    }
+
+    static CriteriaException partitionListIsEmpty() {
+        return new CriteriaException("partition list must not empty");
+    }
+
+    static CriteriaException lockOfTableAliasListIsEmpty() {
+        return new CriteriaException("lock of table alias list must not empty");
     }
 
 

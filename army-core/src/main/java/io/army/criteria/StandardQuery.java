@@ -59,25 +59,6 @@ public interface StandardQuery extends Query, StandardStatement {
 
     /**
      * <p>
-     * This interface representing ON clause for standard syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface StandardOnClause<C, Q extends Query> extends OnClause<C, JoinSpec<C, Q>> {
-
-
-    }
-
-    /**
-     * <p>
      * This interface representing the composite of below:
      *     <ul>
      *          <li>JOIN clause for standard syntax</li>
@@ -122,7 +103,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface StandardJoinClause<C, Q extends Query>
-            extends JoinClause<C, StandardOnClause<C, Q>, StandardOnClause<C, Q>, JoinSpec<C, Q>, JoinSpec<C, Q>, StandardLestBracketClause<C, Q>> {
+            extends JoinClause<C, Statement.OnClause<C, JoinSpec<C, Q>>, Statement.OnClause<C, JoinSpec<C, Q>>, JoinSpec<C, Q>, JoinSpec<C, Q>, StandardLestBracketClause<C, Q>> {
 
     }
 

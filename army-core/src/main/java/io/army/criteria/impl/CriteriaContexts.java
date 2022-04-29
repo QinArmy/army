@@ -10,6 +10,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
+import io.army.meta.TableMeta;
 import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -258,6 +259,12 @@ abstract class CriteriaContexts {
             return block;
         }
 
+        @Override
+        public final boolean containTableAlias(final String tableAlias) {
+            final _TableBlock block;
+            block = this.aliasToBlock.get(tableAlias);
+            return block != null && block.tableItem() instanceof TableMeta;
+        }
 
         @SuppressWarnings("unchecked")
         @Override

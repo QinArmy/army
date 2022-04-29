@@ -3,7 +3,6 @@ package io.army.criteria.mysql;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Query;
 import io.army.criteria.Window;
-import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -78,22 +77,50 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
+    /**
+     * <p>
+     * This interface representing nested join left bracket clause in MySQL.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
     interface MySQLJoinBracketClause<C, JT, JS, JP> extends DialectLeftBracketClause<C, JT, JS, JP> {
 
     }
 
 
+    /**
+     * <p>
+     * This interface representing PARTITION clause in MySQL.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
     interface PartitionClause<C, PR> {
 
         PR partition(String partitionName);
 
         PR partition(String partitionName1, String partitionNam2);
 
-        PR partition(List<String> partitionNameList);
+        PR partition(String partitionName1, String partitionNam2, String partitionNam3);
 
         PR partition(Supplier<List<String>> supplier);
 
         PR partition(Function<C, List<String>> function);
+
+        PR partition(Consumer<List<String>> consumer);
 
         PR ifPartition(Supplier<List<String>> supplier);
 
@@ -102,6 +129,19 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
+    /**
+     * <p>
+     * This interface representing index hint clause in MySQL.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
     interface IndexHintClause<C, IR, IC> {
 
         IR useIndex();
@@ -140,6 +180,19 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
+    /**
+     * <p>
+     * This interface representing index hint(FOR ORDER BY) clause in MySQL.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
     interface IndexOrderByClause<C, IC> {
 
         IC forOrderBy(List<String> indexList);
@@ -147,6 +200,19 @@ public interface MySQLQuery extends Query, DialectStatement {
         IC forOrderBy(Function<C, List<String>> function);
     }
 
+    /**
+     * <p>
+     * This interface representing index hint(FOR JOIN) clause in MySQL.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
     interface IndexJoinClause<C, IC> {
 
         IC forJoin(List<String> indexList);
@@ -155,6 +221,19 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
+    /**
+     * <p>
+     * This interface representing index hint(FOR GROUP BY) clause in MySQL.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
     interface IndexPurposeClause<C, IC> extends MySQLQuery.IndexOrderByClause<C, IC>
             , MySQLQuery.IndexJoinClause<C, IC> {
 
@@ -164,7 +243,20 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface WithRollupClause<C, WU> {
+    /**
+     * <p>
+     * This interface representing WITH ROLLUP clause in MySQL.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _WithRollupClause<C, WU> {
 
         WU withRollup();
 
@@ -173,6 +265,19 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
+    /**
+     * <p>
+     * This interface representing LOCK clause Prior to MySQL 8.0.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
     interface LockClause<C, LO> {
 
         LO forUpdate();
@@ -185,6 +290,20 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
+    /**
+     * <p>
+     * This interface representing WINDOW clause As of MySQL 8.0.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  java criteria object java type
+     * @param <WR> next clause java type
+     * @since 1.0
+     */
     interface WindowClause<C, WR> extends Window.WindowClause<C, WR> {
 
 
@@ -192,7 +311,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     /**
      * <p>
-     * This interface representing lock FOR UPDATE and LOCK IN SHARE MODE clause in MySQL 8.0.
+     * This interface representing lock FOR UPDATE and LOCK IN SHARE MODE clause As of MySQL 8.0.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -223,7 +342,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     /**
      * <p>
-     * This interface representing lock OF clause in MySQL 8.0.
+     * This interface representing lock OF clause As of MySQL 8.0.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -237,15 +356,22 @@ public interface MySQLQuery extends Query, DialectStatement {
      */
     interface Lock80OfClause<C, LO> {
 
-        LO of(TableMeta<?> table);
+        LO of(String tableAlias);
 
-        LO of(TableMeta<?> table1, TableMeta<?> table2);
+        LO of(String tableAlias1, String tableAlias2);
 
-        LO of(List<TableMeta<?>> tableList);
+        LO of(String tableAlias1, String tableAlias2, String tableAlias3);
 
-        LO ifOf(Function<C, List<TableMeta<?>>> function);
+        LO of(Supplier<List<String>> supplier);
 
-        LO ifOf(Supplier<List<TableMeta<?>>> supplier);
+        LO of(Function<C, List<String>> function);
+
+        LO of(Consumer<List<String>> consumer);
+
+        LO ifOf(Supplier<List<String>> supplier);
+
+        LO ifOf(Function<C, List<String>> function);
+
     }
 
     /**
@@ -262,7 +388,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <LS> next clause java type
      * @since 1.0
      */
-    interface Lock80OptionClause<C, LS> {
+    interface _Lock80OptionClause<C, LS> {
 
         LS nowait();
 
@@ -289,7 +415,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/select-into.html">MySQL 5.7 SELECT ... INTO Statement</a>
      * @since 1.0
      */
-    interface IntoClause<C, IO> {
+    interface _IntoClause<C, IO> {
 
         IO into(String varName);
 
@@ -334,7 +460,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IntoSpec<C, Q extends Query> extends MySQLQuery.IntoClause<C, Query.QuerySpec<Q>>, Query.QuerySpec<Q> {
+    interface _IntoSpec<C, Q extends Query> extends _IntoClause<C, QuerySpec<Q>>, Query.QuerySpec<Q> {
 
     }
 

@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.dialect.Constant;
@@ -104,6 +105,12 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP> extends PartRowS
             query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
         } else {
             query = (Q) this;
+        }
+        if (this.left instanceof _LateralSubQuery
+                && !(this instanceof _LateralSubQuery)) {
+            String m = String.format("%s don't implements %s."
+                    , this.getClass().getName(), _LateralSubQuery.class.getName());
+            throw new IllegalStateException(m);
         }
         return query;
     }

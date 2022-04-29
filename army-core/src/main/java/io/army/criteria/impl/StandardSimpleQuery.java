@@ -29,8 +29,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         StandardQuery.JoinSpec<C, Q>,// FT
         StandardQuery.JoinSpec<C, Q>,// FS
         Void,                               // FP
-        StandardQuery.StandardOnClause<C, Q>, // JT
-        StandardQuery.StandardOnClause<C, Q>, // JS
+        Statement.OnClause<C, StandardQuery.JoinSpec<C, Q>>, // JT
+        Statement.OnClause<C, StandardQuery.JoinSpec<C, Q>>, // JS
         Void,                               // JP
         StandardQuery.StandardLestBracketClause<C, Q>,// JE
         StandardQuery.GroupBySpec<C, Q>, // WR
@@ -162,15 +162,14 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final StandardOnClause<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
-        return new OnBlock<>(joinType, table, tableAlias, this);
+    final OnClause<C, JoinSpec<C, Q>> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        return new OnClauseTableBlock<>(joinType, table, tableAlias, this);
     }
 
     @Override
-    final StandardOnClause<C, Q> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
-        return new OnBlock<>(joinType, tableItem, alias, this);
+    final OnClause<C, JoinSpec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
     }
-
 
     @Override
     final Dialect defaultDialect() {
@@ -214,29 +213,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     /*################################## blow private inter class method ##################################*/
-
-
-    private static final class OnBlock<C, Q extends Query> extends OnClauseTableBlock<C, JoinSpec<C, Q>>
-            implements StandardOnClause<C, Q> {
-
-        private final StandardSimpleQuery<C, Q> query;
-
-        OnBlock(_JoinType joinType, TableItem tableItem, String alias, StandardSimpleQuery<C, Q> query) {
-            super(joinType, tableItem, alias);
-            this.query = query;
-        }
-
-        @Override
-        C getCriteria() {
-            return this.query.criteria;
-        }
-
-        @Override
-        JoinSpec<C, Q> endOnClause() {
-            return this.query;
-        }
-
-    } // OnBlock
 
 
     private static final class SimpleSelect<C> extends StandardSimpleQuery<C, Select>

@@ -1,13 +1,14 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -38,30 +39,40 @@ abstract class MySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause
     }
 
     @Override
-    public final PR partition(final List<String> partitionNameList) {
-        if (partitionNameList.size() == 0) {
-            throw new CriteriaException("partitionNameList must not empty.");
-        }
-        this.partitionList = _CollectionUtils.asUnmodifiableList(partitionNameList);
+    public final PR partition(String partitionName1, String partitionNam2, String partitionNam3) {
+        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
         return (PR) this;
     }
 
     @Override
     public final PR partition(Supplier<List<String>> supplier) {
-        return this.partition(supplier.get());
+        this.partitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
+        return (PR) this;
     }
 
     @Override
     public final PR partition(Function<C, List<String>> function) {
-        return this.partition(function.apply(this.criteria));
+        this.partitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
+        return (PR) this;
+    }
+
+    @Override
+    public final PR partition(Consumer<List<String>> consumer) {
+        final List<String> partitionList = new ArrayList<>();
+        consumer.accept(partitionList);
+        if (partitionList.size() == 0) {
+            throw MySQLUtils.partitionListIsEmpty();
+        }
+        this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
+        return (PR) this;
     }
 
     @Override
     public final PR ifPartition(Supplier<List<String>> supplier) {
         final List<String> list;
         list = supplier.get();
-        if (!_CollectionUtils.isEmpty(list)) {
-            this.partition(list);
+        if (list != null && list.size() > 0) {
+            this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
         }
         return (PR) this;
     }
@@ -70,8 +81,8 @@ abstract class MySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause
     public final PR ifPartition(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.criteria);
-        if (!_CollectionUtils.isEmpty(list)) {
-            this.partition(list);
+        if (list != null && list.size() > 0) {
+            this.partitionList = MySQLUtils.asStringList(list, , MySQLUtils::partitionListIsEmpty);
         }
         return (PR) this;
     }

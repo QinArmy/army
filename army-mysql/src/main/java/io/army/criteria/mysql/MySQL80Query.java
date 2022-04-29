@@ -31,13 +31,27 @@ import java.util.function.Predicate;
  */
 public interface MySQL80Query extends MySQLQuery {
 
+    /**
+     * <p>
+     * This interface representing builder of {@link Window}
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @see 1.0
+     */
+    @FunctionalInterface
+    interface WindowBuilder<C> {
+
+        _WindowAsClause<C, Window> window(String windowName);
+    }
+
 
     /**
      * <p>
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link WithCteClause} for MySQL 8.0</li>
-     *          <li>the composite {@link Select80Clause}</li>
+     *          <li>the composite {@link _Select80Clause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -50,8 +64,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface With80Spec<C, Q extends Query> extends WithCteClause<C, Select80Clause<C, Q>>
-            , Select80Clause<C, Q> {
+    interface _WithSpec<C, Q extends Query> extends WithCteClause<C, _Select80Clause<C, Q>>
+            , _Select80Clause<C, Q> {
 
 
     }
@@ -70,7 +84,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Select80Clause<C, Q extends Query> extends MySQLSelectClause<C, From80Spec<C, Q>> {
+    interface _Select80Clause<C, Q extends Query> extends MySQLSelectClause<C, _FromSpec<C, Q>> {
 
     }
 
@@ -79,8 +93,8 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLFromClause} for MySQL 8.0</li>
-     *          <li>the composite {@link UnionSpec}</li>
-     *          <li>the composite {@link MySQLQuery.IntoSpec}</li>
+     *          <li>the composite {@link _UnionSpec}</li>
+     *          <li>the composite {@link _IntoSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -93,9 +107,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface From80Spec<C, Q extends Query>
-            extends MySQLQuery.MySQLFromClause<C, IndexHintJoin80Spec<C, Q>, JoinSpec<C, Q>
-            , PartitionJoin80Clause<C, Q>, LeftBracket80Clause<C, Q>>, UnionSpec<C, Q>, MySQLQuery.IntoSpec<C, Q> {
+    interface _FromSpec<C, Q extends Query>
+            extends MySQLQuery.MySQLFromClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>
+            , _PartitionJoinClause<C, Q>, _LeftBracket80Clause<C, Q>>, _UnionSpec<C, Q>, _IntoSpec<C, Q> {
 
     }
 
@@ -113,7 +127,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface PartitionJoin80Clause<C, Q extends Query> extends MySQLQuery.PartitionClause<C, AsJoin80Clause<C, Q>> {
+    interface _PartitionJoinClause<C, Q extends Query> extends MySQLQuery.PartitionClause<C, _AsJoinClause<C, Q>> {
 
     }
 
@@ -131,7 +145,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface AsJoin80Clause<C, Q extends Query> extends Statement.AsClause<IndexHintJoin80Spec<C, Q>> {
+    interface _AsJoinClause<C, Q extends Query> extends Statement.AsClause<_IndexHintJoinSpec<C, Q>> {
 
     }
 
@@ -141,7 +155,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link IndexHintClause} for MySQL 8.0</li>
-     *          <li>the composite {@link JoinSpec}</li>
+     *          <li>the composite {@link _JoinSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -154,9 +168,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IndexHintJoin80Spec<C, Q extends Query>
-            extends MySQLQuery.IndexHintClause<C, IndexPurposeJoin80Clause<C, Q>, IndexHintJoin80Spec<C, Q>>
-            , JoinSpec<C, Q> {
+    interface _IndexHintJoinSpec<C, Q extends Query>
+            extends MySQLQuery.IndexHintClause<C, _IndexPurposeJoin80Clause<C, Q>, _IndexHintJoinSpec<C, Q>>
+            , _JoinSpec<C, Q> {
 
     }
 
@@ -175,8 +189,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IndexPurposeJoin80Clause<C, Q extends Query>
-            extends MySQLQuery.IndexPurposeClause<C, IndexHintJoin80Spec<C, Q>> {
+    interface _IndexPurposeJoin80Clause<C, Q extends Query>
+            extends MySQLQuery.IndexPurposeClause<C, _IndexHintJoinSpec<C, Q>> {
 
     }
 
@@ -186,7 +200,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLJoinClause} for MySQL 8.0</li>
-     *          <li>the composite {@link Where80Spec}</li>
+     *          <li>the composite {@link _WhereSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -199,10 +213,10 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface JoinSpec<C, Q extends Query>
-            extends MySQLQuery.MySQLJoinClause<C, IndexHintOn80Spec<C, Q>, Statement.OnClause<C, JoinSpec<C, Q>>
-            , PartitionOn80Clause<C, Q>, IndexHintJoin80Spec<C, Q>, JoinSpec<C, Q>, LeftBracket80Clause<C, Q>
-            , PartitionJoin80Clause<C, Q>>, Where80Spec<C, Q> {
+    interface _JoinSpec<C, Q extends Query>
+            extends MySQLQuery.MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, Statement.OnClause<C, _JoinSpec<C, Q>>
+            , _PartitionOn80Clause<C, Q>, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _LeftBracket80Clause<C, Q>
+            , _PartitionJoinClause<C, Q>>, _WhereSpec<C, Q> {
 
     }
 
@@ -220,8 +234,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface LeftBracket80Clause<C, Q extends Query>
-            extends MySQLJoinBracketClause<C, IndexHintJoin80Spec<C, Q>, JoinSpec<C, Q>, PartitionJoin80Clause<C, Q>> {
+    interface _LeftBracket80Clause<C, Q extends Query>
+            extends MySQLJoinBracketClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _PartitionJoinClause<C, Q>> {
 
     }
 
@@ -239,7 +253,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface PartitionOn80Clause<C, Q extends Query> extends MySQLQuery.PartitionClause<C, AsOn80Clause<C, Q>> {
+    interface _PartitionOn80Clause<C, Q extends Query> extends MySQLQuery.PartitionClause<C, _AsOnClause<C, Q>> {
 
     }
 
@@ -257,7 +271,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface AsOn80Clause<C, Q extends Query> extends Statement.AsClause<IndexHintOn80Spec<C, Q>> {
+    interface _AsOnClause<C, Q extends Query> extends Statement.AsClause<_IndexHintOnSpec<C, Q>> {
 
     }
 
@@ -279,9 +293,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IndexHintOn80Spec<C, Q extends Query>
-            extends MySQLQuery.IndexHintClause<C, IndexPurposeOn80Clause<C, Q>, IndexHintOn80Spec<C, Q>>
-            , Statement.OnClause<C, JoinSpec<C, Q>> {
+    interface _IndexHintOnSpec<C, Q extends Query>
+            extends MySQLQuery.IndexHintClause<C, _IndexPurposeOnClause<C, Q>, _IndexHintOnSpec<C, Q>>
+            , Statement.OnClause<C, _JoinSpec<C, Q>> {
 
     }
 
@@ -298,7 +312,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IndexPurposeOn80Clause<C, Q extends Query> extends MySQLQuery.IndexPurposeClause<C, IndexHintOn80Spec<C, Q>> {
+    interface _IndexPurposeOnClause<C, Q extends Query> extends MySQLQuery.IndexPurposeClause<C, _IndexHintOnSpec<C, Q>> {
 
     }
 
@@ -308,7 +322,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link WhereClause} </li>
-     *          <li>the composite {@link MySQL80Query.GroupBy80Spec}</li>
+     *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -321,9 +335,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Where80Spec<C, Q extends Query>
-            extends Statement.WhereClause<C, GroupBy80Spec<C, Q>, WhereAnd80Spec<C, Q>>
-            , GroupBy80Spec<C, Q> {
+    interface _WhereSpec<C, Q extends Query>
+            extends Statement.WhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>
+            , _GroupBySpec<C, Q> {
 
     }
 
@@ -332,7 +346,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link WhereAndClause} </li>
-     *          <li>the composite {@link MySQL80Query.GroupBy80Spec}</li>
+     *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -345,8 +359,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface WhereAnd80Spec<C, Q extends Query> extends Statement.WhereAndClause<C, WhereAnd80Spec<C, Q>>
-            , GroupBy80Spec<C, Q> {
+    interface _WhereAndSpec<C, Q extends Query> extends Statement.WhereAndClause<C, _WhereAndSpec<C, Q>>
+            , _GroupBySpec<C, Q> {
 
     }
 
@@ -355,7 +369,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link Query.GroupClause} </li>
-     *          <li>the composite {@link MySQL80Query.Window80Spec}</li>
+     *          <li>the composite {@link _WindowSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -368,8 +382,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface GroupBy80Spec<C, Q extends Query> extends Query.GroupClause<C, GroupByWithRollup80Spec<C, Q>>
-            , Window80Spec<C, Q> {
+    interface _GroupBySpec<C, Q extends Query> extends Query.GroupClause<C, _GroupByWithRollupSpec<C, Q>>
+            , _WindowSpec<C, Q> {
 
     }
 
@@ -377,8 +391,8 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery.WithRollupClause} after GROUP BY clause</li>
-     *          <li>the composite {@link MySQL80Query.Having80Spec}</li>
+     *          <li>{@link _WithRollupClause} after GROUP BY clause</li>
+     *          <li>the composite {@link _HavingSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -391,14 +405,14 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface GroupByWithRollup80Spec<C, Q extends Query> extends MySQLQuery.WithRollupClause<C, Limit80Spec<C, Q>>
-            , Having80Spec<C, Q> {
+    interface _GroupByWithRollupSpec<C, Q extends Query> extends _WithRollupClause<C, _LimitSpec<C, Q>>
+            , _HavingSpec<C, Q> {
 
         @Override
-        Having80Spec<C, Q> withRollup();
+        _HavingSpec<C, Q> withRollup();
 
         @Override
-        Having80Spec<C, Q> ifWithRollup(Predicate<C> predicate);
+        _HavingSpec<C, Q> ifWithRollup(Predicate<C> predicate);
 
     }
 
@@ -407,7 +421,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link Query.HavingClause}</li>
-     *          <li>the composite {@link MySQL80Query.Window80Spec}</li>
+     *          <li>the composite {@link _WindowSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -420,7 +434,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Having80Spec<C, Q extends Query> extends Query.HavingClause<C, Window80Spec<C, Q>>, Window80Spec<C, Q> {
+    interface _HavingSpec<C, Q extends Query> extends Query.HavingClause<C, _WindowSpec<C, Q>>, _WindowSpec<C, Q> {
 
     }
 
@@ -430,7 +444,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link MySQLQuery.WindowClause}</li>
-     *          <li>the composite {@link MySQL80Query.OrderBy80Spec}</li>
+     *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -443,13 +457,13 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Window80Spec<C, Q extends Query>
-            extends MySQLQuery.WindowClause<C, WindowAsClause<C, WindowCommaSpec<C, Q>>>
-            , OrderBy80Spec<C, Q> {
+    interface _WindowSpec<C, Q extends Query>
+            extends MySQLQuery.WindowClause<C, _WindowAsClause<C, _WindowCommaSpec<C, Q>>>
+            , _OrderBySpec<C, Q> {
 
-        OrderBy80Spec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function);
+        _OrderBySpec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function);
 
-        OrderBy80Spec<C, Q> ifWindow(BiFunction<C, WindowBuilder<C>, List<Window>> function);
+        _OrderBySpec<C, Q> ifWindow(BiFunction<C, WindowBuilder<C>, List<Window>> function);
 
     }
 
@@ -458,7 +472,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link Query.OrderByClause}</li>
-     *          <li>the composite {@link MySQL80Query.Limit80Spec}</li>
+     *          <li>the composite {@link _LimitSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -471,8 +485,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface OrderBy80Spec<C, Q extends Query>
-            extends Query.OrderByClause<C, OrderByWithRollup80Spec<C, Q>>, Limit80Spec<C, Q> {
+    interface _OrderBySpec<C, Q extends Query>
+            extends Query.OrderByClause<C, _OrderByWithRollupSpec<C, Q>>, _LimitSpec<C, Q> {
 
     }
 
@@ -481,8 +495,8 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery.WithRollupClause} after ORDER BY clause</li>
-     *          <li>the composite {@link MySQL80Query.Limit80Spec}</li>
+     *          <li>{@link _WithRollupClause} after ORDER BY clause</li>
+     *          <li>the composite {@link _LimitSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -495,8 +509,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface OrderByWithRollup80Spec<C, Q extends Query> extends
-            MySQLQuery.WithRollupClause<C, Limit80Spec<C, Q>>, Limit80Spec<C, Q> {
+    interface _OrderByWithRollupSpec<C, Q extends Query> extends
+            _WithRollupClause<C, _LimitSpec<C, Q>>, _LimitSpec<C, Q> {
 
     }
 
@@ -505,7 +519,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link  Query.LimitClause}</li>
-     *          <li>the composite {@link MySQL80Query.Lock80Spec}</li>
+     *          <li>the composite {@link _LockSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -518,7 +532,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Limit80Spec<C, Q extends Query> extends Query.LimitClause<C, Lock80Spec<C, Q>>, Lock80Spec<C, Q> {
+    interface _LimitSpec<C, Q extends Query> extends Query.LimitClause<C, _LockSpec<C, Q>>, _LockSpec<C, Q> {
 
     }
 
@@ -527,7 +541,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link Lock80Clause}</li>
-     *          <li>the composite {@link UnionSpec}</li>
+     *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -540,8 +554,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Lock80Spec<C, Q extends Query>
-            extends MySQLQuery.Lock80Clause<C, Lock80OfSpec<C, Q>, UnionSpec<C, Q>>, MySQLQuery.IntoSpec<C, Q> {
+    interface _LockSpec<C, Q extends Query>
+            extends MySQLQuery.Lock80Clause<C, _LockOfSpec<C, Q>, _UnionSpec<C, Q>>, _IntoSpec<C, Q> {
 
     }
 
@@ -550,7 +564,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link Lock80OfClause}</li>
-     *          <li>the composite {@link MySQL80Query.Lock80LockOptionSpec}</li>
+     *          <li>the composite {@link _LockLockOptionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -563,8 +577,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Lock80OfSpec<C, Q extends Query>
-            extends Lock80OfClause<C, Lock80LockOptionSpec<C, Q>>, Lock80LockOptionSpec<C, Q> {
+    interface _LockOfSpec<C, Q extends Query>
+            extends Lock80OfClause<C, _LockLockOptionSpec<C, Q>>, _LockLockOptionSpec<C, Q> {
 
     }
 
@@ -572,8 +586,8 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link Lock80OptionClause}</li>
-     *          <li>the composite {@link MySQL80Query.UnionLimit80Spec}</li>
+     *          <li>{@link _Lock80OptionClause}</li>
+     *          <li>the composite {@link _UnionLimitSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -586,8 +600,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Lock80LockOptionSpec<C, Q extends Query>
-            extends Lock80OptionClause<C, UnionSpec<C, Q>>, UnionSpec<C, Q>, MySQLQuery.IntoSpec<C, Q> {
+    interface _LockLockOptionSpec<C, Q extends Query>
+            extends _Lock80OptionClause<C, _UnionSpec<C, Q>>, _UnionSpec<C, Q>, _IntoSpec<C, Q> {
 
     }
 
@@ -597,7 +611,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>ORDER BY clause for MySQL 8.0</li>
-     *          <li>the composite {@link MySQL80Query.UnionLimit80Spec}</li>
+     *          <li>the composite {@link _UnionLimitSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -610,8 +624,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface UnionOrderBy80Spec<C, Q extends Query> extends Query.OrderByClause<C, UnionLimit80Spec<C, Q>>
-            , UnionLimit80Spec<C, Q> {
+    interface _UnionOrderBySpec<C, Q extends Query> extends Query.OrderByClause<C, _UnionLimitSpec<C, Q>>
+            , _UnionLimitSpec<C, Q> {
 
     }
 
@@ -620,7 +634,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>LIMIT clause for MySQL 8.0</li>
-     *          <li>the composite {@link UnionSpec}</li>
+     *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -633,7 +647,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface UnionLimit80Spec<C, Q extends Query> extends Query.LimitClause<C, UnionSpec<C, Q>>, UnionSpec<C, Q> {
+    interface _UnionLimitSpec<C, Q extends Query> extends Query.LimitClause<C, _UnionSpec<C, Q>>, _UnionSpec<C, Q> {
 
     }
 
@@ -656,8 +670,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface UnionSpec<C, Q extends Query>
-            extends QueryUnionClause<C, UnionOrderBy80Spec<C, Q>, With80Spec<C, Q>>, Query.QuerySpec<Q> {
+    interface _UnionSpec<C, Q extends Query>
+            extends QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _WithSpec<C, Q>>, Query.QuerySpec<Q> {
 
 
     }
@@ -668,7 +682,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>COMMA clause in WINDOW clause</li>
-     *          <li>the composite {@link MySQL80Query.OrderBy80Spec}</li>
+     *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -681,26 +695,14 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface WindowCommaSpec<C, Q extends Query> extends OrderBy80Spec<C, Q> {
+    interface _WindowCommaSpec<C, Q extends Query> extends _OrderBySpec<C, Q> {
 
-        WindowAsClause<C, WindowCommaSpec<C, Q>> comma(String windowName);
+        _WindowAsClause<C, _WindowCommaSpec<C, Q>> comma(String windowName);
 
     }
 
 
-    /**
-     * <p>
-     * This interface representing builder of {@link Window}
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @see 1.0
-     */
-    @FunctionalInterface
-    interface WindowBuilder<C> {
 
-        WindowAsClause<C, Window> window(String windowName);
-    }
 
     /**
      * <p>
@@ -716,7 +718,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
-    interface WindowAsClause<C, R> extends Window.AsClause<WindowLeftBracketClause<C, R>> {
+    interface _WindowAsClause<C, R> extends Window.AsClause<_WindowLeftBracketClause<C, R>> {
 
 
     }
@@ -735,8 +737,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
-    interface WindowLeftBracketClause<C, R>
-            extends Window.LeftBracketClause<C, WindowPartitionBySpec<C, R>> {
+    interface _WindowLeftBracketClause<C, R>
+            extends Window.LeftBracketClause<C, _WindowPartitionBySpec<C, R>> {
 
     }
 
@@ -746,7 +748,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link Window.PartitionByExpClause} in WINDOW clause</li>
-     *          <li>the composite {@link MySQL80Query.WindowOrderBySpec}</li>
+     *          <li>the composite {@link _WindowOrderBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -759,8 +761,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
-    interface WindowPartitionBySpec<C, R> extends Window.PartitionByExpClause<C, WindowOrderBySpec<C, R>>
-            , WindowOrderBySpec<C, R> {
+    interface _WindowPartitionBySpec<C, R> extends Window.PartitionByExpClause<C, _WindowOrderBySpec<C, R>>
+            , _WindowOrderBySpec<C, R> {
 
 
     }
@@ -770,7 +772,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link Statement.OrderByClause} clause in WINDOW clause</li>
-     *          <li>the composite {@link MySQL80Query.WindowFrameUnitsSpec}</li>
+     *          <li>the composite {@link _WindowFrameUnitsSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -783,8 +785,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
-    interface WindowOrderBySpec<C, R> extends Query.OrderByClause<C, WindowFrameUnitsSpec<C, R>>
-            , WindowFrameUnitsSpec<C, R> {
+    interface _WindowOrderBySpec<C, R> extends Query.OrderByClause<C, _WindowFrameUnitsSpec<C, R>>
+            , _WindowFrameUnitsSpec<C, R> {
 
     }
 
@@ -807,8 +809,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
-    interface WindowFrameUnitsSpec<C, R>
-            extends Window.FrameUnitsClause<C, WindowFrameBetweenClause<C, R>, WindowFrameEndNonExpBoundClause<R>>
+    interface _WindowFrameUnitsSpec<C, R>
+            extends Window.FrameUnitsClause<C, _WindowFrameBetweenClause<C, R>, _WindowFrameEndNonExpBoundClause<R>>
             , Statement.RightBracketClause<R> {
 
     }
@@ -827,8 +829,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface WindowFrameBetweenClause<C, R>
-            extends Window.FrameBetweenClause<C, WindowFrameNonExpBoundClause<C, R>, WindowFrameExpBoundClause<C, R>> {
+    interface _WindowFrameBetweenClause<C, R>
+            extends Window.FrameBetweenClause<C, _WindowFrameNonExpBoundClause<C, R>, _WindowFrameExpBoundClause<C, R>> {
 
     }
 
@@ -847,9 +849,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface WindowFrameBetweenAndClause<C, R>
+    interface _WindowFrameBetweenAndClause<C, R>
             extends Clause
-            , Window.FrameBetweenAndClause<C, WindowFrameEndNonExpBoundClause<R>, WindowFrameEndExpBoundClause<R>> {
+            , Window.FrameBetweenAndClause<C, _WindowFrameEndNonExpBoundClause<R>, _WindowFrameEndExpBoundClause<R>> {
 
     }
 
@@ -867,25 +869,25 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface WindowFrameNonExpBoundClause<C, R> extends Window.FrameNonExpBoundClause<Statement.Clause> {
+    interface _WindowFrameNonExpBoundClause<C, R> extends Window.FrameNonExpBoundClause<Statement.Clause> {
 
         /**
          * {@inheritDoc}
          */
         @Override
-        WindowFrameBetweenAndClause<C, R> currentRow();
+        _WindowFrameBetweenAndClause<C, R> currentRow();
 
         /**
          * {@inheritDoc}
          */
         @Override
-        WindowFrameBetweenAndClause<C, R> unboundedPreceding();
+        _WindowFrameBetweenAndClause<C, R> unboundedPreceding();
 
         /**
          * {@inheritDoc}
          */
         @Override
-        WindowFrameBetweenAndClause<C, R> unboundedFollowing();
+        _WindowFrameBetweenAndClause<C, R> unboundedFollowing();
 
 
     }
@@ -904,19 +906,19 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface WindowFrameExpBoundClause<C, R> extends Window.FrameExpBoundClause<Statement.Clause> {
+    interface _WindowFrameExpBoundClause<C, R> extends Window.FrameExpBoundClause<Statement.Clause> {
 
         /**
          * {@inheritDoc}
          */
         @Override
-        WindowFrameBetweenAndClause<C, R> preceding();
+        _WindowFrameBetweenAndClause<C, R> preceding();
 
         /**
          * {@inheritDoc}
          */
         @Override
-        WindowFrameBetweenAndClause<C, R> following();
+        _WindowFrameBetweenAndClause<C, R> following();
 
     }
 
@@ -934,7 +936,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface WindowFrameEndNonExpBoundClause<R> extends Window.FrameNonExpBoundClause<Statement.Clause> {
+    interface _WindowFrameEndNonExpBoundClause<R> extends Window.FrameNonExpBoundClause<Statement.Clause> {
 
         /**
          * {@inheritDoc}
@@ -970,7 +972,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <R> {@link Statement.RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface WindowFrameEndExpBoundClause<R> extends Window.FrameExpBoundClause<Statement.Clause> {
+    interface _WindowFrameEndExpBoundClause<R> extends Window.FrameExpBoundClause<Statement.Clause> {
 
         /**
          * {@inheritDoc}

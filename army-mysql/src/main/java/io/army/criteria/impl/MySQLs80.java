@@ -18,49 +18,49 @@ public abstract class MySQLs80 extends MySQLSyntax {
     protected MySQLs80() {
     }
 
-    public static MySQL80Query.With80Spec<Void, Select> query() {
+    public static MySQL80Query._WithSpec<Void, Select> query() {
         return MySQL80SimpleQuery.simpleSelect(null);
     }
 
-    public static <C> MySQL80Query.With80Spec<C, Select> query(C criteria) {
+    public static <C> MySQL80Query._WithSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.simpleSelect(criteria);
     }
 
-    public static MySQL80Query.With80Spec<Void, SubQuery> subQuery() {
+    public static MySQL80Query._WithSpec<Void, SubQuery> subQuery() {
         return MySQL80SimpleQuery.subQuery(false, null);
     }
 
-    public static MySQL80Query.With80Spec<Void, SubQuery> lateralSubQuery() {
+    public static MySQL80Query._WithSpec<Void, SubQuery> lateralSubQuery() {
         return MySQL80SimpleQuery.subQuery(true, null);
     }
 
-    public static <C> MySQL80Query.With80Spec<C, SubQuery> subQuery(C criteria) {
+    public static <C> MySQL80Query._WithSpec<C, SubQuery> subQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.subQuery(false, criteria);
     }
 
-    public static <C> MySQL80Query.With80Spec<C, SubQuery> lateralSubQuery(C criteria) {
+    public static <C> MySQL80Query._WithSpec<C, SubQuery> lateralSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.subQuery(true, criteria);
     }
 
 
-    public static MySQL80Query.With80Spec<Void, ScalarExpression> scalarSubQuery() {
+    public static MySQL80Query._WithSpec<Void, ScalarExpression> scalarSubQuery() {
         return MySQL80SimpleQuery.scalarSubQuery(false, null);
     }
 
-    public static MySQL80Query.With80Spec<Void, ScalarExpression> lateralScalarSubQuery() {
+    public static MySQL80Query._WithSpec<Void, ScalarExpression> lateralScalarSubQuery() {
         return MySQL80SimpleQuery.scalarSubQuery(true, null);
     }
 
 
-    public static <C> MySQL80Query.With80Spec<C, ScalarExpression> scalarSubQuery(C criteria) {
+    public static <C> MySQL80Query._WithSpec<C, ScalarExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.scalarSubQuery(false, criteria);
     }
 
-    public static <C> MySQL80Query.With80Spec<C, ScalarExpression> lateralScalarSubQuery(C criteria) {
+    public static <C> MySQL80Query._WithSpec<C, ScalarExpression> lateralScalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.scalarSubQuery(true, criteria);
     }
@@ -144,23 +144,23 @@ public abstract class MySQLs80 extends MySQLSyntax {
 
     static final class MySQLWindow<C, R> extends SimpleWindow<
             C,
-            MySQL80Query.WindowLeftBracketClause<C, R>,      //AR
-            MySQL80Query.WindowPartitionBySpec<C, R>,        //LR
-            MySQL80Query.WindowOrderBySpec<C, R>,            //PR,
-            MySQL80Query.WindowFrameUnitsSpec<C, R>,         //OR
-            MySQL80Query.WindowFrameBetweenClause<C, R>,     //FR
-            MySQL80Query.WindowFrameEndNonExpBoundClause<R>, //FC
-            MySQL80Query.WindowFrameNonExpBoundClause<C, R>, //BR
-            MySQL80Query.WindowFrameExpBoundClause<C, R>,    //BC
-            MySQL80Query.WindowFrameEndExpBoundClause<R>,    //NC
+            MySQL80Query._WindowLeftBracketClause<C, R>,      //AR
+            MySQL80Query._WindowPartitionBySpec<C, R>,        //LR
+            MySQL80Query._WindowOrderBySpec<C, R>,            //PR,
+            MySQL80Query._WindowFrameUnitsSpec<C, R>,         //OR
+            MySQL80Query._WindowFrameBetweenClause<C, R>,     //FR
+            MySQL80Query._WindowFrameEndNonExpBoundClause<R>, //FC
+            MySQL80Query._WindowFrameNonExpBoundClause<C, R>, //BR
+            MySQL80Query._WindowFrameExpBoundClause<C, R>,    //BC
+            MySQL80Query._WindowFrameEndExpBoundClause<R>,    //NC
             Statement.Clause,                                //MA
             Statement.Clause,                                //MB
             R>                                               //R
-            implements MySQL80Query.WindowAsClause<C, R>, MySQL80Query.WindowLeftBracketClause<C, R>
-            , MySQL80Query.WindowPartitionBySpec<C, R>, MySQL80Query.WindowFrameBetweenClause<C, R>,
-            MySQL80Query.WindowFrameEndNonExpBoundClause<R>, MySQL80Query.WindowFrameNonExpBoundClause<C, R>
-            , MySQL80Query.WindowFrameExpBoundClause<C, R>, MySQL80Query.WindowFrameEndExpBoundClause<R>
-            , MySQL80Query.WindowFrameBetweenAndClause<C, R> {
+            implements MySQL80Query._WindowAsClause<C, R>, MySQL80Query._WindowLeftBracketClause<C, R>
+            , MySQL80Query._WindowPartitionBySpec<C, R>, MySQL80Query._WindowFrameBetweenClause<C, R>,
+            MySQL80Query._WindowFrameEndNonExpBoundClause<R>, MySQL80Query._WindowFrameNonExpBoundClause<C, R>
+            , MySQL80Query._WindowFrameExpBoundClause<C, R>, MySQL80Query._WindowFrameEndExpBoundClause<R>
+            , MySQL80Query._WindowFrameBetweenAndClause<C, R> {
 
         MySQLWindow(String windowName, CriteriaContext criteriaContext) {
             super(windowName, criteriaContext);

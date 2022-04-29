@@ -62,7 +62,7 @@ public interface MySQL57Query extends MySQLQuery {
      */
     interface From57Spec<C, Q extends Query>
             extends MySQLQuery.MySQLFromClause<C, IndexHintJoin57Spec<C, Q>, Join57Spec<C, Q>, PartitionJoin57Clause<C, Q>, LestBracket57Clause<C, Q>>
-            , Union57Spec<C, Q>, MySQLQuery.IntoSpec<C, Q> {
+            , Union57Spec<C, Q>, _IntoSpec<C, Q> {
 
     }
 
@@ -398,7 +398,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface WithRollup57Spec<C, Q extends Query> extends MySQLQuery.WithRollupClause<C, Having57Spec<C, Q>>
+    interface WithRollup57Spec<C, Q extends Query> extends _WithRollupClause<C, Having57Spec<C, Q>>
             , Having57Spec<C, Q> {
 
     }
@@ -493,7 +493,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @since 1.0
      */
     interface Lock57Spec<C, Q extends Query>
-            extends MySQLQuery.LockClause<C, Union57Spec<C, Q>>, Union57Spec<C, Q>, MySQLQuery.IntoSpec<C, Q> {
+            extends MySQLQuery.LockClause<C, Union57Spec<C, Q>>, Union57Spec<C, Q>, _IntoSpec<C, Q> {
 
     }
 

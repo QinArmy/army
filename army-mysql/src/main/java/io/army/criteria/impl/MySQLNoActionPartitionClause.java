@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery.PartitionClause<C, PR> {
 
@@ -20,10 +21,6 @@ abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery.Partiti
         return (PR) this;
     }
 
-    @Override
-    public final PR partition(List<String> partitionNameList) {
-        return (PR) this;
-    }
 
     @Override
     public final PR partition(Supplier<List<String>> supplier) {

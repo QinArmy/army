@@ -25,7 +25,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
         extends WithCteSimpleQuery<C, Q, WE, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
         implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, JP, FT, FS, JE, FP>
         , MySQLQuery.MySQLFromClause<C, FT, FS, FP, JE>, MySQLQuery.IndexHintClause<C, IR, FT>
-        , MySQLQuery.IndexPurposeClause<C, FT>, MySQLQuery.IntoSpec<C, Q> {
+        , MySQLQuery.IndexPurposeClause<C, FT>, MySQLQuery._IntoSpec<C, Q> {
 
     private MySQLIndexHint.Command indexHintCommand;
 

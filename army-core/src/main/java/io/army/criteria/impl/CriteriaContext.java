@@ -46,6 +46,10 @@ interface CriteriaContext {
         throw new UnsupportedOperationException();
     }
 
+    default boolean containTableAlias(String tableAlias) {
+        throw new UnsupportedOperationException();
+    }
+
     @Nullable
     <C> C criteria();
 
