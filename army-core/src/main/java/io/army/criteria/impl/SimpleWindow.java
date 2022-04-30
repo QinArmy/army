@@ -664,8 +664,8 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             Window._SimpleFrameNonExpBoundClause<C, R>, //BR
             Window._SimpleFrameExpBoundClause<C, R>,    //BC
             Window._SimpleFrameEndExpBoundClause<R>,    //NC
-            Statement.Clause,                                //MA
-            Statement.Clause,                                //MB
+            Statement._Clause,                                //MA
+            Statement._Clause,                                //MB
             R>                                               //R
             implements Window._SimpleAsClause<C, R>, Window._SimpleLeftBracketClause<C, R>
             , Window._SimplePartitionBySpec<C, R>, Window._SimpleFrameBetweenClause<C, R>,

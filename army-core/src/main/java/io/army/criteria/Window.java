@@ -413,7 +413,7 @@ public interface Window {
      * @since 1.0
      */
     interface _SimpleFrameBetweenAndClause<C, R>
-            extends Statement.Clause
+            extends Statement._Clause
             , _FrameBetweenAndClause<C, _SimpleFrameEndNonExpBoundClause<R>, _SimpleFrameEndExpBoundClause<R>> {
 
     }
@@ -432,7 +432,7 @@ public interface Window {
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameNonExpBoundClause<C, R> extends _FrameNonExpBoundClause<Statement.Clause> {
+    interface _SimpleFrameNonExpBoundClause<C, R> extends _FrameNonExpBoundClause<Statement._Clause> {
 
         /**
          * {@inheritDoc}
@@ -469,7 +469,7 @@ public interface Window {
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameExpBoundClause<C, R> extends _FrameExpBoundClause<Statement.Clause> {
+    interface _SimpleFrameExpBoundClause<C, R> extends _FrameExpBoundClause<Statement._Clause> {
 
         /**
          * {@inheritDoc}
@@ -499,7 +499,7 @@ public interface Window {
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameEndNonExpBoundClause<R> extends _FrameNonExpBoundClause<Statement.Clause> {
+    interface _SimpleFrameEndNonExpBoundClause<R> extends _FrameNonExpBoundClause<Statement._Clause> {
 
         /**
          * {@inheritDoc}
@@ -535,7 +535,7 @@ public interface Window {
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
-    interface _SimpleFrameEndExpBoundClause<R> extends _FrameExpBoundClause<Statement.Clause> {
+    interface _SimpleFrameEndExpBoundClause<R> extends _FrameExpBoundClause<Statement._Clause> {
 
         /**
          * {@inheritDoc}

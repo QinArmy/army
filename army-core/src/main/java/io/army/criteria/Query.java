@@ -34,7 +34,7 @@ public interface Query extends RowSet {
     /*################################## blow select clause  interfaces ##################################*/
 
 
-    interface SelectClause<C, SR> {
+    interface SelectClause<C, W extends SQLWords, SR> {
 
         SR select(SelectItem selectItem);
 
@@ -47,6 +47,16 @@ public interface Query extends RowSet {
         SR select(Consumer<List<SelectItem>> consumer);
 
         <S extends SelectItem> SR select(Supplier<List<S>> supplier);
+
+        SR select(@Nullable W modifier, SelectItem selectItem);
+
+        SR select(@Nullable W modifier, SelectItem selectItem1, SelectItem selectItem2);
+
+        SR select(@Nullable W modifier, Consumer<List<SelectItem>> consumer);
+
+        <S extends SelectItem> SR select(@Nullable W modifier, Function<C, List<S>> function);
+
+        <S extends SelectItem> SR select(@Nullable W modifier, Supplier<List<S>> supplier);
 
     }
 

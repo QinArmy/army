@@ -12,9 +12,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class WithCteMultiDelete<C, WE, JT, JS, JP, WR, WA> extends MultiDelete<C, JT, JS, JP, WR, WA>
-        implements DialectStatement.WithCteClause<C, WE> {
-
+abstract class WithCteMultiDelete<C, WE, JT, JS, JP, JC, JD, JE, JF, WR, WA>
+        extends DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
+        implements DialectStatement._WithCteClause<C, WE> {
 
     WithCteMultiDelete(CriteriaContext criteriaContext) {
         super(criteriaContext);

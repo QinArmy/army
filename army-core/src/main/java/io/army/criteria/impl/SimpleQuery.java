@@ -20,13 +20,19 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
+/**
+ * <p>
+ * This class is base class of all simple SELECT query.
+ * </p>
+ *
+ * @since 1.0
+ */
 @SuppressWarnings("unchecked")
-abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends PartRowSet<C, Q, UR, OR, LR, SP> implements StandardStatement.SelectClauseForStandard<C, SR>
-        , DialectStatement.DialectJoinClause<C, JT, JS, JP, FT, FS, JE, FP>, Statement.QueryWhereClause<C, WR, AR>
-        , Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>, Query._HavingClause<C, HR>, _Query
-        , DialectStatement.DialectFromClause<C, FT, FS, FP, JE>, DialectStatement.DialectLeftBracketClause<C, FT, FS, FP>
-        , Statement._RightBracketClause<FS>, DialectStatement.DialectSelectClause<C, SR>, Query._QuerySpec<Q> {
+abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends PartRowSet<C, Q, JT, JS, JP, FT, FS, JE, FP, UR, OR, LR, SP>
+        implements Statement.QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
+        , Query._HavingClause<C, HR>, _Query, DialectStatement.DialectFromClause<C, FT, FS, FP, JE>
+        , DialectStatement.DialectSelectClause<C, W, SR>, Query._QuerySpec<Q> {
 
 
     private List<Hint> hintList;
@@ -56,90 +62,25 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     /*################################## blow io.army.criteria.DialectStatement.DialectSelectClause method ##################################*/
 
     @Override
-    public final SR select(SQLWords modifier, SelectItem selectItem) {
-        return this.innerSafeSelect(modifier, Collections.singletonList(selectItem));
-    }
-
-    @Override
-    public final SR select(SQLWords modifier, SelectItem selectItem1, SelectItem selectItem2) {
-        return this.innerSafeSelect(modifier, ArrayUtils.asUnmodifiableList(selectItem1, selectItem2));
-    }
-
-    @Override
-    public final SR select(SQLWords modifier, Consumer<List<SelectItem>> consumer) {
-        final List<SelectItem> selectItemList = new ArrayList<>();
-        consumer.accept(selectItemList);
-        return this.innerSafeSelect(modifier, selectItemList);
-    }
-
-    @Override
-    public final <S extends SelectItem, M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Function<C, List<S>> function) {
+    public final <S extends SelectItem> SR select(Supplier<List<Hint>> hints, List<W> modifiers, Function<C, List<S>> function) {
         return this.innerNonSafeSelect(hints.get(), modifiers, function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectItem, M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Supplier<List<S>> supplier) {
+    public final <S extends SelectItem> SR select(Supplier<List<Hint>> hints, List<W> modifiers, Supplier<List<S>> supplier) {
         return this.innerNonSafeSelect(hints.get(), modifiers, supplier.get());
     }
 
     @Override
-    public final <M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Consumer<List<SelectItem>> consumer) {
-        List<SelectItem> selectItemList = new ArrayList<>();
-        consumer.accept(selectItemList);
-
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
-        selectItemList = Collections.unmodifiableList(selectItemList);
-
-        this.selectItemList = selectItemList;
-        this.criteriaContext.selectList(selectItemList); //notify context
-        return (SR) this;
-    }
-
-
-    @Override
-    public final <S extends SelectItem, M extends SQLWords> SR select(List<M> modifiers, Function<C, List<S>> function) {
+    public final <S extends SelectItem> SR select(List<W> modifiers, Function<C, List<S>> function) {
         return this.innerNonSafeSelect(null, modifiers, function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectItem, M extends SQLWords> SR select(List<M> modifiers, Supplier<List<S>> supplier) {
+    public final <S extends SelectItem> SR select(List<W> modifiers, Supplier<List<S>> supplier) {
         return this.innerNonSafeSelect(null, modifiers, supplier.get());
     }
 
-    @Override
-    public final <M extends SQLWords> SR select(List<M> modifiers, Consumer<List<SelectItem>> consumer) {
-        return this.select(Collections::emptyList, modifiers, consumer);
-    }
-
-    /*################################## blow io.army.criteria.StandardStatement.SelectClauseForStandard method ##################################*/
-
-    @Override
-    public final SR select(@Nullable Distinct modifier, SelectItem selectItem) {
-        return this.innerSafeSelect(modifier, Collections.singletonList(selectItem));
-    }
-
-    @Override
-    public final SR select(@Nullable Distinct modifier, SelectItem selectItem1, SelectItem selectItem2) {
-        return this.innerSafeSelect(modifier, ArrayUtils.asUnmodifiableList(selectItem1, selectItem2));
-    }
-
-    @Override
-    public final <S extends SelectItem> SR select(@Nullable Distinct modifier, Function<C, List<S>> function) {
-        return this.innerNonSafeSelect(modifier, function.apply(this.criteria));
-    }
-
-    @Override
-    public final <S extends SelectItem> SR select(@Nullable Distinct modifier, Supplier<List<S>> supplier) {
-        return this.innerNonSafeSelect(modifier, supplier.get());
-    }
-
-    @Override
-    public final SR select(@Nullable Distinct modifier, Consumer<List<SelectItem>> consumer) {
-        final List<SelectItem> selectItemList = new ArrayList<>();
-        consumer.accept(selectItemList);
-        return this.innerSafeSelect(modifier, Collections.unmodifiableList(selectItemList));
-    }
 
     /*################################## blow io.army.criteria.Query.SelectClause method ##################################*/
 
@@ -175,7 +116,32 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
         return this.innerNonSafeSelect(null, null, supplier.get());
     }
 
+    @Override
+    public final SR select(@Nullable W modifier, SelectItem selectItem) {
+        return this.innerSafeSelect(modifier, Collections.singletonList(selectItem));
+    }
 
+    @Override
+    public final SR select(@Nullable W modifier, SelectItem selectItem1, SelectItem selectItem2) {
+        return this.innerSafeSelect(modifier, ArrayUtils.asUnmodifiableList(selectItem1, selectItem2));
+    }
+
+    @Override
+    public final SR select(@Nullable W modifier, Consumer<List<SelectItem>> consumer) {
+        final List<SelectItem> selectItemList = new ArrayList<>();
+        consumer.accept(selectItemList);
+        return this.innerSafeSelect(modifier, selectItemList);
+    }
+
+    @Override
+    public final <S extends SelectItem> SR select(@Nullable W modifier, Function<C, List<S>> function) {
+        return this.innerNonSafeSelect(modifier, function.apply(this.criteria));
+    }
+
+    @Override
+    public final <S extends SelectItem> SR select(@Nullable W modifier, Supplier<List<S>> supplier) {
+        return this.innerNonSafeSelect(modifier, supplier.get());
+    }
 
     /*################################## blow FromSpec method ##################################*/
 
@@ -210,254 +176,6 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
         return (FS) this;
     }
 
-
-    /*################################## blow JoinSpec method ##################################*/
-
-    @Override
-    public final JT leftJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.LEFT_JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JP leftJoin(TableMeta<?> table) {
-        return this.createNextClauseWithOnClause(_JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = this.createOnBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final <T extends TableItem> JS leftJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JE leftJoin() {
-        this.criteriaContext.onJoinType(_JoinType.LEFT_JOIN);
-        return (JE) this;
-    }
-
-    @Override
-    public final JE join() {
-        this.criteriaContext.onJoinType(_JoinType.JOIN);
-        return (JE) this;
-    }
-
-    @Override
-    public final JT join(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-
-    @Override
-    public final JP join(TableMeta<?> table) {
-        return this.createNextClauseWithOnClause(_JoinType.JOIN, table);
-    }
-
-    @Override
-    public final <T extends TableItem> JS join(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = this.createOnBlock(_JoinType.JOIN, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final <T extends TableItem> JS join(Function<C, T> function, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JE rightJoin() {
-        this.criteriaContext.onJoinType(_JoinType.RIGHT_JOIN);
-        return (JE) this;
-    }
-
-    @Override
-    public final JT rightJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.RIGHT_JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JP rightJoin(TableMeta<?> table) {
-        return this.createNextClauseWithOnClause(_JoinType.RIGHT_JOIN, table);
-    }
-
-    @Override
-    public final <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final <T extends TableItem> JS rightJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JE crossJoin() {
-        this.criteriaContext.onJoinType(_JoinType.CROSS_JOIN);
-        return (JE) this;
-    }
-
-    @Override
-    public final FT crossJoin(TableMeta<?> table, String tableAlias) {
-        final _TableBlock block;
-        block = this.createTableBlockWithoutOnClause(_JoinType.CROSS_JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock(block);
-        return (FT) this;
-    }
-
-    @Override
-    public final FP crossJoin(TableMeta<?> table) {
-        return this.createNextClauseWithoutOnClause(_JoinType.CROSS_JOIN, table);
-    }
-
-    @Override
-    public final <T extends TableItem> FS crossJoin(Function<C, T> function, String alias) {
-        this.criteriaContext.onAddBlock(TableBlock.crossBlock(function.apply(this.criteria), alias));
-        return (FS) this;
-    }
-
-    @Override
-    public final <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onAddBlock(TableBlock.crossBlock(supplier.get(), alias));
-        return (FS) this;
-    }
-
-    @Override
-    public final JE fullJoin() {
-        this.criteriaContext.onJoinType(_JoinType.FULL_JOIN);
-        return (JE) this;
-    }
-
-    @Override
-    public final JT fullJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = createTableBlock(_JoinType.FULL_JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JP fullJoin(TableMeta<?> table) {
-        return this.createNextClauseWithOnClause(_JoinType.FULL_JOIN, table);
-    }
-
-    @Override
-    public final <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final <T extends TableItem> JS fullJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = createOnBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JE straightJoin() {
-        this.criteriaContext.onJoinType(_JoinType.STRAIGHT_JOIN);
-        return (JE) this;
-    }
-
-    @Override
-    public final JT straightJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JP straightJoin(TableMeta<?> table) {
-        return this.createNextClauseWithOnClause(_JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
-    public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final DialectStatement.DialectLeftBracketClause<C, FT, FS, FP> leftBracket() {
-        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
-        return this;
-    }
-
-    @Override
-    public final FP leftBracket(TableMeta<?> table) {
-        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
-        return (FP) this;
-    }
-
-    @Override
-    public final FT leftBracket(final TableMeta<?> table, final String tableAlias) {
-        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
-        this.criteriaContext.onBlockWithoutOnClause(this.createTableBlockWithoutOnClause(_JoinType.NONE, table, tableAlias));
-        return (FT) this;
-    }
-
-    @Override
-    public final <T extends TableItem> FS leftBracket(Function<C, T> function, String alias) {
-        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
-        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(function.apply(this.criteria), alias));
-        return (FS) this;
-    }
-
-    @Override
-    public final <T extends TableItem> FS leftBracket(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onBracketBlock(CriteriaUtils.leftBracketBlock());
-        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(supplier.get(), alias));
-        return (FS) this;
-    }
-
-    @Override
-    public final FS rightBracket() {
-        this.criteriaContext.onBracketBlock(CriteriaUtils.rightBracketBlock());
-        return (FS) this;
-    }
 
     @Override
     public final WR where(Supplier<List<IPredicate>> supplier) {
@@ -849,19 +567,6 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     abstract Q onAsQuery(boolean fromAsQueryMethod);
 
     abstract void onClear();
-
-    abstract _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias);
-
-    abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
-
-    abstract JS createOnBlock(_JoinType joinType, TableItem tableItem, String alias);
-
-    abstract FP createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table);
-
-
-    JP createNextClauseWithOnClause(_JoinType joinType, TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
-    }
 
 
     private <S extends SelectItem> SR innerNonSafeSelect(@Nullable List<Hint> hintList

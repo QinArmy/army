@@ -5,9 +5,9 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, WE, WR, WA>
-        implements Statement._OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLQuery._PartitionClause<C, PR>
+        implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>, MySQLQuery._PartitionClause<C, PR>
         , _MySQLSingleDelete, MySQLDelete.SingleDeleteClause<C, DR>, MySQLDelete.SingleDeleteFromClause<DR> {
 
     static <C> MySQLDelete.SingleDeleteSpec<C> simple57(@Nullable C criteria) {
@@ -57,7 +57,7 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
 
     private List<Hint> hintList;
 
-    private List<MySQLModifier> modifierList;
+    private List<MySQLWords> modifierList;
 
     private SingleTableMeta<? extends IDomain> table;
 
@@ -75,14 +75,14 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
 
 
     @Override
-    public final MySQLDelete.SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
+    public final MySQLDelete.SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         return this;
     }
 
     @Override
-    public final MySQLDelete.SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers) {
+    public final MySQLDelete.SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = _CollectionUtils.asUnmodifiableList(hints.apply(this.criteria));
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         return this;
@@ -305,7 +305,7 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
-    public final List<MySQLModifier> modifierList() {
+    public final List<MySQLWords> modifierList() {
         return this.modifierList;
     }
 

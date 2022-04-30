@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
+import io.army.criteria.StandardStatement;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.dialect.Dialect;
@@ -18,11 +19,12 @@ import java.util.function.Supplier;
  * This class representing standard domain delete statement.
  * </p>
  *
- * @param <C> criteria java type used to crate dynamic delete and sub query
+ * @param <C> criteria object java type
+ * @since 1.0
  */
 @SuppressWarnings("unchecked")
 abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
-        implements Delete.StandardDeleteClause<DR> {
+        implements Delete.StandardDeleteClause<DR>, StandardStatement {
 
     static <C> StandardDeleteSpec<C> simple(@Nullable C criteria) {
         return new SimpleDelete<>(criteria);
@@ -32,14 +34,12 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
         return new BatchDelete<>(criteria);
     }
 
-
     private TableMeta<?> table;
 
     private String tableAlias;
 
     private StandardDelete(@Nullable C criteria) {
         super(CriteriaContexts.singleDmlContext(criteria));
-        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override
@@ -57,7 +57,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
         if (this.table == null || this.tableAlias == null) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (this instanceof BatchDelete && ((BatchDelete<C>) this).wrapperList == null) {
+        if (this instanceof BatchDelete && ((BatchDelete<C>) this).paramList == null) {
             throw _Exceptions.castCriteriaApi();
         }
     }
@@ -66,13 +66,13 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     void onClear() {
         this.tableAlias = null;
         if (this instanceof BatchDelete) {
-            ((BatchDelete<C>) this).wrapperList = null;
+            ((BatchDelete<C>) this).paramList = null;
         }
     }
 
     @Override
     public final TableMeta<?> table() {
-        prepared();
+        this.prepared();
         return this.table;
     }
 
@@ -116,38 +116,39 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
             implements Delete.StandardBatchWhereAndSpec<C>, Delete.StandardBatchWhereSpec<C>
             , Statement.BatchParamClause<C, Delete.DeleteSpec>, Delete.StandardBatchDeleteSpec<C>, _BatchDml {
 
-        private List<?> wrapperList;
+        private List<?> paramList;
 
         private BatchDelete(@Nullable C criteria) {
             super(criteria);
         }
 
-
         @Override
-        public DeleteSpec paramList(List<?> beanList) {
-            this.wrapperList = CriteriaUtils.paramList(beanList);
+        public DeleteSpec paramList(List<?> paramList) {
+            this.paramList = CriteriaUtils.paramList(paramList);
             return this;
         }
 
         @Override
         public DeleteSpec paramList(Supplier<List<?>> supplier) {
-            return this.paramList(supplier.get());
+            this.paramList = CriteriaUtils.paramList(supplier.get());
+            return this;
         }
 
         @Override
         public DeleteSpec paramList(Function<C, List<?>> function) {
-            return this.paramList(function.apply(this.criteria));
+            this.paramList = CriteriaUtils.paramList(function.apply(this.criteria));
+            return this;
         }
 
         @Override
-        public DeleteSpec paramList(Function<String, Object> function, String keyName) {
-            this.wrapperList = CriteriaUtils.paramList(function, keyName);
+        public DeleteSpec paramList(Function<String, ?> function, String keyName) {
+            this.paramList = CriteriaUtils.paramList((List<?>) function.apply(keyName));
             return this;
         }
 
         @Override
         public List<?> paramList() {
-            return this.wrapperList;
+            return this.paramList;
         }
 
     }// BatchDelete

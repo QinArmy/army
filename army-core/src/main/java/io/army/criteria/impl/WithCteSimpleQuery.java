@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Cte;
-import io.army.criteria.DialectStatement;
-import io.army.criteria.Query;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -14,15 +11,15 @@ import java.util.function.Supplier;
 
 /**
  * <p>
- * This class is base class of the implementation {@link io.army.criteria.DialectStatement.WithCteClause}
+ * This class is base class of the implementation {@link DialectStatement._WithCteClause}
  * </p>
  *
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WithCteSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends SimpleQuery<C, Q, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
-        implements DialectStatement.WithCteClause<C, WE> {
+abstract class WithCteSimpleQuery<C, Q extends Query, WE, W extends SQLWords, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends SimpleQuery<C, Q, W, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
+        implements DialectStatement._WithCteClause<C, WE> {
 
 
     WithCteSimpleQuery(CriteriaContext criteriaContext) {

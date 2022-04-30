@@ -6,9 +6,9 @@ import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -28,8 +28,8 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends WithCteSingleUpdate<C, WE, WR, WA, SR>
-        implements Statement._OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLUpdate, _MySQLSingleUpdate
-        , MySQLUpdate.SingleUpdateClause<UR, UP>, MySQLQuery._PartitionClause<C, PR>
+        implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>, MySQLUpdate, _MySQLSingleUpdate
+        , MySQLUpdate._SingleUpdateClause<UR, UP>, MySQLQuery._PartitionClause<C, PR>
         , MySQLQuery._IndexHintClause<C, IR, UR>, MySQLQuery._IndexOrderByClause<C, UR>
         , Statement._AsClause<UR> {
 
@@ -56,7 +56,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
 
     private List<_MySQLHint> hintList;
 
-    private Set<MySQLModifier> modifierSet;
+    private Set<MySQLWords> modifierSet;
 
     private TableMeta<?> table;
 
@@ -78,7 +78,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+    public final UP update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , TableMeta<?> table) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
@@ -90,7 +90,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final UR update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+    public final UR update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , TableMeta<?> table, String tableAlias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
@@ -552,7 +552,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
     }
 
     @Override
-    public final Set<MySQLModifier> modifierSet() {
+    public final Set<MySQLWords> modifierSet() {
         return this.modifierSet;
     }
 

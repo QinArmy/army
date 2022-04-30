@@ -22,7 +22,7 @@ public interface Delete extends NarrowDmlStatement {
     }
 
 
-    interface StandardWhereSpec<C> extends Statement.WhereClause<C, Delete.DeleteSpec, Delete.StandardWhereAndSpec<C>> {
+    interface StandardWhereSpec<C> extends _WhereClause<C, DeleteSpec, StandardWhereAndSpec<C>> {
 
     }
 
@@ -42,7 +42,7 @@ public interface Delete extends NarrowDmlStatement {
 
 
     interface StandardBatchWhereSpec<C>
-            extends Statement.WhereClause<C, Statement.BatchParamClause<C, Delete.DeleteSpec>, Delete.StandardBatchWhereAndSpec<C>> {
+            extends _WhereClause<C, BatchParamClause<C, DeleteSpec>, StandardBatchWhereAndSpec<C>> {
 
     }
 

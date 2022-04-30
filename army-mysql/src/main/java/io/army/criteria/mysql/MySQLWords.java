@@ -2,7 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.SQLWords;
 
-public enum MySQLModifier implements SQLWords {
+public enum MySQLWords implements SQLWords {
 
 
     HIGH_PRIORITY(" HIGH PRIORITY"),
@@ -21,7 +21,7 @@ public enum MySQLModifier implements SQLWords {
 
     private final String modifier;
 
-    MySQLModifier(String modifier) {
+    MySQLWords(String modifier) {
         this.modifier = modifier;
     }
 
@@ -33,7 +33,7 @@ public enum MySQLModifier implements SQLWords {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", MySQLModifier.class.getName(), this.name());
+        return String.format("%s.%s", MySQLWords.class.getName(), this.name());
     }
 
 

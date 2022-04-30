@@ -18,31 +18,12 @@ import java.util.function.Supplier;
 public interface MySQLUpdate extends Update {
 
 
-    interface LimitClause<C, LR> {
+    interface _SingleUpdateClause<UR, UP> {
 
-        LR limit(long rowCount);
-
-        LR limit(Supplier<Number> supplier);
-
-        LR limit(Function<C, Long> function);
-
-        LR limit(Function<String, ?> function, String keyName);
-
-        LR ifLimit(Supplier<Number> supplier);
-
-        LR ifLimit(Function<C, Long> function);
-
-        LR ifLimit(Function<String, ?> function, String keyName);
-
-    }
-
-
-    interface SingleUpdateClause<UR, UP> {
-
-        UP update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+        UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table);
 
-        UR update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+        UR update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table, String tableAlias);
 
         UP update(TableMeta<?> table);
@@ -52,7 +33,7 @@ public interface MySQLUpdate extends Update {
     }
 
 
-    interface SingleWithAndUpdateSpec<C> extends DialectStatement.WithCteClause<C, SingleUpdateSpec<C>>
+    interface SingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, SingleUpdateSpec<C>>
             , MySQLUpdate.SingleUpdateSpec<C> {
 
     }
@@ -63,7 +44,7 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL single-table update syntax update clause.
      * </p>
      */
-    interface SingleUpdateSpec<C> extends MySQLUpdate.SingleUpdateClause<MySQLUpdate.SingleIndexHintSpec<C>, MySQLUpdate.SinglePartitionSpec<C>> {
+    interface SingleUpdateSpec<C> extends _SingleUpdateClause<SingleIndexHintSpec<C>, SinglePartitionSpec<C>> {
 
 
     }
@@ -101,7 +82,7 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL single-table update syntax set clause.
      * </p>
      */
-    interface SingleSetSpec<C> extends SimpleSetClause<C, SingleWhereSpec<C>> {
+    interface SingleSetSpec<C> extends _SimpleSetClause<C, SingleWhereSpec<C>> {
 
     }
 
@@ -112,7 +93,7 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface SingleWhereSpec<C> extends MySQLUpdate.SingleSetSpec<C>
-            , Statement.WhereClause<C, MySQLUpdate.OrderBySpec<C>, MySQLUpdate.SingleWhereAndSpec<C>> {
+            , _WhereClause<C, OrderBySpec<C>, SingleWhereAndSpec<C>> {
 
     }
 
@@ -141,13 +122,13 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL single-table update syntax limit clause.
      * </p>
      */
-    interface LimitSpec<C> extends LimitClause<C, Update.UpdateSpec>, Update.UpdateSpec {
+    interface LimitSpec<C> extends _RowCountLimitClause<C, UpdateSpec>, Update.UpdateSpec {
 
     }
 
     /*################################## blow batch single-table update spec ##################################*/
 
-    interface BatchSingleWithAndUpdateSpec<C> extends DialectStatement.WithCteClause<C, BatchSingleUpdateSpec<C>>
+    interface BatchSingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, BatchSingleUpdateSpec<C>>
             , MySQLUpdate.BatchSingleUpdateSpec<C> {
 
     }
@@ -158,7 +139,7 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface BatchSingleUpdateSpec<C>
-            extends MySQLUpdate.SingleUpdateClause<MySQLUpdate.BatchSingleIndexHintSpec<C>, MySQLUpdate.BatchSinglePartitionSpec<C>> {
+            extends _SingleUpdateClause<BatchSingleIndexHintSpec<C>, BatchSinglePartitionSpec<C>> {
 
     }
 
@@ -194,7 +175,7 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL batch single-table update syntax set clause.
      * </p>
      */
-    interface BatchSingleSetSpec<C> extends Update.BatchSetClause<C, MySQLUpdate.BatchSingleWhereSpec<C>> {
+    interface BatchSingleSetSpec<C> extends _BatchSetClause<C, BatchSingleWhereSpec<C>> {
 
     }
 
@@ -204,7 +185,7 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface BatchSingleWhereSpec<C> extends MySQLUpdate.BatchSingleSetSpec<C>
-            , Statement.WhereClause<C, MySQLUpdate.BatchOrderBySpec<C>, MySQLUpdate.BatchSingleWhereAndSpec<C>> {
+            , _WhereClause<C, BatchOrderBySpec<C>, BatchSingleWhereAndSpec<C>> {
 
     }
 
@@ -233,7 +214,7 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL batch single-table update syntax limit clause.
      * </p>
      */
-    interface BatchLimitSpec<C> extends MySQLUpdate.LimitClause<C, Statement.BatchParamClause<C, UpdateSpec>>
+    interface BatchLimitSpec<C> extends _RowCountLimitClause<C, BatchParamClause<C, UpdateSpec>>
             , Statement.BatchParamClause<C, UpdateSpec> {
 
     }
@@ -247,29 +228,29 @@ public interface MySQLUpdate extends Update {
 
     interface MultiUpdateClause<C, UP, UT, US> {
 
-        UP update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+        UP update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
                 , TableMeta<? extends IDomain> table);
 
-        UT update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+        UT update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
                 , TableMeta<? extends IDomain> table, String tableAlias);
 
         UP update(TableMeta<? extends IDomain> table);
 
         UT update(TableMeta<? extends IDomain> table, String tableAlias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
                 , Supplier<T> supplier, String alias);
 
         <T extends TableItem> US update(Supplier<T> tablePart, String alias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
                 , Function<C, T> tablePart, String alias);
 
         <T extends TableItem> US update(Function<C, T> tablePart, String alias);
     }
 
 
-    interface WithAndMultiUpdateSpec<C> extends DialectStatement.WithCteClause<C, MultiUpdateSpec<C>>
+    interface WithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, MultiUpdateSpec<C>>
             , MySQLUpdate.MultiUpdateSpec<C> {
 
     }
@@ -371,7 +352,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL multi-table update syntax set clause.
      * </p>
      */
-    interface MultiSetSpec<C> extends SimpleSetClause<C, MultiWhereSpec<C>> {
+    interface MultiSetSpec<C> extends _SimpleSetClause<C, MultiWhereSpec<C>> {
 
     }
 
@@ -380,7 +361,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL multi-table update syntax where clause.
      * </p>
      */
-    interface MultiWhereSpec<C> extends Statement.WhereClause<C, Update.UpdateSpec, MySQLUpdate.MultiWhereAndSpec<C>>
+    interface MultiWhereSpec<C> extends _WhereClause<C, UpdateSpec, MultiWhereAndSpec<C>>
             , MySQLUpdate.MultiSetSpec<C> {
 
 
@@ -399,7 +380,7 @@ public interface MySQLUpdate extends Update {
 
     /*################################## blow batch multi-table update spec ##################################*/
 
-    interface BatchWithAndMultiUpdateSpec<C> extends DialectStatement.WithCteClause<C, BatchMultiUpdateSpec<C>>
+    interface BatchWithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, BatchMultiUpdateSpec<C>>
             , MySQLUpdate.BatchMultiUpdateSpec<C> {
 
     }
@@ -499,7 +480,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL batch multi-table update syntax set clause.
      * </p>
      */
-    interface BatchMultiSetSpec<C> extends Update.BatchSetClause<C, MySQLUpdate.BatchMultiWhereSpec<C>> {
+    interface BatchMultiSetSpec<C> extends _BatchSetClause<C, BatchMultiWhereSpec<C>> {
 
     }
 
@@ -509,7 +490,7 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface BatchMultiWhereSpec<C>
-            extends Statement.WhereClause<C, Statement.BatchParamClause<C, Update.UpdateSpec>, MySQLUpdate.BatchMultiWhereAndSpec<C>>
+            extends _WhereClause<C, BatchParamClause<C, UpdateSpec>, BatchMultiWhereAndSpec<C>>
             , MySQLUpdate.BatchMultiSetSpec<C> {
 
 

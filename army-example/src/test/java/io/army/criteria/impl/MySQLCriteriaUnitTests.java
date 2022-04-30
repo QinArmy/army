@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Hint;
 import io.army.criteria.TableField;
 import io.army.criteria.Update;
-import io.army.criteria.mysql.MySQLModifier;
+import io.army.criteria.mysql.MySQLWords;
 import io.army.example.bank.domain.user.ChinaCity_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
@@ -51,7 +51,7 @@ public class MySQLCriteriaUnitTests {
         };
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(supplier, EnumSet.of(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), ChinaCity_.T)
+                .update(supplier, EnumSet.of(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaCity_.T)
                 .partition("p2", "p1").as("t")
                 .useIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))
                 .set(ChinaRegion_.name, "五指礁")

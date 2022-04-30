@@ -73,9 +73,9 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Nullable
     @Override
-    public final IPredicate ifEqual(Supplier<?> operand) {
+    public final IPredicate ifEqual(Supplier<?> supplier) {
         final Object value;
-        value = operand.get();
+        value = supplier.get();
         return value == null ? null : this.equal(value);
     }
 

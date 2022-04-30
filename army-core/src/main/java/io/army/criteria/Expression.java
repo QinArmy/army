@@ -39,7 +39,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.equal({@link SQLs#namedParam(String, ParamMeta)}})
+     * Equivalence : this.equal({@link SQLs#namedParam(String paramName, ParamMeta this)}})
      * </p>
      */
     IPredicate equalNamed(String paramName);
@@ -55,15 +55,15 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     /**
      * relational operate with {@code =}
      * <p>
-     * If operand non-null than operand will be wrapped with optimizing param.
+     * If supplier non-null than supplier will be wrapped with optimizing param.
      * </p>
      *
-     * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
-     * @return If operand null return null,or return predicate instance.
+     * @param supplier right supplier of {@code =},supplier is weak weakly instance, because sql is weakly typed.
+     * @return If supplier null return null,or return predicate instance.
      * @see Statement._WhereAndClause#ifAnd(IPredicate)
      */
     @Nullable
-    IPredicate ifEqual(Supplier<?> operand);
+    IPredicate ifEqual(Supplier<?> supplier);
 
     @Nullable
     IPredicate ifEqual(Function<String, ?> function, String keyName);

@@ -28,7 +28,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _StandardSelectClause<C, Q extends Query>
-            extends StandardStatement.SelectClauseForStandard<C, _StandardFromSpec<C, Q>> {
+            extends Query.SelectClause<C, Distinct, _StandardFromSpec<C, Q>> {
 
     }
 
@@ -122,7 +122,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _StandardLestBracketClause<C, Q extends Query>
-            extends Statement.LeftBracketClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>> {
+            extends _LeftBracketClause<C, _OnClause<C, _JoinSpec<C, Q>>, _OnClause<C, _JoinSpec<C, Q>>> {
 
     }
 
@@ -260,8 +260,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _LimitSpec<C, Q extends Query> extends _LockSpec<C, Q>
-            , _LimitClause<C, _LockSpec<C, Q>> {
+    interface _LimitSpec<C, Q extends Query> extends _LockSpec<C, Q>, _LimitClause<C, _LockSpec<C, Q>> {
 
     }
 
@@ -295,7 +294,6 @@ public interface StandardQuery extends Query, StandardStatement {
         _UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier);
 
         _UnionSpec<C, Q> ifLock(Function<C, LockMode> function);
-
 
     }
 

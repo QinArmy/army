@@ -2,7 +2,6 @@ package io.army.criteria.mysql;
 
 
 import io.army.criteria.Query;
-import io.army.criteria.Statement;
 import io.army.criteria.Window;
 
 import java.util.List;
@@ -42,7 +41,7 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link WithCteClause} for MySQL 8.0</li>
+     *          <li>{@link _WithCteClause} for MySQL 8.0</li>
      *          <li>the composite {@link _Select80Clause}</li>
      *     </ul>
      * </p>
@@ -56,7 +55,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _WithSpec<C, Q extends Query> extends WithCteClause<C, _Select80Clause<C, Q>>
+    interface _WithSpec<C, Q extends Query> extends _WithCteClause<C, _Select80Clause<C, Q>>
             , _Select80Clause<C, Q> {
 
 
@@ -313,7 +312,7 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link WhereClause} </li>
+     *          <li>{@link _WhereClause} </li>
      *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
      * </p>
@@ -328,7 +327,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _WhereSpec<C, Q extends Query>
-            extends Statement.WhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>
+            extends _WhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>
             , _GroupBySpec<C, Q> {
 
     }
@@ -453,6 +452,10 @@ public interface MySQL80Query extends MySQLQuery {
     interface _WindowSpec<C, Q extends Query>
             extends Window._WindowClause<Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>>>
             , _OrderBySpec<C, Q> {
+
+        _OrderBySpec<C, Q> window(Function<WindowBuilder<C>, List<Window>> function);
+
+        _OrderBySpec<C, Q> window(BiFunction<C, WindowBuilder<C>, List<Window>> function);
 
         _OrderBySpec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function);
 

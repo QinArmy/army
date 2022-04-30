@@ -5,7 +5,7 @@ import io.army.criteria.Hint;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
-import io.army.criteria.mysql.MySQLModifier;
+import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.session.Database;
@@ -72,7 +72,7 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    static Set<MySQLModifier> asUpdateModifierSet(Set<MySQLModifier> modifierSet) {
+    static Set<MySQLWords> asUpdateModifierSet(Set<MySQLWords> modifierSet) {
         return CriteriaUtils.asModifierSet(modifierSet, MySQLUtils::assertUpdateModifier);
     }
 
@@ -123,7 +123,7 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    private static void assertUpdateModifier(final MySQLModifier modifier) {
+    private static void assertUpdateModifier(final MySQLWords modifier) {
         switch (modifier) {
             case LOW_PRIORITY:
             case IGNORE:

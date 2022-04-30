@@ -330,7 +330,7 @@ public abstract class SQLs extends StandardFunctions {
      * Create nullable named parameter expression for batch update(or delete)
      * </p>
      *
-     * @see io.army.criteria.Update.BatchSetClause
+     * @see Update._BatchSetClause
      */
     public static Expression nullableNamedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nullable(name, paramMeta);
@@ -341,7 +341,7 @@ public abstract class SQLs extends StandardFunctions {
      * Create nullable named parameter expression for batch update(or delete)
      * </p>
      *
-     * @see io.army.criteria.Update.BatchSetClause
+     * @see Update._BatchSetClause
      */
     public static Expression nullableNamedParam(TableField<?> field) {
         return NamedParamImpl.nullable(field.fieldName(), field);
@@ -404,7 +404,7 @@ public abstract class SQLs extends StandardFunctions {
 
     /**
      * @param value {@link Expression} or parameter.
-     * @see Update.SimpleSetClause#setPairs(List)
+     * @see Update._SimpleSetClause#setPairs(List)
      */
     public static ItemPair itemPair(FieldMeta<?> field, @Nullable Object value) {
         final Expression valueExp;

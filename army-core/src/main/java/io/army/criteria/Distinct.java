@@ -18,4 +18,9 @@ public enum Distinct implements SQLWords {
     }
 
 
+    @Override
+    public final String toString() {
+        return String.format("%s.%s", Distinct.class.getName(), this.name());
+    }
+
 }

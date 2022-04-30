@@ -8,8 +8,8 @@ import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -53,7 +53,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
 
     private List<Hint> hintList;
 
-    private List<MySQLModifier> modifierList;
+    private List<MySQLWords> modifierList;
 
     private boolean usingSyntax;
 
@@ -68,7 +68,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
 
 
     @Override
-    public final MultiDeleteFromClause<C, DR, DP> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final MultiDeleteFromClause<C, DR, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , List<String> tableAliasList) {
         if (this.tableAliasList != null) {
             throw _Exceptions.castCriteriaApi();
@@ -98,7 +98,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }
 
     @Override
-    public final MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , List<String> tableAliasList) {
         assert hintList != null;
         if (this.tableAliasList != null) {
@@ -190,7 +190,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }
 
     @Override
-    public final List<MySQLModifier> modifierList() {
+    public final List<MySQLWords> modifierList() {
         return this.modifierList;
     }
 

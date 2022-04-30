@@ -70,7 +70,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifEqual(Supplier<?> operand) {
+    public final IPredicate ifEqual(Supplier<?> supplier) {
         throw unsupportedOperation();
     }
 

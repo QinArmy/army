@@ -1,17 +1,31 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.TableItem;
+import io.army.criteria.Update;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
-abstract class SingleUpdate<C, WR, WA, SR> extends JoinableUpdate<C, Void, Void, Void, WR, WA, SR>
-        implements _SingleUpdate {
+/**
+ * <p>
+ * This class is base class of all single table update statement.
+ * </p>
+ *
+ * @since 1.0
+ */
+abstract class SingleUpdate<C, SR, WR, WA>
+        extends JoinableUpdate<C, SR, Void, Void, Void, Void, Void, Void, Void, WR, WA>
+        implements _SingleUpdate, Update.UpdateSpec, Update {
 
     SingleUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
 
+    @Override
+    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        throw _Exceptions.castCriteriaApi();
+    }
 
     @Override
     final Void createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
@@ -24,23 +38,7 @@ abstract class SingleUpdate<C, WR, WA, SR> extends JoinableUpdate<C, Void, Void,
     }
 
     @Override
-    final Void createNoActionTableBlock() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void createNoActionOnBlock() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-
-    @Override
-    final Void getNoActionTableBlock() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void getNoActionOnBlock() {
+    final Void createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
         throw _Exceptions.castCriteriaApi();
     }
 

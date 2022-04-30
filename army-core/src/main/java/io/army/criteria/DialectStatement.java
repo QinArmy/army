@@ -3,7 +3,6 @@ package io.army.criteria;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -23,7 +22,7 @@ public interface DialectStatement extends Statement {
      * @param <C>  criteria object java type
      * @param <WE> next clause java type
      */
-    interface WithCteClause<C, WE> {
+    interface _WithCteClause<C, WE> {
 
         WE with(String cteName, Supplier<? extends SubQuery> supplier);
 
@@ -53,26 +52,16 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface DialectSelectClause<C, SR> extends Query.SelectClause<C, SR> {
+    interface DialectSelectClause<C, W extends SQLWords, SR> extends Query.SelectClause<C, W, SR> {
 
-        SR select(SQLWords modifier, SelectItem selectItem);
 
-        SR select(SQLWords modifier, SelectItem selectItem1, SelectItem selectItem2);
+        <S extends SelectItem> SR select(Supplier<List<Hint>> hints, List<W> modifiers, Function<C, List<S>> function);
 
-        SR select(SQLWords modifier, Consumer<List<SelectItem>> consumer);
+        <S extends SelectItem> SR select(Supplier<List<Hint>> hints, List<W> modifiers, Supplier<List<S>> supplier);
 
-        <S extends SelectItem, M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Function<C, List<S>> function);
+        <S extends SelectItem> SR select(List<W> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectItem, M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Supplier<List<S>> supplier);
-
-        <M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Consumer<List<SelectItem>> consumer);
-
-        <S extends SelectItem, M extends SQLWords> SR select(List<M> modifiers, Function<C, List<S>> function);
-
-        <S extends SelectItem, M extends SQLWords> SR select(List<M> modifiers, Supplier<List<S>> supplier);
-
-        <M extends SQLWords> SR select(List<M> modifiers, Consumer<List<SelectItem>> consumer);
-
+        <S extends SelectItem> SR select(List<W> modifiers, Supplier<List<S>> supplier);
 
     }
 
@@ -90,7 +79,7 @@ public interface DialectStatement extends Statement {
      * @param <FT> next clause java type
      * @param <FS> next clause java type
      * @param <FP> next clause java type
-     * @param <FB> next clause java type,it's sub interface of {@link LeftBracketClause}.
+     * @param <FB> next clause java type,it's sub interface of {@link _LeftBracketClause}.
      * @since 1.0
      */
     interface DialectFromClause<C, FT, FS, FP, FB> extends Statement.FromClause<C, FT, FS, FB> {
@@ -159,10 +148,10 @@ public interface DialectStatement extends Statement {
      * @param <JP> next clause java type
      * @since 1.0
      */
-    interface DialectLeftBracketClause<C, JT, JS, JP> extends LeftBracketClause<C, JT, JS> {
+    interface JointLeftBracketClause<C, JT, JS, JP> extends _LeftBracketClause<C, JT, JS> {
 
         @Override
-        DialectLeftBracketClause<C, JT, JS, JP> leftBracket();
+        JointLeftBracketClause<C, JT, JS, JP> leftBracket();
 
         JP leftBracket(TableMeta<?> table);
     }

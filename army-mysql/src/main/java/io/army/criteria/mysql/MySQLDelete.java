@@ -18,9 +18,9 @@ public interface MySQLDelete extends Delete {
 
     interface SingleDeleteClause<C, DR> {
 
-        SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers);
+        SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers);
 
-        SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers);
+        SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers);
 
         DR deleteFrom(SingleTableMeta<? extends IDomain> table);
 
@@ -32,7 +32,7 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface SingleDelete80Spec<C> extends DialectStatement.WithCteClause<C, MySQLDelete.SingleDeleteSpec<C>>
+    interface SingleDelete80Spec<C> extends DialectStatement._WithCteClause<C, SingleDeleteSpec<C>>
             , MySQLDelete.SingleDeleteSpec<C> {
 
 
@@ -48,7 +48,7 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface SingleWhereSpec<C> extends Statement.WhereClause<C, MySQLDelete.OrderBySpec<C>, MySQLDelete.SingleWhereAndSpec<C>> {
+    interface SingleWhereSpec<C> extends _WhereClause<C, OrderBySpec<C>, SingleWhereAndSpec<C>> {
 
     }
 
@@ -60,14 +60,14 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface LimitSpec<C> extends MySQLUpdate.LimitClause<C, Delete.DeleteSpec>, Delete.DeleteSpec {
+    interface LimitSpec<C> extends MySQLUpdate._RowCountLimitClause<C, DeleteSpec>, Delete.DeleteSpec {
 
     }
 
 
     /*################################## blow batch single delete api interface ##################################*/
 
-    interface BatchSingleDelete80Spec<C> extends DialectStatement.WithCteClause<C, MySQLDelete.BatchSingleDeleteSpec<C>>
+    interface BatchSingleDelete80Spec<C> extends DialectStatement._WithCteClause<C, BatchSingleDeleteSpec<C>>
             , MySQLDelete.BatchSingleDeleteSpec<C> {
 
     }
@@ -84,8 +84,8 @@ public interface MySQLDelete extends Delete {
     }
 
 
-    interface BatchSingleWhereSpec<C> extends Statement.WhereClause<C, MySQLDelete.BatchOrderBySpec<C>
-            , MySQLDelete.BatchSingleWhereAndSpec<C>> {
+    interface BatchSingleWhereSpec<C> extends _WhereClause<C, BatchOrderBySpec<C>
+            , BatchSingleWhereAndSpec<C>> {
 
     }
 
@@ -99,7 +99,7 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface BatchLimitSpec<C> extends MySQLUpdate.LimitClause<C, Statement.BatchParamClause<C, Delete.DeleteSpec>>
+    interface BatchLimitSpec<C> extends MySQLUpdate._RowCountLimitClause<C, BatchParamClause<C, DeleteSpec>>
             , Statement.BatchParamClause<C, Delete.DeleteSpec> {
 
     }
@@ -109,13 +109,13 @@ public interface MySQLDelete extends Delete {
 
     interface MultiDeleteClause<C, DR, DP> {
 
-        MultiDeleteFromClause<C, DR, DP> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, List<String> tableAliasList);
+        MultiDeleteFromClause<C, DR, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList);
 
         MultiDeleteFromClause<C, DR, DP> delete(List<String> tableAliasList);
 
         MultiDeleteFromClause<C, DR, DP> delete(String tableAlias1, String tableAlias2);
 
-        MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, List<String> tableAliasList);
+        MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList);
 
         MultiDeleteUsingClause<C, DR, DP> deleteFrom(List<String> tableAliasList);
 
@@ -147,7 +147,7 @@ public interface MySQLDelete extends Delete {
     }
 
 
-    interface WithMultiDeleteSpec<C> extends DialectStatement.WithCteClause<C, MultiDeleteSpec<C>>
+    interface WithMultiDeleteSpec<C> extends DialectStatement._WithCteClause<C, MultiDeleteSpec<C>>
             , MySQLDelete.MultiDeleteSpec<C> {
 
     }
@@ -186,7 +186,7 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface MultiWhereSpec<C> extends Statement.WhereClause<C, Delete.DeleteSpec, MySQLDelete.MultiWhereAndSpec<C>> {
+    interface MultiWhereSpec<C> extends _WhereClause<C, DeleteSpec, MultiWhereAndSpec<C>> {
 
 
     }
@@ -199,7 +199,7 @@ public interface MySQLDelete extends Delete {
 
     /*################################## blow batch multi-table delete interface ##################################*/
 
-    interface BatchWithMultiDeleteSpec<C> extends DialectStatement.WithCteClause<C, BatchMultiDeleteSpec<C>>
+    interface BatchWithMultiDeleteSpec<C> extends DialectStatement._WithCteClause<C, BatchMultiDeleteSpec<C>>
             , MySQLDelete.BatchMultiDeleteSpec<C> {
 
     }
@@ -237,8 +237,8 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface BatchMultiWhereSpec<C> extends Statement.WhereClause<C, Statement.BatchParamClause<C, Delete.DeleteSpec>
-            , MySQLDelete.BatchMultiWhereAndSpec<C>> {
+    interface BatchMultiWhereSpec<C> extends _WhereClause<C, BatchParamClause<C, DeleteSpec>
+            , BatchMultiWhereAndSpec<C>> {
 
 
     }

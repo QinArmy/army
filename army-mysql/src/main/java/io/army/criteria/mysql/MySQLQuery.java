@@ -58,7 +58,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <FT> next clause java type
      * @param <FS> next clause java type
      * @param <FP> next clause java type
-     * @param <FB> next clause java type,it's sub interface of {@link LeftBracketClause}.
+     * @param <FB> next clause java type,it's sub interface of {@link _LeftBracketClause}.
      * @since 1.0
      */
     interface _MySQLFromClause<C, FT, FS, FP, FB> extends DialectStatement.DialectFromClause<C, FT, FS, FP, FB> {
@@ -89,7 +89,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> java criteria object java type
      * @since 1.0
      */
-    interface _MySQLJoinBracketClause<C, JT, JS, JP> extends DialectLeftBracketClause<C, JT, JS, JP> {
+    interface _MySQLJoinBracketClause<C, JT, JS, JP> extends JointLeftBracketClause<C, JT, JS, JP> {
 
     }
 

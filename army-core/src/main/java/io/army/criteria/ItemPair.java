@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * @see SQLs#itemPair(FieldMeta, Object)
- * @see Update.SimpleSetClause#setPairs(List)
+ * @see Update._SimpleSetClause#setPairs(List)
  */
 public interface ItemPair {
 

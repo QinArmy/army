@@ -35,13 +35,13 @@ public interface Update extends NarrowDmlStatement {
 
     }
 
-    interface StandardSetSpec<C> extends SimpleSetClause<C, StandardWhereSpec<C>> {
+    interface StandardSetSpec<C> extends _SimpleSetClause<C, StandardWhereSpec<C>> {
 
     }
 
 
     interface StandardWhereSpec<C> extends StandardSetSpec<C>
-            , Statement.WhereClause<C, Update.UpdateSpec, StandardWhereAndSpec<C>> {
+            , _WhereClause<C, UpdateSpec, StandardWhereAndSpec<C>> {
 
 
     }
@@ -111,7 +111,7 @@ public interface Update extends NarrowDmlStatement {
      * @param <C>  java type of criteria object
      * @param <SR> java type of next clause.
      */
-    interface SimpleSetClause<C, SR> extends SetClause<C, SR> {
+    interface _SimpleSetClause<C, SR> extends SetClause<C, SR> {
 
         SR set(TableField<?> field, @Nullable Object paramOrExp);
 
@@ -213,7 +213,7 @@ public interface Update extends NarrowDmlStatement {
      * @param <C>  java type of criteria object
      * @param <SR> java type of next clause.
      */
-    interface BatchSetClause<C, SR> extends SetClause<C, SR> {
+    interface _BatchSetClause<C, SR> extends SetClause<C, SR> {
 
         SR setExp(TableField<?> field, Expression value);
 
@@ -291,13 +291,13 @@ public interface Update extends NarrowDmlStatement {
 
     }
 
-    interface StandardBatchSetSpec<C> extends Update.BatchSetClause<C, StandardBatchWhereSpec<C>> {
+    interface StandardBatchSetSpec<C> extends _BatchSetClause<C, StandardBatchWhereSpec<C>> {
 
 
     }
 
     interface StandardBatchWhereSpec<C> extends StandardBatchSetSpec<C>
-            , Statement.WhereClause<C, Statement.BatchParamClause<C, Update.UpdateSpec>, Update.StandardBatchWhereAndSpec<C>>
+            , _WhereClause<C, BatchParamClause<C, UpdateSpec>, StandardBatchWhereAndSpec<C>>
             , Statement.BatchParamClause<C, Update.UpdateSpec> {
 
     }

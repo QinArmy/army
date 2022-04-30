@@ -5,9 +5,9 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql.*;
-import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.criteria.mysql.MySQLWords;
 import io.army.criteria.mysql.NestedJoin;
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
@@ -57,7 +57,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
     private List<_MySQLHint> hintList;
 
-    private Set<MySQLModifier> modifierSet;
+    private Set<MySQLWords> modifierSet;
 
     private JP noActionPartitionBlock;
 
@@ -69,7 +69,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+    public final UP update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , TableMeta<? extends IDomain> table) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
@@ -77,7 +77,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final UT update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+    public final UT update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , TableMeta<? extends IDomain> table, String tableAlias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
@@ -97,7 +97,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
@@ -112,7 +112,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLModifier> modifiers
+    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
         this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
@@ -256,7 +256,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final Set<MySQLModifier> modifierSet() {
+    public final Set<MySQLWords> modifierSet() {
         return this.modifierSet;
     }
 

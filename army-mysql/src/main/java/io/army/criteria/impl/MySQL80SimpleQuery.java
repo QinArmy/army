@@ -159,6 +159,27 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return window;
     }
 
+    @Override
+    public final _OrderBySpec<C, Q> window(Function<WindowBuilder<C>, List<Window>> function) {
+        final List<Window> windowList;
+        windowList = function.apply(this::createWindowClause);
+        if (windowList == null || windowList.size() == 0) {
+            throw _Exceptions.windowListIsEmpty();
+        }
+        this.windowList = _CollectionUtils.asUnmodifiableList(windowList);
+        return this;
+    }
+
+    @Override
+    public final _OrderBySpec<C, Q> window(BiFunction<C, WindowBuilder<C>, List<Window>> function) {
+        final List<Window> windowList;
+        windowList = function.apply(this.criteria, this::createWindowClause);
+        if (windowList == null || windowList.size() == 0) {
+            throw _Exceptions.windowListIsEmpty();
+        }
+        this.windowList = _CollectionUtils.asUnmodifiableList(windowList);
+        return this;
+    }
 
     @Override
     public final _OrderBySpec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function) {

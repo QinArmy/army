@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Update;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
@@ -26,10 +25,9 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableDml<C, JT, JS, JP, WR, WA>
-        implements Update, Update.UpdateSpec, Update.SimpleSetClause<C, SR>, Update.BatchSetClause<C, SR>, _Update {
-
-    final CriteriaContext criteriaContext;
+abstract class JoinableUpdate<C, SR, JT, JS, JP, JC, JD, JE, JF, WR, WA>
+        extends DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
+        implements Update, Update.UpdateSpec, Update._SimpleSetClause<C, SR>, Update._BatchSetClause<C, SR>, _Update {
 
     private List<SetLeftItem> leftList = new ArrayList<>();
 
@@ -39,8 +37,11 @@ abstract class JoinableUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableDml<C, 
 
     JoinableUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);
-        this.criteriaContext = criteriaContext;
-
+        if (this instanceof NonPrimaryStatement) {
+            CriteriaContextStack.push(this.criteriaContext);
+        } else {
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
     }
 
     /*################################## blow SetClause method ##################################*/
@@ -587,30 +588,24 @@ abstract class JoinableUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableDml<C, 
     @Override
     public final Update asUpdate() {
         _Assert.nonPrepared(this.prepared);
-
-        if (this instanceof WithElement) {
+        if (this instanceof NonPrimaryStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        final List<SetLeftItem> targetParts = this.leftList;
-        final List<SetRightItem> valueParts = this.rightList;
-        if (_CollectionUtils.isEmpty(targetParts)) {
+        super.asDmlStatement();
+
+        final List<SetLeftItem> leftItemList = this.leftList;
+        final List<SetRightItem> rightItemList = this.rightList;
+        if (leftItemList == null || leftItemList.size() == 0) {
             throw _Exceptions.updateFieldListEmpty();
         }
-        if (targetParts.size() != valueParts.size()) {
+        if (rightItemList == null || rightItemList.size() != leftItemList.size()) {
             // no bug ,never here
             throw new IllegalStateException("target and value size not match.");
         }
-        this.leftList = _CollectionUtils.unmodifiableList(targetParts);
-        this.rightList = _CollectionUtils.unmodifiableList(valueParts);
-
-        final List<_Predicate> predicates = this.predicateList;
-        if (_CollectionUtils.isEmpty(predicates)) {
-            throw _Exceptions.dmlNoWhereClause();
-        }
-        this.predicateList = _CollectionUtils.unmodifiableList(predicates);
-
+        this.leftList = _CollectionUtils.unmodifiableList(leftItemList);
+        this.rightList = _CollectionUtils.unmodifiableList(rightItemList);
         this.onAsUpdate();
         this.prepared = true;
         return this;
@@ -619,12 +614,11 @@ abstract class JoinableUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableDml<C, 
     @Override
     public final void clear() {
         _Assert.prepared(this.prepared);
-
         this.prepared = false;
+        super.clearWherePredicate();
         this.leftList = null;
-        this.rightList = null;
-        this.predicateList = null;
 
+        this.rightList = null;
         this.onClear();
     }
 
@@ -637,6 +631,7 @@ abstract class JoinableUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableDml<C, 
 
     @Override
     public final List<? extends SetRightItem> rightItemList() {
+        _Assert.prepared(this.prepared);
         return this.rightList;
     }
 

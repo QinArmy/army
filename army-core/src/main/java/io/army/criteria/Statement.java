@@ -96,7 +96,7 @@ public interface Statement {
      * @param <R> next clause java type
      * @since 1.0
      */
-    interface _RightBracketClause<R> extends Statement.Clause {
+    interface _RightBracketClause<R> extends _Clause {
 
         R rightBracket();
 
@@ -116,7 +116,7 @@ public interface Statement {
      * @param <C>  criteria object java type.
      * @param <FT> next clause java type
      * @param <FS> next clause java type
-     * @param <FB> next clause java type,it's sub interface of {@link LeftBracketClause}.
+     * @param <FB> next clause java type,it's sub interface of {@link _LeftBracketClause}.
      * @since 1.0
      */
     interface FromClause<C, FT, FS, FB> {
@@ -179,7 +179,7 @@ public interface Statement {
      * @param <JS> next clause java type
      * @param <JC> next clause java type
      * @param <JD> next clause java type
-     * @param <JE> next clause java type,it's sub interface of {@link LeftBracketClause}.
+     * @param <JE> next clause java type,it's sub interface of {@link _LeftBracketClause}.
      * @since 1.0
      */
     interface JoinClause<C, JT, JS, JC, JD, JE> {
@@ -241,9 +241,9 @@ public interface Statement {
      * @param <JS> next clause java type
      * @since 1.0
      */
-    interface LeftBracketClause<C, JT, JS> {
+    interface _LeftBracketClause<C, JT, JS> {
 
-        LeftBracketClause<C, JT, JS> leftBracket();
+        _LeftBracketClause<C, JT, JS> leftBracket();
 
         JT leftBracket(TableMeta<?> table, String tableAlias);
 
@@ -268,7 +268,7 @@ public interface Statement {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface WhereClause<C, WR, WA> {
+    interface _WhereClause<C, WR, WA> {
 
         WR where(Supplier<List<IPredicate>> supplier);
 
@@ -293,7 +293,7 @@ public interface Statement {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface QueryWhereClause<C, WR, WA> extends WhereClause<C, WR, WA> {
+    interface QueryWhereClause<C, WR, WA> extends _WhereClause<C, WR, WA> {
 
         WR ifWhere(Supplier<List<IPredicate>> supplier);
 
@@ -334,6 +334,18 @@ public interface Statement {
     }
 
 
+    /**
+     * <p>
+     * This interface representing ORDER BY clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @since 1.0
+     */
     interface _OrderByClause<C, OR> {
 
         OR orderBy(Object sortItem);
@@ -357,6 +369,37 @@ public interface Statement {
 
     /**
      * <p>
+     * This interface representing row count limit clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @since 1.0
+     */
+    interface _RowCountLimitClause<C, LR> {
+
+        LR limit(long rowCount);
+
+        LR limit(Supplier<? extends Number> supplier);
+
+        LR limit(Function<C, ? extends Number> function);
+
+        LR limit(Function<String, ?> function, String keyName);
+
+        LR ifLimit(Supplier<? extends Number> supplier);
+
+        LR ifLimit(Function<C, ? extends Number> function);
+
+        LR ifLimit(Function<String, ?> function, String keyName);
+
+    }
+
+
+    /**
+     * <p>
      * This interface representing any sql clause.
      * </p>
      * <p>
@@ -367,7 +410,7 @@ public interface Statement {
      *
      * @since 1.0
      */
-    interface Clause {
+    interface _Clause {
 
 
     }

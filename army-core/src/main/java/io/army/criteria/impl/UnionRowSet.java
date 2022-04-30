@@ -3,12 +3,14 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._PartRowSet;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.dialect.Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
+import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -20,7 +22,8 @@ import java.util.List;
  *
  * @since 1.0
  */
-abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP> extends PartRowSet<C, Q, UR, OR, LR, SP>
+abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
+        extends PartRowSet<C, Q, Void, Void, Void, Void, Void, Void, Void, UR, OR, LR, SP>
         implements _UnionRowSet {
 
     final Q left;
@@ -120,6 +123,27 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP> extends PartRowS
         //no-op
     }
 
+    /*################################## blow JoinableClause method ##################################*/
+
+    @Override
+    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
+    }
 
     interface BracketRowSet {
 

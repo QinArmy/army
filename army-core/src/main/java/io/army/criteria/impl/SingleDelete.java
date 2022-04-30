@@ -1,25 +1,33 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
-import io.army.criteria.WithElement;
-import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.NonPrimaryStatement;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._SingleDelete;
+import io.army.criteria.impl.inner._TableBlock;
+import io.army.meta.TableMeta;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.List;
-
-abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
+/**
+ * <p>
+ * This class is base class of all single table delete statement.
+ * </p>
+ *
+ * @since 1.0
+ */
+abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, Void, WR, WA>
         implements Delete, Delete.DeleteSpec, _SingleDelete {
-
-    final CriteriaContext criteriaContext;
 
     private boolean prepared;
 
     SingleDelete(CriteriaContext criteriaContext) {
         super(criteriaContext);
-        this.criteriaContext = criteriaContext;
+        if (this instanceof NonPrimaryStatement) {
+            CriteriaContextStack.push(this.criteriaContext);
+        } else {
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
     }
 
     @Override
@@ -35,21 +43,12 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
     @Override
     public final Delete asDelete() {
         _Assert.nonPrepared(this.prepared);
-
-        if (this instanceof WithElement) {
+        if (this instanceof NonPrimaryStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-
-        final List<_Predicate> predicates = this.predicateList;
-
-        if (_CollectionUtils.isEmpty(predicates)) {
-            throw _Exceptions.dmlNoWhereClause();
-        }
-
-        this.predicateList = _CollectionUtils.unmodifiableList(predicates);
-
+        super.asDmlStatement();
         this.onAsDelete();
         this.prepared = true;
         return this;
@@ -60,11 +59,8 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
     public final void clear() {
         _Assert.prepared(this.prepared);
         this.prepared = false;
-
-        this.predicateList = null;
+        super.clearWherePredicate();
         this.onClear();
-
-
     }
 
     void onAsDelete() {
@@ -73,6 +69,27 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, WR, WA>
 
     void onClear() {
 
+    }
+
+
+    @Override
+    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
     }
 
 

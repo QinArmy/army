@@ -5,7 +5,7 @@ import io.army.criteria.impl._MySQLCounselor;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql.*;
-import io.army.criteria.mysql.MySQLModifier;
+import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.*;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SimpleTableMeta;
@@ -167,8 +167,8 @@ final class MySQLDialect extends MySQL {
         sqlBuilder.append(SPACE_HINT_END);
     }
 
-    private void updateModifiers(Set<MySQLModifier> modifierSet, StringBuilder builder, _DialectStatement stmt) {
-        for (MySQLModifier modifier : modifierSet) {
+    private void updateModifiers(Set<MySQLWords> modifierSet, StringBuilder builder, _DialectStatement stmt) {
+        for (MySQLWords modifier : modifierSet) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case IGNORE:

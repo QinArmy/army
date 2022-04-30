@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         C,
         Q,
+        Distinct,
         StandardQuery._StandardFromSpec<C, Q>, // SR
         StandardQuery._JoinSpec<C, Q>,// FT
         StandardQuery._JoinSpec<C, Q>,// FS

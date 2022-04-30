@@ -22,6 +22,7 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhereClause<C, WR, WA>
         implements DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF>, _Dml {
 
@@ -34,6 +35,11 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     public final JE leftJoin() {
         this.criteriaContext.onJoinType(_JoinType.LEFT_JOIN);
         return (JE) this;
+    }
+
+    @Override
+    public final JP leftJoin(TableMeta<?> table) {
+        return this.createBlockBeforeAs(_JoinType.LEFT_JOIN, table);
     }
 
     @Override
@@ -67,6 +73,11 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     }
 
     @Override
+    public final JP join(TableMeta<?> table) {
+        return this.createBlockBeforeAs(_JoinType.JOIN, table);
+    }
+
+    @Override
     public final JT join(TableMeta<?> table, String tableAlias) {
         final JT block;
         block = this.createTableBlock(_JoinType.JOIN, table, tableAlias);
@@ -94,6 +105,12 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     public final JE rightJoin() {
         this.criteriaContext.onJoinType(_JoinType.RIGHT_JOIN);
         return (JE) this;
+    }
+
+
+    @Override
+    public final JP rightJoin(TableMeta<?> table) {
+        return this.createBlockBeforeAs(_JoinType.RIGHT_JOIN, table);
     }
 
     @Override
@@ -207,20 +224,6 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
         return block;
     }
 
-    @Override
-    public final JP leftJoin(TableMeta<?> table) {
-        return this.createBlockBeforeAs(_JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final JP join(TableMeta<?> table) {
-        return this.createBlockBeforeAs(_JoinType.JOIN, table);
-    }
-
-    @Override
-    public final JP rightJoin(TableMeta<?> table) {
-        return this.createBlockBeforeAs(_JoinType.RIGHT_JOIN, table);
-    }
 
     @Override
     public final JP straightJoin(TableMeta<?> table) {
