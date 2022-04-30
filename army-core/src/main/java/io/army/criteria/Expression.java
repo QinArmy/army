@@ -60,7 +60,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      *
      * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
      * @return If operand null return null,or return predicate instance.
-     * @see Statement.WhereAndClause#ifAnd(IPredicate)
+     * @see Statement._WhereAndClause#ifAnd(IPredicate)
      */
     @Nullable
     IPredicate ifEqual(Supplier<?> operand);
@@ -216,7 +216,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      *
      * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
      * @return If operand null return null,or return predicate instance.
-     * @see Statement.WhereAndClause#ifAnd(IPredicate)
+     * @see Statement._WhereAndClause#ifAnd(IPredicate)
      */
     @Nullable
     IPredicate ifGreatThan(Supplier<?> operand);
@@ -275,7 +275,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      *
      * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
      * @return If operand null return null,or return predicate instance.
-     * @see Statement.WhereAndClause#ifAnd(IPredicate)
+     * @see Statement._WhereAndClause#ifAnd(IPredicate)
      */
     @Nullable
     IPredicate ifGreatEqual(Supplier<?> operand);
@@ -334,7 +334,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      *
      * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
      * @return If operand null return null,or return predicate instance.
-     * @see Statement.WhereAndClause#ifAnd(IPredicate)
+     * @see Statement._WhereAndClause#ifAnd(IPredicate)
      */
     @Nullable
     IPredicate ifNotEqual(Supplier<?> operand);

@@ -23,21 +23,21 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
         extends PartRowSet<C, Q, UR, OR, LR, SP> implements StandardStatement.SelectClauseForStandard<C, SR>
-        , DialectStatement.DialectJoinClause<C, JT, JS, JP, FT, FS, JE, FP>, Statement.WhereClause<C, WR, AR>
-        , Statement.WhereAndClause<C, AR>, Query.GroupClause<C, GR>, Query.HavingClause<C, HR>, _Query
+        , DialectStatement.DialectJoinClause<C, JT, JS, JP, FT, FS, JE, FP>, Statement.QueryWhereClause<C, WR, AR>
+        , Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>, Query._HavingClause<C, HR>, _Query
         , DialectStatement.DialectFromClause<C, FT, FS, FP, JE>, DialectStatement.DialectLeftBracketClause<C, FT, FS, FP>
-        , Statement.RightBracketClause<FS>, DialectStatement.DialectSelectClause<C, SR>, Query.QuerySpec<Q> {
+        , Statement._RightBracketClause<FS>, DialectStatement.DialectSelectClause<C, SR>, Query._QuerySpec<Q> {
 
 
     private List<Hint> hintList;
 
-    private List<? extends SQLModifier> modifierList;
+    private List<? extends SQLWords> modifierList;
 
     private List<? extends SelectItem> selectItemList;
 
     private List<_TableBlock> tableBlockList;
 
-    private List<_Predicate> predicateList = new ArrayList<>();
+    private List<_Predicate> predicateList;
 
     private List<ArmySortItem> groupByList;
 
@@ -56,34 +56,34 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     /*################################## blow io.army.criteria.DialectStatement.DialectSelectClause method ##################################*/
 
     @Override
-    public final SR select(SQLModifier modifier, SelectItem selectItem) {
+    public final SR select(SQLWords modifier, SelectItem selectItem) {
         return this.innerSafeSelect(modifier, Collections.singletonList(selectItem));
     }
 
     @Override
-    public final SR select(SQLModifier modifier, SelectItem selectItem1, SelectItem selectItem2) {
+    public final SR select(SQLWords modifier, SelectItem selectItem1, SelectItem selectItem2) {
         return this.innerSafeSelect(modifier, ArrayUtils.asUnmodifiableList(selectItem1, selectItem2));
     }
 
     @Override
-    public final SR select(SQLModifier modifier, Consumer<List<SelectItem>> consumer) {
+    public final SR select(SQLWords modifier, Consumer<List<SelectItem>> consumer) {
         final List<SelectItem> selectItemList = new ArrayList<>();
         consumer.accept(selectItemList);
         return this.innerSafeSelect(modifier, selectItemList);
     }
 
     @Override
-    public final <S extends SelectItem, M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Function<C, List<S>> function) {
+    public final <S extends SelectItem, M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Function<C, List<S>> function) {
         return this.innerNonSafeSelect(hints.get(), modifiers, function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectItem, M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Supplier<List<S>> supplier) {
+    public final <S extends SelectItem, M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Supplier<List<S>> supplier) {
         return this.innerNonSafeSelect(hints.get(), modifiers, supplier.get());
     }
 
     @Override
-    public final <M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Consumer<List<SelectItem>> consumer) {
+    public final <M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Consumer<List<SelectItem>> consumer) {
         List<SelectItem> selectItemList = new ArrayList<>();
         consumer.accept(selectItemList);
 
@@ -98,17 +98,17 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
 
 
     @Override
-    public final <S extends SelectItem, M extends SQLModifier> SR select(List<M> modifiers, Function<C, List<S>> function) {
+    public final <S extends SelectItem, M extends SQLWords> SR select(List<M> modifiers, Function<C, List<S>> function) {
         return this.innerNonSafeSelect(null, modifiers, function.apply(this.criteria));
     }
 
     @Override
-    public final <S extends SelectItem, M extends SQLModifier> SR select(List<M> modifiers, Supplier<List<S>> supplier) {
+    public final <S extends SelectItem, M extends SQLWords> SR select(List<M> modifiers, Supplier<List<S>> supplier) {
         return this.innerNonSafeSelect(null, modifiers, supplier.get());
     }
 
     @Override
-    public final <M extends SQLModifier> SR select(List<M> modifiers, Consumer<List<SelectItem>> consumer) {
+    public final <M extends SQLWords> SR select(List<M> modifiers, Consumer<List<SelectItem>> consumer) {
         return this.select(Collections::emptyList, modifiers, consumer);
     }
 
@@ -460,67 +460,81 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     }
 
     @Override
-    public final WR where(final List<IPredicate> predicateList) {
-        final List<_Predicate> list = this.predicateList;
-        for (IPredicate predicate : predicateList) {
-            list.add((OperationPredicate) predicate);// must cast to OperationPredicate
-        }
+    public final WR where(Supplier<List<IPredicate>> supplier) {
+        this.predicateList = CriteriaUtils.asPredicateList(supplier.get(), _Exceptions::predicateListIsEmpty);
         return (WR) this;
     }
 
     @Override
     public final WR where(Function<C, List<IPredicate>> function) {
-        return this.where(function.apply(this.criteria));
-    }
-
-    @Override
-    public final WR where(Supplier<List<IPredicate>> supplier) {
-        return this.where(supplier.get());
+        this.predicateList = CriteriaUtils.asPredicateList(function.apply(this.criteria)
+                , _Exceptions::predicateListIsEmpty);
+        return (WR) this;
     }
 
     @Override
     public final WR where(Consumer<List<IPredicate>> consumer) {
-        final List<IPredicate> list = new ArrayList<>();
-        consumer.accept(list);
-        return this.where(list);
+        final List<IPredicate> predicateList = new ArrayList<>();
+        consumer.accept(predicateList);
+        this.predicateList = CriteriaUtils.asPredicateList(predicateList, _Exceptions::predicateListIsEmpty);
+        return (WR) this;
     }
 
     @Override
     public final AR where(@Nullable IPredicate predicate) {
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
+            final List<_Predicate> predicateList = new ArrayList<>();
+            predicateList.add((OperationPredicate) predicate);
+            this.predicateList = predicateList;
         }
         return (AR) this;
     }
 
     @Override
+    public final WR ifWhere(Supplier<List<IPredicate>> supplier) {
+        final List<IPredicate> predicateList;
+        predicateList = supplier.get();
+        if (predicateList != null && predicateList.size() > 0) {
+            this.predicateList = CriteriaUtils.asPredicateList(predicateList, _Exceptions::predicateListIsEmpty);
+        }
+        return (WR) this;
+    }
+
+    @Override
+    public final WR ifWhere(Function<C, List<IPredicate>> function) {
+        final List<IPredicate> predicateList;
+        predicateList = function.apply(this.criteria);
+        if (predicateList != null && predicateList.size() > 0) {
+            this.predicateList = CriteriaUtils.asPredicateList(predicateList, _Exceptions::predicateListIsEmpty);
+        }
+        return (WR) this;
+    }
+
+    @Override
     public final AR and(IPredicate predicate) {
-        this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
+        List<_Predicate> predicateList = this.predicateList;
+        if (predicateList == null) {
+            predicateList = new ArrayList<>();
+            this.predicateList = predicateList;
+        }
+        predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         return (AR) this;
     }
 
     @Override
     public final AR and(Supplier<IPredicate> supplier) {
-        final IPredicate predicate;
-        predicate = supplier.get();
-        assert predicate != null;
-        this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
-        return (AR) this;
+        return this.and(supplier.get());
     }
 
     @Override
     public final AR and(Function<C, IPredicate> function) {
-        final IPredicate predicate;
-        predicate = function.apply(this.criteria);
-        assert predicate != null;
-        this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
-        return (AR) this;
+        return this.and(function.apply(this.criteria));
     }
 
     @Override
     public final AR ifAnd(@Nullable IPredicate predicate) {
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
+            this.and(predicate);
         }
         return (AR) this;
     }
@@ -530,7 +544,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
+            this.and(predicate);
         }
         return (AR) this;
     }
@@ -540,119 +554,81 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
+            this.and(predicate);
         }
         return (AR) this;
     }
 
+
     @Override
-    public final GR groupBy(SortItem sortItem) {
-        this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
+    public final GR groupBy(Object sortItem) {
+        this.groupByList = Collections.singletonList(SQLs._nonNullSortItem(sortItem));
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(SortItem sortItem1, SortItem sortItem2) {
-        this.groupByList = ArrayUtils.asUnmodifiableList((ArmySortItem) sortItem1, (ArmySortItem) sortItem2);
+    public final GR groupBy(Object sortItem1, Object sortItem2) {
+        this.groupByList = ArrayUtils.asUnmodifiableList(
+                SQLs._nonNullSortItem(sortItem1),
+                SQLs._nonNullSortItem(sortItem2)
+        );
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        this.groupByList = ArrayUtils.asUnmodifiableList((ArmySortItem) sortItem1, (ArmySortItem) sortItem2, (ArmySortItem) sortItem3);
+    public final GR groupBy(Object sortItem1, Object sortItem2, Object sortItem3) {
+        this.groupByList = ArrayUtils.asUnmodifiableList(
+                SQLs._nonNullSortItem(sortItem1),
+                SQLs._nonNullSortItem(sortItem2),
+                SQLs._nonNullSortItem(sortItem3)
+        );
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(List<SortItem> sortItemList) {
-        final int size = sortItemList.size();
-        switch (size) {
-            case 0:
-                throw new CriteriaException("sortItemList must be not empty.");
-            case 1:
-                this.groupByList = Collections.singletonList((ArmySortItem) sortItemList.get(0));
-                break;
-            default: {
-                final List<ArmySortItem> tempList = new ArrayList<>(size);
-                for (SortItem sortItem : sortItemList) {
-                    tempList.add((ArmySortItem) sortItem);
-                }
-                this.groupByList = Collections.unmodifiableList(tempList);
-            }
-        }
+    public final <S extends SortItem> GR groupBy(Supplier<List<S>> supplier) {
+        this.groupByList = CriteriaUtils.asSortItemList(supplier.get());
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(Function<C, List<SortItem>> function) {
-        return this.groupBy(function.apply(this.criteria));
-    }
-
-    @Override
-    public final GR groupBy(Supplier<List<SortItem>> supplier) {
-        return this.groupBy(supplier.get());
+    public final <S extends SortItem> GR groupBy(Function<C, List<S>> function) {
+        this.groupByList = CriteriaUtils.asSortItemList(function.apply(this.criteria));
+        return (GR) this;
     }
 
     @Override
     public final GR groupBy(Consumer<List<SortItem>> consumer) {
-        final List<SortItem> list = new ArrayList<>();
-        consumer.accept(list);
-        return this.groupBy(list);
+        final List<SortItem> sortItemList = new ArrayList<>();
+        consumer.accept(sortItemList);
+        this.groupByList = CriteriaUtils.asSortItemList(sortItemList);
+        return (GR) this;
     }
 
     @Override
-    public final GR ifGroupBy(@Nullable SortItem sortItem) {
-        if (sortItem != null) {
-            this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
+    public final <S extends SortItem> GR ifGroupBy(Supplier<List<S>> supplier) {
+        final List<S> sortItemList;
+        sortItemList = supplier.get();
+        if (sortItemList != null && sortItemList.size() > 0) {
+            this.groupByList = CriteriaUtils.asSortItemList(sortItemList);
         }
         return (GR) this;
     }
 
     @Override
-    public final GR ifGroupBy(Supplier<List<SortItem>> supplier) {
-        final List<SortItem> list;
-        list = supplier.get();
-        if (!_CollectionUtils.isEmpty(list)) {
-            this.groupBy(list);
+    public final <S extends SortItem> GR ifGroupBy(Function<C, List<S>> function) {
+        final List<S> sortItemList;
+        sortItemList = function.apply(this.criteria);
+        if (sortItemList != null && sortItemList.size() > 0) {
+            this.groupByList = CriteriaUtils.asSortItemList(sortItemList);
         }
         return (GR) this;
-    }
-
-    @Override
-    public final GR ifGroupBy(Function<C, List<SortItem>> function) {
-        final List<SortItem> list;
-        list = function.apply(this.criteria);
-        if (!_CollectionUtils.isEmpty(list)) {
-            this.groupBy(list);
-        }
-        return (GR) this;
-    }
-
-    @Override
-    public final HR having(final List<IPredicate> predicateList) {
-        if (!_CollectionUtils.isEmpty(this.groupByList)) {
-            final int size = predicateList.size();
-            switch (size) {
-                case 0:
-                    throw new CriteriaException("having predicate list must not empty.");
-                case 1:
-                    this.predicateList = Collections.singletonList((OperationPredicate) predicateList.get(0));
-                    break;
-                default: {
-                    final List<_Predicate> list = new ArrayList<>(size);
-                    for (IPredicate predicate : predicateList) {
-                        list.add((OperationPredicate) predicate);
-                    }
-                    this.havingList = Collections.unmodifiableList(list);
-                }
-            }
-        }
-        return (HR) this;
     }
 
     @Override
     public final HR having(IPredicate predicate) {
-        if (!_CollectionUtils.isEmpty(this.groupByList)) {
+        final List<ArmySortItem> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
             this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
         return (HR) this;
@@ -660,7 +636,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
 
     @Override
     public final HR having(IPredicate predicate1, IPredicate predicate2) {
-        if (!_CollectionUtils.isEmpty(this.groupByList)) {
+        final List<ArmySortItem> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
             this.havingList = ArrayUtils.asUnmodifiableList((OperationPredicate) predicate1
                     , (OperationPredicate) predicate2);
         }
@@ -669,23 +646,37 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
 
     @Override
     public final HR having(Supplier<List<IPredicate>> supplier) {
-        if (!_CollectionUtils.isEmpty(this.groupByList)) {
-            this.having(supplier.get());
+        final List<ArmySortItem> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
+            this.havingList = CriteriaUtils.asPredicateList(supplier.get(), _Exceptions::havingIsEmpty);
         }
         return (HR) this;
     }
 
     @Override
     public final HR having(Function<C, List<IPredicate>> function) {
-        if (!_CollectionUtils.isEmpty(this.groupByList)) {
-            this.having(function.apply(this.criteria));
+        final List<ArmySortItem> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
+            this.havingList = CriteriaUtils.asPredicateList(function.apply(this.criteria), _Exceptions::havingIsEmpty);
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(Consumer<List<IPredicate>> consumer) {
+        final List<ArmySortItem> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
+            final List<IPredicate> havingList = new ArrayList<>();
+            consumer.accept(havingList);
+            this.havingList = CriteriaUtils.asPredicateList(havingList, _Exceptions::havingIsEmpty);
         }
         return (HR) this;
     }
 
     @Override
     public final HR ifHaving(@Nullable IPredicate predicate) {
-        if (predicate != null && !_CollectionUtils.isEmpty(this.groupByList)) {
+        final List<ArmySortItem> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0 && predicate != null) {
             this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
         return (HR) this;
@@ -693,11 +684,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
 
     @Override
     public final HR ifHaving(Supplier<List<IPredicate>> supplier) {
-        if (!_CollectionUtils.isEmpty(this.groupByList)) {
+        final List<ArmySortItem> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
             final List<IPredicate> list;
             list = supplier.get();
-            if (!_CollectionUtils.isEmpty(list)) {
-                this.having(list);
+            if (list != null && list.size() > 0) {
+                this.havingList = CriteriaUtils.asPredicateList(list, _Exceptions::havingIsEmpty);
             }
         }
         return (HR) this;
@@ -705,11 +697,12 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
 
     @Override
     public final HR ifHaving(Function<C, List<IPredicate>> function) {
-        if (!_CollectionUtils.isEmpty(this.groupByList)) {
+        final List<ArmySortItem> groupByList = this.groupByList;
+        if (groupByList != null && groupByList.size() > 0) {
             final List<IPredicate> list;
             list = function.apply(this.criteria);
-            if (!_CollectionUtils.isEmpty(list)) {
-                this.having(list);
+            if (list != null && list.size() > 0) {
+                this.havingList = CriteriaUtils.asPredicateList(list, _Exceptions::havingIsEmpty);
             }
         }
         return (HR) this;
@@ -723,7 +716,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     }
 
     @Override
-    public final List<? extends SQLModifier> modifierList() {
+    public final List<? extends SQLWords> modifierList() {
         return this.modifierList;
     }
 
@@ -824,8 +817,8 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
         }
         if (fromAsQueryMethod && this instanceof UnionAndRowSet) {
             final UnionAndRowSet union = (UnionAndRowSet) this;
-            final Query.QuerySpec<Q> spec;
-            spec = (Query.QuerySpec<Q>) createUnionRowSet(union.leftRowSet(), union.unionType(), thisQuery);
+            final Query._QuerySpec<Q> spec;
+            spec = (Query._QuerySpec<Q>) createUnionRowSet(union.leftRowSet(), union.unionType(), thisQuery);
             resultQuery = spec.asQuery();
         } else {
             resultQuery = thisQuery;
@@ -872,7 +865,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
 
 
     private <S extends SelectItem> SR innerNonSafeSelect(@Nullable List<Hint> hintList
-            , @Nullable List<? extends SQLModifier> modifierList, List<S> selectItemList) {
+            , @Nullable List<? extends SQLWords> modifierList, List<S> selectItemList) {
         if (hintList != null) {
             this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
         }
@@ -885,7 +878,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
         return (SR) this;
     }
 
-    private <S extends SelectItem> SR innerNonSafeSelect(@Nullable SQLModifier modifier, List<S> selectItemList) {
+    private <S extends SelectItem> SR innerNonSafeSelect(@Nullable SQLWords modifier, List<S> selectItemList) {
         if (modifier != null) {
             this.modifierList = Collections.singletonList(modifier);
         }
@@ -898,7 +891,7 @@ abstract class SimpleQuery<C, Q extends Query, SR, FT, FS, FP, JT, JS, JP, JE, W
     /**
      * @param selectItemList a unmodified list
      */
-    private <S extends SelectItem> SR innerSafeSelect(@Nullable SQLModifier modifier, List<S> selectItemList) {
+    private <S extends SelectItem> SR innerSafeSelect(@Nullable SQLWords modifier, List<S> selectItemList) {
         if (modifier != null) {
             this.modifierList = Collections.singletonList(modifier);
         }

@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.Hint;
-import io.army.criteria.SQLModifier;
+import io.army.criteria.SQLWords;
 import io.army.criteria.SortItem;
 
 import java.util.List;
@@ -10,7 +10,7 @@ public interface _Query extends _PartRowSet {
 
     List<Hint> hintList();
 
-    List<? extends SQLModifier> modifierList();
+    List<? extends SQLWords> modifierList();
 
 
     List<? extends _TableBlock> tableBlockList();

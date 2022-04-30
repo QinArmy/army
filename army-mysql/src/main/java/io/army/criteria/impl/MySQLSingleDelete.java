@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, WE, WR, WA>
-        implements Query.OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLQuery.PartitionClause<C, PR>
+        implements Statement._OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLQuery._PartitionClause<C, PR>
         , _MySQLSingleDelete, MySQLDelete.SingleDeleteClause<C, DR>, MySQLDelete.SingleDeleteFromClause<DR> {
 
     static <C> MySQLDelete.SingleDeleteSpec<C> simple57(@Nullable C criteria) {

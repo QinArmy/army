@@ -30,45 +30,45 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         C,
         Q,
         Void,                       //WE
-        MySQL57Query.From57Spec<C, Q>, //SR
-        MySQL57Query.IndexHintJoin57Spec<C, Q>, //FT
-        MySQL57Query.Join57Spec<C, Q>,          //FS
-        MySQL57Query.PartitionJoin57Clause<C, Q>, //FP
-        MySQL57Query.IndexPurposeJoin57Clause<C, Q>, //IR
-        MySQL57Query.IndexHintOn57Spec<C, Q>,   //JT
-        Statement.OnClause<C, MySQL57Query.Join57Spec<C, Q>>,            //JS
-        MySQL57Query.PartitionOn57Clause<C, Q>,   //JP
-        MySQL57Query.LestBracket57Clause<C, Q>,//JE
-        MySQL57Query.GroupBy57Spec<C, Q>,       //WR
-        MySQL57Query.WhereAnd57Spec<C, Q>,     //AR
-        MySQL57Query.WithRollup57Spec<C, Q>,  //GR
-        MySQL57Query.OrderBy57Spec<C, Q>,    //HR
-        MySQL57Query.Limit57Spec<C, Q>,     //OR
-        MySQL57Query.Lock57Spec<C, Q>,    //LR
-        MySQL57Query.UnionOrderBy57Spec<C, Q>,   //UR
-        MySQL57Query.Select57Clause<C, Q>>   //SP
-        implements MySQL57Query, MySQL57Query.Select57Clause<C, Q>, MySQL57Query.From57Spec<C, Q>
-        , MySQL57Query.Join57Spec<C, Q>, MySQL57Query.WhereAnd57Spec<C, Q>, MySQL57Query.WithRollup57Spec<C, Q>
-        , MySQL57Query.Having57Spec<C, Q>, MySQL57Query.IndexHintJoin57Spec<C, Q>, _MySQL57Query
-        , MySQL57Query.IndexPurposeJoin57Clause<C, Q> {
+        MySQL57Query._FromSpec<C, Q>, //SR
+        MySQL57Query._IndexHintJoinSpec<C, Q>, //FT
+        MySQL57Query._JoinSpec<C, Q>,          //FS
+        MySQL57Query._PartitionJoinClause<C, Q>, //FP
+        MySQL57Query._IndexPurposeJoinClause<C, Q>, //IR
+        MySQL57Query._IndexHintOnSpec<C, Q>,   //JT
+        Statement._OnClause<C, MySQL57Query._JoinSpec<C, Q>>,            //JS
+        MySQL57Query._PartitionOnClause<C, Q>,   //JP
+        MySQL57Query._LestBracket57Clause<C, Q>,//JE
+        MySQL57Query._GroupBySpec<C, Q>,       //WR
+        MySQL57Query._WhereAndSpec<C, Q>,     //AR
+        MySQL57Query._WithRollupSpec<C, Q>,  //GR
+        MySQL57Query._OrderBySpec<C, Q>,    //HR
+        MySQL57Query._LimitSpec<C, Q>,     //OR
+        MySQL57Query._LockSpec<C, Q>,    //LR
+        MySQL57Query._UnionOrderBySpec<C, Q>,   //UR
+        MySQL57Query._Select57Clause<C, Q>>   //SP
+        implements MySQL57Query, MySQL57Query._Select57Clause<C, Q>, MySQL57Query._FromSpec<C, Q>
+        , MySQL57Query._JoinSpec<C, Q>, MySQL57Query._WhereAndSpec<C, Q>, MySQL57Query._WithRollupSpec<C, Q>
+        , MySQL57Query._HavingSpec<C, Q>, MySQL57Query._IndexHintJoinSpec<C, Q>, _MySQL57Query
+        , MySQL57Query._IndexPurposeJoinClause<C, Q> {
 
 
-    static <C> Select57Clause<C, Select> simpleSelect(@Nullable C criteria) {
+    static <C> _Select57Clause<C, Select> simpleSelect(@Nullable C criteria) {
         return new SimpleSelect<>(criteria);
     }
 
-    static <C> Select57Clause<C, SubQuery> subQuery(@Nullable C criteria) {
+    static <C> _Select57Clause<C, SubQuery> subQuery(@Nullable C criteria) {
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C> Select57Clause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
+    static <C> _Select57Clause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(criteria);
     }
 
 
     @SuppressWarnings("unchecked")
-    static <C, Q extends Query> Select57Clause<C, Q> unionAndSelect(final Q left, final UnionType unionType) {
-        final Select57Clause<C, ?> select57Spec;
+    static <C, Q extends Query> _Select57Clause<C, Q> unionAndSelect(final Q left, final UnionType unionType) {
+        final _Select57Clause<C, ?> select57Spec;
         if (left instanceof Select) {
             select57Spec = new UnionAndSelect<>((Select) left, unionType);
         } else if (left instanceof ScalarSubQuery) {
@@ -78,13 +78,13 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
-        return (Select57Clause<C, Q>) select57Spec;
+        return (_Select57Clause<C, Q>) select57Spec;
     }
 
 
     private boolean withRollup;
 
-    private SQLModifier lockModifier;
+    private SQLWords lockModifier;
 
     private MySQL57SimpleQuery(@Nullable C criteria) {
         super(CriteriaContexts.queryContext(criteria));
@@ -100,7 +100,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     @Override
-    public final Having57Spec<C, Q> withRollup() {
+    public final _HavingSpec<C, Q> withRollup() {
         if (hasGroupBy()) {
             this.withRollup = true;
         }
@@ -108,7 +108,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Having57Spec<C, Q> ifWithRollup(Predicate<C> predicate) {
+    public final _HavingSpec<C, Q> ifWithRollup(Predicate<C> predicate) {
         if (hasGroupBy() && predicate.test(this.criteria)) {
             this.withRollup = true;
         }
@@ -116,19 +116,19 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Union57Spec<C, Q> forUpdate() {
+    public final _UnionSpec<C, Q> forUpdate() {
         this.lockModifier = MySQLLock.FOR_UPDATE;
         return this;
     }
 
     @Override
-    public final Union57Spec<C, Q> lockInShareMode() {
+    public final _UnionSpec<C, Q> lockInShareMode() {
         this.lockModifier = MySQLLock.LOCK_IN_SHARE_MODE;
         return this;
     }
 
     @Override
-    public final Union57Spec<C, Q> ifForUpdate(Predicate<C> predicate) {
+    public final _UnionSpec<C, Q> ifForUpdate(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.lockModifier = MySQLLock.FOR_UPDATE;
         }
@@ -136,7 +136,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final Union57Spec<C, Q> ifLockInShareMode(Predicate<C> predicate) {
+    public final _UnionSpec<C, Q> ifLockInShareMode(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
             this.lockModifier = MySQLLock.LOCK_IN_SHARE_MODE;
         }
@@ -144,7 +144,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final SQLModifier lockMode() {
+    public final SQLWords lockMode() {
         return this.lockModifier;
     }
 
@@ -169,33 +169,33 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     @Override
-    final Select57Clause<C, Q> asUnionAndRowSet(UnionType unionType) {
+    final _Select57Clause<C, Q> asUnionAndRowSet(UnionType unionType) {
         return MySQL57SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
 
     @Override
-    final PartitionOn57Clause<C, Q> createNextClauseWithOnClause(_JoinType joinType, TableMeta<?> table) {
+    final _PartitionOnClause<C, Q> createNextClauseWithOnClause(_JoinType joinType, TableMeta<?> table) {
         return new PartitionOnBlock<>(joinType, table, this);
     }
 
     @Override
-    final IndexHintOn57Spec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _IndexHintOnSpec<C, Q> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return new IndexHintOnBlock<>(joinType, table, tableAlias, this);
     }
 
     @Override
-    final Statement.OnClause<C, MySQL57Query.Join57Spec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final _OnClause<C, _JoinSpec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
         Objects.requireNonNull(tableItem);
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
     }
 
     @Override
-    final UnionOrderBy57Spec<C, Q> createBracketQuery(RowSet rowSet) {
+    final _UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
         return MySQL57UnionQuery.bracketQuery(rowSet);
     }
 
     @Override
-    final UnionOrderBy57Spec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+    final _UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
         return MySQL57UnionQuery.unionQuery((Q) left, unionType, right);
     }
 
@@ -205,7 +205,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final PartitionJoin57Clause<C, Q> createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+    final _PartitionJoinClause<C, Q> createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
         return new PartitionJoinImpl<>(joinType, table, this);
     }
 
@@ -343,8 +343,8 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     private static final class PartitionJoinImpl<C, Q extends Query>
-            extends MySQLPartitionClause<C, AsJoin57Clause<C, Q>>
-            implements PartitionJoin57Clause<C, Q>, AsJoin57Clause<C, Q> {
+            extends MySQLPartitionClause<C, _AsJoinClause<C, Q>>
+            implements _PartitionJoinClause<C, Q>, _AsJoinClause<C, Q> {
 
         private final _JoinType joinType;
 
@@ -360,7 +360,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
         @Override
-        public IndexHintJoin57Spec<C, Q> as(String alias) {
+        public _IndexHintJoinSpec<C, Q> as(String alias) {
             Objects.requireNonNull(alias);
             final List<String> partitionList = this.partitionList;
             final MySQLNoOnBlock block;
@@ -383,10 +383,10 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
      */
     private static final class IndexHintOnBlock<C, Q extends Query> extends MySQLIndexHintOnBlock<
             C,
-            MySQL57Query.IndexPurposeOn57Spec<C, Q>,
-            MySQL57Query.IndexHintOn57Spec<C, Q>,
-            MySQL57Query.Join57Spec<C, Q>>
-            implements MySQL57Query.IndexPurposeOn57Spec<C, Q>, MySQL57Query.IndexHintOn57Spec<C, Q> {
+            _IndexPurposeOn57Clause<C, Q>,
+            _IndexHintOnSpec<C, Q>,
+            _JoinSpec<C, Q>>
+            implements _IndexPurposeOn57Clause<C, Q>, _IndexHintOnSpec<C, Q> {
 
         private final List<String> partitionList;
 
@@ -414,8 +414,8 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
      * @see #createNextClauseWithOnClause(_JoinType, TableMeta)
      */
     private static final class PartitionOnBlock<C, Q extends Query>
-            extends MySQLPartitionClause<C, AsOn57Clause<C, Q>>
-            implements AsOn57Clause<C, Q>, PartitionOn57Clause<C, Q> {
+            extends MySQLPartitionClause<C, _AsOnClause<C, Q>>
+            implements _AsOnClause<C, Q>, _PartitionOnClause<C, Q> {
 
         private final _JoinType joinType;
 
@@ -431,7 +431,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
         @Override
-        public IndexHintOn57Spec<C, Q> as(String alias) {
+        public _IndexHintOnSpec<C, Q> as(String alias) {
             Objects.requireNonNull(alias);
             final List<String> partitionList = this.partitionList;
             final IndexHintOnBlock<C, Q> hintOnBlock;

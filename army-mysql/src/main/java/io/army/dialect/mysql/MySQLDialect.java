@@ -247,7 +247,7 @@ final class MySQLDialect extends MySQL {
         if (indexHintList.size() == 0) {
             return;
         }
-        SQLModifier purpose;
+        SQLWords purpose;
         List<String> indexNameList;
         int indexSize;
         for (_IndexHint indexHint : indexHintList) {

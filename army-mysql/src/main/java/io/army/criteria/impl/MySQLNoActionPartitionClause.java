@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 @Deprecated
 @SuppressWarnings("unchecked")
-abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery.PartitionClause<C, PR> {
+abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery._PartitionClause<C, PR> {
 
 
     @Override

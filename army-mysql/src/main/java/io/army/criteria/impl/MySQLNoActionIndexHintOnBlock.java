@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 abstract class MySQLNoActionIndexHintOnBlock<C, IR, IC, OR> extends NoActionOnClause<C, OR>
-        implements MySQLQuery.IndexHintClause<C, IR, IC>, MySQLQuery.IndexPurposeClause<C, IC> {
+        implements MySQLQuery._IndexHintClause<C, IR, IC>, MySQLQuery._IndexPurposeClause<C, IC> {
 
     MySQLNoActionIndexHintOnBlock(OR stmt) {
         super(stmt);

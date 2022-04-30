@@ -1,16 +1,16 @@
 package io.army.criteria.impl.inner.mysql;
 
-import io.army.criteria.SQLModifier;
+import io.army.criteria.SQLWords;
 import io.army.lang.Nullable;
 
 import java.util.List;
 
 public interface _IndexHint {
 
-    SQLModifier command();
+    SQLWords command();
 
     @Nullable
-    SQLModifier purpose();
+    SQLWords purpose();
 
     List<String> indexNameList();
 

@@ -33,6 +33,10 @@ public interface DialectStatement extends Statement {
 
         WE with(Function<C, List<Cte>> function);
 
+        WE ifWith(Supplier<List<Cte>> supplier);
+
+        WE ifWith(Function<C, List<Cte>> function);
+
         WE withRecursive(String cteName, Supplier<? extends SubQuery> supplier);
 
         WE withRecursive(String cteName, Function<C, ? extends SubQuery> function);
@@ -41,28 +45,33 @@ public interface DialectStatement extends Statement {
 
         WE withRecursive(Function<C, List<Cte>> function);
 
+        WE ifWithRecursive(Supplier<List<Cte>> supplier);
+
+        WE ifWithRecursive(Function<C, List<Cte>> function);
+
+
     }
 
 
     interface DialectSelectClause<C, SR> extends Query.SelectClause<C, SR> {
 
-        SR select(SQLModifier modifier, SelectItem selectItem);
+        SR select(SQLWords modifier, SelectItem selectItem);
 
-        SR select(SQLModifier modifier, SelectItem selectItem1, SelectItem selectItem2);
+        SR select(SQLWords modifier, SelectItem selectItem1, SelectItem selectItem2);
 
-        SR select(SQLModifier modifier, Consumer<List<SelectItem>> consumer);
+        SR select(SQLWords modifier, Consumer<List<SelectItem>> consumer);
 
-        <S extends SelectItem, M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Function<C, List<S>> function);
+        <S extends SelectItem, M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectItem, M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Supplier<List<S>> supplier);
+        <S extends SelectItem, M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Supplier<List<S>> supplier);
 
-        <M extends SQLModifier> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Consumer<List<SelectItem>> consumer);
+        <M extends SQLWords> SR select(Supplier<List<Hint>> hints, List<M> modifiers, Consumer<List<SelectItem>> consumer);
 
-        <S extends SelectItem, M extends SQLModifier> SR select(List<M> modifiers, Function<C, List<S>> function);
+        <S extends SelectItem, M extends SQLWords> SR select(List<M> modifiers, Function<C, List<S>> function);
 
-        <S extends SelectItem, M extends SQLModifier> SR select(List<M> modifiers, Supplier<List<S>> supplier);
+        <S extends SelectItem, M extends SQLWords> SR select(List<M> modifiers, Supplier<List<S>> supplier);
 
-        <M extends SQLModifier> SR select(List<M> modifiers, Consumer<List<SelectItem>> consumer);
+        <M extends SQLWords> SR select(List<M> modifiers, Consumer<List<SelectItem>> consumer);
 
 
     }
@@ -173,7 +182,7 @@ public interface DialectStatement extends Statement {
      * @param <SP> next clause java type
      * @since 1.0
      */
-    interface DialectUnionClause<C, UR, SP> extends Query.QueryUnionClause<C, UR, SP> {
+    interface DialectUnionClause<C, UR, SP> extends Query._QueryUnionClause<C, UR, SP> {
 
     }
 

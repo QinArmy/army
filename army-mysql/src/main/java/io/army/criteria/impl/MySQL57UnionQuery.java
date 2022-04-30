@@ -20,15 +20,15 @@ import io.army.util._Exceptions;
 abstract class MySQL57UnionQuery<C, Q extends Query> extends UnionRowSet<
         C,
         Q,
-        MySQL57Query.UnionOrderBy57Spec<C, Q>,
-        MySQL57Query.UnionLimit57Spec<C, Q>,
-        MySQL57Query.Union57Spec<C, Q>,
-        MySQL57Query.Select57Clause<C, Q>>
-        implements MySQL57Query, MySQL57Query.UnionOrderBy57Spec<C, Q>, _UnionRowSet {
+        MySQL57Query._UnionOrderBySpec<C, Q>,
+        MySQL57Query._UnionLimitSpec<C, Q>,
+        MySQL57Query._UnionSpec<C, Q>,
+        MySQL57Query._Select57Clause<C, Q>>
+        implements MySQL57Query, MySQL57Query._UnionOrderBySpec<C, Q>, _UnionRowSet {
 
-    static <C, Q extends Query> UnionOrderBy57Spec<C, Q> bracketQuery(final RowSet query) {
+    static <C, Q extends Query> _UnionOrderBySpec<C, Q> bracketQuery(final RowSet query) {
         query.prepared();
-        final UnionOrderBy57Spec<C, ?> spec;
+        final _UnionOrderBySpec<C, ?> spec;
         if (query instanceof Select) {
             spec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
@@ -38,11 +38,11 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends UnionRowSet<
         } else {
             throw _Exceptions.unknownRowSetType(query);
         }
-        return (UnionOrderBy57Spec<C, Q>) spec;
+        return (_UnionOrderBySpec<C, Q>) spec;
     }
 
 
-    static <C, Q extends Query> UnionOrderBy57Spec<C, Q> unionQuery(Q left, UnionType unionType, RowSet right) {
+    static <C, Q extends Query> _UnionOrderBySpec<C, Q> unionQuery(Q left, UnionType unionType, RowSet right) {
         switch (unionType) {
             case UNION:
             case UNION_ALL:
@@ -52,7 +52,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends UnionRowSet<
                 throw _Exceptions.castCriteriaApi();
         }
         left.prepared();
-        final UnionOrderBy57Spec<C, ?> spec;
+        final _UnionOrderBySpec<C, ?> spec;
         if (left instanceof Select) {
             if (!(right instanceof Select)) {
                 throw errorRight(Select.class);
@@ -71,7 +71,7 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends UnionRowSet<
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
-        return (UnionOrderBy57Spec<C, Q>) spec;
+        return (_UnionOrderBySpec<C, Q>) spec;
     }
 
     private static CriteriaException errorRight(Class<? extends Query> clazz) {
@@ -87,17 +87,17 @@ abstract class MySQL57UnionQuery<C, Q extends Query> extends UnionRowSet<
 
 
     @Override
-    final Select57Clause<C, Q> asUnionAndRowSet(UnionType unionType) {
+    final _Select57Clause<C, Q> asUnionAndRowSet(UnionType unionType) {
         return MySQL57SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
 
     @Override
-    final UnionOrderBy57Spec<C, Q> createBracketQuery(RowSet rowSet) {
+    final _UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
         return MySQL57UnionQuery.bracketQuery(rowSet);
     }
 
     @Override
-    final UnionOrderBy57Spec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+    final _UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
         return MySQL57UnionQuery.unionQuery((Q) left, unionType, right);
     }
 

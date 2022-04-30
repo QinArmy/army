@@ -75,7 +75,7 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface SinglePartitionSpec<C>
-            extends MySQLQuery.PartitionClause<C, Statement.AsClause<MySQLUpdate.SingleIndexHintSpec<C>>> {
+            extends MySQLQuery._PartitionClause<C, _AsClause<SingleIndexHintSpec<C>>> {
 
     }
 
@@ -86,12 +86,12 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface SingleIndexHintSpec<C>
-            extends MySQLQuery.IndexHintClause<C, MySQLUpdate.IndexOrderBySpec<C>, MySQLUpdate.SingleIndexHintSpec<C>>
+            extends MySQLQuery._IndexHintClause<C, IndexOrderBySpec<C>, SingleIndexHintSpec<C>>
             , MySQLUpdate.SingleSetSpec<C> {
 
     }
 
-    interface IndexOrderBySpec<C> extends MySQLQuery.IndexOrderByClause<C, MySQLUpdate.SingleIndexHintSpec<C>> {
+    interface IndexOrderBySpec<C> extends MySQLQuery._IndexOrderByClause<C, SingleIndexHintSpec<C>> {
 
     }
 
@@ -121,7 +121,7 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL single-table update syntax and clause.
      * </p>
      */
-    interface SingleWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLUpdate.SingleWhereAndSpec<C>>
+    interface SingleWhereAndSpec<C> extends _WhereAndClause<C, SingleWhereAndSpec<C>>
             , MySQLUpdate.OrderBySpec<C> {
 
     }
@@ -131,7 +131,7 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL single-table update syntax order by clause.
      * </p>
      */
-    interface OrderBySpec<C> extends Query.OrderByClause<C, MySQLUpdate.LimitSpec<C>>
+    interface OrderBySpec<C> extends _OrderByClause<C, LimitSpec<C>>
             , MySQLUpdate.LimitSpec<C> {
 
     }
@@ -169,7 +169,7 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface BatchSinglePartitionSpec<C>
-            extends MySQLQuery.PartitionClause<C, Statement.AsClause<MySQLUpdate.BatchSingleIndexHintSpec<C>>> {
+            extends MySQLQuery._PartitionClause<C, _AsClause<BatchSingleIndexHintSpec<C>>> {
 
     }
 
@@ -179,12 +179,12 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface BatchSingleIndexHintSpec<C>
-            extends MySQLQuery.IndexHintClause<C, MySQLUpdate.BatchIndexOrderBySpec<C>, MySQLUpdate.BatchSingleIndexHintSpec<C>>
+            extends MySQLQuery._IndexHintClause<C, BatchIndexOrderBySpec<C>, BatchSingleIndexHintSpec<C>>
             , MySQLUpdate.BatchSingleSetSpec<C> {
 
     }
 
-    interface BatchIndexOrderBySpec<C> extends MySQLQuery.IndexOrderByClause<C, MySQLUpdate.BatchSingleIndexHintSpec<C>> {
+    interface BatchIndexOrderBySpec<C> extends MySQLQuery._IndexOrderByClause<C, BatchSingleIndexHintSpec<C>> {
 
     }
 
@@ -213,7 +213,7 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL batch single-table update syntax and clause.
      * </p>
      */
-    interface BatchSingleWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLUpdate.BatchSingleWhereAndSpec<C>>
+    interface BatchSingleWhereAndSpec<C> extends _WhereAndClause<C, BatchSingleWhereAndSpec<C>>
             , MySQLUpdate.BatchOrderBySpec<C> {
 
     }
@@ -223,7 +223,7 @@ public interface MySQLUpdate extends Update {
      * This representing MySQL batch single-table update syntax order by clause.
      * </p>
      */
-    interface BatchOrderBySpec<C> extends Query.OrderByClause<C, MySQLUpdate.BatchLimitSpec<C>>
+    interface BatchOrderBySpec<C> extends _OrderByClause<C, BatchLimitSpec<C>>
             , MySQLUpdate.BatchLimitSpec<C> {
 
     }
@@ -296,7 +296,7 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface MultiPartitionJoinSpec<C>
-            extends MySQLQuery.PartitionClause<C, Statement.AsClause<IndexHintJoinSpec<C>>> {
+            extends MySQLQuery._PartitionClause<C, _AsClause<IndexHintJoinSpec<C>>> {
 
     }
 
@@ -307,12 +307,12 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface IndexHintJoinSpec<C>
-            extends MySQLQuery.IndexHintClause<C, MySQLUpdate.IndexJoinJoinSpec<C>, MySQLUpdate.IndexHintJoinSpec<C>>
+            extends MySQLQuery._IndexHintClause<C, IndexJoinJoinSpec<C>, IndexHintJoinSpec<C>>
             , MySQLUpdate.MultiJoinSpec<C> {
 
     }
 
-    interface IndexJoinJoinSpec<C> extends MySQLQuery.IndexJoinClause<C, MySQLUpdate.IndexHintJoinSpec<C>> {
+    interface IndexJoinJoinSpec<C> extends MySQLQuery._IndexJoinClause<C, IndexHintJoinSpec<C>> {
 
     }
 
@@ -321,7 +321,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL multi-table update syntax partition clause(after join clause).
      * </p>
      */
-    interface MultiPartitionOnSpec<C> extends MySQLQuery.PartitionClause<C, Statement.AsClause<MultiIndexHintOnSpec<C>>> {
+    interface MultiPartitionOnSpec<C> extends MySQLQuery._PartitionClause<C, _AsClause<MultiIndexHintOnSpec<C>>> {
 
     }
 
@@ -330,12 +330,12 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL multi-table update syntax index hint clause(after join clause).
      * </p>
      */
-    interface MultiIndexHintOnSpec<C> extends MySQLQuery.IndexHintClause<C, MySQLUpdate.IndexJoinOnSpec<C>, MySQLUpdate.MultiIndexHintOnSpec<C>>
+    interface MultiIndexHintOnSpec<C> extends MySQLQuery._IndexHintClause<C, IndexJoinOnSpec<C>, MultiIndexHintOnSpec<C>>
             , MySQLUpdate.MultiOnSpec<C> {
 
     }
 
-    interface IndexJoinOnSpec<C> extends MySQLQuery.IndexJoinClause<C, MySQLUpdate.MultiIndexHintOnSpec<C>> {
+    interface IndexJoinOnSpec<C> extends MySQLQuery._IndexJoinClause<C, MultiIndexHintOnSpec<C>> {
 
     }
 
@@ -345,12 +345,12 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL multi-table update syntax join clause.
      * This interface extends below interfaces:
      * <ul>
-     *     <li>{@link  MySQLQuery.MySQLJoinClause}</li>
+     *     <li>{@link  MySQLQuery._MySQLJoinClause}</li>
      *     <li>{@link MySQLUpdate.MultiSetSpec}</li>
      * </ul>
      * </p>
      */
-    interface MultiJoinSpec<C> extends MySQLQuery.MySQLJoinClause<C, MySQLUpdate.MultiIndexHintOnSpec<C>, MySQLUpdate.MultiOnSpec<C>, MySQLUpdate.MultiPartitionOnSpec<C>>
+    interface MultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, MultiIndexHintOnSpec<C>, MultiOnSpec<C>, MultiPartitionOnSpec<C>>
             , MySQLUpdate.MultiSetSpec<C> {
 
 
@@ -361,7 +361,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL multi-table update syntax on clause.
      * </p>
      */
-    interface MultiOnSpec<C> extends Statement.OnClause<C, MySQLUpdate.MultiJoinSpec<C>> {
+    interface MultiOnSpec<C> extends _OnClause<C, MultiJoinSpec<C>> {
 
 
     }
@@ -391,7 +391,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL multi-table update syntax and clause.
      * </p>
      */
-    interface MultiWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLUpdate.MultiWhereAndSpec<C>>
+    interface MultiWhereAndSpec<C> extends _WhereAndClause<C, MultiWhereAndSpec<C>>
             , Update.UpdateSpec {
 
 
@@ -424,7 +424,7 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface BatchMultiPartitionJoinSpec<C>
-            extends MySQLQuery.PartitionClause<C, Statement.AsClause<MySQLUpdate.BatchMultiIndexHintJoinSpec<C>>> {
+            extends MySQLQuery._PartitionClause<C, _AsClause<BatchMultiIndexHintJoinSpec<C>>> {
 
     }
 
@@ -434,12 +434,12 @@ public interface MySQLUpdate extends Update {
      * </p>
      */
     interface BatchMultiIndexHintJoinSpec<C>
-            extends MySQLQuery.IndexHintClause<C, MySQLUpdate.BatchIndexJoinJoinSpec<C>, MySQLUpdate.BatchMultiIndexHintJoinSpec<C>>
+            extends MySQLQuery._IndexHintClause<C, BatchIndexJoinJoinSpec<C>, BatchMultiIndexHintJoinSpec<C>>
             , MySQLUpdate.BatchMultiJoinSpec<C> {
 
     }
 
-    interface BatchIndexJoinJoinSpec<C> extends MySQLQuery.IndexJoinClause<C, MySQLUpdate.BatchMultiIndexHintJoinSpec<C>> {
+    interface BatchIndexJoinJoinSpec<C> extends MySQLQuery._IndexJoinClause<C, BatchMultiIndexHintJoinSpec<C>> {
 
     }
 
@@ -448,7 +448,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL batch multi-table update syntax partition clause(after join clause).
      * </p>
      */
-    interface BatchMultiPartitionOnSpec<C> extends MySQLQuery.PartitionClause<C, Statement.AsClause<MySQLUpdate.BatchMultiIndexHintOnSpec<C>>> {
+    interface BatchMultiPartitionOnSpec<C> extends MySQLQuery._PartitionClause<C, _AsClause<BatchMultiIndexHintOnSpec<C>>> {
 
     }
 
@@ -458,12 +458,12 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL batch multi-table update syntax index hint clause(after join clause).
      * </p>
      */
-    interface BatchMultiIndexHintOnSpec<C> extends MySQLQuery.IndexHintClause<C, MySQLUpdate.BatchIndexJoinOnSpec<C>, MySQLUpdate.BatchMultiIndexHintOnSpec<C>>
+    interface BatchMultiIndexHintOnSpec<C> extends MySQLQuery._IndexHintClause<C, BatchIndexJoinOnSpec<C>, BatchMultiIndexHintOnSpec<C>>
             , MySQLUpdate.BatchMultiOnSpec<C> {
 
     }
 
-    interface BatchIndexJoinOnSpec<C> extends MySQLQuery.IndexJoinClause<C, MySQLUpdate.BatchMultiIndexHintOnSpec<C>> {
+    interface BatchIndexJoinOnSpec<C> extends MySQLQuery._IndexJoinClause<C, BatchMultiIndexHintOnSpec<C>> {
 
     }
 
@@ -473,12 +473,12 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL batch multi-table update syntax join clause.
      * This interface extends below interfaces:
      * <ul>
-     *     <li>{@link  MySQLQuery.MySQLJoinClause}</li>
+     *     <li>{@link  MySQLQuery._MySQLJoinClause}</li>
      *     <li>{@link MySQLUpdate.BatchMultiSetSpec}</li>
      * </ul>
      * </p>
      */
-    interface BatchMultiJoinSpec<C> extends MySQLQuery.MySQLJoinClause<C, MySQLUpdate.BatchMultiIndexHintOnSpec<C>, MySQLUpdate.BatchMultiOnSpec<C>, MySQLUpdate.BatchMultiPartitionOnSpec<C>>
+    interface BatchMultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, BatchMultiIndexHintOnSpec<C>, BatchMultiOnSpec<C>, BatchMultiPartitionOnSpec<C>>
             , MySQLUpdate.BatchMultiSetSpec<C> {
 
 
@@ -489,7 +489,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL batch multi-table update syntax on clause.
      * </p>
      */
-    interface BatchMultiOnSpec<C> extends Statement.OnClause<C, MySQLUpdate.BatchMultiJoinSpec<C>> {
+    interface BatchMultiOnSpec<C> extends _OnClause<C, BatchMultiJoinSpec<C>> {
 
 
     }
@@ -520,7 +520,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL batch multi-table update syntax and clause.
      * </p>
      */
-    interface BatchMultiWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLUpdate.BatchMultiWhereAndSpec<C>>
+    interface BatchMultiWhereAndSpec<C> extends _WhereAndClause<C, BatchMultiWhereAndSpec<C>>
             , Statement.BatchParamClause<C, Update.UpdateSpec> {
 
 

@@ -2,7 +2,6 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Query;
-import io.army.criteria.Window;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -40,7 +39,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <SR> next clause java type
      * @since 1.0
      */
-    interface MySQLSelectClause<C, SR> extends DialectStatement.DialectSelectClause<C, SR> {
+    interface _MySQLSelectClause<C, SR> extends DialectStatement.DialectSelectClause<C, SR> {
 
     }
 
@@ -62,18 +61,18 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <FB> next clause java type,it's sub interface of {@link LeftBracketClause}.
      * @since 1.0
      */
-    interface MySQLFromClause<C, FT, FS, FP, FB> extends DialectStatement.DialectFromClause<C, FT, FS, FP, FB> {
+    interface _MySQLFromClause<C, FT, FS, FP, FB> extends DialectStatement.DialectFromClause<C, FT, FS, FP, FB> {
 
 
     }
 
     /**
      * @param <C>  criteria type use to create dynamic statement.
-     * @param <JT> index hint clause,see {@link MySQLQuery.IndexHintClause}
-     * @param <JS> on clause,see {@link Query.OnClause}
-     * @param <JP> partition clause, see {@link MySQLQuery.PartitionClause}
+     * @param <JT> index hint clause,see {@link _IndexHintClause}
+     * @param <JS> on clause,see {@link _OnClause}
+     * @param <JP> partition clause, see {@link _PartitionClause}
      */
-    interface MySQLJoinClause<C, JT, JS, JP, JC, JD, JE, JF> extends DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF> {
+    interface _MySQLJoinClause<C, JT, JS, JP, JC, JD, JE, JF> extends DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF> {
 
     }
 
@@ -90,7 +89,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> java criteria object java type
      * @since 1.0
      */
-    interface MySQLJoinBracketClause<C, JT, JS, JP> extends DialectLeftBracketClause<C, JT, JS, JP> {
+    interface _MySQLJoinBracketClause<C, JT, JS, JP> extends DialectLeftBracketClause<C, JT, JS, JP> {
 
     }
 
@@ -108,7 +107,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> java criteria object java type
      * @since 1.0
      */
-    interface PartitionClause<C, PR> {
+    interface _PartitionClause<C, PR> {
 
         PR partition(String partitionName);
 
@@ -142,7 +141,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> java criteria object java type
      * @since 1.0
      */
-    interface IndexHintClause<C, IR, IC> {
+    interface _IndexHintClause<C, IR, IC> {
 
         IR useIndex();
 
@@ -193,7 +192,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> java criteria object java type
      * @since 1.0
      */
-    interface IndexOrderByClause<C, IC> {
+    interface _IndexOrderByClause<C, IC> {
 
         IC forOrderBy(List<String> indexList);
 
@@ -213,7 +212,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> java criteria object java type
      * @since 1.0
      */
-    interface IndexJoinClause<C, IC> {
+    interface _IndexJoinClause<C, IC> {
 
         IC forJoin(List<String> indexList);
 
@@ -234,8 +233,8 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> java criteria object java type
      * @since 1.0
      */
-    interface IndexPurposeClause<C, IC> extends MySQLQuery.IndexOrderByClause<C, IC>
-            , MySQLQuery.IndexJoinClause<C, IC> {
+    interface _IndexPurposeClause<C, IC> extends _IndexOrderByClause<C, IC>
+            , _IndexJoinClause<C, IC> {
 
         IC forGroupBy(List<String> indexList);
 
@@ -278,7 +277,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> java criteria object java type
      * @since 1.0
      */
-    interface LockClause<C, LO> {
+    interface _LockClause<C, LO> {
 
         LO forUpdate();
 
@@ -287,25 +286,6 @@ public interface MySQLQuery extends Query, DialectStatement {
         LO ifForUpdate(Predicate<C> predicate);
 
         LO ifLockInShareMode(Predicate<C> predicate);
-
-    }
-
-    /**
-     * <p>
-     * This interface representing WINDOW clause As of MySQL 8.0.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  java criteria object java type
-     * @param <WR> next clause java type
-     * @since 1.0
-     */
-    interface WindowClause<C, WR> extends Window.WindowClause<C, WR> {
-
 
     }
 
@@ -324,7 +304,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <LS> next clause java type
      * @since 1.0
      */
-    interface Lock80Clause<C, LU, LS> {
+    interface _Lock80Clause<C, LU, LS> {
 
         LU forUpdate();
 
@@ -354,7 +334,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <LO> next clause java type
      * @since 1.0
      */
-    interface Lock80OfClause<C, LO> {
+    interface _Lock80OfClause<C, LO> {
 
         LO of(String tableAlias);
 
@@ -447,7 +427,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>INTO clause for MySQL</li>
-     *          <li>method {@link QuerySpec#asQuery()}</li>
+     *          <li>method {@link _QuerySpec#asQuery()}</li>
      *     </ul>
      * </p>
      * <p>
@@ -460,7 +440,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _IntoSpec<C, Q extends Query> extends _IntoClause<C, QuerySpec<Q>>, Query.QuerySpec<Q> {
+    interface _IntoSpec<C, Q extends Query> extends _IntoClause<C, _QuerySpec<Q>>, _QuerySpec<Q> {
 
     }
 

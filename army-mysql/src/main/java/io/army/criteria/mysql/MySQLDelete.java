@@ -43,7 +43,7 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface SinglePartitionSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.SingleWhereSpec<C>>
+    interface SinglePartitionSpec<C> extends MySQLQuery._PartitionClause<C, SingleWhereSpec<C>>
             , MySQLDelete.SingleWhereSpec<C> {
 
     }
@@ -52,11 +52,11 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface SingleWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLDelete.SingleWhereAndSpec<C>>, MySQLDelete.OrderBySpec<C> {
+    interface SingleWhereAndSpec<C> extends _WhereAndClause<C, SingleWhereAndSpec<C>>, MySQLDelete.OrderBySpec<C> {
 
     }
 
-    interface OrderBySpec<C> extends Query.OrderByClause<C, MySQLDelete.LimitSpec<C>>, MySQLDelete.LimitSpec<C> {
+    interface OrderBySpec<C> extends _OrderByClause<C, LimitSpec<C>>, MySQLDelete.LimitSpec<C> {
 
     }
 
@@ -78,7 +78,7 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface BatchSinglePartitionSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.BatchSingleWhereSpec<C>>
+    interface BatchSinglePartitionSpec<C> extends MySQLQuery._PartitionClause<C, BatchSingleWhereSpec<C>>
             , MySQLDelete.BatchSingleWhereSpec<C> {
 
     }
@@ -89,12 +89,12 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface BatchSingleWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLDelete.BatchSingleWhereAndSpec<C>>
+    interface BatchSingleWhereAndSpec<C> extends _WhereAndClause<C, BatchSingleWhereAndSpec<C>>
             , MySQLDelete.BatchOrderBySpec<C> {
 
     }
 
-    interface BatchOrderBySpec<C> extends Query.OrderByClause<C, MySQLDelete.BatchLimitSpec<C>>
+    interface BatchOrderBySpec<C> extends _OrderByClause<C, BatchLimitSpec<C>>
             , MySQLDelete.BatchLimitSpec<C> {
 
     }
@@ -158,31 +158,31 @@ public interface MySQLDelete extends Delete {
     }
 
 
-    interface MultiPartitionJoinSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.MultiAsJoinSpec<C>> {
+    interface MultiPartitionJoinSpec<C> extends MySQLQuery._PartitionClause<C, MultiAsJoinSpec<C>> {
 
     }
 
-    interface MultiAsJoinSpec<C> extends Statement.AsClause<MySQLDelete.MultiJoinSpec<C>> {
+    interface MultiAsJoinSpec<C> extends _AsClause<MultiJoinSpec<C>> {
 
 
     }
 
 
-    interface MultiJoinSpec<C> extends MySQLQuery.MySQLJoinClause<C, MySQLDelete.MultiOnSpec<C>, MySQLDelete.MultiOnSpec<C>, MySQLDelete.MultiPartitionOnSpec<C>>
+    interface MultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, MultiOnSpec<C>, MultiOnSpec<C>, MultiPartitionOnSpec<C>>
             , MySQLDelete.MultiWhereSpec<C> {
 
     }
 
-    interface MultiPartitionOnSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.MultiAsOnSpec<C>> {
+    interface MultiPartitionOnSpec<C> extends MySQLQuery._PartitionClause<C, MultiAsOnSpec<C>> {
 
     }
 
-    interface MultiAsOnSpec<C> extends Statement.AsClause<MySQLDelete.MultiOnSpec<C>> {
+    interface MultiAsOnSpec<C> extends _AsClause<MultiOnSpec<C>> {
 
 
     }
 
-    interface MultiOnSpec<C> extends Statement.OnClause<C, MySQLDelete.MultiJoinSpec<C>> {
+    interface MultiOnSpec<C> extends _OnClause<C, MultiJoinSpec<C>> {
 
     }
 
@@ -191,7 +191,7 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface MultiWhereAndSpec<C> extends Statement.WhereAndClause<C, MySQLDelete.MultiWhereAndSpec<C>>
+    interface MultiWhereAndSpec<C> extends _WhereAndClause<C, MultiWhereAndSpec<C>>
             , Delete.DeleteSpec {
 
 
@@ -209,31 +209,31 @@ public interface MySQLDelete extends Delete {
     }
 
 
-    interface BatchMultiPartitionJoinSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.BatchMultiAsJoinSpec<C>> {
+    interface BatchMultiPartitionJoinSpec<C> extends MySQLQuery._PartitionClause<C, BatchMultiAsJoinSpec<C>> {
 
     }
 
-    interface BatchMultiAsJoinSpec<C> extends Statement.AsClause<MySQLDelete.BatchMultiJoinSpec<C>> {
+    interface BatchMultiAsJoinSpec<C> extends _AsClause<BatchMultiJoinSpec<C>> {
 
 
     }
 
 
-    interface BatchMultiJoinSpec<C> extends MySQLQuery.MySQLJoinClause<C, MySQLDelete.BatchMultiOnSpec<C>, MySQLDelete.BatchMultiOnSpec<C>, MySQLDelete.BatchMultiPartitionOnSpec<C>>
+    interface BatchMultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, BatchMultiOnSpec<C>, BatchMultiOnSpec<C>, BatchMultiPartitionOnSpec<C>>
             , MySQLDelete.BatchMultiWhereSpec<C> {
 
     }
 
-    interface BatchMultiPartitionOnSpec<C> extends MySQLQuery.PartitionClause<C, MySQLDelete.BatchMultiAsOnSpec<C>> {
+    interface BatchMultiPartitionOnSpec<C> extends MySQLQuery._PartitionClause<C, BatchMultiAsOnSpec<C>> {
 
     }
 
-    interface BatchMultiAsOnSpec<C> extends Statement.AsClause<MySQLDelete.BatchMultiOnSpec<C>> {
+    interface BatchMultiAsOnSpec<C> extends _AsClause<BatchMultiOnSpec<C>> {
 
 
     }
 
-    interface BatchMultiOnSpec<C> extends Statement.OnClause<C, MySQLDelete.BatchMultiJoinSpec<C>> {
+    interface BatchMultiOnSpec<C> extends _OnClause<C, BatchMultiJoinSpec<C>> {
 
     }
 
@@ -243,7 +243,7 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface BatchMultiWhereAndSpec<C> extends Statement.WhereAndClause<C, BatchMultiWhereAndSpec<C>>
+    interface BatchMultiWhereAndSpec<C> extends _WhereAndClause<C, BatchMultiWhereAndSpec<C>>
             , Statement.BatchParamClause<C, Delete.DeleteSpec> {
 
 

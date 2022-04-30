@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class NoActionOnClause<C, OR> implements Statement.OnClause<C, OR> {
+abstract class NoActionOnClause<C, OR> implements Statement._OnClause<C, OR> {
 
     final OR stmt;
 

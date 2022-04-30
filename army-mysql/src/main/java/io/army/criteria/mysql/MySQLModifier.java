@@ -1,8 +1,8 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.SQLModifier;
+import io.army.criteria.SQLWords;
 
-public enum MySQLModifier implements SQLModifier {
+public enum MySQLModifier implements SQLWords {
 
 
     HIGH_PRIORITY(" HIGH PRIORITY"),

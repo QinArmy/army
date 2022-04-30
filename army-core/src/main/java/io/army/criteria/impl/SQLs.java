@@ -110,32 +110,32 @@ public abstract class SQLs extends StandardFunctions {
         return StandardDelete.batch(criteria);
     }
 
-    public static StandardQuery.StandardSelectClause<Void, Select> query() {
+    public static StandardQuery._StandardSelectClause<Void, Select> query() {
         return StandardSimpleQuery.query(null);
     }
 
 
-    public static <C> StandardQuery.StandardSelectClause<C, Select> query(C criteria) {
+    public static <C> StandardQuery._StandardSelectClause<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.query(criteria);
     }
 
-    public static StandardQuery.StandardSelectClause<Void, SubQuery> subQuery() {
+    public static StandardQuery._StandardSelectClause<Void, SubQuery> subQuery() {
         return StandardSimpleQuery.subQuery(null);
     }
 
-    public static <C> StandardQuery.StandardSelectClause<C, SubQuery> subQuery(C criteria) {
+    public static <C> StandardQuery._StandardSelectClause<C, SubQuery> subQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.subQuery(criteria);
     }
 
 
-    public static StandardQuery.StandardSelectClause<Void, ScalarExpression> scalarSubQuery() {
+    public static StandardQuery._StandardSelectClause<Void, ScalarExpression> scalarSubQuery() {
         return StandardSimpleQuery.scalarSubQuery(null);
     }
 
 
-    public static <C> StandardQuery.StandardSelectClause<C, ScalarExpression> scalarSubQuery(C criteria) {
+    public static <C> StandardQuery._StandardSelectClause<C, ScalarExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardSimpleQuery.scalarSubQuery(criteria);
     }
@@ -200,7 +200,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @param exp {@link Expression} or parameter
      */
-    static ArmyExpression nonNullExp(final @Nullable Object exp) {
+    static ArmyExpression _nonNullExp(final @Nullable Object exp) {
         final Expression expression;
         if (exp == null) {
             throw _Exceptions.expressionIsNull();
@@ -390,14 +390,14 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @param value {@link Expression} or parameter
      */
-    static ArmySortItem nonNullSortItem(@Nullable Object value) {
+    static ArmySortItem _nonNullSortItem(@Nullable Object value) {
         final SortItem sortItem;
         if (value == null) {
             throw _Exceptions.expressionIsNull();
         } else if (value instanceof SortItem) {
             sortItem = (SortItem) value;
         } else {
-            sortItem = SQLs.param(value);
+            sortItem = SQLs.literal(value);
         }
         return (ArmySortItem) sortItem;
     }

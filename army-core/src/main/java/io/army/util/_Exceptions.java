@@ -188,12 +188,20 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("Window[name : %s] not exists.", windowName));
     }
 
-    public static CriteriaException partitionByEmpty() {
-        return new CriteriaException("PARTITION BY clause must not empty.");
+    public static CriteriaException havingIsEmpty() {
+        return new CriteriaException("having predicate list must not empty.");
     }
 
-    public static CriteriaException orderByEmpty() {
-        return new CriteriaException("ORDER BY clause must not empty.");
+    public static CriteriaException cteListIsEmpty() {
+        return new CriteriaException("with clause cte list must not empty. ");
+    }
+
+    public static CriteriaException predicateListIsEmpty() {
+        return new CriteriaException("predicate list must not empty.");
+    }
+
+    public static CriteriaException sortItemListIsEmpty() {
+        return new CriteriaException("sortItem list must not empty.");
     }
 
     public static CriteriaException unknownSelectItem(@Nullable SelectItem selectItem) {
@@ -294,12 +302,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException dialectAndModifierNotMatch(Dialect dialect, SQLModifier modifier) {
+    public static CriteriaException dialectAndModifierNotMatch(Dialect dialect, SQLWords modifier) {
         String m = String.format("%s and %s not match.", dialect, modifier);
         return new CriteriaException(m);
     }
 
-    public static CriteriaException commandAndModifierNotMatch(_DialectStatement statement, SQLModifier modifier) {
+    public static CriteriaException commandAndModifierNotMatch(_DialectStatement statement, SQLWords modifier) {
         String m = String.format("%s and %s not match.", statement.getClass().getName(), modifier);
         return new CriteriaException(m);
     }

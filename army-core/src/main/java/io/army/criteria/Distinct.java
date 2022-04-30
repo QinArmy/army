@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public enum Distinct implements SQLModifier {
+public enum Distinct implements SQLWords {
 
     ALL(" ALL"),
     DISTINCT(" DISTINCT"),

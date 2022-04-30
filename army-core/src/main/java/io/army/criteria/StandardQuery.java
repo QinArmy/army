@@ -27,8 +27,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface StandardSelectClause<C, Q extends Query>
-            extends StandardStatement.SelectClauseForStandard<C, StandardFromSpec<C, Q>> {
+    interface _StandardSelectClause<C, Q extends Query>
+            extends StandardStatement.SelectClauseForStandard<C, _StandardFromSpec<C, Q>> {
 
     }
 
@@ -37,7 +37,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>FROM clause for standard syntax</li>
-     *          <li>the composite {@link UnionSpec}</li>
+     *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -50,9 +50,9 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface StandardFromSpec<C, Q extends Query>
-            extends Statement.FromClause<C, JoinSpec<C, Q>, JoinSpec<C, Q>, StandardLestBracketClause<C, Q>>
-            , UnionSpec<C, Q> {
+    interface _StandardFromSpec<C, Q extends Query>
+            extends Statement.FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>, _StandardLestBracketClause<C, Q>>
+            , _UnionSpec<C, Q> {
 
     }
 
@@ -64,7 +64,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *          <li>JOIN clause for standard syntax</li>
      *          <li>LEFT BRACKET clause for standard syntax</li>
      *          <li>RIGHT BRACKET clause for standard syntax</li>
-     *          <li>the composite {@link WhereSpec}</li>
+     *          <li>the composite {@link _WhereSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -82,9 +82,9 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface JoinSpec<C, Q extends Query>
-            extends StandardJoinClause<C, Q>, WhereSpec<C, Q>, StandardLestBracketClause<C, Q>
-            , RightBracketClause<JoinSpec<C, Q>> {
+    interface _JoinSpec<C, Q extends Query>
+            extends _StandardJoinClause<C, Q>, _WhereSpec<C, Q>, _StandardLestBracketClause<C, Q>
+            , _RightBracketClause<_JoinSpec<C, Q>> {
 
     }
 
@@ -102,8 +102,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface StandardJoinClause<C, Q extends Query>
-            extends JoinClause<C, Statement.OnClause<C, JoinSpec<C, Q>>, Statement.OnClause<C, JoinSpec<C, Q>>, JoinSpec<C, Q>, JoinSpec<C, Q>, StandardLestBracketClause<C, Q>> {
+    interface _StandardJoinClause<C, Q extends Query>
+            extends JoinClause<C, _OnClause<C, _JoinSpec<C, Q>>, _OnClause<C, _JoinSpec<C, Q>>, _JoinSpec<C, Q>, _JoinSpec<C, Q>, _StandardLestBracketClause<C, Q>> {
 
     }
 
@@ -121,8 +121,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface StandardLestBracketClause<C, Q extends Query>
-            extends Statement.LeftBracketClause<C, JoinSpec<C, Q>, JoinSpec<C, Q>> {
+    interface _StandardLestBracketClause<C, Q extends Query>
+            extends Statement.LeftBracketClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>> {
 
     }
 
@@ -131,7 +131,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>WHERE clause for standard syntax</li>
-     *          <li>the composite {@link GroupBySpec}</li>
+     *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -144,8 +144,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface WhereSpec<C, Q extends Query>
-            extends WhereClause<C, GroupBySpec<C, Q>, WhereAndSpec<C, Q>>, GroupBySpec<C, Q> {
+    interface _WhereSpec<C, Q extends Query>
+            extends QueryWhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>, _GroupBySpec<C, Q> {
 
     }
 
@@ -154,7 +154,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>AND clause for standard syntax</li>
-     *          <li>the composite {@link GroupBySpec}</li>
+     *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -167,8 +167,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface WhereAndSpec<C, Q extends Query>
-            extends WhereAndClause<C, WhereAndSpec<C, Q>>, GroupBySpec<C, Q> {
+    interface _WhereAndSpec<C, Q extends Query>
+            extends _WhereAndClause<C, _WhereAndSpec<C, Q>>, _GroupBySpec<C, Q> {
 
 
     }
@@ -178,7 +178,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>GROUP BY clause for standard syntax</li>
-     *          <li>the composite {@link OrderBySpec}</li>
+     *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -191,8 +191,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface GroupBySpec<C, Q extends Query> extends GroupClause<C, HavingSpec<C, Q>>
-            , OrderBySpec<C, Q> {
+    interface _GroupBySpec<C, Q extends Query> extends _GroupClause<C, _HavingSpec<C, Q>>
+            , _OrderBySpec<C, Q> {
 
     }
 
@@ -201,7 +201,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>HAVING clause for standard syntax</li>
-     *          <li>the composite {@link OrderBySpec}</li>
+     *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -214,8 +214,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface HavingSpec<C, Q extends Query> extends HavingClause<C, OrderBySpec<C, Q>>
-            , OrderBySpec<C, Q> {
+    interface _HavingSpec<C, Q extends Query> extends _HavingClause<C, _OrderBySpec<C, Q>>
+            , _OrderBySpec<C, Q> {
 
     }
 
@@ -224,7 +224,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>ORDER BY clause for standard syntax</li>
-     *          <li>the composite {@link LimitSpec}</li>
+     *          <li>the composite {@link _LimitSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -237,8 +237,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface OrderBySpec<C, Q extends Query> extends LimitSpec<C, Q>
-            , Query.OrderByClause<C, LimitSpec<C, Q>> {
+    interface _OrderBySpec<C, Q extends Query> extends _LimitSpec<C, Q>
+            , _OrderByClause<C, _LimitSpec<C, Q>> {
 
     }
 
@@ -247,7 +247,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>LIMIT clause for standard syntax</li>
-     *          <li>the composite {@link LockSpec}</li>
+     *          <li>the composite {@link _LockSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -260,8 +260,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface LimitSpec<C, Q extends Query> extends LockSpec<C, Q>
-            , Query.LimitClause<C, LockSpec<C, Q>> {
+    interface _LimitSpec<C, Q extends Query> extends _LockSpec<C, Q>
+            , _LimitClause<C, _LockSpec<C, Q>> {
 
     }
 
@@ -271,7 +271,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>lock clause for standard syntax</li>
-     *          <li>the composite {@link UnionSpec}</li>
+     *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -284,17 +284,17 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface LockSpec<C, Q extends Query> extends UnionSpec<C, Q> {
+    interface _LockSpec<C, Q extends Query> extends _UnionSpec<C, Q> {
 
-        UnionSpec<C, Q> lock(LockMode lockMode);
+        _UnionSpec<C, Q> lock(LockMode lockMode);
 
-        UnionSpec<C, Q> lock(Function<C, LockMode> function);
+        _UnionSpec<C, Q> lock(Function<C, LockMode> function);
 
-        UnionSpec<C, Q> ifLock(@Nullable LockMode lockMode);
+        _UnionSpec<C, Q> ifLock(@Nullable LockMode lockMode);
 
-        UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier);
+        _UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier);
 
-        UnionSpec<C, Q> ifLock(Function<C, LockMode> function);
+        _UnionSpec<C, Q> ifLock(Function<C, LockMode> function);
 
 
     }
@@ -304,7 +304,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>ORDER BY clause for standard syntax</li>
-     *          <li>the composite {@link UnionLimitSpec}</li>
+     *          <li>the composite {@link _UnionLimitSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -317,8 +317,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface UnionOrderBySpec<C, Q extends Query> extends Query.OrderByClause<C, UnionLimitSpec<C, Q>>
-            , UnionLimitSpec<C, Q> {
+    interface _UnionOrderBySpec<C, Q extends Query> extends _OrderByClause<C, _UnionLimitSpec<C, Q>>
+            , _UnionLimitSpec<C, Q> {
 
     }
 
@@ -327,7 +327,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>LIMIT clause for standard syntax</li>
-     *          <li>the composite {@link UnionSpec}</li>
+     *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -340,8 +340,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface UnionLimitSpec<C, Q extends Query>
-            extends Query.LimitClause<C, UnionSpec<C, Q>>, UnionSpec<C, Q> {
+    interface _UnionLimitSpec<C, Q extends Query>
+            extends _LimitClause<C, _UnionSpec<C, Q>>, _UnionSpec<C, Q> {
 
     }
 
@@ -351,7 +351,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>UNION clause for standard syntax</li>
-     *          <li>method {@link QuerySpec#asQuery()}</li>
+     *          <li>method {@link _QuerySpec#asQuery()}</li>
      *     </ul>
      * </p>
      * <p>
@@ -364,8 +364,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface UnionSpec<C, Q extends Query> extends Query.QuerySpec<Q>
-            , QueryUnionClause<C, UnionOrderBySpec<C, Q>, StandardSelectClause<C, Q>> {
+    interface _UnionSpec<C, Q extends Query> extends _QuerySpec<Q>
+            , _QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _StandardSelectClause<C, Q>> {
 
     }
 

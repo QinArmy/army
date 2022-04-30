@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Query;
-import io.army.criteria.SQLModifier;
+import io.army.criteria.SQLWords;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLQuery;
@@ -23,9 +23,9 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
         extends WithCteSimpleQuery<C, Q, WE, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
-        implements MySQLQuery, _MySQLQuery, MySQLQuery.MySQLJoinClause<C, JT, JS, JP, FT, FS, JE, FP>
-        , MySQLQuery.MySQLFromClause<C, FT, FS, FP, JE>, MySQLQuery.IndexHintClause<C, IR, FT>
-        , MySQLQuery.IndexPurposeClause<C, FT>, MySQLQuery._IntoSpec<C, Q> {
+        implements _MySQLQuery, MySQLQuery._MySQLJoinClause<C, JT, JS, JP, FT, FS, JE, FP>
+        , MySQLQuery._MySQLFromClause<C, FT, FS, FP, JE>, MySQLQuery._IndexHintClause<C, IR, FT>
+        , MySQLQuery._IndexPurposeClause<C, FT>, MySQLQuery._IntoSpec<C, Q> {
 
     private MySQLIndexHint.Command indexHintCommand;
 
@@ -189,25 +189,25 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
 
 
     @Override
-    public final QuerySpec<Q> into(String varName) {
+    public final _QuerySpec<Q> into(String varName) {
         this.intoVarList = Collections.singletonList(varName);
         return this;
     }
 
     @Override
-    public final QuerySpec<Q> into(String varName1, String varName2) {
+    public final _QuerySpec<Q> into(String varName1, String varName2) {
         this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2);
         return this;
     }
 
     @Override
-    public final QuerySpec<Q> into(String varName1, String varName2, String varName3) {
+    public final _QuerySpec<Q> into(String varName1, String varName2, String varName3) {
         this.intoVarList = ArrayUtils.asUnmodifiableList(varName1, varName2, varName3);
         return this;
     }
 
     @Override
-    public final QuerySpec<Q> into(List<String> varNameList) {
+    public final _QuerySpec<Q> into(List<String> varNameList) {
         if (varNameList.size() == 0) {
             throw MySQLUtils.intoVarListNotEmpty();
         }
@@ -216,17 +216,17 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     }
 
     @Override
-    public final QuerySpec<Q> into(Supplier<List<String>> supplier) {
+    public final _QuerySpec<Q> into(Supplier<List<String>> supplier) {
         return this.into(supplier.get());
     }
 
     @Override
-    public final QuerySpec<Q> into(Function<C, List<String>> function) {
+    public final _QuerySpec<Q> into(Function<C, List<String>> function) {
         return this.into(function.apply(this.criteria));
     }
 
     @Override
-    public final QuerySpec<Q> into(Consumer<List<String>> consumer) {
+    public final _QuerySpec<Q> into(Consumer<List<String>> consumer) {
         final List<String> varNameList = new ArrayList<>();
         consumer.accept(varNameList);
         switch (varNameList.size()) {
@@ -243,11 +243,8 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
 
     @Override
     public final List<String> intoVarList() {
-        List<String> intoVarList = this.intoVarList;
-        if (intoVarList == null) {
-            intoVarList = Collections.emptyList();
-        }
-        return intoVarList;
+        this.prepared();
+        return this.intoVarList;
     }
 
 
@@ -312,7 +309,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     }
 
 
-    enum MySQLLock implements SQLModifier {
+    enum MySQLLock implements SQLWords {
 
         FOR_UPDATE(" FOR UPDATE"),
         LOCK_IN_SHARE_MODE(" LOCK IN SHARE MODE"),
@@ -337,7 +334,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
 
     }//MySQLLock
 
-    enum MySQLLockOption implements SQLModifier {
+    enum MySQLLockOption implements SQLWords {
 
         NOWAIT(" NOWAIT"),
         SKIP_LOCKED(" SKIP LOCKED");

@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-class OnClauseTableBlock<C, OR> extends TableBlock implements Statement.OnClause<C, OR> {
+class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClause<C, OR> {
 
     final String alias;
 

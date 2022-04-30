@@ -52,7 +52,7 @@ public interface Statement {
      * @param <AR> next clause java type
      * @since 1.0
      */
-    interface AsClause<AR> {
+    interface _AsClause<AR> {
 
         AR as(String alias);
     }
@@ -96,7 +96,7 @@ public interface Statement {
      * @param <R> next clause java type
      * @since 1.0
      */
-    interface RightBracketClause<R> extends Statement.Clause {
+    interface _RightBracketClause<R> extends Statement.Clause {
 
         R rightBracket();
 
@@ -147,7 +147,7 @@ public interface Statement {
      * @param <OR> next clause java type
      * @since 1.0
      */
-    interface OnClause<C, OR> {
+    interface _OnClause<C, OR> {
 
         OR on(List<IPredicate> predicateList);
 
@@ -270,15 +270,34 @@ public interface Statement {
      */
     interface WhereClause<C, WR, WA> {
 
-        WR where(List<IPredicate> predicateList);
+        WR where(Supplier<List<IPredicate>> supplier);
 
         WR where(Function<C, List<IPredicate>> function);
-
-        WR where(Supplier<List<IPredicate>> supplier);
 
         WR where(Consumer<List<IPredicate>> consumer);
 
         WA where(@Nullable IPredicate predicate);
+    }
+
+    /**
+     * <p>
+     * This interface representing WHERE clause in SELECT statement.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <WR> next clause java type
+     * @param <WA> next clause java type
+     * @since 1.0
+     */
+    interface QueryWhereClause<C, WR, WA> extends WhereClause<C, WR, WA> {
+
+        WR ifWhere(Supplier<List<IPredicate>> supplier);
+
+        WR ifWhere(Function<C, List<IPredicate>> function);
     }
 
 
@@ -295,7 +314,7 @@ public interface Statement {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface WhereAndClause<C, WA> {
+    interface _WhereAndClause<C, WA> {
 
         WA and(IPredicate predicate);
 
@@ -315,7 +334,7 @@ public interface Statement {
     }
 
 
-    interface OrderByClause<C, OR> {
+    interface _OrderByClause<C, OR> {
 
         OR orderBy(Object sortItem);
 

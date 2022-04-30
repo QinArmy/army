@@ -13,7 +13,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class MySQLPartitionClause<C, PR> implements MySQLQuery.PartitionClause<C, PR> {
+abstract class MySQLPartitionClause<C, PR> implements MySQLQuery._PartitionClause<C, PR> {
 
     final C criteria;
 

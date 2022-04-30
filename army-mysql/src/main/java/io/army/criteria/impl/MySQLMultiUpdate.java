@@ -34,8 +34,8 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         extends WithCteMultiUpdate<C, WE, JT, JS, JP, WR, WA, SR>
-        implements MySQLUpdate.MultiUpdateClause<C, UP, UT, US>, MySQLQuery.IndexHintClause<C, IR, UT>
-        , MySQLQuery.IndexJoinClause<C, UT>, MySQLQuery.MySQLJoinClause<C, JT, JS, JP>, MySQLUpdate
+        implements MySQLUpdate.MultiUpdateClause<C, UP, UT, US>, MySQLQuery._IndexHintClause<C, IR, UT>
+        , MySQLQuery._IndexJoinClause<C, UT>, MySQLQuery._MySQLJoinClause<C, JT, JS, JP>, MySQLUpdate
         , _MySQLMultiUpdate {
 
 
@@ -662,8 +662,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
      * @see SimpleUpdate#createPartitionJoinBlock(TableMeta)
      */
     private static final class SimplePartitionJoinSpec<C, WE>
-            extends MySQLPartitionClause<C, Statement.AsClause<IndexHintJoinSpec<C>>>
-            implements MultiPartitionJoinSpec<C>, Statement.AsClause<IndexHintJoinSpec<C>> {
+            extends MySQLPartitionClause<C, _AsClause<IndexHintJoinSpec<C>>>
+            implements MultiPartitionJoinSpec<C>, _AsClause<IndexHintJoinSpec<C>> {
 
         private final TableMeta<?> table;
 
@@ -695,8 +695,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
      * @see BatchUpdate#createPartitionJoinBlock(TableMeta)
      */
     private static final class BatchPartitionJoinSpec<C, WE>
-            extends MySQLPartitionClause<C, Statement.AsClause<BatchMultiIndexHintJoinSpec<C>>>
-            implements BatchMultiPartitionJoinSpec<C>, Statement.AsClause<BatchMultiIndexHintJoinSpec<C>> {
+            extends MySQLPartitionClause<C, _AsClause<BatchMultiIndexHintJoinSpec<C>>>
+            implements BatchMultiPartitionJoinSpec<C>, _AsClause<BatchMultiIndexHintJoinSpec<C>> {
 
         private final TableMeta<?> table;
 
@@ -803,8 +803,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
      * @see SimpleUpdate#createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class SimplePartitionOnBlock<C, WE>
-            extends MySQLPartitionClause<C, Statement.AsClause<MultiIndexHintOnSpec<C>>>
-            implements Statement.AsClause<MultiIndexHintOnSpec<C>>, MySQLUpdate.MultiPartitionOnSpec<C> {
+            extends MySQLPartitionClause<C, _AsClause<MultiIndexHintOnSpec<C>>>
+            implements _AsClause<MultiIndexHintOnSpec<C>>, MySQLUpdate.MultiPartitionOnSpec<C> {
 
         private final _JoinType joinType;
 
@@ -921,8 +921,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
      * @see BatchUpdate#createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class BatchPartitionOnBlock<C, WE>
-            extends MySQLPartitionClause<C, Statement.AsClause<MySQLUpdate.BatchMultiIndexHintOnSpec<C>>>
-            implements Statement.AsClause<MySQLUpdate.BatchMultiIndexHintOnSpec<C>>
+            extends MySQLPartitionClause<C, _AsClause<BatchMultiIndexHintOnSpec<C>>>
+            implements _AsClause<BatchMultiIndexHintOnSpec<C>>
             , MySQLUpdate.BatchMultiPartitionOnSpec<C> {
 
         private final _JoinType joinType;
@@ -991,8 +991,8 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
      * @see SimpleUpdate#createNoActionPartitionBlock()
      */
     private static final class SimpleNoActionPartitionBlock<C> extends MySQLNoActionPartitionClause<
-            C, Statement.AsClause<MultiIndexHintOnSpec<C>>>
-            implements MySQLUpdate.MultiPartitionOnSpec<C>, Statement.AsClause<MultiIndexHintOnSpec<C>> {
+            C, _AsClause<MultiIndexHintOnSpec<C>>>
+            implements MySQLUpdate.MultiPartitionOnSpec<C>, _AsClause<MultiIndexHintOnSpec<C>> {
 
 
         private final MultiIndexHintOnSpec<C> hintOnSpec;
@@ -1041,9 +1041,9 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
      * @see BatchUpdate#createNoActionPartitionBlock()
      */
     private static final class BatchNoActionPartitionOnBlock<C, WE> extends MySQLNoActionPartitionClause<
-            C, Statement.AsClause<MySQLUpdate.BatchMultiIndexHintOnSpec<C>>>
+            C, _AsClause<BatchMultiIndexHintOnSpec<C>>>
             implements MySQLUpdate.BatchMultiPartitionOnSpec<C>
-            , Statement.AsClause<MySQLUpdate.BatchMultiIndexHintOnSpec<C>> {
+            , _AsClause<BatchMultiIndexHintOnSpec<C>> {
 
         private final BatchMultiIndexHintOnSpec<C> indexHintOnSpec;
 

@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class DmlWhereClause<C, WR, WA> implements Statement, Statement.WhereClause<C, WR, WA>
-        , Statement.WhereAndClause<C, WA>, _Dml {
+        , Statement._WhereAndClause<C, WA>, _Dml {
 
     final CriteriaContext criteriaContext;
 

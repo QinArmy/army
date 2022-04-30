@@ -9,6 +9,7 @@ import io.army.util._Exceptions;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 abstract class CriteriaUtils {
 
@@ -111,6 +112,29 @@ abstract class CriteriaUtils {
         return list;
     }
 
+    static List<_Predicate> asPredicateList(final @Nullable List<IPredicate> predicateList
+            , final @Nullable Supplier<CriteriaException> supplier) {
+        final int size;
+        if (predicateList == null || (size = predicateList.size()) == 0) {
+            if (supplier != null) {
+                throw supplier.get();
+            }
+            return Collections.emptyList();
+        }
+
+        List<_Predicate> list;
+        if (size == 1) {
+            list = Collections.singletonList((OperationPredicate) predicateList.get(0));
+        } else {
+            list = new ArrayList<>(size);
+            for (IPredicate predicate : predicateList) {
+                list.add((OperationPredicate) predicate);
+            }
+            list = Collections.unmodifiableList(list);
+        }
+        return list;
+    }
+
 
     static <E extends Expression> List<_Expression> asExpressionList(final List<E> expressionList) {
         final int size = expressionList.size();
@@ -138,7 +162,7 @@ abstract class CriteriaUtils {
         List<ArmySortItem> itemList;
         switch (size) {
             case 0:
-                throw new CriteriaException("sortItem list must not empty.");
+                throw _Exceptions.sortItemListIsEmpty();
             case 1:
                 itemList = Collections.singletonList((ArmySortItem) sortItemList.get(0));
                 break;
@@ -216,7 +240,7 @@ abstract class CriteriaUtils {
         return ((CriteriaSpec<C>) query).getCriteria();
     }
 
-    static <T extends Enum<T> & SQLModifier> Set<T> asModifierSet(final Set<T> set, Consumer<T> consumer) {
+    static <T extends Enum<T> & SQLWords> Set<T> asModifierSet(final Set<T> set, Consumer<T> consumer) {
         final Set<T> modifierSet;
         switch (set.size()) {
             case 0:

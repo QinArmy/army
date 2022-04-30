@@ -21,12 +21,19 @@ import java.util.function.Supplier;
  *     </ul>
  * </p>
  */
-abstract class JoinableDml<C, JT, JS, JP, WR, WA> extends DmlWhereClause<C, WR, WA>
-        implements DialectStatement.DialectJoinClause<C, JT, JS, JP>, _Dml {
+@SuppressWarnings("unchecked")
+abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhereClause<C, WR, WA>
+        implements DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF>, _Dml {
 
 
     JoinableDml(CriteriaContext criteriaContext) {
         super(criteriaContext);
+    }
+
+    @Override
+    public final JE leftJoin() {
+        this.criteriaContext.onJoinType(_JoinType.LEFT_JOIN);
+        return (JE) this;
     }
 
     @Override
@@ -54,18 +61,9 @@ abstract class JoinableDml<C, JT, JS, JP, WR, WA> extends DmlWhereClause<C, WR, 
     }
 
     @Override
-    public final JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifAddTableBlock(predicate, _JoinType.LEFT_JOIN, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifLeftJoin(Function<C, T> function, String alias) {
-        return this.ifAddOnBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifLeftJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddOnBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
+    public final JE join() {
+        this.criteriaContext.onJoinType(_JoinType.JOIN);
+        return (JE) this;
     }
 
     @Override
@@ -93,18 +91,9 @@ abstract class JoinableDml<C, JT, JS, JP, WR, WA> extends DmlWhereClause<C, WR, 
     }
 
     @Override
-    public final JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifAddTableBlock(predicate, _JoinType.JOIN, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifJoin(Function<C, T> function, String alias) {
-        return this.ifAddOnBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddOnBlock(_JoinType.JOIN, supplier.get(), alias);
+    public final JE rightJoin() {
+        this.criteriaContext.onJoinType(_JoinType.RIGHT_JOIN);
+        return (JE) this;
     }
 
     @Override
@@ -131,58 +120,37 @@ abstract class JoinableDml<C, JT, JS, JP, WR, WA> extends DmlWhereClause<C, WR, 
         return block;
     }
 
+
     @Override
-    public final JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifAddTableBlock(predicate, _JoinType.RIGHT_JOIN, table, tableAlias);
+    public final JE crossJoin() {
+        this.criteriaContext.onJoinType(_JoinType.CROSS_JOIN);
+        return (JE) this;
     }
 
     @Override
-    public final <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias) {
-        return this.ifAddOnBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
+    public final JF crossJoin(TableMeta<?> table) {
+        return null;
     }
 
     @Override
-    public final <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddOnBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
+    public final JC crossJoin(TableMeta<?> table, String tableAlias) {
+        return null;
     }
 
     @Override
-    public final JT crossJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.CROSS_JOIN, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
+    public final <T extends TableItem> JD crossJoin(Function<C, T> function, String alias) {
+        return null;
     }
 
     @Override
-    public final <T extends TableItem> JS crossJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = this.createOnBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
+    public final <T extends TableItem> JD crossJoin(Supplier<T> supplier, String alias) {
+        return null;
     }
 
     @Override
-    public final <T extends TableItem> JS crossJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = this.createOnBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) block);
-        return block;
-    }
-
-    @Override
-    public final JT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifAddTableBlock(predicate, _JoinType.CROSS_JOIN, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifCrossJoin(Function<C, T> function, String alias) {
-        return this.ifAddOnBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifCrossJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddOnBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
+    public final JE fullJoin() {
+        this.criteriaContext.onJoinType(_JoinType.FULL_JOIN);
+        return (JE) this;
     }
 
     @Override
@@ -210,20 +178,10 @@ abstract class JoinableDml<C, JT, JS, JP, WR, WA> extends DmlWhereClause<C, WR, 
     }
 
     @Override
-    public final JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifAddTableBlock(predicate, _JoinType.FULL_JOIN, table, tableAlias);
+    public final JE straightJoin() {
+        this.criteriaContext.onJoinType(_JoinType.STRAIGHT_JOIN);
+        return null;
     }
-
-    @Override
-    public final <T extends TableItem> JS ifFullJoin(Function<C, T> function, String alias) {
-        return this.ifAddOnBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddOnBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
-    }
-
 
     @Override
     public final JT straightJoin(TableMeta<?> table, String tableAlias) {
@@ -250,29 +208,8 @@ abstract class JoinableDml<C, JT, JS, JP, WR, WA> extends DmlWhereClause<C, WR, 
     }
 
     @Override
-    public final JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String alias) {
-        return this.ifAddTableBlock(predicate, _JoinType.STRAIGHT_JOIN, table, alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias) {
-        return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias) {
-        return this.ifAddOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
-    }
-
-
-    @Override
     public final JP leftJoin(TableMeta<?> table) {
         return this.createBlockBeforeAs(_JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.LEFT_JOIN, table);
     }
 
     @Override
@@ -281,18 +218,8 @@ abstract class JoinableDml<C, JT, JS, JP, WR, WA> extends DmlWhereClause<C, WR, 
     }
 
     @Override
-    public final JP ifJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.JOIN, table);
-    }
-
-    @Override
     public final JP rightJoin(TableMeta<?> table) {
         return this.createBlockBeforeAs(_JoinType.RIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.RIGHT_JOIN, table);
     }
 
     @Override
@@ -301,18 +228,8 @@ abstract class JoinableDml<C, JT, JS, JP, WR, WA> extends DmlWhereClause<C, WR, 
     }
 
     @Override
-    public final JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.STRAIGHT_JOIN, table);
-    }
-
-    @Override
     public final JP fullJoin(TableMeta<?> table) {
         return this.createBlockBeforeAs(_JoinType.FULL_JOIN, table);
-    }
-
-    @Override
-    public final JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJointTableBeforeAs(predicate, _JoinType.FULL_JOIN, table);
     }
 
     abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);

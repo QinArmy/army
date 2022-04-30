@@ -53,8 +53,14 @@ final class OrPredicate extends OperationPredicate {
         final StringBuilder builder = context.sqlBuilder()
                 .append(Constant.SPACE_LEFT_BRACKET);
 
-        this.left.appendSql(context);
-
+        final OperationPredicate left = this.left;
+        if (left instanceof AndPredicate) {
+            builder.append(Constant.SPACE_LEFT_BRACKET); //left inner left bracket
+        }
+        left.appendSql(context);
+        if (left instanceof AndPredicate) {
+            builder.append(Constant.SPACE_RIGHT_BRACKET); //left inner left bracket
+        }
         for (OperationPredicate right : this.rights) {
             builder.append(Constant.SPACE_OR);
 
@@ -76,7 +82,14 @@ final class OrPredicate extends OperationPredicate {
         final StringBuilder builder = new StringBuilder(128)
                 .append(Constant.SPACE_LEFT_BRACKET);
 
-        builder.append(this.left);
+        final OperationPredicate left = this.left;
+        if (left instanceof AndPredicate) {
+            builder.append(Constant.SPACE_LEFT_BRACKET); //left inner left bracket
+        }
+        builder.append(left);
+        if (left instanceof AndPredicate) {
+            builder.append(Constant.SPACE_RIGHT_BRACKET); //left inner left bracket
+        }
 
         for (OperationPredicate right : this.rights) {
             builder.append(Constant.SPACE_OR);

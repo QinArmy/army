@@ -1340,7 +1340,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    private void standardSelectClause(List<? extends SQLModifier> modifierList, _SqlContext context) {
+    private void standardSelectClause(List<? extends SQLWords> modifierList, _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
                 .append(Constant.SELECT);
         switch (modifierList.size()) {
@@ -1348,7 +1348,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 //no-op
                 break;
             case 1: {
-                final SQLModifier modifier = modifierList.get(0);
+                final SQLWords modifier = modifierList.get(0);
                 if (!(modifier instanceof Distinct)) {
                     String m = String.format("Standard query api support only %s", Distinct.class.getName());
                     throw new CriteriaException(m);

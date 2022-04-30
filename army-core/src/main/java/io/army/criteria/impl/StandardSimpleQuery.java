@@ -25,43 +25,43 @@ import java.util.function.Supplier;
 abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         C,
         Q,
-        StandardQuery.StandardFromSpec<C, Q>, // SR
-        StandardQuery.JoinSpec<C, Q>,// FT
-        StandardQuery.JoinSpec<C, Q>,// FS
+        StandardQuery._StandardFromSpec<C, Q>, // SR
+        StandardQuery._JoinSpec<C, Q>,// FT
+        StandardQuery._JoinSpec<C, Q>,// FS
         Void,                               // FP
-        Statement.OnClause<C, StandardQuery.JoinSpec<C, Q>>, // JT
-        Statement.OnClause<C, StandardQuery.JoinSpec<C, Q>>, // JS
+        Statement._OnClause<C, StandardQuery._JoinSpec<C, Q>>, // JT
+        Statement._OnClause<C, StandardQuery._JoinSpec<C, Q>>, // JS
         Void,                               // JP
-        StandardQuery.StandardLestBracketClause<C, Q>,// JE
-        StandardQuery.GroupBySpec<C, Q>, // WR
-        StandardQuery.WhereAndSpec<C, Q>, // AR
-        StandardQuery.HavingSpec<C, Q>, // GR
-        StandardQuery.OrderBySpec<C, Q>, // HR
-        StandardQuery.LimitSpec<C, Q>, // OR
-        StandardQuery.LockSpec<C, Q>, // LR
-        StandardQuery.UnionOrderBySpec<C, Q>, // UR
-        StandardQuery.StandardSelectClause<C, Q>> // SP
+        StandardQuery._StandardLestBracketClause<C, Q>,// JE
+        StandardQuery._GroupBySpec<C, Q>, // WR
+        StandardQuery._WhereAndSpec<C, Q>, // AR
+        StandardQuery._HavingSpec<C, Q>, // GR
+        StandardQuery._OrderBySpec<C, Q>, // HR
+        StandardQuery._LimitSpec<C, Q>, // OR
+        StandardQuery._LockSpec<C, Q>, // LR
+        StandardQuery._UnionOrderBySpec<C, Q>, // UR
+        StandardQuery._StandardSelectClause<C, Q>> // SP
 
-        implements StandardQuery, StandardQuery.StandardSelectClause<C, Q>, StandardQuery.StandardFromSpec<C, Q>
-        , StandardQuery.JoinSpec<C, Q>, StandardQuery.WhereAndSpec<C, Q>, StandardQuery.HavingSpec<C, Q>
-        , StandardQuery.StandardLestBracketClause<C, Q>, _StandardQuery {
+        implements StandardQuery, StandardQuery._StandardSelectClause<C, Q>, StandardQuery._StandardFromSpec<C, Q>
+        , StandardQuery._JoinSpec<C, Q>, StandardQuery._WhereAndSpec<C, Q>, StandardQuery._HavingSpec<C, Q>
+        , StandardQuery._StandardLestBracketClause<C, Q>, _StandardQuery {
 
 
-    static <C> StandardSelectClause<C, Select> query(@Nullable C criteria) {
+    static <C> _StandardSelectClause<C, Select> query(@Nullable C criteria) {
         return new SimpleSelect<>(criteria);
     }
 
-    static <C> StandardSelectClause<C, SubQuery> subQuery(@Nullable C criteria) {
+    static <C> _StandardSelectClause<C, SubQuery> subQuery(@Nullable C criteria) {
         return new SimpleSubQuery<>(criteria);
     }
 
-    static <C> StandardSelectClause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
+    static <C> _StandardSelectClause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
         return new SimpleScalarSubQuery<>(criteria);
     }
 
     @SuppressWarnings("unchecked")
-    static <C, Q extends Query> StandardSelectClause<C, Q> unionAndQuery(Q query, UnionType unionType) {
-        final StandardSelectClause<C, ?> spec;
+    static <C, Q extends Query> _StandardSelectClause<C, Q> unionAndQuery(Q query, UnionType unionType) {
+        final _StandardSelectClause<C, ?> spec;
         if (query instanceof Select) {
             spec = new UnionAndSelect<>((Select) query, unionType);
         } else if (query instanceof ScalarSubQuery) {
@@ -71,7 +71,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         } else {
             throw _Exceptions.unknownRowSetType(query);
         }
-        return (StandardSelectClause<C, Q>) spec;
+        return (_StandardSelectClause<C, Q>) spec;
     }
 
 
@@ -91,13 +91,13 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final UnionSpec<C, Q> lock(LockMode lockMode) {
+    public final _UnionSpec<C, Q> lock(LockMode lockMode) {
         this.lockMode = lockMode;
         return this;
     }
 
     @Override
-    public final UnionSpec<C, Q> lock(Function<C, LockMode> function) {
+    public final _UnionSpec<C, Q> lock(Function<C, LockMode> function) {
         final LockMode lockMode;
         lockMode = function.apply(this.criteria);
         Objects.requireNonNull(lockMode);
@@ -106,7 +106,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final UnionSpec<C, Q> ifLock(@Nullable LockMode lockMode) {
+    public final _UnionSpec<C, Q> ifLock(@Nullable LockMode lockMode) {
         if (lockMode != null) {
             this.lockMode = lockMode;
         }
@@ -114,7 +114,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier) {
+    public final _UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier) {
         final LockMode lockMode;
         lockMode = supplier.get();
         if (lockMode != null) {
@@ -124,7 +124,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    public final UnionSpec<C, Q> ifLock(Function<C, LockMode> function) {
+    public final _UnionSpec<C, Q> ifLock(Function<C, LockMode> function) {
         final LockMode lockMode;
         lockMode = function.apply(this.criteria);
         if (lockMode != null) {
@@ -135,7 +135,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final StandardSelectClause<C, Q> asUnionAndRowSet(final UnionType unionType) {
+    final _StandardSelectClause<C, Q> asUnionAndRowSet(final UnionType unionType) {
         return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 
@@ -162,12 +162,12 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final OnClause<C, JoinSpec<C, Q>> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _OnClause<C, _JoinSpec<C, Q>> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return new OnClauseTableBlock<>(joinType, table, tableAlias, this);
     }
 
     @Override
-    final OnClause<C, JoinSpec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final _OnClause<C, _JoinSpec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
     }
 
@@ -194,13 +194,13 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
+    final _UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
         return StandardUnionQuery.bracketQuery(rowSet);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    final UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+    final _UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
         return StandardUnionQuery.unionQuery((Q) left, unionType, right);
     }
 

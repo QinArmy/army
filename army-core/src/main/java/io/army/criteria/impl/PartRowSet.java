@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements CriteriaContextSpec, _PartRowSet, RowSet
-        , Query.OrderByClause<C, OR>, Query.LimitClause<C, LR>, Query.QueryUnionClause<C, UR, SP>, CriteriaSpec<C>
+        , Statement._OrderByClause<C, OR>, Query._LimitClause<C, LR>, Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>
         , RowSet.RowSetSpec<Q> {
 
     final C criteria;
@@ -124,7 +124,7 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
 
     @Override
     public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(SQLs.nonNullSortItem(sortItem));
+        this.orderByList = Collections.singletonList(SQLs._nonNullSortItem(sortItem));
         this.onOrderBy();
         return (OR) this;
     }
@@ -132,8 +132,8 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs.nonNullSortItem(sortItem1),
-                SQLs.nonNullSortItem(sortItem2)
+                SQLs._nonNullSortItem(sortItem1),
+                SQLs._nonNullSortItem(sortItem2)
         );
         this.onOrderBy();
         return (OR) this;
@@ -142,9 +142,9 @@ abstract class PartRowSet<C, Q extends RowSet, UR, OR, LR, SP> implements Criter
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs.nonNullSortItem(sortItem1),
-                SQLs.nonNullSortItem(sortItem2),
-                SQLs.nonNullSortItem(sortItem3)
+                SQLs._nonNullSortItem(sortItem1),
+                SQLs._nonNullSortItem(sortItem2),
+                SQLs._nonNullSortItem(sortItem3)
         );
         this.onOrderBy();
         return (OR) this;

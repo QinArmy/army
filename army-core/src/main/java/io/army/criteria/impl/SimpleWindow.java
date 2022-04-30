@@ -29,10 +29,19 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> implements _Window
-        , Window.AsClause<AR>, Window.LeftBracketClause<C, LR>, Window.PartitionByExpClause<C, PR>
-        , Statement.OrderByClause<C, OR>, Window.FrameUnitsClause<C, FR, FC>, Window.FrameBetweenClause<C, BR, BC>
-        , Window.FrameExpBoundClause<MA>, Window.FrameBetweenAndClause<C, FC, NC>, Window.FrameNonExpBoundClause<MB>
-        , Statement.RightBracketClause<R> {
+        , Window._AsClause<AR>, Window._LeftBracketClause<C, LR>, Window._PartitionByExpClause<C, PR>
+        , Statement._OrderByClause<C, OR>, Window._FrameUnitsClause<C, FR, FC>, Window._FrameBetweenClause<C, BR, BC>
+        , Window._FrameExpBoundClause<MA>, Window._FrameBetweenAndClause<C, FC, NC>, Window._FrameNonExpBoundClause<MB>
+        , Statement._RightBracketClause<R> {
+
+
+    static <C, R> Window._SimpleAsClause<C, R> standard(String windowName, R stmt) {
+        return new StandardSimpleWindow<>(windowName, stmt);
+    }
+
+    static <C, R> Window._SimpleAsClause<C, R> standard(String windowName, CriteriaContext criteriaContext) {
+        return new StandardSimpleWindow<>(windowName, criteriaContext);
+    }
 
 
     private final String windowName;
@@ -126,22 +135,22 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final PR partitionBy(Object exp) {
-        this.partitionByList = Collections.singletonList(SQLs.nonNullExp(exp));
+        this.partitionByList = Collections.singletonList(SQLs._nonNullExp(exp));
         return (PR) this;
     }
 
     @Override
     public final PR partitionBy(Object exp1, Object exp2) {
-        this.partitionByList = ArrayUtils.asUnmodifiableList(SQLs.nonNullExp(exp1), SQLs.nonNullExp(exp2));
+        this.partitionByList = ArrayUtils.asUnmodifiableList(SQLs._nonNullExp(exp1), SQLs._nonNullExp(exp2));
         return (PR) this;
     }
 
     @Override
     public final PR partitionBy(Object exp1, Object exp2, Object exp3) {
         this.partitionByList = ArrayUtils.asUnmodifiableList(
-                SQLs.nonNullExp(exp1),
-                SQLs.nonNullExp(exp2),
-                SQLs.nonNullExp(exp3)
+                SQLs._nonNullExp(exp1),
+                SQLs._nonNullExp(exp2),
+                SQLs._nonNullExp(exp3)
         );
         return (PR) this;
     }
@@ -188,15 +197,15 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(SQLs.nonNullSortItem(sortItem));
+        this.orderByList = Collections.singletonList(SQLs._nonNullSortItem(sortItem));
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs.nonNullSortItem(sortItem1),
-                SQLs.nonNullSortItem(sortItem2)
+                SQLs._nonNullSortItem(sortItem1),
+                SQLs._nonNullSortItem(sortItem2)
         );
         return (OR) this;
     }
@@ -204,9 +213,9 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs.nonNullSortItem(sortItem1),
-                SQLs.nonNullSortItem(sortItem2),
-                SQLs.nonNullSortItem(sortItem3)
+                SQLs._nonNullSortItem(sortItem1),
+                SQLs._nonNullSortItem(sortItem2),
+                SQLs._nonNullSortItem(sortItem3)
         );
         return (OR) this;
     }
@@ -287,7 +296,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     public final FC rows(@Nullable Object expression) {
         this.frameUnits = FrameUnits.ROWS;
         this.betweenExtent = Boolean.FALSE;
-        this.frameStartExp = SQLs.nonNullExp(expression);
+        this.frameStartExp = SQLs._nonNullExp(expression);
         return (FC) this;
     }
 
@@ -295,7 +304,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     public final FC range(@Nullable Object expression) {
         this.frameUnits = FrameUnits.RANGE;
         this.betweenExtent = Boolean.FALSE;
-        this.frameStartExp = SQLs.nonNullExp(expression);
+        this.frameStartExp = SQLs._nonNullExp(expression);
         return (FC) this;
     }
 
@@ -385,7 +394,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             if (this.betweenExtent != Boolean.TRUE) {
                 throw _Exceptions.castCriteriaApi();
             }
-            this.frameStartExp = SQLs.nonNullExp(expression);
+            this.frameStartExp = SQLs._nonNullExp(expression);
         }
         return (BC) this;
     }
@@ -421,7 +430,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             if (this.betweenExtent != Boolean.TRUE || this.frameStartBound == null) {
                 throw _Exceptions.castCriteriaApi();
             }
-            this.frameEndExp = SQLs.nonNullExp(expression);
+            this.frameEndExp = SQLs._nonNullExp(expression);
         }
         return (NC) this;
     }
@@ -593,7 +602,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
 
-    private enum FrameUnits implements SQLModifier {
+    private enum FrameUnits implements SQLWords {
 
         ROWS(" ROWS"),
         RANGE(" RANGE");
@@ -616,7 +625,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     }// FrameUnits
 
-    enum FrameBound implements SQLModifier {
+    enum FrameBound implements SQLWords {
 
         CURRENT_ROW(" CURRENT ROW"),
 
@@ -642,6 +651,68 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         }
 
     }//FrameBound
+
+
+    private static final class StandardSimpleWindow<C, R> extends SimpleWindow<
+            C,
+            Window._SimpleLeftBracketClause<C, R>,      //AR
+            Window._SimplePartitionBySpec<C, R>,        //LR
+            Window._SimpleOrderBySpec<C, R>,            //PR,
+            Window._SimpleFrameUnitsSpec<C, R>,         //OR
+            Window._SimpleFrameBetweenClause<C, R>,     //FR
+            Window._SimpleFrameEndNonExpBoundClause<R>, //FC
+            Window._SimpleFrameNonExpBoundClause<C, R>, //BR
+            Window._SimpleFrameExpBoundClause<C, R>,    //BC
+            Window._SimpleFrameEndExpBoundClause<R>,    //NC
+            Statement.Clause,                                //MA
+            Statement.Clause,                                //MB
+            R>                                               //R
+            implements Window._SimpleAsClause<C, R>, Window._SimpleLeftBracketClause<C, R>
+            , Window._SimplePartitionBySpec<C, R>, Window._SimpleFrameBetweenClause<C, R>,
+            Window._SimpleFrameEndNonExpBoundClause<R>, Window._SimpleFrameNonExpBoundClause<C, R>
+            , Window._SimpleFrameExpBoundClause<C, R>, Window._SimpleFrameEndExpBoundClause<R>
+            , Window._SimpleFrameBetweenAndClause<C, R> {
+
+        private StandardSimpleWindow(String windowName, CriteriaContext criteriaContext) {
+            super(windowName, criteriaContext);
+        }
+
+        private StandardSimpleWindow(String windowName, R stmt) {
+            super(windowName, stmt);
+        }
+
+        @Override
+        public StandardSimpleWindow<C, R> currentRow() {
+            this.bound(FrameBound.CURRENT_ROW);
+            return this;
+        }
+
+        @Override
+        public StandardSimpleWindow<C, R> unboundedPreceding() {
+            this.bound(FrameBound.UNBOUNDED_PRECEDING);
+            return this;
+        }
+
+        @Override
+        public StandardSimpleWindow<C, R> unboundedFollowing() {
+            this.bound(FrameBound.UNBOUNDED_FOLLOWING);
+            return this;
+        }
+
+        @Override
+        public StandardSimpleWindow<C, R> preceding() {
+            this.bound(FrameBound.PRECEDING);
+            return this;
+        }
+
+        @Override
+        public StandardSimpleWindow<C, R> following() {
+            this.bound(FrameBound.FOLLOWING);
+            return this;
+        }
+
+
+    }//StandardSimpleWindow
 
 
 }

@@ -1,9 +1,9 @@
 package io.army.criteria;
 
-public interface SQLModifier {
+public interface SQLWords {
 
     /**
-     * @return one space char and sql modifier
+     * @return one space char and sql keywords.
      */
     String render();
 

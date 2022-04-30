@@ -25,12 +25,10 @@ public interface Window {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
-     * @param <C>  java criteria object java type
      * @param <WR> next clause java type
      * @since 1.0
      */
-    interface WindowClause<C, WR> {
+    interface _WindowClause<WR> {
 
         WR window(String windowName);
     }
@@ -48,7 +46,7 @@ public interface Window {
      * @param <AR> next clause java type
      * @since 1.0
      */
-    interface AsClause<AR> {
+    interface _AsClause<AR> {
 
         AR as();
     }
@@ -68,7 +66,7 @@ public interface Window {
      * @param <NR> next clause java type
      * @since 1.0
      */
-    interface LeftBracketClause<C, NR> {
+    interface _LeftBracketClause<C, NR> {
 
         NR leftBracket();
 
@@ -98,7 +96,7 @@ public interface Window {
      * @param <PR> next clause java type
      * @since 1.0
      */
-    interface PartitionByExpClause<C, PR> {
+    interface _PartitionByExpClause<C, PR> {
 
         PR partitionBy(Object exp);
 
@@ -131,7 +129,7 @@ public interface Window {
      * @param <FR> next clause java type
      * @param <FC> next clause java type
      */
-    interface FrameUnitsClause<C, FR, FC> {
+    interface _FrameUnitsClause<C, FR, FC> {
 
         FR rows();
 
@@ -182,7 +180,7 @@ public interface Window {
      * @param <BR> next clause java type
      * @param <BC> next clause java type
      */
-    interface FrameBetweenClause<C, BR, BC> {
+    interface _FrameBetweenClause<C, BR, BC> {
 
         BR between();
 
@@ -210,7 +208,7 @@ public interface Window {
      * @param <AR> next clause java type
      * @param <AC> next clause java type
      */
-    interface FrameBetweenAndClause<C, AR, AC> {
+    interface _FrameBetweenAndClause<C, AR, AC> {
 
         AR and();
 
@@ -237,7 +235,7 @@ public interface Window {
      * @param <BR> next clause java type
      * @since 1.0
      */
-    interface FrameNonExpBoundClause<BR> {
+    interface _FrameNonExpBoundClause<BR> {
 
         BR currentRow();
 
@@ -260,11 +258,296 @@ public interface Window {
      * @param <BR> next clause java type
      * @since 1.0
      */
-    interface FrameExpBoundClause<BR> {
+    interface _FrameExpBoundClause<BR> {
 
         BR preceding();
 
         BR following();
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing AS clause in WINDOW clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @since 1.0
+     */
+    interface _SimpleAsClause<C, R> extends _AsClause<_SimpleLeftBracketClause<C, R>> {
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing LEFT BRACKET clause in WINDOW clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @since 1.0
+     */
+    interface _SimpleLeftBracketClause<C, R>
+            extends _LeftBracketClause<C, _SimplePartitionBySpec<C, R>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _PartitionByExpClause} in WINDOW clause</li>
+     *          <li>the composite {@link _SimpleOrderBySpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @since 1.0
+     */
+    interface _SimplePartitionBySpec<C, R> extends _PartitionByExpClause<C, _SimpleOrderBySpec<C, R>>
+            , _SimpleOrderBySpec<C, R> {
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Statement._OrderByClause} clause in WINDOW clause</li>
+     *          <li>the composite {@link _SimpleFrameUnitsSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @since 1.0
+     */
+    interface _SimpleOrderBySpec<C, R> extends Statement._OrderByClause<C, _SimpleFrameUnitsSpec<C, R>>
+            , _SimpleFrameUnitsSpec<C, R> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _FrameUnitsClause}</li>
+     *          <li>{@link Statement._RightBracketClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @since 1.0
+     */
+    interface _SimpleFrameUnitsSpec<C, R>
+            extends _FrameUnitsClause<C, _SimpleFrameBetweenClause<C, R>, _SimpleFrameEndNonExpBoundClause<R>>
+            , Statement._RightBracketClause<R> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing BETWEEN clause  in FRAME clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @since 1.0
+     */
+    interface _SimpleFrameBetweenClause<C, R>
+            extends _FrameBetweenClause<C, _SimpleFrameNonExpBoundClause<C, R>, _SimpleFrameExpBoundClause<C, R>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing AND clause  in FRAME clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @since 1.0
+     */
+    interface _SimpleFrameBetweenAndClause<C, R>
+            extends Statement.Clause
+            , _FrameBetweenAndClause<C, _SimpleFrameEndNonExpBoundClause<R>, _SimpleFrameEndExpBoundClause<R>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @since 1.0
+     */
+    interface _SimpleFrameNonExpBoundClause<C, R> extends _FrameNonExpBoundClause<Statement.Clause> {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        _SimpleFrameBetweenAndClause<C, R> currentRow();
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        _SimpleFrameBetweenAndClause<C, R> unboundedPreceding();
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        _SimpleFrameBetweenAndClause<C, R> unboundedFollowing();
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @since 1.0
+     */
+    interface _SimpleFrameExpBoundClause<C, R> extends _FrameExpBoundClause<Statement.Clause> {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        _SimpleFrameBetweenAndClause<C, R> preceding();
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        _SimpleFrameBetweenAndClause<C, R> following();
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @since 1.0
+     */
+    interface _SimpleFrameEndNonExpBoundClause<R> extends _FrameNonExpBoundClause<Statement.Clause> {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        Statement._RightBracketClause<R> currentRow();
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        Statement._RightBracketClause<R> unboundedPreceding();
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        Statement._RightBracketClause<R> unboundedFollowing();
+
+
+    }
+
+    /**
+     * <p>
+     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @since 1.0
+     */
+    interface _SimpleFrameEndExpBoundClause<R> extends _FrameExpBoundClause<Statement.Clause> {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        Statement._RightBracketClause<R> preceding();
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        Statement._RightBracketClause<R> following();
 
     }
 

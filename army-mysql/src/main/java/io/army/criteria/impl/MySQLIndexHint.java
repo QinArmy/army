@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.SQLModifier;
+import io.army.criteria.SQLWords;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
@@ -27,12 +27,12 @@ final class MySQLIndexHint implements _IndexHint {
 
 
     @Override
-    public SQLModifier command() {
+    public SQLWords command() {
         return this.command;
     }
 
     @Override
-    public SQLModifier purpose() {
+    public SQLWords purpose() {
         return this.purpose;
     }
 
@@ -42,7 +42,7 @@ final class MySQLIndexHint implements _IndexHint {
     }
 
 
-    enum Command implements SQLModifier {
+    enum Command implements SQLWords {
 
         USER_INDEX(" USER INDEX"),
         IGNORE_INDEX(" IGNORE INDEX"),
@@ -67,7 +67,7 @@ final class MySQLIndexHint implements _IndexHint {
 
     }//Command
 
-    enum Purpose implements SQLModifier {
+    enum Purpose implements SQLWords {
 
         FOR_ORDER_BY(" FOR ORDER BY"),
         FOR_GROUP_BY(" FOR GROUP BY"),

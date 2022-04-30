@@ -28,10 +28,10 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> extends WithCteSingleUpdate<C, WE, WR, WA, SR>
-        implements Query.OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLUpdate, _MySQLSingleUpdate
-        , MySQLUpdate.SingleUpdateClause<UR, UP>, MySQLQuery.PartitionClause<C, PR>
-        , MySQLQuery.IndexHintClause<C, IR, UR>, MySQLQuery.IndexOrderByClause<C, UR>
-        , Statement.AsClause<UR> {
+        implements Statement._OrderByClause<C, OR>, MySQLUpdate.LimitClause<C, LR>, MySQLUpdate, _MySQLSingleUpdate
+        , MySQLUpdate.SingleUpdateClause<UR, UP>, MySQLQuery._PartitionClause<C, PR>
+        , MySQLQuery._IndexHintClause<C, IR, UR>, MySQLQuery._IndexOrderByClause<C, UR>
+        , Statement._AsClause<UR> {
 
 
     static <C> MySQLUpdate.SingleUpdateSpec<C> simple57(@Nullable C criteria) {
@@ -603,7 +603,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
             WE,// WE
             MySQLUpdate.SingleIndexHintSpec<C>,//UR
             MySQLUpdate.SinglePartitionSpec<C>,//UP
-            Statement.AsClause<MySQLUpdate.SingleIndexHintSpec<C>>,//PR
+            _AsClause<SingleIndexHintSpec<C>>,//PR
             MySQLUpdate.IndexOrderBySpec<C>,//IR
             MySQLUpdate.OrderBySpec<C>, //WR
             MySQLUpdate.SingleWhereAndSpec<C>, //WA
@@ -626,7 +626,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, WR, WA, SR, OR, LR> exte
             WE,// WE
             MySQLUpdate.BatchSingleIndexHintSpec<C>,//UR
             MySQLUpdate.BatchSinglePartitionSpec<C>,//UP
-            Statement.AsClause<MySQLUpdate.BatchSingleIndexHintSpec<C>>,//PR
+            _AsClause<BatchSingleIndexHintSpec<C>>,//PR
             MySQLUpdate.BatchIndexOrderBySpec<C>,   //IR
             MySQLUpdate.BatchOrderBySpec<C>,        //WR
             MySQLUpdate.BatchSingleWhereAndSpec<C>, //WA

@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.ScalarExpression;
 import io.army.criteria.Select;
-import io.army.criteria.Statement;
 import io.army.criteria.SubQuery;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDelete;
@@ -142,66 +141,6 @@ public abstract class MySQLs80 extends MySQLSyntax {
     }
 
 
-    static final class MySQLWindow<C, R> extends SimpleWindow<
-            C,
-            MySQL80Query._WindowLeftBracketClause<C, R>,      //AR
-            MySQL80Query._WindowPartitionBySpec<C, R>,        //LR
-            MySQL80Query._WindowOrderBySpec<C, R>,            //PR,
-            MySQL80Query._WindowFrameUnitsSpec<C, R>,         //OR
-            MySQL80Query._WindowFrameBetweenClause<C, R>,     //FR
-            MySQL80Query._WindowFrameEndNonExpBoundClause<R>, //FC
-            MySQL80Query._WindowFrameNonExpBoundClause<C, R>, //BR
-            MySQL80Query._WindowFrameExpBoundClause<C, R>,    //BC
-            MySQL80Query._WindowFrameEndExpBoundClause<R>,    //NC
-            Statement.Clause,                                //MA
-            Statement.Clause,                                //MB
-            R>                                               //R
-            implements MySQL80Query._WindowAsClause<C, R>, MySQL80Query._WindowLeftBracketClause<C, R>
-            , MySQL80Query._WindowPartitionBySpec<C, R>, MySQL80Query._WindowFrameBetweenClause<C, R>,
-            MySQL80Query._WindowFrameEndNonExpBoundClause<R>, MySQL80Query._WindowFrameNonExpBoundClause<C, R>
-            , MySQL80Query._WindowFrameExpBoundClause<C, R>, MySQL80Query._WindowFrameEndExpBoundClause<R>
-            , MySQL80Query._WindowFrameBetweenAndClause<C, R> {
-
-        MySQLWindow(String windowName, CriteriaContext criteriaContext) {
-            super(windowName, criteriaContext);
-        }
-
-        MySQLWindow(String windowName, R stmt) {
-            super(windowName, stmt);
-        }
-
-        @Override
-        public MySQLWindow<C, R> currentRow() {
-            this.bound(FrameBound.CURRENT_ROW);
-            return this;
-        }
-
-        @Override
-        public MySQLWindow<C, R> unboundedPreceding() {
-            this.bound(FrameBound.UNBOUNDED_PRECEDING);
-            return this;
-        }
-
-        @Override
-        public MySQLWindow<C, R> unboundedFollowing() {
-            this.bound(FrameBound.UNBOUNDED_FOLLOWING);
-            return this;
-        }
-
-        @Override
-        public MySQLWindow<C, R> preceding() {
-            this.bound(FrameBound.PRECEDING);
-            return this;
-        }
-
-        @Override
-        public MySQLWindow<C, R> following() {
-            this.bound(FrameBound.FOLLOWING);
-            return this;
-        }
-
-
-    }//MySQLWindow
 
 
 }

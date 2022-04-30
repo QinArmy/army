@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLModifier;
+import io.army.criteria.SQLWords;
 import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._NoTableBlock;
 import io.army.criteria.impl.inner._Predicate;
@@ -8,7 +8,7 @@ import io.army.criteria.impl.inner._Predicate;
 import java.util.List;
 
 
-public enum _JoinType implements SQLModifier, _NoTableBlock {
+public enum _JoinType implements SQLWords, _NoTableBlock {
 
     NONE(" "),
     LEFT_JOIN(" LEFT JOIN"),

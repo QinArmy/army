@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 public interface Query extends RowSet {
 
 
-    interface QuerySpec<Q extends Query> extends RowSet.RowSetSpec<Q> {
+    interface _QuerySpec<Q extends Query> extends RowSet.RowSetSpec<Q> {
 
     }
 
@@ -51,41 +51,37 @@ public interface Query extends RowSet {
     }
 
 
-    interface GroupClause<C, GR> {
+    interface _GroupClause<C, GR> {
 
-        GR groupBy(SortItem sortItem);
+        GR groupBy(Object sortItem);
 
-        GR groupBy(SortItem sortItem1, SortItem sortItem2);
+        GR groupBy(Object sortItem1, Object sortItem2);
 
-        GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
+        GR groupBy(Object sortItem1, Object sortItem2, Object sortItem3);
 
-        GR groupBy(List<SortItem> sortItemList);
+        <S extends SortItem> GR groupBy(Supplier<List<S>> supplier);
 
-        GR groupBy(Function<C, List<SortItem>> function);
-
-        GR groupBy(Supplier<List<SortItem>> supplier);
+        <S extends SortItem> GR groupBy(Function<C, List<S>> function);
 
         GR groupBy(Consumer<List<SortItem>> consumer);
 
-        GR ifGroupBy(@Nullable SortItem sortItem);
+        <S extends SortItem> GR ifGroupBy(Supplier<List<S>> supplier);
 
-        GR ifGroupBy(Supplier<List<SortItem>> supplier);
-
-        GR ifGroupBy(Function<C, List<SortItem>> function);
+        <S extends SortItem> GR ifGroupBy(Function<C, List<S>> function);
     }
 
 
-    interface HavingClause<C, HR> {
+    interface _HavingClause<C, HR> {
 
         HR having(IPredicate predicate);
 
         HR having(IPredicate predicate1, IPredicate predicate2);
 
-        HR having(List<IPredicate> predicateList);
-
         HR having(Supplier<List<IPredicate>> supplier);
 
         HR having(Function<C, List<IPredicate>> function);
+
+        HR having(Consumer<List<IPredicate>> consumer);
 
         HR ifHaving(@Nullable IPredicate predicate);
 
@@ -113,7 +109,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface QueryUnionClause<C, UR, SP> extends UnionClause<C, UR, SP> {
+    interface _QueryUnionClause<C, UR, SP> extends UnionClause<C, UR, SP> {
 
         SP union();
 
@@ -122,7 +118,7 @@ public interface Query extends RowSet {
         SP unionDistinct();
     }
 
-    interface LimitClause<C, LR> {
+    interface _LimitClause<C, LR> {
 
         LR limit(long rowCount);
 

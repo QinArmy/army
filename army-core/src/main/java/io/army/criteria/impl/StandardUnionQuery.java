@@ -11,15 +11,15 @@ import io.army.util._Exceptions;
 abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         C,
         Q,
-        StandardQuery.UnionOrderBySpec<C, Q>, //UR
-        StandardQuery.UnionLimitSpec<C, Q>,//OR
-        StandardQuery.UnionSpec<C, Q>,//LR
-        StandardQuery.StandardSelectClause<C, Q>>// SP
-        implements StandardQuery.UnionOrderBySpec<C, Q>, StandardQuery {
+        StandardQuery._UnionOrderBySpec<C, Q>, //UR
+        StandardQuery._UnionLimitSpec<C, Q>,//OR
+        StandardQuery._UnionSpec<C, Q>,//LR
+        StandardQuery._StandardSelectClause<C, Q>>// SP
+        implements StandardQuery._UnionOrderBySpec<C, Q>, StandardQuery {
 
-    static <C, Q extends Query> UnionOrderBySpec<C, Q> bracketQuery(final RowSet query) {
+    static <C, Q extends Query> _UnionOrderBySpec<C, Q> bracketQuery(final RowSet query) {
         query.prepared();
-        final UnionOrderBySpec<C, ?> unionSpec;
+        final _UnionOrderBySpec<C, ?> unionSpec;
         if (query instanceof Select) {
             unionSpec = new BracketSelect<>((Select) query);
         } else if (query instanceof ScalarSubQuery) {
@@ -29,11 +29,11 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         } else {
             throw _Exceptions.unknownRowSetType(query);
         }
-        return (UnionOrderBySpec<C, Q>) unionSpec;
+        return (_UnionOrderBySpec<C, Q>) unionSpec;
     }
 
 
-    static <C, Q extends Query> UnionOrderBySpec<C, Q> unionQuery(Q left, UnionType unionType, RowSet right) {
+    static <C, Q extends Query> _UnionOrderBySpec<C, Q> unionQuery(Q left, UnionType unionType, RowSet right) {
         switch (unionType) {
             case UNION:
             case UNION_ALL:
@@ -45,7 +45,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         left.prepared();
         // never validate right,possibly union and select
         CriteriaUtils.assertSelectItemSizeMatch(left, right);
-        final UnionOrderBySpec<C, ?> unionSpec;
+        final _UnionOrderBySpec<C, ?> unionSpec;
         if (left instanceof Select) {
             if (!(right instanceof Select)) {
                 String m = String.format("standard query api support only %s.", Select.class.getName());
@@ -68,7 +68,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
-        return (UnionOrderBySpec<C, Q>) unionSpec;
+        return (_UnionOrderBySpec<C, Q>) unionSpec;
     }
 
 
@@ -78,17 +78,17 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     }
 
     @Override
-    final UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
+    final _UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {
         return bracketQuery(rowSet);
     }
 
     @Override
-    final UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+    final _UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
         return unionQuery((Q) left, unionType, right);
     }
 
     @Override
-    final StandardSelectClause<C, Q> asUnionAndRowSet(UnionType unionType) {
+    final _StandardSelectClause<C, Q> asUnionAndRowSet(UnionType unionType) {
         return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 

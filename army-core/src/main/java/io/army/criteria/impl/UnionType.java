@@ -1,17 +1,17 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLModifier;
+import io.army.criteria.SQLWords;
 
- enum UnionType implements SQLModifier {
-     UNION(" UNION"),
-     UNION_ALL(" UNION ALL"),
-     UNION_DISTINCT(" UNION DISTINCT");
+enum UnionType implements SQLWords {
+    UNION(" UNION"),
+    UNION_ALL(" UNION ALL"),
+    UNION_DISTINCT(" UNION DISTINCT");
 
-     final String keyWords;
+    final String keyWords;
 
-     UnionType(String keyWords) {
-         this.keyWords = keyWords;
-     }
+    UnionType(String keyWords) {
+        this.keyWords = keyWords;
+    }
 
     @Override
     public String render() {

@@ -46,7 +46,7 @@ public interface Update extends NarrowDmlStatement {
 
     }
 
-    interface StandardWhereAndSpec<C> extends Statement.WhereAndClause<C, StandardWhereAndSpec<C>>, Update.UpdateSpec {
+    interface StandardWhereAndSpec<C> extends _WhereAndClause<C, StandardWhereAndSpec<C>>, Update.UpdateSpec {
 
     }
 
@@ -286,7 +286,7 @@ public interface Update extends NarrowDmlStatement {
     }
 
 
-    interface StandardBatchWhereAndSpec<C> extends Statement.WhereAndClause<C, Update.StandardBatchWhereAndSpec<C>>
+    interface StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, StandardBatchWhereAndSpec<C>>
             , Statement.BatchParamClause<C, Update.UpdateSpec> {
 
     }

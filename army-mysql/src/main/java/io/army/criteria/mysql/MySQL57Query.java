@@ -38,7 +38,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Select57Clause<C, Q extends Query> extends MySQLSelectClause<C, From57Spec<C, Q>> {
+    interface _Select57Clause<C, Q extends Query> extends _MySQLSelectClause<C, _FromSpec<C, Q>> {
 
     }
 
@@ -47,7 +47,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      * <ul>
      *      <li>FROM clause in MySQL 57 syntax</li>
-     *      <li>the composite {@link Union57Spec} </li>
+     *      <li>the composite {@link _UnionSpec} </li>
      * </ul>
      * </p>
      * <p>
@@ -60,9 +60,9 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface From57Spec<C, Q extends Query>
-            extends MySQLQuery.MySQLFromClause<C, IndexHintJoin57Spec<C, Q>, Join57Spec<C, Q>, PartitionJoin57Clause<C, Q>, LestBracket57Clause<C, Q>>
-            , Union57Spec<C, Q>, _IntoSpec<C, Q> {
+    interface _FromSpec<C, Q extends Query>
+            extends _MySQLFromClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _PartitionJoinClause<C, Q>, _LestBracket57Clause<C, Q>>
+            , _UnionSpec<C, Q>, _IntoSpec<C, Q> {
 
     }
 
@@ -81,7 +81,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface PartitionJoin57Clause<C, Q extends Query> extends MySQLQuery.PartitionClause<C, AsJoin57Clause<C, Q>> {
+    interface _PartitionJoinClause<C, Q extends Query> extends _PartitionClause<C, _AsJoinClause<C, Q>> {
 
     }
 
@@ -99,7 +99,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface AsJoin57Clause<C, Q extends Query> extends Statement.AsClause<IndexHintJoin57Spec<C, Q>> {
+    interface _AsJoinClause<C, Q extends Query> extends _AsClause<_IndexHintJoinSpec<C, Q>> {
 
     }
 
@@ -122,9 +122,9 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IndexHintJoin57Spec<C, Q extends Query>
-            extends MySQLQuery.IndexHintClause<C, IndexPurposeJoin57Clause<C, Q>, IndexHintJoin57Spec<C, Q>>
-            , Join57Clause<C, Q> {
+    interface _IndexHintJoinSpec<C, Q extends Query>
+            extends _IndexHintClause<C, _IndexPurposeJoinClause<C, Q>, _IndexHintJoinSpec<C, Q>>
+            , _Join57Clause<C, Q> {
 
     }
 
@@ -132,9 +132,9 @@ public interface MySQL57Query extends MySQLQuery {
      * <p>
      * This interface representing index hint clause after below methods:
      * <ul>
-     *     <li>{@link IndexHintJoin57Spec#useIndex()}</li>
-     *     <li>{@link IndexHintJoin57Spec#ignoreIndex()}</li>
-     *     <li>{@link IndexHintJoin57Spec#forceIndex()}</li>
+     *     <li>{@link _IndexHintJoinSpec#useIndex()}</li>
+     *     <li>{@link _IndexHintJoinSpec#ignoreIndex()}</li>
+     *     <li>{@link _IndexHintJoinSpec#forceIndex()}</li>
      * </ul>
      * </p>
      * <p>
@@ -147,8 +147,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IndexPurposeJoin57Clause<C, Q extends Query>
-            extends MySQLQuery.IndexPurposeClause<C, IndexHintJoin57Spec<C, Q>> {
+    interface _IndexPurposeJoinClause<C, Q extends Query>
+            extends _IndexPurposeClause<C, _IndexHintJoinSpec<C, Q>> {
 
     }
 
@@ -166,7 +166,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface PartitionOn57Clause<C, Q extends Query> extends MySQLQuery.PartitionClause<C, AsOn57Clause<C, Q>> {
+    interface _PartitionOnClause<C, Q extends Query> extends _PartitionClause<C, _AsOnClause<C, Q>> {
 
     }
 
@@ -185,7 +185,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface AsOn57Clause<C, Q extends Query> extends Statement.AsClause<IndexHintOn57Spec<C, Q>> {
+    interface _AsOnClause<C, Q extends Query> extends _AsClause<_IndexHintOnSpec<C, Q>> {
 
     }
 
@@ -209,8 +209,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IndexHintOn57Spec<C, Q extends Query>
-            extends MySQLQuery.IndexHintClause<C, IndexPurposeOn57Spec<C, Q>, IndexHintOn57Spec<C, Q>>, Statement.OnClause<C, Join57Spec<C, Q>> {
+    interface _IndexHintOnSpec<C, Q extends Query>
+            extends _IndexHintClause<C, _IndexPurposeOn57Clause<C, Q>, _IndexHintOnSpec<C, Q>>, _OnClause<C, _JoinSpec<C, Q>> {
 
     }
 
@@ -219,11 +219,11 @@ public interface MySQL57Query extends MySQLQuery {
      * <p>
      * This interface representing index hint clause after below methods:
      * <ul>
-     *     <li>{@link IndexHintOn57Spec#useIndex()}</li>
-     *     <li>{@link IndexHintOn57Spec#ignoreIndex()}</li>
-     *     <li>{@link IndexHintOn57Spec#forceIndex()}</li>
+     *     <li>{@link _IndexHintOnSpec#useIndex()}</li>
+     *     <li>{@link _IndexHintOnSpec#ignoreIndex()}</li>
+     *     <li>{@link _IndexHintOnSpec#forceIndex()}</li>
      * </ul>
-     * this interface is returned by {@link IndexHintOn57Spec}.
+     * this interface is returned by {@link _IndexHintOnSpec}.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -235,8 +235,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface IndexPurposeOn57Spec<C, Q extends Query>
-            extends MySQLQuery.IndexPurposeClause<C, IndexHintOn57Spec<C, Q>> {
+    interface _IndexPurposeOn57Clause<C, Q extends Query>
+            extends _IndexPurposeClause<C, _IndexHintOnSpec<C, Q>> {
 
     }
 
@@ -246,7 +246,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *    <ul>
      *        <li>join clause in MySQL 57 syntax</li>
-     *        <li>the composite {@link Where57Spec}</li>
+     *        <li>the composite {@link _WhereSpec}</li>
      *        <li>right bracket clause</li>
      *    </ul>
      * </p>
@@ -266,8 +266,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Join57Spec<C, Q extends Query> extends Join57Clause<C, Q>, Where57Spec<C, Q>
-            , RightBracketClause<Join57Spec<C, Q>> {
+    interface _JoinSpec<C, Q extends Query> extends _Join57Clause<C, Q>, _WhereSpec<C, Q>
+            , _RightBracketClause<_JoinSpec<C, Q>> {
 
     }
 
@@ -285,9 +285,9 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Join57Clause<C, Q extends Query>
-            extends MySQLJoinClause<C, IndexHintOn57Spec<C, Q>, Statement.OnClause<C, Join57Spec<C, Q>>, PartitionOn57Clause<C, Q>
-            , IndexHintJoin57Spec<C, Q>, Join57Spec<C, Q>, LestBracket57Clause<C, Q>, PartitionJoin57Clause<C, Q>> {
+    interface _Join57Clause<C, Q extends Query>
+            extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>, _PartitionOnClause<C, Q>
+            , _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _LestBracket57Clause<C, Q>, _PartitionJoinClause<C, Q>> {
 
     }
 
@@ -306,8 +306,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface LestBracket57Clause<C, Q extends Query>
-            extends MySQLJoinBracketClause<C, IndexHintJoin57Spec<C, Q>, Join57Spec<C, Q>, PartitionJoin57Clause<C, Q>> {
+    interface _LestBracket57Clause<C, Q extends Query>
+            extends _MySQLJoinBracketClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _PartitionJoinClause<C, Q>> {
 
     }
 
@@ -316,7 +316,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>WHERE clause for MySQL 57</li>
-     *          <li>the composite {@link GroupBy57Spec}</li>
+     *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -329,8 +329,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Where57Spec<C, Q extends Query> extends Statement.WhereClause<C, GroupBy57Spec<C, Q>, WhereAnd57Spec<C, Q>>
-            , GroupBy57Spec<C, Q> {
+    interface _WhereSpec<C, Q extends Query> extends Statement.QueryWhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>
+            , _GroupBySpec<C, Q> {
 
     }
 
@@ -339,7 +339,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>AND clause for MySQL 57</li>
-     *          <li>the composite {@link GroupBy57Spec}</li>
+     *          <li>the composite {@link _GroupBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -352,8 +352,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface WhereAnd57Spec<C, Q extends Query> extends Statement.WhereAndClause<C, WhereAnd57Spec<C, Q>>
-            , GroupBy57Spec<C, Q> {
+    interface _WhereAndSpec<C, Q extends Query> extends _WhereAndClause<C, _WhereAndSpec<C, Q>>
+            , _GroupBySpec<C, Q> {
 
     }
 
@@ -362,7 +362,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>GROUP BY clause for MySQL 57</li>
-     *          <li>the composite {@link OrderBy57Spec}</li>
+     *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -375,8 +375,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface GroupBy57Spec<C, Q extends Query> extends Query.GroupClause<C, WithRollup57Spec<C, Q>>
-            , OrderBy57Spec<C, Q> {
+    interface _GroupBySpec<C, Q extends Query> extends _GroupClause<C, _WithRollupSpec<C, Q>>
+            , _OrderBySpec<C, Q> {
 
     }
 
@@ -385,7 +385,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>WITH ROLLUP clause for MySQL 57</li>
-     *          <li>the composite {@link Having57Spec}</li>
+     *          <li>the composite {@link _HavingSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -398,8 +398,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface WithRollup57Spec<C, Q extends Query> extends _WithRollupClause<C, Having57Spec<C, Q>>
-            , Having57Spec<C, Q> {
+    interface _WithRollupSpec<C, Q extends Query> extends _WithRollupClause<C, _HavingSpec<C, Q>>
+            , _HavingSpec<C, Q> {
 
     }
 
@@ -408,7 +408,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>HAVING clause for MySQL 57</li>
-     *          <li>the composite {@link OrderBy57Spec}</li>
+     *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -421,8 +421,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Having57Spec<C, Q extends Query> extends Query.HavingClause<C, OrderBy57Spec<C, Q>>
-            , OrderBy57Spec<C, Q> {
+    interface _HavingSpec<C, Q extends Query> extends _HavingClause<C, _OrderBySpec<C, Q>>
+            , _OrderBySpec<C, Q> {
 
 
     }
@@ -432,7 +432,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>ORDER BY clause for MySQL 57</li>
-     *          <li>the composite {@link Limit57Spec}</li>
+     *          <li>the composite {@link _LimitSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -445,8 +445,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface OrderBy57Spec<C, Q extends Query> extends Query.OrderByClause<C, Limit57Spec<C, Q>>
-            , Limit57Spec<C, Q> {
+    interface _OrderBySpec<C, Q extends Query> extends _OrderByClause<C, _LimitSpec<C, Q>>
+            , _LimitSpec<C, Q> {
 
     }
 
@@ -456,7 +456,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>LIMIT clause for MySQL 57</li>
-     *          <li>the composite {@link Lock57Spec}</li>
+     *          <li>the composite {@link _LockSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -469,8 +469,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Limit57Spec<C, Q extends Query> extends Query.LimitClause<C, Lock57Spec<C, Q>>
-            , Lock57Spec<C, Q> {
+    interface _LimitSpec<C, Q extends Query> extends _LimitClause<C, _LockSpec<C, Q>>
+            , _LockSpec<C, Q> {
 
     }
 
@@ -479,7 +479,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>LOCK clause for MySQL 57</li>
-     *          <li>the composite {@link Union57Spec}</li>
+     *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -492,8 +492,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Lock57Spec<C, Q extends Query>
-            extends MySQLQuery.LockClause<C, Union57Spec<C, Q>>, Union57Spec<C, Q>, _IntoSpec<C, Q> {
+    interface _LockSpec<C, Q extends Query>
+            extends _LockClause<C, _UnionSpec<C, Q>>, _UnionSpec<C, Q>, _IntoSpec<C, Q> {
 
     }
 
@@ -502,7 +502,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>ORDER BY clause for MySQL 57</li>
-     *          <li>the composite {@link UnionLimit57Spec}</li>
+     *          <li>the composite {@link _UnionLimitSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -515,8 +515,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface UnionOrderBy57Spec<C, Q extends Query> extends Query.OrderByClause<C, UnionLimit57Spec<C, Q>>
-            , UnionLimit57Spec<C, Q> {
+    interface _UnionOrderBySpec<C, Q extends Query> extends _OrderByClause<C, _UnionLimitSpec<C, Q>>
+            , _UnionLimitSpec<C, Q> {
 
     }
 
@@ -525,7 +525,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>LIMIT clause for MySQL 57</li>
-     *          <li>the composite {@link Union57Spec}</li>
+     *          <li>the composite {@link _UnionSpec}</li>
      *     </ul>
      * </p>
      * <p>
@@ -538,7 +538,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface UnionLimit57Spec<C, Q extends Query> extends Query.LimitClause<C, Union57Spec<C, Q>>, Union57Spec<C, Q> {
+    interface _UnionLimitSpec<C, Q extends Query> extends _LimitClause<C, _UnionSpec<C, Q>>, _UnionSpec<C, Q> {
 
     }
 
@@ -548,7 +548,7 @@ public interface MySQL57Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>UNION clause for MySQL 57</li>
-     *          <li>method {@link QuerySpec#asQuery()}</li>
+     *          <li>method {@link _QuerySpec#asQuery()}</li>
      *     </ul>
      * </p>
      * <p>
@@ -561,9 +561,9 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface Union57Spec<C, Q extends Query>
-            extends QueryUnionClause<C, UnionOrderBy57Spec<C, Q>, Select57Clause<C, Q>>
-            , Query.QuerySpec<Q> {
+    interface _UnionSpec<C, Q extends Query>
+            extends _QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _Select57Clause<C, Q>>
+            , _QuerySpec<Q> {
 
     }
 
