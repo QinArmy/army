@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class JoinableUpdate<C, SR, JT, JS, JP, JC, JD, JE, JF, WR, WA>
         extends DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
-        implements Update, Update.UpdateSpec, Update._SimpleSetClause<C, SR>, Update._BatchSetClause<C, SR>, _Update {
+        implements Update, Update._UpdateSpec, Update._SimpleSetClause<C, SR>, Update._BatchSetClause<C, SR>, _Update {
 
     private List<SetLeftItem> leftList = new ArrayList<>();
 

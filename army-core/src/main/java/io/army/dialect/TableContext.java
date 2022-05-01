@@ -1,8 +1,8 @@
 package io.army.dialect;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.NestedItems;
 import io.army.criteria.TableItem;
-import io.army.criteria.TableItemGroup;
 import io.army.criteria.Visible;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._Predicate;
@@ -61,7 +61,7 @@ final class TableContext {
             block = blockList.get(i);
             final TableItem tableItem = block.tableItem();
             final String alias = block.alias();
-            if (tableItem instanceof TableItemGroup) {
+            if (tableItem instanceof NestedItems) {
                 throw new UnsupportedOperationException();
             }
             _DialectUtils.validateTableAlias(alias);

@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 public interface Update extends NarrowDmlStatement {
 
 
-    interface UpdateSpec {
+    interface _UpdateSpec {
 
         Update asUpdate();
     }
@@ -41,12 +41,12 @@ public interface Update extends NarrowDmlStatement {
 
 
     interface StandardWhereSpec<C> extends StandardSetSpec<C>
-            , _WhereClause<C, UpdateSpec, StandardWhereAndSpec<C>> {
+            , _WhereClause<C, _UpdateSpec, StandardWhereAndSpec<C>> {
 
 
     }
 
-    interface StandardWhereAndSpec<C> extends _WhereAndClause<C, StandardWhereAndSpec<C>>, Update.UpdateSpec {
+    interface StandardWhereAndSpec<C> extends _WhereAndClause<C, StandardWhereAndSpec<C>>, _UpdateSpec {
 
     }
 
@@ -287,7 +287,7 @@ public interface Update extends NarrowDmlStatement {
 
 
     interface StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, StandardBatchWhereAndSpec<C>>
-            , Statement.BatchParamClause<C, Update.UpdateSpec> {
+            , Statement.BatchParamClause<C, _UpdateSpec> {
 
     }
 
@@ -297,8 +297,8 @@ public interface Update extends NarrowDmlStatement {
     }
 
     interface StandardBatchWhereSpec<C> extends StandardBatchSetSpec<C>
-            , _WhereClause<C, BatchParamClause<C, UpdateSpec>, StandardBatchWhereAndSpec<C>>
-            , Statement.BatchParamClause<C, Update.UpdateSpec> {
+            , _WhereClause<C, BatchParamClause<C, _UpdateSpec>, StandardBatchWhereAndSpec<C>>
+            , Statement.BatchParamClause<C, _UpdateSpec> {
 
     }
 

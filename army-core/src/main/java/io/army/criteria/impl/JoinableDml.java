@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 @Deprecated
 abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhereClause<C, WR, WA>
-        implements DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF>, _Dml {
+        implements DialectStatement._DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF>, _Dml {
 
 
     JoinableDml(CriteriaContext criteriaContext) {
@@ -53,7 +53,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS leftJoin(Function<C, T> function, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
+        block = this.createItemBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -61,7 +61,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
+        block = this.createItemBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -88,7 +88,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS join(Function<C, T> function, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
+        block = this.createItemBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -96,7 +96,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS join(Supplier<T> supplier, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.JOIN, supplier.get(), alias);
+        block = this.createItemBlock(_JoinType.JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -124,7 +124,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS rightJoin(Function<C, T> function, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
+        block = this.createItemBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -132,7 +132,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
+        block = this.createItemBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -181,7 +181,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS fullJoin(Function<C, T> function, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
+        block = this.createItemBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -189,7 +189,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
+        block = this.createItemBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -211,7 +211,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
+        block = this.createItemBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -219,7 +219,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
     @Override
     public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
         final JS block;
-        block = this.createOnBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
+        block = this.createItemBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
         this.criteriaContext.onAddBlock((_TableBlock) block);
         return block;
     }
@@ -237,7 +237,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
 
     abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
 
-    abstract JS createOnBlock(_JoinType joinType, TableItem tableItem, String alias);
+    abstract JS createItemBlock(_JoinType joinType, TableItem tableItem, String alias);
 
     abstract JT createNoActionTableBlock();
 
@@ -264,7 +264,7 @@ abstract class JoinableDml<C, JT, JS, JP, JC, JD, JE, JF, WR, WA> extends DmlWhe
         if (tableItem == null) {
             block = getNoActionOnBlock();
         } else {
-            block = createOnBlock(joinType, tableItem, alias);
+            block = createItemBlock(joinType, tableItem, alias);
         }
         return block;
     }

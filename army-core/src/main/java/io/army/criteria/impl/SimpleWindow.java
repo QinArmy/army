@@ -43,6 +43,10 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         return new StandardSimpleWindow<>(windowName, criteriaContext);
     }
 
+    static boolean isIllegalWindow(Window window) {
+        return !(window instanceof StandardSimpleWindow);
+    }
+
 
     private final String windowName;
 
@@ -197,15 +201,15 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(SQLs._nonNullSortItem(sortItem));
+        this.orderByList = Collections.singletonList(SQLs._sortItem(sortItem));
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._nonNullSortItem(sortItem1),
-                SQLs._nonNullSortItem(sortItem2)
+                SQLs._sortItem(sortItem1),
+                SQLs._sortItem(sortItem2)
         );
         return (OR) this;
     }
@@ -213,9 +217,9 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._nonNullSortItem(sortItem1),
-                SQLs._nonNullSortItem(sortItem2),
-                SQLs._nonNullSortItem(sortItem3)
+                SQLs._sortItem(sortItem1),
+                SQLs._sortItem(sortItem2),
+                SQLs._sortItem(sortItem3)
         );
         return (OR) this;
     }

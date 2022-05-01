@@ -2,27 +2,36 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.SQLWords;
 
-public enum MySQLWords implements SQLWords {
+public enum MySQLWords implements SQLWords.Modifier {
+
+    /*################################## blow SELECT modifiers ##################################*/
+    ALL(" ALL", 0),
+    DISTINCT(" DISTINCT", 0),
+    DISTINCTROW(" DISTINCTROW", 0),
+
+    HIGH_PRIORITY(" HIGH_PRIORITY", 1),
+
+    STRAIGHT_JOIN(" STRAIGHT_JOIN", 2),
+
+    SQL_SMALL_RESULT(" SQL_SMALL_RESULT", 3),
+    SQL_BIG_RESULT(" SQL_BIG_RESULT", 4),
+    SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT", 5),
+
+    SQL_NO_CACHE(" SQL_NO_CACHE", 6),
+    SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS", 7),
+
+    /*################################## blow UPDATE modifiers ##################################*/
+    LOW_PRIORITY(" LOW_PRIORITY", 0),                                  // update statement
+    IGNORE(" IGNORE", 0);                                             // update statement
 
 
-    HIGH_PRIORITY(" HIGH PRIORITY"),
+    public final String modifier;
 
-    STRAIGHT_JOIN(" STRAIGHT JOIN"),
-    SQL_SMALL_RESULT(" SQL SMALL RESULT"),
-    SQL_BIG_RESULT(" SQL BIG RESULT"),
-    SQL_CACHE(" SQL CACHE"),
+    public final byte number;
 
-    SQL_NO_CACHE(" SQL NO CACHE"),
-    SQL_CALC_FOUND_ROWS(" SQL CALC FOUND ROWS"),
-
-    LOW_PRIORITY(" LOW_PRIORITY"),                                  // update statement
-    IGNORE(" IGNORE");                                             // update statement
-
-
-    private final String modifier;
-
-    MySQLWords(String modifier) {
+    MySQLWords(String modifier, int number) {
         this.modifier = modifier;
+        this.number = (byte) number;
     }
 
     @Override
@@ -30,6 +39,10 @@ public enum MySQLWords implements SQLWords {
         return this.modifier;
     }
 
+    @Override
+    public final int level() {
+        return this.number;
+    }
 
     @Override
     public final String toString() {

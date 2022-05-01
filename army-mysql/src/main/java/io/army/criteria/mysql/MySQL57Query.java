@@ -1,7 +1,6 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.Query;
-import io.army.criteria.Statement;
 
 /**
  * <p>
@@ -34,7 +33,7 @@ public interface MySQL57Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -286,8 +285,9 @@ public interface MySQL57Query extends MySQLQuery {
      * @since 1.0
      */
     interface _Join57Clause<C, Q extends Query>
-            extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>, _PartitionOnClause<C, Q>
-            , _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _LestBracket57Clause<C, Q>, _PartitionJoinClause<C, Q>> {
+            extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>, _LestBracket57Clause<C, Q>>
+            , _CrossJoinClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _LestBracket57Clause<C, Q>>
+            , _MySQLDialectJoin<_PartitionOnClause<C, Q>>, _DialectCrossJoinClause<_PartitionJoinClause<C, Q>> {
 
     }
 
@@ -329,7 +329,7 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _WhereSpec<C, Q extends Query> extends Statement.QueryWhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>
+    interface _WhereSpec<C, Q extends Query> extends _QueryWhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>
             , _GroupBySpec<C, Q> {
 
     }

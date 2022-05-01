@@ -51,7 +51,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _StandardFromSpec<C, Q extends Query>
-            extends Statement.FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>, _StandardLestBracketClause<C, Q>>
+            extends _FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>, _StandardLestBracketClause<C, Q>>
             , _UnionSpec<C, Q> {
 
     }
@@ -103,7 +103,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _StandardJoinClause<C, Q extends Query>
-            extends JoinClause<C, _OnClause<C, _JoinSpec<C, Q>>, _OnClause<C, _JoinSpec<C, Q>>, _JoinSpec<C, Q>, _JoinSpec<C, Q>, _StandardLestBracketClause<C, Q>> {
+            extends _JoinClause<C, _OnClause<C, _JoinSpec<C, Q>>, _OnClause<C, _JoinSpec<C, Q>>, _JoinSpec<C, Q>, _JoinSpec<C, Q>, _StandardLestBracketClause<C, Q>> {
 
     }
 
@@ -145,7 +145,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _WhereSpec<C, Q extends Query>
-            extends QueryWhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>, _GroupBySpec<C, Q> {
+            extends _QueryWhereClause<C, _GroupBySpec<C, Q>, _WhereAndSpec<C, Q>>, _GroupBySpec<C, Q> {
 
     }
 

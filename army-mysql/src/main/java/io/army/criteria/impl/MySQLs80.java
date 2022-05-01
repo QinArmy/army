@@ -65,11 +65,11 @@ public abstract class MySQLs80 extends MySQLSyntax {
     }
 
 
-    public static MySQLUpdate.SingleWithAndUpdateSpec<Void> singleUpdate() {
+    public static MySQLUpdate._SingleWithAndUpdateSpec<Void> singleUpdate() {
         return MySQLSingleUpdate.simple80(null);
     }
 
-    public static <C> MySQLUpdate.SingleWithAndUpdateSpec<C> singleUpdate(C criteria) {
+    public static <C> MySQLUpdate._SingleWithAndUpdateSpec<C> singleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLSingleUpdate.simple80(criteria);
     }

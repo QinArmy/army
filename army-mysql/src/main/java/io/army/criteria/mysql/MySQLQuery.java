@@ -39,7 +39,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <SR> next clause java type
      * @since 1.0
      */
-    interface _MySQLSelectClause<C, SR> extends DialectStatement.DialectSelectClause<C, SR> {
+    interface _MySQLSelectClause<C, SR> extends _DialectSelectClause<C, MySQLWords, SR> {
 
     }
 
@@ -61,20 +61,47 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <FB> next clause java type,it's sub interface of {@link _LeftBracketClause}.
      * @since 1.0
      */
-    interface _MySQLFromClause<C, FT, FS, FP, FB> extends DialectStatement.DialectFromClause<C, FT, FS, FP, FB> {
+    interface _MySQLFromClause<C, FT, FS, FP, FB> extends _DialectFromClause<C, FT, FS, FP, FB> {
 
 
     }
 
     /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *         <li>{@link _JoinClause }</li>
+     *         <li>{@link  _StraightJoinClause}</li>
+     *     </ul>
+     * </p>
+     *
      * @param <C>  criteria type use to create dynamic statement.
-     * @param <JT> index hint clause,see {@link _IndexHintClause}
-     * @param <JS> on clause,see {@link _OnClause}
-     * @param <JP> partition clause, see {@link _PartitionClause}
+     * @param <JT> next clause java type
+     * @param <JS> next clause java type
+     * @param <JE> next clause java type
+     * @since 1.0
      */
-    interface _MySQLJoinClause<C, JT, JS, JP, JC, JD, JE, JF> extends DialectStatement.DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF> {
+    interface _MySQLJoinClause<C, JT, JS, JE>
+            extends _JoinClause<C, JT, JS, JE>, _StraightJoinClause<C, JT, JS, JE> {
 
     }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *         <li>{@link _DialectJoinClause }</li>
+     *         <li>{@link  _DialectStraightJoinClause}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param <JP> next clause java type
+     * @since 1.0
+     */
+    interface _MySQLDialectJoin<JP> extends _DialectJoinClause<JP>, _DialectStraightJoinClause<JP> {
+
+    }
+
 
     /**
      * <p>
@@ -86,10 +113,10 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _MySQLJoinBracketClause<C, JT, JS, JP> extends JointLeftBracketClause<C, JT, JS, JP> {
+    interface _MySQLJoinBracketClause<C, FT, FS, FP> extends _DialectLeftBracketClause<C, FT, FS, FP> {
 
     }
 

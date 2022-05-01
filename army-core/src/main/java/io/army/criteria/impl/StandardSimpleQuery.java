@@ -142,7 +142,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         final _TableBlock block;
         switch (joinType) {
             case NONE:
@@ -158,7 +158,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final Void createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+    final Void createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
         throw _Exceptions.castCriteriaApi();
     }
 
@@ -168,7 +168,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
     }
 

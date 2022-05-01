@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.Hint;
 import io.army.criteria.impl.inner.mysql._MySQLHint;
+import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect.Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
@@ -21,12 +23,23 @@ import java.util.List;
  */
 abstract class MySQLHints implements _MySQLHint {
 
+    @Nullable
+    static _MySQLHint castHint(final Hint hint) {
+        final _MySQLHint h;
+        if (hint instanceof MySQLHints) {
+            h = (MySQLHints) hint;
+        } else {
+            h = null;
+        }
+        return h;
+    }
+
     private MySQLHints() {
 
     }
 
 
-    enum Hint {
+    enum HintType {
 
         JOIN_FIXED_ORDER,
         JOIN_ORDER,
@@ -89,7 +102,7 @@ abstract class MySQLHints implements _MySQLHint {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html#optimizer-hints-join-order">Join-Order Optimizer Hints</a>
      */
-    static MySQLHints joinOrderHint(Hint hint, @Nullable String queryBlockName, List<String> tableNameList) {
+    static MySQLHints joinOrderHint(HintType hint, @Nullable String queryBlockName, List<String> tableNameList) {
         if (tableNameList.size() == 0) {
             throw new CriteriaException("tableNameList must non-empty.");
         }
@@ -99,7 +112,7 @@ abstract class MySQLHints implements _MySQLHint {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html#optimizer-hints-table-level">Table-Level Optimizer Hints</a>
      */
-    static MySQLHints tableLevelHint(Hint hint, @Nullable String queryBlockName, List<String> tableNameList) {
+    static MySQLHints tableLevelHint(HintType hint, @Nullable String queryBlockName, List<String> tableNameList) {
         if (tableNameList.size() == 0) {
             throw new CriteriaException("tableNameList must non-empty.");
         }
@@ -109,7 +122,7 @@ abstract class MySQLHints implements _MySQLHint {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html#optimizer-hints-index-level">Index-Level Optimizer Hints</a>
      */
-    static MySQLHints indexLevelHint(Hint hint, @Nullable String queryBlockName, String tableName
+    static MySQLHints indexLevelHint(HintType hint, @Nullable String queryBlockName, String tableName
             , List<String> indexNameList) {
         if (indexNameList.size() == 0) {
             throw new CriteriaException("indexNameList must non-empty.");
@@ -120,7 +133,7 @@ abstract class MySQLHints implements _MySQLHint {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html#optimizer-hints-subquery">Subquery Optimizer Hints</a>
      */
-    static MySQLHints subQueryHint(Hint hint, @Nullable String queryBlockName, EnumSet<HintStrategy> strategySet) {
+    static MySQLHints subQueryHint(HintType hint, @Nullable String queryBlockName, EnumSet<HintStrategy> strategySet) {
         if (strategySet.size() == 0) {
             throw new CriteriaException("strategySet must non-empty.");
         }
@@ -170,7 +183,7 @@ abstract class MySQLHints implements _MySQLHint {
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(Constant.SPACE)
-                    .append(Hint.JOIN_FIXED_ORDER.name())
+                    .append(HintType.JOIN_FIXED_ORDER.name())
                     .append(Constant.LEFT_BRACKET);
             final String queryBlockName = this.queryBlockName;
             if (queryBlockName == null) {
@@ -190,21 +203,21 @@ abstract class MySQLHints implements _MySQLHint {
      * <p>
      * Support below join-order hints:
      *     <ul>
-     *         <li>{@link Hint#JOIN_ORDER}</li>
-     *         <li>{@link Hint#JOIN_PREFIX}</li>
-     *         <li>{@link Hint#JOIN_SUFFIX}</li>
+     *         <li>{@link HintType#JOIN_ORDER}</li>
+     *         <li>{@link HintType#JOIN_PREFIX}</li>
+     *         <li>{@link HintType#JOIN_SUFFIX}</li>
      *     </ul>
      * </p>
      */
     private static final class JoinOrder extends MySQLHints {
 
-        private final Hint hint;
+        private final HintType hint;
 
         private final String queryBlockName;
 
         private final List<String> tableNameList;
 
-        private JoinOrder(Hint hint, @Nullable String queryBlockName, List<String> tableNameList) {
+        private JoinOrder(HintType hint, @Nullable String queryBlockName, List<String> tableNameList) {
             if (tableNameList.size() == 0) {
                 throw MySQLHints.hintTableListIsEmpty();
             }
@@ -269,13 +282,13 @@ abstract class MySQLHints implements _MySQLHint {
 
     private static final class TableLevelHint extends MySQLHints {
 
-        private final Hint hint;
+        private final HintType hint;
 
         private final String queryBlockName;
 
         private final List<String> tableNameList;
 
-        private TableLevelHint(Hint hint, @Nullable String queryBlockName, List<String> tableNameList) {
+        private TableLevelHint(HintType hint, @Nullable String queryBlockName, List<String> tableNameList) {
             if (tableNameList.size() == 0) {
                 throw MySQLHints.hintTableListIsEmpty();
             }
@@ -345,7 +358,7 @@ abstract class MySQLHints implements _MySQLHint {
 
     private static final class IndexLevelHint extends MySQLHints {
 
-        private final Hint hint;
+        private final HintType hint;
 
         private final String queryBlockName;
 
@@ -353,7 +366,7 @@ abstract class MySQLHints implements _MySQLHint {
 
         private final List<String> indexNameList;
 
-        private IndexLevelHint(Hint hint, @Nullable String queryBlockName, String tableName, List<String> indexNameList) {
+        private IndexLevelHint(HintType hint, @Nullable String queryBlockName, String tableName, List<String> indexNameList) {
             switch (hint) {
                 case GROUP_INDEX:
                 case NO_GROUP_INDEX:
@@ -414,13 +427,13 @@ abstract class MySQLHints implements _MySQLHint {
 
     private static final class SubQueryHint extends MySQLHints {
 
-        private final Hint hint;
+        private final HintType hint;
 
         private final String queryBlockName;
 
         private final EnumSet<HintStrategy> strategySet;
 
-        private SubQueryHint(Hint hint, @Nullable String queryBlockName, EnumSet<HintStrategy> strategySet) {
+        private SubQueryHint(HintType hint, @Nullable String queryBlockName, EnumSet<HintStrategy> strategySet) {
             switch (hint) {
                 case SEMIJOIN:
                 case NO_SEMIJOIN:
@@ -479,7 +492,7 @@ abstract class MySQLHints implements _MySQLHint {
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(Constant.SPACE)
-                    .append(Hint.MAX_EXECUTION_TIME.name())
+                    .append(HintType.MAX_EXECUTION_TIME.name())
                     .append(Constant.LEFT_BRACKET);
 
             final Long millis = this.millis;
@@ -511,7 +524,7 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             context.sqlBuilder()
                     .append(Constant.SPACE)
-                    .append(Hint.SET_VAR.name())
+                    .append(HintType.SET_VAR.name())
                     .append(Constant.LEFT_BRACKET)
                     .append(Constant.SPACE)
                     .append(this.varValuePair)
@@ -533,7 +546,7 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             context.sqlBuilder()
                     .append(Constant.SPACE)
-                    .append(Hint.RESOURCE_GROUP.name())
+                    .append(HintType.RESOURCE_GROUP.name())
                     .append(Constant.LEFT_BRACKET)
                     .append(Constant.SPACE)
                     .append(this.groupName)
@@ -555,7 +568,7 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             context.sqlBuilder()
                     .append(Constant.SPACE)
-                    .append(Hint.QB_NAME.name())
+                    .append(HintType.QB_NAME.name())
                     .append(Constant.LEFT_BRACKET)
                     .append(Constant.SPACE)
                     .append(this.name)
@@ -589,7 +602,7 @@ abstract class MySQLHints implements _MySQLHint {
 
     private static CriteriaException varValuePairError(String varValuePair) {
         return new CriteriaException(String.format("%s var and value pair %s error."
-                , Hint.SET_VAR.name(), varValuePair));
+                , HintType.SET_VAR.name(), varValuePair));
     }
 
 

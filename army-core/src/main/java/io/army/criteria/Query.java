@@ -102,7 +102,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface UnionClause<C, UR, SP> {
+    interface _UnionClause<C, UR, SP> {
         UR bracket();
 
         UR union(Function<C, ? extends RowSet> function);
@@ -119,7 +119,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface _QueryUnionClause<C, UR, SP> extends UnionClause<C, UR, SP> {
+    interface _QueryUnionClause<C, UR, SP> extends _UnionClause<C, UR, SP> {
 
         SP union();
 

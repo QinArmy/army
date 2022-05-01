@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.DialectStatement;
+import io.army.criteria.NestedItems;
 import io.army.criteria.TableItem;
-import io.army.criteria.TableItemGroup;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._TableItemGroup;
 import io.army.lang.Nullable;
@@ -21,8 +21,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 abstract class AbstractTableItemGroup<C, JT, JS, JP>
-        implements _TableItemGroup, DialectStatement.DialectJoinClause<C, JT, JS, JP>
-        , TableItemGroup.TableItemGroupSpec {
+        implements _TableItemGroup, DialectStatement._DialectJoinClause<C, JT, JS, JP>
+        , NestedItems.TableItemGroupSpec {
 
     final C criteria;
 
@@ -325,7 +325,7 @@ abstract class AbstractTableItemGroup<C, JT, JS, JP>
     }
 
     @Override
-    public final TableItemGroup asTableGroup() {
+    public final NestedItems asTableGroup() {
         _Assert.nonPrepared(this.prepared);
         this.tableBlockList = _CollectionUtils.asUnmodifiableList(this.tableBlockList);
         this.prepared = true;

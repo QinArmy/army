@@ -31,6 +31,7 @@ public interface Window {
     interface _WindowClause<WR> {
 
         WR window(String windowName);
+
     }
 
     /**

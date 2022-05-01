@@ -328,7 +328,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final MultiOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        final MultiOnSpec<C> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
             return new SimpleOnBlock<>(joinType, tableItem, alias, this);
         }
 
@@ -407,7 +407,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final BatchMultiOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        final BatchMultiOnSpec<C> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
             return new BatchOnBlock<>(joinType, tableItem, alias, this);
         }
 
@@ -609,7 +609,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
 
 
     /**
-     * @see SimpleDelete#createOnBlock(_JoinType, TableItem, String)
+     * @see SimpleDelete#createItemBlock(_JoinType, TableItem, String)
      * @see SimpleDelete#createTableBlock(_JoinType, TableMeta, String)
      */
     private static class SimpleOnBlock<C, WE> extends OnClauseTableBlock<C, MySQLDelete.MultiJoinSpec<C>>
@@ -708,7 +708,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
 
     /**
      * @see BatchDelete#createTableBlock(_JoinType, TableMeta, String)
-     * @see BatchDelete#createOnBlock(_JoinType, TableItem, String)
+     * @see BatchDelete#createItemBlock(_JoinType, TableItem, String)
      */
     private static class BatchOnBlock<C, WE> extends OnClauseTableBlock<C, MySQLDelete.BatchMultiJoinSpec<C>>
             implements MySQLDelete.BatchMultiOnSpec<C> {

@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class WithCteSingleUpdate<C, WE, WR, WA, SR> extends SingleUpdate<C, WR, WA, SR>
+abstract class WithCteSingleUpdate<C, WE, SR, WR, WA> extends SingleUpdate<C, SR, WR, WA>
         implements DialectStatement._WithCteClause<C, WE> {
 
     WithCteSingleUpdate(CriteriaContext criteriaContext) {

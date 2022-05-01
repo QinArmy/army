@@ -72,7 +72,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     public final UP update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , TableMeta<? extends IDomain> table) {
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierList(modifiers);
         return this.createPartitionJoinBlock(table);
     }
 
@@ -80,7 +80,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     public final UT update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , TableMeta<? extends IDomain> table, String tableAlias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierList(modifiers);
         this.criteriaContext.onBlockWithoutOnClause(new FirstBlock(table, tableAlias));
         return (UT) this;
     }
@@ -100,7 +100,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     public final <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierList(modifiers);
         this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(supplier.get(), alias));
         return (US) this;
     }
@@ -115,7 +115,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     public final <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get());
-        this.modifierSet = MySQLUtils.asUpdateModifierSet(modifiers);
+        this.modifierSet = MySQLUtils.asUpdateModifierList(modifiers);
         this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (US) this;
     }
@@ -256,7 +256,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
     }
 
     @Override
-    public final Set<MySQLWords> modifierSet() {
+    public final Set<MySQLWords> modifierList() {
         return this.modifierSet;
     }
 
@@ -451,7 +451,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             MySQLUpdate.MultiIndexHintOnSpec<C>,
             MySQLUpdate.MultiOnSpec<C>,
             MySQLUpdate.MultiPartitionOnSpec<C>,
-            Update.UpdateSpec,
+            _UpdateSpec,
             MySQLUpdate.MultiWhereAndSpec<C>,
             MySQLUpdate.MultiWhereSpec<C>,
             MySQLUpdate.IndexJoinJoinSpec<C>>
@@ -473,7 +473,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        final MultiOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        final MultiOnSpec<C> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
             return new SimpleOnBlock<>(joinType, tableItem, alias, this);
         }
 
@@ -517,7 +517,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
             MySQLUpdate.BatchMultiIndexHintOnSpec<C>,
             MySQLUpdate.BatchMultiOnSpec<C>,
             MySQLUpdate.BatchMultiPartitionOnSpec<C>,
-            Statement.BatchParamClause<C, Update.UpdateSpec>,
+            Statement.BatchParamClause<C, _UpdateSpec>,
             MySQLUpdate.BatchMultiWhereAndSpec<C>,
             MySQLUpdate.BatchMultiWhereSpec<C>,
             MySQLUpdate.BatchIndexJoinJoinSpec<C>>
@@ -532,23 +532,23 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        public final UpdateSpec paramList(List<?> beanList) {
+        public final _UpdateSpec paramList(List<?> beanList) {
             this.wrapperList = CriteriaUtils.paramList(beanList);
             return this;
         }
 
         @Override
-        public final UpdateSpec paramList(Supplier<List<?>> supplier) {
+        public final _UpdateSpec paramList(Supplier<List<?>> supplier) {
             return this.paramList(supplier.get());
         }
 
         @Override
-        public final UpdateSpec paramList(Function<C, List<?>> function) {
+        public final _UpdateSpec paramList(Function<C, List<?>> function) {
             return this.paramList(function.apply(this.criteria));
         }
 
         @Override
-        public final UpdateSpec paramList(Function<String, Object> function, String keyName) {
+        public final _UpdateSpec paramList(Function<String, Object> function, String keyName) {
             this.wrapperList = CriteriaUtils.paramList(function, keyName);
             return this;
         }
@@ -564,7 +564,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
         }
 
         @Override
-        final BatchMultiOnSpec<C> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        final BatchMultiOnSpec<C> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
             return new BatchOnBlock<>(joinType, tableItem, alias, this);
         }
 
@@ -725,7 +725,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
 
     /**
-     * @see SimpleUpdate#createOnBlock(_JoinType, TableItem, String)
+     * @see SimpleUpdate#createItemBlock(_JoinType, TableItem, String)
      */
     private static final class SimpleOnBlock<C, WE> extends OnClauseTableBlock<C, MySQLUpdate.MultiJoinSpec<C>>
             implements MySQLUpdate.MultiOnSpec<C> {
@@ -838,7 +838,7 @@ abstract class MySQLMultiUpdate<C, WE, UP, UT, US, JT, JS, JP, WR, WA, SR, IR>
 
 
     /**
-     * @see BatchUpdate#createOnBlock(_JoinType, TableItem, String)
+     * @see BatchUpdate#createItemBlock(_JoinType, TableItem, String)
      */
     private static final class BatchOnBlock<C, WE> extends OnClauseTableBlock<C, MySQLUpdate.BatchMultiJoinSpec<C>>
             implements BatchMultiOnSpec<C> {

@@ -73,7 +73,7 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
 
 
     @Override
-    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         throw _Exceptions.castCriteriaApi();
     }
 
@@ -83,12 +83,12 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
     }
 
     @Override
-    final Void createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final Void createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
         throw _Exceptions.castCriteriaApi();
     }
 
     @Override
-    final Void createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+    final Void createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
         throw _Exceptions.castCriteriaApi();
     }
 

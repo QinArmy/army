@@ -4,6 +4,7 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public interface DialectStatement extends Statement {
@@ -52,7 +53,7 @@ public interface DialectStatement extends Statement {
     }
 
 
-    interface DialectSelectClause<C, W extends SQLWords, SR> extends Query.SelectClause<C, W, SR> {
+    interface _DialectSelectClause<C, W extends SQLWords, SR> extends Query.SelectClause<C, W, SR> {
 
 
         <S extends SelectItem> SR select(Supplier<List<Hint>> hints, List<W> modifiers, Function<C, List<S>> function);
@@ -67,7 +68,26 @@ public interface DialectStatement extends Statement {
 
     /**
      * <p>
-     * This interface representing dialect from clause.
+     * This interface representing dialect FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FP> next clause java type
+     * @see _FromClause
+     * @since 1.0
+     */
+    interface _DialectFromClause<FP> {
+
+        FP from(TableMeta<?> table);
+    }
+
+    /**
+     * <p>
+     * This interface representing STRAIGHT JOIN clause
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -76,15 +96,25 @@ public interface DialectStatement extends Statement {
      * </p>
      *
      * @param <C>  criteria object java type
-     * @param <FT> next clause java type
-     * @param <FS> next clause java type
-     * @param <FP> next clause java type
-     * @param <FB> next clause java type,it's sub interface of {@link _LeftBracketClause}.
+     * @param <JT> same with JT with the JT of {@link _JoinClause}
+     * @param <JS> same with JT with the JS of {@link _JoinClause}
+     * @see _CrossJoinClause
      * @since 1.0
      */
-    interface DialectFromClause<C, FT, FS, FP, FB> extends Statement.FromClause<C, FT, FS, FB> {
+    interface _StraightJoinClause<C, JT, JS> {
 
-        FP from(TableMeta<?> table);
+        JT straightJoin(TableMeta<?> table, String tableAlias);
+
+        <T extends TableItem> JS straightJoin(Function<C, T> function, String alias);
+
+        <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias);
+
+        JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
+
+        <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias);
+
     }
 
 
@@ -98,39 +128,72 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type
-     * @param <JT> next clause java type
-     * @param <JS> next clause java type
      * @param <JP> next clause java type
-     * @param <JC> next clause java type
-     * @param <JD> next clause java type
-     * @param <JE> next clause java type
-     * @param <JF> next clause java type
      * @since 1.0
      */
-    interface DialectJoinClause<C, JT, JS, JP, JC, JD, JE, JF> extends Statement.JoinClause<C, JT, JS, JC, JD, JE> {
-
-        JT straightJoin(TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS straightJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias);
-
-        JE straightJoin();
+    interface _DialectJoinClause<C, JP> {
 
         JP leftJoin(TableMeta<?> table);
 
+        JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
+
         JP join(TableMeta<?> table);
+
+        JP ifJoin(Predicate<C> predicate, TableMeta<?> table);
 
         JP rightJoin(TableMeta<?> table);
 
-        JP straightJoin(TableMeta<?> table);
+        JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
 
         JP fullJoin(TableMeta<?> table);
 
-        JF crossJoin(TableMeta<?> table);
+        JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table);
+    }
+
+    /**
+     * <p>
+     * This interface representing dialect STRAIGHT JOIN clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <JP> same with the JP of {@link _DialectJoinClause}
+     * @see _DialectJoinClause
+     * @since 1.0
+     */
+    interface _DialectStraightJoinClause<C, JP> {
+
+        JP straightJoin(TableMeta<?> table);
+
+        JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
+    }
+
+
+    /**
+     * <p>
+     * This interface representing dialect CROSS JOIN clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FP> same with the FP of {@link _DialectFromClause}
+     * @see _DialectFromClause
+     * @since 1.0
+     */
+    interface _DialectCrossJoinClause<C, FP> {
+
+        FP crossJoin(TableMeta<?> table);
+
+        FP ifCrossJoin(Predicate<C> predicate, TableMeta<?> table);
 
     }
+
 
     /**
      * <p>
@@ -143,17 +206,17 @@ public interface DialectStatement extends Statement {
      * </p>
      *
      * @param <C>  criteria object java type
-     * @param <JT> next clause java type
-     * @param <JS> next clause java type
-     * @param <JP> next clause java type
+     * @param <LT> next clause java type
+     * @param <LS> next clause java type
+     * @param <LP> next clause java type
      * @since 1.0
      */
-    interface JointLeftBracketClause<C, JT, JS, JP> extends _LeftBracketClause<C, JT, JS> {
+    interface _DialectLeftBracketClause<C, LT, LS, LP> extends _LeftBracketClause<C, JT, JS> {
 
         @Override
-        JointLeftBracketClause<C, JT, JS, JP> leftBracket();
+        _DialectLeftBracketClause<C, LT, LS, LP> leftBracket();
 
-        JP leftBracket(TableMeta<?> table);
+        LP leftBracket(TableMeta<?> table);
     }
 
     /**
@@ -171,7 +234,7 @@ public interface DialectStatement extends Statement {
      * @param <SP> next clause java type
      * @since 1.0
      */
-    interface DialectUnionClause<C, UR, SP> extends Query._QueryUnionClause<C, UR, SP> {
+    interface _DialectUnionClause<C, UR, SP> extends Query._QueryUnionClause<C, UR, SP> {
 
     }
 

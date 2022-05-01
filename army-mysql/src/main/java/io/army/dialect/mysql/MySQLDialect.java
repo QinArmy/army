@@ -73,7 +73,7 @@ final class MySQLDialect extends MySQL {
         //2. hint comment block
         hintClause(stmt.hintList(), sqlBuilder, context);
         //3. modifier
-        this.updateModifiers(stmt.modifierSet(), sqlBuilder, stmt);
+        this.updateModifiers(stmt.modifierList(), sqlBuilder, stmt);
 
         //4. table name
         final TableMeta<?> table = context.table();
@@ -136,7 +136,7 @@ final class MySQLDialect extends MySQL {
         //2. hint comment block
         this.hintClause(stmt.hintList(), sqlBuilder, context);
         //3. modifier
-        this.updateModifiers(stmt.modifierSet(), sqlBuilder, stmt);
+        this.updateModifiers(stmt.modifierList(), sqlBuilder, stmt);
         //4. table_references (and partition ,index hint)
         this.standardFromClause(stmt.tableBlockList(), context);
         //5. set clause

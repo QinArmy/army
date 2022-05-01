@@ -18,12 +18,12 @@ import java.time.LocalDateTime;
  *
  * @see SQLs
  */
-abstract class StandardFunctions {
+abstract class Functions {
 
     /**
      * package constructor,forbid application developer directly extend this util class.
      */
-    StandardFunctions() {
+    Functions() {
         throw new UnsupportedOperationException();
     }
 

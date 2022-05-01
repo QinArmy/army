@@ -30,9 +30,9 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
         extends PartRowSet<C, Q, JT, JS, JP, FT, FS, JE, FP, UR, OR, LR, SP>
-        implements Statement.QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
-        , Query._HavingClause<C, HR>, _Query, DialectStatement.DialectFromClause<C, FT, FS, FP, JE>
-        , DialectStatement.DialectSelectClause<C, W, SR>, Query._QuerySpec<Q> {
+        implements Statement._QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
+        , Query._HavingClause<C, HR>, _Query, DialectStatement._DialectFromClause<C, FT, FS, FP, JE>
+        , DialectStatement._DialectSelectClause<C, W, SR>, Query._QuerySpec<Q> {
 
 
     private List<Hint> hintList;
@@ -153,13 +153,13 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public final FP from(TableMeta<?> table) {
-        return this.createNextClauseWithoutOnClause(_JoinType.NONE, table);
+        return this.createNextNoOnClause(_JoinType.NONE, table);
     }
 
     @Override
     public final FT from(TableMeta<?> table, String tableAlias) {
         final _TableBlock block;
-        block = this.createTableBlockWithoutOnClause(_JoinType.NONE, table, tableAlias);
+        block = this.createNoOnTableBlock(_JoinType.NONE, table, tableAlias);
         this.criteriaContext.onBlockWithoutOnClause(block);
         return (FT) this;
     }
@@ -280,15 +280,15 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public final GR groupBy(Object sortItem) {
-        this.groupByList = Collections.singletonList(SQLs._nonNullSortItem(sortItem));
+        this.groupByList = Collections.singletonList(SQLs._sortItem(sortItem));
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(Object sortItem1, Object sortItem2) {
         this.groupByList = ArrayUtils.asUnmodifiableList(
-                SQLs._nonNullSortItem(sortItem1),
-                SQLs._nonNullSortItem(sortItem2)
+                SQLs._sortItem(sortItem1),
+                SQLs._sortItem(sortItem2)
         );
         return (GR) this;
     }
@@ -296,9 +296,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final GR groupBy(Object sortItem1, Object sortItem2, Object sortItem3) {
         this.groupByList = ArrayUtils.asUnmodifiableList(
-                SQLs._nonNullSortItem(sortItem1),
-                SQLs._nonNullSortItem(sortItem2),
-                SQLs._nonNullSortItem(sortItem3)
+                SQLs._sortItem(sortItem1),
+                SQLs._sortItem(sortItem2),
+                SQLs._sortItem(sortItem3)
         );
         return (GR) this;
     }

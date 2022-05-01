@@ -111,7 +111,7 @@ abstract class PartRowSet<C, Q extends RowSet, JT, JS, JP, JC, JD, JE, JF, UR, O
 
     @Override
     public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(SQLs._nonNullSortItem(sortItem));
+        this.orderByList = Collections.singletonList(SQLs._sortItem(sortItem));
         this.onOrderBy();
         return (OR) this;
     }
@@ -119,8 +119,8 @@ abstract class PartRowSet<C, Q extends RowSet, JT, JS, JP, JC, JD, JE, JF, UR, O
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._nonNullSortItem(sortItem1),
-                SQLs._nonNullSortItem(sortItem2)
+                SQLs._sortItem(sortItem1),
+                SQLs._sortItem(sortItem2)
         );
         this.onOrderBy();
         return (OR) this;
@@ -129,9 +129,9 @@ abstract class PartRowSet<C, Q extends RowSet, JT, JS, JP, JC, JD, JE, JF, UR, O
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._nonNullSortItem(sortItem1),
-                SQLs._nonNullSortItem(sortItem2),
-                SQLs._nonNullSortItem(sortItem3)
+                SQLs._sortItem(sortItem1),
+                SQLs._sortItem(sortItem2),
+                SQLs._sortItem(sortItem3)
         );
         this.onOrderBy();
         return (OR) this;
@@ -495,9 +495,9 @@ abstract class PartRowSet<C, Q extends RowSet, JT, JS, JP, JC, JD, JE, JF, UR, O
      * <p>
      * This interface representing the type that is returned by below methods:
      * <ul>
-     *     <li> {@link DialectStatement.DialectUnionClause#union()}</li>
-     *     <li> {@link DialectStatement.DialectUnionClause#unionAll()}</li>
-     *     <li> {@link DialectStatement.DialectUnionClause#unionDistinct()}</li>
+     *     <li> {@link DialectStatement._DialectUnionClause#union()}</li>
+     *     <li> {@link DialectStatement._DialectUnionClause#unionAll()}</li>
+     *     <li> {@link DialectStatement._DialectUnionClause#unionDistinct()}</li>
      * </ul>
      * </p>
      *  <p>

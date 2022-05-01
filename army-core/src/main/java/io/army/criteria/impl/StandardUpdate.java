@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR, WA>
-        implements Update.StandardUpdateClause<UR>, _SingleUpdate, Update.UpdateSpec, StandardStatement {
+        implements Update.StandardUpdateClause<UR>, _SingleUpdate, Update._UpdateSpec, StandardStatement {
 
     static <C> StandardUpdateSpec<C> simple(@Nullable C criteria) {
         return new SimpleUpdate<>(criteria);
@@ -105,7 +105,7 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR,
             C,
             Update.StandardSetSpec<C>,
             Update.StandardWhereSpec<C>,
-            Update.UpdateSpec,
+            _UpdateSpec,
             Update.StandardWhereAndSpec<C>> implements Update.StandardUpdateSpec<C>, Update.StandardWhereAndSpec<C>
             , Update.StandardWhereSpec<C> {
 
@@ -129,10 +129,10 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR,
             C,
             Update.StandardBatchSetSpec<C>,
             Update.StandardBatchWhereSpec<C>,
-            Statement.BatchParamClause<C, Update.UpdateSpec>,
+            Statement.BatchParamClause<C, _UpdateSpec>,
             Update.StandardBatchWhereAndSpec<C>> implements Update.StandardBatchUpdateSpec<C>
             , Update.StandardBatchWhereSpec<C>, Update.StandardBatchWhereAndSpec<C>
-            , Statement.BatchParamClause<C, Update.UpdateSpec>, _BatchDml {
+            , Statement.BatchParamClause<C, _UpdateSpec>, _BatchDml {
 
         private List<?> paramList;
 
@@ -141,25 +141,25 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR,
         }
 
         @Override
-        public UpdateSpec paramList(List<?> paramList) {
+        public _UpdateSpec paramList(List<?> paramList) {
             this.paramList = CriteriaUtils.paramList(paramList);
             return this;
         }
 
         @Override
-        public UpdateSpec paramList(Supplier<List<?>> supplier) {
+        public _UpdateSpec paramList(Supplier<List<?>> supplier) {
             this.paramList = CriteriaUtils.paramList(supplier.get());
             return this;
         }
 
         @Override
-        public UpdateSpec paramList(Function<C, List<?>> function) {
+        public _UpdateSpec paramList(Function<C, List<?>> function) {
             this.paramList = CriteriaUtils.paramList(function.apply(this.criteria));
             return this;
         }
 
         @Override
-        public UpdateSpec paramList(Function<String, ?> function, String keyName) {
+        public _UpdateSpec paramList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList((List<?>) function.apply(keyName));
             return this;
         }

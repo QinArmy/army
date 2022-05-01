@@ -42,7 +42,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         MySQL80Query._IndexPurposeJoin80Clause<C, Q>,//IR
         MySQL80Query._IndexHintOnSpec<C, Q>,    //JT
         Statement._OnClause<C, MySQL80Query._JoinSpec<C, Q>>, //JS
-        MySQL80Query._PartitionOn80Clause<C, Q>,   //JP
+        MySQL80Query._PartitionOnClause<C, Q>,   //JP
         MySQL80Query._LeftBracket80Clause<C, Q>,  //JE
         MySQL80Query._GroupBySpec<C, Q>,       //WR
         MySQL80Query._WhereAndSpec<C, Q>,      //AR
@@ -163,10 +163,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     public final _OrderBySpec<C, Q> window(Function<WindowBuilder<C>, List<Window>> function) {
         final List<Window> windowList;
         windowList = function.apply(this::createWindowClause);
-        if (windowList == null || windowList.size() == 0) {
-            throw _Exceptions.windowListIsEmpty();
-        }
-        this.windowList = _CollectionUtils.asUnmodifiableList(windowList);
+        this.windowList = CriteriaUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
         return this;
     }
 
@@ -174,10 +171,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     public final _OrderBySpec<C, Q> window(BiFunction<C, WindowBuilder<C>, List<Window>> function) {
         final List<Window> windowList;
         windowList = function.apply(this.criteria, this::createWindowClause);
-        if (windowList == null || windowList.size() == 0) {
-            throw _Exceptions.windowListIsEmpty();
-        }
-        this.windowList = _CollectionUtils.asUnmodifiableList(windowList);
+        this.windowList = CriteriaUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
         return this;
     }
 
@@ -186,7 +180,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         final List<Window> windowList;
         windowList = function.apply(this::createWindowClause);
         if (windowList != null && windowList.size() > 0) {
-            this.windowList = _CollectionUtils.asUnmodifiableList(windowList);
+            this.windowList = CriteriaUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
         }
         return this;
     }
@@ -196,7 +190,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         final List<Window> windowList;
         windowList = function.apply(this.criteria, this::createWindowClause);
         if (windowList != null && windowList.size() > 0) {
-            this.windowList = _CollectionUtils.asUnmodifiableList(windowList);
+            this.windowList = CriteriaUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
         }
         return this;
     }
@@ -417,17 +411,17 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return new MySQLNoOnBlock(joinType, table, tableAlias);
     }
 
     @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
     }
 
     @Override
-    final _PartitionJoinClause<C, Q> createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+    final _PartitionJoinClause<C, Q> createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
         return new PartitionJoinImpl<>(joinType, table, this);
     }
 
@@ -491,6 +485,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     /*################################## blow private method ##################################*/
 
     private Window._SimpleAsClause<C, Window> createWindowClause(String windowName) {
+        if (!_StringUtils.hasText(windowName)) {
+            throw _Exceptions.namedWindowNoText();
+        }
         return SimpleWindow.standard(windowName, this.criteriaContext);
     }
 
@@ -743,7 +740,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private static final class PartitionOnBlock<C, Q extends Query>
             extends MySQLPartitionClause<C, _AsOnClause<C, Q>>
-            implements _AsOnClause<C, Q>, _PartitionOn80Clause<C, Q> {
+            implements _AsOnClause<C, Q>, _PartitionOnClause<C, Q> {
 
         private final _JoinType joinType;
 

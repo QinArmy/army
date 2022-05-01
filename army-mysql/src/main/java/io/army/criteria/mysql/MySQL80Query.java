@@ -31,8 +31,8 @@ import java.util.function.Predicate;
 public interface MySQL80Query extends MySQLQuery {
 
 
-    @FunctionalInterface
     interface WindowBuilder<C> {
+
         Window._SimpleAsClause<C, Window> window(String windowName);
     }
 
@@ -190,7 +190,7 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _MySQLJoinClause} for MySQL 8.0</li>
+     *          <li>{@link _Join80Clause}</li>
      *          <li>the composite {@link _WhereSpec}</li>
      *     </ul>
      * </p>
@@ -204,10 +204,28 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _JoinSpec<C, Q extends Query>
-            extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>
-            , _PartitionOn80Clause<C, Q>, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _LeftBracket80Clause<C, Q>
-            , _PartitionJoinClause<C, Q>>, _WhereSpec<C, Q> {
+    interface _JoinSpec<C, Q extends Query> extends _Join80Clause<C, Q>, _WhereSpec<C, Q> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing join clause for MySQL 8.0 syntax.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
+     * @since 1.0
+     */
+    interface _Join80Clause<C, Q extends Query>
+            extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>, _LeftBracket80Clause<C, Q>>
+            , _CrossJoinClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _LeftBracket80Clause<C, Q>>
+            , _MySQLDialectJoin<_PartitionOnClause<C, Q>>, _DialectCrossJoinClause<_PartitionJoinClause<C, Q>> {
 
     }
 
@@ -244,7 +262,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _PartitionOn80Clause<C, Q extends Query> extends _PartitionClause<C, _AsOnClause<C, Q>> {
+    interface _PartitionOnClause<C, Q extends Query> extends _PartitionClause<C, _AsOnClause<C, Q>> {
 
     }
 

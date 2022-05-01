@@ -192,6 +192,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("window list must not empty.");
     }
 
+
     public static CriteriaException havingIsEmpty() {
         return new CriteriaException("having predicate list must not empty.");
     }

@@ -7,7 +7,7 @@ package io.army.criteria;
  *     <ul>
  *          <li>{@link DerivedTable}</li>
  *          <li>{@link io.army.meta.TableMeta}</li>
- *          <li>{@link TableItemGroup}</li>
+ *          <li>{@link NestedItems}</li>
  *     </ul>
  * </p>
  *

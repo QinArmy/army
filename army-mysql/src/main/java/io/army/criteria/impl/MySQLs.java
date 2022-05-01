@@ -56,8 +56,8 @@ public abstract class MySQLs extends MySQLSyntax {
      * @return MySQL 5.7 single-table update api
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static MySQLUpdate.SingleUpdateSpec<Void> singleUpdate() {
-        return MySQLSingleUpdate.simple57(null);
+    public static MySQLUpdate._SingleUpdate57Clause<Void> singleUpdate() {
+        return MySQLSingleUpdate.simple(null);
     }
 
     /**
@@ -73,9 +73,9 @@ public abstract class MySQLs extends MySQLSyntax {
      * @return MySQL 5.7 single-table update api
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static <C> MySQLUpdate.SingleUpdateSpec<C> singleUpdate(C criteria) {
+    public static <C> MySQLUpdate._SingleUpdate57Clause<C> singleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQLSingleUpdate.simple57(criteria);
+        return MySQLSingleUpdate.simple(criteria);
     }
 
     /**
@@ -91,7 +91,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
     public static MySQLUpdate.BatchSingleUpdateSpec<Void> batchSingleUpdate() {
-        return MySQLSingleUpdate.batch57(null);
+        return MySQLSingleUpdate.batch(null);
     }
 
     /**
@@ -109,7 +109,7 @@ public abstract class MySQLs extends MySQLSyntax {
      */
     public static <C> MySQLUpdate.BatchSingleUpdateSpec<C> batchSingleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQLSingleUpdate.batch57(criteria);
+        return MySQLSingleUpdate.batch(criteria);
     }
 
     /**

@@ -174,7 +174,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final _PartitionOnClause<C, Q> createNextClauseWithOnClause(_JoinType joinType, TableMeta<?> table) {
+    final _PartitionOnClause<C, Q> createNextClause(_JoinType joinType, TableMeta<?> table) {
         return new PartitionOnBlock<>(joinType, table, this);
     }
 
@@ -184,7 +184,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
         Objects.requireNonNull(tableItem);
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
     }
@@ -200,12 +200,12 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final _TableBlock createTableBlockWithoutOnClause(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
         return new MySQLNoOnBlock(joinType, table, tableAlias);
     }
 
     @Override
-    final _PartitionJoinClause<C, Q> createNextClauseWithoutOnClause(_JoinType joinType, TableMeta<?> table) {
+    final _PartitionJoinClause<C, Q> createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
         return new PartitionJoinImpl<>(joinType, table, this);
     }
 
@@ -411,7 +411,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     /**
-     * @see #createNextClauseWithOnClause(_JoinType, TableMeta)
+     * @see #createNextClause(_JoinType, TableMeta)
      */
     private static final class PartitionOnBlock<C, Q extends Query>
             extends MySQLPartitionClause<C, _AsOnClause<C, Q>>

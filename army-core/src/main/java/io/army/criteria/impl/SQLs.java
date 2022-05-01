@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings({"unused"})
-public abstract class SQLs extends StandardFunctions {
+public abstract class SQLs extends Functions {
 
     /**
      * protected constructor, application developer can extend this util class.
@@ -390,7 +390,7 @@ public abstract class SQLs extends StandardFunctions {
      *
      * @param value {@link Expression} or parameter
      */
-    static ArmySortItem _nonNullSortItem(@Nullable Object value) {
+    static ArmySortItem _sortItem(@Nullable Object value) {
         final SortItem sortItem;
         if (value == null) {
             throw _Exceptions.expressionIsNull();

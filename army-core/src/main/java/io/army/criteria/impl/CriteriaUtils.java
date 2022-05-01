@@ -1,14 +1,14 @@
 package io.army.criteria.impl;
 
-import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
+import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 abstract class CriteriaUtils {
@@ -75,42 +75,42 @@ abstract class CriteriaUtils {
 
     }
 
-
-    static <T> List<T> unmodifiableList(@Nullable List<T> original) {
-        return original == null ? Collections.emptyList() : Collections.unmodifiableList(original);
-    }
-
-    static <K, V> Map<K, V> unmodifiableMap(@Nullable Map<K, V> original) {
-        return original == null ? Collections.emptyMap() : Collections.unmodifiableMap(original);
-    }
-
-    static List<_Predicate> predicateList(final List<_Predicate> predicateList) {
-        final List<_Predicate> list;
-        switch (predicateList.size()) {
-            case 0:
-                throw new IllegalStateException("no predicate clause.");
-            case 1:
-                list = Collections.singletonList(predicateList.get(0));
-                break;
-            default:
-                list = Collections.unmodifiableList(predicateList);
+    static long asRowCount(final Object value) {
+        final long rowCount;
+        if (value instanceof Long) {
+            rowCount = (Long) value;
+        } else if (value instanceof Integer
+                || value instanceof Short
+                || value instanceof Byte) {
+            rowCount = ((Number) value).longValue();
+        } else {
+            throw limitParamError(value);
         }
-        return list;
+        return rowCount;
     }
 
-    static List<ReadWrapper> namedParamList(final List<ReadWrapper> wrapperList) {
-        final List<ReadWrapper> list;
-        switch (wrapperList.size()) {
-            case 0:
-                throw new IllegalStateException("no any name param.");
-            case 1:
-                list = Collections.singletonList(wrapperList.get(0));
-                break;
-            default:
-                list = Collections.unmodifiableList(wrapperList);
+    static long asIfRowCount(final @Nullable Object value) {
+        final long rowCount;
+        if (value == null) {
+            rowCount = -1L;
+        } else if (value instanceof Long) {
+            rowCount = (Long) value;
+        } else if (value instanceof Integer
+                || value instanceof Short
+                || value instanceof Byte) {
+            rowCount = ((Number) value).longValue();
+        } else {
+            throw limitParamError(value);
         }
-        return list;
+        return rowCount;
     }
+
+    static CriteriaException limitParamError(@Nullable Object value) {
+        String m = String.format("limit clause only support [%s,%s,%s,%s],but input %s"
+                , Long.class.getName(), Integer.class.getName(), Short.class.getName(), Byte.class.getName(), value);
+        return new CriteriaException(m);
+    }
+
 
     static List<_Predicate> asPredicateList(final @Nullable List<IPredicate> predicateList
             , final @Nullable Supplier<CriteriaException> supplier) {
@@ -186,9 +186,9 @@ abstract class CriteriaUtils {
     }
 
 
-    static List<Object> paramList(final List<?> paramList) {
-        final int size = paramList.size();
-        if (size == 0) {
+    static List<Object> paramList(final @Nullable List<?> paramList) {
+        final int size;
+        if (paramList == null || (size = paramList.size()) == 0) {
             throw new CriteriaException("Batch dml parameter list must not empty.");
         }
         final Object firstParam = paramList.get(0);
@@ -206,7 +206,7 @@ abstract class CriteriaUtils {
                 if (!(param instanceof Map)) {
                     throw new CriteriaException("Batch parameter must be same java type.");
                 }
-            } else if (param.getClass() != paramJavaType) {
+            } else if (!paramJavaType.isInstance(param)) {
                 throw new CriteriaException("Batch parameter must be same java type.");
             }
             wrapperList.add(param);
@@ -226,66 +226,139 @@ abstract class CriteriaUtils {
         return paramList((List<?>) value);
     }
 
-    static _TableBlock leftBracketBlock() {
-        return LeftBracketTableBlock.INSTANCE;
-    }
-
-    static _TableBlock rightBracketBlock() {
-        return RightBracketTableBlock.INSTANCE;
-    }
-
     @SuppressWarnings("unchecked")
     @Nullable
     static <C> C getCriteria(final Query query) {
         return ((CriteriaSpec<C>) query).getCriteria();
     }
 
-    static <T extends Enum<T> & SQLWords> Set<T> asModifierSet(final Set<T> set, Consumer<T> consumer) {
-        final Set<T> modifierSet;
-        switch (set.size()) {
+    static List<Window> asWindowList(final @Nullable List<Window> list, final Predicate<Window> predicate) {
+        final int size;
+        if (list == null || (size = list.size()) == 0) {
+            throw _Exceptions.windowListIsEmpty();
+        }
+        List<Window> windowList;
+        if (size == 1) {
+            final Window window;
+            window = list.get(0);
+            if (predicate.test(window)) {
+                throw illegalWindow(window);
+            }
+            windowList = Collections.singletonList(window);
+        } else {
+            windowList = new ArrayList<>(size);
+            for (Window window : list) {
+                if (predicate.test(window)) {
+                    throw illegalWindow(window);
+                }
+                windowList.add(window);
+            }
+            windowList = Collections.unmodifiableList(windowList);
+        }
+        return windowList;
+    }
+
+    static <T extends Enum<T> & SQLWords.Modifier> List<T> asModifierList(final List<T> list, Predicate<T> predicate) {
+        final List<T> modifierList;
+        final int size = list.size();
+        switch (size) {
             case 0:
-                modifierSet = Collections.emptySet();
+                modifierList = Collections.emptyList();
                 break;
             case 1: {
-                Set<T> tempSet = null;
-                for (T modifier : set) {
-                    consumer.accept(modifier);
-                    tempSet = Collections.singleton(modifier);
+                List<T> tempSet = null;
+                for (T modifier : list) {
+                    assert modifier != null;
+                    if (predicate.test(modifier)) {
+                        throw modifierSyntaxError(modifier);
+                    }
+                    tempSet = Collections.singletonList(modifier);
                     break;
                 }
-                modifierSet = tempSet;
+                modifierList = tempSet;
             }
             break;
             default: {
-                Set<T> tempSet = null;
-                for (T modifier : set) {
-                    if (tempSet == null) {
-                        tempSet = EnumSet.of(modifier);
+                List<T> tempList = null;
+                T modifier;
+                for (int i = 0, preLevel = -1, level; i < size; i++) {
+                    modifier = list.get(i);
+                    assert modifier != null;
+                    if (predicate.test(modifier)) {
+                        throw modifierSyntaxError(modifier);
+                    }
+                    level = modifier.level();
+                    if (level <= preLevel) {
+                        String m = String.format("%s syntax error", modifier);
+                        throw new CriteriaException(m);
+                    }
+                    preLevel = level;
+                    if (tempList == null) {
+                        tempList = new ArrayList<>(size);
                     } else {
-                        tempSet.add(modifier);
+                        tempList.add(modifier);
                     }
                 }
-                modifierSet = Collections.unmodifiableSet(tempSet);
+                modifierList = Collections.unmodifiableList(tempList);
             }
         }
-        return modifierSet;
+        return modifierList;
+    }
+
+    static <H extends Hint> List<H> asHintList(List<Hint> hintList, final Function<Hint, H> function) {
+        final List<H> mySqlHintList;
+        switch (hintList.size()) {
+            case 0:
+                mySqlHintList = Collections.emptyList();
+                break;
+            case 1: {
+                final Hint hint = hintList.get(0);
+                final H dialectHint;
+                dialectHint = function.apply(hint);
+                if (dialectHint == null) {
+                    throw illegalHint(hint);
+                }
+                mySqlHintList = Collections.singletonList(dialectHint);
+            }
+            break;
+            default: {
+                final List<H> tempList = new ArrayList<>(hintList.size());
+                H dialectHint;
+                for (Hint hint : hintList) {
+                    dialectHint = function.apply(hint);
+                    if (dialectHint == null) {
+                        throw illegalHint(hint);
+                    }
+                    tempList.add(dialectHint);
+                }
+                mySqlHintList = Collections.unmodifiableList(tempList);
+            }
+
+        }
+        return mySqlHintList;
+    }
+
+    private static CriteriaException illegalHint(@Nullable Hint hint) {
+        String m = String.format("Hint %s is illegal."
+                , _ClassUtils.safeClassName(hint));
+        throw new CriteriaException(m);
     }
 
 
-    static CriteriaException unknownCriteriaContext(CriteriaContext context) {
-        String m = String.format("Unknown %s[%s] type.", CriteriaContext.class.getName(), context.getClass().getName());
+    private static CriteriaException modifierSyntaxError(SQLWords.Modifier modifier) {
+        String m = String.format("modifier syntax error,%s isn't support.", modifier);
+        throw new CriteriaException(m);
+    }
+
+    private static CriteriaException illegalWindow(Window window) {
+        String m = String.format("window %s is illegal", _ClassUtils.safeClassName(window));
         return new CriteriaException(m);
     }
 
-    static CriteriaException nonArmyExpression(Expression expression) {
-        String m = String.format("%s isn't army class", expression.getClass().getName());
-        return new CriteriaException(m);
-    }
 
+    static final class LeftBracketTableBlock implements _TableBlock, _LeftBracketBlock {
 
-    private static final class LeftBracketTableBlock implements _TableBlock, _LeftBracketBlock {
-
-        private static final LeftBracketTableBlock INSTANCE = new LeftBracketTableBlock();
+        static final LeftBracketTableBlock INSTANCE = new LeftBracketTableBlock();
 
         private LeftBracketTableBlock() {
         }
@@ -312,9 +385,9 @@ abstract class CriteriaUtils {
 
     }//LeftBracketTableBlock
 
-    private static final class RightBracketTableBlock implements _TableBlock, _RightBracketBlock {
+    static final class RightBracketTableBlock implements _TableBlock, _RightBracketBlock {
 
-        private static final RightBracketTableBlock INSTANCE = new RightBracketTableBlock();
+        static final RightBracketTableBlock INSTANCE = new RightBracketTableBlock();
 
         private RightBracketTableBlock() {
         }
@@ -340,5 +413,6 @@ abstract class CriteriaUtils {
         }
 
     }//RightBracketTableBlock
+
 
 }

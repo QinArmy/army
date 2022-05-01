@@ -11,4 +11,11 @@ public interface SQLWords {
     String toString();
 
 
+    interface Modifier extends SQLWords {
+
+        int level();
+
+    }
+
+
 }
