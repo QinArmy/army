@@ -6,6 +6,7 @@ import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util._Exceptions;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -201,7 +202,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         final _TableBlock block;
         block = this.createNoOnTableBlock(_JoinType.CROSS_JOIN, table, tableAlias);
         this.blockConsumer.accept(block);
-        this.noOnJoinEvent(true);
+        this.crossJoinEvent(true);
         return (FT) this;
     }
 
@@ -226,7 +227,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
             clause = this.crossJoin(table);
         } else {
             clause = this.getNoActionNextNoOnClause();
-            this.noOnJoinEvent(false);
+            this.crossJoinEvent(false);
         }
         return clause;
     }
@@ -236,7 +237,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         if (predicate.test(this.criteria)) {
             this.crossJoin(table, tableAlias);
         } else {
-            this.noOnJoinEvent(true);
+            this.crossJoinEvent(false);
         }
         return (FT) this;
     }
@@ -387,7 +388,15 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     abstract JP createNextClause(_JoinType joinType, TableMeta<?> table);
 
-    abstract void noOnJoinEvent(boolean success);
+    abstract void crossJoinEvent(boolean success);
+
+    FP createNoActionNextNoOnClause() {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    JP createNoActionNextClause() {
+        throw _Exceptions.castCriteriaApi();
+    }
 
     private JP ifJoinTable(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
         final JP clause;

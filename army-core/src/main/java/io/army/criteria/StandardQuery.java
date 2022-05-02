@@ -50,8 +50,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _StandardFromSpec<C, Q extends Query>
-            extends _FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>, _StandardLestBracketClause<C, Q>>
+    interface _StandardFromSpec<C, Q extends Query> extends _FromClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>>
             , _UnionSpec<C, Q> {
 
     }
@@ -61,21 +60,15 @@ public interface StandardQuery extends Query, StandardStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>JOIN clause for standard syntax</li>
-     *          <li>LEFT BRACKET clause for standard syntax</li>
-     *          <li>RIGHT BRACKET clause for standard syntax</li>
+     *          <li>{@link _JoinClause}</li>
+     *          <li>{@link _CrossJoinClause}</li>
      *          <li>the composite {@link _WhereSpec}</li>
      *     </ul>
      * </p>
      * <p>
-     *     If and only if use below methods to create dynamic nested join,then you is allowed to declare this interface type variable
-     *     <ul>
-     *         <li>{@link #leftJoin()}</li>
-     *         <li>{@link #join()}</li>
-     *         <li>{@link #rightJoin()}</li>
-     *         <li>{@link #fullJoin()}</li>
-     *         <li>{@link #crossJoin()}</li>
-     *     </ul>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
      * @param <C> java criteria object java type
@@ -83,48 +76,11 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _JoinSpec<C, Q extends Query>
-            extends _StandardJoinClause<C, Q>, _WhereSpec<C, Q>, _StandardLestBracketClause<C, Q>
-            , _RightBracketClause<_JoinSpec<C, Q>> {
+            extends _JoinClause<C, _OnClause<C, _JoinSpec<C, Q>>, _OnClause<C, _JoinSpec<C, Q>>>
+            , _CrossJoinClause<C, _JoinSpec<C, Q>, _JoinSpec<C, Q>>, _WhereSpec<C, Q> {
 
     }
 
-    /**
-     * <p>
-     * This interface representing join clause for standard syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _StandardJoinClause<C, Q extends Query>
-            extends _JoinClause<C, _OnClause<C, _JoinSpec<C, Q>>, _OnClause<C, _JoinSpec<C, Q>>, _JoinSpec<C, Q>, _JoinSpec<C, Q>, _StandardLestBracketClause<C, Q>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing left bracket clause for standard syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _StandardLestBracketClause<C, Q extends Query>
-            extends _LeftBracketClause<C, _OnClause<C, _JoinSpec<C, Q>>, _OnClause<C, _JoinSpec<C, Q>>> {
-
-    }
 
     /**
      * <p>

@@ -110,7 +110,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private boolean orderByWithRollup;
 
-    private MySQLLock lockMode;
+    private MySQLLockMode lockMode;
 
     private List<String> ofTableList;
 
@@ -202,20 +202,20 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     public final _LockOfSpec<C, Q> forUpdate() {
-        this.lockMode = MySQLLock.FOR_UPDATE;
+        this.lockMode = MySQLLockMode.FOR_UPDATE;
         return this;
     }
 
     @Override
     public final _LockOfSpec<C, Q> forShare() {
-        this.lockMode = MySQLLock.SHARE;
+        this.lockMode = MySQLLockMode.SHARE;
         return this;
     }
 
     @Override
     public final _LockOfSpec<C, Q> ifForUpdate(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.lockMode = MySQLLock.FOR_UPDATE;
+            this.lockMode = MySQLLockMode.FOR_UPDATE;
         }
         return this;
     }
@@ -223,21 +223,21 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final _LockOfSpec<C, Q> ifForShare(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.lockMode = MySQLLock.SHARE;
+            this.lockMode = MySQLLockMode.SHARE;
         }
         return this;
     }
 
     @Override
     public final _UnionSpec<C, Q> lockInShareMode() {
-        this.lockMode = MySQLLock.LOCK_IN_SHARE_MODE;
+        this.lockMode = MySQLLockMode.LOCK_IN_SHARE_MODE;
         return this;
     }
 
     @Override
     public final _UnionSpec<C, Q> ifLockInShareMode(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.lockMode = MySQLLock.LOCK_IN_SHARE_MODE;
+            this.lockMode = MySQLLockMode.LOCK_IN_SHARE_MODE;
         }
         return this;
     }
@@ -530,7 +530,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     private _UnionSpec<C, Q> lockOption(MySQLLockOption lockOption) {
-        final MySQLLock lock = this.lockMode;
+        final MySQLLockMode lock = this.lockMode;
         if (lock == null) {
             return this;
         }

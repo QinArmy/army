@@ -9,17 +9,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class NoActionOnClause<C, OR> implements Statement._OnClause<C, OR> {
+ class NoActionOnClause<C, OR> implements Statement._OnClause<C, OR> {
 
-    final OR stmt;
+     final OR stmt;
 
-    NoActionOnClause(OR stmt) {
-        this.stmt = stmt;
-    }
+     NoActionOnClause(OR stmt) {
+         this.stmt = stmt;
+     }
 
-    @Override
-    public final OR on(List<IPredicate> predicateList) {
-        return this.stmt;
+     @Override
+     public final OR on(List<IPredicate> predicateList) {
+         return this.stmt;
     }
 
     @Override

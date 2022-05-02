@@ -397,6 +397,7 @@ public abstract class SQLs extends Functions {
         } else if (value instanceof SortItem) {
             sortItem = (SortItem) value;
         } else {
+            //TODO ref selection
             sortItem = SQLs.literal(value);
         }
         return (ArmySortItem) sortItem;

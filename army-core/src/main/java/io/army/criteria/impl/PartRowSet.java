@@ -17,11 +17,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class PartRowSet<C, Q extends RowSet, JT, JS, JP, JC, JD, JE, JF, UR, OR, LR, SP>
-        extends JoinableClause<C, JT, JS, JP, JC, JD, JE, JF>
-        implements CriteriaContextSpec, _PartRowSet, RowSet
-        , Statement._OrderByClause<C, OR>, Query._LimitClause<C, LR>, Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>
-        , RowSet.RowSetSpec<Q> {
+abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, LR, SP>
+        extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
+        implements CriteriaContextSpec, _PartRowSet, Statement._OrderByClause<C, OR>, Query._LimitClause<C, LR>
+        , Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>, RowSet.RowSetSpec<Q> {
+
+    final CriteriaContext criteriaContext;
 
     private List<ArmySortItem> orderByList;
 
@@ -33,7 +34,13 @@ abstract class PartRowSet<C, Q extends RowSet, JT, JS, JP, JC, JD, JE, JF, UR, O
 
 
     PartRowSet(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+        super(criteriaContext::onAddBlock, criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
+    }
+
+    @Override
+    public final CriteriaContext getCriteriaContext() {
+        return this.criteriaContext;
     }
 
     @Override

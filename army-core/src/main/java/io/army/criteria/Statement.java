@@ -117,11 +117,9 @@ public interface Statement {
      * @param <C>  criteria object java type.
      * @param <FT> next clause java type
      * @param <FS> next clause java type
-     * @param <FL> next clause java type,it's sub interface of {@link _LeftBracketClause}.
      * @since 1.0
      */
-    interface _FromClause<C, FT, FS, FL> {
-
+    interface _FromClause<C, FT, FS> {
 
         FT from(TableMeta<?> table, String tableAlias);
 
@@ -129,7 +127,6 @@ public interface Statement {
 
         <T extends TableItem> FS from(Supplier<T> supplier, String alias);
 
-        FL from();
 
     }
 

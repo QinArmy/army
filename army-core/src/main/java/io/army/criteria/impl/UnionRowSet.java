@@ -23,7 +23,7 @@ import java.util.List;
  * @since 1.0
  */
 abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
-        extends PartRowSet<C, Q, Void, Void, Void, Void, Void, Void, Void, UR, OR, LR, SP>
+        extends PartRowSet<C, Q, Void, Void, Void, Void, Void, Void, UR, OR, LR, SP>
         implements _UnionRowSet {
 
     final Q left;
@@ -142,6 +142,36 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
 
     @Override
     final Void createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void getNoActionTableBlock() {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void getNoActionItemBlock() {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void getNoActionNextClause() {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void getNoActionNextNoOnClause() {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void createNextClause(_JoinType joinType, TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final void crossJoinEvent(boolean success) {
         throw _Exceptions.castCriteriaApi();
     }
 

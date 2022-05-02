@@ -33,7 +33,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         Statement._OnClause<C, StandardQuery._JoinSpec<C, Q>>, // JT
         Statement._OnClause<C, StandardQuery._JoinSpec<C, Q>>, // JS
         Void,                               // JP
-        StandardQuery._StandardLestBracketClause<C, Q>,// JE
         StandardQuery._GroupBySpec<C, Q>, // WR
         StandardQuery._WhereAndSpec<C, Q>, // AR
         StandardQuery._HavingSpec<C, Q>, // GR
@@ -45,7 +44,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
         implements StandardQuery, StandardQuery._StandardSelectClause<C, Q>, StandardQuery._StandardFromSpec<C, Q>
         , StandardQuery._JoinSpec<C, Q>, StandardQuery._WhereAndSpec<C, Q>, StandardQuery._HavingSpec<C, Q>
-        , StandardQuery._StandardLestBracketClause<C, Q>, _StandardQuery {
+        , _StandardQuery {
 
 
     static <C> _StandardSelectClause<C, Select> query(@Nullable C criteria) {
@@ -143,23 +142,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     @Override
     final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
-        final _TableBlock block;
-        switch (joinType) {
-            case NONE:
-                block = TableBlock.noneBlock(table, tableAlias);
-                break;
-            case CROSS_JOIN:
-                block = TableBlock.crossBlock(table, tableAlias);
-                break;
-            default:
-                throw _Exceptions.castCriteriaApi();
-        }
-        return block;
-    }
-
-    @Override
-    final Void createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
+        return new TableBlock.NoOnTableBlock(joinType, table, tableAlias);
     }
 
     @Override
@@ -170,6 +153,43 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+    }
+
+
+    @Override
+    final _OnClause<C, _JoinSpec<C, Q>> createNoActionTableBlock() {
+        return new NoActionOnClause<>(this);
+    }
+
+    @Override
+    final _OnClause<C, _JoinSpec<C, Q>> createNoActionItemBlock() {
+        return new NoActionOnClause<>(this);
+    }
+
+
+    @Override
+    final Void createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void getNoActionNextClause() {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void getNoActionNextNoOnClause() {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final Void createNextClause(_JoinType joinType, TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    final void crossJoinEvent(boolean success) {
+        //no-op
     }
 
     @Override

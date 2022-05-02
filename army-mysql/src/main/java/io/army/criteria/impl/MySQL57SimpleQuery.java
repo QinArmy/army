@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._SubQuery;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQL57Query;
 import io.army.criteria.mysql.MySQL57Query;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -26,6 +28,7 @@ import java.util.function.Predicate;
  * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
  * @since 1.0
  */
+@SuppressWarnings("unchecked")
 abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         C,
         Q,
@@ -38,7 +41,6 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         MySQL57Query._IndexHintOnSpec<C, Q>,   //JT
         Statement._OnClause<C, MySQL57Query._JoinSpec<C, Q>>,            //JS
         MySQL57Query._PartitionOnClause<C, Q>,   //JP
-        MySQL57Query._LestBracket57Clause<C, Q>,//JE
         MySQL57Query._GroupBySpec<C, Q>,       //WR
         MySQL57Query._WhereAndSpec<C, Q>,     //AR
         MySQL57Query._WithRollupSpec<C, Q>,  //GR
@@ -117,20 +119,20 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     public final _UnionSpec<C, Q> forUpdate() {
-        this.lockModifier = MySQLLock.FOR_UPDATE;
+        this.lockModifier = MySQLLockMode.FOR_UPDATE;
         return this;
     }
 
     @Override
     public final _UnionSpec<C, Q> lockInShareMode() {
-        this.lockModifier = MySQLLock.LOCK_IN_SHARE_MODE;
+        this.lockModifier = MySQLLockMode.LOCK_IN_SHARE_MODE;
         return this;
     }
 
     @Override
     public final _UnionSpec<C, Q> ifForUpdate(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.lockModifier = MySQLLock.FOR_UPDATE;
+            this.lockModifier = MySQLLockMode.FOR_UPDATE;
         }
         return this;
     }
@@ -138,7 +140,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final _UnionSpec<C, Q> ifLockInShareMode(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.lockModifier = MySQLLock.LOCK_IN_SHARE_MODE;
+            this.lockModifier = MySQLLockMode.LOCK_IN_SHARE_MODE;
         }
         return this;
     }
@@ -210,6 +212,26 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
+    final _IndexHintOnSpec<C, Q> createNoActionTableBlock() {
+        return new NoActionTableBlock<>(this);
+    }
+
+    @Override
+    final _OnClause<C, _JoinSpec<C, Q>> createNoActionItemBlock() {
+        return new NoActionOnClause<>(this);
+    }
+
+    @Override
+    final _PartitionJoinClause<C, Q> createNoActionNextNoOnClause() {
+        return new NoActionPartitionJoinClause<>(this::noActionAfterPartitionAs);
+    }
+
+    @Override
+    final _PartitionOnClause<C, Q> createNoActionNextClause() {
+        return new NoActionPartitionOnClause<>(this::getNoActionTableBlock);
+    }
+
+    @Override
     final void doWithCte(boolean recursive, List<Cte> cteList) {
         //MySQL 5.7 don't support WITH clause.
         throw _Exceptions.castCriteriaApi();
@@ -244,7 +266,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }// SimpleSelect
 
     private static class SimpleSubQuery<C, Q extends SubQuery> extends MySQL57SimpleQuery<C, Q>
-            implements SubQuery {
+            implements _SubQuery {
 
         private Map<String, Selection> selectionMap;
 
@@ -310,7 +332,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }// UnionAndSelect
 
-    private static class UnionAndSubQuery<C, Q extends SubQuery> extends UnionAndQuery<C, Q> implements SubQuery {
+    private static class UnionAndSubQuery<C, Q extends SubQuery> extends UnionAndQuery<C, Q> implements _SubQuery {
 
         private Map<String, Selection> selectionMap;
 
@@ -350,13 +372,13 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private final TableMeta<?> table;
 
-        private final MySQL57SimpleQuery<C, Q> query;
+        private final MySQL57SimpleQuery<C, Q> stmt;
 
-        private PartitionJoinImpl(_JoinType joinType, TableMeta<?> table, MySQL57SimpleQuery<C, Q> query) {
-            super(query.criteria);
+        private PartitionJoinImpl(_JoinType joinType, TableMeta<?> table, MySQL57SimpleQuery<C, Q> stmt) {
+            super(stmt.criteria);
             this.joinType = joinType;
             this.table = table;
-            this.query = query;
+            this.stmt = stmt;
         }
 
         @Override
@@ -369,8 +391,9 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             } else {
                 block = new MySQLNoOnBlock(this.joinType, this.table, alias, partitionList);
             }
-            this.query.criteriaContext.onBlockWithoutOnClause(block);
-            return this.query;
+            this.stmt.criteriaContext.onBlockWithoutOnClause(block);
+            this.stmt.crossJoinEvent(true);
+            return this.stmt;
         }
 
 
@@ -446,6 +469,55 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     }// PartitionOnBlock
+
+    private static final class NoActionPartitionJoinClause<C, Q extends Query>
+            extends MySQLNoActionPartitionClause<C, MySQL57Query._AsJoinClause<C, Q>>
+            implements MySQL57Query._PartitionJoinClause<C, Q>, MySQL57Query._AsJoinClause<C, Q> {
+
+        private final Supplier<_IndexHintJoinSpec<C, Q>> supplier;
+
+        private NoActionPartitionJoinClause(Supplier<_IndexHintJoinSpec<C, Q>> supplier) {
+            this.supplier = supplier;
+        }
+
+        @Override
+        public _IndexHintJoinSpec<C, Q> as(String alias) {
+            return this.supplier.get();
+        }
+
+    }//NoActionPartitionJoinClause
+
+    private static final class NoActionPartitionOnClause<C, Q extends Query>
+            extends MySQLNoActionPartitionClause<C, MySQL57Query._AsOnClause<C, Q>>
+            implements MySQL57Query._PartitionOnClause<C, Q>, MySQL57Query._AsOnClause<C, Q> {
+
+        private final Supplier<_IndexHintOnSpec<C, Q>> supplier;
+
+        private NoActionPartitionOnClause(Supplier<_IndexHintOnSpec<C, Q>> supplier) {
+            this.supplier = supplier;
+        }
+
+        @Override
+        public _IndexHintOnSpec<C, Q> as(String alias) {
+            return this.supplier.get();
+        }
+
+    }//NoActionPartitionOnClause
+
+    private static final class NoActionTableBlock<C, Q extends Query>
+            extends MySQLNoActionIndexHintOnBlock<
+            C,
+            MySQL57Query._IndexPurposeOn57Clause<C, Q>,
+            MySQL57Query._IndexHintOnSpec<C, Q>,
+            MySQL57Query._JoinSpec<C, Q>>
+            implements MySQL57Query._IndexPurposeOn57Clause<C, Q>, MySQL57Query._IndexHintOnSpec<C, Q> {
+
+        private NoActionTableBlock(_JoinSpec<C, Q> stmt) {
+            super(stmt);
+        }
+
+
+    }// NoActionTableBlock
 
 
 }

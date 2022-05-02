@@ -46,28 +46,6 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     /**
      * <p>
-     * This interface representing FORM clause for MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C>  criteria object java type.
-     * @param <FT> next clause java type
-     * @param <FS> next clause java type
-     * @param <FP> next clause java type
-     * @param <FB> next clause java type,it's sub interface of {@link _LeftBracketClause}.
-     * @since 1.0
-     */
-    interface _MySQLFromClause<C, FT, FS, FP, FB> extends _DialectFromClause<C, FT, FS, FP, FB> {
-
-
-    }
-
-    /**
-     * <p>
      * This interface representing the composite of below:
      *     <ul>
      *         <li>{@link _JoinClause }</li>
@@ -81,8 +59,8 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <JE> next clause java type
      * @since 1.0
      */
-    interface _MySQLJoinClause<C, JT, JS, JE>
-            extends _JoinClause<C, JT, JS, JE>, _StraightJoinClause<C, JT, JS, JE> {
+    interface _MySQLJoinClause<C, JT, JS>
+            extends _JoinClause<C, JT, JS>, _StraightJoinClause<C, JT, JS> {
 
     }
 
@@ -98,7 +76,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <JP> next clause java type
      * @since 1.0
      */
-    interface _MySQLDialectJoin<JP> extends _DialectJoinClause<JP>, _DialectStraightJoinClause<JP> {
+    interface _MySQLDialectJoin<C, JP> extends _DialectJoinClause<C, JP>, _DialectStraightJoinClause<C, JP> {
 
     }
 

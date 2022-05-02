@@ -60,8 +60,8 @@ public interface MySQL57Query extends MySQLQuery {
      * @since 1.0
      */
     interface _FromSpec<C, Q extends Query>
-            extends _MySQLFromClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _PartitionJoinClause<C, Q>, _LestBracket57Clause<C, Q>>
-            , _UnionSpec<C, Q>, _IntoSpec<C, Q> {
+            extends _FromClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>>
+            , _DialectFromClause<_PartitionJoinClause<C, Q>>, _UnionSpec<C, Q>, _IntoSpec<C, Q> {
 
     }
 
@@ -123,7 +123,7 @@ public interface MySQL57Query extends MySQLQuery {
      */
     interface _IndexHintJoinSpec<C, Q extends Query>
             extends _IndexHintClause<C, _IndexPurposeJoinClause<C, Q>, _IndexHintJoinSpec<C, Q>>
-            , _Join57Clause<C, Q> {
+            , _JoinSpec<C, Q> {
 
     }
 
@@ -246,35 +246,9 @@ public interface MySQL57Query extends MySQLQuery {
      *    <ul>
      *        <li>join clause in MySQL 57 syntax</li>
      *        <li>the composite {@link _WhereSpec}</li>
-     *        <li>right bracket clause</li>
      *    </ul>
      * </p>
      * <p>
-     *     If and only if use below methods to create dynamic nested join,then you is allowed to declare this interface type variable
-     *     <ul>
-     *         <li>{@link #leftJoin()}</li>
-     *         <li>{@link #join()}</li>
-     *         <li>{@link #rightJoin()}</li>
-     *         <li>{@link #fullJoin()}</li>
-     *         <li>{@link #crossJoin()}</li>
-     *         <li>{@link #straightJoin()}</li>
-     *     </ul>
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _JoinSpec<C, Q extends Query> extends _Join57Clause<C, Q>, _WhereSpec<C, Q>
-            , _RightBracketClause<_JoinSpec<C, Q>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing join clause for MySQL 57 syntax.
-     * </p>
-     * <p>
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
@@ -284,32 +258,14 @@ public interface MySQL57Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _Join57Clause<C, Q extends Query>
-            extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>, _LestBracket57Clause<C, Q>>
-            , _CrossJoinClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _LestBracket57Clause<C, Q>>
-            , _MySQLDialectJoin<_PartitionOnClause<C, Q>>, _DialectCrossJoinClause<_PartitionJoinClause<C, Q>> {
+    interface _JoinSpec<C, Q extends Query>
+            extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>>
+            , _CrossJoinClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>>
+            , _MySQLDialectJoin<C, _PartitionOnClause<C, Q>>, _DialectCrossJoinClause<C, _PartitionJoinClause<C, Q>>
+            , _WhereSpec<C, Q> {
 
     }
 
-
-    /**
-     * <p>
-     * This interface representing a left bracket clause after key word 'FROM' or key word 'JOIN' for MySQL 57 syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _LestBracket57Clause<C, Q extends Query>
-            extends _MySQLJoinBracketClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _PartitionJoinClause<C, Q>> {
-
-    }
 
     /**
      * <p>

@@ -28,12 +28,11 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, JT, JS, JP, JE, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends PartRowSet<C, Q, JT, JS, JP, FT, FS, JE, FP, UR, OR, LR, SP>
+abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends PartRowSet<C, Q, FT, FS, FP, JT, JS, JP, UR, OR, LR, SP>
         implements Statement._QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
-        , Query._HavingClause<C, HR>, _Query, DialectStatement._DialectFromClause<C, FT, FS, FP, JE>
+        , Query._HavingClause<C, HR>, _Query, Statement._FromClause<C, FT, FS>, DialectStatement._DialectFromClause<FP>
         , DialectStatement._DialectSelectClause<C, W, SR>, Query._QuerySpec<Q> {
-
 
     private List<Hint> hintList;
 
@@ -48,6 +47,11 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     private List<ArmySortItem> groupByList;
 
     private List<_Predicate> havingList;
+
+
+    private JT noActionTableBlock;
+
+    private JS noActionItemBlock;
 
 
     SimpleQuery(CriteriaContext criteriaContext) {
@@ -144,13 +148,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     /*################################## blow FromSpec method ##################################*/
-
-    @Override
-    public final JE from() {
-        this.criteriaContext.onJoinType(_JoinType.NONE);
-        return (JE) this;
-    }
-
     @Override
     public final FP from(TableMeta<?> table) {
         return this.createNextNoOnClause(_JoinType.NONE, table);
@@ -213,7 +210,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final List<IPredicate> predicateList;
         predicateList = supplier.get();
         if (predicateList != null && predicateList.size() > 0) {
-            this.predicateList = CriteriaUtils.asPredicateList(predicateList, _Exceptions::predicateListIsEmpty);
+            this.predicateList = CriteriaUtils.asPredicateList(predicateList, null);
         }
         return (WR) this;
     }
@@ -223,7 +220,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final List<IPredicate> predicateList;
         predicateList = function.apply(this.criteria);
         if (predicateList != null && predicateList.size() > 0) {
-            this.predicateList = CriteriaUtils.asPredicateList(predicateList, _Exceptions::predicateListIsEmpty);
+            this.predicateList = CriteriaUtils.asPredicateList(predicateList, null);
         }
         return (WR) this;
     }
@@ -407,7 +404,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             final List<IPredicate> list;
             list = supplier.get();
             if (list != null && list.size() > 0) {
-                this.havingList = CriteriaUtils.asPredicateList(list, _Exceptions::havingIsEmpty);
+                this.havingList = CriteriaUtils.asPredicateList(list, null);
             }
         }
         return (HR) this;
@@ -420,7 +417,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             final List<IPredicate> list;
             list = function.apply(this.criteria);
             if (list != null && list.size() > 0) {
-                this.havingList = CriteriaUtils.asPredicateList(list, _Exceptions::havingIsEmpty);
+                this.havingList = CriteriaUtils.asPredicateList(list, null);
             }
         }
         return (HR) this;
@@ -447,7 +444,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public final List<? extends _TableBlock> tableBlockList() {
-        prepared();
         return this.tableBlockList;
     }
 
@@ -569,6 +565,31 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     abstract void onClear();
 
 
+    abstract JT createNoActionTableBlock();
+
+    abstract JS createNoActionItemBlock();
+
+
+    @Override
+    final JT getNoActionTableBlock() {
+        JT noActionTableBlock = this.noActionTableBlock;
+        if (noActionTableBlock == null) {
+            noActionTableBlock = this.createNoActionTableBlock();
+            this.noActionTableBlock = noActionTableBlock;
+        }
+        return noActionTableBlock;
+    }
+
+    @Override
+    final JS getNoActionItemBlock() {
+        JS noActionItemBlock = this.noActionItemBlock;
+        if (noActionItemBlock == null) {
+            noActionItemBlock = this.createNoActionItemBlock();
+            this.noActionItemBlock = noActionItemBlock;
+        }
+        return noActionItemBlock;
+    }
+
     private <S extends SelectItem> SR innerNonSafeSelect(@Nullable List<Hint> hintList
             , @Nullable List<? extends SQLWords> modifierList, List<S> selectItemList) {
         if (hintList != null) {
@@ -603,11 +624,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         this.selectItemList = selectItemList;
         this.criteriaContext.selectList(selectItemList); //notify context
         return (SR) this;
-    }
-
-
-    static IllegalStateException asQueryMethodError() {
-        return new IllegalStateException("onAsQuery(boolean) error");
     }
 
 
