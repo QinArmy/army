@@ -261,7 +261,7 @@ public interface MySQL57Query extends MySQLQuery {
     interface _JoinSpec<C, Q extends Query>
             extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>>
             , _CrossJoinClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>>
-            , _MySQLDialectJoin<C, _PartitionOnClause<C, Q>>, _DialectCrossJoinClause<C, _PartitionJoinClause<C, Q>>
+            , _MySQLDialectJoinClause<C, _PartitionOnClause<C, Q>>, _DialectCrossJoinClause<C, _PartitionJoinClause<C, Q>>
             , _WhereSpec<C, Q> {
 
     }

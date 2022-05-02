@@ -1,9 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.CriteriaException;
+import io.army.criteria.CteTableItem;
 import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,9 +18,17 @@ abstract class TableBlock implements _TableBlock {
 
     final TableItem tableItem;
 
-    TableBlock(_JoinType joinType, TableItem tableItem) {
+    final String alias;
+
+    TableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        Objects.requireNonNull(alias);
+        if (!(tableItem instanceof CteTableItem) && !_StringUtils.hasText(alias)) {
+            String m = String.format("Non-%s alias must have text.", CteTableItem.class.getSimpleName());
+            throw new CriteriaException(m);
+        }
         this.joinType = joinType;
         this.tableItem = tableItem;
+        this.alias = alias;
 
     }
 
@@ -31,6 +42,10 @@ abstract class TableBlock implements _TableBlock {
         return this.joinType;
     }
 
+    @Override
+    public final String alias() {
+        return this.alias;
+    }
 
     static TableBlock noneBlock(TableItem tableItem, String alias) {
         Objects.requireNonNull(tableItem);
@@ -45,10 +60,8 @@ abstract class TableBlock implements _TableBlock {
 
     static class NoOnTableBlock extends TableBlock {
 
-        private final String alias;
-
         public NoOnTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
-            super(joinType, tableItem);
+            super(joinType, tableItem, alias);
             switch (joinType) {
                 case NONE:
                 case CROSS_JOIN:
@@ -56,13 +69,7 @@ abstract class TableBlock implements _TableBlock {
                 default:
                     throw _Exceptions.castCriteriaApi();
             }
-            this.alias = alias;
 
-        }
-
-        @Override
-        public final String alias() {
-            return this.alias;
         }
 
         @Override

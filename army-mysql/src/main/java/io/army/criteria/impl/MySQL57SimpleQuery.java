@@ -391,7 +391,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             } else {
                 block = new MySQLNoOnBlock(this.joinType, this.table, alias, partitionList);
             }
-            this.stmt.criteriaContext.onBlockWithoutOnClause(block);
+            this.stmt.criteriaContext.onAddNoOnBlock(block);
             this.stmt.crossJoinEvent(true);
             return this.stmt;
         }

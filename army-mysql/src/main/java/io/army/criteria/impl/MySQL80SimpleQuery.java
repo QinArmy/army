@@ -16,7 +16,10 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 
 /**
@@ -43,7 +46,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         MySQL80Query._IndexHintOnSpec<C, Q>,    //JT
         Statement._OnClause<C, MySQL80Query._JoinSpec<C, Q>>, //JS
         MySQL80Query._PartitionOnClause<C, Q>,   //JP
-        MySQL80Query._LeftBracket80Clause<C, Q>,  //JE
         MySQL80Query._GroupBySpec<C, Q>,       //WR
         MySQL80Query._WhereAndSpec<C, Q>,      //AR
         MySQL80Query._GroupByWithRollupSpec<C, Q>,//GR
@@ -160,37 +162,33 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final _OrderBySpec<C, Q> window(Function<WindowBuilder<C>, List<Window>> function) {
-        final List<Window> windowList;
-        windowList = function.apply(this::createWindowClause);
-        this.windowList = CriteriaUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
+    public final _OrderBySpec<C, Q> window(Supplier<List<Window>> supplier) {
+        this.windowList = MySQLUtils.asWindowList(supplier.get(), this::isIllegalWindow);
         return this;
     }
 
     @Override
-    public final _OrderBySpec<C, Q> window(BiFunction<C, WindowBuilder<C>, List<Window>> function) {
-        final List<Window> windowList;
-        windowList = function.apply(this.criteria, this::createWindowClause);
-        this.windowList = CriteriaUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
+    public final _OrderBySpec<C, Q> window(Function<C, List<Window>> function) {
+        this.windowList = MySQLUtils.asWindowList(function.apply(this.criteria), this::isIllegalWindow);
         return this;
     }
 
     @Override
-    public final _OrderBySpec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function) {
+    public final _OrderBySpec<C, Q> ifWindow(Supplier<List<Window>> supplier) {
         final List<Window> windowList;
-        windowList = function.apply(this::createWindowClause);
+        windowList = supplier.get();
         if (windowList != null && windowList.size() > 0) {
-            this.windowList = CriteriaUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
+            this.windowList = MySQLUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
         }
         return this;
     }
 
     @Override
-    public final _OrderBySpec<C, Q> ifWindow(BiFunction<C, WindowBuilder<C>, List<Window>> function) {
+    public final _OrderBySpec<C, Q> ifWindow(Function<C, List<Window>> function) {
         final List<Window> windowList;
-        windowList = function.apply(this.criteria, this::createWindowClause);
+        windowList = function.apply(this.criteria);
         if (windowList != null && windowList.size() > 0) {
-            this.windowList = CriteriaUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
+            this.windowList = MySQLUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
         }
         return this;
     }
@@ -484,12 +482,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     /*################################## blow private method ##################################*/
 
-    private Window._SimpleAsClause<C, Window> createWindowClause(String windowName) {
-        if (!_StringUtils.hasText(windowName)) {
-            throw _Exceptions.namedWindowNoText();
-        }
-        return SimpleWindow.standard(windowName, this.criteriaContext);
+    private boolean isIllegalWindow(Window window) {
+        return SimpleWindow.isIllegalWindow(window, this.criteriaContext);
     }
+
 
     private _LockLockOptionSpec<C, Q> asOfTableAliasList(final boolean unmodified
             , final @Nullable List<String> aliasList) {
@@ -703,7 +699,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             } else {
                 block = new MySQLNoOnBlock(this.joinType, this.table, alias, partitionList);
             }
-            this.query.criteriaContext.onBlockWithoutOnClause(block);
+            this.query.criteriaContext.onAddNoOnBlock(block);
             return this.query;
         }
 

@@ -25,12 +25,22 @@ public interface Window {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
+     *
      * @param <WR> next clause java type
+     * @param <WB> next clause java type
      * @since 1.0
      */
-    interface _WindowClause<WR> {
+    interface _WindowClause<C, WR, WB> {
 
         WR window(String windowName);
+
+        WB window(Supplier<List<Window>> supplier);
+
+        WB window(Function<C, List<Window>> function);
+
+        WB ifWindow(Supplier<List<Window>> supplier);
+
+        WB ifWindow(Function<C, List<Window>> function);
 
     }
 

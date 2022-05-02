@@ -32,7 +32,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         extends PartRowSet<C, Q, FT, FS, FP, JT, JS, JP, UR, OR, LR, SP>
         implements Statement._QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
         , Query._HavingClause<C, HR>, _Query, Statement._FromClause<C, FT, FS>, DialectStatement._DialectFromClause<FP>
-        , DialectStatement._DialectSelectClause<C, W, SR>, Query._QuerySpec<Q> {
+        , DialectStatement._DialectSelectClause<C, W, SR>, DialectStatement._FromCteClause<FS>, Query._QuerySpec<Q> {
 
     private List<Hint> hintList;
 
@@ -157,19 +157,31 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final FT from(TableMeta<?> table, String tableAlias) {
         final _TableBlock block;
         block = this.createNoOnTableBlock(_JoinType.NONE, table, tableAlias);
-        this.criteriaContext.onBlockWithoutOnClause(block);
+        this.criteriaContext.onAddNoOnBlock(block);
         return (FT) this;
     }
 
     @Override
+    public final FS from(String cteName) {
+        this.criteriaContext.onAddNoOnBlock(TableBlock.noneBlock(SQLs.refCte(cteName), ""));
+        return (FS) this;
+    }
+
+    @Override
+    public final FS from(String cteName, String alias) {
+        this.criteriaContext.onAddNoOnBlock(TableBlock.noneBlock(SQLs.refCte(cteName), alias));
+        return (FS) this;
+    }
+
+    @Override
     public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
-        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        this.criteriaContext.onAddNoOnBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
         return (FS) this;
     }
 
     @Override
     public final <T extends TableItem> FS from(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onBlockWithoutOnClause(TableBlock.noneBlock(supplier.get(), alias));
+        this.criteriaContext.onAddNoOnBlock(TableBlock.noneBlock(supplier.get(), alias));
         return (FS) this;
     }
 

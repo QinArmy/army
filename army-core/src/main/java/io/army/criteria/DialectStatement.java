@@ -87,6 +87,28 @@ public interface DialectStatement extends Statement {
 
     /**
      * <p>
+     * This interface representing dialect FROM clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <FS> same with the FS of {@link _FromClause}
+     * @see _FromClause
+     * @since 1.0
+     */
+    interface _FromCteClause<FS> {
+
+        FS from(String cteName);
+
+        FS from(String cteName, String alias);
+
+    }
+
+    /**
+     * <p>
      * This interface representing STRAIGHT JOIN clause
      * </p>
      * <p>
@@ -194,6 +216,68 @@ public interface DialectStatement extends Statement {
 
     }
 
+    /**
+     * <p>
+     * This interface representing JOIN CTE clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <JS> same with the JS of {@link _JoinClause}
+     * @since 1.0
+     */
+    interface _JoinCteClause<JS> {
+
+        JS leftJoin(String cteName);
+
+        JS leftJoin(String cteName, String alias);
+
+        JS join(String cteName);
+
+        JS join(String cteName, String alias);
+
+        JS rightJoin(String cteName);
+
+        JS rightJoin(String cteName, String alias);
+
+        JS fullJoin(String cteName);
+
+        JS fullJoin(String cteName, String alias);
+
+    }
+
+    interface _CrossJoinCteClause<FS> {
+
+        FS crossJoin(String cteName);
+
+        FS crossJoin(String cteName, String alias);
+
+    }
+
+    /**
+     * <p>
+     * This interface representing STRAIGHT JOIN CTE clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <JS> same with the JS of {@link _JoinClause}
+     * @since 1.0
+     */
+    interface _StraightJoinCteClause<JS> {
+
+        JS straightJoin(String cteName);
+
+        JS straightJoin(String cteName, String alias);
+
+    }
+
 
     /**
      * <p>
@@ -205,18 +289,32 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type
-     * @param <LT> next clause java type
-     * @param <LS> next clause java type
      * @param <LP> next clause java type
      * @since 1.0
      */
-    interface _DialectLeftBracketClause<C, LT, LS, LP> extends _LeftBracketClause<C, JT, JS> {
-
-        @Override
-        _DialectLeftBracketClause<C, LT, LS, LP> leftBracket();
+    interface _DialectLeftBracketClause<LP> {
 
         LP leftBracket(TableMeta<?> table);
+    }
+
+    /**
+     * <p>
+     * This interface representing  left bracket cte clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <LS> same with the LS of {@link _LeftBracketClause}
+     * @since 1.0
+     */
+    interface _LeftBracketCteClause<LS> {
+
+        LS leftBracket(String cteName);
+
+        LS leftBracket(String cteName, String alias);
     }
 
     /**

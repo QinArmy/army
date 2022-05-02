@@ -47,12 +47,22 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         return !(window instanceof StandardSimpleWindow);
     }
 
+    static boolean isIllegalWindow(Window window, CriteriaContext criteriaContext) {
+        final boolean illegal;
+        if (window instanceof StandardSimpleWindow) {
+            illegal = ((StandardSimpleWindow<?, ?>) window).criteriaContext != criteriaContext;
+        } else {
+            illegal = true;
+        }
+        return illegal;
+    }
+
 
     private final String windowName;
 
     private final R stmt;
 
-    private final CriteriaContext criteriaContext;
+    final CriteriaContext criteriaContext;
 
     private String refWindowName;
 

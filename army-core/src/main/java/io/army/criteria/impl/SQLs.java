@@ -508,6 +508,10 @@ public abstract class SQLs extends Functions {
         return CriteriaContextStack.root().createVar(varName, paramMeta);
     }
 
+    public static CteTableItem refCte(String cteName) {
+        return CriteriaContextStack.peek().refCteItem(cteName);
+    }
+
 
     public static <T extends IDomain> SelectionGroup group(TableMeta<T> table, String alias) {
         return SelectionGroups.singleGroup(table, alias);

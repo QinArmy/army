@@ -280,8 +280,6 @@ public interface Statement {
      */
     interface _LeftBracketClause<C, LT, LS> {
 
-        _LeftBracketClause<C, LT, LS> leftBracket();
-
         LT leftBracket(TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> LS leftBracket(Function<C, T> function, String alias);

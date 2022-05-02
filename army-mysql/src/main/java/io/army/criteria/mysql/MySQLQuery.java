@@ -56,11 +56,9 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C>  criteria type use to create dynamic statement.
      * @param <JT> next clause java type
      * @param <JS> next clause java type
-     * @param <JE> next clause java type
      * @since 1.0
      */
-    interface _MySQLJoinClause<C, JT, JS>
-            extends _JoinClause<C, JT, JS>, _StraightJoinClause<C, JT, JS> {
+    interface _MySQLJoinClause<C, JT, JS> extends _JoinClause<C, JT, JS>, _StraightJoinClause<C, JT, JS> {
 
     }
 
@@ -76,25 +74,23 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <JP> next clause java type
      * @since 1.0
      */
-    interface _MySQLDialectJoin<C, JP> extends _DialectJoinClause<C, JP>, _DialectStraightJoinClause<C, JP> {
+    interface _MySQLDialectJoinClause<C, JP> extends _DialectJoinClause<C, JP>, _DialectStraightJoinClause<C, JP> {
 
     }
 
-
     /**
      * <p>
-     * This interface representing nested join left bracket clause in MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
+     * This interface representing the composite of below:
+     *     <ul>
+     *         <li>{@link _JoinCteClause }</li>
+     *         <li>{@link  _StraightJoinCteClause}</li>
+     *     </ul>
      * </p>
      *
-     * @param <C> criteria object java type
+     * @param <JS> next clause java type
      * @since 1.0
      */
-    interface _MySQLJoinBracketClause<C, FT, FS, FP> extends _DialectLeftBracketClause<C, FT, FS, FP> {
+    interface _MySQLJoinCteClause<JS> extends _JoinCteClause<JS>, _StraightJoinCteClause<JS> {
 
     }
 

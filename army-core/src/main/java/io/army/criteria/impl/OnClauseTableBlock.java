@@ -16,15 +16,12 @@ import java.util.function.Supplier;
 
 class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClause<C, OR> {
 
-    final String alias;
-
     private List<_Predicate> onPredicates;
 
     final OR stmt;
 
     OnClauseTableBlock(_JoinType joinType, TableItem tableItem, String alias, OR stmt) {
-        super(joinType, tableItem);
-        this.alias = alias;
+        super(joinType, tableItem, alias);
         this.stmt = stmt;
     }
 
@@ -86,10 +83,6 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
         return predicateList;
     }
 
-    @Override
-    public final String alias() {
-        return this.alias;
-    }
 
     @Nullable
     @SuppressWarnings("unchecked")

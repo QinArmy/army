@@ -1,12 +1,10 @@
 package io.army.criteria.mysql;
 
 
+import io.army.criteria.NestedItems;
 import io.army.criteria.Query;
 import io.army.criteria.Window;
 
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -29,12 +27,6 @@ import java.util.function.Predicate;
  * @since 1.0
  */
 public interface MySQL80Query extends MySQLQuery {
-
-
-    interface WindowBuilder<C> {
-
-        Window._SimpleAsClause<C, Window> window(String windowName);
-    }
 
 
     /**
@@ -83,7 +75,9 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _MySQLFromClause} for MySQL 8.0</li>
+     *          <li>{@link _FromClause}</li>
+     *          <li>{@link _DialectFromClause}</li>
+     *          <li>{@link _FromCteClause}</li>
      *          <li>the composite {@link _UnionSpec}</li>
      *          <li>the composite {@link _IntoSpec}</li>
      *     </ul>
@@ -99,8 +93,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _FromSpec<C, Q extends Query>
-            extends _MySQLFromClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>
-            , _PartitionJoinClause<C, Q>, _LeftBracket80Clause<C, Q>>, _UnionSpec<C, Q>, _IntoSpec<C, Q> {
+            extends _FromClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>>
+            , _DialectFromClause<_PartitionJoinClause<C, Q>>, _FromCteClause<_JoinSpec<C, Q>>
+            , _UnionSpec<C, Q>, _IntoSpec<C, Q> {
 
     }
 
@@ -190,7 +185,11 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _Join80Clause}</li>
+     *          <li>{@link _MySQLJoinClause}</li>
+     *          <li>{@link _MySQLJoinCteClause}</li>
+     *          <li>{@link _CrossJoinCteClause}</li>
+     *          <li>{@link _MySQLDialectJoinClause}</li>
+     *          <li>{@link _DialectCrossJoinClause}</li>
      *          <li>the composite {@link _WhereSpec}</li>
      *     </ul>
      * </p>
@@ -204,49 +203,15 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _JoinSpec<C, Q extends Query> extends _Join80Clause<C, Q>, _WhereSpec<C, Q> {
+    interface _JoinSpec<C, Q extends Query> extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>>
+            , _MySQLJoinCteClause<_OnClause<C, _JoinSpec<C, Q>>>, _CrossJoinCteClause<_JoinSpec<C, Q>>
+            , _CrossJoinClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>>
+            , _MySQLDialectJoinClause<C, _PartitionOnClause<C, Q>>
+            , _DialectCrossJoinClause<C, _PartitionJoinClause<C, Q>>
+            , _WhereSpec<C, Q> {
 
     }
 
-    /**
-     * <p>
-     * This interface representing join clause for MySQL 8.0 syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _Join80Clause<C, Q extends Query>
-            extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>, _LeftBracket80Clause<C, Q>>
-            , _CrossJoinClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _LeftBracket80Clause<C, Q>>
-            , _MySQLDialectJoin<_PartitionOnClause<C, Q>>, _DialectCrossJoinClause<_PartitionJoinClause<C, Q>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing LEFT BRACKET clause for MySQL 8.0
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> java criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _LeftBracket80Clause<C, Q extends Query>
-            extends _MySQLJoinBracketClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>, _PartitionJoinClause<C, Q>> {
-
-    }
 
     /**
      * <p>
@@ -453,7 +418,6 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link Window._WindowClause}</li>
-     *          <li>if window clause</li>
      *          <li>the composite {@link _OrderBySpec}</li>
      *     </ul>
      * </p>
@@ -468,16 +432,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _WindowSpec<C, Q extends Query>
-            extends Window._WindowClause<Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>>>
+            extends Window._WindowClause<C, Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>>, _OrderBySpec<C, Q>>
             , _OrderBySpec<C, Q> {
 
-        _OrderBySpec<C, Q> window(Function<WindowBuilder<C>, List<Window>> function);
-
-        _OrderBySpec<C, Q> window(BiFunction<C, WindowBuilder<C>, List<Window>> function);
-
-        _OrderBySpec<C, Q> ifWindow(Function<WindowBuilder<C>, List<Window>> function);
-
-        _OrderBySpec<C, Q> ifWindow(BiFunction<C, WindowBuilder<C>, List<Window>> function);
 
     }
 
@@ -712,6 +669,197 @@ public interface MySQL80Query extends MySQLQuery {
     interface _UnionSpec<C, Q extends Query>
             extends _QueryUnionClause<C, _UnionOrderBySpec<C, Q>, _WithSpec<C, Q>>, _QuerySpec<Q> {
 
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing nested LEFT BRACKET clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedLeftBracketClause<C>
+            extends _LeftBracketClause<C, _NestedIndexHintJoinSpec<C>, _NestedJoinSpec<C>>
+            , _DialectLeftBracketClause<_NestedPartitionJoinClause<C>>
+            , _LeftBracketCteClause<_NestedJoinSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing nested partition clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedPartitionJoinClause<C>
+            extends _PartitionClause<C, _AsClause<_NestedIndexHintJoinSpec<C>>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _IndexHintClause}</li>
+     *          <li>the composite {@link _NestedJoinSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedIndexHintJoinSpec<C>
+            extends _IndexHintClause<C, _NestedIndexPurposeJoinClause<C>, _NestedIndexHintJoinSpec<C>>
+            , _NestedJoinSpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing nested index hint clause after key word 'FOR'.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedIndexPurposeJoinClause<C> extends _IndexPurposeClause<C, _NestedIndexHintJoinSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing nested partition clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedPartitionOnClause<C> extends _PartitionClause<C, _AsClause<_NestedIndexHintOnSpec<C>>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _IndexHintClause}</li>
+     *          <li>the composite {@link _NestedOnSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedIndexHintOnSpec<C>
+            extends _IndexHintClause<C, _NestedIndexPurposeOnClause<C>, _NestedIndexHintOnSpec<C>>
+            , _NestedOnSpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing nested index hint clause after key word 'FOR'.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedIndexPurposeOnClause<C> extends _IndexPurposeClause<C, _NestedIndexHintOnSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _MySQLJoinClause}</li>
+     *          <li>{@link _MySQLJoinCteClause}</li>
+     *          <li>{@link _CrossJoinCteClause}</li>
+     *          <li>{@link _CrossJoinClause}</li>
+     *          <li>{@link _MySQLDialectJoinClause}</li>
+     *          <li>{@link _DialectCrossJoinClause}</li>
+     *          <li> {@link _RightBracketClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedJoinSpec<C> extends _MySQLJoinClause<C, _NestedIndexHintOnSpec<C>, _NestedOnSpec<C>>
+            , _MySQLJoinCteClause<_NestedOnSpec<C>>, _CrossJoinCteClause<_NestedJoinSpec<C>>
+            , _CrossJoinClause<C, _NestedIndexHintJoinSpec<C>, _NestedJoinSpec<C>>
+            , _MySQLDialectJoinClause<C, _NestedPartitionOnClause<C>>
+            , _DialectCrossJoinClause<C, _NestedPartitionJoinClause<C>>
+            , _RightBracketClause<NestedItems> {
+
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _OnClause}</li>
+     *          <li>the composite {@link _NestedJoinSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> java criteria object java type
+     * @since 1.0
+     */
+    interface _NestedOnSpec<C> extends _OnClause<C, _NestedJoinSpec<C>>, _NestedJoinSpec<C> {
 
     }
 

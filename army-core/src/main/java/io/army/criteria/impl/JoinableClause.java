@@ -30,7 +30,8 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         implements Statement._JoinClause<C, JT, JS>, Statement._CrossJoinClause<C, FT, FS>
         , DialectStatement._StraightJoinClause<C, JT, JS>, DialectStatement._DialectJoinClause<C, JP>
         , DialectStatement._DialectStraightJoinClause<C, JP>, DialectStatement._DialectCrossJoinClause<C, FP>
-        , CriteriaSpec<C> {
+        , DialectStatement._JoinCteClause<JS>, DialectStatement._StraightJoinCteClause<JS>
+        , DialectStatement._CrossJoinCteClause<FS>, CriteriaSpec<C> {
 
     private final Consumer<_TableBlock> blockConsumer;
 
@@ -70,6 +71,22 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     public final <T extends TableItem> JS leftJoin(Function<C, T> function, String alias) {
         final JS block;
         block = this.createItemBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JS leftJoin(String cteName) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), "");
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JS leftJoin(String cteName, String alias) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), alias);
         this.blockConsumer.accept((_TableBlock) block);
         return block;
     }
@@ -124,6 +141,23 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     }
 
     @Override
+    public final JS join(String cteName) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.JOIN, SQLs.refCte(cteName), "");
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JS join(String cteName, String alias) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.JOIN, SQLs.refCte(cteName), alias);
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+
+    @Override
     public final JP ifJoin(Predicate<C> predicate, TableMeta<?> table) {
         return this.ifJoinTable(predicate, _JoinType.JOIN, table);
     }
@@ -173,6 +207,22 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     }
 
     @Override
+    public final JS rightJoin(String cteName) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), "");
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JS rightJoin(String cteName, String alias) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), alias);
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+    @Override
     public final JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
         return this.ifJoinTable(predicate, _JoinType.RIGHT_JOIN, table);
     }
@@ -190,77 +240,6 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     @Override
     public final <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias) {
         return this.ifJoinItem(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
-    public final FP crossJoin(TableMeta<?> table) {
-        return this.createNextNoOnClause(_JoinType.CROSS_JOIN, table);
-    }
-
-    @Override
-    public final FT crossJoin(TableMeta<?> table, String tableAlias) {
-        final _TableBlock block;
-        block = this.createNoOnTableBlock(_JoinType.CROSS_JOIN, table, tableAlias);
-        this.blockConsumer.accept(block);
-        this.crossJoinEvent(true);
-        return (FT) this;
-    }
-
-
-    @Override
-    public final <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias) {
-        this.blockConsumer.accept(TableBlock.crossBlock(supplier.get(), alias));
-        return (FS) this;
-    }
-
-
-    @Override
-    public final <T extends TableItem> FS crossJoin(Function<C, T> function, String alias) {
-        this.blockConsumer.accept(TableBlock.crossBlock(function.apply(this.criteria), alias));
-        return (FS) this;
-    }
-
-    @Override
-    public final FP ifCrossJoin(Predicate<C> predicate, TableMeta<?> table) {
-        final FP clause;
-        if (predicate.test(this.criteria)) {
-            clause = this.crossJoin(table);
-        } else {
-            clause = this.getNoActionNextNoOnClause();
-            this.crossJoinEvent(false);
-        }
-        return clause;
-    }
-
-    @Override
-    public final FT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        if (predicate.test(this.criteria)) {
-            this.crossJoin(table, tableAlias);
-        } else {
-            this.crossJoinEvent(false);
-        }
-        return (FT) this;
-    }
-
-
-    @Override
-    public final <T extends TableItem> FS ifCrossJoin(Supplier<T> supplier, String alias) {
-        final TableItem item;
-        item = supplier.get();
-        if (item != null) {
-            this.blockConsumer.accept(TableBlock.crossBlock(item, alias));
-        }
-        return (FS) this;
-    }
-
-    @Override
-    public final <T extends TableItem> FS ifCrossJoin(Function<C, T> function, String alias) {
-        final TableItem item;
-        item = function.apply(this.criteria);
-        if (item != null) {
-            this.blockConsumer.accept(TableBlock.crossBlock(item, alias));
-        }
-        return (FS) this;
     }
 
     @Override
@@ -288,6 +267,22 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     public final <T extends TableItem> JS fullJoin(Function<C, T> function, String alias) {
         final JS block;
         block = createItemBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JS fullJoin(String cteName) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.FULL_JOIN, SQLs.refCte(cteName), "");
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JS fullJoin(String cteName, String alias) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.FULL_JOIN, SQLs.refCte(cteName), alias);
         this.blockConsumer.accept((_TableBlock) block);
         return block;
     }
@@ -343,6 +338,23 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     }
 
     @Override
+    public final JS straightJoin(String cteName) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), "");
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+    @Override
+    public final JS straightJoin(String cteName, String alias) {
+        final JS block;
+        block = this.createItemBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), alias);
+        this.blockConsumer.accept((_TableBlock) block);
+        return block;
+    }
+
+
+    @Override
     public final JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
         return this.ifJoinTable(predicate, _JoinType.STRAIGHT_JOIN, table);
     }
@@ -361,6 +373,94 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     public final <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias) {
         return this.ifJoinItem(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
     }
+
+
+    @Override
+    public final FP crossJoin(TableMeta<?> table) {
+        final FP clause;
+        clause = this.createNextNoOnClause(_JoinType.CROSS_JOIN, table);
+        this.crossJoinEvent(true);
+        return clause;
+    }
+
+    @Override
+    public final FT crossJoin(TableMeta<?> table, String tableAlias) {
+        final _TableBlock block;
+        block = this.createNoOnTableBlock(_JoinType.CROSS_JOIN, table, tableAlias);
+        this.blockConsumer.accept(block);
+        this.crossJoinEvent(true);
+        return (FT) this;
+    }
+
+
+    @Override
+    public final <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias) {
+        this.blockConsumer.accept(TableBlock.crossBlock(supplier.get(), alias));
+        return (FS) this;
+    }
+
+
+    @Override
+    public final <T extends TableItem> FS crossJoin(Function<C, T> function, String alias) {
+        this.blockConsumer.accept(TableBlock.crossBlock(function.apply(this.criteria), alias));
+        return (FS) this;
+    }
+
+    @Override
+    public final FS crossJoin(String cteName) {
+        this.blockConsumer.accept(TableBlock.crossBlock(SQLs.refCte(cteName), ""));
+        return (FS) this;
+    }
+
+    @Override
+    public final FS crossJoin(String cteName, String alias) {
+        this.blockConsumer.accept(TableBlock.crossBlock(SQLs.refCte(cteName), alias));
+        return (FS) this;
+    }
+
+    @Override
+    public final FP ifCrossJoin(Predicate<C> predicate, TableMeta<?> table) {
+        final FP clause;
+        if (predicate.test(this.criteria)) {
+            clause = this.crossJoin(table);
+        } else {
+            clause = this.getNoActionNextNoOnClause();
+            this.crossJoinEvent(false);
+        }
+        return clause;
+    }
+
+    @Override
+    public final FT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
+        if (predicate.test(this.criteria)) {
+            this.crossJoin(table, tableAlias);
+        } else {
+            this.crossJoinEvent(false);
+        }
+        return (FT) this;
+    }
+
+
+    @Override
+    public final <T extends TableItem> FS ifCrossJoin(Supplier<T> supplier, String alias) {
+        final TableItem item;
+        item = supplier.get();
+        if (item != null) {
+            this.blockConsumer.accept(TableBlock.crossBlock(item, alias));
+        }
+        return (FS) this;
+    }
+
+    @Override
+    public final <T extends TableItem> FS ifCrossJoin(Function<C, T> function, String alias) {
+        final TableItem item;
+        item = function.apply(this.criteria);
+        if (item != null) {
+            this.blockConsumer.accept(TableBlock.crossBlock(item, alias));
+        }
+        return (FS) this;
+    }
+
 
     @Override
     public final C getCriteria() {

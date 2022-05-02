@@ -34,7 +34,7 @@ interface CriteriaContext {
 
     void onAddBlock(_TableBlock block);
 
-    void onBlockWithoutOnClause(_TableBlock block);
+    void onAddNoOnBlock(_TableBlock block);
 
     void onBracketBlock(_TableBlock block);
 
@@ -47,6 +47,10 @@ interface CriteriaContext {
     }
 
     default boolean containTableAlias(String tableAlias) {
+        throw new UnsupportedOperationException();
+    }
+
+    default CteTableItem refCteItem(String cteName) {
         throw new UnsupportedOperationException();
     }
 

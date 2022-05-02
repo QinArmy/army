@@ -10,6 +10,7 @@ import io.army.criteria.NestedItems;
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/nested-join-optimization.html">Nested Join Optimization</a>
  * @since 1.0
  */
+@Deprecated
 public interface NestedJoin extends NestedItems {
 
 

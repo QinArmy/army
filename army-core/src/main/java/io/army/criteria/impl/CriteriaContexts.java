@@ -189,7 +189,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void onBlockWithoutOnClause(final _TableBlock block) {
+        public final void onAddNoOnBlock(final _TableBlock block) {
             switch (block.jointType()) {
                 case NONE:
                 case CROSS_JOIN:
@@ -437,7 +437,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void onBlockWithoutOnClause(_TableBlock block) {
+        public final void onAddNoOnBlock(_TableBlock block) {
             throw nonJoinable("onFirstBlock");
         }
 
@@ -650,7 +650,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void onBlockWithoutOnClause(_TableBlock block) {
+        public void onAddNoOnBlock(_TableBlock block) {
             throw nonJoinable("onFirstBlock");
         }
 

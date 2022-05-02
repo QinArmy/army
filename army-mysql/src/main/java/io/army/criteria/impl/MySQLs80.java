@@ -1,11 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ScalarExpression;
-import io.army.criteria.Select;
-import io.army.criteria.SubQuery;
+import io.army.criteria.*;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.lang.Nullable;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.Objects;
 
@@ -140,7 +141,52 @@ public abstract class MySQLs80 extends MySQLSyntax {
         return MySQLMultiDelete.batch80(criteria);
     }
 
+    /**
+     * <p>
+     * create named {@link Window}.
+     * </p>
+     */
+    public static Window._SimpleAsClause<Void, Window> window(final String windowName) {
+        if (!_StringUtils.hasText(windowName)) {
+            throw _Exceptions.namedWindowNoText();
+        }
+        final CriteriaContext criteriaContext;
+        criteriaContext = CriteriaContextStack.peek();
+        if (criteriaContext.criteria() != null) {
+            String m = String.format("Current criteria object don't match,please use %s.%s"
+                    , SQLs.class.getName(), "window(C criteria,String windowName) method.");
+            throw new CriteriaException(m);
+        }
+        return SimpleWindow.standard(windowName, criteriaContext);
+    }
 
+    /**
+     * <p>
+     * create named {@link Window}.
+     * </p>
+     *
+     * @param criteria non-null criteria for dynamic named window.
+     */
+    public static <C> Window._SimpleAsClause<C, Window> window(C criteria, final String windowName) {
+        Objects.requireNonNull(criteria);
+        if (!_StringUtils.hasText(windowName)) {
+            throw _Exceptions.namedWindowNoText();
+        }
+        final CriteriaContext criteriaContext;
+        criteriaContext = CriteriaContextStack.peek();
+        if (criteria != criteriaContext.criteria()) {
+            throw new CriteriaException("Current criteria object don't match,please check criteria.");
+        }
+        return SimpleWindow.standard(windowName, criteriaContext);
+    }
+
+    public static MySQL80Query._NestedLeftBracketClause<Void> nestedItems() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQL80Query._NestedLeftBracketClause<C> nestedItems(@Nullable C criteria) {
+        throw new UnsupportedOperationException();
+    }
 
 
 }
