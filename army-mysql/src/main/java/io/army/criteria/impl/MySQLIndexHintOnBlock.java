@@ -20,12 +20,20 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
         implements MySQLQuery._IndexHintClause<C, IR, IC>, MySQLQuery._IndexPurposeClause<C, IC>
         , _MySQLTableBlock {
 
+    private final List<String> partitionList;
+
     private List<MySQLIndexHint> indexHintList;
 
     private MySQLIndexHint.Command indexHintCommand;
 
     MySQLIndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, OR stmt) {
         super(joinType, table, alias, stmt);
+        this.partitionList = Collections.emptyList();
+    }
+
+    MySQLIndexHintOnBlock(_JoinType joinType, TableMeta<?> table, String alias, List<String> partitionList, OR stmt) {
+        super(joinType, table, alias, stmt);
+        this.partitionList = partitionList;
     }
 
     @Override
@@ -202,6 +210,10 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
         return indexHintList;
     }
 
+    @Override
+    public final List<String> partitionList() {
+        return this.partitionList;
+    }
 
     /**
      * @see #useIndex(List)

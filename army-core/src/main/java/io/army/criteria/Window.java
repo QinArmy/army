@@ -62,6 +62,24 @@ public interface Window {
         AR as();
     }
 
+    /**
+     * <p>
+     * This interface representing comma clause in WINDOW clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <CR> next clause java type
+     * @since 1.0
+     */
+    interface _CommaClause<CR> {
+
+        CR comma(String window);
+    }
+
 
     /**
      * <p>

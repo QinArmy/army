@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 import io.army.criteria.impl.inner._TableBlock;
@@ -38,13 +37,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
         implements _MySQLQuery, MySQLQuery._IndexHintClause<C, IR, FT>, MySQLQuery._IndexPurposeClause<C, FT>
         , MySQLQuery._IntoSpec<C, Q> {
 
-    private MySQLIndexHint.Command indexHintCommand;
+    private MySQLIndexHint.Command command;
 
     private List<String> intoVarList;
-
-    private FP noActionNextNoOnClause;
-
-    private JP noActionNextClause;
 
     private boolean fromOrCrossValid = true;
 
@@ -55,7 +50,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final IR useIndex() {
         if (this.fromOrCrossValid) {
-            this.setIndexHintCommand(MySQLIndexHint.Command.USER_INDEX);
+            this.command = MySQLIndexHint.Command.USER_INDEX;
+        } else {
+            this.command = null;
         }
         return (IR) this;
     }
@@ -63,7 +60,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final IR ignoreIndex() {
         if (this.fromOrCrossValid) {
-            this.setIndexHintCommand(MySQLIndexHint.Command.IGNORE_INDEX);
+            this.command = MySQLIndexHint.Command.IGNORE_INDEX;
+        } else {
+            this.command = null;
         }
         return (IR) this;
     }
@@ -71,7 +70,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final IR forceIndex() {
         if (this.fromOrCrossValid) {
-            this.setIndexHintCommand(MySQLIndexHint.Command.FORCE_INDEX);
+            this.command = MySQLIndexHint.Command.FORCE_INDEX;
+        } else {
+            this.command = null;
         }
         return (IR) this;
     }
@@ -79,9 +80,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final IR ifUseIndex(Predicate<C> predicate) {
         if (this.fromOrCrossValid && predicate.test(this.criteria)) {
-            this.useIndex();
+            this.command = MySQLIndexHint.Command.USER_INDEX;
         } else {
-            this.indexHintCommand = null;
+            this.command = null;
         }
         return (IR) this;
     }
@@ -89,9 +90,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final IR ifIgnoreIndex(Predicate<C> predicate) {
         if (this.fromOrCrossValid && predicate.test(this.criteria)) {
-            this.ignoreIndex();
+            this.command = MySQLIndexHint.Command.IGNORE_INDEX;
         } else {
-            this.indexHintCommand = null;
+            this.command = null;
         }
         return (IR) this;
     }
@@ -99,9 +100,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final IR ifForceIndex(Predicate<C> predicate) {
         if (this.fromOrCrossValid && predicate.test(this.criteria)) {
-            this.forceIndex();
+            this.command = MySQLIndexHint.Command.FORCE_INDEX;
         } else {
-            this.indexHintCommand = null;
+            this.command = null;
         }
         return (IR) this;
     }
@@ -136,7 +137,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
             final List<String> list;
             list = function.apply(this.criteria);
             if (list != null && list.size() > 0) {
-                this.useIndex(list);
+                this.addIndexHint(MySQLIndexHint.Command.USER_INDEX, null, list);
             }
         }
         return (FT) this;
@@ -148,7 +149,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
             final List<String> list;
             list = function.apply(this.criteria);
             if (list != null && list.size() > 0) {
-                this.ignoreIndex(list);
+                this.addIndexHint(MySQLIndexHint.Command.IGNORE_INDEX, null, list);
             }
         }
         return (FT) this;
@@ -160,7 +161,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
             final List<String> list;
             list = function.apply(this.criteria);
             if (list != null && list.size() > 0) {
-                this.forceIndex(list);
+                this.addIndexHint(MySQLIndexHint.Command.FORCE_INDEX, null, list);
             }
         }
         return (FT) this;
@@ -169,9 +170,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final FT forJoin(List<String> indexList) {
         if (this.fromOrCrossValid) {
-            final MySQLIndexHint.Command command = this.indexHintCommand;
+            final MySQLIndexHint.Command command = this.command;
             if (command != null) {
-                this.indexHintCommand = null;//firstly clear command
+                this.command = null;//firstly clear command
                 this.addIndexHint(command, MySQLIndexHint.Purpose.FOR_JOIN, indexList);
 
             }
@@ -182,9 +183,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final FT forOrderBy(List<String> indexList) {
         if (this.fromOrCrossValid) {
-            final MySQLIndexHint.Command command = this.indexHintCommand;
+            final MySQLIndexHint.Command command = this.command;
             if (command != null) {
-                this.indexHintCommand = null;//firstly clear command
+                this.command = null;//firstly clear command
                 this.addIndexHint(command, MySQLIndexHint.Purpose.FOR_ORDER_BY, indexList);
 
             }
@@ -195,9 +196,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final FT forGroupBy(List<String> indexList) {
         if (this.fromOrCrossValid) {
-            final MySQLIndexHint.Command command = this.indexHintCommand;
+            final MySQLIndexHint.Command command = this.command;
             if (command != null) {
-                this.indexHintCommand = null;//firstly clear command
+                this.command = null;//firstly clear command
                 this.addIndexHint(command, MySQLIndexHint.Purpose.FOR_GROUP_BY, indexList);
             }
         }
@@ -206,7 +207,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
 
     @Override
     public final FT forJoin(Function<C, List<String>> function) {
-        if (this.fromOrCrossValid && this.indexHintCommand != null) {
+        if (this.fromOrCrossValid && this.command != null) {
             this.forJoin(function.apply(this.criteria));
         }
         return (FT) this;
@@ -214,7 +215,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
 
     @Override
     public final FT forOrderBy(Function<C, List<String>> function) {
-        if (this.fromOrCrossValid && this.indexHintCommand != null) {
+        if (this.fromOrCrossValid && this.command != null) {
             this.forOrderBy(function.apply(this.criteria));
         }
         return (FT) this;
@@ -222,7 +223,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
 
     @Override
     public final FT forGroupBy(Function<C, List<String>> function) {
-        if (this.fromOrCrossValid && this.indexHintCommand != null) {
+        if (this.fromOrCrossValid && this.command != null) {
             this.forGroupBy(function.apply(this.criteria));
         }
         return (FT) this;
@@ -303,27 +304,6 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
         this.intoVarList = null;
     }
 
-
-    @Override
-    final JP getNoActionNextClause() {
-        JP clause = this.noActionNextClause;
-        if (clause == null) {
-            clause = this.createNoActionNextClause();
-            this.noActionNextClause = clause;
-        }
-        return clause;
-    }
-
-    @Override
-    final FP getNoActionNextNoOnClause() {
-        FP clause = this.noActionNextNoOnClause;
-        if (clause == null) {
-            clause = this.createNoActionNextNoOnClause();
-            this.noActionNextNoOnClause = clause;
-        }
-        return clause;
-    }
-
     @Override
     final void crossJoinEvent(boolean success) {
         this.fromOrCrossValid = success;
@@ -338,18 +318,6 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     /*################################## blow private method ##################################*/
 
     /**
-     * @see #useIndex()
-     * @see #ignoreIndex()
-     * @see #forceIndex()
-     */
-    private void setIndexHintCommand(MySQLIndexHint.Command command) {
-        if (this.indexHintCommand != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.indexHintCommand = command;
-    }
-
-    /**
      * @see #useIndex(List)
      * @see #ignoreIndex(List)
      * @see #forceIndex(List)
@@ -358,17 +326,17 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
      * @see #forJoin(List)
      */
     private void addIndexHint(MySQLIndexHint.Command command, @Nullable MySQLIndexHint.Purpose purpose
-            , List<String> indexNames) {
+            , @Nullable List<String> indexNames) {
 
-        if (this.indexHintCommand != null) {
+        if (this.command != null) {
             throw _Exceptions.castCriteriaApi();
         }
         final _TableBlock block = this.criteriaContext.lastTableBlockWithoutOnClause();
         if (!(block instanceof MySQLNoOnBlock)) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (_CollectionUtils.isEmpty(indexNames)) {
-            throw new CriteriaException("index name list must not empty.");
+        if (indexNames == null || indexNames.size() == 0) {
+            throw MySQLUtils.indexListIsEmpty();
         }
         final MySQLNoOnBlock tableBlock = (MySQLNoOnBlock) block;
         List<MySQLIndexHint> indexHintList = tableBlock.indexHintList;

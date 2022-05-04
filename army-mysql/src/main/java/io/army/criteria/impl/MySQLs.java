@@ -1,206 +1,191 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ScalarExpression;
-import io.army.criteria.Select;
-import io.army.criteria.SubQuery;
-import io.army.criteria.mysql.MySQL57Query;
+import io.army.criteria.*;
+import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLUpdate;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.Objects;
 
 public abstract class MySQLs extends MySQLSyntax {
 
+    /**
+     * protected constructor, application developer can extend this util class.
+     */
     protected MySQLs() {
-
     }
 
-    public static MySQL57Query._Select57Clause<Void, Select> query() {
-        return MySQL57SimpleQuery.simpleSelect(null);
+    public static MySQL80Query._WithSpec<Void, Select> query() {
+        return MySQL80SimpleQuery.simpleSelect(null);
     }
 
-    public static <C> MySQL57Query._Select57Clause<C, Select> query(C criteria) {
+    public static <C> MySQL80Query._WithSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQL57SimpleQuery.simpleSelect(criteria);
+        return MySQL80SimpleQuery.simpleSelect(criteria);
     }
 
-    public static MySQL57Query._Select57Clause<Void, SubQuery> subQuery() {
-        return MySQL57SimpleQuery.subQuery(null);
+    public static MySQL80Query._WithSpec<Void, SubQuery> subQuery() {
+        return MySQL80SimpleQuery.subQuery(false, null);
     }
 
-    public static <C> MySQL57Query._Select57Clause<C, SubQuery> subQuery(C criteria) {
+    public static MySQL80Query._WithSpec<Void, SubQuery> lateralSubQuery() {
+        return MySQL80SimpleQuery.subQuery(true, null);
+    }
+
+    public static <C> MySQL80Query._WithSpec<C, SubQuery> subQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQL57SimpleQuery.subQuery(criteria);
+        return MySQL80SimpleQuery.subQuery(false, criteria);
     }
 
-
-    public static MySQL57Query._Select57Clause<Void, ScalarExpression> scalarSubQuery() {
-        return MySQL57SimpleQuery.scalarSubQuery(null);
-    }
-
-    public static <C, E> MySQL57Query._Select57Clause<C, ScalarExpression> scalarSubQuery(C criteria) {
+    public static <C> MySQL80Query._WithSpec<C, SubQuery> lateralSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQL57SimpleQuery.scalarSubQuery(criteria);
+        return MySQL80SimpleQuery.subQuery(true, criteria);
     }
 
+
+    public static MySQL80Query._WithSpec<Void, ScalarExpression> scalarSubQuery() {
+        return MySQL80SimpleQuery.scalarSubQuery(false, null);
+    }
+
+    public static MySQL80Query._WithSpec<Void, ScalarExpression> lateralScalarSubQuery() {
+        return MySQL80SimpleQuery.scalarSubQuery(true, null);
+    }
+
+
+    public static <C> MySQL80Query._WithSpec<C, ScalarExpression> scalarSubQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.scalarSubQuery(false, criteria);
+    }
+
+    public static <C> MySQL80Query._WithSpec<C, ScalarExpression> lateralScalarSubQuery(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQL80SimpleQuery.scalarSubQuery(true, criteria);
+    }
+
+
+    public static MySQLUpdate._SingleWithAndUpdateSpec<Void> singleUpdate() {
+        return MySQLSingleUpdate.simple80(null);
+    }
+
+    public static <C> MySQLUpdate._SingleWithAndUpdateSpec<C> singleUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLSingleUpdate.simple80(criteria);
+    }
+
+    public static MySQLUpdate.BatchSingleWithAndUpdateSpec<Void> batchSingleUpdate() {
+        return MySQLSingleUpdate.batch80(null);
+    }
+
+    public static <C> MySQLUpdate.BatchSingleWithAndUpdateSpec<C> batchSingleUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLSingleUpdate.batch80(criteria);
+    }
+
+
+    static MySQLUpdate.WithAndMultiUpdateSpec<Void> multiUpdate() {
+        return MySQLMultiUpdate.simple80(null);
+    }
+
+    static <C> MySQLUpdate.WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLMultiUpdate.simple80(criteria);
+    }
+
+    static MySQLUpdate.BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
+        return MySQLMultiUpdate.batch80(null);
+    }
+
+    static <C> MySQLUpdate.BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLMultiUpdate.batch80(criteria);
+    }
+
+
+    public static MySQLDelete.SingleDelete80Spec<Void> singleDelete() {
+        return MySQLSingleDelete.simple80(null);
+    }
+
+    public static <C> MySQLDelete.SingleDelete80Spec<C> singleDelete(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLSingleDelete.simple80(criteria);
+    }
+
+    public static MySQLDelete.BatchSingleDelete80Spec<Void> batchSingleDelete() {
+        return MySQLSingleDelete.batch80(null);
+    }
+
+    public static <C> MySQLDelete.BatchSingleDelete80Spec<C> batchSingleDelete(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLSingleDelete.batch80(criteria);
+    }
+
+    public static MySQLDelete.WithMultiDeleteSpec<Void> multiDelete() {
+        return MySQLMultiDelete.simple80(null);
+    }
+
+    public static <C> MySQLDelete.WithMultiDeleteSpec<C> multiDelete(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLMultiDelete.simple80(criteria);
+    }
+
+
+    public static MySQLDelete.BatchWithMultiDeleteSpec<Void> batchMultiDelete() {
+        return MySQLMultiDelete.batch80(null);
+    }
+
+    public static <C> MySQLDelete.BatchWithMultiDeleteSpec<C> batchMultiDelete(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLMultiDelete.batch80(criteria);
+    }
 
     /**
      * <p>
-     * MySQL 5.7 single-table update api,this api can only update below fields:
-     *     <ul>
-     *         <li>The fields of {@link io.army.meta.SingleTableMeta}</li>
-     *         <li>The fields of the parent of {@link io.army.meta.ChildTableMeta}</li>
-     *     </ul>
+     * create named {@link Window}.
      * </p>
-     *
-     * @return MySQL 5.7 single-table update api
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static MySQLUpdate._SingleUpdate57Clause<Void> singleUpdate() {
-        return MySQLSingleUpdate.simple(null);
+    public static Window._SimpleAsClause<Void, Window> window(final String windowName) {
+        if (!_StringUtils.hasText(windowName)) {
+            throw _Exceptions.namedWindowNoText();
+        }
+        final CriteriaContext criteriaContext;
+        criteriaContext = CriteriaContextStack.peek();
+        if (criteriaContext.criteria() != null) {
+            String m = String.format("Current criteria object don't match,please use %s.%s"
+                    , SQLs.class.getName(), "window(C criteria,String windowName) method.");
+            throw new CriteriaException(m);
+        }
+        return SimpleWindow.standard(windowName, criteriaContext);
     }
 
     /**
      * <p>
-     * MySQL 5.7 single-table update api,this api can only update below fields:
-     *     <ul>
-     *         <li>The fields of {@link io.army.meta.SingleTableMeta}</li>
-     *         <li>The fields of the parent of {@link io.army.meta.ChildTableMeta}</li>
-     *     </ul>
+     * create named {@link Window}.
      * </p>
      *
-     * @param criteria criteria instance(map or bean) used to create dynamic update statement
-     * @return MySQL 5.7 single-table update api
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
+     * @param criteria non-null criteria for dynamic named window.
      */
-    public static <C> MySQLUpdate._SingleUpdate57Clause<C> singleUpdate(C criteria) {
+    public static <C> Window._SimpleAsClause<C, Window> window(C criteria, final String windowName) {
         Objects.requireNonNull(criteria);
-        return MySQLSingleUpdate.simple(criteria);
+        if (!_StringUtils.hasText(windowName)) {
+            throw _Exceptions.namedWindowNoText();
+        }
+        final CriteriaContext criteriaContext;
+        criteriaContext = CriteriaContextStack.peek();
+        if (criteria != criteriaContext.criteria()) {
+            throw new CriteriaException("Current criteria object don't match,please check criteria.");
+        }
+        return SimpleWindow.standard(windowName, criteriaContext);
     }
 
-    /**
-     * <p>
-     * MySQL 5.7 batch single-table update api,this api can only update below fields:
-     *     <ul>
-     *         <li>The fields of {@link io.army.meta.SingleTableMeta}</li>
-     *         <li>The fields of the parent of {@link io.army.meta.ChildTableMeta}</li>
-     *     </ul>
-     * </p>
-     *
-     * @return MySQL 5.7 batch single-table update api instance
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
-     */
-    public static MySQLUpdate.BatchSingleUpdateSpec<Void> batchSingleUpdate() {
-        return MySQLSingleUpdate.batch(null);
+    public static MySQL80Query._NestedLeftBracketClause<Void> nestedItems() {
+        return MySQLNestedItems.create(null);
     }
 
-    /**
-     * <p>
-     * MySQL 5.7 batch single-table update api,this api can only update below fields:
-     *     <ul>
-     *         <li>The fields of {@link io.army.meta.SingleTableMeta}</li>
-     *         <li>The fields of the parent of {@link io.army.meta.ChildTableMeta}</li>
-     *     </ul>
-     * </p>
-     *
-     * @param criteria criteria instance(map or bean) used to create dynamic update statement
-     * @return MySQL 5.7 batch single-table update api instance
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
-     */
-    public static <C> MySQLUpdate.BatchSingleUpdateSpec<C> batchSingleUpdate(C criteria) {
+    public static <C> MySQL80Query._NestedLeftBracketClause<C> nestedItems(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQLSingleUpdate.batch(criteria);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
-     */
-    public static MySQLUpdate.MultiUpdateSpec<Void> multiUpdate() {
-        return MySQLMultiUpdate.simple(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
-     */
-    public static <C> MySQLUpdate.MultiUpdateSpec<C> multiUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiUpdate.simple(criteria);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
-     */
-    public static MySQLUpdate.BatchMultiUpdateSpec<Void> batchMultiUpdate() {
-        return MySQLMultiUpdate.batch(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
-     */
-    public static <C> MySQLUpdate.BatchMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiUpdate.batch(criteria);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/delete.html">DELETE Statement Single-Table Syntax</a>
-     */
-    public static MySQLDelete.SingleDeleteSpec<Void> singleDelete() {
-        return MySQLSingleDelete.simple57(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/delete.html">DELETE Statement Single-Table Syntax</a>
-     */
-    public static <C> MySQLDelete.SingleDeleteSpec<C> singleDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLSingleDelete.simple57(criteria);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/delete.html">DELETE Statement Single-Table Syntax</a>
-     */
-    public static MySQLDelete.BatchSingleDeleteSpec<Void> batchSingleDelete() {
-        return MySQLSingleDelete.batch57(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/delete.html">DELETE Statement Single-Table Syntax</a>
-     */
-    public static <C> MySQLDelete.BatchSingleDeleteSpec<C> batchSingleDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLSingleDelete.batch57(criteria);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/delete.html">DELETE Statement Multiple-Table Syntax</a>
-     */
-    public static MySQLDelete.MultiDeleteSpec<Void> multiDelete() {
-        return MySQLMultiDelete.simple(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/delete.html">DELETE Statement Multiple-Table Syntax</a>
-     */
-    public static <C> MySQLDelete.MultiDeleteSpec<C> multiDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiDelete.simple(criteria);
-    }
-
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/delete.html">DELETE Statement Multiple-Table Syntax</a>
-     */
-    public static MySQLDelete.BatchMultiDeleteSpec<Void> batchMultiDelete() {
-        return MySQLMultiDelete.batch(null);
-    }
-
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/delete.html">DELETE Statement Multiple-Table Syntax</a>
-     */
-    public static <C> MySQLDelete.BatchMultiDeleteSpec<C> batchMultiDelete(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQLMultiDelete.batch(criteria);
+        return MySQLNestedItems.create(criteria);
     }
 
 

@@ -32,7 +32,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         extends PartRowSet<C, Q, FT, FS, FP, JT, JS, JP, UR, OR, LR, SP>
         implements Statement._QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
         , Query._HavingClause<C, HR>, _Query, Statement._FromClause<C, FT, FS>, DialectStatement._DialectFromClause<FP>
-        , DialectStatement._DialectSelectClause<C, W, SR>, DialectStatement._FromCteClause<FS>, Query._QuerySpec<Q> {
+        , DialectStatement._DialectSelectClause<C, W, SR>, DialectStatement._FromCteClause<FS>, Query._QuerySpec<Q>
+        , JoinableClause.ClauseSupplier {
 
     private List<Hint> hintList;
 
@@ -47,11 +48,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     private List<ArmySortItem> groupByList;
 
     private List<_Predicate> havingList;
-
-
-    private JT noActionTableBlock;
-
-    private JS noActionItemBlock;
 
 
     SimpleQuery(CriteriaContext criteriaContext) {
@@ -150,41 +146,39 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     /*################################## blow FromSpec method ##################################*/
     @Override
     public final FP from(TableMeta<?> table) {
-        return this.createNextNoOnClause(_JoinType.NONE, table);
+        return (FP) this.clauseSupplier.createClause(_JoinType.NONE, table);
     }
 
     @Override
     public final FT from(TableMeta<?> table, String tableAlias) {
-        final _TableBlock block;
-        block = this.createNoOnTableBlock(_JoinType.NONE, table, tableAlias);
-        this.criteriaContext.onAddNoOnBlock(block);
+        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, table, tableAlias);
         return (FT) this;
     }
 
     @Override
     public final FS from(String cteName) {
-        this.criteriaContext.onAddNoOnBlock(TableBlock.noneBlock(SQLs.refCte(cteName), ""));
+        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, cteName, "");
         return (FS) this;
     }
 
     @Override
     public final FS from(String cteName, String alias) {
-        this.criteriaContext.onAddNoOnBlock(TableBlock.noneBlock(SQLs.refCte(cteName), alias));
-        return (FS) this;
-    }
-
-    @Override
-    public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
-        this.criteriaContext.onAddNoOnBlock(TableBlock.noneBlock(function.apply(this.criteria), alias));
+        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, cteName, alias);
         return (FS) this;
     }
 
     @Override
     public final <T extends TableItem> FS from(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onAddNoOnBlock(TableBlock.noneBlock(supplier.get(), alias));
+        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, supplier.get(), alias);
         return (FS) this;
     }
 
+
+    @Override
+    public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
+        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, function.apply(this.criteria), alias);
+        return (FS) this;
+    }
 
     @Override
     public final WR where(Supplier<List<IPredicate>> supplier) {
@@ -576,31 +570,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     abstract void onClear();
 
-
-    abstract JT createNoActionTableBlock();
-
-    abstract JS createNoActionItemBlock();
-
-
-    @Override
-    final JT getNoActionTableBlock() {
-        JT noActionTableBlock = this.noActionTableBlock;
-        if (noActionTableBlock == null) {
-            noActionTableBlock = this.createNoActionTableBlock();
-            this.noActionTableBlock = noActionTableBlock;
-        }
-        return noActionTableBlock;
-    }
-
-    @Override
-    final JS getNoActionItemBlock() {
-        JS noActionItemBlock = this.noActionItemBlock;
-        if (noActionItemBlock == null) {
-            noActionItemBlock = this.createNoActionItemBlock();
-            this.noActionItemBlock = noActionItemBlock;
-        }
-        return noActionItemBlock;
-    }
 
     private <S extends SelectItem> SR innerNonSafeSelect(@Nullable List<Hint> hintList
             , @Nullable List<? extends SQLWords> modifierList, List<S> selectItemList) {

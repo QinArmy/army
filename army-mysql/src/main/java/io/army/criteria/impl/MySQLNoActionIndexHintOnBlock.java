@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
+@SuppressWarnings("unchecked")
 abstract class MySQLNoActionIndexHintOnBlock<C, IR, IC, OR> extends NoActionOnClause<C, OR>
         implements MySQLQuery._IndexHintClause<C, IR, IC>, MySQLQuery._IndexPurposeClause<C, IC> {
 

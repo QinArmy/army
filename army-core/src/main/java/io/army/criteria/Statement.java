@@ -123,10 +123,9 @@ public interface Statement {
 
         FT from(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> FS from(Function<C, T> function, String alias);
-
         <T extends TableItem> FS from(Supplier<T> supplier, String alias);
 
+        <T extends TableItem> FS from(Function<C, T> function, String alias);
 
     }
 

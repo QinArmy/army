@@ -11,6 +11,7 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.session.Database;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -26,8 +27,8 @@ import java.util.function.Supplier;
  * This class is the implementation of {@link NestedItems} for MySQL.
  * </p>
  *
- * @see MySQLs80#nestedItems()
- * @see MySQLs80#nestedItems(Object)
+ * @see MySQLs#nestedItems()
+ * @see MySQLs#nestedItems(Object)
  * @since 1.0
  */
 final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause<C>, NestedItems
@@ -48,6 +49,8 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
     private NoActionPartitionJoinClause<C> noActionPartitionJoinClause;
 
     private NoActionPartitionOnClause<C> noActionPartitionOnClause;
+
+    private boolean nestedEnd;
 
 
     private MySQLNestedItems(@Nullable C criteria) {
@@ -119,7 +122,14 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
         }
         final _TableBlock block;
         switch (joinType) {
-            case CROSS_JOIN:
+            case CROSS_JOIN: {
+                if (item instanceof TableMeta) {
+                    block = new IndexHintJoinBlock<>(this, this.criteria, joinType, item, tableAlias);
+                } else {
+                    block = new OnBlock<>(this, this.criteria, joinType, item, tableAlias);
+                }
+            }
+            break;
             case LEFT_JOIN:
             case JOIN:
             case RIGHT_JOIN:
@@ -225,7 +235,11 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
 
     @Override
     public NestedItems endNested() {
-        return null;
+        if (this.nestedEnd) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.nestedEnd = true;
+        return this;
     }
 
 
@@ -500,6 +514,8 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             List<MySQLIndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = Collections.emptyList();
+            } else {
+                indexHintList = _CollectionUtils.asUnmodifiableList(indexHintList);
             }
             return indexHintList;
         }

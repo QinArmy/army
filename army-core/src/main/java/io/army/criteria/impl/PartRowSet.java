@@ -33,8 +33,13 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     private boolean prepared;
 
 
+    PartRowSet(CriteriaContext criteriaContext, ClauseSupplier suppler) {
+        super(suppler, criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
+    }
+
     PartRowSet(CriteriaContext criteriaContext) {
-        super(criteriaContext::onAddBlock, criteriaContext.criteria());
+        super(criteriaContext.criteria());
         this.criteriaContext = criteriaContext;
     }
 

@@ -16,11 +16,11 @@ abstract class TableBlock implements _TableBlock {
 
     final _JoinType joinType;
 
-    final TableItem tableItem;
+    final Object tableItem;
 
     final String alias;
 
-    TableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    TableBlock(_JoinType joinType, Object tableItem, String alias) {
         Objects.requireNonNull(alias);
         if (!(tableItem instanceof CteTableItem) && !_StringUtils.hasText(alias)) {
             String m = String.format("Non-%s alias must have text.", CteTableItem.class.getSimpleName());
@@ -33,7 +33,7 @@ abstract class TableBlock implements _TableBlock {
     }
 
     @Override
-    public final TableItem tableItem() {
+    public final Object tableItem() {
         return this.tableItem;
     }
 
@@ -60,7 +60,7 @@ abstract class TableBlock implements _TableBlock {
 
     static class NoOnTableBlock extends TableBlock {
 
-        public NoOnTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        public NoOnTableBlock(_JoinType joinType, Object tableItem, String alias) {
             super(joinType, tableItem, alias);
             switch (joinType) {
                 case NONE:

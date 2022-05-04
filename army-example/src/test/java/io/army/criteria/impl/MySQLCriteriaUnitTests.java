@@ -25,7 +25,7 @@ public class MySQLCriteriaUnitTests {
         criteria.setRowCount(5L);
 
         final Update stmt;
-        stmt = MySQLs.singleUpdate()
+        stmt = MySQLs_.singleUpdate()
                 .update(ChinaRegion_.T, "t")
                 .set(ChinaRegion_.name, "五指礁")
                 .where(ChinaRegion_.name.equal(""))
@@ -45,12 +45,12 @@ public class MySQLCriteriaUnitTests {
         map.put("parentId", "1");
         Supplier<List<Hint>> supplier = () -> {
             List<Hint> list = new ArrayList<>();
-            list.add(MySQLs.qbName("qb1"));
-            list.add(MySQLs.orderIndex("qb1", "t", Collections.singletonList("uni_name_region_type")));
+            list.add(MySQLs_.qbName("qb1"));
+            list.add(MySQLs_.orderIndex("qb1", "t", Collections.singletonList("uni_name_region_type")));
             return list;
         };
         final Update stmt;
-        stmt = MySQLs.singleUpdate()
+        stmt = MySQLs_.singleUpdate()
                 .update(supplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaCity_.T)
                 .partition("p2", "p1").as("t")
                 .useIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))
@@ -74,7 +74,7 @@ public class MySQLCriteriaUnitTests {
             return list;
         };
         final Update stmt;
-        stmt = MySQLs.batchSingleUpdate()
+        stmt = MySQLs_.batchSingleUpdate()
                 .update(ChinaRegion_.T, "t")
                 .set(supplier)
                 .where(ChinaRegion_.id.equalNamed())

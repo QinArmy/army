@@ -11,8 +11,8 @@ import java.util.List;
  * <p>
  * This class is base class of below:
  *     <ul>
+ *         <li>{@link MySQLs_}</li>
  *         <li>{@link MySQLs}</li>
- *         <li>{@link MySQLs80}</li>
  *     </ul>
  * </p>
  * package class
