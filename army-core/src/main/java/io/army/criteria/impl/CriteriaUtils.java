@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._PartRowSet;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -338,6 +340,12 @@ abstract class CriteriaUtils {
         return mySqlHintList;
     }
 
+    static CriteriaException nestedItemsNotMatch(NestedItems nestedItems, Enum<?> target) {
+        String m = String.format("%s %s and %s not match", NestedItems.class.getName()
+                , _ClassUtils.safeClassName(nestedItems), target);
+        return new CriteriaException(m);
+    }
+
     private static CriteriaException illegalHint(@Nullable Hint hint) {
         String m = String.format("Hint %s is illegal."
                 , _ClassUtils.safeClassName(hint));
@@ -354,65 +362,6 @@ abstract class CriteriaUtils {
         String m = String.format("window %s is illegal", _ClassUtils.safeClassName(window));
         return new CriteriaException(m);
     }
-
-
-    static final class LeftBracketTableBlock implements _TableBlock, _LeftBracketBlock {
-
-        static final LeftBracketTableBlock INSTANCE = new LeftBracketTableBlock();
-
-        private LeftBracketTableBlock() {
-        }
-
-        @Override
-        public TableItem tableItem() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String alias() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public _JoinType jointType() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<_Predicate> predicates() {
-            throw new UnsupportedOperationException();
-        }
-
-    }//LeftBracketTableBlock
-
-    static final class RightBracketTableBlock implements _TableBlock, _RightBracketBlock {
-
-        static final RightBracketTableBlock INSTANCE = new RightBracketTableBlock();
-
-        private RightBracketTableBlock() {
-        }
-
-        @Override
-        public TableItem tableItem() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String alias() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public _JoinType jointType() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<_Predicate> predicates() {
-            throw new UnsupportedOperationException();
-        }
-
-    }//RightBracketTableBlock
 
 
 }

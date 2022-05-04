@@ -1,13 +1,16 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DialectStatement;
-import io.army.criteria.Statement;
-import io.army.criteria.TableItem;
+import io.army.criteria.*;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -33,12 +36,12 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         , DialectStatement._JoinCteClause<JS>, DialectStatement._StraightJoinCteClause<JS>
         , DialectStatement._CrossJoinCteClause<FS>, CriteriaSpec<C> {
 
-    private final Consumer<_TableBlock> blockConsumer;
+    final ClauseSuppler suppler;
 
     final C criteria;
 
-    JoinableClause(Consumer<_TableBlock> blockConsumer, @Nullable C criteria) {
-        this.blockConsumer = blockConsumer;
+    JoinableClause(ClauseSuppler suppler, @Nullable C criteria) {
+        this.suppler = suppler;
         this.criteria = criteria;
     }
 
@@ -48,47 +51,33 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JP leftJoin(TableMeta<?> table) {
-        return this.createNextClause(_JoinType.LEFT_JOIN, table);
+        return (JP) this.suppler.createClause(_JoinType.LEFT_JOIN, table);
     }
 
     @Override
     public final JT leftJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.LEFT_JOIN, table, tableAlias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JT) this.suppler.createAndAddBlock(_JoinType.LEFT_JOIN, table, tableAlias);
     }
+
 
     @Override
     public final <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TableItem> JS leftJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JS leftJoin(String cteName) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), "");
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.LEFT_JOIN, cteName, "");
     }
 
     @Override
     public final JS leftJoin(String cteName, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.LEFT_JOIN, cteName, alias);
     }
 
     @Override
@@ -113,47 +102,32 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JP join(TableMeta<?> table) {
-        return this.createNextClause(_JoinType.JOIN, table);
+        return (JP) this.suppler.createClause(_JoinType.JOIN, table);
     }
 
     @Override
     public final JT join(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.JOIN, table, tableAlias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JT) this.suppler.createAndAddBlock(_JoinType.JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TableItem> JS join(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.JOIN, supplier.get(), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TableItem> JS join(Function<C, T> function, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JS join(String cteName) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.JOIN, SQLs.refCte(cteName), "");
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.JOIN, cteName, "");
     }
 
     @Override
     public final JS join(String cteName, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.JOIN, SQLs.refCte(cteName), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.JOIN, cteName, alias);
     }
 
 
@@ -179,47 +153,32 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JP rightJoin(TableMeta<?> table) {
-        return this.createNextClause(_JoinType.RIGHT_JOIN, table);
+        return (JP) this.suppler.createClause(_JoinType.RIGHT_JOIN, table);
     }
 
     @Override
     public final JT rightJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.RIGHT_JOIN, table, tableAlias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JT) this.suppler.createAndAddBlock(_JoinType.RIGHT_JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = createItemBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TableItem> JS rightJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = createItemBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JS rightJoin(String cteName) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), "");
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.RIGHT_JOIN, cteName, "");
     }
 
     @Override
     public final JS rightJoin(String cteName, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.RIGHT_JOIN, cteName, alias);
     }
 
     @Override
@@ -244,47 +203,32 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JP fullJoin(TableMeta<?> table) {
-        return this.createNextClause(_JoinType.FULL_JOIN, table);
+        return (JP) this.suppler.createClause(_JoinType.FULL_JOIN, table);
     }
 
     @Override
     public final JT fullJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = createTableBlock(_JoinType.FULL_JOIN, table, tableAlias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JT) this.suppler.createAndAddBlock(_JoinType.FULL_JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = createItemBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TableItem> JS fullJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = createItemBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JS fullJoin(String cteName) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.FULL_JOIN, SQLs.refCte(cteName), "");
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.FULL_JOIN, cteName, "");
     }
 
     @Override
     public final JS fullJoin(String cteName, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.FULL_JOIN, SQLs.refCte(cteName), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.FULL_JOIN, cteName, alias);
     }
 
 
@@ -310,47 +254,32 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JP straightJoin(TableMeta<?> table) {
-        return this.createNextClause(_JoinType.STRAIGHT_JOIN, table);
+        return (JP) this.suppler.createClause(_JoinType.STRAIGHT_JOIN, table);
     }
 
     @Override
     public final JT straightJoin(TableMeta<?> table, String tableAlias) {
-        final JT block;
-        block = this.createTableBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JT) this.suppler.createAndAddBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
     }
 
     @Override
     public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
     }
 
     @Override
     public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
     public final JS straightJoin(String cteName) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), "");
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.STRAIGHT_JOIN, cteName, "");
     }
 
     @Override
     public final JS straightJoin(String cteName, String alias) {
-        final JS block;
-        block = this.createItemBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), alias);
-        this.blockConsumer.accept((_TableBlock) block);
-        return block;
+        return (JS) this.suppler.createAndAddBlock(_JoinType.STRAIGHT_JOIN, cteName, alias);
     }
 
 
@@ -378,87 +307,109 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     @Override
     public final FP crossJoin(TableMeta<?> table) {
         final FP clause;
-        clause = this.createNextNoOnClause(_JoinType.CROSS_JOIN, table);
-        this.crossJoinEvent(true);
+        clause = (FP) this.suppler.createClause(_JoinType.CROSS_JOIN, table);
+        if (this instanceof Statement) {
+            this.crossJoinEvent(true);
+        }
         return clause;
     }
 
     @Override
     public final FT crossJoin(TableMeta<?> table, String tableAlias) {
         final _TableBlock block;
-        block = this.createNoOnTableBlock(_JoinType.CROSS_JOIN, table, tableAlias);
-        this.blockConsumer.accept(block);
-        this.crossJoinEvent(true);
-        return (FT) this;
+        block = this.suppler.createAndAddBlock(_JoinType.CROSS_JOIN, table, tableAlias);
+        final Object clause;
+        if (block instanceof JoinableClause) {
+            clause = block;
+        } else {
+            this.crossJoinEvent(true);
+            clause = this;
+        }
+        return (FT) clause;
     }
 
 
     @Override
     public final <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias) {
-        this.blockConsumer.accept(TableBlock.crossBlock(supplier.get(), alias));
-        return (FS) this;
+        final _TableBlock block;
+        block = this.suppler.createAndAddBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
+        final Object clause;
+        if (block instanceof JoinableClause) {
+            clause = block;
+        } else {
+            this.crossJoinEvent(true);
+            clause = this;
+        }
+        return (FS) clause;
     }
 
 
     @Override
     public final <T extends TableItem> FS crossJoin(Function<C, T> function, String alias) {
-        this.blockConsumer.accept(TableBlock.crossBlock(function.apply(this.criteria), alias));
-        return (FS) this;
+        final _TableBlock block;
+        block = this.suppler.createAndAddBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
+        final Object clause;
+        if (block instanceof JoinableClause) {
+            clause = block;
+        } else {
+            this.crossJoinEvent(true);
+            clause = this;
+        }
+        return (FS) clause;
     }
 
     @Override
     public final FS crossJoin(String cteName) {
-        this.blockConsumer.accept(TableBlock.crossBlock(SQLs.refCte(cteName), ""));
-        return (FS) this;
+        return this.crossJoin(cteName, "");
     }
 
     @Override
     public final FS crossJoin(String cteName, String alias) {
-        this.blockConsumer.accept(TableBlock.crossBlock(SQLs.refCte(cteName), alias));
-        return (FS) this;
+        final _TableBlock block;
+        block = this.suppler.createAndAddBlock(_JoinType.CROSS_JOIN, cteName, alias);
+        final Object clause;
+        if (block instanceof JoinableClause) {
+            clause = block;
+        } else {
+            this.crossJoinEvent(true);
+            clause = this;
+        }
+        return (FS) clause;
     }
 
     @Override
     public final FP ifCrossJoin(Predicate<C> predicate, TableMeta<?> table) {
-        final FP clause;
+        final Object clause;
         if (predicate.test(this.criteria)) {
             clause = this.crossJoin(table);
         } else {
-            clause = this.getNoActionNextNoOnClause();
+            clause = this.suppler.getNoActionClauseBeforeAs(_JoinType.CROSS_JOIN);
             this.crossJoinEvent(false);
         }
-        return clause;
+        return (FP) clause;
     }
 
     @Override
     public final FT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
+        final FT clause;
         if (predicate.test(this.criteria)) {
-            this.crossJoin(table, tableAlias);
+            clause = this.crossJoin(table, tableAlias);
         } else {
             this.crossJoinEvent(false);
+            clause = (FT) this;
         }
-        return (FT) this;
+        return clause;
     }
 
 
     @Override
     public final <T extends TableItem> FS ifCrossJoin(Supplier<T> supplier, String alias) {
-        final TableItem item;
-        item = supplier.get();
-        if (item != null) {
-            this.blockConsumer.accept(TableBlock.crossBlock(item, alias));
-        }
-        return (FS) this;
+        return this.doIfCrossJoin(supplier.get(), alias);
     }
 
     @Override
     public final <T extends TableItem> FS ifCrossJoin(Function<C, T> function, String alias) {
-        final TableItem item;
-        item = function.apply(this.criteria);
-        if (item != null) {
-            this.blockConsumer.accept(TableBlock.crossBlock(item, alias));
-        }
-        return (FS) this;
+        return this.doIfCrossJoin(function.apply(this.criteria), alias);
     }
 
 
@@ -468,69 +419,240 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     }
 
 
-    abstract _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
-
-    abstract JT createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias);
-
-    abstract JT getNoActionTableBlock();
-
-    abstract JS createItemBlock(_JoinType joinType, TableItem tableItem, String alias);
-
-    abstract JS getNoActionItemBlock();
-
-    abstract FP createNextNoOnClause(_JoinType joinType, TableMeta<?> table);
-
-
-    abstract JP getNoActionNextClause();
-
-    abstract FP getNoActionNextNoOnClause();
-
-
-    abstract JP createNextClause(_JoinType joinType, TableMeta<?> table);
-
     abstract void crossJoinEvent(boolean success);
 
-    FP createNoActionNextNoOnClause() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    JP createNoActionNextClause() {
-        throw _Exceptions.castCriteriaApi();
-    }
 
     private JP ifJoinTable(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
-        final JP clause;
+        final Object clause;
         if (predicate.test(this.criteria)) {
-            clause = this.createNextClause(joinType, table);
+            clause = this.suppler.createClause(joinType, table);
         } else {
-            clause = this.getNoActionNextClause();
+            clause = this.suppler.getNoActionClauseBeforeAs(joinType);
         }
-        return clause;
+        return (JP) clause;
     }
 
 
     private JT ifJoinTable(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table, String tableAlias) {
-        final JT block;
+        final Object clause;
         if (predicate.test(this.criteria)) {
-            block = this.createTableBlock(joinType, table, tableAlias);
-            this.blockConsumer.accept((_TableBlock) block);
+            clause = this.suppler.createAndAddBlock(joinType, table, tableAlias);
         } else {
-            block = this.getNoActionTableBlock();
+            clause = this.suppler.getNoActionClause(joinType);
         }
-        return block;
+        return (JT) clause;
     }
 
 
     private JS ifJoinItem(_JoinType joinType, @Nullable TableItem item, String alias) {
-        final JS block;
+        final Object clause;
         if (item == null) {
-            block = this.getNoActionItemBlock();
+            clause = this.suppler.getNoActionClause(joinType);
         } else {
-            block = this.createItemBlock(joinType, item, alias);
-            this.blockConsumer.accept((_TableBlock) block);
+            clause = this.suppler.createAndAddBlock(joinType, item, alias);
         }
-        return block;
+        return (JS) clause;
     }
+
+    private FS doIfCrossJoin(@Nullable TableItem item, String alias) {
+        final FS clause;
+        if (item == null) {
+            clause = (FS) this;
+            this.crossJoinEvent(false);
+        } else {
+            final _TableBlock block;
+            block = this.suppler.createAndAddBlock(_JoinType.CROSS_JOIN, item, alias);
+            if (block instanceof JoinableClause) {
+                clause = (FS) block;
+                // no crossJoinEvent
+            } else {
+                this.crossJoinEvent(true);
+                clause = (FS) this;
+            }
+        }
+        return clause;
+    }
+
+    interface ClauseSuppler {
+
+        _TableBlock createAndAddBlock(_JoinType joinType, Object item, String tableAlias);
+
+        Object createClause(_JoinType joinType, TableMeta<?> table);
+
+        Object getNoActionClause(_JoinType joinType);
+
+        Object getNoActionClauseBeforeAs(_JoinType joinType);
+
+    }
+
+    interface NestedClauseSuppler extends ClauseSuppler {
+
+        NestedItems endNested();
+    }
+
+
+    static abstract class NoActionOnOrJoinBlock<C, FT, FS, FP, JT, JS, JP>
+            extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
+            implements Statement._OnClause<C, FS>, Statement._RightBracketClause<NestedItems> {
+
+
+        protected NoActionOnOrJoinBlock(NestedClauseSuppler suppler, @Nullable C criteria) {
+            super(suppler, criteria);
+        }
+
+        @Override
+        public final FS on(IPredicate predicate) {
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(IPredicate predicate1, IPredicate predicate2) {
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Function<C, List<IPredicate>> function) {
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Supplier<List<IPredicate>> supplier) {
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Consumer<List<IPredicate>> consumer) {
+            return (FS) this;
+        }
+
+        @Override
+        public final NestedItems rightBracket() {
+            return ((NestedClauseSuppler) this.suppler).endNested();
+        }
+
+        @Override
+        final void crossJoinEvent(boolean success) {
+            //no-op
+        }
+
+
+    }//NoActionOnOrJoinBlock
+
+
+    static abstract class OnOrJoinBlock<C, FT, FS, FP, JT, JS, JP>
+            extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
+            implements Statement._OnClause<C, FS>, _TableBlock, Statement._RightBracketClause<NestedItems> {
+
+        final _JoinType joinType;
+
+        final Object tableItem;
+
+        final String alias;
+
+        private List<_Predicate> predicateList;
+
+        protected OnOrJoinBlock(NestedClauseSuppler suppler, @Nullable C criteria
+                , _JoinType joinType, Object tableItem
+                , String alias) {
+            super(suppler, criteria);
+            this.joinType = joinType;
+            this.tableItem = tableItem;
+            this.alias = alias;
+        }
+
+        @Override
+        public final _JoinType jointType() {
+            return this.joinType;
+        }
+
+        @Override
+        public final Object tableItem() {
+            return this.tableItem;
+        }
+
+        @Override
+        public final String alias() {
+            return this.alias;
+        }
+
+        @Override
+        public final FS on(IPredicate predicate) {
+            this.assertForOn();
+            this.predicateList = Collections.singletonList((OperationPredicate) predicate);
+            return (FS) this;
+        }
+
+
+        @Override
+        public final FS on(IPredicate predicate1, IPredicate predicate2) {
+            this.assertForOn();
+            this.predicateList = ArrayUtils.asUnmodifiableList(
+                    (OperationPredicate) predicate1,
+                    (OperationPredicate) predicate2
+            );
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Function<C, List<IPredicate>> function) {
+            this.assertForOn();
+            this.predicateList = CriteriaUtils.asPredicateList(function.apply(this.criteria)
+                    , _Exceptions::predicateListIsEmpty);
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Supplier<List<IPredicate>> supplier) {
+            this.assertForOn();
+            this.predicateList = CriteriaUtils.asPredicateList(supplier.get(), _Exceptions::predicateListIsEmpty);
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Consumer<List<IPredicate>> consumer) {
+            this.assertForOn();
+            final List<IPredicate> list = new ArrayList<>();
+            consumer.accept(list);
+            this.predicateList = CriteriaUtils.asPredicateList(list, _Exceptions::predicateListIsEmpty);
+            return (FS) this;
+        }
+
+        @Override
+        public final NestedItems rightBracket() {
+            return ((NestedClauseSuppler) this.suppler).endNested();
+        }
+
+        @Override
+        public final List<_Predicate> predicates() {
+            List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null) {
+                predicateList = Collections.emptyList();
+            }
+            return predicateList;
+        }
+
+        private void assertForOn() {
+            if (this.predicateList != null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            switch (this.joinType) {
+                case LEFT_JOIN:
+                case JOIN:
+                case RIGHT_JOIN:
+                case FULL_JOIN:
+                case STRAIGHT_JOIN:
+                    break;
+                case NONE:
+                case CROSS_JOIN:
+                    throw _Exceptions.castCriteriaApi();
+                default:
+                    throw _Exceptions.unexpectedEnum(this.joinType);
+
+            }
+        }
+
+
+    }//OnOrJoinBlock
 
 
 }

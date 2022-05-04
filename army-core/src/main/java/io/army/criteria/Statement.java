@@ -147,8 +147,6 @@ public interface Statement {
      */
     interface _OnClause<C, OR> {
 
-        OR on(List<IPredicate> predicateList);
-
         OR on(IPredicate predicate);
 
         OR on(IPredicate predicate1, IPredicate predicate2);
@@ -282,9 +280,9 @@ public interface Statement {
 
         LT leftBracket(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> LS leftBracket(Function<C, T> function, String alias);
-
         <T extends TableItem> LS leftBracket(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> LS leftBracket(Function<C, T> function, String alias);
 
     }
 

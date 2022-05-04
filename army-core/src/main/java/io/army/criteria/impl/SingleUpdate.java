@@ -23,7 +23,7 @@ abstract class SingleUpdate<C, SR, WR, WA>
     }
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableItem table, String tableAlias) {
         throw _Exceptions.castCriteriaApi();
     }
 

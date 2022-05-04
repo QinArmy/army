@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
-        extends JoinableClause<C, JT, JS, JP, JC, JD, JE, JF>
+        extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
         implements Statement, Statement._WhereClause<C, WR, WA>, Statement._WhereAndClause<C, WA>, _Dml {
 
 

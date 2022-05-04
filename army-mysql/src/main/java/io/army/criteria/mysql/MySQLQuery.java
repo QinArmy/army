@@ -105,7 +105,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _PartitionClause<C, PR> {
@@ -139,7 +139,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _IndexHintClause<C, IR, IC> {
@@ -190,7 +190,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _IndexOrderByClause<C, IC> {
@@ -210,7 +210,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _IndexJoinClause<C, IC> {
@@ -231,7 +231,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _IndexPurposeClause<C, IC> extends _IndexOrderByClause<C, IC>
@@ -253,7 +253,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _WithRollupClause<C, WU> {
@@ -275,7 +275,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _LockClause<C, LO> {
@@ -437,7 +437,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */

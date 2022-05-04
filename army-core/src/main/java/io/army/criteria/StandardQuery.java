@@ -23,7 +23,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -46,7 +46,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -71,7 +71,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -96,7 +96,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -119,7 +119,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -143,7 +143,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -166,7 +166,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -189,7 +189,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -212,7 +212,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -235,7 +235,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -267,7 +267,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -290,7 +290,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -314,7 +314,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */

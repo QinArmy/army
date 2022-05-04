@@ -43,7 +43,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -63,7 +63,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -88,7 +88,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -109,7 +109,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -127,7 +127,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -150,7 +150,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -171,7 +171,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -199,7 +199,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -223,7 +223,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -241,7 +241,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -263,7 +263,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -282,7 +282,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -305,7 +305,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -329,7 +329,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -352,7 +352,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -375,7 +375,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -404,7 +404,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -427,7 +427,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -453,7 +453,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -477,7 +477,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -501,7 +501,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -524,7 +524,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -546,7 +546,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -569,7 +569,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -592,7 +592,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -616,7 +616,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -639,7 +639,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -662,7 +662,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
@@ -683,7 +683,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedLeftBracketClause<C>
@@ -703,7 +703,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedPartitionJoinClause<C>
@@ -725,7 +725,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedIndexHintJoinSpec<C>
@@ -744,7 +744,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedIndexPurposeJoinClause<C> extends _IndexPurposeClause<C, _NestedIndexHintJoinSpec<C>> {
@@ -761,7 +761,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedPartitionOnClause<C> extends _PartitionClause<C, _AsClause<_NestedIndexHintOnSpec<C>>> {
@@ -782,7 +782,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedIndexHintOnSpec<C>
@@ -801,7 +801,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedIndexPurposeOnClause<C> extends _IndexPurposeClause<C, _NestedIndexHintOnSpec<C>> {
@@ -828,7 +828,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedJoinSpec<C> extends _MySQLJoinClause<C, _NestedIndexHintOnSpec<C>, _NestedOnSpec<C>>
@@ -856,7 +856,7 @@ public interface MySQL80Query extends MySQLQuery {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @since 1.0
      */
     interface _NestedOnSpec<C> extends _OnClause<C, _NestedJoinSpec<C>>, _NestedJoinSpec<C> {

@@ -288,7 +288,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
@@ -307,7 +307,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
@@ -355,7 +355,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
@@ -379,7 +379,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
      * @since 1.0
      */
@@ -399,7 +399,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
@@ -419,7 +419,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
@@ -439,7 +439,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */
@@ -476,7 +476,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C> java criteria object java type
+     * @param <C> criteria object java type
      * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
      * @since 1.0
      */

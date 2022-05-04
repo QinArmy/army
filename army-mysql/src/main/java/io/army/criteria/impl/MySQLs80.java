@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLUpdate;
-import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -181,11 +180,12 @@ public abstract class MySQLs80 extends MySQLSyntax {
     }
 
     public static MySQL80Query._NestedLeftBracketClause<Void> nestedItems() {
-        throw new UnsupportedOperationException();
+        return MySQLNestedItems.create(null);
     }
 
-    public static <C> MySQL80Query._NestedLeftBracketClause<C> nestedItems(@Nullable C criteria) {
-        throw new UnsupportedOperationException();
+    public static <C> MySQL80Query._NestedLeftBracketClause<C> nestedItems(C criteria) {
+        Objects.requireNonNull(criteria);
+        return MySQLNestedItems.create(criteria);
     }
 
 

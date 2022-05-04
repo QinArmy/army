@@ -12,7 +12,7 @@ import io.army.util._Exceptions;
  * This class is implementation of MySQL 5.7 union statement.
  * </p>
  *
- * @param <C> java criteria object java type
+ * @param <C> criteria object java type
  * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
  * @since 1.0
  */

@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  * This class is the implementation of {@link MySQL57Query}
  * </p>
  *
- * @param <C> java criteria object java type
+ * @param <C> criteria object java type
  * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
  * @since 1.0
  */
@@ -202,7 +202,7 @@ abstract class MySQL57SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableItem table, String tableAlias) {
         return new MySQLNoOnBlock(joinType, table, tableAlias);
     }
 

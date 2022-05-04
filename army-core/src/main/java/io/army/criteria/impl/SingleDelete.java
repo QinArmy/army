@@ -73,7 +73,7 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
 
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableItem table, String tableAlias) {
         throw _Exceptions.castCriteriaApi();
     }
 

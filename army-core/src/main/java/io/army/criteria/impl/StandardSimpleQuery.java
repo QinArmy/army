@@ -141,7 +141,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableItem table, String tableAlias) {
         return new TableBlock.NoOnTableBlock(joinType, table, tableAlias);
     }
 
