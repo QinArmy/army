@@ -501,7 +501,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     }
 
-    interface NestedClauseSuppler extends ClauseSupplier {
+    interface NestedClauseSupplier extends ClauseSupplier {
 
         NestedItems endNested();
     }
@@ -537,12 +537,86 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     }//VoidClauseSuppler
 
 
+    static abstract class LeftBracketNestedItem<C, LT, LS, LP> implements Statement._LeftBracketClause<C, LT, LS>
+            , DialectStatement._DialectLeftBracketClause<LP>, DialectStatement._LeftBracketCteClause<LS>
+            , NestedItems, NestedClauseSupplier {
+
+        final C criteria;
+
+        final List<_TableBlock> blockList = new ArrayList<>();
+
+        private boolean nestedEnd;
+
+        LeftBracketNestedItem(@Nullable C criteria) {
+            this.criteria = criteria;
+        }
+
+        @Override
+        public final LP leftBracket(TableMeta<?> table) {
+            if (this.blockList.size() != 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            return (LP) this.createClause(_JoinType.NONE, table);
+        }
+
+        @Override
+        public final LT leftBracket(TableMeta<?> table, String tableAlias) {
+            if (this.blockList.size() != 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            return (LT) this.createAndAddBlock(_JoinType.NONE, table, tableAlias);
+        }
+
+        @Override
+        public final <T extends TableItem> LS leftBracket(Supplier<T> supplier, String alias) {
+            if (this.blockList.size() != 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            return (LS) this.createAndAddBlock(_JoinType.NONE, supplier.get(), alias);
+        }
+
+        @Override
+        public final <T extends TableItem> LS leftBracket(Function<C, T> function, String alias) {
+            if (this.blockList.size() != 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            return (LS) this.createAndAddBlock(_JoinType.NONE, function.apply(this.criteria), alias);
+        }
+
+        @Override
+        public final LS leftBracket(String cteName) {
+            if (this.blockList.size() != 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            return (LS) this.createAndAddBlock(_JoinType.NONE, cteName, "");
+        }
+
+        @Override
+        public final LS leftBracket(String cteName, String alias) {
+            if (this.blockList.size() != 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            return (LS) this.createAndAddBlock(_JoinType.NONE, cteName, alias);
+        }
+
+        @Override
+        public final NestedItems endNested() {
+            if (this.nestedEnd) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            this.nestedEnd = true;
+            return this;
+        }
+
+    }//LeftBracketNestedItem
+
+
     static abstract class NoActionOnOrJoinBlock<C, FT, FS, FP, JT, JS, JP>
             extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
             implements Statement._OnClause<C, FS>, Statement._RightBracketClause<NestedItems> {
 
 
-        protected NoActionOnOrJoinBlock(NestedClauseSuppler suppler, @Nullable C criteria) {
+        protected NoActionOnOrJoinBlock(NestedClauseSupplier suppler, @Nullable C criteria) {
             super(suppler, criteria);
         }
 
@@ -573,7 +647,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
         @Override
         public final NestedItems rightBracket() {
-            return ((NestedClauseSuppler) this.clauseSupplier).endNested();
+            return ((NestedClauseSupplier) this.clauseSupplier).endNested();
         }
 
         @Override
@@ -597,7 +671,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
         private List<_Predicate> predicateList;
 
-        protected OnOrJoinBlock(NestedClauseSuppler suppler, @Nullable C criteria
+        protected OnOrJoinBlock(NestedClauseSupplier suppler, @Nullable C criteria
                 , _JoinType joinType, Object tableItem
                 , String alias) {
             super(suppler, criteria);
@@ -665,7 +739,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
         @Override
         public final NestedItems rightBracket() {
-            return ((NestedClauseSuppler) this.clauseSupplier).endNested();
+            return ((NestedClauseSupplier) this.clauseSupplier).endNested();
         }
 
         @Override

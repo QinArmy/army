@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.NestedItems;
 import io.army.criteria.Statement;
-import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
@@ -22,6 +21,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+
 /**
  * <p>
  * This class is the implementation of {@link NestedItems} for MySQL.
@@ -31,16 +31,16 @@ import java.util.function.Supplier;
  * @see MySQLs#nestedItems(Object)
  * @since 1.0
  */
-final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause<C>, NestedItems
-        , JoinableClause.NestedClauseSuppler {
+final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
+        C,
+        MySQL80Query._NestedIndexHintJoinSpec<C>
+        , MySQL80Query._NestedJoinSpec<C>,
+        MySQL80Query._NestedPartitionJoinClause<C>>
+        implements MySQL80Query._NestedLeftBracketClause<C> {
 
     static <C> MySQLNestedItems<C> create(@Nullable C criteria) {
         return new MySQLNestedItems<>(criteria);
     }
-
-    private final C criteria;
-
-    private final List<_TableBlock> blockList = new ArrayList<>();
 
     private NoActionIndexHintJoinClause<C> noActionJoinClause;
 
@@ -50,69 +50,11 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
 
     private NoActionPartitionOnClause<C> noActionPartitionOnClause;
 
-    private boolean nestedEnd;
-
 
     private MySQLNestedItems(@Nullable C criteria) {
-        this.criteria = criteria;
+        super(criteria);
     }
 
-    @Override
-    public MySQL80Query._NestedPartitionJoinClause<C> leftBracket(TableMeta<?> table) {
-        if (this.blockList.size() != 0) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        return new PartitionJoinClause<>(this.criteria, this, _JoinType.NONE, table);
-    }
-
-    @Override
-    public MySQL80Query._NestedJoinSpec<C> leftBracket(String cteName) {
-        return this.leftBracket(cteName, "");
-    }
-
-    @Override
-    public MySQL80Query._NestedJoinSpec<C> leftBracket(String cteName, String alias) {
-        if (this.blockList.size() != 0) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final OnBlock<C> block;
-        block = new OnBlock<>(this, this.criteria, _JoinType.NONE, cteName, alias);
-        this.blockList.add(block);
-        return block;
-    }
-
-    @Override
-    public MySQL80Query._NestedIndexHintJoinSpec<C> leftBracket(TableMeta<?> table, String tableAlias) {
-        if (this.blockList.size() != 0) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final IndexHintJoinBlock<C> block;
-        block = new IndexHintJoinBlock<>(this, this.criteria, _JoinType.NONE, table, tableAlias);
-        this.blockList.add(block);
-        return block;
-    }
-
-    @Override
-    public <T extends TableItem> MySQL80Query._NestedJoinSpec<C> leftBracket(Supplier<T> supplier, String alias) {
-        if (this.blockList.size() != 0) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final OnBlock<C> block;
-        block = new OnBlock<>(this, this.criteria, _JoinType.NONE, supplier.get(), alias);
-        this.blockList.add(block);
-        return block;
-    }
-
-    @Override
-    public <T extends TableItem> MySQL80Query._NestedJoinSpec<C> leftBracket(Function<C, T> function, String alias) {
-        if (this.blockList.size() != 0) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final OnBlock<C> block;
-        block = new OnBlock<>(this, this.criteria, _JoinType.NONE, function.apply(this.criteria), alias);
-        this.blockList.add(block);
-        return block;
-    }
 
     @Override
     public _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String tableAlias) {
@@ -122,6 +64,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
         }
         final _TableBlock block;
         switch (joinType) {
+            case NONE:
             case CROSS_JOIN: {
                 if (item instanceof TableMeta) {
                     block = new IndexHintJoinBlock<>(this, this.criteria, joinType, item, tableAlias);
@@ -153,6 +96,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
     public Object createClause(final _JoinType joinType, TableMeta<?> table) {
         final Object clause;
         switch (joinType) {
+            case NONE:
             case CROSS_JOIN:
                 clause = new PartitionJoinClause<>(this.criteria, this, joinType, table);
                 break;
@@ -173,28 +117,16 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
     public Object getNoActionClause(final _JoinType joinType) {
         final Object clause;
         switch (joinType) {
-            case CROSS_JOIN: {
-                NoActionIndexHintJoinClause<C> joinClause = this.noActionJoinClause;
-                if (joinClause == null) {
-                    joinClause = new NoActionIndexHintJoinClause<>(this, this.criteria);
-                    this.noActionJoinClause = joinClause;
-                }
-                clause = joinClause;
-            }
-            break;
+            case CROSS_JOIN:
+                clause = this.getNoActionJoinClause();
+                break;
             case LEFT_JOIN:
             case JOIN:
             case RIGHT_JOIN:
             case FULL_JOIN:
-            case STRAIGHT_JOIN: {
-                NoActionIndexHintOnClause<C> onClause = this.noActionOnClause;
-                if (onClause == null) {
-                    onClause = new NoActionIndexHintOnClause<>(this, this.criteria);
-                    this.noActionOnClause = onClause;
-                }
-                clause = onClause;
-            }
-            break;
+            case STRAIGHT_JOIN:
+                clause = this.getNoActionOnClause();
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(joinType);
         }
@@ -208,7 +140,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             case CROSS_JOIN: {
                 NoActionPartitionJoinClause<C> clause = this.noActionPartitionJoinClause;
                 if (clause == null) {
-                    clause = new NoActionPartitionJoinClause<>(joinType, this::getNoActionClause);
+                    clause = new NoActionPartitionJoinClause<>(this::getNoActionJoinClause);
                     this.noActionPartitionJoinClause = clause;
                 }
                 partitionClause = clause;
@@ -221,7 +153,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             case STRAIGHT_JOIN: {
                 NoActionPartitionOnClause<C> clause = this.noActionPartitionOnClause;
                 if (clause == null) {
-                    clause = new NoActionPartitionOnClause<>(joinType, this::getNoActionClause);
+                    clause = new NoActionPartitionOnClause<>(this::getNoActionOnClause);
                     this.noActionPartitionOnClause = clause;
                 }
                 partitionClause = clause;
@@ -233,13 +165,22 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
         return partitionClause;
     }
 
-    @Override
-    public NestedItems endNested() {
-        if (this.nestedEnd) {
-            throw _Exceptions.castCriteriaApi();
+    private NoActionIndexHintOnClause<C> getNoActionOnClause() {
+        NoActionIndexHintOnClause<C> clause = this.noActionOnClause;
+        if (clause == null) {
+            clause = new NoActionIndexHintOnClause<>(this, this.criteria);
+            this.noActionOnClause = clause;
         }
-        this.nestedEnd = true;
-        return this;
+        return clause;
+    }
+
+    private NoActionIndexHintJoinClause<C> getNoActionJoinClause() {
+        NoActionIndexHintJoinClause<C> clause = this.noActionJoinClause;
+        if (clause == null) {
+            clause = new NoActionIndexHintJoinClause<>(this, this.criteria);
+            this.noActionJoinClause = clause;
+        }
+        return clause;
     }
 
 
@@ -253,7 +194,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             MySQL80Query._NestedPartitionOnClause<C>>
             implements MySQL80Query._NestedOnSpec<C> {
 
-        private OnBlock(NestedClauseSuppler suppler, @Nullable C criteria
+        private OnBlock(NestedClauseSupplier suppler, @Nullable C criteria
                 , _JoinType joinType, Object tableItem
                 , String alias) {
             super(suppler, criteria, joinType, tableItem, alias);
@@ -281,14 +222,14 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
 
         private List<MySQLIndexHint> indexHintList;
 
-        private IndexHintBlock(NestedClauseSuppler suppler, @Nullable C criteria
+        private IndexHintBlock(NestedClauseSupplier suppler, @Nullable C criteria
                 , _JoinType joinType, Object tableItem
                 , String alias) {
             super(suppler, criteria, joinType, tableItem, alias);
             this.partitionList = Collections.emptyList();
         }
 
-        private IndexHintBlock(NestedClauseSuppler suppler, @Nullable C criteria
+        private IndexHintBlock(NestedClauseSupplier suppler, @Nullable C criteria
                 , _JoinType joinType, Object tableItem
                 , String alias, List<String> partitionList) {
             super(suppler, criteria, joinType, tableItem, alias);
@@ -490,7 +431,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             }
             List<MySQLIndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
-                indexHintList = Collections.emptyList();
+                indexHintList = new ArrayList<>();
                 this.indexHintList = indexHintList;
             }
             indexHintList.add(new MySQLIndexHint(command, purpose, indexNameList));
@@ -529,13 +470,13 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             MySQL80Query._NestedIndexHintJoinSpec<C>>
             implements MySQL80Query._NestedIndexPurposeJoinClause<C>, MySQL80Query._NestedIndexHintJoinSpec<C> {
 
-        private IndexHintJoinBlock(NestedClauseSuppler suppler, @Nullable C criteria
+        private IndexHintJoinBlock(NestedClauseSupplier suppler, @Nullable C criteria
                 , _JoinType joinType, Object tableItem
                 , String alias) {
             super(suppler, criteria, joinType, tableItem, alias);
         }
 
-        private IndexHintJoinBlock(NestedClauseSuppler suppler, @Nullable C criteria
+        private IndexHintJoinBlock(NestedClauseSupplier suppler, @Nullable C criteria
                 , _JoinType joinType, Object tableItem
                 , String alias, List<String> partitionList) {
             super(suppler, criteria, joinType, tableItem, alias, partitionList);
@@ -549,13 +490,13 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             MySQL80Query._NestedIndexHintOnSpec<C>>
             implements MySQL80Query._NestedIndexPurposeOnClause<C>, MySQL80Query._NestedIndexHintOnSpec<C> {
 
-        private IndexHintOnBlock(NestedClauseSuppler suppler, @Nullable C criteria
+        private IndexHintOnBlock(NestedClauseSupplier suppler, @Nullable C criteria
                 , _JoinType joinType, Object tableItem
                 , String alias) {
             super(suppler, criteria, joinType, tableItem, alias);
         }
 
-        private IndexHintOnBlock(NestedClauseSuppler suppler, @Nullable C criteria
+        private IndexHintOnBlock(NestedClauseSupplier suppler, @Nullable C criteria
                 , _JoinType joinType, Object tableItem
                 , String alias, List<String> partitionList) {
             super(suppler, criteria, joinType, tableItem, alias, partitionList);
@@ -661,7 +602,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             MySQL80Query._NestedPartitionOnClause<C>>
             implements MySQL80Query._NestedOnSpec<C> {
 
-        private NoActionOnBlock(NestedClauseSuppler suppler, @Nullable C criteria) {
+        private NoActionOnBlock(NestedClauseSupplier suppler, @Nullable C criteria) {
             super(suppler, criteria);
         }
 
@@ -672,7 +613,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
     private static abstract class NoActionIndexHintClause<C, IR, IC> extends NoActionOnBlock<C>
             implements MySQLQuery._IndexHintClause<C, IR, IC>, MySQLQuery._IndexPurposeClause<C, IC> {
 
-        private NoActionIndexHintClause(NestedClauseSuppler suppler, @Nullable C criteria) {
+        private NoActionIndexHintClause(NestedClauseSupplier suppler, @Nullable C criteria) {
             super(suppler, criteria);
         }
 
@@ -774,7 +715,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             MySQL80Query._NestedIndexHintJoinSpec<C>>
             implements MySQL80Query._NestedIndexPurposeJoinClause<C>, MySQL80Query._NestedIndexHintJoinSpec<C> {
 
-        private NoActionIndexHintJoinClause(NestedClauseSuppler suppler, @Nullable C criteria) {
+        private NoActionIndexHintJoinClause(NestedClauseSupplier suppler, @Nullable C criteria) {
             super(suppler, criteria);
         }
 
@@ -786,7 +727,7 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             MySQL80Query._NestedIndexHintOnSpec<C>>
             implements MySQL80Query._NestedIndexPurposeOnClause<C>, MySQL80Query._NestedIndexHintOnSpec<C> {
 
-        private NoActionIndexHintOnClause(NestedClauseSuppler suppler, @Nullable C criteria) {
+        private NoActionIndexHintOnClause(NestedClauseSupplier suppler, @Nullable C criteria) {
             super(suppler, criteria);
         }
 
@@ -798,20 +739,16 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             implements Statement._AsClause<MySQL80Query._NestedIndexHintJoinSpec<C>>
             , MySQL80Query._NestedPartitionJoinClause<C> {
 
-        private final _JoinType joinType;
 
-        private final Function<_JoinType, ?> function;
+        private final Supplier<MySQL80Query._NestedIndexHintJoinSpec<C>> supplier;
 
-        private NoActionPartitionJoinClause(_JoinType joinType
-                , Function<_JoinType, ?> function) {
-            this.joinType = joinType;
-            this.function = function;
+        private NoActionPartitionJoinClause(Supplier<MySQL80Query._NestedIndexHintJoinSpec<C>> supplier) {
+            this.supplier = supplier;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public MySQL80Query._NestedIndexHintJoinSpec<C> as(String alias) {
-            return (MySQL80Query._NestedIndexHintJoinSpec<C>) this.function.apply(this.joinType);
+            return this.supplier.get();
         }
 
     }//NoActionPartitionJoinClause
@@ -821,20 +758,15 @@ final class MySQLNestedItems<C> implements MySQL80Query._NestedLeftBracketClause
             implements Statement._AsClause<MySQL80Query._NestedIndexHintOnSpec<C>>
             , MySQL80Query._NestedPartitionOnClause<C> {
 
-        private final _JoinType joinType;
+        private final Supplier<MySQL80Query._NestedIndexHintOnSpec<C>> supplier;
 
-        private final Function<_JoinType, ?> function;
-
-        private NoActionPartitionOnClause(_JoinType joinType
-                , Function<_JoinType, ?> function) {
-            this.joinType = joinType;
-            this.function = function;
+        private NoActionPartitionOnClause(Supplier<MySQL80Query._NestedIndexHintOnSpec<C>> supplier) {
+            this.supplier = supplier;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public MySQL80Query._NestedIndexHintOnSpec<C> as(String alias) {
-            return (MySQL80Query._NestedIndexHintOnSpec<C>) this.function.apply(this.joinType);
+            return this.supplier.get();
         }
 
     }//NoActionPartitionJoinClause
