@@ -491,7 +491,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     interface ClauseSupplier {
 
-        _TableBlock createAndAddBlock(_JoinType joinType, Object item, String tableAlias);
+        _TableBlock createAndAddBlock(_JoinType joinType, Object item, String alias);
 
         Object createClause(_JoinType joinType, TableMeta<?> table);
 
@@ -515,7 +515,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
 
         @Override
-        public _TableBlock createAndAddBlock(_JoinType joinType, Object item, String tableAlias) {
+        public _TableBlock createAndAddBlock(_JoinType joinType, Object item, String alias) {
             throw _Exceptions.castCriteriaApi();
         }
 

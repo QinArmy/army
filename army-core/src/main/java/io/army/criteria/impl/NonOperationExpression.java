@@ -70,26 +70,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifEqual(Supplier<?> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifEqual(Function<String, ?> operand, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifEqualLiteral(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifEqualLiteral(Function<String, ?> operand, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C> IPredicate equalAny(Function<C, ? extends SubQuery> supplier) {
         throw unsupportedOperation();
     }
@@ -131,26 +111,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate lessThanExp(Supplier<? extends Expression> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLessThan(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLessThan(Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLessThanLiteral(Supplier<?> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLessThanLiteral(Function<String, ?> function, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -210,26 +170,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifLessEqual(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLessEqual(Function<String, ?> operand, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLessEqualLiteral(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLessEqualLiteral(Function<String, ?> operand, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C> IPredicate lessEqualAny(Function<C, ? extends SubQuery> function) {
         throw unsupportedOperation();
     }
@@ -281,26 +221,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate greatThanExp(Supplier<? extends Expression> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifGreatThan(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifGreatThan(Function<String, ?> operand, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifGreatThanLiteral(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifGreatThanLiteral(Function<String, ?> operand, String keyName) {
         throw unsupportedOperation();
     }
 
@@ -360,26 +280,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifGreatEqual(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifGreatEqual(Function<String, ?> operand, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifGreatEqualLiteral(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifGreatEqualLiteral(Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C> IPredicate greatEqualAny(Function<C, ? extends SubQuery> function) {
         throw unsupportedOperation();
     }
@@ -435,26 +335,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifNotEqual(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotEqual(Function<String, ?> operand, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotEqualLiteral(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotEqualLiteral(Function<String, ?> operand, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C> IPredicate notEqualAny(Function<C, ? extends SubQuery> function) {
         throw unsupportedOperation();
     }
@@ -495,32 +375,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifBetween(Supplier<?> firstOperand, Supplier<?> secondOperand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifBetween(Function<String, ?> function, String firstKey, String secondKey) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifBetweenLiteral(Supplier<?> firstOperand, Supplier<?> secondOperand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifBetweenLiteral(Function<String, ?> function, String firstKey, String secondKey) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final <C> IPredicate between(Function<C, ExpressionPair> function) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final <C> IPredicate ifBetween(Function<C, ExpressionPair> function) {
         throw unsupportedOperation();
     }
 
@@ -560,26 +415,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifIn(Supplier<?> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifInParam(Supplier<?> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifIn(Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifInParam(Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate notIn(Object operand) {
         throw unsupportedOperation();
     }
@@ -605,26 +440,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifNotIn(Supplier<?> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotIn(Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotInParam(Supplier<?> operand) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotInParam(Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate like(Object pattern) {
         throw unsupportedOperation();
     }
@@ -645,16 +460,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate ifLike(Supplier<?> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifLike(Function<String, ?> function, String keyName) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final IPredicate notLike(Object pattern) {
         throw unsupportedOperation();
     }
@@ -671,16 +476,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate notLikeExp(Supplier<? extends Expression> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotLike(Supplier<?> supplier) {
-        throw unsupportedOperation();
-    }
-
-    @Override
-    public final IPredicate ifNotLike(Function<String, ?> function, String keyName) {
         throw unsupportedOperation();
     }
 

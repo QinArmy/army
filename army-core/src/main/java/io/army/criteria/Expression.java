@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 
@@ -51,30 +50,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate equalExp(Supplier<? extends Expression> supplier);
 
-
-    /**
-     * relational operate with {@code =}
-     * <p>
-     * If supplier non-null than supplier will be wrapped with optimizing param.
-     * </p>
-     *
-     * @param supplier right supplier of {@code =},supplier is weak weakly instance, because sql is weakly typed.
-     * @return If supplier null return null,or return predicate instance.
-     * @see Statement._WhereAndClause#ifAnd(IPredicate)
-     */
-    @Nullable
-    IPredicate ifEqual(Supplier<?> supplier);
-
-    @Nullable
-    IPredicate ifEqual(Function<String, ?> function, String keyName);
-
-    @Nullable
-    IPredicate ifEqualLiteral(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifEqualLiteral(Function<String, ?> function, String keyName);
-
-
     /**
      * relational operate with {@code = ANY}
      */
@@ -115,19 +90,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate lessThanExp(Supplier<? extends Expression> supplier);
 
-    @Nullable
-    IPredicate ifLessThan(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifLessThan(Function<String, ?> function, String keyName);
-
-    @Nullable
-    IPredicate ifLessThanLiteral(Supplier<?> supplier);
-
-    @Nullable
-    IPredicate ifLessThanLiteral(Function<String, ?> function, String keyName);
-
-
     <C> IPredicate lessThanAny(Function<C, ? extends SubQuery> function);
 
     IPredicate lessThanAny(Supplier<? extends SubQuery> supplier);
@@ -159,18 +121,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <C> IPredicate lessEqualExp(Function<C, ? extends Expression> function);
 
     IPredicate lessEqualExp(Supplier<? extends Expression> supplier);
-
-    @Nullable
-    IPredicate ifLessEqual(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifLessEqual(Function<String, ?> function, String keyName);
-
-    @Nullable
-    IPredicate ifLessEqualLiteral(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifLessEqualLiteral(Function<String, ?> function, String keyName);
 
     <C> IPredicate lessEqualAny(Function<C, ? extends SubQuery> function);
 
@@ -208,29 +158,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate greatThanExp(Supplier<? extends Expression> supplier);
 
-    /**
-     * Relational operate with {@code =}
-     * <p>
-     * If operand non-null than operand will be wrapped with optimizing param.
-     * </p>
-     *
-     * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
-     * @return If operand null return null,or return predicate instance.
-     * @see Statement._WhereAndClause#ifAnd(IPredicate)
-     */
-    @Nullable
-    IPredicate ifGreatThan(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifGreatThan(Function<String, ?> function, String keyName);
-
-    @Nullable
-    IPredicate ifGreatThanLiteral(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifGreatThanLiteral(Function<String, ?> function, String keyName);
-
-
     <C> IPredicate greatThanAny(Function<C, ? extends SubQuery> function);
 
     IPredicate greatThanAny(Supplier<? extends SubQuery> supplier);
@@ -266,29 +193,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <C> IPredicate greatEqualExp(Function<C, ? extends Expression> function);
 
     IPredicate greatEqualExp(Supplier<? extends Expression> supplier);
-
-    /**
-     * relational operate with {@code =}
-     * <p>
-     * If operand non-null than operand will be wrapped with optimizing param.
-     * </p>
-     *
-     * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
-     * @return If operand null return null,or return predicate instance.
-     * @see Statement._WhereAndClause#ifAnd(IPredicate)
-     */
-    @Nullable
-    IPredicate ifGreatEqual(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifGreatEqual(Function<String, ?> function, String keyName);
-
-    @Nullable
-    IPredicate ifGreatEqualLiteral(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifGreatEqualLiteral(Function<String, ?> function, String keyName);
-
 
     <C> IPredicate greatEqualAny(Function<C, ? extends SubQuery> function);
 
@@ -326,28 +230,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate notEqualExp(Supplier<? extends Expression> supplier);
 
-    /**
-     * relational operate with {@code =}
-     * <p>
-     * If operand non-null than operand will be wrapped with optimizing param.
-     * </p>
-     *
-     * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
-     * @return If operand null return null,or return predicate instance.
-     * @see Statement._WhereAndClause#ifAnd(IPredicate)
-     */
-    @Nullable
-    IPredicate ifNotEqual(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifNotEqual(Function<String, ?> function, String keyName);
-
-    @Nullable
-    IPredicate ifNotEqualLiteral(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifNotEqualLiteral(Function<String, ?> function, String keyName);
-
     <C> IPredicate notEqualAny(Function<C, ? extends SubQuery> function);
 
     IPredicate notEqualAny(Supplier<? extends SubQuery> supplier);
@@ -364,22 +246,8 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate betweenLiteral(Object firstOperand, Object secondOperand);
 
-    @Nullable
-    IPredicate ifBetween(Supplier<?> firstOperand, Supplier<?> secondOperand);
-
-    @Nullable
-    IPredicate ifBetween(Function<String, ?> function, String firstKey, String secondKey);
-
-    @Nullable
-    IPredicate ifBetweenLiteral(Supplier<?> firstOperand, Supplier<?> secondOperand);
-
-    @Nullable
-    IPredicate ifBetweenLiteral(Function<String, ?> function, String firstKey, String secondKey);
-
     <C> IPredicate between(Function<C, ExpressionPair> function);
 
-    @Nullable
-    <C> IPredicate ifBetween(Function<C, ExpressionPair> function);
 
     IPredicate isNull();
 
@@ -412,23 +280,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * If parameters non-null parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
-     * </p>
-     **/
-    @Nullable
-    IPredicate ifIn(Supplier<?> supplier);
-
-    @Nullable
-    IPredicate ifIn(Function<String, ?> function, String keyName);
-
-    @Nullable
-    IPredicate ifInParam(Supplier<?> supplier);
-
-    @Nullable
-    IPredicate ifInParam(Function<String, ?> function, String keyName);
-
-    /**
-     * <p>
      * Parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
      * </p>
      */
@@ -452,18 +303,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     IPredicate notInExp(Supplier<? extends Expression> supplier);
 
-    @Nullable
-    IPredicate ifNotIn(Supplier<?> supplier);
-
-    @Nullable
-    IPredicate ifNotIn(Function<String, ?> function, String keyName);
-
-    @Nullable
-    IPredicate ifNotInParam(Supplier<?> operand);
-
-    @Nullable
-    IPredicate ifNotInParam(Function<String, ?> function, String keyName);
-
 
     IPredicate like(Object pattern);
 
@@ -477,12 +316,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <C> IPredicate likeExp(Function<C, ? extends Expression> function);
 
     IPredicate likeExp(Supplier<? extends Expression> supplier);
-
-    @Nullable
-    IPredicate ifLike(Supplier<?> supplier);
-
-    @Nullable
-    IPredicate ifLike(Function<String, ?> function, String keyName);
 
 
     IPredicate notLike(Object pattern);
@@ -498,12 +331,6 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
     <C> IPredicate notLikeExp(Function<C, ? extends Expression> function);
 
     IPredicate notLikeExp(Supplier<? extends Expression> supplier);
-
-    @Nullable
-    IPredicate ifNotLike(Supplier<?> supplier);
-
-    @Nullable
-    IPredicate ifNotLike(Function<String, ?> function, String keyName);
 
 
     Expression mod(Object operand);

@@ -1,10 +1,8 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -240,46 +238,70 @@ public interface MySQLUpdate extends Update {
     /*################################## blow multi-table update api interface ##################################*/
 
 
-    interface MultiUpdateClause<C, UP, UT, US> {
+    interface MultiUpdateClause<C, UT, US, UP> {
 
-        UP update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
-                , TableMeta<? extends IDomain> table);
+        UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , TableMeta<?> table);
 
-        UT update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
-                , TableMeta<? extends IDomain> table, String tableAlias);
+        UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , TableMeta<?> table, String tableAlias);
 
-        UP update(TableMeta<? extends IDomain> table);
+        UP update(TableMeta<?> table);
 
-        UT update(TableMeta<? extends IDomain> table, String tableAlias);
+        UT update(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , Supplier<T> supplier, String alias);
 
         <T extends TableItem> US update(Supplier<T> tablePart, String alias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, EnumSet<MySQLWords> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , Function<C, T> tablePart, String alias);
 
         <T extends TableItem> US update(Function<C, T> tablePart, String alias);
     }
 
-
-    interface WithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, MultiUpdateSpec<C>>
-            , MySQLUpdate.MultiUpdateSpec<C> {
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link _MultiUpdate57Clause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _WithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, _MultiUpdate57Clause<C>>
+            , _MultiUpdate57Clause<C> {
 
     }
 
 
     /**
      * <p>
-     * This interface representing MySQL multi-table update syntax update clause.
+     * This interface representing multi-table update clause.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface MultiUpdateSpec<C> extends MySQLUpdate.MultiUpdateClause<
+    interface _MultiUpdate57Clause<C> extends MySQLUpdate.MultiUpdateClause<
             C,
-            MySQLUpdate.MultiPartitionJoinSpec<C>,
-            IndexHintJoinSpec<C>,
-            MySQLUpdate.MultiJoinSpec<C>> {
+            _IndexHintJoinSpec<C>,
+            _MultiJoinSpec<C>,
+            _MultiPartitionJoinClause<C>> {
 
 
     }
@@ -287,27 +309,60 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This interface representing MySQL multi-table update syntax partition clause(after from clause and before join clause).
+     * This interface representing PARTITION clause for multi-table update clause.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface MultiPartitionJoinSpec<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<IndexHintJoinSpec<C>>> {
+    interface _MultiPartitionJoinClause<C>
+            extends MySQLQuery._PartitionClause<C, _AsClause<_IndexHintJoinSpec<C>>> {
 
     }
 
 
     /**
      * <p>
-     * This interface representing MySQL multi-table update syntax index hint clause(after from clause and before join clause).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLQuery._IndexHintClause}</li>
+     *          <li>{@link _MultiJoinSpec}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface IndexHintJoinSpec<C>
-            extends MySQLQuery._IndexHintClause<C, IndexJoinJoinSpec<C>, IndexHintJoinSpec<C>>
-            , MySQLUpdate.MultiJoinSpec<C> {
+    interface _IndexHintJoinSpec<C>
+            extends MySQLQuery._IndexHintClause<C, _IndexJoinJoinClause<C>, _IndexHintJoinSpec<C>>
+            , _MultiJoinSpec<C> {
 
     }
 
-    interface IndexJoinJoinSpec<C> extends MySQLQuery._IndexJoinClause<C, IndexHintJoinSpec<C>> {
+    /**
+     * <p>
+     * This interface representing index hint 'FOR JOIN' clause for multi-table update clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _IndexJoinJoinClause<C> extends MySQLQuery._IndexJoinClause<C, _IndexHintJoinSpec<C>> {
 
     }
 
@@ -345,7 +400,7 @@ public interface MySQLUpdate extends Update {
      * </ul>
      * </p>
      */
-    interface MultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, MultiIndexHintOnSpec<C>, MultiOnSpec<C>, MultiPartitionOnSpec<C>>
+    interface _MultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, MultiIndexHintOnSpec<C>, MultiOnSpec<C>>
             , MySQLUpdate.MultiSetSpec<C> {
 
 
@@ -356,7 +411,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing MySQL multi-table update syntax on clause.
      * </p>
      */
-    interface MultiOnSpec<C> extends _OnClause<C, MultiJoinSpec<C>> {
+    interface MultiOnSpec<C> extends _OnClause<C, _MultiJoinSpec<C>> {
 
 
     }

@@ -1,29 +1,24 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.WithElement;
+import io.army.criteria.NonPrimaryStatement;
 import io.army.criteria.impl.inner._MultiUpdate;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.util._CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * <p>
  * This class is base class of multi-table update implementation.
  * </p>
+ *
+ * @since 1.0
  */
-@Deprecated
-abstract class MultiUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableUpdate<C, JT, JS, JP, WR, WA, SR>
-        implements _MultiUpdate {
+abstract class MultiUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
+        extends JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
+        implements _MultiUpdate, JoinableClause.ClauseSupplier {
 
 
-    private JT noActionTableBlock;
-
-    private JS noActionOnBlock;
-
-    private List<_TableBlock> tableBlockList = new ArrayList<>();
+    private List<_TableBlock> tableBlockList;
 
     MultiUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);
@@ -39,18 +34,12 @@ abstract class MultiUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableUpdate<C, 
 
     @Override
     final void onAsUpdate() {
-        final List<_TableBlock> tableBlockList = this.tableBlockList;
-        if (_CollectionUtils.isEmpty(tableBlockList)) {
-            throw new CriteriaException("multi-table table block list must not empty.");
-        }
-        this.tableBlockList = this.criteriaContext.clear();
-        if (this instanceof WithElement) {
+        if (this instanceof NonPrimaryStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        this.noActionTableBlock = null;
-        this.noActionOnBlock = null;
+        this.tableBlockList = this.criteriaContext.clear();
         this.doOnAsUpdate();
     }
 
@@ -61,26 +50,6 @@ abstract class MultiUpdate<C, JT, JS, JP, WR, WA, SR> extends JoinableUpdate<C, 
 
     void doOnAsUpdate() {
 
-    }
-
-    @Override
-    final JT getNoActionTableBlock() {
-        JT noActionTableBlock = this.noActionTableBlock;
-        if (noActionTableBlock == null) {
-            noActionTableBlock = createNoActionTableBlock();
-            this.noActionTableBlock = noActionTableBlock;
-        }
-        return noActionTableBlock;
-    }
-
-    @Override
-    final JS getNoActionOnBlock() {
-        JS block = this.noActionOnBlock;
-        if (block == null) {
-            block = createNoActionOnBlock();
-            this.noActionOnBlock = block;
-        }
-        return block;
     }
 
 

@@ -6,10 +6,7 @@ import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -309,6 +306,15 @@ public interface Statement {
         WR where(Consumer<List<IPredicate>> consumer);
 
         WA where(@Nullable IPredicate predicate);
+
+        WA where(Function<Object, IPredicate> operator, Supplier<?> operand);
+
+        WA where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
+
+        WA where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
     }
 
     /**
@@ -354,14 +360,25 @@ public interface Statement {
 
         WA and(Function<C, IPredicate> function);
 
-        /**
-         * @see Expression#ifEqual(Supplier)
-         */
-        WA ifAnd(@Nullable IPredicate predicate);
+        WA and(Function<Object, IPredicate> operator, Supplier<?> operand);
+
+        WA and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
+
+        WA and(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        WA and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
 
         WA ifAnd(Supplier<IPredicate> supplier);
 
         WA ifAnd(Function<C, IPredicate> function);
+
+        WA ifAnd(Function<Object, IPredicate> operator, Supplier<?> operand);
+
+        WA ifAnd(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
+
+        WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
 
     }
 

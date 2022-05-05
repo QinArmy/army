@@ -113,14 +113,14 @@ public abstract class MySQLs_ extends MySQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static MySQLUpdate.MultiUpdateSpec<Void> multiUpdate() {
+    public static MySQLUpdate._MultiUpdate57Clause<Void> multiUpdate() {
         return MySQLMultiUpdate.simple(null);
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static <C> MySQLUpdate.MultiUpdateSpec<C> multiUpdate(C criteria) {
+    public static <C> MySQLUpdate._MultiUpdate57Clause<C> multiUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiUpdate.simple(criteria);
     }

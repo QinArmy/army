@@ -11,9 +11,16 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * <p>
+ * This class is base class of multi-table update with WITH CLAUSE implementation.
+ * </p>
+ *
+ * @since 1.0
+ */
 @SuppressWarnings("unchecked")
-abstract class WithCteMultiUpdate<C, WE, SR, JT, JS, JP, JC, JD, JE, JF, WR, WA>
-        extends JoinableUpdate<C, SR, JT, JS, JP, JC, JD, JE, JF, WR, WA>
+abstract class WithCteMultiUpdate<C, WE, SR, FT, FS, FP, JT, JS, JP, WR, WA>
+        extends MultiUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         implements DialectStatement._WithCteClause<C, WE> {
 
     WithCteMultiUpdate(CriteriaContext criteriaContext) {

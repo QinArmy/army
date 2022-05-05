@@ -84,11 +84,11 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    static MySQLUpdate.WithAndMultiUpdateSpec<Void> multiUpdate() {
+    static MySQLUpdate._WithAndMultiUpdateSpec<Void> multiUpdate() {
         return MySQLMultiUpdate.simple80(null);
     }
 
-    static <C> MySQLUpdate.WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
+    static <C> MySQLUpdate._WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiUpdate.simple80(criteria);
     }

@@ -25,9 +25,12 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<C, SR, JT, JS, JP, JC, JD, JE, JF, WR, WA>
-        extends DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
+abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
+        extends DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         implements Update, Update._UpdateSpec, Update._SimpleSetClause<C, SR>, Update._BatchSetClause<C, SR>, _Update {
+
+
+    final CriteriaContext criteriaContext;
 
     private List<SetLeftItem> leftList = new ArrayList<>();
 
@@ -35,13 +38,14 @@ abstract class JoinableUpdate<C, SR, JT, JS, JP, JC, JD, JE, JF, WR, WA>
 
     private boolean prepared;
 
+    JoinableUpdate(ClauseSupplier clauseSupplier, CriteriaContext criteriaContext) {
+        super(clauseSupplier, criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
+    }
+
     JoinableUpdate(CriteriaContext criteriaContext) {
-        super(criteriaContext);
-        if (this instanceof NonPrimaryStatement) {
-            CriteriaContextStack.push(this.criteriaContext);
-        } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        }
+        super(criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
     }
 
     /*################################## blow SetClause method ##################################*/

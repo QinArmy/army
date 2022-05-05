@@ -98,9 +98,11 @@ public interface Update extends NarrowDmlStatement {
          */
         SR ifSetPairs(Function<C, List<ItemPair>> function);
 
+        SR setExp(TableField<?> field, Supplier<? extends Expression> supplier);
+
         SR setExp(TableField<?> field, Function<C, ? extends Expression> function);
 
-        SR setExp(TableField<?> field, Supplier<? extends Expression> supplier);
+        SR ifSetExp(TableField<?> field, Supplier<? extends Expression> supplier);
 
         SR ifSetExp(TableField<?> field, Function<C, ? extends Expression> function);
 
@@ -216,8 +218,6 @@ public interface Update extends NarrowDmlStatement {
     interface _BatchSetClause<C, SR> extends SetClause<C, SR> {
 
         SR setExp(TableField<?> field, Expression value);
-
-        SR ifSetExp(TableField<?> field, Supplier<? extends Expression> supplier);
 
         SR setNullable(List<? extends TableField<?>> fieldList);
 

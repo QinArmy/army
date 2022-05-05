@@ -10,7 +10,6 @@ import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -77,6 +76,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     private LockMode lockMode;
 
+    private NoActionOnClause<C, StandardQuery._JoinSpec<C, Q>> noActionOnClause;
+
     StandardSimpleQuery(@Nullable C criteria) {
         super(CriteriaContexts.queryContext(criteria));
 
@@ -100,7 +101,9 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     public final _UnionSpec<C, Q> lock(Function<C, LockMode> function) {
         final LockMode lockMode;
         lockMode = function.apply(this.criteria);
-        Objects.requireNonNull(lockMode);
+        if (lockMode == null) {
+            throw new NullPointerException();
+        }
         this.lockMode = lockMode;
         return this;
     }
@@ -141,53 +144,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableItem table, String tableAlias) {
-        return new TableBlock.NoOnTableBlock(joinType, table, tableAlias);
-    }
-
-    @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
-        return new OnClauseTableBlock<>(joinType, table, tableAlias, this);
-    }
-
-    @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
-        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
-    }
-
-
-    @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createNoActionTableBlock() {
-        return new NoActionOnClause<>(this);
-    }
-
-    @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createNoActionItemBlock() {
-        return new NoActionOnClause<>(this);
-    }
-
-
-    @Override
-    final Void createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void getNoActionNextClause() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void getNoActionNextNoOnClause() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void createNextClause(_JoinType joinType, TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
     final void crossJoinEvent(boolean success) {
         //no-op
     }
@@ -224,6 +180,68 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     final _UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
         return StandardUnionQuery.unionQuery((Q) left, unionType, right);
     }
+
+
+    @Override
+    public final _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String alias) {
+        final _TableBlock tableBlock;
+        switch (joinType) {
+            case NONE:
+            case CROSS_JOIN:
+                tableBlock = new TableBlock.NoOnTableBlock(joinType, item, alias);
+                break;
+            case LEFT_JOIN:
+            case JOIN:
+            case RIGHT_JOIN:
+            case FULL_JOIN:
+                tableBlock = new OnClauseTableBlock<>(joinType, item, alias, this);
+                break;
+            case STRAIGHT_JOIN:
+                throw _Exceptions.castCriteriaApi();
+            default:
+                throw _Exceptions.unexpectedEnum(joinType);
+        }
+        return tableBlock;
+    }
+
+    @Override
+    public final Object createClause(_JoinType joinType, TableMeta<?> table) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
+    public final Object getNoActionClause(final _JoinType joinType) {
+        final Object noActionClause;
+        switch (joinType) {
+            case NONE:
+            case CROSS_JOIN:
+                noActionClause = this;
+                break;
+            case LEFT_JOIN:
+            case JOIN:
+            case RIGHT_JOIN:
+            case FULL_JOIN: {
+                NoActionOnClause<C, StandardQuery._JoinSpec<C, Q>> clause = this.noActionOnClause;
+                if (clause == null) {
+                    clause = new NoActionOnClause<>(this);
+                    this.noActionOnClause = clause;
+                }
+                noActionClause = clause;
+            }
+            break;
+            case STRAIGHT_JOIN:
+                throw _Exceptions.castCriteriaApi();
+            default:
+                throw _Exceptions.unexpectedEnum(joinType);
+        }
+        return noActionClause;
+    }
+
+    @Override
+    public final Object getNoActionClauseBeforeAs(_JoinType joinType) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
 
     @Override
     public final LockMode lockMode() {

@@ -57,7 +57,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
 
 
     @Override
-    public _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String tableAlias) {
+    public _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String alias) {
         Objects.requireNonNull(item);
         if (item instanceof NestedItems && !(item instanceof MySQLNestedItems)) {
             throw CriteriaUtils.nestedItemsNotMatch((NestedItems) item, Database.MySQL);
@@ -67,9 +67,9 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
             case NONE:
             case CROSS_JOIN: {
                 if (item instanceof TableMeta) {
-                    block = new IndexHintJoinBlock<>(this, this.criteria, joinType, item, tableAlias);
+                    block = new IndexHintJoinBlock<>(this, this.criteria, joinType, item, alias);
                 } else {
-                    block = new OnBlock<>(this, this.criteria, joinType, item, tableAlias);
+                    block = new OnBlock<>(this, this.criteria, joinType, item, alias);
                 }
             }
             break;
@@ -79,9 +79,9 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
             case FULL_JOIN:
             case STRAIGHT_JOIN: {
                 if (item instanceof TableMeta) {
-                    block = new IndexHintOnBlock<>(this, this.criteria, joinType, item, tableAlias);
+                    block = new IndexHintOnBlock<>(this, this.criteria, joinType, item, alias);
                 } else {
-                    block = new OnBlock<>(this, this.criteria, joinType, item, tableAlias);
+                    block = new OnBlock<>(this, this.criteria, joinType, item, alias);
                 }
             }
             break;

@@ -15,6 +15,8 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -232,7 +234,31 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
+    public final AR where(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.and(operator, operand);
+    }
+
+    @Override
+    public final AR where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.and(operator, operand, keyName);
+    }
+
+    @Override
+    public final AR where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        return this.and(operator, firstOperand, secondOperand);
+    }
+
+    @Override
+    public final AR where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        return this.and(operator, operand, firstKey, secondKey);
+    }
+
+
+    @Override
     public final AR and(IPredicate predicate) {
+        Objects.requireNonNull(predicate);
         List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null) {
             predicateList = new ArrayList<>();
@@ -253,11 +279,25 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final AR ifAnd(@Nullable IPredicate predicate) {
-        if (predicate != null) {
-            this.and(predicate);
-        }
-        return (AR) this;
+    public final AR and(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.and(operator.apply(operand.get()));
+    }
+
+    @Override
+    public final AR and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.and(operator.apply(operand.apply(keyName)));
+    }
+
+    @Override
+    public final AR and(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        return this.and(operator.apply(firstOperand.get(), secondOperand.get()));
+    }
+
+    @Override
+    public final AR and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
     }
 
     @Override
@@ -276,6 +316,47 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         predicate = function.apply(this.criteria);
         if (predicate != null) {
             this.and(predicate);
+        }
+        return (AR) this;
+    }
+
+
+    @Override
+    public final AR ifAnd(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        final Object paramOrExp;
+        paramOrExp = operand.get();
+        if (paramOrExp != null) {
+            this.and(operator.apply(paramOrExp));
+        }
+        return (AR) this;
+    }
+
+    @Override
+    public final AR ifAnd(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        final Object paramOrExp;
+        paramOrExp = operand.apply(keyName);
+        if (paramOrExp != null) {
+            this.and(operator.apply(paramOrExp));
+        }
+        return (AR) this;
+    }
+
+    @Override
+    public final AR ifAnd(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        final Object first, second;
+        if ((first = firstOperand.get()) != null && (second = secondOperand.get()) != null) {
+            this.and(operator.apply(first, second));
+        }
+        return (AR) this;
+    }
+
+    @Override
+    public final AR ifAnd(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        final Object first, second;
+        if ((first = operand.apply(firstKey)) != null && (second = operand.apply(secondKey)) != null) {
+            this.and(operator.apply(first, second));
         }
         return (AR) this;
     }

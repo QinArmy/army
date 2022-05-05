@@ -17,11 +17,6 @@ import java.util.function.Supplier;
          this.stmt = stmt;
      }
 
-     @Override
-     public final OR on(List<IPredicate> predicateList) {
-         return this.stmt;
-    }
-
     @Override
     public final OR on(IPredicate predicate) {
         return this.stmt;

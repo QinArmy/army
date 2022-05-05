@@ -16,6 +16,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -28,15 +29,19 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
+abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
         implements Statement, Statement._WhereClause<C, WR, WA>, Statement._WhereAndClause<C, WA>, _Dml {
 
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
-    DmlWhereClause(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+    DmlWhereClause(ClauseSupplier clauseSupplier, @Nullable C criteria) {
+        super(clauseSupplier, criteria);
+    }
+
+    DmlWhereClause(@Nullable C criteria) {
+        super(criteria);
     }
 
 
@@ -66,6 +71,28 @@ abstract class DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
     }
 
     @Override
+    public final WA where(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.and(operator, operand);
+    }
+
+    @Override
+    public final WA where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.and(operator, operand, keyName);
+    }
+
+    @Override
+    public final WA where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        return this.and(operator, firstOperand, secondOperand);
+    }
+
+    @Override
+    public final WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        return this.and(operator, operand, firstKey, secondKey);
+    }
+
+    @Override
     public final WA and(IPredicate predicate) {
         Objects.requireNonNull(predicate);
         this.predicateList.add((OperationPredicate) predicate);
@@ -83,7 +110,31 @@ abstract class DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
     }
 
     @Override
-    public final WA ifAnd(@Nullable IPredicate predicate) {
+    public final WA and(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.and(operator.apply(operand.get()));
+    }
+
+    @Override
+    public final WA and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.and(operator.apply(operand.apply(keyName)));
+    }
+
+    @Override
+    public final WA and(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        return this.and(operator.apply(firstOperand.get(), secondOperand.get()));
+    }
+
+    @Override
+    public final WA and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
+    }
+
+    @Override
+    public final WA ifAnd(Supplier<IPredicate> supplier) {
+        final IPredicate predicate;
+        predicate = supplier.get();
         if (predicate != null) {
             this.predicateList.add((OperationPredicate) predicate);
         }
@@ -91,13 +142,65 @@ abstract class DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
     }
 
     @Override
-    public final WA ifAnd(Supplier<IPredicate> supplier) {
-        return this.ifAnd(supplier.get());
+    public final WA ifAnd(Function<C, IPredicate> function) {
+        final IPredicate predicate;
+        predicate = function.apply(this.criteria);
+        if (predicate != null) {
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
     }
 
     @Override
-    public final WA ifAnd(Function<C, IPredicate> function) {
-        return this.ifAnd(function.apply(this.criteria));
+    public final WA ifAnd(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        final Object paramOrExp;
+        paramOrExp = operand.get();
+        if (paramOrExp != null) {
+            final IPredicate predicate;
+            predicate = operator.apply(paramOrExp);
+            assert predicate != null;
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final WA ifAnd(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        final Object paramOrExp;
+        paramOrExp = operand.apply(keyName);
+        if (paramOrExp != null) {
+            final IPredicate predicate;
+            predicate = operator.apply(paramOrExp);
+            assert predicate != null;
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        final Object first, second;
+        if ((first = firstOperand.get()) != null && (second = secondOperand.get()) != null) {
+            final IPredicate predicate;
+            predicate = operator.apply(first, second);
+            assert predicate != null;
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        final Object first, second;
+        if ((first = operand.apply(firstKey)) != null && (second = operand.apply(secondKey)) != null) {
+            final IPredicate predicate;
+            predicate = operator.apply(first, second);
+            assert predicate != null;
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
     }
 
     @Override

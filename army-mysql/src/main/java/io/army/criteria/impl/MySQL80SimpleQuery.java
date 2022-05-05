@@ -469,16 +469,16 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     /*################################## blow ClauseSupplier method ##################################*/
 
     @Override
-    public _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String tableAlias) {
+    public _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String alias) {
         Objects.requireNonNull(item);
         final _TableBlock block;
         switch (joinType) {
             case NONE:
             case CROSS_JOIN: {
                 if (item instanceof TableMeta) {
-                    block = new MySQLNoOnBlock(joinType, item, tableAlias);
+                    block = new MySQLNoOnBlock(joinType, item, alias);
                 } else {
-                    block = new TableBlock.NoOnTableBlock(joinType, item, tableAlias);
+                    block = new TableBlock.NoOnTableBlock(joinType, item, alias);
                 }
             }
             break;
@@ -488,9 +488,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             case FULL_JOIN:
             case STRAIGHT_JOIN: {
                 if (item instanceof TableMeta) {
-                    block = new IndexHintOnBlock<>(joinType, (TableMeta<?>) item, tableAlias, this);
+                    block = new IndexHintOnBlock<>(joinType, (TableMeta<?>) item, alias, this);
                 } else {
-                    block = new OnClauseTableBlock<>(joinType, item, tableAlias, this);
+                    block = new OnClauseTableBlock<>(joinType, item, alias, this);
                 }
             }
             break;
@@ -876,11 +876,11 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }//PartitionOnBlock
 
     private static final class NoActionIndexHintOnClause<C, Q extends Query>
-            extends MySQLNoActionIndexHintOnBlock<
+            extends MySQLNoActionIndexHintOnClause<
             C,
-            MySQL80Query._IndexPurposeOnClause<C, Q>,
-            MySQL80Query._IndexHintOnSpec<C, Q>,
-            MySQL80Query._JoinSpec<C, Q>>
+            _IndexPurposeOnClause<C, Q>,
+            _IndexHintOnSpec<C, Q>,
+            _JoinSpec<C, Q>>
             implements MySQL80Query._IndexHintOnSpec<C, Q>, MySQL80Query._IndexPurposeOnClause<C, Q> {
 
         private NoActionIndexHintOnClause(_JoinSpec<C, Q> stmt) {
