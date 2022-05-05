@@ -866,6 +866,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
                 hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, partitionList, this.query);
             }
             this.query.criteriaContext.onAddBlock(hintOnBlock);
+            if (this.joinType == _JoinType.CROSS_JOIN) {
+                this.query.crossJoinEvent(true);
+            }
             return hintOnBlock;
         }
 

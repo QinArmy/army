@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartRowSet;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.Dialect;
 import io.army.dialect._MockDialects;
 import io.army.stmt.SimpleStmt;
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
 abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, LR, SP>
         extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
         implements CriteriaContextSpec, _PartRowSet, Statement._OrderByClause<C, OR>, Query._LimitClause<C, LR>
-        , Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>, RowSet.RowSetSpec<Q> {
+        , Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>, RowSet.RowSetSpec<Q>, _SelfDescribed {
 
     final CriteriaContext criteriaContext;
 

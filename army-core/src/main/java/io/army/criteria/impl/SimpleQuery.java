@@ -481,6 +481,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
 
+    @Override
     public final void appendSql(final _SqlContext context) {
         if (!(this instanceof SubQuery)) {
             throw _Exceptions.castCriteriaApi();
@@ -491,12 +492,12 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     protected final Q internalAsRowSet(final boolean fromAsQueryMethod) {
-        this.tableBlockList = this.criteriaContext.clear();
         if (this instanceof NonPrimaryStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
+        this.tableBlockList = this.criteriaContext.clear();
 
         // hint list
         if (this.hintList == null) {
@@ -508,7 +509,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         }
         // selection list
         final List<? extends SelectItem> selectPartList = this.selectItemList;
-        if (_CollectionUtils.isEmpty(selectPartList)) {
+        if (selectPartList == null || selectPartList.size() == 0) {
             throw _Exceptions.selectListIsEmpty();
         }
         if (this instanceof ScalarSubQuery
@@ -516,9 +517,13 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             throw _Exceptions.ScalarSubQuerySelectionError();
         }
 
+        if (this.predicateList == null) {
+            this.predicateList = Collections.emptyList();
+        }
+
         // group by and having
         final List<? extends SortItem> groupByList = this.groupByList;
-        if (_CollectionUtils.isEmpty(groupByList)) {
+        if (groupByList == null || groupByList.size() == 0) {
             this.groupByList = Collections.emptyList();
             this.hintList = Collections.emptyList();
         } else if (_CollectionUtils.isEmpty(this.havingList)) {
