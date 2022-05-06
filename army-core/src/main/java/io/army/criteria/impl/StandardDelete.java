@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
 import io.army.criteria.StandardStatement;
-import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
@@ -111,10 +110,10 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     private static final class BatchDelete<C> extends StandardDelete<
             C,
             Delete.StandardBatchWhereSpec<C>,
-            Statement.BatchParamClause<C, Delete.DeleteSpec>,
+            _BatchParamClause<C, DeleteSpec>,
             Delete.StandardBatchWhereAndSpec<C>>
             implements Delete.StandardBatchWhereAndSpec<C>, Delete.StandardBatchWhereSpec<C>
-            , Statement.BatchParamClause<C, Delete.DeleteSpec>, Delete.StandardBatchDeleteSpec<C>, _BatchDml {
+            , _BatchParamClause<C, DeleteSpec>, Delete.StandardBatchDeleteSpec<C>, _BatchDml {
 
         private List<?> paramList;
 

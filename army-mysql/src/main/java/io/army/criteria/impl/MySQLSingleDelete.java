@@ -419,7 +419,7 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
             MySQLDelete.BatchOrderBySpec<C>,
             MySQLDelete.BatchSingleWhereAndSpec<C>,
             MySQLDelete.BatchLimitSpec<C>,
-            Statement.BatchParamClause<C, Delete.DeleteSpec>>
+            _BatchParamClause<C, DeleteSpec>>
             implements MySQLDelete.BatchSinglePartitionSpec<C>, MySQLDelete.BatchSingleWhereAndSpec<C>
             , MySQLDelete.BatchSingleDeleteSpec<C>, _BatchDml {
 

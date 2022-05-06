@@ -88,7 +88,7 @@ public abstract class MySQLs_ extends MySQLSyntax {
      * @return MySQL 5.7 batch single-table update api instance
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static MySQLUpdate.BatchSingleUpdateSpec<Void> batchSingleUpdate() {
+    public static MySQLUpdate._BatchSingleUpdateClause<Void> batchSingleUpdate() {
         return MySQLSingleUpdate.batch(null);
     }
 
@@ -105,7 +105,7 @@ public abstract class MySQLs_ extends MySQLSyntax {
      * @return MySQL 5.7 batch single-table update api instance
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static <C> MySQLUpdate.BatchSingleUpdateSpec<C> batchSingleUpdate(C criteria) {
+    public static <C> MySQLUpdate._BatchSingleUpdateClause<C> batchSingleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLSingleUpdate.batch(criteria);
     }
@@ -128,14 +128,14 @@ public abstract class MySQLs_ extends MySQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static MySQLUpdate.BatchMultiUpdateSpec<Void> batchMultiUpdate() {
+    public static MySQLUpdate._BatchMultiUpdateClause<Void> batchMultiUpdate() {
         return MySQLMultiUpdate.batch(null);
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/update.html">UPDATE Statement</a>
      */
-    public static <C> MySQLUpdate.BatchMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
+    public static <C> MySQLUpdate._BatchMultiUpdateClause<C> batchMultiUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiUpdate.batch(criteria);
     }

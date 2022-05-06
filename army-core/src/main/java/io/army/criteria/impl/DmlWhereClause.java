@@ -63,33 +63,55 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA where(final @Nullable IPredicate predicate) {
-        if (predicate != null) {
-            this.predicateList.add((OperationPredicate) predicate);
-        }
+    public final WA where(IPredicate predicate) {
+        Objects.requireNonNull(predicate);
+        this.predicateList.add((OperationPredicate) predicate);
         return (WA) this;
     }
 
     @Override
     public final WA where(Function<Object, IPredicate> operator, Supplier<?> operand) {
-        return this.and(operator, operand);
+        return this.and(operator.apply(operand.get()));
     }
 
     @Override
     public final WA where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
-        return this.and(operator, operand, keyName);
+        return this.and(operator.apply(operand.apply(keyName)));
     }
 
     @Override
     public final WA where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
             , Supplier<?> secondOperand) {
-        return this.and(operator, firstOperand, secondOperand);
+        return this.and(operator.apply(firstOperand.get(), secondOperand.get()));
     }
 
     @Override
     public final WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
             , String firstKey, String secondKey) {
-        return this.and(operator, operand, firstKey, secondKey);
+        return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
+    }
+
+
+    @Override
+    public final WA whereIf(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.ifAnd(operator, operand);
+    }
+
+    @Override
+    public final WA whereIf(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.ifAnd(operator, operand, keyName);
+    }
+
+    @Override
+    public final WA whereIf(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        return this.ifAnd(operator, firstOperand, secondOperand);
+    }
+
+    @Override
+    public final WA whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        return this.ifAnd(operator, operand, firstKey, secondKey);
     }
 
     @Override

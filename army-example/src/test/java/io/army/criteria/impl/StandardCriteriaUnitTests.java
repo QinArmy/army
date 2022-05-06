@@ -65,7 +65,7 @@ public class StandardCriteriaUnitTests {
                 .update(ChinaRegion_.T, "c")
                 .set(ChinaRegion_.name, "武侠江湖")
                 .setPlus(ChinaRegion_.regionGdp, addGdp)
-                .where(ChinaRegion_.id.equal("1"))
+                .where(ChinaRegion_.id::equal, ChinaRegion_.T::id)
                 .and(ChinaRegion_.name.equal("江湖"))
                 .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
                 .asUpdate();

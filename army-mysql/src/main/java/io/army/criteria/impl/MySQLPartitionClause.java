@@ -82,7 +82,7 @@ abstract class MySQLPartitionClause<C, PR> implements MySQLQuery._PartitionClaus
         final List<String> list;
         list = function.apply(this.criteria);
         if (list != null && list.size() > 0) {
-            this.partitionList = MySQLUtils.asStringList(list, , MySQLUtils::partitionListIsEmpty);
+            this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
         }
         return (PR) this;
     }

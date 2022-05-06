@@ -1,6 +1,9 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.*;
+import io.army.criteria.Delete;
+import io.army.criteria.DialectStatement;
+import io.army.criteria.Hint;
+import io.army.criteria.TableItem;
 import io.army.domain.IDomain;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
@@ -99,8 +102,8 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface BatchLimitSpec<C> extends MySQLUpdate._RowCountLimitClause<C, BatchParamClause<C, DeleteSpec>>
-            , Statement.BatchParamClause<C, Delete.DeleteSpec> {
+    interface BatchLimitSpec<C> extends MySQLUpdate._RowCountLimitClause<C, _BatchParamClause<C, DeleteSpec>>
+            , _BatchParamClause<C, DeleteSpec> {
 
     }
 
@@ -237,14 +240,14 @@ public interface MySQLDelete extends Delete {
 
     }
 
-    interface BatchMultiWhereSpec<C> extends _WhereClause<C, BatchParamClause<C, DeleteSpec>
+    interface BatchMultiWhereSpec<C> extends _WhereClause<C, _BatchParamClause<C, DeleteSpec>
             , BatchMultiWhereAndSpec<C>> {
 
 
     }
 
     interface BatchMultiWhereAndSpec<C> extends _WhereAndClause<C, BatchMultiWhereAndSpec<C>>
-            , Statement.BatchParamClause<C, Delete.DeleteSpec> {
+            , _BatchParamClause<C, DeleteSpec> {
 
 
     }

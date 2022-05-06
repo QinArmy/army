@@ -74,11 +74,11 @@ public abstract class MySQLs extends MySQLSyntax {
         return MySQLSingleUpdate.simple80(criteria);
     }
 
-    public static MySQLUpdate.BatchSingleWithAndUpdateSpec<Void> batchSingleUpdate() {
+    public static MySQLUpdate._BatchSingleWithAndUpdateSpec<Void> batchSingleUpdate() {
         return MySQLSingleUpdate.batch80(null);
     }
 
-    public static <C> MySQLUpdate.BatchSingleWithAndUpdateSpec<C> batchSingleUpdate(C criteria) {
+    public static <C> MySQLUpdate._BatchSingleWithAndUpdateSpec<C> batchSingleUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLSingleUpdate.batch80(criteria);
     }
@@ -93,11 +93,11 @@ public abstract class MySQLs extends MySQLSyntax {
         return MySQLMultiUpdate.simple80(criteria);
     }
 
-    static MySQLUpdate.BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
+    static MySQLUpdate._BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
         return MySQLMultiUpdate.batch80(null);
     }
 
-    static <C> MySQLUpdate.BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
+    static <C> MySQLUpdate._BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiUpdate.batch80(criteria);
     }

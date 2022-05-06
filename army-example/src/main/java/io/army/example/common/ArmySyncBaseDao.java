@@ -80,13 +80,13 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
                     .select(SQLs.childGroup(child, "c", "p"))
                     .from(table, "c")
                     .join(parent, "p").on(table.id().equal(parent.id()))
-                    .where(table.id().equalLiteral(id))
+                    .whereIf(table.id().equalLiteral(id))
                     .asQuery();
         } else {
             stmt = SQLs.query()
                     .select(SQLs.group(table, "t"))
                     .from(table, "t")
-                    .where(table.id().equalLiteral(id))
+                    .whereIf(table.id().equalLiteral(id))
                     .asQuery();
         }
         return stmt;

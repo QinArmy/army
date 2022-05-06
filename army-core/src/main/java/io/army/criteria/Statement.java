@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 import io.army.dialect.Dialect;
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
@@ -66,17 +65,17 @@ public interface Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <C>  criteria object java type.
+     * @param <C>  criteria object java type
      * @param <BR> next clause java type
      * @since 1.0
      */
-    interface BatchParamClause<C, BR> {
+    interface _BatchParamClause<C, BR> {
 
-        BR paramList(List<?> paramList);
+        <P> BR paramList(List<P> paramList);
 
-        BR paramList(Supplier<List<?>> supplier);
+        <P> BR paramList(Supplier<List<P>> supplier);
 
-        BR paramList(Function<C, List<?>> function);
+        <P> BR paramList(Function<C, List<P>> function);
 
         BR paramList(Function<String, ?> function, String keyName);
     }
@@ -305,7 +304,7 @@ public interface Statement {
 
         WR where(Consumer<List<IPredicate>> consumer);
 
-        WA where(@Nullable IPredicate predicate);
+        WA where(IPredicate predicate);
 
         WA where(Function<Object, IPredicate> operator, Supplier<?> operand);
 
@@ -314,6 +313,14 @@ public interface Statement {
         WA where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
         WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
+        WA whereIf(Function<Object, IPredicate> operator, Supplier<?> operand);
+
+        WA whereIf(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
+
+        WA whereIf(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        WA whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
 
     }
 

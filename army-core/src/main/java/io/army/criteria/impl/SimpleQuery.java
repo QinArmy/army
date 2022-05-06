@@ -204,13 +204,53 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final AR where(@Nullable IPredicate predicate) {
-        if (predicate != null) {
-            final List<_Predicate> predicateList = new ArrayList<>();
-            predicateList.add((OperationPredicate) predicate);
-            this.predicateList = predicateList;
-        }
-        return (AR) this;
+    public final AR where(IPredicate predicate) {
+        return this.and(predicate);
+    }
+
+    @Override
+    public final AR where(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.and(operator.apply(operand.get()));
+    }
+
+    @Override
+    public final AR where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.and(operator.apply(operand.apply(keyName)));
+    }
+
+    @Override
+    public final AR where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        return this.and(operator.apply(firstOperand.get(), secondOperand.get()));
+    }
+
+    @Override
+    public final AR where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
+    }
+
+
+    @Override
+    public final AR whereIf(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.ifAnd(operator, operand);
+    }
+
+    @Override
+    public final AR whereIf(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.ifAnd(operator, operand, keyName);
+    }
+
+    @Override
+    public final AR whereIf(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
+        return this.ifAnd(operator, firstOperand, secondOperand);
+    }
+
+    @Override
+    public final AR whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
+        return this.ifAnd(operator, operand, firstKey, secondKey);
     }
 
     @Override
@@ -231,28 +271,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             this.predicateList = CriteriaUtils.asPredicateList(predicateList, null);
         }
         return (WR) this;
-    }
-
-    @Override
-    public final AR where(Function<Object, IPredicate> operator, Supplier<?> operand) {
-        return this.and(operator, operand);
-    }
-
-    @Override
-    public final AR where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
-        return this.and(operator, operand, keyName);
-    }
-
-    @Override
-    public final AR where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
-            , Supplier<?> secondOperand) {
-        return this.and(operator, firstOperand, secondOperand);
-    }
-
-    @Override
-    public final AR where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
-            , String firstKey, String secondKey) {
-        return this.and(operator, operand, firstKey, secondKey);
     }
 
 

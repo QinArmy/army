@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.StandardStatement;
-import io.army.criteria.Statement;
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
@@ -73,6 +72,11 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR,
     }
 
     @Override
+    void crossJoinEvent(boolean success) {
+        //no-op
+    }
+
+    @Override
     Dialect defaultDialect() {
         return Dialect.MySQL57;
     }
@@ -129,10 +133,10 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR,
             C,
             Update.StandardBatchSetSpec<C>,
             Update.StandardBatchWhereSpec<C>,
-            Statement.BatchParamClause<C, _UpdateSpec>,
+            _BatchParamClause<C, _UpdateSpec>,
             Update.StandardBatchWhereAndSpec<C>> implements Update.StandardBatchUpdateSpec<C>
             , Update.StandardBatchWhereSpec<C>, Update.StandardBatchWhereAndSpec<C>
-            , Statement.BatchParamClause<C, _UpdateSpec>, _BatchDml {
+            , _BatchParamClause<C, _UpdateSpec>, _BatchDml {
 
         private List<?> paramList;
 
@@ -141,19 +145,19 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR,
         }
 
         @Override
-        public _UpdateSpec paramList(List<?> paramList) {
+        public <P> _UpdateSpec paramList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(paramList);
             return this;
         }
 
         @Override
-        public _UpdateSpec paramList(Supplier<List<?>> supplier) {
+        public <P> _UpdateSpec paramList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(supplier.get());
             return this;
         }
 
         @Override
-        public _UpdateSpec paramList(Function<C, List<?>> function) {
+        public <P> _UpdateSpec paramList(Function<C, List<P>> function) {
             this.paramList = CriteriaUtils.paramList(function.apply(this.criteria));
             return this;
         }

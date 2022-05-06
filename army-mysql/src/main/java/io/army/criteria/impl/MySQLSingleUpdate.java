@@ -48,7 +48,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         return update;
     }
 
-    static <C> MySQLUpdate.BatchSingleUpdateSpec<C> batch(@Nullable C criteria) {
+    static <C> _BatchSingleUpdateClause<C> batch(@Nullable C criteria) {
         final BatchUpdate<C, Void> update;
         update = new BatchUpdate<>(criteria);
         return update;
@@ -58,7 +58,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         return new SimpleWithAndUpdate<>(criteria);
     }
 
-    static <C> MySQLUpdate.BatchSingleWithAndUpdateSpec<C> batch80(@Nullable C criteria) {
+    static <C> _BatchSingleWithAndUpdateSpec<C> batch80(@Nullable C criteria) {
         return new BatchWithAndUpdate<>(criteria);
     }
 
@@ -596,17 +596,17 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
             C,
             WE,                                                 // WE
             MySQLUpdate._SingleIndexHintSpec<C>,                //UR
-            MySQLUpdate._SinglePartitionSpec<C>,                //UP
+            _SinglePartitionClause<C>,                //UP
             _AsClause<MySQLUpdate._SingleIndexHintSpec<C>>,     //PR
-            MySQLUpdate._IndexOrderBySpec<C>,                   //IR
+            _IndexOrderBy57Clause<C>,                   //IR
             MySQLUpdate._SingleWhereSpec<C>,                    //SR
             MySQLUpdate._OrderBySpec<C>,                        //WR
             MySQLUpdate._SingleWhereAndSpec<C>,                 //WA
             MySQLUpdate._LimitSpec<C>,                          //OR
             _UpdateSpec>                                        //LR
-            implements _SingleUpdate57Clause<C>, _SinglePartitionSpec<C>
+            implements _SingleUpdate57Clause<C>, _SinglePartitionClause<C>
             , _SingleIndexHintSpec<C>, _SingleWhereSpec<C>, _SingleWhereAndSpec<C>
-            , _OrderBySpec<C>, _IndexOrderBySpec<C> {
+            , _OrderBySpec<C>, _IndexOrderBy57Clause<C> {
 
         private SimpleUpdate(@Nullable C criteria) {
             super(criteria);
@@ -618,19 +618,19 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
     private static class BatchUpdate<C, WE> extends MySQLSingleUpdate<
             C,
             WE,// WE
-            MySQLUpdate.BatchSingleIndexHintSpec<C>,//UR
-            MySQLUpdate.BatchSinglePartitionSpec<C>,//UP
-            _AsClause<BatchSingleIndexHintSpec<C>>,//PR
-            MySQLUpdate.BatchIndexOrderBySpec<C>,   //IR
-            MySQLUpdate.BatchSingleWhereSpec<C>,    //SR
-            MySQLUpdate.BatchOrderBySpec<C>,        //WR
-            MySQLUpdate.BatchSingleWhereAndSpec<C>, //WA
-            MySQLUpdate.BatchLimitSpec<C>,         //OR
-            Statement.BatchParamClause<C, _UpdateSpec>> //LR
-            implements MySQLUpdate.BatchSingleUpdateSpec<C>, MySQLUpdate.BatchSinglePartitionSpec<C>
-            , MySQLUpdate.BatchSingleIndexHintSpec<C>, MySQLUpdate.BatchIndexOrderBySpec<C>
-            , MySQLUpdate.BatchSingleWhereSpec<C>, MySQLUpdate.BatchSingleWhereAndSpec<C>
-            , MySQLUpdate.BatchOrderBySpec<C>, Statement.BatchParamClause<C, _UpdateSpec>, _BatchDml {
+            _BatchSingleIndexHintSpec<C>,//UR
+            _BatchSinglePartitionClause<C>,//UP
+            _AsClause<_BatchSingleIndexHintSpec<C>>,//PR
+            _BatchIndexOrderByClause<C>,   //IR
+            _BatchSingleWhereSpec<C>,    //SR
+            _BatchOrderBySpec<C>,        //WR
+            _BatchSingleWhereAndSpec<C>, //WA
+            _BatchLimitSpec<C>,         //OR
+            _BatchParamClause<C, _UpdateSpec>> //LR
+            implements _BatchSingleUpdateClause<C>, _BatchSinglePartitionClause<C>
+            , _BatchSingleIndexHintSpec<C>, _BatchIndexOrderByClause<C>
+            , _BatchSingleWhereSpec<C>, _BatchSingleWhereAndSpec<C>
+            , _BatchOrderBySpec<C>, _BatchParamClause<C, _UpdateSpec>, _BatchDml {
 
         private List<?> paramList;
 
@@ -699,8 +699,8 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
 
     }//SimpleWithAndUpdate
 
-    private static final class BatchWithAndUpdate<C> extends BatchUpdate<C, BatchSingleUpdateSpec<C>>
-            implements MySQLUpdate.BatchSingleWithAndUpdateSpec<C>, _MySQLWithClause {
+    private static final class BatchWithAndUpdate<C> extends BatchUpdate<C, _BatchSingleUpdateClause<C>>
+            implements _BatchSingleWithAndUpdateSpec<C>, _MySQLWithClause {
 
         private boolean recursive;
 

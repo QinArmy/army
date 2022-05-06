@@ -362,7 +362,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
             MySQLDelete.BatchMultiPartitionJoinSpec<C>,
             MySQLDelete.BatchMultiOnSpec<C>,
             MySQLDelete.BatchMultiPartitionOnSpec<C>,
-            Statement.BatchParamClause<C, Delete.DeleteSpec>,
+            _BatchParamClause<C, DeleteSpec>,
             MySQLDelete.BatchMultiWhereAndSpec<C>>
             implements MySQLDelete.BatchMultiWhereAndSpec<C>, MySQLDelete.BatchMultiJoinSpec<C>, _BatchDml
             , MySQLDelete.BatchMultiDeleteSpec<C> {

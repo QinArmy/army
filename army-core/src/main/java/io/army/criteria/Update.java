@@ -287,7 +287,7 @@ public interface Update extends NarrowDmlStatement {
 
 
     interface StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, StandardBatchWhereAndSpec<C>>
-            , Statement.BatchParamClause<C, _UpdateSpec> {
+            , _BatchParamClause<C, _UpdateSpec> {
 
     }
 
@@ -297,8 +297,8 @@ public interface Update extends NarrowDmlStatement {
     }
 
     interface StandardBatchWhereSpec<C> extends StandardBatchSetSpec<C>
-            , _WhereClause<C, BatchParamClause<C, _UpdateSpec>, StandardBatchWhereAndSpec<C>>
-            , Statement.BatchParamClause<C, _UpdateSpec> {
+            , _WhereClause<C, _BatchParamClause<C, _UpdateSpec>, StandardBatchWhereAndSpec<C>>
+            , _BatchParamClause<C, _UpdateSpec> {
 
     }
 

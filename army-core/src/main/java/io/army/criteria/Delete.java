@@ -42,12 +42,12 @@ public interface Delete extends NarrowDmlStatement {
 
 
     interface StandardBatchWhereSpec<C>
-            extends _WhereClause<C, BatchParamClause<C, DeleteSpec>, StandardBatchWhereAndSpec<C>> {
+            extends _WhereClause<C, _BatchParamClause<C, DeleteSpec>, StandardBatchWhereAndSpec<C>> {
 
     }
 
     interface StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, StandardBatchWhereAndSpec<C>>
-            , Statement.BatchParamClause<C, Delete.DeleteSpec> {
+            , _BatchParamClause<C, DeleteSpec> {
 
     }
 

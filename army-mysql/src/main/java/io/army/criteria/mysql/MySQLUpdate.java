@@ -20,7 +20,7 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This interface representing single table UPDATE clause for MySQL syntax.
+     * This interface representing single-table UPDATE clause for MySQL syntax.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -28,25 +28,41 @@ public interface MySQLUpdate extends Update {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <UR> next clause java type
+     * @param <UT> next clause java type
      * @param <UP> next clause java type
      * @since 1.0
      */
-    interface _SingleUpdateClause<UR, UP> {
+    interface _SingleUpdateClause<UT, UP> {
 
         UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table);
 
-        UR update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table, String tableAlias);
 
         UP update(TableMeta<?> table);
 
-        UR update(TableMeta<?> table, String tableAlias);
+        UT update(TableMeta<?> table, String tableAlias);
 
     }
 
-
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>method {@link MySQLUpdate._SingleUpdate57Clause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
     interface _SingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, _SingleUpdate57Clause<C>>
             , _SingleUpdate57Clause<C> {
 
@@ -55,10 +71,18 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This representing MySQL single-table update syntax update clause.
+     * This interface representing single-table UPDATE clause for MySQL 5.7 syntax.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type.
+     * @since 1.0
      */
-    interface _SingleUpdate57Clause<C> extends _SingleUpdateClause<_SingleIndexHintSpec<C>, _SinglePartitionSpec<C>> {
+    interface _SingleUpdate57Clause<C> extends _SingleUpdateClause<_SingleIndexHintSpec<C>, _SinglePartitionClause<C>> {
 
 
     }
@@ -66,10 +90,18 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This representing MySQL single-table update syntax partition clause.
+     * This interface representing PARTITION clause for  single-table UPDATE syntax.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type.
+     * @since 1.0
      */
-    interface _SinglePartitionSpec<C>
+    interface _SinglePartitionClause<C>
             extends MySQLQuery._PartitionClause<C, _AsClause<_SingleIndexHintSpec<C>>> {
 
     }
@@ -77,24 +109,57 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This representing MySQL single-table update syntax index hint clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLQuery._IndexHintClause}</li>
+     *          <li>method {@link MySQLUpdate._SingleSet57Clause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
     interface _SingleIndexHintSpec<C>
-            extends MySQLQuery._IndexHintClause<C, _IndexOrderBySpec<C>, _SingleIndexHintSpec<C>>
+            extends MySQLQuery._IndexHintClause<C, _IndexOrderBy57Clause<C>, _SingleIndexHintSpec<C>>
             , _SingleSet57Clause<C> {
 
     }
 
-    interface _IndexOrderBySpec<C> extends MySQLQuery._IndexOrderByClause<C, _SingleIndexHintSpec<C>> {
+    /**
+     * <p>
+     * This interface representing index hint FOR ORDER BY clause for single-table UPDATE syntax.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type.
+     * @since 1.0
+     */
+    interface _IndexOrderBy57Clause<C> extends MySQLQuery._IndexOrderByClause<C, _SingleIndexHintSpec<C>> {
 
     }
 
 
     /**
      * <p>
-     * This representing MySQL single-table update syntax set clause.
+     * This interface representing SET clause for single-table UPDATE syntax.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type.
+     * @since 1.0
      */
     interface _SingleSet57Clause<C> extends _SimpleSetClause<C, _SingleWhereSpec<C>> {
 
@@ -103,8 +168,20 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This representing MySQL single-table update syntax where clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLUpdate._SingleSet57Clause}</li>
+     *          <li>method {@link Statement._WhereClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
     interface _SingleWhereSpec<C> extends _SingleSet57Clause<C>
             , _WhereClause<C, _OrderBySpec<C>, _SingleWhereAndSpec<C>> {
@@ -113,8 +190,20 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This representing MySQL single-table update syntax and clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLUpdate._OrderBySpec}</li>
+     *          <li>method {@link Statement._WhereAndClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
     interface _SingleWhereAndSpec<C> extends _WhereAndClause<C, _SingleWhereAndSpec<C>>
             , _OrderBySpec<C> {
@@ -123,8 +212,20 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This representing MySQL single-table update syntax order by clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLUpdate._LimitSpec}</li>
+     *          <li>method {@link Statement._OrderByClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
     interface _OrderBySpec<C> extends _OrderByClause<C, _LimitSpec<C>>, _LimitSpec<C> {
 
@@ -132,8 +233,20 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This representing MySQL single-table update syntax limit clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Update._UpdateSpec}</li>
+     *          <li>method {@link Statement._RowCountLimitClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
     interface _LimitSpec<C> extends _RowCountLimitClause<C, _UpdateSpec>, _UpdateSpec {
 
@@ -141,94 +254,208 @@ public interface MySQLUpdate extends Update {
 
     /*################################## blow batch single-table update spec ##################################*/
 
-    interface BatchSingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, BatchSingleUpdateSpec<C>>
-            , MySQLUpdate.BatchSingleUpdateSpec<C> {
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>method {@link _BatchSingleUpdateClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _BatchSingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, _BatchSingleUpdateClause<C>>
+            , _BatchSingleUpdateClause<C> {
 
     }
 
     /**
      * <p>
-     * This representing MySQL batch single-table update syntax update clause.
+     * This interface representing batch single-table UPDATE clause.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type.
+     * @since 1.0
      */
-    interface BatchSingleUpdateSpec<C>
-            extends _SingleUpdateClause<BatchSingleIndexHintSpec<C>, BatchSinglePartitionSpec<C>> {
+    interface _BatchSingleUpdateClause<C>
+            extends _SingleUpdateClause<_BatchSingleIndexHintSpec<C>, _BatchSinglePartitionClause<C>> {
 
     }
 
 
     /**
      * <p>
-     * This representing MySQL batch single-table update syntax partition clause.
+     * This interface representing PARTITION clause for batch single-table UPDATE.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type.
+     * @since 1.0
      */
-    interface BatchSinglePartitionSpec<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<BatchSingleIndexHintSpec<C>>> {
+    interface _BatchSinglePartitionClause<C>
+            extends MySQLQuery._PartitionClause<C, _AsClause<_BatchSingleIndexHintSpec<C>>> {
 
     }
 
     /**
      * <p>
-     * This representing MySQL batch single-table update syntax index hint clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLQuery._IndexHintClause}</li>
+     *          <li>method {@link _BatchSingleSetClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchSingleIndexHintSpec<C>
-            extends MySQLQuery._IndexHintClause<C, BatchIndexOrderBySpec<C>, BatchSingleIndexHintSpec<C>>
-            , MySQLUpdate.BatchSingleSetSpec<C> {
+    interface _BatchSingleIndexHintSpec<C>
+            extends MySQLQuery._IndexHintClause<C, _BatchIndexOrderByClause<C>, _BatchSingleIndexHintSpec<C>>
+            , _BatchSingleSetClause<C> {
 
     }
 
-    interface BatchIndexOrderBySpec<C> extends MySQLQuery._IndexOrderByClause<C, BatchSingleIndexHintSpec<C>> {
+    /**
+     * <p>
+     * This interface representing index hint 'FOR ORDER BY' clause for batch single-table UPDATE.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type.
+     * @since 1.0
+     */
+    interface _BatchIndexOrderByClause<C> extends MySQLQuery._IndexOrderByClause<C, _BatchSingleIndexHintSpec<C>> {
 
     }
 
 
     /**
      * <p>
-     * This representing MySQL batch single-table update syntax set clause.
+     * This interface representing SET clause for batch single-table UPDATE.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type.
+     * @since 1.0
      */
-    interface BatchSingleSetSpec<C> extends _BatchSetClause<C, BatchSingleWhereSpec<C>> {
+    interface _BatchSingleSetClause<C> extends _BatchSetClause<C, _BatchSingleWhereSpec<C>> {
 
     }
 
     /**
      * <p>
-     * This representing MySQL batch single-table update syntax where clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Statement._WhereClause}</li>
+     *          <li>method {@link MySQLUpdate._BatchSingleSetClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchSingleWhereSpec<C> extends MySQLUpdate.BatchSingleSetSpec<C>
-            , _WhereClause<C, BatchOrderBySpec<C>, BatchSingleWhereAndSpec<C>> {
+    interface _BatchSingleWhereSpec<C> extends _BatchSingleSetClause<C>
+            , _WhereClause<C, _BatchOrderBySpec<C>, _BatchSingleWhereAndSpec<C>> {
 
     }
 
     /**
      * <p>
-     * This representing MySQL batch single-table update syntax and clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Statement._WhereAndClause}</li>
+     *          <li>method {@link _BatchOrderBySpec}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchSingleWhereAndSpec<C> extends _WhereAndClause<C, BatchSingleWhereAndSpec<C>>
-            , MySQLUpdate.BatchOrderBySpec<C> {
+    interface _BatchSingleWhereAndSpec<C> extends _WhereAndClause<C, _BatchSingleWhereAndSpec<C>>
+            , _BatchOrderBySpec<C> {
 
     }
 
     /**
      * <p>
-     * This representing MySQL batch single-table update syntax order by clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Statement._OrderByClause}</li>
+     *          <li>method {@link _BatchLimitSpec}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchOrderBySpec<C> extends _OrderByClause<C, BatchLimitSpec<C>>
-            , MySQLUpdate.BatchLimitSpec<C> {
+    interface _BatchOrderBySpec<C> extends _OrderByClause<C, _BatchLimitSpec<C>>
+            , _BatchLimitSpec<C> {
 
     }
 
     /**
      * <p>
-     * This representing MySQL batch single-table update syntax limit clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Statement._RowCountLimitClause}</li>
+     *          <li>method {@link Statement._BatchParamClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchLimitSpec<C> extends _RowCountLimitClause<C, BatchParamClause<C, _UpdateSpec>>
-            , Statement.BatchParamClause<C, _UpdateSpec> {
+    interface _BatchLimitSpec<C> extends _RowCountLimitClause<C, _BatchParamClause<C, _UpdateSpec>>
+            , Statement._BatchParamClause<C, _UpdateSpec> {
 
     }
 
@@ -238,6 +465,22 @@ public interface MySQLUpdate extends Update {
     /*################################## blow multi-table update api interface ##################################*/
 
 
+    /**
+     * <p>
+     * This interface representing multi-table UPDATE clause for MySQL syntax.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C>  criteria object java type
+     * @param <UT> next clause java type
+     * @param <US> next clause java type
+     * @param <UP> next clause java type
+     * @since 1.0
+     */
     interface MultiUpdateClause<C, UT, US, UP> {
 
         UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
@@ -266,7 +509,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link DialectStatement._WithCteClause}</li>
-     *          <li>{@link _MultiUpdate57Clause}</li>
+     *          <li>{@link MySQLUpdate._MultiUpdate57Clause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -286,9 +529,9 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This interface representing multi-table update clause.
+     * This interface representing multi-table UPDATE clause for MySQL 5.7.
      * </p>
-     * <p>
+     * <p>/
      * <strong>Note:</strong><br/>
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
@@ -344,7 +587,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _IndexHintJoinSpec<C>
-            extends MySQLQuery._IndexHintClause<C, _IndexJoinJoinClause<C>, _IndexHintJoinSpec<C>>
+            extends MySQLQuery._IndexHintClause<C, _IndexForJoinJoinClause<C>, _IndexHintJoinSpec<C>>
             , _MultiJoinSpec<C> {
 
     }
@@ -362,86 +605,156 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _IndexJoinJoinClause<C> extends MySQLQuery._IndexJoinClause<C, _IndexHintJoinSpec<C>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing MySQL multi-table update syntax partition clause(after join clause).
-     * </p>
-     */
-    interface MultiPartitionOnSpec<C> extends MySQLQuery._PartitionClause<C, _AsClause<MultiIndexHintOnSpec<C>>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing MySQL multi-table update syntax index hint clause(after join clause).
-     * </p>
-     */
-    interface MultiIndexHintOnSpec<C> extends MySQLQuery._IndexHintClause<C, IndexJoinOnSpec<C>, MultiIndexHintOnSpec<C>>
-            , MySQLUpdate.MultiOnSpec<C> {
-
-    }
-
-    interface IndexJoinOnSpec<C> extends MySQLQuery._IndexJoinClause<C, MultiIndexHintOnSpec<C>> {
+    interface _IndexForJoinJoinClause<C> extends MySQLQuery._IndexForJoinClause<C, _IndexHintJoinSpec<C>> {
 
     }
 
 
     /**
      * <p>
-     * This interface representing MySQL multi-table update syntax join clause.
-     * This interface extends below interfaces:
-     * <ul>
-     *     <li>{@link  MySQLQuery._MySQLJoinClause}</li>
-     *     <li>{@link MySQLUpdate.MultiSetSpec}</li>
-     * </ul>
+     * This interface representing PARTITION clause for multi-table update clause.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface _MultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, MultiIndexHintOnSpec<C>, MultiOnSpec<C>>
-            , MySQLUpdate.MultiSetSpec<C> {
+    interface _MultiPartitionOnClause<C> extends MySQLQuery._PartitionClause<C, _AsClause<_MultiIndexHintOnSpec<C>>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLQuery._IndexHintClause}</li>
+     *          <li>method {@link Statement._AsClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _MultiIndexHintOnSpec<C> extends MySQLQuery._IndexHintClause<C, _IndexForJoinOnClause<C>, _MultiIndexHintOnSpec<C>>
+            , Statement._OnClause<C, _MultiJoinSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing index hint 'FOR JOIN' clause for multi-table update clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _IndexForJoinOnClause<C> extends MySQLQuery._IndexForJoinClause<C, _MultiIndexHintOnSpec<C>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLQuery._MySQLJoinClause}</li>
+     *          <li>{@link MySQLQuery._MySQLJoinCteClause}</li>
+     *          <li>{@link DialectStatement._CrossJoinCteClause}</li>
+     *          <li>{@link MySQLQuery._MySQLDialectJoinClause}</li>
+     *          <li>{@link DialectStatement._DialectCrossJoinClause}</li>
+     *          <li>{@link MySQLUpdate._MultiSetClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     */
+    interface _MultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, _MultiIndexHintOnSpec<C>, _OnClause<C, _MultiJoinSpec<C>>>
+            , MySQLQuery._MySQLJoinCteClause<_OnClause<C, _MultiJoinSpec<C>>>, DialectStatement._CrossJoinCteClause<_MultiJoinSpec<C>>
+            , _CrossJoinClause<C, _IndexHintJoinSpec<C>, _MultiJoinSpec<C>>
+            , MySQLQuery._MySQLDialectJoinClause<C, _MultiPartitionOnClause<C>>
+            , DialectStatement._DialectCrossJoinClause<C, _MultiPartitionJoinClause<C>>
+            , _MultiSetClause<C> {
 
 
     }
 
     /**
      * <p>
-     * This interface representing MySQL multi-table update syntax on clause.
+     * This interface representing SET clause for multi-table update clause.
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface MultiOnSpec<C> extends _OnClause<C, _MultiJoinSpec<C>> {
+    interface _MultiSetClause<C> extends _SimpleSetClause<C, _MultiWhereSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Statement._WhereClause}</li>
+     *          <li>{@link MySQLUpdate._MultiSetClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _MultiWhereSpec<C> extends _WhereClause<C, _UpdateSpec, _MultiWhereAndSpec<C>>
+            , _MultiSetClause<C> {
 
 
     }
 
     /**
      * <p>
-     * This interface representing MySQL multi-table update syntax set clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Statement._WhereAndClause}</li>
+     *          <li>{@link Update._UpdateSpec}</li>
+     *     </ul>
      * </p>
-     */
-    interface MultiSetSpec<C> extends _SimpleSetClause<C, MultiWhereSpec<C>> {
-
-    }
-
-    /**
      * <p>
-     * This interface representing MySQL multi-table update syntax where clause.
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface MultiWhereSpec<C> extends _WhereClause<C, _UpdateSpec, MultiWhereAndSpec<C>>
-            , MySQLUpdate.MultiSetSpec<C> {
-
-
-    }
-
-    /**
-     * <p>
-     * This interface representing MySQL multi-table update syntax and clause.
-     * </p>
-     */
-    interface MultiWhereAndSpec<C> extends _WhereAndClause<C, MultiWhereAndSpec<C>>
+    interface _MultiWhereAndSpec<C> extends _WhereAndClause<C, _MultiWhereAndSpec<C>>
             , _UpdateSpec {
 
 
@@ -449,129 +762,258 @@ public interface MySQLUpdate extends Update {
 
     /*################################## blow batch multi-table update spec ##################################*/
 
-    interface BatchWithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, BatchMultiUpdateSpec<C>>
-            , MySQLUpdate.BatchMultiUpdateSpec<C> {
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link _BatchMultiUpdateClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _BatchWithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, _BatchMultiUpdateClause<C>>
+            , _BatchMultiUpdateClause<C> {
 
     }
 
     /**
      * <p>
-     * This interface representing MySQL batch multi-table update syntax update clause
+     * This interface representing batch multi-table UPDATE clause.
      * </p>
+     * <p>/
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchMultiUpdateSpec<C> extends MySQLUpdate.MultiUpdateClause<
+    interface _BatchMultiUpdateClause<C> extends MySQLUpdate.MultiUpdateClause<
             C,
-            MySQLUpdate.BatchMultiPartitionJoinSpec<C>,
-            MySQLUpdate.BatchMultiIndexHintJoinSpec<C>,
-            MySQLUpdate.BatchMultiJoinSpec<C>> {
+            MySQLUpdate._BatchMultiIndexHintJoinSpec<C>,
+            MySQLUpdate._BatchMultiJoinSpec<C>,
+            MySQLUpdate._BatchMultiPartitionJoinClause<C>> {
 
     }
 
 
     /**
      * <p>
-     * This interface representing MySQL batch multi-table update syntax partition clause(after update clause and before join clause).
+     * This interface representing PARTITION clause for batch multi-table UPDATE clause.
      * </p>
+     * <p>/
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchMultiPartitionJoinSpec<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<BatchMultiIndexHintJoinSpec<C>>> {
+    interface _BatchMultiPartitionJoinClause<C>
+            extends MySQLQuery._PartitionClause<C, _AsClause<_BatchMultiIndexHintJoinSpec<C>>> {
 
     }
 
     /**
      * <p>
-     * This interface representing MySQL batch multi-table update syntax index hint clause(after update clause and before join clause).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLQuery._IndexHintClause}</li>
+     *          <li>{@link _BatchMultiJoinSpec}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchMultiIndexHintJoinSpec<C>
-            extends MySQLQuery._IndexHintClause<C, BatchIndexJoinJoinSpec<C>, BatchMultiIndexHintJoinSpec<C>>
-            , MySQLUpdate.BatchMultiJoinSpec<C> {
-
-    }
-
-    interface BatchIndexJoinJoinSpec<C> extends MySQLQuery._IndexJoinClause<C, BatchMultiIndexHintJoinSpec<C>> {
+    interface _BatchMultiIndexHintJoinSpec<C>
+            extends MySQLQuery._IndexHintClause<C, _BatchIndexForJoinJoinClause<C>, _BatchMultiIndexHintJoinSpec<C>>
+            , _BatchMultiJoinSpec<C> {
 
     }
 
     /**
      * <p>
-     * This interface representing MySQL batch multi-table update syntax partition clause(after join clause).
+     * This interface representing index hint 'FOR JOIN' clause for batch multi-table UPDATE clause.
      * </p>
+     * <p>/
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchMultiPartitionOnSpec<C> extends MySQLQuery._PartitionClause<C, _AsClause<BatchMultiIndexHintOnSpec<C>>> {
+    interface _BatchIndexForJoinJoinClause<C> extends MySQLQuery._IndexForJoinClause<C, _BatchMultiIndexHintJoinSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing PARTITION clause for batch multi-table UPDATE clause.
+     * </p>
+     * <p>/
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _BatchMultiPartitionOnClause<C> extends MySQLQuery._PartitionClause<C, _AsClause<_BatchMultiIndexHintOnSpec<C>>> {
 
     }
 
 
     /**
      * <p>
-     * This interface representing MySQL batch multi-table update syntax index hint clause(after join clause).
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLQuery._IndexHintClause}</li>
+     *          <li>{@link Statement._OnClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchMultiIndexHintOnSpec<C> extends MySQLQuery._IndexHintClause<C, BatchIndexJoinOnSpec<C>, BatchMultiIndexHintOnSpec<C>>
-            , MySQLUpdate.BatchMultiOnSpec<C> {
+    interface _BatchMultiIndexHintOnSpec<C> extends MySQLQuery._IndexHintClause<C, _BatchIndexForJoinOnClause<C>, _BatchMultiIndexHintOnSpec<C>>
+            , _OnClause<C, _BatchMultiJoinSpec<C>> {
 
     }
 
-    interface BatchIndexJoinOnSpec<C> extends MySQLQuery._IndexJoinClause<C, BatchMultiIndexHintOnSpec<C>> {
+    /**
+     * <p>
+     * This interface representing index hint 'FOR JOIN' clause for batch multi-table update clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _BatchIndexForJoinOnClause<C> extends MySQLQuery._IndexForJoinClause<C, _BatchMultiIndexHintOnSpec<C>> {
 
     }
 
 
     /**
      * <p>
-     * This interface representing MySQL batch multi-table update syntax join clause.
-     * This interface extends below interfaces:
-     * <ul>
-     *     <li>{@link  MySQLQuery._MySQLJoinClause}</li>
-     *     <li>{@link MySQLUpdate.BatchMultiSetSpec}</li>
-     * </ul>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLQuery._MySQLJoinClause}</li>
+     *          <li>{@link MySQLQuery._MySQLJoinCteClause}</li>
+     *          <li>{@link DialectStatement._CrossJoinCteClause}</li>
+     *          <li>{@link MySQLQuery._MySQLDialectJoinClause}</li>
+     *          <li>{@link DialectStatement._DialectCrossJoinClause}</li>
+     *          <li>{@link MySQLUpdate._BatchMultiSetClause}</li>
+     *     </ul>
      * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
      */
-    interface BatchMultiJoinSpec<C> extends MySQLQuery._MySQLJoinClause<C, BatchMultiIndexHintOnSpec<C>, BatchMultiOnSpec<C>, BatchMultiPartitionOnSpec<C>>
-            , MySQLUpdate.BatchMultiSetSpec<C> {
+    interface _BatchMultiJoinSpec<C>
+            extends MySQLQuery._MySQLJoinClause<C, _BatchMultiIndexHintOnSpec<C>, _OnClause<C, _BatchMultiJoinSpec<C>>>
+            , MySQLQuery._MySQLJoinCteClause<_OnClause<C, _BatchMultiJoinSpec<C>>>, DialectStatement._CrossJoinCteClause<_BatchMultiJoinSpec<C>>
+            , DialectStatement._CrossJoinClause<C, _BatchMultiIndexHintJoinSpec<C>, _BatchMultiJoinSpec<C>>
+            , MySQLQuery._MySQLDialectJoinClause<C, _BatchMultiPartitionOnClause<C>>
+            , DialectStatement._DialectCrossJoinClause<C, _BatchMultiPartitionJoinClause<C>>
+            , _BatchMultiSetClause<C> {
+
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing index SET clause for batch multi-table update clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _BatchMultiSetClause<C> extends _BatchSetClause<C, _BatchMultiWhereSpec<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link MySQLUpdate._BatchMultiSetClause}</li>
+     *          <li>method {@link Statement._WhereClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _BatchMultiWhereSpec<C>
+            extends _WhereClause<C, _BatchParamClause<C, _UpdateSpec>, _BatchMultiWhereAndSpec<C>>
+            , _BatchMultiSetClause<C> {
 
 
     }
 
     /**
      * <p>
-     * This interface representing MySQL batch multi-table update syntax on clause.
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link Statement._BatchParamClause}</li>
+     *          <li>method {@link Statement._WhereAndClause}</li>
+     *     </ul>
      * </p>
-     */
-    interface BatchMultiOnSpec<C> extends _OnClause<C, BatchMultiJoinSpec<C>> {
-
-
-    }
-
-    /**
      * <p>
-     * This interface representing MySQL batch multi-table update syntax set clause.
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
      * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
      */
-    interface BatchMultiSetSpec<C> extends _BatchSetClause<C, BatchMultiWhereSpec<C>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing MySQL batch multi-table update syntax where clause.
-     * </p>
-     */
-    interface BatchMultiWhereSpec<C>
-            extends _WhereClause<C, BatchParamClause<C, _UpdateSpec>, BatchMultiWhereAndSpec<C>>
-            , MySQLUpdate.BatchMultiSetSpec<C> {
-
-
-    }
-
-    /**
-     * <p>
-     * This interface representing MySQL batch multi-table update syntax and clause.
-     * </p>
-     */
-    interface BatchMultiWhereAndSpec<C> extends _WhereAndClause<C, BatchMultiWhereAndSpec<C>>
-            , Statement.BatchParamClause<C, _UpdateSpec> {
+    interface _BatchMultiWhereAndSpec<C> extends _WhereAndClause<C, _BatchMultiWhereAndSpec<C>>
+            , _BatchParamClause<C, _UpdateSpec> {
 
 
     }

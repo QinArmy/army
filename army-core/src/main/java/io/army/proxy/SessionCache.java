@@ -212,7 +212,7 @@ final class SessionCache implements _SessionCache {
         stmt = SQLs.singleUpdate()
                 .update(table, "t")
                 .setPairs(itemPairList)
-                .where(table.id().equal(id))
+                .whereIf(table.id().equal(id))
                 .ifAnd(() -> versionField == null ? null : versionField.equalLiteral(versionValue))
                 .asUpdate();
         return new CacheBlock(w, versionValue, stmt);
