@@ -116,7 +116,7 @@ public abstract class Stmts {
                 //here bug
                 throw new IllegalStateException("create parameter group error.");
             }
-            groupList.add(group);
+            groupList.add(_CollectionUtils.unmodifiableList(group));
         }
         if (namedParam == null) {
             throw new CriteriaException("Not found any named parameter in batch statement.");

@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Cte;
 import io.army.criteria.Hint;
 import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
@@ -7,6 +8,7 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
+import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.criteria.mysql.MySQLWords;
@@ -20,7 +22,6 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -32,20 +33,24 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
+abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         extends WithCteSingleUpdate<C, WE, SR, WR, WA>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
-        , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<UR, UP>, MySQLQuery._PartitionClause<C, PR>
-        , MySQLQuery._IndexHintClause<C, IR, UR>, MySQLQuery._IndexForOrderByClause<C, UR>
-        , Statement._AsClause<UR> {
+        , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<UR, UP>, MySQLQuery._IndexHintClause<C, IR, UR>
+        , MySQLQuery._IndexForOrderByClause<C, UR>, _MySQLWithClause {
 
-    static <C> _SingleWithAndUpdateSpec<C> simple80(@Nullable C criteria) {
-        return new SimpleWithAndUpdate<>(criteria);
+    static <C> _SingleWithAndUpdateSpec<C> simple(@Nullable C criteria) {
+        return new SimpleUpdate<>(criteria);
     }
 
-    static <C> _BatchSingleWithAndUpdateSpec<C> batch80(@Nullable C criteria) {
-        return new BatchWithAndUpdate<>(criteria);
+    static <C> _BatchSingleWithAndUpdateSpec<C> batch(@Nullable C criteria) {
+        return new BatchUpdate<>(criteria);
     }
+
+
+    private boolean recursive;
+
+    private List<Cte> cteList;
 
     private List<_MySQLHint> hintList;
 
@@ -78,7 +83,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isUpdateModifier);
         this.table = table;
-        return (UP) this;
+        return this.createPartitionClause();
     }
 
     @Override
@@ -97,7 +102,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
     @Override
     public final UP update(TableMeta<?> table) {
         this.table = table;
-        return (UP) this;
+        return this.createPartitionClause();
     }
 
     @Override
@@ -107,97 +112,6 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         return (UR) this;
     }
 
-    @Override
-    public final PR partition(String partitionName) {
-        if (this.table == null || this.partitionList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.partitionList = Collections.singletonList(partitionName);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(String partitionName1, String partitionNam2) {
-        if (this.table == null || this.partitionList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(String partitionName1, String partitionNam2, String partitionNam3) {
-        if (this.table == null || this.partitionList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(Supplier<List<String>> supplier) {
-        if (this.table == null || this.partitionList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.partitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(Function<C, List<String>> function) {
-        if (this.table == null || this.partitionList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.partitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(Consumer<List<String>> consumer) {
-        if (this.table == null || this.partitionList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final List<String> list = new ArrayList<>();
-        consumer.accept(list);
-        this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR ifPartition(Supplier<List<String>> supplier) {
-        if (this.table == null || this.partitionList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final List<String> list;
-        list = supplier.get();
-        if (list != null && list.size() > 0) {
-            this.partitionList = _CollectionUtils.asUnmodifiableList(list);
-        }
-        return (PR) this;
-    }
-
-    @Override
-    public final PR ifPartition(Function<C, List<String>> function) {
-        if (this.table == null || this.partitionList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final List<String> list;
-        list = function.apply(this.criteria);
-        if (list != null && list.size() > 0) {
-            this.partitionList = _CollectionUtils.asUnmodifiableList(list);
-        }
-        return (PR) this;
-    }
-
-    @Override
-    public final UR as(final String alias) {
-        if (this.table == null || this.tableAlias != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        Objects.requireNonNull(alias);
-        this.tableAlias = alias;
-        return (UR) this;
-    }
 
     /*################################## blow IndexHintClause method ##################################*/
 
@@ -442,10 +356,33 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         return (LR) this;
     }
 
+    abstract UP createPartitionClause();
+
+    final UR afterAs(@Nullable String tableAlias, @Nullable List<String> partitionList) {
+        assert tableAlias != null;
+        if (this.table == null || this.tableAlias != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.tableAlias = tableAlias;
+        this.partitionList = partitionList;
+        return (UR) this;
+    }
+
+    @Override
+    final void doWithCte(boolean recursive, List<Cte> cteList) {
+        this.recursive = recursive;
+        this.cteList = cteList;
+    }
+
+
     @Override
     final void onAsUpdate() {
         if (this.table == null || this.tableAlias == null) {
             throw _Exceptions.castCriteriaApi();
+        }
+        this.command = null;
+        if (this.cteList == null) {
+            this.cteList = Collections.emptyList();
         }
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
@@ -462,48 +399,43 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         } else {
             this.indexHintList = _CollectionUtils.unmodifiableList(indexHintList);
         }
-        this.command = null;
         if (this.orderByList == null) {
             this.orderByList = Collections.emptyList();
         }
 
-        if (this instanceof BatchUpdate && ((BatchUpdate<C, ?>) this).paramList == null) {
+        if (this instanceof BatchUpdate && ((BatchUpdate<C>) this).paramList == null) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (this instanceof SimpleWithAndUpdate) {
-            final SimpleWithAndUpdate<C> update = (SimpleWithAndUpdate<C>) this;
-            if (update.cteList == null) {
-                update.cteList = Collections.emptyList();
-            }
-        } else if (this instanceof BatchWithAndUpdate) {
-            final BatchWithAndUpdate<C> update = (BatchWithAndUpdate<C>) this;
-            if (update.cteList == null) {
-                update.cteList = Collections.emptyList();
-            }
-        }
-
     }
 
     @Override
     final void onClear() {
+        this.cteList = null;
         this.hintList = null;
         this.modifierList = null;
         this.partitionList = null;
+
         this.indexHintList = null;
         this.orderByList = null;
 
         if (this instanceof BatchUpdate) {
-            ((BatchUpdate<C, ?>) this).paramList = null;
-        }
-
-        if (this instanceof SimpleWithAndUpdate) {
-            ((SimpleWithAndUpdate<C>) this).cteList = null;
-        } else if (this instanceof BatchWithAndUpdate) {
-            ((BatchWithAndUpdate<C>) this).cteList = null;
+            ((BatchUpdate<C>) this).paramList = null;
         }
     }
 
+
+
     /*################################## blow _MySQLSingleUpdate method ##################################*/
+
+    @Override
+    public final boolean isRecursive() {
+        return this.recursive;
+    }
+
+    @Override
+    public List<Cte> cteList() {
+        return this.cteList;
+    }
 
     @Override
     public final TableMeta<?> table() {
@@ -579,44 +511,45 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
     }
 
 
-    private static abstract class SimpleUpdate<C, WE> extends MySQLSingleUpdate<
+    private static final class SimpleUpdate<C> extends MySQLSingleUpdate<
             C,
-            WE,                                                 // WE
-            MySQLUpdate._SingleIndexHintSpec<C>,                //UR
-            _SinglePartitionClause<C>,                //UP
-            _AsClause<MySQLUpdate._SingleIndexHintSpec<C>>,     //PR
-            _IndexForOrderBy57Clause<C>,                   //IR
-            MySQLUpdate._SingleWhereSpec<C>,                    //SR
-            MySQLUpdate._OrderBySpec<C>,                        //WR
-            MySQLUpdate._SingleWhereAndSpec<C>,                 //WA
-            MySQLUpdate._LimitSpec<C>,                          //OR
-            _UpdateSpec>                                        //LR
-            implements _SingleUpdate57Clause<C>, _SinglePartitionClause<C>
-            , _SingleIndexHintSpec<C>, _SingleWhereSpec<C>, _SingleWhereAndSpec<C>
+            MySQLUpdate._SingleUpdate57Clause<C>,       // WE
+            MySQLUpdate._SingleIndexHintSpec<C>,        //UR
+            MySQLUpdate._SinglePartitionClause<C>,      //UP
+            MySQLUpdate._IndexForOrderBy57Clause<C>,    //IR
+            MySQLUpdate._SingleWhereSpec<C>,            //SR
+            MySQLUpdate._OrderBySpec<C>,                //WR
+            MySQLUpdate._SingleWhereAndSpec<C>,         //WA
+            MySQLUpdate._LimitSpec<C>,                  //OR
+            _UpdateSpec>                                //LR
+            implements _SingleWithAndUpdateSpec<C>, _SingleIndexHintSpec<C>
+            , _SingleWhereSpec<C>, _SingleWhereAndSpec<C>
             , _OrderBySpec<C>, _IndexForOrderBy57Clause<C> {
 
         private SimpleUpdate(@Nullable C criteria) {
             super(criteria);
         }
 
+        @Override
+        _SinglePartitionClause<C> createPartitionClause() {
+            return new SimplePartitionClause<>(this);
+        }
 
     } // SimpleUpdate
 
-    private static abstract class BatchUpdate<C, WE> extends MySQLSingleUpdate<
+    private static final class BatchUpdate<C> extends MySQLSingleUpdate<
             C,
-            WE,// WE
-            _BatchSingleIndexHintSpec<C>,//UR
-            _BatchSinglePartitionClause<C>,//UP
-            _AsClause<_BatchSingleIndexHintSpec<C>>,//PR
-            _BatchIndexForOrderByClause<C>,   //IR
-            _BatchSingleWhereSpec<C>,    //SR
-            _BatchOrderBySpec<C>,        //WR
-            _BatchSingleWhereAndSpec<C>, //WA
-            _BatchLimitSpec<C>,         //OR
-            _BatchParamClause<C, _UpdateSpec>> //LR
-            implements _BatchSingleUpdateClause<C>, _BatchSinglePartitionClause<C>
-            , _BatchSingleIndexHintSpec<C>, _BatchIndexForOrderByClause<C>
-            , _BatchSingleWhereSpec<C>, _BatchSingleWhereAndSpec<C>
+            MySQLUpdate._BatchSingleUpdateClause<C>,        // WE
+            MySQLUpdate._BatchSingleIndexHintSpec<C>,       //UR
+            MySQLUpdate._BatchSinglePartitionClause<C>,     //UP
+            MySQLUpdate._BatchIndexForOrderByClause<C>,     //IR
+            MySQLUpdate._BatchSingleWhereSpec<C>,           //SR
+            MySQLUpdate._BatchOrderBySpec<C>,               //WR
+            MySQLUpdate._BatchSingleWhereAndSpec<C>,        //WA
+            MySQLUpdate._BatchLimitSpec<C>,                 //OR
+            Statement._BatchParamClause<C, _UpdateSpec>>    //LR
+            implements _BatchSingleWithAndUpdateSpec<C>, _BatchSingleIndexHintSpec<C>
+            , _BatchIndexForOrderByClause<C>, _BatchSingleWhereSpec<C>, _BatchSingleWhereAndSpec<C>
             , _BatchOrderBySpec<C>, _BatchParamClause<C, _UpdateSpec>, _BatchDml {
 
         private List<?> paramList;
@@ -654,6 +587,48 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
             return this.paramList;
         }
 
+        @Override
+        _BatchSinglePartitionClause<C> createPartitionClause() {
+            return new BatchPartitionClause<>(this);
+        }
     }//BatchUpdate
+
+
+    private static final class SimplePartitionClause<C>
+            extends MySQLPartitionClause<C, _AsClause<_SingleIndexHintSpec<C>>>
+            implements _AsClause<_SingleIndexHintSpec<C>>, MySQLUpdate._SinglePartitionClause<C> {
+
+        private final SimpleUpdate<C> stmt;
+
+        public SimplePartitionClause(SimpleUpdate<C> stmt) {
+            super(stmt.criteria);
+            this.stmt = stmt;
+        }
+
+        @Override
+        public _SingleIndexHintSpec<C> as(final String alias) {
+            return this.stmt.afterAs(alias, this.partitionList);
+        }
+
+    }//SimplePartitionClause
+
+    private static final class BatchPartitionClause<C>
+            extends MySQLPartitionClause<C, _AsClause<_BatchSingleIndexHintSpec<C>>>
+            implements _AsClause<_BatchSingleIndexHintSpec<C>>, MySQLUpdate._BatchSinglePartitionClause<C> {
+
+        private final BatchUpdate<C> stmt;
+
+        private BatchPartitionClause(BatchUpdate<C> stmt) {
+            super(stmt.criteria);
+            this.stmt = stmt;
+        }
+
+        @Override
+        public _BatchSingleIndexHintSpec<C> as(final String alias) {
+            return this.stmt.afterAs(alias, this.partitionList);
+        }
+
+    }//BatchPartitionClause
+
 
 }

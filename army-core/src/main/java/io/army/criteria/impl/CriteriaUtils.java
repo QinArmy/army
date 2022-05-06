@@ -346,11 +346,11 @@ abstract class CriteriaUtils {
         return new CriteriaException(m);
     }
 
-    private static CriteriaException illegalHint(@Nullable Hint hint) {
-        String m = String.format("Hint %s is illegal."
-                , _ClassUtils.safeClassName(hint));
-        throw new CriteriaException(m);
-    }
+     static CriteriaException illegalHint(@Nullable Hint hint) {
+         String m = String.format("Hint %s is illegal."
+                 , _ClassUtils.safeClassName(hint));
+         throw new CriteriaException(m);
+     }
 
 
     private static CriteriaException modifierSyntaxError(SQLWords.Modifier modifier) {

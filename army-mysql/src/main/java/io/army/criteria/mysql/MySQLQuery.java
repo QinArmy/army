@@ -13,7 +13,6 @@ import java.util.function.Supplier;
  * <p>
  * This interface representing MySQL SELECT syntax,this interface is base interface of below:
  * <ul>
- *     <li>{@link MySQL57Query}</li>
  *     <li>{@link MySQL80Query}</li>
  * </ul>
  * </p>

@@ -38,7 +38,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
         implements MySQLUpdate.MultiUpdateClause<C, UT, US, UP>, MySQLQuery._IndexHintClause<C, IR, UT>
         , MySQLQuery._IndexForJoinClause<C, UT>, MySQLQuery._MySQLJoinClause<C, JT, JS>
         , Statement._CrossJoinClause<C, UT, US>, MySQLQuery._MySQLDialectJoinClause<C, JP>
-        , DialectStatement._DialectCrossJoinClause<C, UP>, _MySQLMultiUpdate {
+        , DialectStatement._DialectCrossJoinClause<C, UP>, _MySQLMultiUpdate, _MySQLWithClause {
 
 
     static <C> _WithAndMultiUpdateSpec<C> simple(@Nullable C criteria) {
@@ -48,6 +48,10 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     static <C> _BatchWithAndMultiUpdateSpec<C> batch(@Nullable C criteria) {
         return new BatchUpdate<>(criteria);
     }
+
+    private boolean recursive;
+
+    private List<Cte> cteList;
 
     private List<_MySQLHint> hintList;
 
@@ -258,6 +262,16 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
         return (UT) this;
     }
 
+    @Override
+    public final boolean isRecursive() {
+        return this.recursive;
+    }
+
+    @Override
+    public final List<Cte> cteList() {
+        return this.cteList;
+    }
+
 
     @Override
     public final List<_MySQLHint> hintList() {
@@ -276,6 +290,9 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     @Override
     final void doOnAsUpdate() {
         this.command = null;
+        if (this.cteList == null) {
+            this.cteList = Collections.emptyList();
+        }
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
         }
@@ -285,9 +302,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
         if (this instanceof SimpleUpdate) {
             final SimpleUpdate<C> stmt = (SimpleUpdate<C>) this;
-            if (stmt.cteList == null) {
-                stmt.cteList = Collections.emptyList();
-            }
             stmt.noActionOnClause = null;
             stmt.noActionPartitionJoinClause = null;
             stmt.noActionPartitionOnClause = null;
@@ -295,9 +309,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
             final BatchUpdate<C> stmt = (BatchUpdate<C>) this;
             if (stmt.paramList == null) {
                 throw _Exceptions.batchParamEmpty();
-            }
-            if (stmt.cteList == null) {
-                stmt.cteList = Collections.emptyList();
             }
             stmt.noActionOnClause = null;
             stmt.noActionPartitionJoinClause = null;
@@ -310,13 +321,13 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
     @Override
     final void onClear() {
+        this.cteList = null;
         this.hintList = null;
         this.modifierList = null;
 
         if (this instanceof SimpleUpdate) {
             final SimpleUpdate<C> stmt = (SimpleUpdate<C>) this;
 
-            stmt.cteList = null;
             stmt.noActionOnClause = null;
             stmt.noActionPartitionJoinClause = null;
             stmt.noActionPartitionOnClause = null;
@@ -324,10 +335,8 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
             final BatchUpdate<C> stmt = (BatchUpdate<C>) this;
 
             stmt.paramList = null;
-            stmt.cteList = null;
             stmt.noActionOnClause = null;
             stmt.noActionPartitionJoinClause = null;
-
             stmt.noActionPartitionOnClause = null;
         } else {
             throw new IllegalStateException();
@@ -348,6 +357,12 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     @Override
     final void crossJoinEvent(boolean success) {
         this.updateCrossValid = success;
+    }
+
+    @Override
+    final void doWithCte(boolean recursive, List<Cte> cteList) {
+        this.recursive = recursive;
+        this.cteList = cteList;
     }
 
 
@@ -406,9 +421,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
             , MySQLUpdate._IndexHintJoinSpec<C>, MySQLUpdate._WithAndMultiUpdateSpec<C>
             , MySQLUpdate._IndexForJoinJoinClause<C>, MySQLUpdate._MultiWhereSpec<C>, _MySQLWithClause {
 
-        private boolean recursive;
-
-        private List<Cte> cteList;
 
         private _MultiIndexHintOnSpec<C> noActionOnClause;
 
@@ -418,22 +430,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
         private SimpleUpdate(@Nullable C criteria) {
             super(criteria);
-        }
-
-        @Override
-        public boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public List<Cte> cteList() {
-            return this.cteList;
-        }
-
-        @Override
-        void doWithCte(boolean recursive, List<Cte> cteList) {
-            this.recursive = recursive;
-            this.cteList = cteList;
         }
 
 
@@ -581,9 +577,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
             , MySQLUpdate._BatchMultiIndexHintJoinSpec<C>, MySQLUpdate._BatchIndexForJoinJoinClause<C>
             , _BatchDml, _MySQLWithClause {
 
-        private boolean recursive;
-
-        private List<Cte> cteList;
 
         private List<?> paramList;
 
@@ -596,12 +589,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
         private BatchUpdate(@Nullable C criteria) {
             super(criteria);
-        }
-
-        @Override
-        void doWithCte(boolean recursive, List<Cte> cteList) {
-            this.recursive = recursive;
-            this.cteList = cteList;
         }
 
         @Override
@@ -740,17 +727,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
         public List<?> paramList() {
             return this.paramList;
         }
-
-        @Override
-        public boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public List<Cte> cteList() {
-            return this.cteList;
-        }
-
 
         private _BatchMultiIndexHintOnSpec<C> getNoActionOnClause() {
             _BatchMultiIndexHintOnSpec<C> clause = this.noActionOnClause;
