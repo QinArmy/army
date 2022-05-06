@@ -193,7 +193,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _IndexOrderByClause<C, IC> {
+    interface _IndexForOrderByClause<C, IC> {
 
         IC forOrderBy(List<String> indexList);
 
@@ -234,7 +234,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _IndexPurposeClause<C, IC> extends _IndexOrderByClause<C, IC>
+    interface _IndexPurposeClause<C, IC> extends _IndexForOrderByClause<C, IC>
             , _IndexForJoinClause<C, IC> {
 
         IC forGroupBy(List<String> indexList);

@@ -7,10 +7,9 @@ import io.army.dialect._SqlContext;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
+import io.army.util._CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 final class CollectionParamExpression extends NonOperationExpression {
@@ -25,18 +24,10 @@ final class CollectionParamExpression extends NonOperationExpression {
 
     private static <E> CollectionParamExpression create(final ParamMeta paramMeta, final Collection<E> values
             , final boolean optimizing) {
-        final int size = values.size();
-        if (size == 0) {
+        if (values.size() == 0) {
             throw new CriteriaException("Collection parameter expression must not empty");
         }
-        final List<E> list = new ArrayList<>(size);
-        for (E v : values) {
-            if (v == null) {
-                throw elementIsNull();
-            }
-            list.add(v);
-        }
-        return new CollectionParamExpression(paramMeta, list, optimizing);
+        return new CollectionParamExpression(paramMeta, values, optimizing);
     }
 
     private final ParamMeta paramMeta;
@@ -45,9 +36,9 @@ final class CollectionParamExpression extends NonOperationExpression {
 
     private final boolean optimizing;
 
-    private CollectionParamExpression(final ParamMeta paramMeta, final List<?> valueList, final boolean optimizing) {
+    private CollectionParamExpression(final ParamMeta paramMeta, final Collection<?> values, final boolean optimizing) {
         this.paramMeta = paramMeta;
-        this.value = Collections.unmodifiableList(valueList);
+        this.value = _CollectionUtils.asUnmodifiableList(values);
         this.optimizing = optimizing;
     }
 
@@ -66,9 +57,6 @@ final class CollectionParamExpression extends NonOperationExpression {
         final _Dialect dialect = context.dialect();
         int index = 0;
         for (Object v : this.value) {
-            if (v == null) {
-                throw elementIsNull();
-            }
             if (index > 0) {
                 builder.append(Constant.SPACE_COMMA);
             }
@@ -84,8 +72,21 @@ final class CollectionParamExpression extends NonOperationExpression {
     }
 
 
-    private static CriteriaException elementIsNull() {
-        return new CriteriaException("Collection element must not null.");
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder()
+                .append(Constant.SPACE_LEFT_BRACKET);
+
+        final int size = this.value.size();
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(Constant.SPACE_COMMA);
+            }
+            builder.append(" ?");
+            i++;
+        }
+        builder.append(Constant.SPACE_RIGHT_BRACKET);
+        return builder.toString();
     }
 
 

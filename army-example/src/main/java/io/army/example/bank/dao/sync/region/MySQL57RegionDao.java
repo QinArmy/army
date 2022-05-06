@@ -3,7 +3,7 @@ package io.army.example.bank.dao.sync.region;
 import io.army.criteria.Expression;
 import io.army.criteria.Insert;
 import io.army.criteria.Select;
-import io.army.criteria.impl.MySQLs_;
+import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
 import io.army.example.bank.domain.user.*;
@@ -24,7 +24,7 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
     @Override
     public List<Map<String, Object>> findAllCity() {
         final Select stmt;
-        stmt = MySQLs_.query()
+        stmt = MySQLs.query()
                 .select(list -> {
                     list.add(SQLs.field("p_of_city", ChinaRegion_.name));
                     list.add(ChinaCity_.mayorName);
@@ -43,11 +43,11 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
     public void batchSaveProvincialCapital(List<ChinaCity> domainList) {
 
         final Supplier<Expression> provinceIdSubQuery;
-        provinceIdSubQuery = () -> MySQLs_.scalarSubQuery()
+        provinceIdSubQuery = () -> MySQLs.scalarSubQuery()
                 .select(ChinaProvince_.id)
                 .from(ChinaProvince_.T, "p")
                 .join(ChinaRegion_.T, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
-                .whereIf(ChinaProvince_.provincialCapital.equalNamed(ChinaRegion_.NAME))
+                .where(ChinaProvince_.provincialCapital.equalNamed(ChinaRegion_.NAME))
                 .asQuery();
 
         final Insert stmt;
@@ -62,10 +62,10 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
     @Override
     public Long getRegionId(String regionName, RegionType regionType) {
         final Select stmt;
-        stmt = MySQLs_.query()
+        stmt = MySQLs.query()
                 .select(ChinaRegion_.id)
                 .from(ChinaRegion_.T, "t")
-                .whereIf(ChinaRegion_.name.equalLiteral(regionName))
+                .where(ChinaRegion_.name.equalLiteral(regionName))
                 .and(ChinaRegion_.regionType.equalLiteral(regionType))
                 .asQuery();
         return this.sessionContext.currentSession().queryOne(stmt, Long.class);

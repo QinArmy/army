@@ -41,11 +41,11 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
         , DialectStatement._DialectCrossJoinClause<C, UP>, _MySQLMultiUpdate {
 
 
-    static <C> _MultiUpdate57Clause<C> simple(@Nullable C criteria) {
+    static <C> _WithAndMultiUpdateSpec<C> simple(@Nullable C criteria) {
         return new SimpleUpdate<>(criteria);
     }
 
-    static <C> _BatchMultiUpdateClause<C> batch(@Nullable C criteria) {
+    static <C> _BatchWithAndMultiUpdateSpec<C> batch(@Nullable C criteria) {
         return new BatchUpdate<>(criteria);
     }
 

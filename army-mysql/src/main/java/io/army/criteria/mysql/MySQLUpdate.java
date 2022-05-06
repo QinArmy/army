@@ -125,7 +125,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _SingleIndexHintSpec<C>
-            extends MySQLQuery._IndexHintClause<C, _IndexOrderBy57Clause<C>, _SingleIndexHintSpec<C>>
+            extends MySQLQuery._IndexHintClause<C, _IndexForOrderBy57Clause<C>, _SingleIndexHintSpec<C>>
             , _SingleSet57Clause<C> {
 
     }
@@ -143,7 +143,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _IndexOrderBy57Clause<C> extends MySQLQuery._IndexOrderByClause<C, _SingleIndexHintSpec<C>> {
+    interface _IndexForOrderBy57Clause<C> extends MySQLQuery._IndexForOrderByClause<C, _SingleIndexHintSpec<C>> {
 
     }
 
@@ -331,7 +331,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _BatchSingleIndexHintSpec<C>
-            extends MySQLQuery._IndexHintClause<C, _BatchIndexOrderByClause<C>, _BatchSingleIndexHintSpec<C>>
+            extends MySQLQuery._IndexHintClause<C, _BatchIndexForOrderByClause<C>, _BatchSingleIndexHintSpec<C>>
             , _BatchSingleSetClause<C> {
 
     }
@@ -349,7 +349,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _BatchIndexOrderByClause<C> extends MySQLQuery._IndexOrderByClause<C, _BatchSingleIndexHintSpec<C>> {
+    interface _BatchIndexForOrderByClause<C> extends MySQLQuery._IndexForOrderByClause<C, _BatchSingleIndexHintSpec<C>> {
 
     }
 

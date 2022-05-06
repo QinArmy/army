@@ -5,9 +5,13 @@ import io.army.stmt.ParamValue;
 /**
  * <p>
  * This interface representing named param for batch update or batch delete.
+ * This interface is base interface of below:
+ * <ul>
+ *     <li>{@link NonNullNamedParam}</li>
+ *     <li>{@link NamedElementParam}</li>
+ * </ul>
  * </p>
  *
- * @param <E> java type of named parameter
  * @see NonNullNamedParam
  */
 public interface NamedParam extends Expression, ParamValue {

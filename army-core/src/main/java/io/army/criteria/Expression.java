@@ -272,7 +272,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      * Equivalence : this.in({@link SQLs#namedParam(String, ParamMeta)})
      * </p>
      */
-    IPredicate inNamed(String paramName);
+    IPredicate inNamed(String paramName, int size);
 
     <C> IPredicate inExp(Function<C, ? extends Expression> function);
 
@@ -297,7 +297,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      * Equivalence : this.notIn({@link SQLs#namedParam(String, ParamMeta)})
      * </p>
      */
-    IPredicate notInNamed(String paramName);
+    IPredicate notInNamed(String paramName, int size);
 
     <C> IPredicate notInExp(Function<C, ? extends Expression> function);
 

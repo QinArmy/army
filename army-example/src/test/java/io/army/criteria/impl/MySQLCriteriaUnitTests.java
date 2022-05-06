@@ -25,10 +25,10 @@ public class MySQLCriteriaUnitTests {
         criteria.setRowCount(5L);
 
         final Update stmt;
-        stmt = MySQLs_.singleUpdate()
+        stmt = MySQLs.singleUpdate()
                 .update(ChinaRegion_.T, "t")
                 .set(ChinaRegion_.name, "五指礁")
-                .whereIf(ChinaRegion_.name.equal(""))
+                .where(ChinaRegion_.name.equal(""))
                 .and(ChinaRegion_.regionType.equalLiteral(RegionType.CITY).or(ChinaRegion_.regionGdp.greatEqual("3333")))
                 .orderBy(ChinaRegion_.id.desc())
                 .limit(criteria::getRowCount)
@@ -45,20 +45,20 @@ public class MySQLCriteriaUnitTests {
         map.put("parentId", "1");
         Supplier<List<Hint>> supplier = () -> {
             List<Hint> list = new ArrayList<>();
-            list.add(MySQLs_.qbName("qb1"));
-            list.add(MySQLs_.orderIndex("qb1", "t", Collections.singletonList("uni_name_region_type")));
+            list.add(MySQLs.qbName("qb1"));
+            list.add(MySQLs.orderIndex("qb1", "t", Collections.singletonList("uni_name_region_type")));
             return list;
         };
         final Update stmt;
-        stmt = MySQLs_.singleUpdate()
+        stmt = MySQLs.singleUpdate()
                 .update(supplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaCity_.T)
                 .partition("p2", "p1").as("t")
                 .useIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))
                 .set(ChinaRegion_.name, "五指礁")
                 .setPlusLiteral(ChinaRegion_.regionGdp, 100)
-                .whereIf(ChinaRegion_.name.equal(""))
+                .where(ChinaRegion_.name.equal(""))
                 .and(ChinaRegion_.parentId.equal(map.get("parentId")).or(ChinaRegion_.regionType.equalLiteral(RegionType.CITY)))
-                .ifAnd(ChinaRegion_.regionGdp.ifGreatEqual(map::get, "regionGdp"))
+                .ifAnd(ChinaRegion_.regionGdp::greatEqualLiteral, map::get, "regionGdp")
                 .orderBy(ChinaRegion_.name.desc())
                 .limit(map::get, "rowCount")
                 .asUpdate();
@@ -74,10 +74,10 @@ public class MySQLCriteriaUnitTests {
             return list;
         };
         final Update stmt;
-        stmt = MySQLs_.batchSingleUpdate()
+        stmt = MySQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, "t")
                 .set(supplier)
-                .whereIf(ChinaRegion_.id.equalNamed())
+                .where(ChinaRegion_.id.equalNamed())
                 .limit(10)
                 .paramList(Collections::emptyList)
                 .asUpdate();

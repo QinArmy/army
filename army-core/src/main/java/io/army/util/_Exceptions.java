@@ -15,12 +15,14 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
+import io.army.stmt.ParamValue;
 import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
 import io.army.tx.TransactionTimeOutException;
 import io.qinarmy.util.ExceptionUtils;
 import io.qinarmy.util.UnexpectedEnumException;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -290,6 +292,31 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("Couldn't exist named parameter[%s] in non-batch statement.", param.name());
         return new CriteriaException(m);
     }
+
+    public static CriteriaException namedParamsInNonBatch(NamedElementParam param) {
+        String m = String.format("Couldn't exist named parameters[name:%s,size:%s] in non-batch statement."
+                , param.name(), param.size());
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException namedCollectionParamNotMatch(NamedElementParam param, @Nullable Object value) {
+        String m = String.format("named collection parameters[name:%s,size:%s] value[%s] isn't %s."
+                , param.name(), param.size(), _ClassUtils.safeClassName(value), Collection.class.getName());
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException namedCollectionParamSizeError(NamedElementParam param, int size) {
+        String m = String.format("named collection parameters[name:%s,size:%s] value size[%s] error."
+                , param.name(), param.size(), size);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException unknownParamValue(@Nullable ParamValue paramValue) {
+        String m = String.format("unknown %s type %s", ParamValue.class.getName()
+                , _ClassUtils.safeClassName(paramValue));
+        return new CriteriaException(m);
+    }
+
 
     public static CriteriaException nonScalarSubQuery(SubQuery subQuery) {
         String m = String.format("Expression right value[%s] is non-scalar sub query.", subQuery.getClass().getName());

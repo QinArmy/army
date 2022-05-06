@@ -3,16 +3,15 @@ package io.army.stmt;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.NamedParam;
-import io.army.criteria.NonNullNamedParam;
-import io.army.criteria.Selection;
+import io.army.criteria.*;
 import io.army.domain.IDomain;
+import io.army.meta.ParamMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -58,30 +57,64 @@ public abstract class Stmts {
         return new PairStmtImpl(parent, child);
     }
 
-    public static BatchStmt batchDml(SimpleStmt stmt, List<?> paramList) {
+    public static BatchStmt batchDml(SimpleStmt stmt, List<?> paramWrapperList) {
         final List<ParamValue> paramGroup = stmt.paramGroup();
         final int paramSize = paramGroup.size();
-        final List<List<ParamValue>> groupList = new ArrayList<>(paramList.size());
+        final List<List<ParamValue>> groupList = new ArrayList<>(paramWrapperList.size());
         final ReadAccessor accessor;
-        accessor = ObjectAccessorFactory.readOnlyForInstance(paramList.get(0));
+        accessor = ObjectAccessorFactory.readOnlyForInstance(paramWrapperList.get(0));
 
         NamedParam namedParam = null;
         List<ParamValue> group;
         Object value;
-        for (Object paramObject : paramList) {
+        for (Object paramObject : paramWrapperList) {
             group = new ArrayList<>(paramSize);
-
-            for (ParamValue param : paramGroup) {
-                if (!(param instanceof NamedParam)) {
+            ParamValue param;
+            for (int i = 0; i < paramSize; i++) {
+                param = paramGroup.get(i);
+                if (param instanceof StrictParamValue) {
                     group.add(param);
-                    continue;
+                } else if (param instanceof NamedElementParam) {
+                    namedParam = ((NamedParam) param);
+                    value = accessor.get(paramObject, namedParam.name());
+                    if (!(value instanceof Collection)) {
+                        throw _Exceptions.namedCollectionParamNotMatch((NamedElementParam) namedParam, value);
+                    }
+                    final int size = ((NamedElementParam) namedParam).size();
+                    final Collection<?> collection = (Collection<?>) value;
+                    if (collection.size() != size) {
+                        throw _Exceptions.namedCollectionParamSizeError((NamedElementParam) namedParam
+                                , collection.size());
+                    }
+                    final ParamMeta paramMeta = namedParam.paramMeta();
+                    int index = i;
+                    for (Object element : collection) {
+                        if (paramGroup.get(index) != namedParam) {
+                            //here expression bug
+                            throw new CriteriaException("NamedElementParam not match");
+                        }
+                        group.add(ParamValue.build(paramMeta, element));
+                        index++;
+                    }
+                    if (index > paramSize || i + size != index) {
+                        throw _Exceptions.namedCollectionParamSizeError((NamedElementParam) namedParam, index - i);
+                    }
+                    i = index - 1;
+                } else if (param instanceof NamedParam) {
+                    namedParam = ((NamedParam) param);
+                    value = accessor.get(paramObject, namedParam.name());
+                    if (value == null && param instanceof NonNullNamedParam) {
+                        throw _Exceptions.nonNullNamedParam((NonNullNamedParam) param);
+                    }
+                    group.add(ParamValue.build(param.paramMeta(), value));
+                } else {
+                    throw _Exceptions.unknownParamValue(param);
                 }
-                namedParam = ((NamedParam) param);
-                value = accessor.get(paramObject, namedParam.name());
-                if (value == null && param instanceof NonNullNamedParam) {
-                    throw _Exceptions.nonNullNamedParam((NonNullNamedParam) param);
-                }
-                group.add(ParamValue.build(param.paramMeta(), value));
+            }
+
+            if (group.size() != paramSize) {
+                //here bug
+                throw new IllegalStateException("create parameter group error.");
             }
             groupList.add(group);
         }

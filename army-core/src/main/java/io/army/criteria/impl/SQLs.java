@@ -332,7 +332,7 @@ public abstract class SQLs extends Functions {
      *
      * @see Update._BatchSetClause
      */
-    public static Expression nullableNamedParam(String name, ParamMeta paramMeta) {
+    public static NamedParam nullableNamedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nullable(name, paramMeta);
     }
 
@@ -343,7 +343,7 @@ public abstract class SQLs extends Functions {
      *
      * @see Update._BatchSetClause
      */
-    public static Expression nullableNamedParam(TableField<?> field) {
+    public static NamedParam nullableNamedParam(TableField<?> field) {
         return NamedParamImpl.nullable(field.fieldName(), field);
     }
 
@@ -358,7 +358,7 @@ public abstract class SQLs extends Functions {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static Expression namedParam(String name, ParamMeta paramMeta) {
+    public static NamedParam namedParam(String name, ParamMeta paramMeta) {
         return NamedParamImpl.nonNull(name, paramMeta);
     }
 
@@ -372,8 +372,16 @@ public abstract class SQLs extends Functions {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static Expression namedParam(TableField<?> field) {
+    public static NamedParam namedParam(TableField<?> field) {
         return NamedParamImpl.nonNull(field.fieldName(), field);
+    }
+
+    public static Expression namedParams(String name, ParamMeta paramMeta, int size) {
+        return NamedCollectionParamExpression.named(name, paramMeta, size);
+    }
+
+    public static Expression namedParams(TableField<?> field, int size) {
+        return NamedCollectionParamExpression.named(field.fieldName(), field, size);
     }
 
     public static Expression literal(Object value) {

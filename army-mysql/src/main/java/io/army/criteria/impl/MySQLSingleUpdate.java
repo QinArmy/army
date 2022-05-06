@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Cte;
 import io.army.criteria.Hint;
 import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
@@ -8,7 +7,6 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
-import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.criteria.mysql.MySQLWords;
@@ -38,21 +36,8 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         extends WithCteSingleUpdate<C, WE, SR, WR, WA>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
         , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<UR, UP>, MySQLQuery._PartitionClause<C, PR>
-        , MySQLQuery._IndexHintClause<C, IR, UR>, MySQLQuery._IndexOrderByClause<C, UR>
+        , MySQLQuery._IndexHintClause<C, IR, UR>, MySQLQuery._IndexForOrderByClause<C, UR>
         , Statement._AsClause<UR> {
-
-
-    static <C> _SingleUpdate57Clause<C> simple(@Nullable C criteria) {
-        final SimpleUpdate<C, Void> update;
-        update = new SimpleUpdate<>(criteria);
-        return update;
-    }
-
-    static <C> _BatchSingleUpdateClause<C> batch(@Nullable C criteria) {
-        final BatchUpdate<C, Void> update;
-        update = new BatchUpdate<>(criteria);
-        return update;
-    }
 
     static <C> _SingleWithAndUpdateSpec<C> simple80(@Nullable C criteria) {
         return new SimpleWithAndUpdate<>(criteria);
@@ -237,7 +222,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
     @Override
     public final IR ifUseIndex(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.useIndex();
+            this.command = MySQLIndexHint.Command.USER_INDEX;
         } else {
             this.command = null;
         }
@@ -247,7 +232,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
     @Override
     public final IR ifIgnoreIndex(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.ignoreIndex();
+            this.command = MySQLIndexHint.Command.IGNORE_INDEX;
         } else {
             this.command = null;
         }
@@ -257,7 +242,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
     @Override
     public final IR ifForceIndex(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.forceIndex();
+            this.command = MySQLIndexHint.Command.FORCE_INDEX;
         } else {
             this.command = null;
         }
@@ -293,7 +278,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         final List<String> indexList;
         indexList = function.apply(this.criteria);
         if (indexList != null && indexList.size() > 0) {
-            this.useIndex(indexList);
+            this.addIndexHint(MySQLIndexHint.Command.USER_INDEX, false, indexList);
         }
         return (UR) this;
     }
@@ -303,7 +288,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         final List<String> indexList;
         indexList = function.apply(this.criteria);
         if (indexList != null && indexList.size() > 0) {
-            this.ignoreIndex(indexList);
+            this.addIndexHint(MySQLIndexHint.Command.IGNORE_INDEX, false, indexList);
         }
         return (UR) this;
     }
@@ -313,7 +298,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         final List<String> indexList;
         indexList = function.apply(this.criteria);
         if (indexList != null && indexList.size() > 0) {
-            this.forceIndex(indexList);
+            this.addIndexHint(MySQLIndexHint.Command.FORCE_INDEX, false, indexList);
         }
         return (UR) this;
     }
@@ -333,11 +318,13 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
 
     @Override
     public final UR forOrderBy(Function<C, List<String>> function) {
-        if (this.command != null) {
+        final MySQLIndexHint.Command command = this.command;
+        if (command != null) {
+            this.command = null;
             final List<String> list;
             list = function.apply(this.criteria);
             if (list != null && list.size() > 0) {
-                this.forOrderBy(list);
+                this.addIndexHint(command, true, list);
             }
         }
         return (UR) this;
@@ -592,13 +579,13 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
     }
 
 
-    private static class SimpleUpdate<C, WE> extends MySQLSingleUpdate<
+    private static abstract class SimpleUpdate<C, WE> extends MySQLSingleUpdate<
             C,
             WE,                                                 // WE
             MySQLUpdate._SingleIndexHintSpec<C>,                //UR
             _SinglePartitionClause<C>,                //UP
             _AsClause<MySQLUpdate._SingleIndexHintSpec<C>>,     //PR
-            _IndexOrderBy57Clause<C>,                   //IR
+            _IndexForOrderBy57Clause<C>,                   //IR
             MySQLUpdate._SingleWhereSpec<C>,                    //SR
             MySQLUpdate._OrderBySpec<C>,                        //WR
             MySQLUpdate._SingleWhereAndSpec<C>,                 //WA
@@ -606,7 +593,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
             _UpdateSpec>                                        //LR
             implements _SingleUpdate57Clause<C>, _SinglePartitionClause<C>
             , _SingleIndexHintSpec<C>, _SingleWhereSpec<C>, _SingleWhereAndSpec<C>
-            , _OrderBySpec<C>, _IndexOrderBy57Clause<C> {
+            , _OrderBySpec<C>, _IndexForOrderBy57Clause<C> {
 
         private SimpleUpdate(@Nullable C criteria) {
             super(criteria);
@@ -615,20 +602,20 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
 
     } // SimpleUpdate
 
-    private static class BatchUpdate<C, WE> extends MySQLSingleUpdate<
+    private static abstract class BatchUpdate<C, WE> extends MySQLSingleUpdate<
             C,
             WE,// WE
             _BatchSingleIndexHintSpec<C>,//UR
             _BatchSinglePartitionClause<C>,//UP
             _AsClause<_BatchSingleIndexHintSpec<C>>,//PR
-            _BatchIndexOrderByClause<C>,   //IR
+            _BatchIndexForOrderByClause<C>,   //IR
             _BatchSingleWhereSpec<C>,    //SR
             _BatchOrderBySpec<C>,        //WR
             _BatchSingleWhereAndSpec<C>, //WA
             _BatchLimitSpec<C>,         //OR
             _BatchParamClause<C, _UpdateSpec>> //LR
             implements _BatchSingleUpdateClause<C>, _BatchSinglePartitionClause<C>
-            , _BatchSingleIndexHintSpec<C>, _BatchIndexOrderByClause<C>
+            , _BatchSingleIndexHintSpec<C>, _BatchIndexForOrderByClause<C>
             , _BatchSingleWhereSpec<C>, _BatchSingleWhereAndSpec<C>
             , _BatchOrderBySpec<C>, _BatchParamClause<C, _UpdateSpec>, _BatchDml {
 
@@ -639,19 +626,19 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         }
 
         @Override
-        public final _UpdateSpec paramList(List<?> paramList) {
+        public <P> _UpdateSpec paramList(List<P> paramList) {
             this.paramList = MySQLUtils.paramList(paramList);
             return this;
         }
 
         @Override
-        public final _UpdateSpec paramList(Supplier<List<?>> supplier) {
+        public <P> _UpdateSpec paramList(Supplier<List<P>> supplier) {
             this.paramList = MySQLUtils.paramList(supplier.get());
             return this;
         }
 
         @Override
-        public final _UpdateSpec paramList(Function<C, List<?>> function) {
+        public <P> _UpdateSpec paramList(Function<C, List<P>> function) {
             this.paramList = MySQLUtils.paramList(function.apply(this.criteria));
             return this;
         }
@@ -668,65 +655,5 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, PR, IR, SR, WR, WA, OR, LR>
         }
 
     }//BatchUpdate
-
-
-    private static final class SimpleWithAndUpdate<C> extends SimpleUpdate<C, _SingleUpdate57Clause<C>>
-            implements _SingleWithAndUpdateSpec<C>, _MySQLWithClause {
-
-        private boolean recursive;
-
-        private List<Cte> cteList;
-
-        private SimpleWithAndUpdate(@Nullable C criteria) {
-            super(criteria);
-        }
-
-        @Override
-        public boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public List<Cte> cteList() {
-            return this.cteList;
-        }
-
-        @Override
-        void doWithCte(boolean recursive, List<Cte> cteList) {
-            this.recursive = recursive;
-            this.cteList = cteList;
-        }
-
-    }//SimpleWithAndUpdate
-
-    private static final class BatchWithAndUpdate<C> extends BatchUpdate<C, _BatchSingleUpdateClause<C>>
-            implements _BatchSingleWithAndUpdateSpec<C>, _MySQLWithClause {
-
-        private boolean recursive;
-
-        private List<Cte> cteList;
-
-        private BatchWithAndUpdate(@Nullable C criteria) {
-            super(criteria);
-        }
-
-        @Override
-        public boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public List<Cte> cteList() {
-            return this.cteList;
-        }
-
-        @Override
-        void doWithCte(boolean recursive, List<Cte> cteList) {
-            this.recursive = recursive;
-            this.cteList = cteList;
-        }
-
-    }// BatchWithAndUpdate
-
 
 }

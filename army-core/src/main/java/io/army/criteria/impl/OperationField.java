@@ -58,13 +58,13 @@ abstract class OperationField<T extends IDomain> extends OperationExpression imp
     }
 
     @Override
-    public final IPredicate inNamed() {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.namedParam(this));
+    public final IPredicate inNamed(int size) {
+        return DualPredicate.create(this, DualOperator.IN, SQLs.namedParams(this, size));
     }
 
     @Override
-    public final IPredicate notInNamed() {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedParam(this));
+    public final IPredicate notInNamed(int size) {
+        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedParams(this, size));
     }
 
     @Override

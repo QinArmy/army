@@ -400,7 +400,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate inNamed(String paramName) {
+    public final IPredicate inNamed(String paramName, int size) {
         throw unsupportedOperation();
     }
 
@@ -425,7 +425,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notInNamed(String paramName) {
+    public final IPredicate notInNamed(String paramName, int size) {
         throw unsupportedOperation();
     }
 

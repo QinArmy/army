@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.util._Exceptions;
 
 /**
  * <p>
@@ -19,6 +20,11 @@ abstract class SingleUpdate<C, SR, WR, WA>
         super(JoinableClause.voidClauseSuppler(), criteriaContext);
     }
 
+
+    @Override
+    final void crossJoinEvent(boolean success) {
+        throw _Exceptions.castCriteriaApi();
+    }
 
 
 }

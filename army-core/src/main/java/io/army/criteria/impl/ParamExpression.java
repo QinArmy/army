@@ -3,19 +3,13 @@ package io.army.criteria.impl;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
-import io.army.stmt.ParamValue;
+import io.army.stmt.StrictParamValue;
 
-final class ParamExpression extends OperationExpression implements ValueExpression, ParamValue {
+final class ParamExpression extends OperationExpression implements ValueExpression, StrictParamValue {
 
 
     static ValueExpression create(final ParamMeta paramMeta, final @Nullable Object value) {
-        final ValueExpression expression;
-        if (value == null) {
-            expression = new NullExpression(paramMeta);
-        } else {
-            expression = new ParamExpression(paramMeta, value);
-        }
-        return expression;
+        return new ParamExpression(paramMeta, value);
     }
 
     final ParamMeta paramMeta;
@@ -23,12 +17,13 @@ final class ParamExpression extends OperationExpression implements ValueExpressi
     final Object value;
 
 
-    private ParamExpression(ParamMeta paramMeta, Object value) {
+    private ParamExpression(ParamMeta paramMeta, @Nullable Object value) {
         this.paramMeta = paramMeta;
         this.value = value;
     }
 
 
+    @Nullable
     public Object value() {
         return this.value;
     }
@@ -47,34 +42,6 @@ final class ParamExpression extends OperationExpression implements ValueExpressi
     public String toString() {
         return " ?";
     }
-
-
-    static final class NullExpression extends NonOperationExpression
-            implements _StrictParam, ValueExpression {
-
-        private final ParamMeta paramMeta;
-
-        private NullExpression(ParamMeta paramMeta) {
-            this.paramMeta = paramMeta;
-        }
-
-        @Override
-        public ParamMeta paramMeta() {
-            return this.paramMeta;
-        }
-
-        @Override
-        public Object value() {
-            //always null
-            return null;
-        }
-
-        @Override
-        public void appendSql(_SqlContext context) {
-            context.appendParam(this);
-        }
-
-    }//StrictNullExpression
 
 
 }

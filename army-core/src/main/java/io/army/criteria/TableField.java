@@ -71,9 +71,9 @@ public interface TableField<T extends IDomain> extends Expression, FieldSelectio
 
     IPredicate notLikeNamed();
 
-    IPredicate inNamed();
+    IPredicate inNamed(int size);
 
-    IPredicate notInNamed();
+    IPredicate notInNamed(int size);
 
     Expression modNamed();
 

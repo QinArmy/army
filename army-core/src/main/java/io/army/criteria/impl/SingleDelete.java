@@ -2,12 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
 import io.army.criteria.NonPrimaryStatement;
-import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._SingleDelete;
-import io.army.criteria.impl.inner._TableBlock;
-import io.army.meta.TableMeta;
 import io.army.util._Assert;
-import io.army.util._Exceptions;
 
 /**
  * <p>
@@ -16,13 +12,16 @@ import io.army.util._Exceptions;
  *
  * @since 1.0
  */
-abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, Void, WR, WA>
+abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, WR, WA>
         implements Delete, Delete.DeleteSpec, _SingleDelete {
+
+    final CriteriaContext criteriaContext;
 
     private boolean prepared;
 
     SingleDelete(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+        super(JoinableClause.voidClauseSuppler(), criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
         if (this instanceof NonPrimaryStatement) {
             CriteriaContextStack.push(this.criteriaContext);
         } else {
@@ -69,27 +68,6 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
 
     void onClear() {
 
-    }
-
-
-    @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableItem table, String tableAlias) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
     }
 
 
