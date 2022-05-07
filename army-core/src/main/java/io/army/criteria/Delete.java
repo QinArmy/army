@@ -6,7 +6,7 @@ import io.army.meta.TableMeta;
 public interface Delete extends NarrowDmlStatement {
 
 
-    interface DeleteSpec {
+    interface _DeleteSpec {
 
         Delete asDelete();
     }
@@ -22,12 +22,12 @@ public interface Delete extends NarrowDmlStatement {
     }
 
 
-    interface StandardWhereSpec<C> extends _WhereClause<C, DeleteSpec, StandardWhereAndSpec<C>> {
+    interface StandardWhereSpec<C> extends _WhereClause<C, _DeleteSpec, StandardWhereAndSpec<C>> {
 
     }
 
     interface StandardWhereAndSpec<C> extends _WhereAndClause<C, StandardWhereAndSpec<C>>
-            , Delete.DeleteSpec {
+            , _DeleteSpec {
 
     }
 
@@ -42,12 +42,12 @@ public interface Delete extends NarrowDmlStatement {
 
 
     interface StandardBatchWhereSpec<C>
-            extends _WhereClause<C, _BatchParamClause<C, DeleteSpec>, StandardBatchWhereAndSpec<C>> {
+            extends _WhereClause<C, _BatchParamClause<C, _DeleteSpec>, StandardBatchWhereAndSpec<C>> {
 
     }
 
     interface StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, StandardBatchWhereAndSpec<C>>
-            , _BatchParamClause<C, DeleteSpec> {
+            , _BatchParamClause<C, _DeleteSpec> {
 
     }
 

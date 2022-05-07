@@ -11,6 +11,10 @@ import java.util.List;
 
 interface CriteriaContext {
 
+    default Cte refCte(String cteName) {
+        throw new UnsupportedOperationException();
+    }
+
     void selectList(List<? extends SelectItem> selectPartList);
 
     boolean containsTable(String tableAlias);
@@ -50,9 +54,6 @@ interface CriteriaContext {
         throw new UnsupportedOperationException();
     }
 
-    default CteTableItem refCteItem(String cteName) {
-        throw new UnsupportedOperationException();
-    }
 
     @Nullable
     <C> C criteria();

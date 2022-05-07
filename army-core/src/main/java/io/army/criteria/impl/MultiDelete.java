@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Deprecated
 abstract class MultiDelete<C, JT, JS, JP, WR, WA> extends JoinableDml<C, JT, JS, JP, WR, WA>
-        implements Delete, Delete.DeleteSpec, _MultiDelete {
+        implements Delete, Delete._DeleteSpec, _MultiDelete {
 
 
     private JT noActionTableBlock;

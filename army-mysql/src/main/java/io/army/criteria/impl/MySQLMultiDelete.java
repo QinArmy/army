@@ -1,6 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.Cte;
+import io.army.criteria.Hint;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner.mysql._IndexHint;
@@ -27,27 +30,27 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMultiDelete<C, WE, JT, JT, IT, WR, WA>
         implements _MySQLMultiDelete, MySQLDelete, MySQLQuery._MySQLJoinClause<C, JT, JT, IT>
-        , MySQLDelete.MultiDeleteClause<C, DR, DP>, MySQLDelete.MultiDeleteFromClause<C, DR, DP>
-        , MySQLDelete.MultiDeleteUsingClause<C, DR, DP> {
+        , MySQLDelete._MultiDeleteClause<C, DR, DP>, MySQLDelete._MultiDeleteFromClause<C, DR, DP>
+        , MySQLDelete._MultiDeleteUsingClause<C, DR, DP> {
 
 
-    static <C> MySQLDelete.MultiDeleteSpec<C> simple(@Nullable C criteria) {
+    static <C> _MultiDeleteSpec<C> simple(@Nullable C criteria) {
         final SimpleDelete<C, Void> delete;
         delete = new SimpleDelete<>(criteria);
         return delete;
     }
 
-    static <C> MySQLDelete.BatchMultiDeleteSpec<C> batch(@Nullable C criteria) {
+    static <C> _BatchMultiDeleteClause<C> batch(@Nullable C criteria) {
         final BatchDelete<C, Void> delete;
         delete = new BatchDelete<>(criteria);
         return delete;
     }
 
-    static <C> MySQLDelete.WithMultiDeleteSpec<C> simple80(@Nullable C criteria) {
+    static <C> _WithAndMultiDeleteSpec<C> simple80(@Nullable C criteria) {
         return new SimpleWithAndDelete<>(criteria);
     }
 
-    static <C> MySQLDelete.BatchWithMultiDeleteSpec<C> batch80(@Nullable C criteria) {
+    static <C> _BatchWithAndMultiDeleteSpec<C> batch80(@Nullable C criteria) {
         return new BatchWithAndDelete<>(criteria);
     }
 
@@ -68,7 +71,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
 
 
     @Override
-    public final MultiDeleteFromClause<C, DR, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+    public final _MultiDeleteFromClause<C, DR, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , List<String> tableAliasList) {
         if (this.tableAliasList != null) {
             throw _Exceptions.castCriteriaApi();
@@ -81,7 +84,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }
 
     @Override
-    public final MultiDeleteFromClause<C, DR, DP> delete(List<String> tableAliasList) {
+    public final _MultiDeleteFromClause<C, DR, DP> delete(List<String> tableAliasList) {
         if (this.tableAliasList != null) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -91,14 +94,14 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }
 
     @Override
-    public final MultiDeleteFromClause<C, DR, DP> delete(String tableAlias1, String tableAlias2) {
+    public final _MultiDeleteFromClause<C, DR, DP> delete(String tableAlias1, String tableAlias2) {
         this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
         this.usingSyntax = false;
         return this;
     }
 
     @Override
-    public final MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+    public final _MultiDeleteUsingClause<C, DR, DP> deleteFrom(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , List<String> tableAliasList) {
         assert hintList != null;
         if (this.tableAliasList != null) {
@@ -112,7 +115,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }
 
     @Override
-    public final MultiDeleteUsingClause<C, DR, DP> deleteFrom(List<String> tableAliasList) {
+    public final _MultiDeleteUsingClause<C, DR, DP> deleteFrom(List<String> tableAliasList) {
         if (this.tableAliasList != null) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -122,7 +125,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }
 
     @Override
-    public final MultiDeleteUsingClause<C, DR, DP> deleteFrom(String tableAlias1, String tableAlias2) {
+    public final _MultiDeleteUsingClause<C, DR, DP> deleteFrom(String tableAlias1, String tableAlias2) {
         this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
         this.usingSyntax = true;
         return this;
@@ -304,21 +307,21 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     private static class SimpleDelete<C, WE> extends MySQLMultiDelete<
             C,
             WE,
-            MySQLDelete.MultiJoinSpec<C>,
-            MySQLDelete.MultiPartitionJoinSpec<C>,
+            _MultiJoinSpec<C>,
+            _MultiPartitionJoinClause<C>,
             MySQLDelete.MultiOnSpec<C>,
-            MySQLDelete.MultiPartitionOnSpec<C>,
-            Delete.DeleteSpec,
-            MySQLDelete.MultiWhereAndSpec<C>>
-            implements MySQLDelete.MultiWhereAndSpec<C>, MySQLDelete.MultiJoinSpec<C>
-            , MySQLDelete.MultiDeleteSpec<C> {
+            _MultiPartitionOnClause<C>,
+            _DeleteSpec,
+            _MultiWhereAndSpec<C>>
+            implements _MultiWhereAndSpec<C>, _MultiJoinSpec<C>
+            , _MultiDeleteSpec<C> {
 
         private SimpleDelete(@Nullable C criteria) {
             super(criteria);
         }
 
         @Override
-        final MultiPartitionJoinSpec<C> createPartitionJoinSpec(TableMeta<?> table) {
+        final _MultiPartitionJoinClause<C> createPartitionJoinSpec(TableMeta<?> table) {
             return new SimplePartitionJoinSpec<>(table, this);
         }
 
@@ -333,7 +336,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final MultiPartitionOnSpec<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
+        final _MultiPartitionOnClause<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
             return new SimplePartitionOnBlock<>(joinType, table, this);
         }
 
@@ -348,7 +351,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final MultiPartitionOnSpec<C> createNoActionPartitionBlock() {
+        final _MultiPartitionOnClause<C> createNoActionPartitionBlock() {
             return new NoActionPartitionBlock<>(this);
         }
 
@@ -358,14 +361,14 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     private static class BatchDelete<C, WE> extends MySQLMultiDelete<
             C,
             WE,
-            MySQLDelete.BatchMultiJoinSpec<C>,
-            MySQLDelete.BatchMultiPartitionJoinSpec<C>,
+            _BatchMultiJoinSpec<C>,
+            _BatchMultiPartitionJoinClause<C>,
             MySQLDelete.BatchMultiOnSpec<C>,
-            MySQLDelete.BatchMultiPartitionOnSpec<C>,
-            _BatchParamClause<C, DeleteSpec>,
-            MySQLDelete.BatchMultiWhereAndSpec<C>>
-            implements MySQLDelete.BatchMultiWhereAndSpec<C>, MySQLDelete.BatchMultiJoinSpec<C>, _BatchDml
-            , MySQLDelete.BatchMultiDeleteSpec<C> {
+            _BatchMultiPartitionOnClause<C>,
+            _BatchParamClause<C, _DeleteSpec>,
+            _BatchMultiWhereAndSpec<C>>
+            implements _BatchMultiWhereAndSpec<C>, _BatchMultiJoinSpec<C>, _BatchDml
+            , _BatchMultiDeleteClause<C> {
 
 
         private List<?> wrapperList;
@@ -375,29 +378,29 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        public final DeleteSpec paramList(List<?> beanList) {
+        public final _DeleteSpec paramList(List<?> beanList) {
             this.wrapperList = CriteriaUtils.paramList(beanList);
             return this;
         }
 
         @Override
-        public final DeleteSpec paramList(Supplier<List<?>> supplier) {
+        public final _DeleteSpec paramList(Supplier<List<?>> supplier) {
             return this.paramList(supplier.get());
         }
 
         @Override
-        public final DeleteSpec paramList(Function<C, List<?>> function) {
+        public final _DeleteSpec paramList(Function<C, List<?>> function) {
             return this.paramList(function.apply(this.criteria));
         }
 
         @Override
-        public final DeleteSpec paramList(Function<String, Object> function, String keyName) {
+        public final _DeleteSpec paramList(Function<String, Object> function, String keyName) {
             this.wrapperList = CriteriaUtils.paramList(function, keyName);
             return this;
         }
 
         @Override
-        final BatchMultiPartitionJoinSpec<C> createPartitionJoinSpec(TableMeta<?> table) {
+        final _BatchMultiPartitionJoinClause<C> createPartitionJoinSpec(TableMeta<?> table) {
             return new BatchPartitionJoinSpec<>(table, this);
         }
 
@@ -412,7 +415,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final BatchMultiPartitionOnSpec<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
+        final _BatchMultiPartitionOnClause<C> createBlockBeforeAs(_JoinType joinType, TableMeta<?> table) {
             return new BatchPartitionBlock<>(joinType, table, this);
         }
 
@@ -427,7 +430,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final BatchMultiPartitionOnSpec<C> createNoActionPartitionBlock() {
+        final _BatchMultiPartitionOnClause<C> createNoActionPartitionBlock() {
             return new BatchNoActionPartitionBlock<>(this);
         }
 
@@ -441,8 +444,8 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }//SimpleDelete
 
 
-    private static final class SimpleWithAndDelete<C> extends SimpleDelete<C, MySQLDelete.MultiDeleteSpec<C>>
-            implements MySQLDelete.WithMultiDeleteSpec<C>, _MySQLWithClause {
+    private static final class SimpleWithAndDelete<C> extends SimpleDelete<C, _MultiDeleteSpec<C>>
+            implements _WithAndMultiDeleteSpec<C>, _MySQLWithClause {
 
         private boolean recursive;
 
@@ -473,8 +476,8 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
     }//SimpleWithAndDelete
 
 
-    private static final class BatchWithAndDelete<C> extends BatchDelete<C, MySQLDelete.BatchMultiDeleteSpec<C>>
-            implements MySQLDelete.BatchWithMultiDeleteSpec<C>, _MySQLWithClause {
+    private static final class BatchWithAndDelete<C> extends BatchDelete<C, _BatchMultiDeleteClause<C>>
+            implements _BatchWithAndMultiDeleteSpec<C>, _MySQLWithClause {
 
         private boolean recursive;
 
@@ -546,7 +549,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      * @see SimpleDelete#createPartitionJoinSpec(TableMeta)
      */
     private static final class SimplePartitionJoinSpec<C, WE> extends MySQLPartitionClause<C, MySQLDelete.MultiAsJoinSpec<C>>
-            implements MySQLDelete.MultiAsJoinSpec<C>, MySQLDelete.MultiPartitionJoinSpec<C> {
+            implements MySQLDelete.MultiAsJoinSpec<C>, _MultiPartitionJoinClause<C> {
 
         private final TableMeta<?> table;
 
@@ -559,7 +562,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        public MultiJoinSpec<C> as(final String alias) {
+        public _MultiJoinSpec<C> as(final String alias) {
             Objects.requireNonNull(alias);
             final List<String> partitionList = this.partitionList;
             final TableBlock block;
@@ -579,7 +582,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      */
     private static final class BatchPartitionJoinSpec<C, WE>
             extends MySQLPartitionClause<C, MySQLDelete.BatchMultiAsJoinSpec<C>>
-            implements MySQLDelete.BatchMultiAsJoinSpec<C>, MySQLDelete.BatchMultiPartitionJoinSpec<C> {
+            implements MySQLDelete.BatchMultiAsJoinSpec<C>, _BatchMultiPartitionJoinClause<C> {
 
 
         private final TableMeta<?> table;
@@ -593,7 +596,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        public BatchMultiJoinSpec<C> as(String alias) {
+        public _BatchMultiJoinSpec<C> as(String alias) {
             Objects.requireNonNull(alias);
             final List<String> partitionList = this.partitionList;
             final TableBlock block;
@@ -612,7 +615,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      * @see SimpleDelete#createItemBlock(_JoinType, TableItem, String)
      * @see SimpleDelete#createTableBlock(_JoinType, TableMeta, String)
      */
-    private static class SimpleOnBlock<C, WE> extends OnClauseTableBlock<C, MySQLDelete.MultiJoinSpec<C>>
+    private static class SimpleOnBlock<C, WE> extends OnClauseTableBlock<C, _MultiJoinSpec<C>>
             implements MySQLDelete.MultiOnSpec<C> {
 
         private final SimpleDelete<C, WE> delete;
@@ -628,7 +631,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        MultiJoinSpec<C> endOnClause() {
+        _MultiJoinSpec<C> endOnClause() {
             return this.delete;
         }
 
@@ -673,7 +676,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      */
     private static final class SimplePartitionOnBlock<C, WE>
             extends MySQLPartitionClause<C, MySQLDelete.MultiAsOnSpec<C>>
-            implements MySQLDelete.MultiPartitionOnSpec<C>, MySQLDelete.MultiAsOnSpec<C> {
+            implements _MultiPartitionOnClause<C>, MySQLDelete.MultiAsOnSpec<C> {
 
         private final _JoinType joinType;
 
@@ -710,7 +713,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      * @see BatchDelete#createTableBlock(_JoinType, TableMeta, String)
      * @see BatchDelete#createItemBlock(_JoinType, TableItem, String)
      */
-    private static class BatchOnBlock<C, WE> extends OnClauseTableBlock<C, MySQLDelete.BatchMultiJoinSpec<C>>
+    private static class BatchOnBlock<C, WE> extends OnClauseTableBlock<C, _BatchMultiJoinSpec<C>>
             implements MySQLDelete.BatchMultiOnSpec<C> {
 
 
@@ -727,7 +730,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
         }
 
         @Override
-        final BatchMultiJoinSpec<C> endOnClause() {
+        final _BatchMultiJoinSpec<C> endOnClause() {
             return this.delete;
         }
 
@@ -768,7 +771,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      * @see BatchDelete#createBlockBeforeAs(_JoinType, TableMeta)
      */
     private static final class BatchPartitionBlock<C, WE> extends MySQLPartitionClause<C, MySQLDelete.BatchMultiAsOnSpec<C>>
-            implements MySQLDelete.BatchMultiAsOnSpec<C>, MySQLDelete.BatchMultiPartitionOnSpec<C> {
+            implements MySQLDelete.BatchMultiAsOnSpec<C>, _BatchMultiPartitionOnClause<C> {
 
         private final _JoinType joinType;
 
@@ -807,7 +810,7 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      */
     private static final class NoActionPartitionBlock<C, WE>
             extends MySQLNoActionPartitionClause<C, MultiAsOnSpec<C>>
-            implements MySQLDelete.MultiAsOnSpec<C>, MySQLDelete.MultiPartitionOnSpec<C> {
+            implements MySQLDelete.MultiAsOnSpec<C>, _MultiPartitionOnClause<C> {
 
         private final MultiOnSpec<C> onSpec;
 
@@ -826,10 +829,10 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      * @see SimpleDelete#createNoActionTableBlock()
      * @see SimpleDelete#createNoActionOnBlock()
      */
-    private static final class NoActionOnBlock<C> extends NoActionOnClause<C, MySQLDelete.MultiJoinSpec<C>>
+    private static final class NoActionOnBlock<C> extends NoActionOnClause<C, _MultiJoinSpec<C>>
             implements MySQLDelete.MultiOnSpec<C> {
 
-        private NoActionOnBlock(MultiJoinSpec<C> stmt) {
+        private NoActionOnBlock(_MultiJoinSpec<C> stmt) {
             super(stmt);
         }
 
@@ -839,10 +842,10 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      * @see BatchDelete#createNoActionTableBlock()
      * @see BatchDelete#createNoActionOnBlock()
      */
-    private static final class BatchNoActionOnBlock<C> extends NoActionOnClause<C, MySQLDelete.BatchMultiJoinSpec<C>>
+    private static final class BatchNoActionOnBlock<C> extends NoActionOnClause<C, _BatchMultiJoinSpec<C>>
             implements MySQLDelete.BatchMultiOnSpec<C> {
 
-        private BatchNoActionOnBlock(BatchMultiJoinSpec<C> stmt) {
+        private BatchNoActionOnBlock(_BatchMultiJoinSpec<C> stmt) {
             super(stmt);
         }
 
@@ -853,11 +856,11 @@ abstract class MySQLMultiDelete<C, WE, DR, DP, JT, IT, WR, WA> extends WithCteMu
      */
     private static final class BatchNoActionPartitionBlock<C>
             extends MySQLNoActionPartitionClause<C, BatchMultiAsOnSpec<C>>
-            implements MySQLDelete.BatchMultiAsOnSpec<C>, MySQLDelete.BatchMultiPartitionOnSpec<C> {
+            implements MySQLDelete.BatchMultiAsOnSpec<C>, _BatchMultiPartitionOnClause<C> {
 
         private final BatchMultiOnSpec<C> onSpec;
 
-        private BatchNoActionPartitionBlock(BatchMultiJoinSpec<C> delete) {
+        private BatchNoActionPartitionBlock(_BatchMultiJoinSpec<C> delete) {
             this.onSpec = new BatchNoActionOnBlock<>(delete);
         }
 

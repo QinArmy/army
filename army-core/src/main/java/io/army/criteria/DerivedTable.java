@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @since 1.0
  */
-public interface DerivedTable extends TableItem, NonPrimaryStatement {
+public interface DerivedTable extends TableItem {
 
     List<? extends SelectItem> selectItemList();
 

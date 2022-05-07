@@ -592,7 +592,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
     @Override
     public final Update asUpdate() {
         _Assert.nonPrepared(this.prepared);
-        if (this instanceof NonPrimaryStatement) {
+        if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);

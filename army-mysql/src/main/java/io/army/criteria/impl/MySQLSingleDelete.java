@@ -33,25 +33,25 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, WE, WR, WA>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>, MySQLQuery._PartitionClause<C, PR>
-        , _MySQLSingleDelete, MySQLDelete.SingleDeleteClause<C, DR>, MySQLDelete.SingleDeleteFromClause<DR> {
+        , _MySQLSingleDelete, MySQLDelete._SingleDeleteClause<C, DR>, MySQLDelete._SingleDeleteFromClause<DR> {
 
-    static <C> MySQLDelete.SingleDeleteSpec<C> simple57(@Nullable C criteria) {
+    static <C> _SingleDelete57Clause<C> simple57(@Nullable C criteria) {
         final SimpleDelete<C, Void> delete;
         delete = new SimpleDelete<>(criteria);
         return delete;
     }
 
-    static <C> MySQLDelete.BatchSingleDeleteSpec<C> batch57(@Nullable C criteria) {
+    static <C> _BatchSingleDeleteClause<C> batch57(@Nullable C criteria) {
         final BatchDelete<C, Void> delete;
         delete = new BatchDelete<>(criteria);
         return delete;
     }
 
-    static <C> MySQLDelete.SingleDelete80Spec<C> simple80(@Nullable C criteria) {
+    static <C> _WithAndSingleDeleteSpec<C> simple80(@Nullable C criteria) {
         return new SimpleDelete80<>(criteria);
     }
 
-    static <C> MySQLDelete.BatchSingleDelete80Spec<C> batch80(@Nullable C criteria) {
+    static <C> _BatchWithAndSingleDeleteSpec<C> batch80(@Nullable C criteria) {
         return new BatchDelete80<>(criteria);
     }
 
@@ -75,14 +75,14 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
 
 
     @Override
-    public final MySQLDelete.SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         return this;
     }
 
     @Override
-    public final MySQLDelete.SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = _CollectionUtils.asUnmodifiableList(hints.apply(this.criteria));
         this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
         return this;
@@ -395,14 +395,14 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     private static class SimpleDelete<C, WE> extends MySQLSingleDelete<
             C,
             WE,
-            MySQLDelete.SinglePartitionSpec<C>,
-            MySQLDelete.SingleWhereSpec<C>,
-            MySQLDelete.OrderBySpec<C>,
-            MySQLDelete.SingleWhereAndSpec<C>,
-            MySQLDelete.LimitSpec<C>,
-            Delete.DeleteSpec>
-            implements MySQLDelete.SinglePartitionSpec<C>, MySQLDelete.SingleWhereAndSpec<C>
-            , MySQLDelete.SingleDeleteSpec<C> {
+            _SinglePartitionSpec<C>,
+            _SingleWhereClause<C>,
+            _OrderBySpec<C>,
+            _SingleWhereAndSpec<C>,
+            _LimitSpec<C>,
+            _DeleteSpec>
+            implements _SinglePartitionSpec<C>, _SingleWhereAndSpec<C>
+            , _SingleDelete57Clause<C> {
 
         private SimpleDelete(@Nullable C criteria) {
             super(criteria);
@@ -414,14 +414,14 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     private static class BatchDelete<C, WE> extends MySQLSingleDelete<
             C,
             WE,
-            MySQLDelete.BatchSinglePartitionSpec<C>,
-            MySQLDelete.BatchSingleWhereSpec<C>,
-            MySQLDelete.BatchOrderBySpec<C>,
-            MySQLDelete.BatchSingleWhereAndSpec<C>,
-            MySQLDelete.BatchLimitSpec<C>,
-            _BatchParamClause<C, DeleteSpec>>
-            implements MySQLDelete.BatchSinglePartitionSpec<C>, MySQLDelete.BatchSingleWhereAndSpec<C>
-            , MySQLDelete.BatchSingleDeleteSpec<C>, _BatchDml {
+            _BatchSinglePartitionSpec<C>,
+            _BatchSingleWhereClause<C>,
+            _BatchOrderBySpec<C>,
+            _BatchSingleWhereAndSpec<C>,
+            _BatchLimitSpec<C>,
+            _BatchParamClause<C, _DeleteSpec>>
+            implements _BatchSinglePartitionSpec<C>, _BatchSingleWhereAndSpec<C>
+            , _BatchSingleDeleteClause<C>, _BatchDml {
 
         private List<?> wrapperList;
 
@@ -431,23 +431,23 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
         }
 
         @Override
-        public final DeleteSpec paramList(List<?> beanList) {
+        public final _DeleteSpec paramList(List<?> beanList) {
             this.wrapperList = CriteriaUtils.paramList(beanList);
             return this;
         }
 
         @Override
-        public final DeleteSpec paramList(Supplier<List<?>> supplier) {
+        public final _DeleteSpec paramList(Supplier<List<?>> supplier) {
             return this.paramList(supplier.get());
         }
 
         @Override
-        public final DeleteSpec paramList(Function<C, List<?>> function) {
+        public final _DeleteSpec paramList(Function<C, List<?>> function) {
             return this.paramList(function.apply(this.criteria));
         }
 
         @Override
-        public final DeleteSpec paramList(Function<String, Object> function, String keyName) {
+        public final _DeleteSpec paramList(Function<String, Object> function, String keyName) {
             this.wrapperList = CriteriaUtils.paramList(function, keyName);
             return this;
         }
@@ -460,8 +460,8 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     }//BatchDelete
 
 
-    private static final class SimpleDelete80<C> extends SimpleDelete<C, MySQLDelete.SingleDeleteSpec<C>>
-            implements _MySQLWithClause, MySQLDelete.SingleDelete80Spec<C> {
+    private static final class SimpleDelete80<C> extends SimpleDelete<C, _SingleDelete57Clause<C>>
+            implements _MySQLWithClause, _WithAndSingleDeleteSpec<C> {
 
         private boolean recursive;
 
@@ -490,8 +490,8 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     }//SimpleDelete80
 
 
-    private static final class BatchDelete80<C> extends BatchDelete<C, MySQLDelete.BatchSingleDeleteSpec<C>>
-            implements _MySQLWithClause, MySQLDelete.BatchSingleDelete80Spec<C> {
+    private static final class BatchDelete80<C> extends BatchDelete<C, _BatchSingleDeleteClause<C>>
+            implements _MySQLWithClause, _BatchWithAndSingleDeleteSpec<C> {
 
         private boolean recursive;
 

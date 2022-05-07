@@ -31,7 +31,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     UnionRowSet(Q left) {
         super(CriteriaContexts.unionContext(left));
         this.left = left;
-        if (this instanceof NonPrimaryStatement) {
+        if (this instanceof SubStatement) {
             CriteriaContextStack.push(this.criteriaContext);
         } else {
             CriteriaContextStack.setContextStack(this.criteriaContext);
@@ -98,7 +98,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     @SuppressWarnings("unchecked")
     @Override
     final Q internalAsRowSet(final boolean fromAsQueryMethod) {
-        if (this instanceof NonPrimaryStatement) {
+        if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);

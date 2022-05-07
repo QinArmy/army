@@ -103,39 +103,39 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLDelete.SingleDelete80Spec<Void> singleDelete() {
+    public static MySQLDelete._WithAndSingleDeleteSpec<Void> singleDelete() {
         return MySQLSingleDelete.simple80(null);
     }
 
-    public static <C> MySQLDelete.SingleDelete80Spec<C> singleDelete(C criteria) {
+    public static <C> MySQLDelete._WithAndSingleDeleteSpec<C> singleDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLSingleDelete.simple80(criteria);
     }
 
-    public static MySQLDelete.BatchSingleDelete80Spec<Void> batchSingleDelete() {
+    public static MySQLDelete._BatchWithAndSingleDeleteSpec<Void> batchSingleDelete() {
         return MySQLSingleDelete.batch80(null);
     }
 
-    public static <C> MySQLDelete.BatchSingleDelete80Spec<C> batchSingleDelete(C criteria) {
+    public static <C> MySQLDelete._BatchWithAndSingleDeleteSpec<C> batchSingleDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLSingleDelete.batch80(criteria);
     }
 
-    public static MySQLDelete.WithMultiDeleteSpec<Void> multiDelete() {
+    public static MySQLDelete._WithAndMultiDeleteSpec<Void> multiDelete() {
         return MySQLMultiDelete.simple80(null);
     }
 
-    public static <C> MySQLDelete.WithMultiDeleteSpec<C> multiDelete(C criteria) {
+    public static <C> MySQLDelete._WithAndMultiDeleteSpec<C> multiDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiDelete.simple80(criteria);
     }
 
 
-    public static MySQLDelete.BatchWithMultiDeleteSpec<Void> batchMultiDelete() {
+    public static MySQLDelete._BatchWithAndMultiDeleteSpec<Void> batchMultiDelete() {
         return MySQLMultiDelete.batch80(null);
     }
 
-    public static <C> MySQLDelete.BatchWithMultiDeleteSpec<C> batchMultiDelete(C criteria) {
+    public static <C> MySQLDelete._BatchWithAndMultiDeleteSpec<C> batchMultiDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiDelete.batch80(criteria);
     }

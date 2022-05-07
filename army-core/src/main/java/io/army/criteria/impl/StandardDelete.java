@@ -95,7 +95,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     private static final class SimpleDelete<C> extends StandardDelete<
             C,
             Delete.StandardWhereSpec<C>,
-            Delete.DeleteSpec,
+            _DeleteSpec,
             Delete.StandardWhereAndSpec<C>>
             implements Delete.StandardWhereSpec<C>, Delete.StandardWhereAndSpec<C>
             , Delete.StandardDeleteSpec<C> {
@@ -110,10 +110,10 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     private static final class BatchDelete<C> extends StandardDelete<
             C,
             Delete.StandardBatchWhereSpec<C>,
-            _BatchParamClause<C, DeleteSpec>,
+            _BatchParamClause<C, _DeleteSpec>,
             Delete.StandardBatchWhereAndSpec<C>>
             implements Delete.StandardBatchWhereAndSpec<C>, Delete.StandardBatchWhereSpec<C>
-            , _BatchParamClause<C, DeleteSpec>, Delete.StandardBatchDeleteSpec<C>, _BatchDml {
+            , _BatchParamClause<C, _DeleteSpec>, Delete.StandardBatchDeleteSpec<C>, _BatchDml {
 
         private List<?> paramList;
 
@@ -122,25 +122,25 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
         }
 
         @Override
-        public DeleteSpec paramList(List<?> paramList) {
+        public _DeleteSpec paramList(List<?> paramList) {
             this.paramList = CriteriaUtils.paramList(paramList);
             return this;
         }
 
         @Override
-        public DeleteSpec paramList(Supplier<List<?>> supplier) {
+        public _DeleteSpec paramList(Supplier<List<?>> supplier) {
             this.paramList = CriteriaUtils.paramList(supplier.get());
             return this;
         }
 
         @Override
-        public DeleteSpec paramList(Function<C, List<?>> function) {
+        public _DeleteSpec paramList(Function<C, List<?>> function) {
             this.paramList = CriteriaUtils.paramList(function.apply(this.criteria));
             return this;
         }
 
         @Override
-        public DeleteSpec paramList(Function<String, ?> function, String keyName) {
+        public _DeleteSpec paramList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList((List<?>) function.apply(keyName));
             return this;
         }

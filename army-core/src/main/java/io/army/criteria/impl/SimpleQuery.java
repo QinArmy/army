@@ -54,7 +54,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     SimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
-        if (this instanceof NonPrimaryStatement) {
+        if (this instanceof SubStatement) {
             CriteriaContextStack.push(this.criteriaContext);
         } else {
             CriteriaContextStack.setContextStack(this.criteriaContext);
@@ -591,7 +591,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     protected final Q internalAsRowSet(final boolean fromAsQueryMethod) {
-        if (this instanceof NonPrimaryStatement) {
+        if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);

@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
-import io.army.criteria.NonPrimaryStatement;
+import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.util._Assert;
 
@@ -13,7 +13,7 @@ import io.army.util._Assert;
  * @since 1.0
  */
 abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, WR, WA>
-        implements Delete, Delete.DeleteSpec, _SingleDelete {
+        implements Delete, Delete._DeleteSpec, _SingleDelete {
 
     final CriteriaContext criteriaContext;
 
@@ -22,7 +22,7 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
     SingleDelete(CriteriaContext criteriaContext) {
         super(JoinableClause.voidClauseSuppler(), criteriaContext.criteria());
         this.criteriaContext = criteriaContext;
-        if (this instanceof NonPrimaryStatement) {
+        if (this instanceof SubStatement) {
             CriteriaContextStack.push(this.criteriaContext);
         } else {
             CriteriaContextStack.setContextStack(this.criteriaContext);
@@ -42,7 +42,7 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
     @Override
     public final Delete asDelete() {
         _Assert.nonPrepared(this.prepared);
-        if (this instanceof NonPrimaryStatement) {
+        if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);

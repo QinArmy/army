@@ -799,7 +799,7 @@ public abstract class SQLs extends Functions {
         }
 
         @Override
-        public SubQuery subQuery() {
+        public SubQuery subStatement() {
             return this.subQuery;
         }
 

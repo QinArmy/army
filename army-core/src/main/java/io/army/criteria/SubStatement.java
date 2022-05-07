@@ -7,7 +7,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface NonPrimaryStatement extends Statement {
+public interface SubStatement extends Statement {
 
 
 }
