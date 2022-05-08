@@ -63,11 +63,11 @@ public interface Query extends RowSet {
 
     interface _GroupClause<C, GR> {
 
-        GR groupBy(Object sortItem);
+        GR groupBy(SortItem sortItem);
 
-        GR groupBy(Object sortItem1, Object sortItem2);
+        GR groupBy(SortItem sortItem1, SortItem sortItem2);
 
-        GR groupBy(Object sortItem1, Object sortItem2, Object sortItem3);
+        GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
 
         <S extends SortItem> GR groupBy(Supplier<List<S>> supplier);
 

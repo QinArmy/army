@@ -209,16 +209,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final AR where(Function<Object, IPredicate> operator, Supplier<?> operand) {
-        return this.and(operator.apply(operand.get()));
-    }
-
-    @Override
-    public final AR where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
-        return this.and(operator.apply(operand.apply(keyName)));
-    }
-
-    @Override
     public final AR where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
             , Supplier<?> secondOperand) {
         return this.and(operator.apply(firstOperand.get(), secondOperand.get()));
@@ -230,6 +220,15 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
     }
 
+    @Override
+    public final AR whereIf(Supplier<IPredicate> supplier) {
+        return this.ifAnd(supplier);
+    }
+
+    @Override
+    public final AR whereIf(Function<C, IPredicate> function) {
+        return this.ifAnd(function);
+    }
 
     @Override
     public final AR whereIf(Function<Object, IPredicate> operator, Supplier<?> operand) {
@@ -294,16 +293,6 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final AR and(Function<C, IPredicate> function) {
         return this.and(function.apply(this.criteria));
-    }
-
-    @Override
-    public final AR and(Function<Object, IPredicate> operator, Supplier<?> operand) {
-        return this.and(operator.apply(operand.get()));
-    }
-
-    @Override
-    public final AR and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
-        return this.and(operator.apply(operand.apply(keyName)));
     }
 
     @Override
@@ -381,26 +370,26 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
 
     @Override
-    public final GR groupBy(Object sortItem) {
-        this.groupByList = Collections.singletonList(SQLs._sortItem(sortItem));
+    public final GR groupBy(SortItem sortItem) {
+        this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(Object sortItem1, Object sortItem2) {
+    public final GR groupBy(SortItem sortItem1, SortItem sortItem2) {
         this.groupByList = ArrayUtils.asUnmodifiableList(
-                SQLs._sortItem(sortItem1),
-                SQLs._sortItem(sortItem2)
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2
         );
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(Object sortItem1, Object sortItem2, Object sortItem3) {
+    public final GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
         this.groupByList = ArrayUtils.asUnmodifiableList(
-                SQLs._sortItem(sortItem1),
-                SQLs._sortItem(sortItem2),
-                SQLs._sortItem(sortItem3)
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2,
+                (ArmySortItem) sortItem3
         );
         return (GR) this;
     }

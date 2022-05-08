@@ -180,13 +180,6 @@ abstract class CriteriaUtils {
         return itemList;
     }
 
-    static List<_Predicate> onPredicates(IPredicate predicate1, IPredicate predicate2) {
-        final List<_Predicate> list = new ArrayList<>(2);
-        list.add((OperationPredicate) predicate1);
-        list.add((OperationPredicate) predicate2);
-        return Collections.unmodifiableList(list);
-    }
-
 
     static List<Object> paramList(final @Nullable List<?> paramList) {
         final int size;
@@ -346,11 +339,11 @@ abstract class CriteriaUtils {
         return new CriteriaException(m);
     }
 
-     static CriteriaException illegalHint(@Nullable Hint hint) {
-         String m = String.format("Hint %s is illegal."
-                 , _ClassUtils.safeClassName(hint));
-         throw new CriteriaException(m);
-     }
+    static CriteriaException illegalHint(@Nullable Hint hint) {
+        String m = String.format("Hint %s is illegal."
+                , _ClassUtils.safeClassName(hint));
+        throw new CriteriaException(m);
+    }
 
 
     private static CriteriaException modifierSyntaxError(SQLWords.Modifier modifier) {

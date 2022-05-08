@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Cte;
-import io.army.criteria.Hint;
-import io.army.criteria.SortItem;
-import io.army.criteria.Statement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLHint;
@@ -34,7 +31,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
-        extends WithCteSingleUpdate<C, WE, SR, WR, WA>
+        extends WithCteSingleUpdate<C, SubQuery, WE, SR, WR, WA>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
         , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<UR, UP>, MySQLQuery._IndexHintClause<C, IR, UR>
         , MySQLQuery._IndexForOrderByClause<C, UR>, _MySQLWithClause {
@@ -249,16 +246,22 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     /*################################## blow OrderByClause method ##################################*/
 
     @Override
-    public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(SQLs._sortItem(sortItem));
+    public final OR orderBy(String selection) {
+        this.orderByList = Collections.singletonList(CriteriaUtils._sortItem(selection));
+        return (OR) this;
+    }
+
+    @Override
+    public final OR orderBy(SortItem sortItem) {
+        this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._sortItem(sortItem1),
-                SQLs._sortItem(sortItem2)
+                CriteriaUtils._sortItem(sortItem1),
+                CriteriaUtils._sortItem(sortItem2)
         );
         return (OR) this;
     }
@@ -266,9 +269,9 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._sortItem(sortItem1),
-                SQLs._sortItem(sortItem2),
-                SQLs._sortItem(sortItem3)
+                CriteriaUtils._sortItem(sortItem1),
+                CriteriaUtils._sortItem(sortItem2),
+                CriteriaUtils._sortItem(sortItem3)
         );
         return (OR) this;
     }

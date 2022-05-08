@@ -15,7 +15,7 @@ public interface _MySQLSingleDelete extends _MySQLDelete, _SingleDelete, MySQLDe
     /**
      * @return a unmodifiable list
      */
-    List<SortItem> orderByList();
+    List<? extends SortItem> orderByList();
 
     long rowCount();
 

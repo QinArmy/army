@@ -104,21 +104,21 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLDelete._WithAndSingleDeleteSpec<Void> singleDelete() {
-        return MySQLSingleDelete.simple80(null);
+        return MySQLSingleDelete.simple(null);
     }
 
     public static <C> MySQLDelete._WithAndSingleDeleteSpec<C> singleDelete(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQLSingleDelete.simple80(criteria);
+        return MySQLSingleDelete.simple(criteria);
     }
 
     public static MySQLDelete._BatchWithAndSingleDeleteSpec<Void> batchSingleDelete() {
-        return MySQLSingleDelete.batch80(null);
+        return MySQLSingleDelete.batch(null);
     }
 
     public static <C> MySQLDelete._BatchWithAndSingleDeleteSpec<C> batchSingleDelete(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQLSingleDelete.batch80(criteria);
+        return MySQLSingleDelete.batch(criteria);
     }
 
     public static MySQLDelete._WithAndMultiDeleteSpec<Void> multiDelete() {

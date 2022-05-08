@@ -46,6 +46,20 @@ abstract class MySQLUtils extends CriteriaUtils {
         return match;
     }
 
+    static boolean isDeleteModifier(final MySQLWords modifier) {
+        final boolean match;
+        switch (modifier) {
+            case LOW_PRIORITY:
+            case QUICK:
+            case IGNORE:
+                match = true;
+                break;
+            default:
+                match = false;
+        }
+        return match;
+    }
+
     static List<String> asStringList(final @Nullable List<String> partitionList, Supplier<CriteriaException> supplier) {
         if (partitionList == null) {
             throw supplier.get();

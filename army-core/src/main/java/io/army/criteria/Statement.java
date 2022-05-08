@@ -306,13 +306,13 @@ public interface Statement {
 
         WA where(IPredicate predicate);
 
-        WA where(Function<Object, IPredicate> operator, Supplier<?> operand);
-
-        WA where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
-
         WA where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
         WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
+        WA whereIf(Supplier<IPredicate> supplier);
+
+        WA whereIf(Function<C, IPredicate> function);
 
         WA whereIf(Function<Object, IPredicate> operator, Supplier<?> operand);
 
@@ -367,10 +367,6 @@ public interface Statement {
 
         WA and(Function<C, IPredicate> function);
 
-        WA and(Function<Object, IPredicate> operator, Supplier<?> operand);
-
-        WA and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
-
         WA and(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
         WA and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
@@ -404,11 +400,11 @@ public interface Statement {
      */
     interface _OrderByClause<C, OR> {
 
-        OR orderBy(Object sortItem);
+        OR orderBy(SortItem sortItem);
 
-        OR orderBy(Object sortItem1, Object sortItem2);
+        OR orderBy(SortItem sortItem1, SortItem sortItem2);
 
-        OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3);
+        OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
 
         <S extends SortItem> OR orderBy(Function<C, List<S>> function);
 

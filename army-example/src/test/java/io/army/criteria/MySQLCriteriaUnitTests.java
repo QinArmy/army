@@ -1,8 +1,6 @@
-package io.army.criteria.impl;
+package io.army.criteria;
 
-import io.army.criteria.Hint;
-import io.army.criteria.TableField;
-import io.army.criteria.Update;
+import io.army.criteria.impl.MySQLs;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.example.bank.domain.user.ChinaCity_;
 import io.army.example.bank.domain.user.ChinaRegion_;
@@ -12,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MySQLCriteriaUnitTests {
@@ -81,6 +81,49 @@ public class MySQLCriteriaUnitTests {
                 .limit(10)
                 .paramList(Collections::emptyList)
                 .asUpdate();
+    }
+
+
+    @Test
+    public void singleDelete57WithCriteriaMap() {
+
+        //daoMethod mock dao method
+        final Consumer<Map<String, Object>> daoMethod = map -> {
+
+            final Supplier<List<Hint>> hintSupplier = () -> {
+                final List<Hint> hintList = new ArrayList<>(2);
+                hintList.add(MySQLs.qbName("regionDelete"));
+                hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
+                return hintList;
+            };
+
+            final Delete stmt;
+            stmt = MySQLs.singleDelete()
+                    .delete(hintSupplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE))
+                    .from(ChinaRegion_.T, "r")
+                    .partition("P1")
+                    .where(ChinaRegion_.createTime::betweenLiteral, map::get, "startTime", "endTIme")
+                    .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")
+                    .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
+                    .orderBy(ChinaRegion_.name.desc(), ChinaRegion_.id)
+                    .ifLimit(map::get, "rowCount")
+                    .asDelete();
+
+            System.out.println(stmt);
+        };
+
+
+        final Map<String, Object> map = new HashMap<>();
+        final LocalDateTime now = LocalDateTime.now();
+        map.put("startTime", now.minusDays(15));
+        map.put("endTIme", now.plusDays(6));
+        map.put("version", "0");
+
+        //map.put("rowCount",(byte)36);
+
+        //below,mock dao method invoking
+        daoMethod.accept(map);
+
     }
 
 

@@ -70,16 +70,6 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA where(Function<Object, IPredicate> operator, Supplier<?> operand) {
-        return this.and(operator.apply(operand.get()));
-    }
-
-    @Override
-    public final WA where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
-        return this.and(operator.apply(operand.apply(keyName)));
-    }
-
-    @Override
     public final WA where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
             , Supplier<?> secondOperand) {
         return this.and(operator.apply(firstOperand.get(), secondOperand.get()));
@@ -91,6 +81,15 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
     }
 
+    @Override
+    public final WA whereIf(Supplier<IPredicate> supplier) {
+        return this.ifAnd(supplier);
+    }
+
+    @Override
+    public final WA whereIf(Function<C, IPredicate> function) {
+        return this.ifAnd(function);
+    }
 
     @Override
     public final WA whereIf(Function<Object, IPredicate> operator, Supplier<?> operand) {
@@ -129,16 +128,6 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     @Override
     public final WA and(Function<C, IPredicate> function) {
         return this.and(function.apply(this.criteria));
-    }
-
-    @Override
-    public final WA and(Function<Object, IPredicate> operator, Supplier<?> operand) {
-        return this.and(operator.apply(operand.get()));
-    }
-
-    @Override
-    public final WA and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
-        return this.and(operator.apply(operand.apply(keyName)));
     }
 
     @Override

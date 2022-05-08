@@ -23,11 +23,11 @@ public interface DialectStatement extends Statement {
      * @param <C>  criteria object java type
      * @param <WE> next clause java type
      */
-    interface _WithCteClause<C, WE> {
+    interface _WithCteClause<C, SS extends SubStatement, WE> {
 
-        WE with(String cteName, Supplier<? extends SubQuery> supplier);
+        WE with(String cteName, Supplier<? extends SS> supplier);
 
-        WE with(String cteName, Function<C, ? extends SubQuery> function);
+        WE with(String cteName, Function<C, ? extends SS> function);
 
         WE with(Supplier<List<Cte>> supplier);
 
@@ -37,9 +37,9 @@ public interface DialectStatement extends Statement {
 
         WE ifWith(Function<C, List<Cte>> function);
 
-        WE withRecursive(String cteName, Supplier<? extends SubQuery> supplier);
+        WE withRecursive(String cteName, Supplier<? extends SS> supplier);
 
-        WE withRecursive(String cteName, Function<C, ? extends SubQuery> function);
+        WE withRecursive(String cteName, Function<C, ? extends SS> function);
 
         WE withRecursive(Supplier<List<Cte>> supplier);
 

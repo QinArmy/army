@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Cte;
 import io.army.criteria.DialectStatement;
-import io.army.criteria.SubQuery;
+import io.army.criteria.SubStatement;
 import io.army.util._CollectionUtils;
 
 import java.util.Collections;
@@ -12,21 +12,21 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class WithCteSingleUpdate<C, WE, SR, WR, WA> extends SingleUpdate<C, SR, WR, WA>
-        implements DialectStatement._WithCteClause<C, WE> {
+abstract class WithCteSingleUpdate<C, SS extends SubStatement, WE, SR, WR, WA> extends SingleUpdate<C, SR, WR, WA>
+        implements DialectStatement._WithCteClause<C, SS, WE> {
 
     WithCteSingleUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
 
     @Override
-    public final WE with(String cteName, Supplier<? extends SubQuery> supplier) {
+    public final WE with(String cteName, Supplier<? extends SS> supplier) {
         this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, supplier)));
         return (WE) this;
     }
 
     @Override
-    public final WE with(String cteName, Function<C, ? extends SubQuery> function) {
+    public final WE with(String cteName, Function<C, ? extends SS> function) {
         this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, function)));
         return (WE) this;
     }
@@ -64,13 +64,13 @@ abstract class WithCteSingleUpdate<C, WE, SR, WR, WA> extends SingleUpdate<C, SR
     }
 
     @Override
-    public final WE withRecursive(String cteName, Supplier<? extends SubQuery> supplier) {
+    public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
         this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, supplier)));
         return (WE) this;
     }
 
     @Override
-    public final WE withRecursive(String cteName, Function<C, ? extends SubQuery> function) {
+    public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
         this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, function)));
         return (WE) this;
     }

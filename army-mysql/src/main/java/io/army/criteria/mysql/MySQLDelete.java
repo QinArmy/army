@@ -31,14 +31,11 @@ public interface MySQLDelete extends Delete {
      * @param <DR> next clause java type
      * @since 1.0
      */
-    interface _SingleDeleteClause<C, DR> {
+    interface _MySQLSingleDeleteClause<C, DR> extends _SingleDeleteClause<DR> {
 
         _SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers);
 
         _SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers);
-
-        DR deleteFrom(SingleTableMeta<?> table, String alias);
-
     }
 
     /**
@@ -77,7 +74,7 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _WithAndSingleDeleteSpec<C> extends DialectStatement._WithCteClause<C, _SingleDelete57Clause<C>>
+    interface _WithAndSingleDeleteSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _SingleDelete57Clause<C>>
             , _SingleDelete57Clause<C> {
 
 
@@ -96,7 +93,7 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _SingleDelete57Clause<C> extends _SingleDeleteClause<C, _SinglePartitionSpec<C>> {
+    interface _SingleDelete57Clause<C> extends _MySQLSingleDeleteClause<C, _SinglePartitionSpec<C>> {
 
 
     }
@@ -118,7 +115,7 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _SinglePartitionSpec<C> extends MySQLQuery._PartitionClause<C, _SinglePartitionSpec<C>>
+    interface _SinglePartitionSpec<C> extends MySQLQuery._PartitionClause<C, _SingleWhereClause<C>>
             , _SingleWhereClause<C> {
 
     }
@@ -223,7 +220,8 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchWithAndSingleDeleteSpec<C> extends DialectStatement._WithCteClause<C, _BatchSingleDeleteClause<C>>
+    interface _BatchWithAndSingleDeleteSpec<C>
+            extends DialectStatement._WithCteClause<C, SubQuery, _BatchSingleDeleteClause<C>>
             , _BatchSingleDeleteClause<C> {
 
     }
@@ -242,7 +240,7 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _BatchSingleDeleteClause<C> extends _SingleDeleteClause<C, _BatchSinglePartitionSpec<C>> {
+    interface _BatchSingleDeleteClause<C> extends _MySQLSingleDeleteClause<C, _BatchSinglePartitionSpec<C>> {
 
 
     }
@@ -452,7 +450,7 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _WithAndMultiDeleteSpec<C> extends DialectStatement._WithCteClause<C, _MultiDeleteSpec<C>>
+    interface _WithAndMultiDeleteSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _MultiDeleteSpec<C>>
             , _MultiDeleteSpec<C> {
 
     }
@@ -599,7 +597,8 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchWithAndMultiDeleteSpec<C> extends DialectStatement._WithCteClause<C, _BatchMultiDeleteClause<C>>
+    interface _BatchWithAndMultiDeleteSpec<C>
+            extends DialectStatement._WithCteClause<C, SubQuery, _BatchMultiDeleteClause<C>>
             , _BatchMultiDeleteClause<C> {
 
     }

@@ -4,7 +4,6 @@ import io.army.criteria.Delete;
 import io.army.criteria.StandardStatement;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.dialect.Dialect;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
@@ -42,7 +41,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     }
 
     @Override
-    public final DR deleteFrom(TableMeta<? extends IDomain> table, String tableAlias) {
+    public final DR deleteFrom(TableMeta<?> table, String tableAlias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }

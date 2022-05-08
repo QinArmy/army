@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-import io.army.domain.IDomain;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 public interface Delete extends NarrowDmlStatement {
@@ -11,9 +11,14 @@ public interface Delete extends NarrowDmlStatement {
         Delete asDelete();
     }
 
+    interface _SingleDeleteClause<DR> {
+
+        DR deleteFrom(SingleTableMeta<?> table, String alias);
+    }
+
     interface StandardDeleteClause<DR> {
 
-        DR deleteFrom(TableMeta<? extends IDomain> table, String tableAlias);
+        DR deleteFrom(TableMeta<?> table, String tableAlias);
     }
 
 

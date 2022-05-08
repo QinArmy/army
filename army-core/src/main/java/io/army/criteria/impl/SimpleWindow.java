@@ -211,15 +211,15 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(SQLs._sortItem(sortItem));
+        this.orderByList = Collections.singletonList(CriteriaUtils._sortItem(sortItem));
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._sortItem(sortItem1),
-                SQLs._sortItem(sortItem2)
+                CriteriaUtils._sortItem(sortItem1),
+                CriteriaUtils._sortItem(sortItem2)
         );
         return (OR) this;
     }
@@ -227,9 +227,9 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._sortItem(sortItem1),
-                SQLs._sortItem(sortItem2),
-                SQLs._sortItem(sortItem3)
+                CriteriaUtils._sortItem(sortItem1),
+                CriteriaUtils._sortItem(sortItem2),
+                CriteriaUtils._sortItem(sortItem3)
         );
         return (OR) this;
     }

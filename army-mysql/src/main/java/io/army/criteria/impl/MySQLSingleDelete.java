@@ -9,15 +9,15 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
 import io.army.util.ArrayUtils;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -31,78 +31,75 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, WE, WR, WA>
-        implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>, MySQLQuery._PartitionClause<C, PR>
-        , _MySQLSingleDelete, MySQLDelete._SingleDeleteClause<C, DR>, MySQLDelete._SingleDeleteFromClause<DR> {
+abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, SubQuery, WE, WR, WA>
+        implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
+        , MySQLQuery._PartitionClause<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DR>
+        , MySQLDelete._SingleDeleteFromClause<DR>, _MySQLWithClause {
 
-    static <C> _SingleDelete57Clause<C> simple57(@Nullable C criteria) {
-        final SimpleDelete<C, Void> delete;
-        delete = new SimpleDelete<>(criteria);
-        return delete;
+
+    static <C> _WithAndSingleDeleteSpec<C> simple(@Nullable C criteria) {
+        return new SimpleDelete<>(criteria);
     }
 
-    static <C> _BatchSingleDeleteClause<C> batch57(@Nullable C criteria) {
-        final BatchDelete<C, Void> delete;
-        delete = new BatchDelete<>(criteria);
-        return delete;
+    static <C> _BatchWithAndSingleDeleteSpec<C> batch(@Nullable C criteria) {
+        return new BatchDelete<>(criteria);
     }
 
-    static <C> _WithAndSingleDeleteSpec<C> simple80(@Nullable C criteria) {
-        return new SimpleDelete80<>(criteria);
-    }
+    private boolean recursive;
 
-    static <C> _BatchWithAndSingleDeleteSpec<C> batch80(@Nullable C criteria) {
-        return new BatchDelete80<>(criteria);
-    }
+    private List<Cte> cteList;
 
     private List<Hint> hintList;
 
     private List<MySQLWords> modifierList;
 
-    private SingleTableMeta<? extends IDomain> table;
+    private SingleTableMeta<?> table;
+
+    private String alias;
 
     private List<String> partitionList;
 
-    private List<SortItem> orderByList;
+    private List<ArmySortItem> orderByList;
 
     private long rowCount = -1L;
 
 
     private MySQLSingleDelete(@Nullable C criteria) {
         super(CriteriaContexts.singleDmlContext(criteria));
-        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
 
     @Override
     public final _SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.get());
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isDeleteModifier);
         return this;
     }
 
     @Override
     public final _SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
-        this.hintList = _CollectionUtils.asUnmodifiableList(hints.apply(this.criteria));
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isDeleteModifier);
         return this;
     }
 
     @Override
-    public final DR deleteFrom(SingleTableMeta<? extends IDomain> table) {
+    public final DR deleteFrom(SingleTableMeta<?> table, String alias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
         this.table = table;
+        this.alias = alias;
         return (DR) this;
     }
 
     @Override
-    public final DR from(SingleTableMeta<? extends IDomain> table) {
+    public final DR from(SingleTableMeta<?> table, String alias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
         this.table = table;
+        this.alias = alias;
         return (DR) this;
     }
 
@@ -119,30 +116,37 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
-    public final PR partition(List<String> partitionNameList) {
-        if (_CollectionUtils.isEmpty(partitionNameList)) {
-            throw new CriteriaException("partitionNameList must not empty.");
-        }
-        this.partitionList = _CollectionUtils.asUnmodifiableList(partitionNameList);
+    public final PR partition(String partitionName1, String partitionNam2, String partitionNam3) {
+        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
         return (PR) this;
     }
 
     @Override
     public final PR partition(Supplier<List<String>> supplier) {
-        return this.partition(supplier.get());
+        this.partitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
+        return (PR) this;
     }
 
     @Override
     public final PR partition(Function<C, List<String>> function) {
-        return this.partition(function.apply(this.criteria));
+        this.partitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
+        return (PR) this;
+    }
+
+    @Override
+    public final PR partition(Consumer<List<String>> consumer) {
+        final List<String> list = new ArrayList<>();
+        consumer.accept(list);
+        this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
+        return (PR) this;
     }
 
     @Override
     public final PR ifPartition(Supplier<List<String>> supplier) {
         final List<String> list;
         list = supplier.get();
-        if (!_CollectionUtils.isEmpty(list)) {
-            this.partition(list);
+        if (list != null && list.size() > 0) {
+            this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
         }
         return (PR) this;
     }
@@ -151,70 +155,74 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     public final PR ifPartition(Function<C, List<String>> function) {
         final List<String> list;
         list = function.apply(this.criteria);
-        if (!_CollectionUtils.isEmpty(list)) {
-            this.partition(list);
+        if (list != null && list.size() > 0) {
+            this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
         }
         return (PR) this;
     }
 
+
     @Override
     public final OR orderBy(SortItem sortItem) {
-        this.orderByList = Collections.singletonList(sortItem);
+        this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
-        this.orderByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2);
+        this.orderByList = ArrayUtils.asUnmodifiableList(
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2
+        );
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        this.orderByList = ArrayUtils.asUnmodifiableList(sortItem1, sortItem2, sortItem3);
+        this.orderByList = ArrayUtils.asUnmodifiableList(
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2,
+                (ArmySortItem) sortItem3
+        );
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(List<SortItem> sortItemList) {
-        this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
+    public final <S extends SortItem> OR orderBy(Function<C, List<S>> function) {
+        this.orderByList = MySQLUtils.asSortItemList(function.apply(this.criteria));
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Function<C, List<SortItem>> function) {
-        return this.orderBy(function.apply(this.criteria));
-    }
-
-    @Override
-    public final OR orderBy(Supplier<List<SortItem>> supplier) {
-        return this.orderBy(supplier.get());
-    }
-
-    @Override
-    public final OR ifOrderBy(@Nullable SortItem sortItem) {
-        if (sortItem != null) {
-            this.orderByList = Collections.singletonList(sortItem);
-        }
+    public final <S extends SortItem> OR orderBy(Supplier<List<S>> supplier) {
+        this.orderByList = MySQLUtils.asSortItemList(supplier.get());
         return (OR) this;
     }
 
     @Override
-    public final OR ifOrderBy(Supplier<List<SortItem>> supplier) {
-        final List<SortItem> sortItemList;
+    public final OR orderBy(Consumer<List<SortItem>> consumer) {
+        final List<SortItem> sortItemList = new ArrayList<>();
+        consumer.accept(sortItemList);
+        this.orderByList = MySQLUtils.asSortItemList(sortItemList);
+        return (OR) this;
+    }
+
+    @Override
+    public final <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier) {
+        final List<S> sortItemList;
         sortItemList = supplier.get();
-        if (!_CollectionUtils.isEmpty(sortItemList)) {
-            this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
+        if (sortItemList != null && sortItemList.size() > 0) {
+            this.orderByList = MySQLUtils.asSortItemList(sortItemList);
         }
         return (OR) this;
     }
 
     @Override
-    public final OR ifOrderBy(Function<C, List<SortItem>> function) {
-        final List<SortItem> sortItemList;
+    public final <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function) {
+        final List<S> sortItemList;
         sortItemList = function.apply(this.criteria);
-        if (!_CollectionUtils.isEmpty(sortItemList)) {
-            this.orderByList = _CollectionUtils.asUnmodifiableList(sortItemList);
+        if (sortItemList != null && sortItemList.size() > 0) {
+            this.orderByList = MySQLUtils.asSortItemList(sortItemList);
         }
         return (OR) this;
     }
@@ -226,78 +234,52 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
-    public final LR limit(Supplier<Number> supplier) {
-        final Number rowCount;
-        rowCount = supplier.get();
-        if (rowCount instanceof Long) {
-            this.rowCount = (Long) rowCount;
-        } else if (rowCount instanceof Integer) {
-            this.rowCount = rowCount.longValue();
-        } else {
-            throw MySQLUtils.limitParamError();
-        }
+    public final LR limit(Supplier<? extends Number> supplier) {
+        this.rowCount = MySQLUtils.asRowCount(supplier.get());
         return (LR) this;
     }
 
     @Override
-    public final LR limit(Function<C, Long> function) {
-        this.rowCount = function.apply(this.criteria);
+    public final LR limit(Function<C, ? extends Number> function) {
+        this.rowCount = MySQLUtils.asRowCount(function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<String, ?> function, String keyName) {
-        final Object rowCount;
-        rowCount = function.apply(keyName);
-        if (rowCount instanceof Long) {
-            this.rowCount = (Long) rowCount;
-        } else if (rowCount instanceof Integer) {
-            this.rowCount = ((Integer) rowCount).longValue();
-        } else {
-            throw MySQLUtils.limitParamError();
-        }
+        this.rowCount = MySQLUtils.asRowCount(function.apply(keyName));
         return (LR) this;
     }
 
     @Override
-    public final LR ifLimit(Supplier<Number> supplier) {
-        final Number rowCount;
-        rowCount = supplier.get();
-        if (rowCount instanceof Long) {
-            this.rowCount = (Long) rowCount;
-        } else if (rowCount instanceof Integer) {
-            this.rowCount = rowCount.longValue();
-        } else if (rowCount != null) {
-            throw MySQLUtils.limitParamError();
-        }
+    public final LR ifLimit(Supplier<? extends Number> supplier) {
+        this.rowCount = MySQLUtils.asIfRowCount(supplier.get());
         return (LR) this;
     }
 
     @Override
-    public final LR ifLimit(Function<C, Long> function) {
-        final Long rowCount;
-        rowCount = function.apply(this.criteria);
-        if (rowCount != null) {
-            this.rowCount = rowCount;
-        }
+    public final LR ifLimit(Function<C, ? extends Number> function) {
+        this.rowCount = MySQLUtils.asIfRowCount(function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<String, ?> function, String keyName) {
-        final Object rowCount;
-        rowCount = function.apply(keyName);
-        if (rowCount instanceof Long) {
-            this.rowCount = (Long) rowCount;
-        } else if (rowCount instanceof Integer) {
-            this.rowCount = ((Integer) rowCount).longValue();
-        } else if (rowCount != null) {
-            throw MySQLUtils.limitParamError();
-        }
+        this.rowCount = MySQLUtils.asIfRowCount(function.apply(keyName));
         return (LR) this;
     }
 
     /*################################## blow _MySQLSingleDelete method ##################################*/
+
+    @Override
+    public final boolean isRecursive() {
+        return this.recursive;
+    }
+
+    @Override
+    public final List<Cte> cteList() {
+        return this.cteList;
+    }
 
     @Override
     public final List<Hint> hintList() {
@@ -318,13 +300,12 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
 
     @Override
     public final String tableAlias() {
-        return "t";
+        return this.alias;
     }
 
 
     @Override
-    public final List<SortItem> orderByList() {
-        prepared();
+    public final List<? extends SortItem> orderByList() {
         return this.orderByList;
     }
 
@@ -334,35 +315,35 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
+    final void doWithCte(boolean recursive, List<Cte> cteList) {
+        this.recursive = recursive;
+        this.cteList = cteList;
+    }
+
+
+    @Override
     final void onAsDelete() {
+        if (this.cteList == null) {
+            this.cteList = Collections.emptyList();
+        }
         if (this.hintList == null) {
             this.hintList = Collections.emptyList();
         }
         if (this.modifierList == null) {
             this.modifierList = Collections.emptyList();
         }
-        if (this.table == null) {
+        if (this.table == null || this.alias == null) {
             throw _Exceptions.castCriteriaApi();
         }
-        final List<String> partitionList = this.partitionList;
-        if (_CollectionUtils.isEmpty(partitionList)) {
+
+        if (this.partitionList == null) {
             this.partitionList = Collections.emptyList();
-        } else {
-            this.partitionList = partitionList;
         }
-
-        final List<SortItem> orderByList = this.orderByList;
-        if (_CollectionUtils.isEmpty(orderByList)) {
+        if (this.orderByList == null) {
             this.orderByList = Collections.emptyList();
-        } else {
-            this.orderByList = orderByList;
         }
-
-        if (this instanceof BatchDelete) {
-            final List<?> wrapperList = ((BatchDelete<C, ?>) this).wrapperList;
-            if (_CollectionUtils.isEmpty(wrapperList)) {
-                throw _Exceptions.batchParamEmpty();
-            }
+        if (this instanceof BatchDelete && ((BatchDelete<C>) this).paramList == null) {
+            throw _Exceptions.batchParamEmpty();
         }
 
 
@@ -370,13 +351,16 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
 
     @Override
     final void onClear() {
+        this.cteList = null;
         this.hintList = null;
+        this.modifierList = null;
         this.partitionList = null;
+
         this.orderByList = null;
         this.rowCount = -1L;
 
         if (this instanceof BatchDelete) {
-            ((BatchDelete<C, ?>) this).wrapperList = null;
+            ((BatchDelete<C>) this).paramList = null;
         }
     }
 
@@ -392,38 +376,39 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
 
     /*################################## blow inner class ##################################*/
 
-    private static class SimpleDelete<C, WE> extends MySQLSingleDelete<
+    private static final class SimpleDelete<C> extends MySQLSingleDelete<
             C,
-            WE,
-            _SinglePartitionSpec<C>,
-            _SingleWhereClause<C>,
-            _OrderBySpec<C>,
-            _SingleWhereAndSpec<C>,
-            _LimitSpec<C>,
-            _DeleteSpec>
-            implements _SinglePartitionSpec<C>, _SingleWhereAndSpec<C>
-            , _SingleDelete57Clause<C> {
+            MySQLDelete._SingleDelete57Clause<C>,
+            MySQLDelete._SinglePartitionSpec<C>,
+            MySQLDelete._SingleWhereClause<C>,
+            MySQLDelete._OrderBySpec<C>,
+            MySQLDelete._SingleWhereAndSpec<C>,
+            MySQLDelete._LimitSpec<C>,
+            Delete._DeleteSpec>
+            implements MySQLDelete._WithAndSingleDeleteSpec<C>, MySQLDelete._SinglePartitionSpec<C>
+            , MySQLDelete._SingleWhereAndSpec<C>, MySQLDelete._OrderBySpec<C> {
 
         private SimpleDelete(@Nullable C criteria) {
             super(criteria);
 
         }
 
+
     }//SimpleDelete
 
-    private static class BatchDelete<C, WE> extends MySQLSingleDelete<
+    private static final class BatchDelete<C> extends MySQLSingleDelete<
             C,
-            WE,
-            _BatchSinglePartitionSpec<C>,
-            _BatchSingleWhereClause<C>,
-            _BatchOrderBySpec<C>,
-            _BatchSingleWhereAndSpec<C>,
-            _BatchLimitSpec<C>,
-            _BatchParamClause<C, _DeleteSpec>>
-            implements _BatchSinglePartitionSpec<C>, _BatchSingleWhereAndSpec<C>
-            , _BatchSingleDeleteClause<C>, _BatchDml {
+            MySQLDelete._BatchSingleDeleteClause<C>,
+            MySQLDelete._BatchSinglePartitionSpec<C>,
+            MySQLDelete._BatchSingleWhereClause<C>,
+            MySQLDelete._BatchOrderBySpec<C>,
+            MySQLDelete._BatchSingleWhereAndSpec<C>,
+            MySQLDelete._BatchLimitSpec<C>,
+            Statement._BatchParamClause<C, Delete._DeleteSpec>>
+            implements MySQLDelete._BatchWithAndSingleDeleteSpec<C>, MySQLDelete._BatchSinglePartitionSpec<C>
+            , MySQLDelete._BatchSingleWhereAndSpec<C>, MySQLDelete._BatchOrderBySpec<C>, _BatchDml {
 
-        private List<?> wrapperList;
+        private List<?> paramList;
 
         private BatchDelete(@Nullable C criteria) {
             super(criteria);
@@ -431,93 +416,36 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
         }
 
         @Override
-        public final _DeleteSpec paramList(List<?> beanList) {
-            this.wrapperList = CriteriaUtils.paramList(beanList);
+        public <P> _DeleteSpec paramList(List<P> paramList) {
+            this.paramList = MySQLUtils.paramList(paramList);
             return this;
         }
 
         @Override
-        public final _DeleteSpec paramList(Supplier<List<?>> supplier) {
-            return this.paramList(supplier.get());
-        }
-
-        @Override
-        public final _DeleteSpec paramList(Function<C, List<?>> function) {
-            return this.paramList(function.apply(this.criteria));
-        }
-
-        @Override
-        public final _DeleteSpec paramList(Function<String, Object> function, String keyName) {
-            this.wrapperList = CriteriaUtils.paramList(function, keyName);
+        public <P> _DeleteSpec paramList(Supplier<List<P>> supplier) {
+            this.paramList = MySQLUtils.paramList(supplier.get());
             return this;
         }
 
         @Override
-        public final List<?> paramList() {
-            return this.wrapperList;
+        public <P> _DeleteSpec paramList(Function<C, List<P>> function) {
+            this.paramList = MySQLUtils.paramList(function.apply(this.criteria));
+            return this;
         }
+
+        @Override
+        public _DeleteSpec paramList(Function<String, ?> function, String keyName) {
+            this.paramList = MySQLUtils.paramList((List<?>) function.apply(keyName));
+            return this;
+        }
+
+        @Override
+        public List<?> paramList() {
+            return this.paramList;
+        }
+
 
     }//BatchDelete
-
-
-    private static final class SimpleDelete80<C> extends SimpleDelete<C, _SingleDelete57Clause<C>>
-            implements _MySQLWithClause, _WithAndSingleDeleteSpec<C> {
-
-        private boolean recursive;
-
-        private List<Cte> cteList;
-
-        private SimpleDelete80(@Nullable C criteria) {
-            super(criteria);
-        }
-
-        @Override
-        public boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public List<Cte> cteList() {
-            return this.cteList;
-        }
-
-        @Override
-        void doWithCte(boolean recursive, List<Cte> cteList) {
-            this.recursive = recursive;
-            this.cteList = cteList;
-        }
-
-    }//SimpleDelete80
-
-
-    private static final class BatchDelete80<C> extends BatchDelete<C, _BatchSingleDeleteClause<C>>
-            implements _MySQLWithClause, _BatchWithAndSingleDeleteSpec<C> {
-
-        private boolean recursive;
-
-        private List<Cte> cteList;
-
-        private BatchDelete80(@Nullable C criteria) {
-            super(criteria);
-        }
-
-        @Override
-        public boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public List<Cte> cteList() {
-            return this.cteList;
-        }
-
-        @Override
-        void doWithCte(boolean recursive, List<Cte> cteList) {
-            this.recursive = recursive;
-            this.cteList = cteList;
-        }
-
-    }//BatchDelete80
 
 
 }

@@ -4,6 +4,7 @@ import io.army.criteria.Delete;
 import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.util._Assert;
+import io.army.util._Exceptions;
 
 /**
  * <p>
@@ -68,6 +69,11 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
 
     void onClear() {
 
+    }
+
+    @Override
+    final void crossJoinEvent(boolean success) {
+        throw _Exceptions.castCriteriaApi();
     }
 
 

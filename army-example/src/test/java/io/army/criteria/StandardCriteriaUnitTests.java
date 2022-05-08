@@ -1,6 +1,6 @@
-package io.army.criteria.impl;
+package io.army.criteria;
 
-import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.ChinaProvince;
 import io.army.example.bank.domain.user.ChinaProvince_;
@@ -60,12 +60,16 @@ public class StandardCriteriaUnitTests {
     @Test
     public void updateParent() {
         final BigDecimal addGdp = new BigDecimal("888.8");
+        final Map<String, Object> map = new HashMap<>();
+        map.put("firstId", (byte) 1);
+        map.put("secondId", "3");
+
         final Update update;
         update = SQLs.singleUpdate()
                 .update(ChinaRegion_.T, "c")
                 .set(ChinaRegion_.name, "武侠江湖")
                 .setPlus(ChinaRegion_.regionGdp, addGdp)
-                .where(ChinaRegion_.id::equal, ChinaRegion_.T::id)
+                .where(ChinaRegion_.id::between, map::get, "firstId", "secondId")
                 .and(ChinaRegion_.name.equal("江湖"))
                 .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
                 .asUpdate();

@@ -394,24 +394,6 @@ public abstract class SQLs extends Functions {
     }
 
     /**
-     * package method that is used by army developer.
-     *
-     * @param value {@link Expression} or parameter
-     */
-    static ArmySortItem _sortItem(@Nullable Object value) {
-        final SortItem sortItem;
-        if (value == null) {
-            throw _Exceptions.expressionIsNull();
-        } else if (value instanceof SortItem) {
-            sortItem = (SortItem) value;
-        } else {
-            //TODO ref selection
-            sortItem = SQLs.literal(value);
-        }
-        return (ArmySortItem) sortItem;
-    }
-
-    /**
      * @param value {@link Expression} or parameter.
      * @see Update._SimpleSetClause#setPairs(List)
      */
@@ -550,29 +532,29 @@ public abstract class SQLs extends Functions {
         return SelectionGroups.buildDerivedGroup(subQueryAlias, derivedFieldNameList);
     }
 
-    public static Cte cte(String name, Supplier<? extends SubQuery> supplier) {
-        final SubQuery subQuery;
+    public static Cte cte(String name, Supplier<? extends SubStatement> supplier) {
+        final SubStatement subQuery;
         subQuery = supplier.get();
         assert subQuery != null;
         return new CteImpl(name, subQuery);
     }
 
-    public static Cte cte(String name, List<String> columnNameList, Supplier<? extends SubQuery> supplier) {
-        final SubQuery subQuery;
+    public static Cte cte(String name, List<String> columnNameList, Supplier<? extends SubStatement> supplier) {
+        final SubStatement subQuery;
         subQuery = supplier.get();
         assert subQuery != null;
         return new CteImpl(name, columnNameList, subQuery);
     }
 
-    public static <C> Cte cte(String name, Function<C, ? extends SubQuery> function) {
-        final SubQuery subQuery;
+    public static <C> Cte cte(String name, Function<C, ? extends SubStatement> function) {
+        final SubStatement subQuery;
         subQuery = function.apply(CriteriaContextStack.getTopCriteria());
         assert subQuery != null;
         return new CteImpl(name, subQuery);
     }
 
-    public static <C> Cte cte(String name, List<String> columnNameList, Function<C, ? extends SubQuery> function) {
-        final SubQuery subQuery;
+    public static <C> Cte cte(String name, List<String> columnNameList, Function<C, ? extends SubStatement> function) {
+        final SubStatement subQuery;
         subQuery = function.apply(CriteriaContextStack.getTopCriteria());
         assert subQuery != null;
         return new CteImpl(name, columnNameList, subQuery);
@@ -773,7 +755,7 @@ public abstract class SQLs extends Functions {
 
         private final List<String> columnNameList;
 
-        private final SubQuery subQuery;
+        private final SubStatement subQuery;
 
         private CteImpl(String name, SubQuery subQuery) {
             this.name = name;
@@ -782,7 +764,7 @@ public abstract class SQLs extends Functions {
         }
 
 
-        private CteImpl(String name, List<String> columnNameList, SubQuery subQuery) {
+        private CteImpl(String name, List<String> columnNameList, SubStatement subQuery) {
             this.name = name;
             this.columnNameList = _CollectionUtils.asUnmodifiableList(columnNameList);
             this.subQuery = subQuery;
@@ -799,10 +781,19 @@ public abstract class SQLs extends Functions {
         }
 
         @Override
-        public SubQuery subStatement() {
+        public SubStatement subStatement() {
             return this.subQuery;
         }
 
+        @Override
+        public List<? extends SelectItem> selectItemList() {
+            return null;
+        }
+
+        @Override
+        public Selection selection(String derivedFieldName) {
+            return null;
+        }
     }//CteImpl
 
 

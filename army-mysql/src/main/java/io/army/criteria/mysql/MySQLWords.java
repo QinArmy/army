@@ -20,9 +20,10 @@ public enum MySQLWords implements SQLWords.Modifier {
     SQL_NO_CACHE(" SQL_NO_CACHE", 6),
     SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS", 7),
 
-    /*################################## blow UPDATE modifiers ##################################*/
-    LOW_PRIORITY(" LOW_PRIORITY", 0),                                  // update statement
-    IGNORE(" IGNORE", 0);                                             // update statement
+    /*################################## blow UPDATE/DELETE modifiers ##################################*/
+    LOW_PRIORITY(" LOW_PRIORITY", 0),
+    QUICK(" QUICK", 1),
+    IGNORE(" IGNORE", 2);
 
 
     public final String modifier;

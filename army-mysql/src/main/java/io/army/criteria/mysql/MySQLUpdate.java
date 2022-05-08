@@ -32,12 +32,18 @@ public interface MySQLUpdate extends Update {
      * @param <UP> next clause java type
      * @since 1.0
      */
-    interface _SingleUpdateClause<UT, UP> {
+    interface _SingleUpdateClause<C, UT, UP> {
 
         UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table);
 
         UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , TableMeta<?> table, String tableAlias);
+
+        UP update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
+                , TableMeta<?> table);
+
+        UT update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table, String tableAlias);
 
         UP update(TableMeta<?> table);
@@ -63,7 +69,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _SingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, _SingleUpdate57Clause<C>>
+    interface _SingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _SingleUpdate57Clause<C>>
             , _SingleUpdate57Clause<C> {
 
     }
@@ -82,7 +88,8 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _SingleUpdate57Clause<C> extends _SingleUpdateClause<_SingleIndexHintSpec<C>, _SinglePartitionClause<C>> {
+    interface _SingleUpdate57Clause<C>
+            extends _SingleUpdateClause<C, _SingleIndexHintSpec<C>, _SinglePartitionClause<C>> {
 
 
     }
@@ -271,7 +278,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchSingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, _BatchSingleUpdateClause<C>>
+    interface _BatchSingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _BatchSingleUpdateClause<C>>
             , _BatchSingleUpdateClause<C> {
 
     }
@@ -290,7 +297,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _BatchSingleUpdateClause<C>
-            extends _SingleUpdateClause<_BatchSingleIndexHintSpec<C>, _BatchSinglePartitionClause<C>> {
+            extends _SingleUpdateClause<C, _BatchSingleIndexHintSpec<C>, _BatchSinglePartitionClause<C>> {
 
     }
 
@@ -521,7 +528,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _WithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, _MultiUpdate57Clause<C>>
+    interface _WithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _MultiUpdate57Clause<C>>
             , _MultiUpdate57Clause<C> {
 
     }
@@ -779,7 +786,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchWithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, _BatchMultiUpdateClause<C>>
+    interface _BatchWithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _BatchMultiUpdateClause<C>>
             , _BatchMultiUpdateClause<C> {
 
     }

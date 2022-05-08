@@ -124,7 +124,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
 
     @Override
     public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(SQLs._sortItem(sortItem));
+        this.orderByList = Collections.singletonList(CriteriaUtils._sortItem(sortItem));
         this.onOrderBy();
         return (OR) this;
     }
@@ -132,8 +132,8 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._sortItem(sortItem1),
-                SQLs._sortItem(sortItem2)
+                CriteriaUtils._sortItem(sortItem1),
+                CriteriaUtils._sortItem(sortItem2)
         );
         this.onOrderBy();
         return (OR) this;
@@ -142,9 +142,9 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     @Override
     public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                SQLs._sortItem(sortItem1),
-                SQLs._sortItem(sortItem2),
-                SQLs._sortItem(sortItem3)
+                CriteriaUtils._sortItem(sortItem1),
+                CriteriaUtils._sortItem(sortItem2),
+                CriteriaUtils._sortItem(sortItem3)
         );
         this.onOrderBy();
         return (OR) this;
