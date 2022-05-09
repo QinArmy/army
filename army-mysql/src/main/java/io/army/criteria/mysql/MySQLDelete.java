@@ -1,7 +1,6 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
-import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface MySQLDelete extends Delete {
+public interface MySQLDelete extends Delete, DialectStatement {
 
     /**
      * <p>
@@ -28,34 +27,16 @@ public interface MySQLDelete extends Delete {
      * </p>
      *
      * @param <C>  criteria object java type
-     * @param <DR> next clause java type
+     * @param <DS> next clause java type
      * @since 1.0
      */
-    interface _MySQLSingleDeleteClause<C, DR> extends _SingleDeleteClause<DR> {
+    interface _MySQLSingleDeleteClause<C, DS> extends Delete._SingleDeleteClause<DS> {
 
-        _SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers);
+        _SingleDeleteFromClause<DS> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers);
 
-        _SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers);
+        _SingleDeleteFromClause<DS> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers);
     }
 
-    /**
-     * <p>
-     * This interface representing  FROM clause for MySQL single-table DELETE syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>/
-     *
-     * @param <DR> next clause java type
-     * @since 1.0
-     */
-    interface _SingleDeleteFromClause<DR> {
-
-        DR from(SingleTableMeta<?> table, String alias);
-
-    }
 
     /**
      * <p>
@@ -93,7 +74,8 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _SingleDelete57Clause<C> extends _MySQLSingleDeleteClause<C, _SinglePartitionSpec<C>> {
+    interface _SingleDelete57Clause<C>
+            extends _MySQLSingleDeleteClause<C, _SinglePartitionSpec<C>> {
 
 
     }
@@ -371,11 +353,15 @@ public interface MySQLDelete extends Delete {
 
         _MultiDeleteFromClause<C, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList);
 
+        _MultiDeleteFromClause<C, DS, DP> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList);
+
         _MultiDeleteFromClause<C, DS, DP> delete(List<String> tableAliasList);
 
         _MultiDeleteFromClause<C, DS, DP> delete(String tableAlias1, String tableAlias2);
 
         _MultiDeleteUsingClause<C, DS, DP> deleteFrom(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList);
+
+        _MultiDeleteUsingClause<C, DS, DP> deleteFrom(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList);
 
         _MultiDeleteUsingClause<C, DS, DP> deleteFrom(List<String> tableAliasList);
 
@@ -438,7 +424,7 @@ public interface MySQLDelete extends Delete {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link DialectStatement._WithCteClause}</li>
-     *          <li>{@link _MultiDeleteSpec}</li>
+     *          <li>{@link _MultiDelete57Clause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -450,8 +436,8 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _WithAndMultiDeleteSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _MultiDeleteSpec<C>>
-            , _MultiDeleteSpec<C> {
+    interface _WithAndMultiDeleteSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _MultiDelete57Clause<C>>
+            , _MultiDelete57Clause<C> {
 
     }
 
@@ -468,7 +454,7 @@ public interface MySQLDelete extends Delete {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _MultiDeleteSpec<C> extends _MultiDeleteClause<C, _MultiJoinSpec<C>, _MultiPartitionJoinClause<C>> {
+    interface _MultiDelete57Clause<C> extends _MultiDeleteClause<C, _MultiJoinSpec<C>, _MultiPartitionJoinClause<C>> {
 
     }
 

@@ -31,10 +31,10 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, SubQuery, WE, WR, WA>
+abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, SubQuery, WE, WR, WA>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
-        , MySQLQuery._PartitionClause<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DR>
-        , MySQLDelete._SingleDeleteFromClause<DR>, _MySQLWithClause {
+        , MySQLQuery._PartitionClause<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DS>
+        , MySQLDelete._SingleDeleteFromClause<DS>, _MySQLWithClause {
 
 
     static <C> _WithAndSingleDeleteSpec<C> simple(@Nullable C criteria) {
@@ -70,37 +70,37 @@ abstract class MySQLSingleDelete<C, WE, DR, PR, WR, WA, OR, LR> extends WithCteS
 
 
     @Override
-    public final _SingleDeleteFromClause<DR> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _SingleDeleteFromClause<DS> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isDeleteModifier);
         return this;
     }
 
     @Override
-    public final _SingleDeleteFromClause<DR> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _SingleDeleteFromClause<DS> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isDeleteModifier);
         return this;
     }
 
     @Override
-    public final DR deleteFrom(SingleTableMeta<?> table, String alias) {
+    public final DS deleteFrom(SingleTableMeta<?> table, String alias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
         this.table = table;
         this.alias = alias;
-        return (DR) this;
+        return (DS) this;
     }
 
     @Override
-    public final DR from(SingleTableMeta<?> table, String alias) {
+    public final DS from(SingleTableMeta<?> table, String alias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
         this.table = table;
         this.alias = alias;
-        return (DR) this;
+        return (DS) this;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -333,6 +334,63 @@ public interface DialectStatement extends Statement {
      * @since 1.0
      */
     interface _DialectUnionClause<C, UR, SP> extends Query._QueryUnionClause<C, UR, SP> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing dialect single delete clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <DP> next clause java type
+     * @since 1.0
+     */
+    interface _DialectSingleDeleteClause<DP> {
+
+        DP deleteFrom(SingleTableMeta<?> table);
+
+    }
+
+    /**
+     * <p>
+     * This interface representing FROM clause for single-table DELETE syntax.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>/
+     *
+     * @param <DT> next clause java type
+     * @since 1.0
+     */
+    interface _SingleDeleteFromClause<DT> {
+
+        DT from(SingleTableMeta<?> table, String alias);
+
+    }
+
+    /**
+     * <p>
+     * This interface representing dialect FROM clause for single-table DELETE syntax.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>/
+     *
+     * @param <DP> next clause java type
+     * @since 1.0
+     */
+    interface _DialectSingleDeleteFromClause<DP> {
+
+        DP from(SingleTableMeta<?> table);
 
     }
 

@@ -1,15 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
-import io.army.criteria.WithElement;
+import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._MultiDelete;
-import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
-import java.util.Collections;
 import java.util.List;
 
 
@@ -18,14 +14,10 @@ import java.util.List;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-@Deprecated
-abstract class MultiDelete<C, JT, JS, JP, WR, WA> extends JoinableDml<C, JT, JS, JP, WR, WA>
-        implements Delete, Delete._DeleteSpec, _MultiDelete {
+abstract class MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA> extends DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
+        implements Delete, Delete._DeleteSpec, _MultiDelete, JoinableClause.ClauseSupplier {
 
-
-    private JT noActionTableBlock;
-
-    private JS noActionTablePartBlock;
+    final CriteriaContext criteriaContext;
 
     private boolean prepared;
 
@@ -33,7 +25,8 @@ abstract class MultiDelete<C, JT, JS, JP, WR, WA> extends JoinableDml<C, JT, JS,
 
 
     MultiDelete(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+        super(criteriaContext.criteria());
+        this.criteriaContext = criteriaContext;
     }
 
     @Override
@@ -51,22 +44,13 @@ abstract class MultiDelete<C, JT, JS, JP, WR, WA> extends JoinableDml<C, JT, JS,
         _Assert.nonPrepared(this.prepared);
         this.validateBeforeClearContext();
         this.tableBlockList = this.criteriaContext.clear();
-        if (this instanceof WithElement) {
+        if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-
-        this.noActionTableBlock = null;
-        this.noActionTablePartBlock = null;
-        final List<_Predicate> predicateList = this.predicateList;
-        if (_CollectionUtils.isEmpty(predicateList)) {
-            throw _Exceptions.dmlNoWhereClause();
-        }
-        this.predicateList = Collections.unmodifiableList(predicateList);
-
+        this.asDmlStatement();
         this.onAsDelete();
-
         this.prepared = true;
         return this;
     }
@@ -76,14 +60,13 @@ abstract class MultiDelete<C, JT, JS, JP, WR, WA> extends JoinableDml<C, JT, JS,
     public final void clear() {
         _Assert.prepared(this.prepared);
         this.prepared = false;
-        this.predicateList = null;
+        this.clearWherePredicate();
         this.tableBlockList = null;
         this.onClear();
     }
 
     @Override
     public final List<? extends _TableBlock> tableBlockList() {
-        _Assert.prepared(this.prepared);
         return this.tableBlockList;
     }
 
@@ -94,26 +77,6 @@ abstract class MultiDelete<C, JT, JS, JP, WR, WA> extends JoinableDml<C, JT, JS,
 
     void validateBeforeClearContext() {
         // no-op
-    }
-
-    @Override
-    final JT getNoActionTableBlock() {
-        JT noActionTableBlock = this.noActionTableBlock;
-        if (noActionTableBlock == null) {
-            noActionTableBlock = createNoActionTableBlock();
-            this.noActionTableBlock = noActionTableBlock;
-        }
-        return noActionTableBlock;
-    }
-
-    @Override
-    final JS getNoActionOnBlock() {
-        JS block = this.noActionTablePartBlock;
-        if (block == null) {
-            block = createNoActionOnBlock();
-            this.noActionTablePartBlock = block;
-        }
-        return block;
     }
 
 

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -107,6 +108,66 @@ public class MySQLCriteriaUnitTests {
                     .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
                     .orderBy(ChinaRegion_.name.desc(), ChinaRegion_.id)
                     .ifLimit(map::get, "rowCount")
+                    .asDelete();
+
+            System.out.println(stmt);
+        };
+
+
+        final Map<String, Object> map = new HashMap<>();
+        final LocalDateTime now = LocalDateTime.now();
+        map.put("startTime", now.minusDays(15));
+        map.put("endTIme", now.plusDays(6));
+        map.put("version", "0");
+
+        //map.put("rowCount",(byte)36);
+
+        //below,mock dao method invoking
+        daoMethod.accept(map);
+
+    }
+
+    @Test
+    public void batchSingleDelete57WithCriteriaMap() {
+
+        //daoMethod mock dao method
+        final Consumer<Map<String, Object>> daoMethod = map -> {
+
+            final Supplier<List<Hint>> hintSupplier = () -> {
+                final List<Hint> hintList = new ArrayList<>(2);
+                hintList.add(MySQLs.qbName("regionDelete"));
+                hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
+                return hintList;
+            };
+
+            final List<Map<String, Object>> paramList = new ArrayList<>();
+            Map<String, Object> paramMap;
+
+            paramMap = new HashMap<>();
+            paramMap.put("name", "水城");
+            paramMap.put("regionGdp", "39999.00");
+
+            paramList.add(paramMap);
+
+            paramMap = new HashMap<>();
+            paramMap.put("name", "凉都");
+            paramMap.put("regionGdp", new BigDecimal("99999.00"));
+
+            paramList.add(paramMap);
+
+
+            final Delete stmt;
+            stmt = MySQLs.batchSingleDelete()
+                    .delete(hintSupplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE))
+                    .from(ChinaRegion_.T, "r")
+                    .partition("P1")
+                    .where(ChinaRegion_.name.equalNamed()) // batch parameter
+                    .and(ChinaRegion_.regionGdp.greatEqualNamed())// batch parameter
+                    .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")// common parameter
+                    .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")// common parameter
+                    .orderBy(ChinaRegion_.name.desc(), ChinaRegion_.id)
+                    .ifLimit(map::get, "rowCount")
+                    .paramList(paramList)
                     .asDelete();
 
             System.out.println(stmt);

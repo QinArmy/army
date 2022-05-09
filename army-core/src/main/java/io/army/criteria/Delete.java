@@ -11,10 +11,11 @@ public interface Delete extends NarrowDmlStatement {
         Delete asDelete();
     }
 
-    interface _SingleDeleteClause<DR> {
+    interface _SingleDeleteClause<DT> {
 
-        DR deleteFrom(SingleTableMeta<?> table, String alias);
+        DT deleteFrom(SingleTableMeta<?> table, String alias);
     }
+
 
     interface StandardDeleteClause<DR> {
 

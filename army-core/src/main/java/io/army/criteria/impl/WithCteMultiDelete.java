@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Cte;
 import io.army.criteria.DialectStatement;
-import io.army.criteria.SubQuery;
+import io.army.criteria.SubStatement;
 import io.army.util._CollectionUtils;
 
 import java.util.Collections;
@@ -12,9 +12,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class WithCteMultiDelete<C, WE, JT, JS, JP, JC, JD, JE, JF, WR, WA>
-        extends DmlWhereClause<C, JT, JS, JP, JC, JD, JE, JF, WR, WA>
-        implements DialectStatement._WithCteClause<C, WE> {
+abstract class WithCteMultiDelete<C, SS extends SubStatement, WE, FT, FS, FP, JT, JS, JP, WR, WA>
+        extends MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA>
+        implements DialectStatement._WithCteClause<C, SS, WE> {
 
     WithCteMultiDelete(CriteriaContext criteriaContext) {
         super(criteriaContext);
@@ -22,13 +22,13 @@ abstract class WithCteMultiDelete<C, WE, JT, JS, JP, JC, JD, JE, JF, WR, WA>
 
 
     @Override
-    public final WE with(String cteName, Supplier<? extends SubQuery> supplier) {
+    public final WE with(String cteName, Supplier<? extends SS> supplier) {
         this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, supplier)));
         return (WE) this;
     }
 
     @Override
-    public final WE with(String cteName, Function<C, ? extends SubQuery> function) {
+    public final WE with(String cteName, Function<C, ? extends SS> function) {
         this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, function)));
         return (WE) this;
     }
@@ -66,13 +66,13 @@ abstract class WithCteMultiDelete<C, WE, JT, JS, JP, JC, JD, JE, JF, WR, WA>
     }
 
     @Override
-    public final WE withRecursive(String cteName, Supplier<? extends SubQuery> supplier) {
+    public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
         this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, supplier)));
         return (WE) this;
     }
 
     @Override
-    public final WE withRecursive(String cteName, Function<C, ? extends SubQuery> function) {
+    public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
         this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, function)));
         return (WE) this;
     }
