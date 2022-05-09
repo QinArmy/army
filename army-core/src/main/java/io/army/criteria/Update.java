@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Update extends NarrowDmlStatement {
+public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
 
     interface _UpdateSpec {
@@ -97,6 +97,8 @@ public interface Update extends NarrowDmlStatement {
          * @see SQLs#itemPair(FieldMeta, Object)
          */
         SR ifSetPairs(Function<C, List<ItemPair>> function);
+
+        SR setExp(TableField<?> field, Expression value);
 
         SR setExp(TableField<?> field, Supplier<? extends Expression> supplier);
 
@@ -217,8 +219,6 @@ public interface Update extends NarrowDmlStatement {
      */
     interface _BatchSetClause<C, SR> extends SetClause<C, SR> {
 
-        SR setExp(TableField<?> field, Expression value);
-
         SR setNullable(List<? extends TableField<?>> fieldList);
 
         SR set(List<TableField<?>> fieldList);
@@ -241,6 +241,8 @@ public interface Update extends NarrowDmlStatement {
         SR setNullable(TableField<?> field);
 
         SR set(TableField<?> field);
+
+        SR setNamed(TableField<?> field, String paramName);
 
         /**
          * @see SQLs#namedParam(TableField)

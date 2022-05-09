@@ -17,17 +17,18 @@ abstract class MultiUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         extends JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         implements _MultiUpdate, JoinableClause.ClauseSupplier {
 
+    final CriteriaContext criteriaContext;
 
     private List<_TableBlock> tableBlockList;
 
     MultiUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);
+        this.criteriaContext = criteriaContext;
     }
 
 
     @Override
     public final List<? extends _TableBlock> tableBlockList() {
-        prepared();
         return this.tableBlockList;
     }
 
@@ -39,7 +40,7 @@ abstract class MultiUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        this.tableBlockList = this.criteriaContext.clear();
+        this.tableBlockList = this.criteriaContext.clear(this instanceof SubStatement);
         this.doOnAsUpdate();
     }
 

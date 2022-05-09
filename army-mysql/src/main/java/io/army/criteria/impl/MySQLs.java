@@ -84,20 +84,20 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    static MySQLUpdate._WithAndMultiUpdateSpec<Void> multiUpdate() {
-        return MySQLMultiUpdate.simple(null);
-    }
+  public static MySQLUpdate._WithAndMultiUpdateSpec<Void> multiUpdate() {
+      return MySQLMultiUpdate.simple(null);
+  }
 
-    static <C> MySQLUpdate._WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
+    public static <C> MySQLUpdate._WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiUpdate.simple(criteria);
     }
 
-    static MySQLUpdate._BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
+    public static MySQLUpdate._BatchWithAndMultiUpdateSpec<Void> batchMultiUpdate() {
         return MySQLMultiUpdate.batch(null);
     }
 
-    static <C> MySQLUpdate._BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
+    public static <C> MySQLUpdate._BatchWithAndMultiUpdateSpec<C> batchMultiUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLMultiUpdate.batch(criteria);
     }
@@ -122,22 +122,22 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static MySQLDelete._WithAndMultiDeleteSpec<Void> multiDelete() {
-        return MySQLMultiDelete.simple80(null);
+        return MySQLMultiDelete.simple(null);
     }
 
     public static <C> MySQLDelete._WithAndMultiDeleteSpec<C> multiDelete(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQLMultiDelete.simple80(criteria);
+        return MySQLMultiDelete.simple(criteria);
     }
 
 
     public static MySQLDelete._BatchWithAndMultiDeleteSpec<Void> batchMultiDelete() {
-        return MySQLMultiDelete.batch80(null);
+        return MySQLMultiDelete.batch(null);
     }
 
     public static <C> MySQLDelete._BatchWithAndMultiDeleteSpec<C> batchMultiDelete(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQLMultiDelete.batch80(criteria);
+        return MySQLMultiDelete.batch(criteria);
     }
 
     /**

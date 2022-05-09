@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 
@@ -14,12 +15,12 @@ final class MySQLNoOnBlock extends TableBlock.NoOnTableBlock implements _MySQLTa
     List<MySQLIndexHint> indexHintList;
 
 
-    MySQLNoOnBlock(_JoinType joinType, Object tableItem, String alias) {
+    MySQLNoOnBlock(_JoinType joinType, TableItem tableItem, String alias) {
         super(joinType, tableItem, alias);
         this.partitionList = Collections.emptyList();
     }
 
-    MySQLNoOnBlock(_JoinType joinType, Object tableItem, String alias, List<String> partitionList) {
+    MySQLNoOnBlock(_JoinType joinType, TableItem tableItem, String alias, List<String> partitionList) {
         super(joinType, tableItem, alias);
         this.partitionList = partitionList;
     }

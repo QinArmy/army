@@ -80,12 +80,12 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JS leftJoin(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, cteName, "");
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), "");
     }
 
     @Override
     public final JS leftJoin(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, cteName, alias);
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), alias);
     }
 
     @Override
@@ -130,12 +130,12 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JS join(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, cteName, "");
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, SQLs.refCte(cteName), "");
     }
 
     @Override
     public final JS join(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, cteName, alias);
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, SQLs.refCte(cteName), alias);
     }
 
 
@@ -181,12 +181,12 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JS rightJoin(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, cteName, "");
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), "");
     }
 
     @Override
     public final JS rightJoin(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, cteName, alias);
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), alias);
     }
 
     @Override
@@ -231,12 +231,12 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JS fullJoin(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, cteName, "");
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, SQLs.refCte(cteName), "");
     }
 
     @Override
     public final JS fullJoin(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, cteName, alias);
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, SQLs.refCte(cteName), alias);
     }
 
 
@@ -282,12 +282,12 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JS straightJoin(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, cteName, "");
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), "");
     }
 
     @Override
     public final JS straightJoin(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, cteName, alias);
+        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), alias);
     }
 
 
@@ -377,7 +377,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     @Override
     public final FS crossJoin(String cteName, String alias) {
         final _TableBlock block;
-        block = this.clauseSupplier.createAndAddBlock(_JoinType.CROSS_JOIN, cteName, alias);
+        block = this.clauseSupplier.createAndAddBlock(_JoinType.CROSS_JOIN, SQLs.refCte(cteName), alias);
         final Object clause;
         if (block instanceof JoinableClause) {
             //here nested join items,//nested join couldn't invoking crossJoinEvent(true),because throw CriteriaException
@@ -491,7 +491,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     interface ClauseSupplier {
 
-        _TableBlock createAndAddBlock(_JoinType joinType, Object item, String alias);
+        _TableBlock createAndAddBlock(_JoinType joinType, TableItem item, String alias);
 
         Object createClause(_JoinType joinType, TableMeta<?> table);
 
@@ -514,8 +514,9 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         private VoidClauseSuppler() {
         }
 
+
         @Override
-        public _TableBlock createAndAddBlock(_JoinType joinType, Object item, String alias) {
+        public _TableBlock createAndAddBlock(_JoinType joinType, TableItem item, String alias) {
             throw _Exceptions.castCriteriaApi();
         }
 
@@ -588,7 +589,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
             if (this.blockList.size() != 0) {
                 throw _Exceptions.castCriteriaApi();
             }
-            return (LS) this.createAndAddBlock(_JoinType.NONE, cteName, "");
+            return (LS) this.createAndAddBlock(_JoinType.NONE, SQLs.refCte(cteName), "");
         }
 
         @Override
@@ -596,7 +597,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
             if (this.blockList.size() != 0) {
                 throw _Exceptions.castCriteriaApi();
             }
-            return (LS) this.createAndAddBlock(_JoinType.NONE, cteName, alias);
+            return (LS) this.createAndAddBlock(_JoinType.NONE, SQLs.refCte(cteName), alias);
         }
 
         @Override
@@ -665,14 +666,14 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
         final _JoinType joinType;
 
-        final Object tableItem;
+        final TableItem tableItem;
 
         final String alias;
 
         private List<_Predicate> predicateList;
 
         protected OnOrJoinBlock(NestedClauseSupplier suppler, @Nullable C criteria
-                , _JoinType joinType, Object tableItem
+                , _JoinType joinType, TableItem tableItem
                 , String alias) {
             super(suppler, criteria);
             this.joinType = joinType;
@@ -686,7 +687,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
 
         @Override
-        public final Object tableItem() {
+        public final TableItem tableItem() {
             return this.tableItem;
         }
 

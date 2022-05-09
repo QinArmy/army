@@ -3,6 +3,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.NestedItems;
 import io.army.criteria.Query;
+import io.army.criteria.SubQuery;
 import io.army.criteria.Window;
 
 import java.util.function.Predicate;
@@ -47,7 +48,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _WithSpec<C, Q extends Query> extends _WithCteClause<C, _Select80Clause<C, Q>>
+    interface _WithSpec<C, Q extends Query> extends _WithCteClause<C, SubQuery, _Select80Clause<C, Q>>
             , _Select80Clause<C, Q> {
 
 

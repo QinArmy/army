@@ -70,6 +70,15 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     }
 
     @Override
+    public final WA where(Function<Object, IPredicate> operator, DataField operand) {
+        final IPredicate predicate;
+        predicate = operator.apply(operand);
+        assert predicate != null;
+        this.predicateList.add((OperationPredicate) predicate);
+        return (WA) this;
+    }
+
+    @Override
     public final WA where(Function<Object, IPredicate> operator, Supplier<?> operand) {
         return this.and(operator.apply(operand.get()));
     }
@@ -138,6 +147,15 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     @Override
     public final WA and(Function<C, IPredicate> function) {
         return this.and(function.apply(this.criteria));
+    }
+
+    @Override
+    public final WA and(Function<Object, IPredicate> operator, DataField operand) {
+        final IPredicate predicate;
+        predicate = operator.apply(operand);
+        assert predicate != null;
+        this.predicateList.add((OperationPredicate) predicate);
+        return (WA) this;
     }
 
     @Override

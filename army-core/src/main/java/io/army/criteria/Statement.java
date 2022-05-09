@@ -144,6 +144,10 @@ public interface Statement {
 
         OR on(IPredicate predicate);
 
+        OR on(Function<Object, IPredicate> operator, DataField operandField);
+
+        OR on(Function<Object, IPredicate> operator, Supplier<?> operand);
+
         OR on(IPredicate predicate1, IPredicate predicate2);
 
         OR on(Function<C, List<IPredicate>> function);
@@ -306,6 +310,8 @@ public interface Statement {
 
         WA where(IPredicate predicate);
 
+        WA where(Function<Object, IPredicate> operator, DataField operand);
+
         WA where(Function<Object, IPredicate> operator, Supplier<?> operand);
 
         WA where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName);
@@ -370,6 +376,8 @@ public interface Statement {
         WA and(Supplier<IPredicate> supplier);
 
         WA and(Function<C, IPredicate> function);
+
+        WA and(Function<Object, IPredicate> operator, DataField operand);
 
         WA and(Function<Object, IPredicate> operator, Supplier<?> operand);
 

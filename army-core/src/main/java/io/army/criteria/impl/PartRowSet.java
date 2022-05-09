@@ -123,28 +123,28 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     }
 
     @Override
-    public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(CriteriaUtils._sortItem(sortItem));
+    public final OR orderBy(SortItem sortItem) {
+        this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
         this.onOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Object sortItem1, Object sortItem2) {
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                CriteriaUtils._sortItem(sortItem1),
-                CriteriaUtils._sortItem(sortItem2)
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2
         );
         this.onOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                CriteriaUtils._sortItem(sortItem1),
-                CriteriaUtils._sortItem(sortItem2),
-                CriteriaUtils._sortItem(sortItem3)
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2,
+                (ArmySortItem) sortItem3
         );
         this.onOrderBy();
         return (OR) this;

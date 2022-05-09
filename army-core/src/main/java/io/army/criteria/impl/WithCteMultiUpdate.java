@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Cte;
 import io.army.criteria.DialectStatement;
-import io.army.criteria.SubQuery;
+import io.army.criteria.SubStatement;
 import io.army.util._CollectionUtils;
 
 import java.util.Collections;
@@ -19,9 +19,9 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WithCteMultiUpdate<C, WE, SR, FT, FS, FP, JT, JS, JP, WR, WA>
+abstract class WithCteMultiUpdate<C, SS extends SubStatement, WE, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         extends MultiUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
-        implements DialectStatement._WithCteClause<C, WE> {
+        implements DialectStatement._WithCteClause<C, SS, WE> {
 
     WithCteMultiUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);
@@ -29,13 +29,13 @@ abstract class WithCteMultiUpdate<C, WE, SR, FT, FS, FP, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final WE with(String cteName, Supplier<? extends SubQuery> supplier) {
+    public final WE with(String cteName, Supplier<? extends SS> supplier) {
         this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, supplier)));
         return (WE) this;
     }
 
     @Override
-    public final WE with(String cteName, Function<C, ? extends SubQuery> function) {
+    public final WE with(String cteName, Function<C, ? extends SS> function) {
         this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, function)));
         return (WE) this;
     }
@@ -73,13 +73,13 @@ abstract class WithCteMultiUpdate<C, WE, SR, FT, FS, FP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WE withRecursive(String cteName, Supplier<? extends SubQuery> supplier) {
+    public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
         this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, supplier)));
         return (WE) this;
     }
 
     @Override
-    public final WE withRecursive(String cteName, Function<C, ? extends SubQuery> function) {
+    public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
         this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, function)));
         return (WE) this;
     }

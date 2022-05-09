@@ -519,6 +519,11 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
     }
 
     @Override
+    public final SR setNamed(TableField<?> field, String paramName) {
+        return this.setExp(field, SQLs.namedParam(paramName, field));
+    }
+
+    @Override
     public final SR setPlus(TableField<?> field) {
         return this.setExp(field, field.plus(SQLs.namedParam(field)));
     }

@@ -17,23 +17,24 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WithCteSimpleQuery<C, Q extends Query, WE, W extends SQLWords, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+abstract class WithCteSimpleQuery<C, Q extends Query, SS extends SubStatement, WE, W extends SQLWords, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
         extends SimpleQuery<C, Q, W, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
-        implements DialectStatement._WithCteClause<C, WE> {
+        implements DialectStatement._WithCteClause<C, SS, WE> {
 
 
     WithCteSimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
 
+
     @Override
-    public final WE with(String cteName, Supplier<? extends SubQuery> supplier) {
+    public final WE with(String cteName, Supplier<? extends SS> supplier) {
         this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, supplier)));
         return (WE) this;
     }
 
     @Override
-    public final WE with(String cteName, Function<C, ? extends SubQuery> function) {
+    public final WE with(String cteName, Function<C, ? extends SS> function) {
         this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, function)));
         return (WE) this;
     }
@@ -71,13 +72,13 @@ abstract class WithCteSimpleQuery<C, Q extends Query, WE, W extends SQLWords, SR
     }
 
     @Override
-    public final WE withRecursive(String cteName, Supplier<? extends SubQuery> supplier) {
+    public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
         this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, supplier)));
         return (WE) this;
     }
 
     @Override
-    public final WE withRecursive(String cteName, Function<C, ? extends SubQuery> function) {
+    public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
         this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, function)));
         return (WE) this;
     }

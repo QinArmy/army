@@ -469,7 +469,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     /*################################## blow ClauseSupplier method ##################################*/
 
     @Override
-    public _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String alias) {
+    public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {
         Objects.requireNonNull(item);
         final _TableBlock block;
         switch (joinType) {
@@ -502,7 +502,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public Object createClause(final _JoinType joinType, final TableMeta<?> table) {
+    public final Object createClause(final _JoinType joinType, final TableMeta<?> table) {
         final Object clause;
         switch (joinType) {
             case NONE:
@@ -525,7 +525,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public Object getNoActionClause(final _JoinType joinType) {
+    public final Object getNoActionClause(final _JoinType joinType) {
         final Object clause;
         switch (joinType) {
             case NONE:
@@ -546,7 +546,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public Object getNoActionClauseBeforeAs(_JoinType joinType) {
+    public final Object getNoActionClauseBeforeAs(_JoinType joinType) {
         final Object clause;
         switch (joinType) {
             case NONE:

@@ -496,6 +496,13 @@ public interface MySQLUpdate extends Update {
         UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table, String tableAlias);
 
+
+        UP update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
+                , TableMeta<?> table);
+
+        UT update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
+                , TableMeta<?> table, String tableAlias);
+
         UP update(TableMeta<?> table);
 
         UT update(TableMeta<?> table, String tableAlias);
@@ -503,12 +510,18 @@ public interface MySQLUpdate extends Update {
         <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , Supplier<T> supplier, String alias);
 
-        <T extends TableItem> US update(Supplier<T> tablePart, String alias);
-
         <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
-                , Function<C, T> tablePart, String alias);
+                , Function<C, T> function, String alias);
 
-        <T extends TableItem> US update(Function<C, T> tablePart, String alias);
+        <T extends TableItem> US update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
+                , Supplier<T> supplier, String alias);
+
+        <T extends TableItem> US update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
+                , Function<C, T> function, String alias);
+
+        <T extends TableItem> US update(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> US update(Function<C, T> function, String alias);
     }
 
     /**

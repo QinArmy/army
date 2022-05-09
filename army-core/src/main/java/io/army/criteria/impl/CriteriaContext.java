@@ -8,12 +8,17 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 
 import java.util.List;
+import java.util.function.Function;
 
 interface CriteriaContext {
 
     default Cte refCte(String cteName) {
         throw new UnsupportedOperationException();
     }
+
+    default boolean finishCte(boolean primaryQuery, Function<String, Cte> function) {
+        throw new UnsupportedOperationException();
+    }1
 
     void selectList(List<? extends SelectItem> selectPartList);
 
@@ -58,6 +63,6 @@ interface CriteriaContext {
     @Nullable
     <C> C criteria();
 
-    List<_TableBlock> clear();
+    List<_TableBlock> clear(boolean subStatement);
 
 }

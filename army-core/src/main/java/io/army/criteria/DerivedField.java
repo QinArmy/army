@@ -1,7 +1,7 @@
 package io.army.criteria;
 
-public interface DerivedField extends Expression, Selection {
+public interface DerivedField extends DataField, Selection {
 
-    String subQueryAlias();
+    String tableAlias();
 
 }

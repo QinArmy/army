@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.NestedItems;
 import io.army.criteria.Statement;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
@@ -57,7 +58,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
 
 
     @Override
-    public _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String alias) {
+    public _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {
         Objects.requireNonNull(item);
         if (item instanceof NestedItems && !(item instanceof MySQLNestedItems)) {
             throw CriteriaUtils.nestedItemsNotMatch((NestedItems) item, Database.MySQL);
@@ -195,7 +196,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
             implements MySQL80Query._NestedOnSpec<C> {
 
         private OnBlock(NestedClauseSupplier suppler, @Nullable C criteria
-                , _JoinType joinType, Object tableItem
+                , _JoinType joinType, TableItem tableItem
                 , String alias) {
             super(suppler, criteria, joinType, tableItem, alias);
         }
@@ -223,14 +224,14 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
         private List<MySQLIndexHint> indexHintList;
 
         private IndexHintBlock(NestedClauseSupplier suppler, @Nullable C criteria
-                , _JoinType joinType, Object tableItem
+                , _JoinType joinType, TableItem tableItem
                 , String alias) {
             super(suppler, criteria, joinType, tableItem, alias);
             this.partitionList = Collections.emptyList();
         }
 
         private IndexHintBlock(NestedClauseSupplier suppler, @Nullable C criteria
-                , _JoinType joinType, Object tableItem
+                , _JoinType joinType, TableItem tableItem
                 , String alias, List<String> partitionList) {
             super(suppler, criteria, joinType, tableItem, alias);
             this.partitionList = partitionList;
@@ -471,13 +472,13 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
             implements MySQL80Query._NestedIndexPurposeJoinClause<C>, MySQL80Query._NestedIndexHintJoinSpec<C> {
 
         private IndexHintJoinBlock(NestedClauseSupplier suppler, @Nullable C criteria
-                , _JoinType joinType, Object tableItem
+                , _JoinType joinType, TableItem tableItem
                 , String alias) {
             super(suppler, criteria, joinType, tableItem, alias);
         }
 
         private IndexHintJoinBlock(NestedClauseSupplier suppler, @Nullable C criteria
-                , _JoinType joinType, Object tableItem
+                , _JoinType joinType, TableItem tableItem
                 , String alias, List<String> partitionList) {
             super(suppler, criteria, joinType, tableItem, alias, partitionList);
         }
@@ -491,13 +492,13 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
             implements MySQL80Query._NestedIndexPurposeOnClause<C>, MySQL80Query._NestedIndexHintOnSpec<C> {
 
         private IndexHintOnBlock(NestedClauseSupplier suppler, @Nullable C criteria
-                , _JoinType joinType, Object tableItem
+                , _JoinType joinType, TableItem tableItem
                 , String alias) {
             super(suppler, criteria, joinType, tableItem, alias);
         }
 
         private IndexHintOnBlock(NestedClauseSupplier suppler, @Nullable C criteria
-                , _JoinType joinType, Object tableItem
+                , _JoinType joinType, TableItem tableItem
                 , String alias, List<String> partitionList) {
             super(suppler, criteria, joinType, tableItem, alias, partitionList);
         }

@@ -740,7 +740,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public String subQueryAlias() {
+        public String tableAlias() {
             return this.tableName;
         }
 
@@ -827,7 +827,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public String subQueryAlias() {
+        public String tableAlias() {
             return this.tableName;
         }
 

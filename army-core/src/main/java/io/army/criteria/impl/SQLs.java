@@ -498,8 +498,8 @@ public abstract class SQLs extends Functions {
         return CriteriaContextStack.root().createVar(varName, paramMeta);
     }
 
-    public static CteTableItem refCte(String cteName) {
-        return CriteriaContextStack.peek().refCteItem(cteName);
+    public static Cte refCte(String cteName) {
+        return CriteriaContextStack.peek().refCte(cteName);
     }
 
 
@@ -757,7 +757,7 @@ public abstract class SQLs extends Functions {
 
         private final SubStatement subQuery;
 
-        private CteImpl(String name, SubQuery subQuery) {
+        private CteImpl(String name, SubStatement subQuery) {
             this.name = name;
             this.columnNameList = Collections.emptyList();
             this.subQuery = subQuery;

@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         extends WithCteSingleUpdate<C, SubQuery, WE, SR, WR, WA>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
-        , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<UR, UP>, MySQLQuery._IndexHintClause<C, IR, UR>
+        , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<C, UR, UP>, MySQLQuery._IndexHintClause<C, IR, UR>
         , MySQLQuery._IndexForOrderByClause<C, UR>, _MySQLWithClause {
 
     static <C> _SingleWithAndUpdateSpec<C> simple(@Nullable C criteria) {
@@ -84,12 +84,36 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }
 
     @Override
+    public final UP update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table) {
+        if (this.table != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isUpdateModifier);
+        this.table = table;
+        return this.createPartitionClause();
+    }
+
+    @Override
     public final UR update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , TableMeta<?> table, String tableAlias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isUpdateModifier);
+        this.table = table;
+        this.tableAlias = tableAlias;
+        return (UR) this;
+    }
+
+    @Override
+    public final UR update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table
+            , String tableAlias) {
+        if (this.table != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isUpdateModifier);
         this.table = table;
         this.tableAlias = tableAlias;
@@ -246,32 +270,26 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     /*################################## blow OrderByClause method ##################################*/
 
     @Override
-    public final OR orderBy(String selection) {
-        this.orderByList = Collections.singletonList(CriteriaUtils._sortItem(selection));
-        return (OR) this;
-    }
-
-    @Override
     public final OR orderBy(SortItem sortItem) {
         this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Object sortItem1, Object sortItem2) {
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                CriteriaUtils._sortItem(sortItem1),
-                CriteriaUtils._sortItem(sortItem2)
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2
         );
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                CriteriaUtils._sortItem(sortItem1),
-                CriteriaUtils._sortItem(sortItem2),
-                CriteriaUtils._sortItem(sortItem3)
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2,
+                (ArmySortItem) sortItem3
         );
         return (OR) this;
     }

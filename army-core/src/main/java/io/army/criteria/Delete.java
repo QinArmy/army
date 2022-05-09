@@ -3,7 +3,7 @@ package io.army.criteria;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
-public interface Delete extends NarrowDmlStatement {
+public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete {
 
 
     interface _DeleteSpec {

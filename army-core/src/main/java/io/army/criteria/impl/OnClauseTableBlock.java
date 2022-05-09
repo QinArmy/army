@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
+import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
@@ -20,7 +21,7 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
 
     final OR stmt;
 
-    OnClauseTableBlock(_JoinType joinType, Object tableItem, String alias, OR stmt) {
+    OnClauseTableBlock(_JoinType joinType, TableItem tableItem, String alias, OR stmt) {
         super(joinType, tableItem, alias);
         this.stmt = stmt;
     }

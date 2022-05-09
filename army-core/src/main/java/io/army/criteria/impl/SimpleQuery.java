@@ -159,13 +159,13 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public final FS from(String cteName) {
-        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, cteName, "");
+        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, this.criteriaContext.refCte(cteName), "");
         return (FS) this;
     }
 
     @Override
     public final FS from(String cteName, String alias) {
-        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, cteName, alias);
+        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, this.criteriaContext.refCte(cteName), alias);
         return (FS) this;
     }
 
@@ -206,6 +206,21 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final AR where(IPredicate predicate) {
         return this.and(predicate);
+    }
+
+    @Override
+    public final AR where(Function<Object, IPredicate> operator, DataField operand) {
+        return this.and(operator.apply(operand));
+    }
+
+    @Override
+    public final AR where(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.and(operator.apply(operand.get()));
+    }
+
+    @Override
+    public final AR where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.and(operator.apply(operand.apply(keyName)));
     }
 
     @Override
@@ -293,6 +308,21 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final AR and(Function<C, IPredicate> function) {
         return this.and(function.apply(this.criteria));
+    }
+
+    @Override
+    public final AR and(Function<Object, IPredicate> operator, DataField operand) {
+        return this.and(operator.apply(operand));
+    }
+
+    @Override
+    public final AR and(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        return this.and(operator.apply(operand.get()));
+    }
+
+    @Override
+    public final AR and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+        return this.and(operator.apply(operand.apply(keyName)));
     }
 
     @Override
@@ -585,7 +615,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        this.tableBlockList = this.criteriaContext.clear();
+        this.tableBlockList = this.criteriaContext.clear(this instanceof SubQuery);
 
         // hint list
         if (this.hintList == null) {

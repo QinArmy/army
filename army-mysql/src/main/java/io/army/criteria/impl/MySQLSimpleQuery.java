@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
+import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLQuery;
@@ -24,7 +25,6 @@ import java.util.function.Supplier;
  * <p>
  * This class is base class of below:
  *     <ul>
- *         <li>{@link MySQL57SimpleQuery}</li>
  *         <li>{@link MySQL80SimpleQuery}</li>
  *     </ul>
  * </p>
@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends WithCteSimpleQuery<C, Q, WE, MySQLWords, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends WithCteSimpleQuery<C, Q, SubQuery, WE, MySQLWords, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
         implements _MySQLQuery, MySQLQuery._IndexHintClause<C, IR, FT>, MySQLQuery._IndexPurposeClause<C, FT>
         , MySQLQuery._IntoSpec<C, Q> {
 
