@@ -24,7 +24,7 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
                 .select(BankUser_.id)
                 .from(Certificate_.T, "c")
                 .join(BankUser_.T, "u").on(Certificate_.id.equal(BankUser_.certificateId))
-                .whereIf(Certificate_.certificateNo.equal(certificateNo))
+                .where(Certificate_.certificateNo.equal(certificateNo))
                 .and(Certificate_.certificateType.equalLiteral(certificateType))
                 .and(BankUser_.userType.equalLiteral(userType))
                 .limit(1)
@@ -43,7 +43,7 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
             stmt = SQLs.query()
                     .select(SQLs.group(Certificate_.T, "t"))
                     .from(Certificate_.T, "t")
-                    .whereIf(Certificate_.certificateNo.equal(certificateNo))
+                    .where(Certificate_.certificateNo.equal(certificateNo))
                     .and(Certificate_.certificateType.equalLiteral(certificateType))
                     .asQuery();
         } else {
@@ -52,7 +52,7 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
                     .select(SQLs.childGroup(child, "c", "p"))
                     .from(child, "c")
                     .join(Certificate_.T, "p").on(child.id().equal(Certificate_.id))
-                    .whereIf(Certificate_.certificateNo.equal(certificateNo))
+                    .where(Certificate_.certificateNo.equal(certificateNo))
                     .and(Certificate_.certificateType.equalLiteral(certificateType))
                     .asQuery();
         }
@@ -65,7 +65,7 @@ public class StandardUserDao extends BankSyncBaseDao implements BankUserDao {
         stmt = SQLs.query()
                 .select(BankUser_.id, BankUser_.userType)
                 .from(BankUser_.T, "t")
-                .whereIf(BankUser_.userNo.equal(userNo))
+                .where(BankUser_.userNo.equal(userNo))
                 .asQuery();
         return selectAsPair(this.sessionContext.currentSession(), stmt);
     }

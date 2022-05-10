@@ -236,6 +236,24 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
+    public final AR whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
+        return this.ifNonNullAnd(operator, operand);
+    }
+
+    @Override
+    public final AR whereIfNonNull(@Nullable BiFunction<Object, Object, IPredicate> operator
+            , @Nullable Object firstOperand, @Nullable Object secondOperand) {
+        return this.ifNonNullAnd(operator, firstOperand, secondOperand);
+    }
+
+    @Override
+    public final AR whereIfNonNull(@Nullable Function<Object, ? extends Expression> firstOperator
+            , @Nullable Object firstOperand, BiFunction<Expression, Object, IPredicate> secondOperator
+            , Object secondOperand) {
+        return this.ifNonNullAnd(firstOperator, firstOperand, secondOperator, secondOperand);
+    }
+
+    @Override
     public final AR whereIf(Supplier<IPredicate> supplier) {
         return this.ifAnd(supplier);
     }
@@ -265,6 +283,12 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final AR whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
             , String firstKey, String secondKey) {
         return this.ifAnd(operator, operand, firstKey, secondKey);
+    }
+
+    @Override
+    public final AR whereIf(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
+            , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand) {
+        return this.ifAnd(firstOperator, firstOperand, secondOperator, secondOperand);
     }
 
     @Override
@@ -338,6 +362,36 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
+    public final AR ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
+        if (operator != null && operand != null) {
+            this.and(operator.apply(operand));
+        }
+        return (AR) this;
+    }
+
+    @Override
+    public final AR ifNonNullAnd(@Nullable BiFunction<Object, Object, IPredicate> operator
+            , @Nullable Object firstOperand, @Nullable Object secondOperand) {
+        if (operator != null && firstOperand != null && secondOperand != null) {
+            this.and(operator.apply(firstOperand, secondOperand));
+        }
+        return (AR) this;
+    }
+
+    @Override
+    public final AR ifNonNullAnd(@Nullable Function<Object, ? extends Expression> firstOperator
+            , @Nullable Object firstOperand, BiFunction<Expression, Object, IPredicate> secondOperator
+            , Object secondOperand) {
+        if (firstOperator != null && firstOperand != null) {
+            final Expression expression;
+            expression = firstOperator.apply(firstOperand);
+            assert expression != null;
+            this.and(secondOperator.apply(expression, secondOperator));
+        }
+        return (AR) this;
+    }
+
+    @Override
     public final AR ifAnd(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
@@ -398,6 +452,19 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         return (AR) this;
     }
 
+    @Override
+    public final AR ifAnd(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
+            , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand) {
+        final Object firstValue;
+        firstValue = firstOperand.get();
+        if (firstValue != null) {
+            final Expression expression;
+            expression = firstOperator.apply(firstValue);
+            assert expression != null;
+            this.and(secondOperator.apply(expression, secondOperand));
+        }
+        return (AR) this;
+    }
 
     @Override
     public final GR groupBy(SortItem sortItem) {
@@ -615,7 +682,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        this.tableBlockList = this.criteriaContext.clear(this instanceof SubQuery);
+        this.tableBlockList = this.criteriaContext.clear();
 
         // hint list
         if (this.hintList == null) {

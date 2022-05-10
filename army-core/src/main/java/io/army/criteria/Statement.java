@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.dialect.Dialect;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
@@ -90,7 +91,7 @@ public interface Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <R> next clause java type
+     * @param <RR> next clause java type
      * @since 1.0
      */
     interface _RightBracketClause<RR> extends _Clause {
@@ -144,11 +145,12 @@ public interface Statement {
 
         OR on(IPredicate predicate);
 
+        OR on(IPredicate predicate1, IPredicate predicate2);
+
         OR on(Function<Object, IPredicate> operator, DataField operandField);
 
-        OR on(Function<Object, IPredicate> operator, Supplier<?> operand);
-
-        OR on(IPredicate predicate1, IPredicate predicate2);
+        OR on(Function<Object, IPredicate> operator1, DataField operandField1
+                , Function<Object, IPredicate> operator2, DataField operandField2);
 
         OR on(Function<C, List<IPredicate>> function);
 
@@ -320,6 +322,13 @@ public interface Statement {
 
         WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
 
+        WA whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand);
+
+        WA whereIfNonNull(@Nullable BiFunction<Object, Object, IPredicate> operator, @Nullable Object firstOperand, @Nullable Object secondOperand);
+
+        WA whereIfNonNull(@Nullable Function<Object, ? extends Expression> firstOperator, @Nullable Object firstOperand
+                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
+
         WA whereIf(Supplier<IPredicate> supplier);
 
         WA whereIf(Function<C, IPredicate> function);
@@ -331,6 +340,9 @@ public interface Statement {
         WA whereIf(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
         WA whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
+        WA whereIf(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
+                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
 
     }
 
@@ -387,6 +399,13 @@ public interface Statement {
 
         WA and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
 
+        WA ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand);
+
+        WA ifNonNullAnd(@Nullable BiFunction<Object, Object, IPredicate> operator, @Nullable Object firstOperand, @Nullable Object secondOperand);
+
+        WA ifNonNullAnd(@Nullable Function<Object, ? extends Expression> firstOperator, @Nullable Object firstOperand
+                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
+
         WA ifAnd(Supplier<IPredicate> supplier);
 
         WA ifAnd(Function<C, IPredicate> function);
@@ -398,6 +417,9 @@ public interface Statement {
         WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
         WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
+        WA ifAnd(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
+                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
 
     }
 

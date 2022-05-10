@@ -391,8 +391,12 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
     @Override
     final void doWithCte(boolean recursive, List<Cte> cteList) {
+        if (this.cteList != null) {
+            throw _Exceptions.castCriteriaApi();
+        }
         this.recursive = recursive;
         this.cteList = cteList;
+        this.criteriaContext.cteList(recursive, cteList, false);
     }
 
 
@@ -598,13 +602,13 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         }
 
         @Override
-        public final _UpdateSpec paramList(Function<String, ?> function, String keyName) {
+        public _UpdateSpec paramList(Function<String, ?> function, String keyName) {
             this.paramList = MySQLUtils.paramList((List<?>) function.apply(keyName));
             return this;
         }
 
         @Override
-        public final List<?> paramList() {
+        public List<?> paramList() {
             return this.paramList;
         }
 
@@ -612,6 +616,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         _BatchSinglePartitionClause<C> createPartitionClause() {
             return new BatchPartitionClause<>(this);
         }
+
     }//BatchUpdate
 
 

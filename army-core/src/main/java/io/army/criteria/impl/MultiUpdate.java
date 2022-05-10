@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._MultiUpdate;
 import io.army.criteria.impl.inner._TableBlock;
 
@@ -35,12 +34,7 @@ abstract class MultiUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
 
     @Override
     final void onAsUpdate() {
-        if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.criteriaContext);
-        } else {
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-        }
-        this.tableBlockList = this.criteriaContext.clear(this instanceof SubStatement);
+        this.tableBlockList = this.criteriaContext.clear();
         this.doOnAsUpdate();
     }
 

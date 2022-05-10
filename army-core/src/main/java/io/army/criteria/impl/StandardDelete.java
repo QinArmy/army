@@ -121,19 +121,19 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
         }
 
         @Override
-        public _DeleteSpec paramList(List<?> paramList) {
+        public <P> _DeleteSpec paramList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(paramList);
             return this;
         }
 
         @Override
-        public _DeleteSpec paramList(Supplier<List<?>> supplier) {
+        public <P> _DeleteSpec paramList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(supplier.get());
             return this;
         }
 
         @Override
-        public _DeleteSpec paramList(Function<C, List<?>> function) {
+        public <P> _DeleteSpec paramList(Function<C, List<P>> function) {
             this.paramList = CriteriaUtils.paramList(function.apply(this.criteria));
             return this;
         }

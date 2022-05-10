@@ -148,23 +148,26 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
 
     @Override
-    public final PR partitionBy(Object exp) {
-        this.partitionByList = Collections.singletonList(SQLs._nonNullExp(exp));
+    public final PR partitionBy(Expression exp) {
+        this.partitionByList = Collections.singletonList((ArmyExpression) exp);
         return (PR) this;
     }
 
     @Override
-    public final PR partitionBy(Object exp1, Object exp2) {
-        this.partitionByList = ArrayUtils.asUnmodifiableList(SQLs._nonNullExp(exp1), SQLs._nonNullExp(exp2));
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partitionBy(Object exp1, Object exp2, Object exp3) {
+    public final PR partitionBy(Expression exp1, Expression exp2) {
         this.partitionByList = ArrayUtils.asUnmodifiableList(
-                SQLs._nonNullExp(exp1),
-                SQLs._nonNullExp(exp2),
-                SQLs._nonNullExp(exp3)
+                (ArmyExpression) exp1,
+                (ArmyExpression) exp2
+        );
+        return (PR) this;
+    }
+
+    @Override
+    public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3) {
+        this.partitionByList = ArrayUtils.asUnmodifiableList(
+                (ArmyExpression) exp1,
+                (ArmyExpression) exp2,
+                (ArmyExpression) exp3
         );
         return (PR) this;
     }
@@ -210,26 +213,26 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
     @Override
-    public final OR orderBy(Object sortItem) {
-        this.orderByList = Collections.singletonList(CriteriaUtils._sortItem(sortItem));
+    public final OR orderBy(SortItem sortItem) {
+        this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Object sortItem1, Object sortItem2) {
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                CriteriaUtils._sortItem(sortItem1),
-                CriteriaUtils._sortItem(sortItem2)
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2
         );
         return (OR) this;
     }
 
     @Override
-    public final OR orderBy(Object sortItem1, Object sortItem2, Object sortItem3) {
+    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
         this.orderByList = ArrayUtils.asUnmodifiableList(
-                CriteriaUtils._sortItem(sortItem1),
-                CriteriaUtils._sortItem(sortItem2),
-                CriteriaUtils._sortItem(sortItem3)
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2,
+                (ArmySortItem) sortItem3
         );
         return (OR) this;
     }

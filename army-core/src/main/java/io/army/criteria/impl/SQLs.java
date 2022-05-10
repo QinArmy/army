@@ -751,11 +751,11 @@ public abstract class SQLs extends Functions {
 
     static final class CteImpl implements Cte {
 
-        private final String name;
+        final String name;
 
-        private final List<String> columnNameList;
+        final List<String> columnNameList;
 
-        private final SubStatement subQuery;
+        final SubStatement subQuery;
 
         private CteImpl(String name, SubStatement subQuery) {
             this.name = name;

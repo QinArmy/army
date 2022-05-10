@@ -16,7 +16,6 @@ import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * <p>
@@ -167,7 +166,7 @@ final class MySQLDialect extends MySQL {
         sqlBuilder.append(SPACE_HINT_END);
     }
 
-    private void updateModifiers(Set<MySQLWords> modifierSet, StringBuilder builder, _DialectStatement stmt) {
+    private void updateModifiers(List<MySQLWords> modifierSet, StringBuilder builder, _DialectStatement stmt) {
         for (MySQLWords modifier : modifierSet) {
             switch (modifier) {
                 case LOW_PRIORITY:

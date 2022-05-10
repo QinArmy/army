@@ -32,7 +32,8 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext queryContext(@Nullable Object criteria) {
+    static CriteriaContext queryContext(final @Nullable Object criteria) {
+
         return new SimpleQueryContext(criteria);
     }
 

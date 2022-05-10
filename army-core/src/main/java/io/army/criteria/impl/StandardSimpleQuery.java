@@ -83,14 +83,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     }
 
-    StandardSimpleQuery(CriteriaContext context) {
-        super(context);
-        if (!(this instanceof StandardSimpleQuery.UnionAndQuery)) {
-            throw new IllegalStateException("this error.");
-        }
-
-    }
-
     @Override
     public final _UnionSpec<C, Q> lock(LockMode lockMode) {
         this.lockMode = lockMode;
@@ -183,7 +175,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    public final _TableBlock createAndAddBlock(final _JoinType joinType, final Object item, final String alias) {
+    public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {
         final _TableBlock tableBlock;
         switch (joinType) {
             case NONE:
@@ -312,7 +304,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         private final UnionType unionType;
 
         UnionAndQuery(Q left, UnionType unionType) {
-            super(CriteriaContexts.unionAndContext(left));
+            super(CriteriaUtils.getCriteria(left));
             this.left = left;
             this.unionType = unionType;
         }

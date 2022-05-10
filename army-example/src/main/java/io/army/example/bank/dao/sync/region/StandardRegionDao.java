@@ -47,7 +47,7 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
                 .select(ChinaProvince_.id)
                 .from(ChinaProvince_.T, "p")
                 .join(ChinaRegion_.T, "r").on(ChinaProvince_.id.equal(ChinaRegion_.id))
-                .whereIf(ChinaProvince_.provincialCapital.equalNamed(ChinaRegion_.NAME))
+                .where(ChinaProvince_.provincialCapital.equalNamed(ChinaRegion_.NAME))
                 .asQuery();
 
         final Insert stmt;
@@ -65,7 +65,7 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
         stmt = SQLs.query()
                 .select(ChinaRegion_.id)
                 .from(ChinaRegion_.T, "t")
-                .whereIf(ChinaRegion_.name.equalLiteral(regionName))
+                .where(ChinaRegion_.name.equalLiteral(regionName))
                 .and(ChinaRegion_.regionType.equalLiteral(regionType))
                 .asQuery();
         return this.sessionContext.currentSession().queryOne(stmt, Long.class);

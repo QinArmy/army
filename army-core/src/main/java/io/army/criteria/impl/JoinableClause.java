@@ -632,6 +632,17 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
 
         @Override
+        public final FS on(Function<Object, IPredicate> operator, DataField operandField) {
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Function<Object, IPredicate> operator1, DataField operandField1
+                , Function<Object, IPredicate> operator2, DataField operandField2) {
+            return (FS) this;
+        }
+
+        @Override
         public final FS on(Function<C, List<IPredicate>> function) {
             return (FS) this;
         }
@@ -710,6 +721,26 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
             this.predicateList = ArrayUtils.asUnmodifiableList(
                     (OperationPredicate) predicate1,
                     (OperationPredicate) predicate2
+            );
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Function<Object, IPredicate> operator, DataField operandField) {
+            this.assertForOn();
+            final IPredicate predicate;
+            predicate = operator.apply(operandField);
+            assert predicate instanceof OperationPredicate;
+            this.predicateList = Collections.singletonList((OperationPredicate) predicate);
+            return (FS) this;
+        }
+
+        @Override
+        public final FS on(Function<Object, IPredicate> operator1, DataField operandField1
+                , Function<Object, IPredicate> operator2, DataField operandField2) {
+            this.predicateList = ArrayUtils.asUnmodifiableList(
+                    (OperationPredicate) operator1.apply(operandField1),
+                    (OperationPredicate) operator2.apply(operandField2)
             );
             return (FS) this;
         }

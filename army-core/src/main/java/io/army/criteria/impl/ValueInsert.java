@@ -8,7 +8,6 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -35,6 +34,11 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
     ValueInsert(TableMeta<T> table, CriteriaContext criteriaContext) {
         super(table, criteriaContext);
+        if (this instanceof SubStatement) {
+            CriteriaContextStack.push(this.criteriaContext);
+        } else {
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
 
     }
 
@@ -174,17 +178,17 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
     @Override
     public final Insert asInsert() {
         _Assert.nonPrepared(this.prepared);
-
-        if (this instanceof WithElement) {
+        this.criteriaContext.clear();
+        if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        if (_CollectionUtils.isEmpty(this.domainList)) {
+        if (this.domainList == null) {
             throw _Exceptions.castCriteriaApi();
         }
         final Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
-        if (_CollectionUtils.isEmpty(commonExpMap)) {
+        if (commonExpMap == null) {
             this.commonExpMap = Collections.emptyMap();
         } else {
             this.commonExpMap = Collections.unmodifiableMap(commonExpMap);
@@ -214,7 +218,6 @@ abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractIns
 
     @Override
     public final List<IDomain> domainList() {
-        prepared();
         return this.domainList;
     }
 

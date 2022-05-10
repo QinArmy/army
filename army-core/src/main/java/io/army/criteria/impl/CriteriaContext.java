@@ -7,7 +7,9 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 interface CriteriaContext {
@@ -16,9 +18,19 @@ interface CriteriaContext {
         throw new UnsupportedOperationException();
     }
 
-    default boolean finishCte(boolean primaryQuery, Function<String, Cte> function) {
+    default boolean cteList(boolean recursive, List<Cte> cteList, boolean subStatement) {
+        final Map<String, Cte> cteMap = new HashMap<>((int) (cteList.size() / 0.75F));
+
+        for (Cte cte : cteList) {
+            ((CriteriaContextSpec) ((SQLs.CteImpl) cte).subQuery)
+                    .getCriteriaContext().finishCteRefs(cteMap::get, subStatement);
+        }
         throw new UnsupportedOperationException();
-    }1
+    }
+
+    default boolean finishCteRefs(Function<String, Cte> function, boolean subStatement) {
+        throw new UnsupportedOperationException();
+    }
 
     void selectList(List<? extends SelectItem> selectPartList);
 
@@ -63,6 +75,6 @@ interface CriteriaContext {
     @Nullable
     <C> C criteria();
 
-    List<_TableBlock> clear(boolean subStatement);
+    List<_TableBlock> clear();
 
 }

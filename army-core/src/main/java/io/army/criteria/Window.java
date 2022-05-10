@@ -127,11 +127,11 @@ public interface Window {
      */
     interface _PartitionByExpClause<C, PR> {
 
-        PR partitionBy(Object exp);
+        PR partitionBy(Expression exp);
 
-        PR partitionBy(Object exp1, Object exp2);
+        PR partitionBy(Expression exp1, Expression exp2);
 
-        PR partitionBy(Object exp1, Object exp2, Object exp3);
+        PR partitionBy(Expression exp1, Expression exp2, Expression exp3);
 
         <E extends Expression> PR partitionBy(Function<C, List<E>> function);
 

@@ -43,6 +43,7 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
     @Override
     public final Delete asDelete() {
         _Assert.nonPrepared(this.prepared);
+        this.criteriaContext.clear();
         if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {

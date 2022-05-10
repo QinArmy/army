@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.DataField;
 import io.army.criteria.IPredicate;
 import io.army.criteria.Statement;
 import io.army.criteria.TableItem;
@@ -44,6 +45,25 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
         this.predicateList = ArrayUtils.asUnmodifiableList(
                 (OperationPredicate) predicate1,
                 (OperationPredicate) predicate2
+        );
+        return this.stmt;
+    }
+
+    @Override
+    public final OR on(Function<Object, IPredicate> operator, DataField operandField) {
+        final IPredicate predicate;
+        predicate = operator.apply(operandField);
+        assert predicate != null;
+        this.predicateList = Collections.singletonList((OperationPredicate) predicate);
+        return this.stmt;
+    }
+
+    @Override
+    public final OR on(Function<Object, IPredicate> operator1, DataField operandField1
+            , Function<Object, IPredicate> operator2, DataField operandField2) {
+        this.predicateList = ArrayUtils.asUnmodifiableList(
+                (OperationPredicate) operator1.apply(operandField1),
+                (OperationPredicate) operator2.apply(operandField2)
         );
         return this.stmt;
     }

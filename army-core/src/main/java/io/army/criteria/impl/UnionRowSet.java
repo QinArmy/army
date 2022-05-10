@@ -3,14 +3,12 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._PartRowSet;
-import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.dialect.Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
-import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -29,7 +27,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     final Q left;
 
     UnionRowSet(Q left) {
-        super(CriteriaContexts.unionContext(left));
+        super(CriteriaContexts.unionContext(left), JoinableClause.voidClauseSuppler());
         this.left = left;
         if (this instanceof SubStatement) {
             CriteriaContextStack.push(this.criteriaContext);
@@ -125,50 +123,9 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
 
     /*################################## blow JoinableClause method ##################################*/
 
-    @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, TableItem table, String tableAlias) {
-        throw _Exceptions.castCriteriaApi();
-    }
 
-    @Override
-    final Void createTableBlock(_JoinType joinType, TableMeta<?> table, String tableAlias) {
-        throw _Exceptions.castCriteriaApi();
-    }
 
-    @Override
-    final Void createItemBlock(_JoinType joinType, TableItem tableItem, String alias) {
-        throw _Exceptions.castCriteriaApi();
-    }
 
-    @Override
-    final Void createNextNoOnClause(_JoinType joinType, TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void getNoActionTableBlock() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void getNoActionItemBlock() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void getNoActionNextClause() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void getNoActionNextNoOnClause() {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    final Void createNextClause(_JoinType joinType, TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
-    }
 
     @Override
     final void crossJoinEvent(boolean success) {

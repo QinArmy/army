@@ -101,6 +101,25 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     }
 
     @Override
+    public final WA whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
+        return this.ifNonNullAnd(operator, operand);
+    }
+
+    @Override
+    public final WA whereIfNonNull(@Nullable BiFunction<Object, Object, IPredicate> operator
+            , @Nullable Object firstOperand
+            , @Nullable Object secondOperand) {
+        return this.ifNonNullAnd(operator, firstOperand, secondOperand);
+    }
+
+    @Override
+    public final WA whereIfNonNull(@Nullable Function<Object, ? extends Expression> firstOperator
+            , @Nullable Object firstOperand, BiFunction<Expression, Object, IPredicate> secondOperator
+            , Object secondOperand) {
+        return this.ifNonNullAnd(firstOperator, firstOperand, secondOperator, secondOperand);
+    }
+
+    @Override
     public final WA whereIf(Supplier<IPredicate> supplier) {
         return this.ifAnd(supplier);
     }
@@ -130,6 +149,12 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     public final WA whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
             , String firstKey, String secondKey) {
         return this.ifAnd(operator, operand, firstKey, secondKey);
+    }
+
+    @Override
+    public final WA whereIf(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
+            , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand) {
+        return this.ifAnd(firstOperator, firstOperand, secondOperator, secondOperand);
     }
 
     @Override
@@ -179,6 +204,47 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
             , String firstKey, String secondKey) {
         return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
     }
+
+    @Override
+    public final WA ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
+        if (operator != null && operand != null) {
+            final IPredicate predicate;
+            predicate = operator.apply(operand);
+            assert predicate != null;
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final WA ifNonNullAnd(@Nullable Function<Object, ? extends Expression> firstOperator
+            , @Nullable Object firstOperand, BiFunction<Expression, Object, IPredicate> secondOperator
+            , Object secondOperand) {
+        if (firstOperator != null && firstOperand != null) {
+            final Expression expression;
+            expression = firstOperator.apply(firstOperand);
+            assert expression != null;
+
+            final IPredicate predicate;
+            predicate = secondOperator.apply(expression, secondOperand);
+            assert predicate != null;
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final WA ifNonNullAnd(@Nullable BiFunction<Object, Object, IPredicate> operator
+            , @Nullable Object firstOperand, @Nullable Object secondOperand) {
+        if (operator != null && firstOperand != null && secondOperand != null) {
+            final IPredicate predicate;
+            predicate = operator.apply(firstOperand, secondOperand);
+            assert predicate != null;
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
+    }
+
 
     @Override
     public final WA ifAnd(Supplier<IPredicate> supplier) {
@@ -239,6 +305,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         return (WA) this;
     }
 
+
     @Override
     public final WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
             , String firstKey, String secondKey) {
@@ -246,6 +313,24 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         if ((first = operand.apply(firstKey)) != null && (second = operand.apply(secondKey)) != null) {
             final IPredicate predicate;
             predicate = operator.apply(first, second);
+            assert predicate != null;
+            this.predicateList.add((OperationPredicate) predicate);
+        }
+        return (WA) this;
+    }
+
+    @Override
+    public final WA ifAnd(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
+            , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand) {
+        final Object firstValue;
+        firstValue = firstOperand.get();
+        if (firstValue != null) {
+            final Expression expression;
+            expression = firstOperator.apply(firstValue);
+            assert expression != null;
+
+            final IPredicate predicate;
+            predicate = secondOperator.apply(expression, secondOperand);
             assert predicate != null;
             this.predicateList.add((OperationPredicate) predicate);
         }

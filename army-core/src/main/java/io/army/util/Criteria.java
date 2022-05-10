@@ -25,13 +25,13 @@ public abstract class Criteria {
                     .select(SQLs.childGroup(child, "c", "p"))
                     .from(child, "c") // small table first
                     .join(parent, "p").on(child.id().equal(parent.id()))
-                    .whereIf(child.id().equal(id))
+                    .where(child.id().equal(id))
                     .asQuery();
         } else {
             stmt = SQLs.query()
                     .select(SQLs.group(table, "t"))
                     .from(table, "t")
-                    .whereIf(table.id().equal(id))
+                    .where(table.id().equal(id))
                     .asQuery();
         }
         return stmt;
@@ -47,14 +47,14 @@ public abstract class Criteria {
                     .select(SQLs.childGroup(child, "c", "p"))
                     .from(child, "c")
                     .join(parent, "p").on(child.id().equal(parent.id()))
-                    .whereIf(field.equal(value))
+                    .where(field.equal(value))
                     .limit(2)
                     .asQuery();
         } else {
             stmt = SQLs.query()
                     .select(SQLs.group(table, "t"))
                     .from(table, "t")
-                    .whereIf(field.equal(value))
+                    .where(field.equal(value))
                     .limit(2)
                     .asQuery();
         }

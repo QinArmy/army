@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -211,11 +212,12 @@ public class MySQLCriteriaUnitTests {
                     .ignoreIndex(Collections.singletonList("idx_account_id"))
                     .on(User_.id::equal, BankAccount_.id)
                     .ifSet(User_.nickName, map::get, "newNickName")
-                    .setPlusLiteral(BankAccount_.balance, map.get("amount"))
+                    .ifSetPlus(BankAccount_.balance, map::get, "amount")
                     .where(User_.identityId::equalLiteral, map::get, "identityId")
                     .ifAnd(User_.nickName::equal, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
                     .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
+                    .ifNonNullAnd(BankAccount_.balance::plus, map.get("amount"), Expression::greatEqualLiteral, 0)
                     .asUpdate();
             System.out.println(stmt);
 
@@ -281,6 +283,7 @@ public class MySQLCriteriaUnitTests {
                     .setPlus(BankAccount_.balance)
                     .where(User_.identityId::equalLiteral, map::get, "identityId")
                     .ifAnd(User_.nickName::equal, map::get, "oldNickName")
+                    .and(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
                     .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
                     .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
                     .paramList(paramListSupplier)
@@ -304,6 +307,10 @@ public class MySQLCriteriaUnitTests {
 
         //below,mock dao method invoking
         daoMethod.accept(map);
+
+        BiFunction<? extends Expression, Object, IPredicate> function = Expression::equal;
+
+
     }
 
 
