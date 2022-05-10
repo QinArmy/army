@@ -498,7 +498,7 @@ public abstract class SQLs extends Functions {
         return CriteriaContextStack.root().createVar(varName, paramMeta);
     }
 
-    public static Cte refCte(String cteName) {
+    public static CteItem refCte(String cteName) {
         return CriteriaContextStack.peek().refCte(cteName);
     }
 
@@ -755,19 +755,19 @@ public abstract class SQLs extends Functions {
 
         final List<String> columnNameList;
 
-        final SubStatement subQuery;
+        final SubStatement subStatement;
 
-        private CteImpl(String name, SubStatement subQuery) {
+        private CteImpl(String name, SubStatement subStatement) {
             this.name = name;
             this.columnNameList = Collections.emptyList();
-            this.subQuery = subQuery;
+            this.subStatement = subStatement;
         }
 
 
-        private CteImpl(String name, List<String> columnNameList, SubStatement subQuery) {
+        private CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
             this.name = name;
             this.columnNameList = _CollectionUtils.asUnmodifiableList(columnNameList);
-            this.subQuery = subQuery;
+            this.subStatement = subStatement;
         }
 
         @Override
@@ -782,7 +782,7 @@ public abstract class SQLs extends Functions {
 
         @Override
         public SubStatement subStatement() {
-            return this.subQuery;
+            return this.subStatement;
         }
 
         @Override

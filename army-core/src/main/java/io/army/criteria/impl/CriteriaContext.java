@@ -7,30 +7,18 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 interface CriteriaContext {
 
-    default Cte refCte(String cteName) {
-        throw new UnsupportedOperationException();
-    }
+    CteItem refCte(String cteName);
 
-    default boolean cteList(boolean recursive, List<Cte> cteList, boolean subStatement) {
-        final Map<String, Cte> cteMap = new HashMap<>((int) (cteList.size() / 0.75F));
+    boolean cteList(boolean recursive, List<Cte> cteList, boolean subStatement);
 
-        for (Cte cte : cteList) {
-            ((CriteriaContextSpec) ((SQLs.CteImpl) cte).subQuery)
-                    .getCriteriaContext().finishCteRefs(cteMap::get, subStatement);
-        }
-        throw new UnsupportedOperationException();
-    }
 
-    default boolean finishCteRefs(Function<String, Cte> function, boolean subStatement) {
-        throw new UnsupportedOperationException();
-    }
+    boolean finishCteRefs(boolean recursive, String thisCteName, Function<String, Cte> function
+            , boolean subStatement);
 
     void selectList(List<? extends SelectItem> selectPartList);
 
@@ -55,11 +43,20 @@ interface CriteriaContext {
 
     void onAddBlock(_TableBlock block);
 
-    void onAddNoOnBlock(_TableBlock block);
+    @Deprecated
+    default void onAddNoOnBlock(_TableBlock block) {
+        throw new UnsupportedOperationException();
+    }
 
-    void onBracketBlock(_TableBlock block);
+    @Deprecated
+    default void onBracketBlock(_TableBlock block) {
+        throw new UnsupportedOperationException();
+    }
 
-    void onJoinType(_JoinType joinType);
+    @Deprecated
+    default void onJoinType(_JoinType joinType) {
+        throw new UnsupportedOperationException();
+    }
 
     _TableBlock lastTableBlockWithoutOnClause();
 

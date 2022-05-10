@@ -561,7 +561,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             if (i == 0) {
                 continue;
             }
-            final List<_Predicate> onPredicates = block.predicates();
+            final List<_Predicate> onPredicates = block.predicateList();
             final int onSize = onPredicates.size();
             if (onSize > 0) {
                 builder.append(Constant.SPACE_ON);

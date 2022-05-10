@@ -27,6 +27,6 @@ public interface _TableBlock {
 
     String alias();
 
-    List<_Predicate> predicates();
+    List<_Predicate> predicateList();
 
 }

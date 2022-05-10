@@ -124,7 +124,7 @@ final class TableContext {
                     throw _Exceptions.unexpectedEnum(block.jointType());
 
             }
-            if (block.tableItem() == parent && isParentChildJoin(block.predicates())) {
+            if (block.tableItem() == parent && isParentChildJoin(block.predicateList())) {
                 // validate success.
                 return block;
             }
@@ -158,7 +158,7 @@ final class TableContext {
                     throw _Exceptions.unexpectedEnum(block.jointType());
 
             }
-            if (block.tableItem() == parent && isParentChildJoin(block.predicates())) {
+            if (block.tableItem() == parent && isParentChildJoin(block.predicateList())) {
                 // validate success.
                 parentBlock = block;
                 break;

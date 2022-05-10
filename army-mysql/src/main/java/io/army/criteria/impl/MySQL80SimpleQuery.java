@@ -808,7 +808,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             } else {
                 block = new MySQLNoOnBlock(this.joinType, this.table, alias, partitionList);
             }
-            this.query.criteriaContext.onAddNoOnBlock(block);
+            this.query.criteriaContext.onAddBlock(block);
             if (this.joinType == _JoinType.CROSS_JOIN) {
                 this.query.crossJoinEvent(true);
             }

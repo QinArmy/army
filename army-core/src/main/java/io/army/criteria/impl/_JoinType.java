@@ -57,7 +57,7 @@ public enum _JoinType implements SQLWords, _NoTableBlock {
     }
 
     @Override
-    public final List<_Predicate> predicates() {
+    public final List<_Predicate> predicateList() {
         throw new UnsupportedOperationException();
     }
 

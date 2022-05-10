@@ -775,7 +775,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
 
         @Override
-        public final List<_Predicate> predicates() {
+        public final List<_Predicate> predicateList() {
             List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null) {
                 predicateList = Collections.emptyList();

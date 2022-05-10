@@ -66,7 +66,7 @@ abstract class TableBlock implements _TableBlock {
         }
 
         @Override
-        public final List<_Predicate> predicates() {
+        public final List<_Predicate> predicateList() {
             return Collections.emptyList();
         }
 
