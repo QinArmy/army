@@ -8,17 +8,13 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 
 import java.util.List;
-import java.util.function.Function;
 
 interface CriteriaContext {
 
+    CteConsumer onBeforeWithClause(boolean recursive);
+
     CteItem refCte(String cteName);
 
-    boolean cteList(boolean recursive, List<Cte> cteList, boolean subStatement);
-
-
-    boolean finishCteRefs(boolean recursive, String thisCteName, Function<String, Cte> function
-            , boolean subStatement);
 
     void selectList(List<? extends SelectItem> selectPartList);
 
@@ -43,20 +39,6 @@ interface CriteriaContext {
 
     void onAddBlock(_TableBlock block);
 
-    @Deprecated
-    default void onAddNoOnBlock(_TableBlock block) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    default void onBracketBlock(_TableBlock block) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    default void onJoinType(_JoinType joinType) {
-        throw new UnsupportedOperationException();
-    }
 
     _TableBlock lastTableBlockWithoutOnClause();
 
@@ -73,5 +55,17 @@ interface CriteriaContext {
     <C> C criteria();
 
     List<_TableBlock> clear();
+
+
+    interface CteConsumer {
+
+        void addCte(Cte cte);
+
+        /**
+         * @return a unmodified list.
+         */
+        List<Cte> end();
+
+    }
 
 }

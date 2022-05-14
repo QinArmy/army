@@ -27,8 +27,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class AbstractInsert<T extends IDomain, C, IR>
-        implements Insert, Insert.InsertSpec, Insert.InsertIntoClause<T, C, IR>, _Insert {
+abstract class AbstractInsert<C, T extends IDomain, IR>
+        implements Insert, Insert.InsertSpec, Insert.InsertIntoClause<C, T, IR>, _Insert {
 
     final TableMeta<T> table;
 

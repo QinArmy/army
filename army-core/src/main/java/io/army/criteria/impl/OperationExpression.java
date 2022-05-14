@@ -594,27 +594,27 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression multiply(Object multiplicand) {
+    public final Expression times(Object multiplicand) {
         return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.nonNullParam(this, multiplicand));
     }
 
     @Override
-    public final Expression multiplyLiteral(Object multiplicand) {
+    public final Expression timesLiteral(Object multiplicand) {
         return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.nonNullLiteral(this, multiplicand));
     }
 
     @Override
-    public final Expression multiplyNamed(String paramName) {
+    public final Expression timesNamed(String paramName) {
         return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.namedParam(paramName, this.paramMeta()));
     }
 
     @Override
-    public final <C> Expression multiplyExp(Function<C, ? extends Expression> function) {
+    public final <C> Expression timesExp(Function<C, ? extends Expression> function) {
         return DualExpression.create(this, DualOperator.MULTIPLY, function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
     @Override
-    public final Expression multiplyExp(Supplier<? extends Expression> supplier) {
+    public final Expression timesExp(Supplier<? extends Expression> supplier) {
         return DualExpression.create(this, DualOperator.MULTIPLY, supplier.get());
     }
 

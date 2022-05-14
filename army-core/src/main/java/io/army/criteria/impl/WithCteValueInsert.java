@@ -3,6 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.Cte;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.SubStatement;
+import io.army.domain.IDomain;
+import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -11,12 +13,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * @since 1.0
+ */
 @SuppressWarnings("unchecked")
-abstract class WithCteSingleUpdate<C, SS extends SubStatement, WE, SR, WR, WA> extends SingleUpdate<C, SR, WR, WA>
+abstract class WithCteValueInsert<C, T extends IDomain, SS extends SubStatement, WE, OR, IR, SR>
+        extends ValueInsert<C, T, OR, IR, SR>
         implements DialectStatement._WithCteClause<C, SS, WE> {
 
-    WithCteSingleUpdate(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+
+    WithCteValueInsert(TableMeta<T> table, CriteriaContext criteriaContext) {
+        super(table, criteriaContext);
     }
 
 

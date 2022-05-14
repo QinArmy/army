@@ -9,14 +9,88 @@ import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 abstract class CriteriaUtils {
 
     CriteriaUtils() {
         throw new UnsupportedOperationException();
+    }
+
+
+    static void withClause(final boolean recursive, final Cte cte, final CriteriaContext context
+            , BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+
+        final CriteriaContext.CteConsumer cteConsumer;
+        cteConsumer = context.onBeforeWithClause(recursive);
+        cteConsumer.addCte(cte);
+
+        final List<Cte> cteList;
+        cteList = cteConsumer.end();
+        if (cteList.size() == 0) {
+            throw _Exceptions.cteListIsEmpty();
+        }
+        subClassConsumer.accept(recursive, cteList);
+    }
+
+
+    static <C> void withClause(final boolean recursive, final BiConsumer<C, Consumer<Cte>> consumer
+            , final CriteriaContext context, BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+
+        final CriteriaContext.CteConsumer cteConsumer;
+        cteConsumer = context.onBeforeWithClause(recursive);
+        consumer.accept(context.criteria(), cteConsumer::addCte);
+
+        final List<Cte> cteList;
+        cteList = cteConsumer.end();
+        if (cteList.size() == 0) {
+            throw _Exceptions.cteListIsEmpty();
+        }
+        subClassConsumer.accept(recursive, cteList);
+    }
+
+    static void withClause(final boolean recursive, final Consumer<Consumer<Cte>> consumer
+            , final CriteriaContext context, BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+
+        final CriteriaContext.CteConsumer cteConsumer;
+        cteConsumer = context.onBeforeWithClause(recursive);
+        consumer.accept(cteConsumer::addCte);
+
+        final List<Cte> cteList;
+        cteList = cteConsumer.end();
+        if (cteList.size() == 0) {
+            throw _Exceptions.cteListIsEmpty();
+        }
+        subClassConsumer.accept(recursive, cteList);
+    }
+
+    static <C> void ifWithClause(final boolean recursive, final BiConsumer<C, Consumer<Cte>> consumer
+            , final CriteriaContext context, BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+
+        final CriteriaContext.CteConsumer cteConsumer;
+        cteConsumer = context.onBeforeWithClause(recursive);
+        consumer.accept(context.criteria(), cteConsumer::addCte);
+
+        final List<Cte> cteList;
+        cteList = cteConsumer.end();
+        if (cteList.size() > 0) {
+            subClassConsumer.accept(recursive, cteList);
+        }
+
+    }
+
+    static void ifWithClause(final boolean recursive, final Consumer<Consumer<Cte>> consumer
+            , final CriteriaContext context, BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+
+        final CriteriaContext.CteConsumer cteConsumer;
+        cteConsumer = context.onBeforeWithClause(recursive);
+        consumer.accept(cteConsumer::addCte);
+
+        final List<Cte> cteList;
+        cteList = cteConsumer.end();
+        if (cteList.size() > 0) {
+            subClassConsumer.accept(recursive, cteList);
+        }
     }
 
 
@@ -209,17 +283,6 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableList(wrapperList);
     }
 
-
-    static List<?> paramList(Function<String, Object> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (!(value instanceof List)) {
-            String m = String.format("%s key[%s] return isn't %s."
-                    , Function.class.getName(), keyName, Long.class.getName());
-            throw new CriteriaException(m);
-        }
-        return paramList((List<?>) value);
-    }
 
     @SuppressWarnings("unchecked")
     @Nullable

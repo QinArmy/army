@@ -97,17 +97,17 @@ public interface Window {
      */
     interface _LeftBracketClause<C, NR> {
 
-        NR leftBracket();
+        NR leftParen();
 
-        NR leftBracket(String existingWindowName);
+        NR leftParen(String existingWindowName);
 
-        NR leftBracket(Supplier<String> supplier);
+        NR leftParen(Supplier<String> supplier);
 
-        NR leftBracket(Function<C, String> function);
+        NR leftParen(Function<C, String> function);
 
-        NR leftBracketIf(Supplier<String> supplier);
+        NR leftParenIf(Supplier<String> supplier);
 
-        NR leftBracketIf(Function<C, String> function);
+        NR leftParenIf(Function<C, String> function);
 
     }
 

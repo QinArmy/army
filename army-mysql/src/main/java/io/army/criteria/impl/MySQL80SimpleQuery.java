@@ -125,8 +125,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private MySQL80Query._PartitionOnClause<C, Q> noActionPartitionOnClause;
 
 
-    private MySQL80SimpleQuery(@Nullable C criteria) {
-        super(CriteriaContexts.queryContext(criteria));
+    private MySQL80SimpleQuery(CriteriaContext criteriaContext) {
+        super(criteriaContext);
     }
 
     /**
@@ -659,7 +659,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static final class SimpleSelect<C> extends MySQL80SimpleQuery<C, Select> implements Select {
 
         private SimpleSelect(@Nullable C criteria) {
-            super(criteria);
+            super(CriteriaContexts.primaryQueryContext(criteria));
         }
 
     }// SimpleSelect
@@ -670,7 +670,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         private Map<String, Selection> selectionMap;
 
         private SimpleSubQuery(@Nullable C criteria) {
-            super(criteria);
+            super(CriteriaContexts.subQueryContext(criteria));
         }
 
         @Override
@@ -721,8 +721,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private final UnionType unionType;
 
-        private UnionAndQuery(Q left, UnionType unionType) {
-            super(CriteriaUtils.getCriteria(left));
+        private UnionAndQuery(CriteriaContext criteriaContext, Q left, UnionType unionType) {
+            super(criteriaContext);
             this.left = left;
             this.unionType = unionType;
         }
@@ -743,7 +743,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static final class UnionAndSelect<C> extends UnionAndQuery<C, Select> implements Select {
 
         private UnionAndSelect(Select left, UnionType unionType) {
-            super(left, unionType);
+            super(CriteriaContexts.primaryQueryContext(left), left, unionType);
         }
 
     }//UnionAndSelect
@@ -754,7 +754,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         private Map<String, Selection> selectionMap;
 
         private UnionAndSubQuery(Q left, UnionType unionType) {
-            super(left, unionType);
+            super(CriteriaContexts.subQueryContext(left), left, unionType);
         }
 
         @Override

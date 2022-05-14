@@ -157,12 +157,12 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
 
     @Override
     public final SR setMultiply(TableField<?> field, Object paramOrExp) {
-        return this.setExp(field, field.multiply(paramOrExp));
+        return this.setExp(field, field.times(paramOrExp));
     }
 
     @Override
     public final SR setMultiplyLiteral(TableField<?> field, Object paramOrExp) {
-        return this.setExp(field, field.multiplyLiteral(paramOrExp));
+        return this.setExp(field, field.timesLiteral(paramOrExp));
     }
 
     @Override
@@ -270,7 +270,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.setExp(field, field.multiply(value));
+            this.setExp(field, field.times(value));
         }
         return (SR) this;
     }
@@ -280,7 +280,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
-            this.setExp(field, field.multiply(value));
+            this.setExp(field, field.times(value));
         }
         return (SR) this;
     }
@@ -370,7 +370,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.setExp(field, field.multiplyLiteral(value));
+            this.setExp(field, field.timesLiteral(value));
         }
         return (SR) this;
     }
@@ -380,7 +380,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
-            this.setExp(field, field.multiplyLiteral(value));
+            this.setExp(field, field.timesLiteral(value));
         }
         return (SR) this;
     }
@@ -535,7 +535,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
 
     @Override
     public final SR setMultiply(TableField<?> field) {
-        return this.setExp(field, field.multiply(SQLs.namedParam(field)));
+        return this.setExp(field, field.times(SQLs.namedParam(field)));
     }
 
     @Override

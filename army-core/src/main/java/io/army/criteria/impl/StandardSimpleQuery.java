@@ -78,8 +78,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     private NoActionOnClause<C, StandardQuery._JoinSpec<C, Q>> noActionOnClause;
 
-    StandardSimpleQuery(@Nullable C criteria) {
-        super(CriteriaContexts.queryContext(criteria));
+    StandardSimpleQuery(CriteriaContext criteriaContext) {
+        super(criteriaContext);
 
     }
 
@@ -250,7 +250,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             implements Select {
 
         private SimpleSelect(@Nullable C criteria) {
-            super(criteria);
+            super(CriteriaContexts.primaryQueryContext(criteria));
         }
 
     }//SimpleSelect
@@ -265,7 +265,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         private Map<String, Selection> selectionMap;
 
         private SimpleSubQuery(@Nullable C criteria) {
-            super(criteria);
+            super(CriteriaContexts.subQueryContext(criteria));
         }
 
 

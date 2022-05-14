@@ -18,8 +18,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class ValueInsert<T extends IDomain, C, OR, IR, SR> extends AbstractInsert<T, C, IR> implements
-        Insert.OptionClause<OR>, Insert.CommonExpClause<T, C, SR>, Insert.ValueClause<T, C>, _ValuesInsert {
+abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractInsert<C, T, IR> implements
+        Insert.OptionClause<OR>, Insert.CommonExpClause<C, T, SR>, Insert.ValueClause<C, T>, _ValuesInsert {
 
 
     private boolean migration;

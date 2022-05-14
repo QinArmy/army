@@ -4,9 +4,7 @@ import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public interface DialectStatement extends Statement {
 
@@ -30,25 +28,25 @@ public interface DialectStatement extends Statement {
 
         WE with(String cteName, Function<C, ? extends SS> function);
 
-        WE with(Supplier<List<Cte>> supplier);
+        WE with(Consumer<Consumer<Cte>> consumer);
 
-        WE with(Function<C, List<Cte>> function);
+        WE with(BiConsumer<C, Consumer<Cte>> consumer);
 
-        WE ifWith(Supplier<List<Cte>> supplier);
+        WE ifWith(Consumer<Consumer<Cte>> consumer);
 
-        WE ifWith(Function<C, List<Cte>> function);
+        WE ifWith(BiConsumer<C, Consumer<Cte>> consumer);
 
         WE withRecursive(String cteName, Supplier<? extends SS> supplier);
 
         WE withRecursive(String cteName, Function<C, ? extends SS> function);
 
-        WE withRecursive(Supplier<List<Cte>> supplier);
+        WE withRecursive(Consumer<Consumer<Cte>> consumer);
 
-        WE withRecursive(Function<C, List<Cte>> function);
+        WE withRecursive(BiConsumer<C, Consumer<Cte>> consumer);
 
-        WE ifWithRecursive(Supplier<List<Cte>> supplier);
+        WE ifWithRecursive(Consumer<Consumer<Cte>> consumer);
 
-        WE ifWithRecursive(Function<C, List<Cte>> function);
+        WE ifWithRecursive(BiConsumer<C, Consumer<Cte>> consumer);
 
 
     }

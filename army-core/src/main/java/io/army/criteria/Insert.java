@@ -47,7 +47,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface InsertIntoClause<T extends IDomain, C, IR> {
+    interface InsertIntoClause<C, T extends IDomain, IR> {
 
         IR insertInto(List<FieldMeta<? super T>> fields);
 
@@ -61,7 +61,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface CommonExpClause<T extends IDomain, C, SR> {
+    interface CommonExpClause<C, T extends IDomain, SR> {
 
         SR set(FieldMeta<? super T> field, @Nullable Object paramOrExp);
 
@@ -78,7 +78,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface ValueClause<T extends IDomain, C> {
+    interface ValueClause<C, T extends IDomain> {
 
         InsertSpec value(T domain);
 
@@ -101,8 +101,8 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface StandardValueInsertSpec<T extends IDomain, C>
-            extends Insert.ValueInsertIntoSpec<T, C>, Insert.OptionClause<Insert.ValueInsertIntoSpec<T, C>> {
+    interface StandardValueInsertSpec<C, T extends IDomain>
+            extends Insert.ValueInsertIntoSpec<C, T>, Insert.OptionClause<Insert.ValueInsertIntoSpec<C, T>> {
 
     }
 
@@ -110,16 +110,16 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface ValueInsertIntoSpec<T extends IDomain, C>
-            extends Insert.InsertIntoClause<T, C, Insert.ValueSpec<T, C>> {
+    interface ValueInsertIntoSpec<C, T extends IDomain>
+            extends Insert.InsertIntoClause<C, T, Insert.ValueSpec<C, T>> {
 
     }
 
     /**
      * @since 1.0
      */
-    interface ValueSpec<T extends IDomain, C> extends Insert.CommonExpClause<T, C, ValueSpec<T, C>>
-            , Insert.ValueClause<T, C> {
+    interface ValueSpec<C, T extends IDomain> extends Insert.CommonExpClause<C, T, ValueSpec<C, T>>
+            , Insert.ValueClause<C, T> {
 
     }
 

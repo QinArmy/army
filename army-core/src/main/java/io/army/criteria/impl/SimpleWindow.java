@@ -103,12 +103,12 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
     @Override
-    public final LR leftBracket() {
+    public final LR leftParen() {
         return (LR) this;
     }
 
     @Override
-    public final LR leftBracket(String existingWindowName) {
+    public final LR leftParen(String existingWindowName) {
         if (!this.criteriaContext.isExistWindow(existingWindowName)) {
             throw _Exceptions.windowNotExists(existingWindowName);
         }
@@ -117,31 +117,31 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
     @Override
-    public final LR leftBracket(Supplier<String> supplier) {
-        return this.leftBracket(supplier.get());
+    public final LR leftParen(Supplier<String> supplier) {
+        return this.leftParen(supplier.get());
     }
 
     @Override
-    public final LR leftBracket(Function<C, String> function) {
-        return this.leftBracket(function.apply(this.criteriaContext.criteria()));
+    public final LR leftParen(Function<C, String> function) {
+        return this.leftParen(function.apply(this.criteriaContext.criteria()));
     }
 
     @Override
-    public final LR leftBracketIf(Supplier<String> supplier) {
+    public final LR leftParenIf(Supplier<String> supplier) {
         final String windowName;
         windowName = supplier.get();
         if (windowName != null) {
-            this.leftBracket(windowName);
+            this.leftParen(windowName);
         }
         return (LR) this;
     }
 
     @Override
-    public final LR leftBracketIf(Function<C, String> function) {
+    public final LR leftParenIf(Function<C, String> function) {
         final String windowName;
         windowName = function.apply(this.criteriaContext.criteria());
         if (windowName != null) {
-            this.leftBracket(windowName);
+            this.leftParen(windowName);
         }
         return (LR) this;
     }

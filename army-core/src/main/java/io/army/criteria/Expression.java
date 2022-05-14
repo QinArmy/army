@@ -354,25 +354,25 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression modExp(Supplier<? extends Expression> supplier);
 
-    Expression multiply(Object multiplicand);
+    Expression times(Object multiplicand);
 
     /**
      * <p>
      * Equivalence : this.multiply({@link SQLs#param(ParamMeta, Object)})
      * </p>
      */
-    Expression multiplyLiteral(Object multiplicand);
+    Expression timesLiteral(Object multiplicand);
 
     /**
      * <p>
      * Equivalence : this.multiply({@link SQLs#namedParam(String, ParamMeta)})
      * </p>
      */
-    Expression multiplyNamed(String paramName);
+    Expression timesNamed(String paramName);
 
-    <C> Expression multiplyExp(Function<C, ? extends Expression> function);
+    <C> Expression timesExp(Function<C, ? extends Expression> function);
 
-    Expression multiplyExp(Supplier<? extends Expression> supplier);
+    Expression timesExp(Supplier<? extends Expression> supplier);
 
     Expression plus(Object augend);
 

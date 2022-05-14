@@ -532,42 +532,14 @@ public abstract class SQLs extends Functions {
         return SelectionGroups.buildDerivedGroup(subQueryAlias, derivedFieldNameList);
     }
 
-    public static Cte cte(String name, Supplier<? extends SubStatement> supplier) {
-        final SubStatement subQuery;
-        subQuery = supplier.get();
-        assert subQuery != null;
-        return new CteImpl(name, subQuery);
+
+    public static <C> Cte cte(String name, SubStatement subStatement) {
+        return new CteImpl(name, subStatement);
     }
 
-    public static Cte cte(String name, List<String> columnNameList, Supplier<? extends SubStatement> supplier) {
-        final SubStatement subQuery;
-        subQuery = supplier.get();
-        assert subQuery != null;
-        return new CteImpl(name, columnNameList, subQuery);
+    public static <C> Cte cte(String name, List<String> aliasLst, SubStatement subStatement) {
+        return new CteImpl(name, aliasLst, subStatement);
     }
-
-    public static <C> Cte cte(String name, Function<C, ? extends SubStatement> function) {
-        final SubStatement subQuery;
-        subQuery = function.apply(CriteriaContextStack.getTopCriteria());
-        assert subQuery != null;
-        return new CteImpl(name, subQuery);
-    }
-
-    public static <C> Cte cte(String name, List<String> columnNameList, Function<C, ? extends SubStatement> function) {
-        final SubStatement subQuery;
-        subQuery = function.apply(CriteriaContextStack.getTopCriteria());
-        assert subQuery != null;
-        return new CteImpl(name, columnNameList, subQuery);
-    }
-
-    /**
-     * package method
-     */
-    static <C> Cte cte(String name, SubQuery subQuery) {
-        return new CteImpl(name, subQuery);
-    }
-
-
 
 
     /*################################## blow sql key word operate method ##################################*/

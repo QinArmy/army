@@ -1,11 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -27,91 +27,78 @@ abstract class WithCteSimpleQuery<C, Q extends Query, SS extends SubStatement, W
     }
 
 
+
     @Override
     public final WE with(String cteName, Supplier<? extends SS> supplier) {
-        this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, supplier)));
+        CriteriaUtils.withClause(false, SQLs.cte(cteName, supplier.get()), this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE with(String cteName, Function<C, ? extends SS> function) {
-        this.doWithCte(false, Collections.singletonList(SQLs.cte(cteName, function)));
+        CriteriaUtils.withClause(false, SQLs.cte(cteName, function.apply(this.criteria))
+                , this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE with(Supplier<List<Cte>> supplier) {
-        this.doWithCte(false, _CollectionUtils.asUnmodifiableList(supplier.get()));
+    public final WE with(Consumer<Consumer<Cte>> consumer) {
+        CriteriaUtils.withClause(false, consumer, this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE with(Function<C, List<Cte>> function) {
-        this.doWithCte(false, _CollectionUtils.asUnmodifiableList(function.apply(this.criteria)));
+    public final WE with(BiConsumer<C, Consumer<Cte>> consumer) {
+        CriteriaUtils.withClause(false, consumer, this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE ifWith(Supplier<List<Cte>> supplier) {
-        final List<Cte> cteList;
-        cteList = supplier.get();
-        if (cteList != null && cteList.size() > 0) {
-            this.doWithCte(false, cteList);
-        }
+    public final WE ifWith(Consumer<Consumer<Cte>> consumer) {
+        CriteriaUtils.ifWithClause(false, consumer, this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE ifWith(Function<C, List<Cte>> function) {
-        final List<Cte> cteList;
-        cteList = function.apply(this.criteria);
-        if (cteList != null && cteList.size() > 0) {
-            this.doWithCte(false, cteList);
-        }
+    public final WE ifWith(BiConsumer<C, Consumer<Cte>> consumer) {
+        CriteriaUtils.ifWithClause(false, consumer, this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
-        this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, supplier)));
+        CriteriaUtils.withClause(true, SQLs.cte(cteName, supplier.get()), this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
-        this.doWithCte(true, Collections.singletonList(SQLs.cte(cteName, function)));
+        CriteriaUtils.withClause(true, SQLs.cte(cteName, function.apply(this.criteria))
+                , this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE withRecursive(Supplier<List<Cte>> supplier) {
-        this.doWithCte(true, _CollectionUtils.asUnmodifiableList(supplier.get()));
+    public final WE withRecursive(Consumer<Consumer<Cte>> consumer) {
+        CriteriaUtils.withClause(true, consumer, this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE withRecursive(Function<C, List<Cte>> function) {
-        this.doWithCte(true, _CollectionUtils.asUnmodifiableList(function.apply(this.criteria)));
+    public final WE withRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
+        CriteriaUtils.withClause(true, consumer, this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE ifWithRecursive(Supplier<List<Cte>> supplier) {
-        final List<Cte> cteList;
-        cteList = supplier.get();
-        if (cteList != null && cteList.size() > 0) {
-            this.doWithCte(true, cteList);
-        }
+    public final WE ifWithRecursive(Consumer<Consumer<Cte>> consumer) {
+        CriteriaUtils.ifWithClause(true, consumer, this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE ifWithRecursive(Function<C, List<Cte>> function) {
-        final List<Cte> cteList;
-        cteList = function.apply(this.criteria);
-        if (cteList != null && cteList.size() > 0) {
-            this.doWithCte(true, cteList);
-        }
+    public final WE ifWithRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
+        CriteriaUtils.ifWithClause(true, consumer, this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 

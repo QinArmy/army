@@ -15,16 +15,16 @@ import io.army.meta.TableMeta;
  * @param <C> criteria java type used to dynamic statement.
  * @since 1.0
  */
-final class StandardValueInsert<T extends IDomain, C> extends ValueInsert<
-        T,
+final class StandardValueInsert<C, T extends IDomain> extends ValueInsert<
         C,
-        Insert.ValueInsertIntoSpec<T, C>,//OR
-        Insert.ValueSpec<T, C>, //IR
-        Insert.ValueSpec<T, C>> // SR
-        implements Insert.StandardValueInsertSpec<T, C>, Insert.ValueSpec<T, C>, Insert.ValueInsertIntoSpec<T, C> {
+        T,
+        Insert.ValueInsertIntoSpec<C, T>,//OR
+        Insert.ValueSpec<C, T>, //IR
+        Insert.ValueSpec<C, T>> // SR
+        implements Insert.StandardValueInsertSpec<C, T>, Insert.ValueSpec<C, T>, Insert.ValueInsertIntoSpec<C, T> {
 
 
-    static <T extends IDomain, C> StandardValueInsert<T, C> create(TableMeta<T> table, @Nullable C criteria) {
+    static <C, T extends IDomain> StandardValueInsert<C, T> create(TableMeta<T> table, @Nullable C criteria) {
         return new StandardValueInsert<>(table, criteria);
     }
 

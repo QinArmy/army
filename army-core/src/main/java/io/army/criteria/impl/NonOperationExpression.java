@@ -505,27 +505,27 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression multiply(Object multiplicand) {
+    public final Expression times(Object multiplicand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression multiplyLiteral(Object multiplicand) {
+    public final Expression timesLiteral(Object multiplicand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression multiplyNamed(String paramName) {
+    public final Expression timesNamed(String paramName) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <C> Expression multiplyExp(Function<C, ? extends Expression> function) {
+    public final <C> Expression timesExp(Function<C, ? extends Expression> function) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final Expression multiplyExp(Supplier<? extends Expression> supplier) {
+    public final Expression timesExp(Supplier<? extends Expression> supplier) {
         throw unsupportedOperation();
     }
 

@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.NonNullNamedParam;
-import io.army.criteria.TableField;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
@@ -70,8 +68,8 @@ final class UnaryExpression extends OperationExpression {
 
         final _Expression expression = this.expression;
         final boolean innerBracket = !(expression instanceof ValueExpression
-                || expression instanceof TableField
-                || expression instanceof NonNullNamedParam
+                || expression instanceof DataField
+                || expression instanceof NamedParam
                 || expression instanceof BracketsExpression);
 
         if (innerBracket) {

@@ -84,7 +84,7 @@ abstract class OperationField<T extends IDomain> extends OperationExpression imp
 
     @Override
     public final Expression multiplyNamed() {
-        return this.multiply(SQLs.namedParam(this));
+        return this.times(SQLs.namedParam(this));
     }
 
     @Override
