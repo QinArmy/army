@@ -26,8 +26,8 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
 
     final Q left;
 
-    UnionRowSet(Q left) {
-        super(CriteriaContexts.unionContext(left), JoinableClause.voidClauseSuppler());
+    UnionRowSet(Q left, CriteriaContext criteriaContext) {
+        super(criteriaContext, JoinableClause.voidClauseSuppler());
         this.left = left;
         if (this instanceof SubStatement) {
             CriteriaContextStack.push(this.criteriaContext);

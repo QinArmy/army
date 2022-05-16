@@ -34,58 +34,74 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext primaryQueryContext(final @Nullable Object criteriaOrLeftQuery) {
-        final Object criteria;
-        if (criteriaOrLeftQuery instanceof RowSet) {
-            criteria = ((CriteriaSpec<?>) criteriaOrLeftQuery).getCriteria();
-        } else {
-            criteria = criteriaOrLeftQuery;
-        }
+    static CriteriaContext primaryQueryContext(final @Nullable Object criteria) {
         return new SimpleQueryContext(null, criteria);
     }
 
-    static CriteriaContext subQueryContext(final @Nullable Object criteriaOrLeftQuery) {
-        final Object criteria;
-        if (criteriaOrLeftQuery instanceof RowSet) {
-            criteria = ((CriteriaSpec<?>) criteriaOrLeftQuery).getCriteria();
-        } else {
-            criteria = criteriaOrLeftQuery;
-        }
+    static CriteriaContext primaryQueryContextFrom(final Query query) {
+        final AbstractContext leftContext;
+        leftContext = (AbstractContext) ((CriteriaContextSpec) query).getCriteriaContext();
+
+        final SimpleQueryContext context;
+        context = new SimpleQueryContext(null, ((CriteriaSpec<?>) query).getCriteria());
+        context.varMap = leftContext.varMap;
+        return context;
+    }
+
+    static CriteriaContext subQueryContext(final @Nullable Object criteria) {
         return new SimpleQueryContext(CriteriaContextStack.peek(), criteria);
     }
 
+    static CriteriaContext subQueryContextFrom(final Query query) {
+        final AbstractContext leftContext;
+        leftContext = (AbstractContext) ((CriteriaContextSpec) query).getCriteriaContext();
 
-    static CriteriaContext insertContext(@Nullable Object criteria) {
-        return new InsertContext(criteria);
+        final SimpleQueryContext context;
+        context = new SimpleQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
+        context.varMap = leftContext.varMap;
+        return context;
     }
 
 
-    static <C> CriteriaContext multiDmlContext(@Nullable C criteria) {
-        return new MultiDmlContext(criteria);
-    }
-
-    static CriteriaContext singleDmlContext(@Nullable Object criteria) {
-        return new SingleDmlContext(criteria);
-    }
-
-
-    static CriteriaContext unionContext(final RowSet leftQuery) {
-        final AbstractContext leftContext = (AbstractContext) ((CriteriaContextSpec) leftQuery).getCriteriaContext();
-        final CriteriaContext criteriaContext;
-        if (leftQuery instanceof SimpleQuery) {
-            criteriaContext = new UnionQueryContext(leftContext, ((_Query) leftQuery).selectItemList());
-        } else if (leftQuery instanceof _UnionRowSet) {
-            criteriaContext = leftContext;
+    static CriteriaContext bracketContext(final Query left) {
+        final CriteriaContext leftContext = ((CriteriaContextSpec) left).getCriteriaContext();
+        final List<? extends SelectItem> selectItemList = ((_Query) left).selectItemList();
+        final CriteriaContext outerContext;
+        if (left instanceof SubStatement) {
+            outerContext = CriteriaContextStack.peek();
         } else {
-            throw _Exceptions.unknownRowSetType(leftQuery);
+            outerContext = null;
         }
-        return criteriaContext;
+        return new BracketQueryContext(outerContext, leftContext, selectItemList);
     }
 
-    static CriteriaContext unionAndContext(final Query leftQuery) {
-        final AbstractContext leftContext = (AbstractContext) ((CriteriaContextSpec) leftQuery).getCriteriaContext();
-        return new SimpleQueryContext(leftContext);
+    static CriteriaContext unionContext(final Query left, final RowSet right) {
+        final CriteriaContext leftContext = ((CriteriaContextSpec) left).getCriteriaContext();
+        final List<? extends SelectItem> selectItemList = ((_Query) left).selectItemList();
+        final CriteriaContext outerContext;
+        if (left instanceof SubStatement) {
+            outerContext = CriteriaContextStack.peek();
+        } else {
+            outerContext = null;
+        }
+        return new UnionQueryContext(outerContext, leftContext
+                , ((CriteriaContextSpec) right).getCriteriaContext(), selectItemList);
     }
+
+
+    static CriteriaContext primaryInsertContext(@Nullable Object criteria) {
+        return new InsertContext(null, criteria);
+    }
+
+
+    static <C> CriteriaContext primaryMultiDmlContext(@Nullable C criteria) {
+        return new MultiDmlContext(null, criteria);
+    }
+
+    static CriteriaContext primarySingleDmlContext(@Nullable Object criteria) {
+        return new SingleDmlContext(null, criteria);
+    }
+
 
     /**
      * @see OperationExpression#as(String)
@@ -662,7 +678,7 @@ abstract class CriteriaContexts {
     }//NonJoinableContext
 
     /**
-     * @see #insertContext(Object)
+     * @see #primaryInsertContext(Object)
      */
     private static final class InsertContext extends NonJoinableContext {
 
@@ -674,7 +690,7 @@ abstract class CriteriaContexts {
 
 
     /**
-     * @see #singleDmlContext(Object)
+     * @see #primarySingleDmlContext(Object)
      */
     private static final class SingleDmlContext extends NonJoinableContext {
 
@@ -840,9 +856,9 @@ abstract class CriteriaContexts {
         private Map<String, SelectionExpression> aliasToSelection;
 
 
-        private UnionOperationContext(@Nullable CriteriaContext outerContext, AbstractContext leftContext
+        private UnionOperationContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext
                 , List<? extends SelectItem> selectItemList) {
-            super(outerContext, leftContext);
+            super(outerContext, leftContext.criteria());
             this.leftContext = leftContext;
             this.selectItemList = selectItemList;
         }
@@ -942,7 +958,7 @@ abstract class CriteriaContexts {
             if (targetContext instanceof JoinableContext) {
                 match = ((JoinableContext) targetContext).containCte(cteName);
             } else {
-                match = ((UnionOperationContext) rightContext).isRecursive(cteName);
+                match = ((UnionOperationContext) targetContext).isRecursive(cteName);
             }
             return match;
         }
@@ -953,7 +969,7 @@ abstract class CriteriaContexts {
 
     private static final class BracketQueryContext extends UnionOperationContext {
 
-        private BracketQueryContext(@Nullable CriteriaContext outerContext, AbstractContext leftContext
+        private BracketQueryContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext
                 , List<? extends SelectItem> selectItemList) {
             super(outerContext, leftContext, selectItemList);
         }
@@ -965,7 +981,7 @@ abstract class CriteriaContexts {
 
         private final CriteriaContext rightContext;
 
-        private UnionQueryContext(@Nullable CriteriaContext outerContext, AbstractContext leftContext
+        private UnionQueryContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext
                 , CriteriaContext rightContext, List<? extends SelectItem> selectItemList) {
             super(outerContext, leftContext, selectItemList);
             this.rightContext = rightContext;

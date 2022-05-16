@@ -65,7 +65,7 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteS
 
 
     private MySQLSingleDelete(@Nullable C criteria) {
-        super(CriteriaContexts.singleDmlContext(criteria));
+        super(CriteriaContexts.primarySingleDmlContext(criteria));
     }
 
 

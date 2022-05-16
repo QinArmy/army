@@ -37,7 +37,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     private String tableAlias;
 
     private StandardDelete(@Nullable C criteria) {
-        super(CriteriaContexts.singleDmlContext(criteria));
+        super(CriteriaContexts.primarySingleDmlContext(criteria));
     }
 
     @Override

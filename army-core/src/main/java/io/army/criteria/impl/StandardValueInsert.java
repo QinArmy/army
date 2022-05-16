@@ -29,7 +29,7 @@ final class StandardValueInsert<C, T extends IDomain> extends ValueInsert<
     }
 
     private StandardValueInsert(TableMeta<T> table, @Nullable C criteria) {
-        super(table, CriteriaContexts.insertContext(criteria));
+        super(table, CriteriaContexts.primaryInsertContext(criteria));
     }
 
     @Override

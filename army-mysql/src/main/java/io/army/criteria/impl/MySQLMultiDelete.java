@@ -63,7 +63,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
     Object noActionPartitionOnClause;
 
     private MySQLMultiDelete(@Nullable C criteria) {
-        super(CriteriaContexts.multiDmlContext(criteria));
+        super(CriteriaContexts.primaryMultiDmlContext(criteria));
     }
 
 

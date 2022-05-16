@@ -68,7 +68,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     private Object noActionPartitionOnClause;
 
     private MySQLMultiUpdate(@Nullable C criteria) {
-        super(CriteriaContexts.multiDmlContext(criteria));
+        super(CriteriaContexts.primaryMultiDmlContext(criteria));
         CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 

@@ -47,26 +47,30 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     static <C> _StandardSelectClause<C, Select> query(@Nullable C criteria) {
-        return new SimpleSelect<>(criteria);
+        return new SimpleSelect<>(CriteriaContexts.primaryQueryContext(criteria));
     }
 
     static <C> _StandardSelectClause<C, SubQuery> subQuery(@Nullable C criteria) {
-        return new SimpleSubQuery<>(criteria);
+        return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
     static <C> _StandardSelectClause<C, ScalarExpression> scalarSubQuery(@Nullable C criteria) {
-        return new SimpleScalarSubQuery<>(criteria);
+        return new SimpleScalarSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
     @SuppressWarnings("unchecked")
     static <C, Q extends Query> _StandardSelectClause<C, Q> unionAndQuery(Q query, UnionType unionType) {
         final _StandardSelectClause<C, ?> spec;
+        final CriteriaContext criteriaContext;
         if (query instanceof Select) {
-            spec = new UnionAndSelect<>((Select) query, unionType);
+            criteriaContext = CriteriaContexts.primaryQueryContextFrom(query);
+            spec = new UnionAndSelect<>((Select) query, unionType, criteriaContext);
         } else if (query instanceof ScalarSubQuery) {
-            spec = new UnionAndScalarSubQuery<>((ScalarExpression) query, unionType);
+            criteriaContext = CriteriaContexts.subQueryContextFrom(query);
+            spec = new UnionAndScalarSubQuery<>((ScalarExpression) query, unionType, criteriaContext);
         } else if (query instanceof SubQuery) {
-            spec = new UnionAndSubQuery<>((SubQuery) query, unionType);
+            criteriaContext = CriteriaContexts.subQueryContextFrom(query);
+            spec = new UnionAndSubQuery<>((SubQuery) query, unionType, criteriaContext);
         } else {
             throw _Exceptions.unknownRowSetType(query);
         }
@@ -249,8 +253,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private static final class SimpleSelect<C> extends StandardSimpleQuery<C, Select>
             implements Select {
 
-        private SimpleSelect(@Nullable C criteria) {
-            super(CriteriaContexts.primaryQueryContext(criteria));
+        private SimpleSelect(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
     }//SimpleSelect
@@ -264,8 +268,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
         private Map<String, Selection> selectionMap;
 
-        private SimpleSubQuery(@Nullable C criteria) {
-            super(CriteriaContexts.subQueryContext(criteria));
+        private SimpleSubQuery(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
 
@@ -288,8 +292,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private static final class SimpleScalarSubQuery<C> extends SimpleSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private SimpleScalarSubQuery(@Nullable C criteria) {
-            super(criteria);
+        private SimpleScalarSubQuery(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
 
@@ -303,8 +307,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
         private final UnionType unionType;
 
-        UnionAndQuery(Q left, UnionType unionType) {
-            super(CriteriaUtils.getCriteria(left));
+        UnionAndQuery(Q left, UnionType unionType, CriteriaContext context) {
+            super(context);
             this.left = left;
             this.unionType = unionType;
         }
@@ -325,8 +329,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private static final class UnionAndSelect<C> extends UnionAndQuery<C, Select>
             implements Select {
 
-        private UnionAndSelect(Select left, UnionType unionType) {
-            super(left, unionType);
+        private UnionAndSelect(Select left, UnionType unionType, CriteriaContext context) {
+            super(left, unionType, context);
         }
 
     } // UnionAndSelect
@@ -337,8 +341,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
         private Map<String, Selection> selectionMap;
 
-        private UnionAndSubQuery(Q left, UnionType unionType) {
-            super(left, unionType);
+        private UnionAndSubQuery(Q left, UnionType unionType, CriteriaContext context) {
+            super(left, unionType, context);
         }
 
         @Override
@@ -358,8 +362,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType) {
-            super(left, unionType);
+        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType, CriteriaContext context) {
+            super(left, unionType, context);
         }
 
 

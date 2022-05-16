@@ -18,14 +18,19 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         implements StandardQuery._UnionOrderBySpec<C, Q>, StandardQuery {
 
     static <C, Q extends Query> _UnionOrderBySpec<C, Q> bracketQuery(final RowSet query) {
+        if (!(query instanceof Query)) {
+            throw _Exceptions.unknownRowSetType(query);
+        }
         query.prepared();
         final _UnionOrderBySpec<C, ?> unionSpec;
+        final CriteriaContext criteriaContext;
+        criteriaContext = CriteriaContexts.bracketContext((Query) query);
         if (query instanceof Select) {
-            unionSpec = new BracketSelect<>((Select) query);
+            unionSpec = new BracketSelect<>((Select) query, criteriaContext);
         } else if (query instanceof ScalarSubQuery) {
-            unionSpec = new BracketScalarSubQuery<>((ScalarExpression) query);
+            unionSpec = new BracketScalarSubQuery<>((ScalarExpression) query, criteriaContext);
         } else if (query instanceof SubQuery) {
-            unionSpec = new BracketSubQuery<>((SubQuery) query);
+            unionSpec = new BracketSubQuery<>((SubQuery) query, criteriaContext);
         } else {
             throw _Exceptions.unknownRowSetType(query);
         }
@@ -45,26 +50,29 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         left.prepared();
         // never validate right,possibly union and select
         CriteriaUtils.assertSelectItemSizeMatch(left, right);
+        final CriteriaContext criteriaContext;
+        criteriaContext = CriteriaContexts.unionContext(left, right);
         final _UnionOrderBySpec<C, ?> unionSpec;
         if (left instanceof Select) {
             if (!(right instanceof Select)) {
                 String m = String.format("standard query api support only %s.", Select.class.getName());
                 throw new CriteriaException(m);
             }
-            unionSpec = new UnionSelect<>((Select) left, unionType, (Select) right);
+            unionSpec = new UnionSelect<>((Select) left, unionType, (Select) right, criteriaContext);
         } else if (left instanceof ScalarSubQuery) {
             if (!(right instanceof ScalarExpression)) {
                 String m;
                 m = String.format("standard scalar sub query api support only %s.", ScalarExpression.class.getName());
                 throw new CriteriaException(m);
             }
-            unionSpec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType, (ScalarExpression) right);
+            unionSpec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType
+                    , (ScalarExpression) right, criteriaContext);
         } else if (left instanceof SubQuery) {
             if (!(right instanceof SubQuery)) {
                 String m = String.format("standard sub query api support only %s.", SubQuery.class.getName());
                 throw new CriteriaException(m);
             }
-            unionSpec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right);
+            unionSpec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right, criteriaContext);
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
@@ -72,8 +80,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     }
 
 
-    private StandardUnionQuery(Q left) {
-        super(left);
+    private StandardUnionQuery(Q left, CriteriaContext criteriaContext) {
+        super(left, criteriaContext);
 
     }
 
@@ -107,8 +115,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     private static final class BracketSelect<C> extends StandardUnionQuery<C, Select>
             implements Select, BracketRowSet {
 
-        private BracketSelect(Select query) {
-            super(query);
+        private BracketSelect(Select query, CriteriaContext criteriaContext) {
+            super(query, criteriaContext);
         }
 
     }//BracketSelect
@@ -116,8 +124,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     private static class BracketSubQuery<C, Q extends SubQuery> extends StandardUnionQuery<C, Q>
             implements SubQuery, BracketRowSet {
 
-        private BracketSubQuery(Q query) {
-            super(query);
+        private BracketSubQuery(Q query, CriteriaContext criteriaContext) {
+            super(query, criteriaContext);
         }
 
     }
@@ -126,8 +134,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     private static final class BracketScalarSubQuery<C> extends BracketSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private BracketScalarSubQuery(ScalarExpression query) {
-            super(query);
+        private BracketScalarSubQuery(ScalarExpression query, CriteriaContext criteriaContext) {
+            super(query, criteriaContext);
         }
 
     }//BracketScalarSubQuery
@@ -149,8 +157,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
         final Q right;
 
-        UnionQuery(Q left, UnionType unionType, Q right) {
-            super(left);
+        UnionQuery(Q left, UnionType unionType, Q right, CriteriaContext criteriaContext) {
+            super(left, criteriaContext);
             this.unionType = unionType;
             this.right = right;
         }
@@ -170,8 +178,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
     private static final class UnionSelect<C> extends UnionQuery<C, Select> implements Select {
 
-        private UnionSelect(Select left, UnionType unionType, Select right) {
-            super(left, unionType, right);
+        private UnionSelect(Select left, UnionType unionType, Select right, CriteriaContext criteriaContext) {
+            super(left, unionType, right, criteriaContext);
         }
 
 
@@ -180,8 +188,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
 
     private static class UnionSubQuery<C, Q extends SubQuery> extends UnionQuery<C, Q> implements SubQuery {
 
-        private UnionSubQuery(Q left, UnionType unionType, Q right) {
-            super(left, unionType, right);
+        private UnionSubQuery(Q left, UnionType unionType, Q right, CriteriaContext criteriaContext) {
+            super(left, unionType, right, criteriaContext);
         }
 
 
@@ -192,8 +200,8 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
             implements ScalarSubQuery {
 
         private UnionScalarSubQuery(ScalarExpression left, UnionType unionType
-                , ScalarExpression right) {
-            super(left, unionType, right);
+                , ScalarExpression right, CriteriaContext criteriaContext) {
+            super(left, unionType, right, criteriaContext);
         }
 
 
