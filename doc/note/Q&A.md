@@ -59,16 +59,16 @@
     * sql style 追求明确的语义,因此 batch update 和 update 分别由不同的方法提供.
 
 
+12. 为什么 with clause 实现没有设计成 顶层 基类?
+    * with clause 实现需要 CriteriaContext
+    * NestedItems 没有 CriteriaContext
+
 13. 为什么 io.army.criteria.Expression 要设计 ifEqual(Supplier<Object>) 和 ifEqual(Function<String, Object> function, String
     keyName) 方法, 而放弃 ifEqual(@Nullable Object) 方法?
     * 首先在一部分场景 ifEqual(@Nullable Object) 确实能替换两者,似乎理方便,但 ifEqual(@Nullable Object) 参数是 Object, 而我们总是得设计 一个 ifEqual(
       Function<C,Object>) 方法,大多数情况下java 都能识别这两个方法,但谨慎的原则考虑还是要避免重载 Object 参数的方法.
-    * 在别一部分场景里 我们不能直接 使用 java bean 的 getXxx() 方法和 Map.get(String) 方法得到条件,而是需要一些简单的计算,在这个场景里 ifEqual(@Nullable Object)
-      通过 在 语句的 之前准备好条件或者定义一个新方法,可 Supplier<Object> 可依赖于 lambda 和方法引用, 两者虽可替换,但从 sql style 和 代码相关性而言,lambda 和 方法引用 更胜一筹.
-    * equalExp(Function<C, Expression>) 和 equalExp(Supplier<Expression>) 方法其实也是为避免重载 equal(Object) 方法.其它操作符同理.
+    * 在别一部分场景里 我们不能直接使用 java bean 的 getXxx() 方法和 Map.get(String) 方法得到条件,而是需要一些简单的计算,在这个场景里 ifEqual(@Nullable Object)通过 在
+      语句的 之前准备好条件或者定义一个新方法,可 Supplier 可依赖于 lambda 和方法引用, 两者虽可替换,但从 sql style 和 代码相关性而言,lambda 和 方法引用 更胜一筹.
+    * equalExp(Function<C, Expression>) 和 equalExp(Supplier) 方法其实也是为避免重载 equal(Object) 方法.其它操作符同理.
 
-
-12. 为什么 with clause 实现没有设计成 顶层 基类?
-    * with clause 实现需要 CriteriaContext
-    * NestedItems 没有 CriteriaContext
     

@@ -89,7 +89,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
             default:
                 throw _Exceptions.unexpectedEnum(joinType);
         }
-        this.blockList.add(block);
+        this.blockConsumer.accept(block);
         return block;
     }
 
@@ -542,7 +542,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
                 block = new IndexHintJoinBlock<>(this.suppler, this.criteria
                         , this.joinType, this.table, alias, partitionList);
             }
-            this.suppler.blockList.add(block);
+            this.suppler.blockConsumer.accept(block);
             return block;
         }
 
@@ -586,7 +586,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
                 block = new IndexHintOnBlock<>(this.suppler, this.criteria
                         , this.joinType, this.table, alias, partitionList);
             }
-            this.suppler.blockList.add(block);
+            this.suppler.blockConsumer.accept(block);
             return block;
         }
 

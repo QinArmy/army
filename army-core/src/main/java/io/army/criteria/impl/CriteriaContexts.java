@@ -182,21 +182,18 @@ abstract class CriteriaContexts {
 
         private Map<String, RefCte> refCteMap;
 
+        private boolean withClauseEnd;
+
 
         private AbstractContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
             this.outerContext = outerContext;
             this.criteria = criteria;
         }
 
-        private AbstractContext(@Nullable CriteriaContext outerContext, AbstractContext leftContext) {
-            this.outerContext = outerContext;
-            this.criteria = leftContext.criteria;
-            this.varMap = leftContext.varMap;
-        }
 
         @Override
         public final CteConsumer onBeforeWithClause(final boolean recursive) {
-            if (this.withClauseCteMap != null) {
+            if (this.withClauseCteMap != null || this.withClauseEnd) {
                 throw _Exceptions.castCriteriaApi();
             }
             this.recursive = recursive;
@@ -208,25 +205,34 @@ abstract class CriteriaContexts {
         public final CteItem refCte(final String cteName) {
             final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
             final CriteriaContext outerContext = this.outerContext;
-            CteItem cteItem;
+            CteItem tempItem;
+            final CteItem cteItem;
             if (withClauseCteMap == null) {
                 if (outerContext == null) {
                     throw notFoundCte(cteName);
                 }
                 cteItem = outerContext.refCte(cteName);// get CteItem fro outer context
-            } else if ((cteItem = withClauseCteMap.get(cteName)) == null) {
+            } else if ((tempItem = withClauseCteMap.get(cteName)) != null) {
+                cteItem = tempItem;
+            } else if (this.withClauseEnd) {
+                if (outerContext == null) {
+                    throw notFoundCte(cteName);
+                }
+                cteItem = outerContext.refCte(cteName);
+            } else {
                 Map<String, RefCte> refCteMap = this.refCteMap;
                 if (refCteMap == null) {
                     refCteMap = new HashMap<>();
                     this.refCteMap = refCteMap;
                 }
-                cteItem = refCteMap.get(cteName);
-                if (cteItem == null) {
+                tempItem = refCteMap.get(cteName);
+                if (tempItem == null) {
                     final RefCte refCte;
                     refCte = new RefCte(cteName);
                     refCteMap.put(cteName, refCte);
-                    cteItem = refCte;
+                    tempItem = refCte;
                 }
+                cteItem = tempItem;
             }
             return cteItem;
         }
@@ -269,13 +275,9 @@ abstract class CriteriaContexts {
             return Collections.emptyList();
         }
 
-        private CteItem getRefCte(final String cteName) {
-
-        }
-
         private void addCte(final Cte cte) {
             final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
-            if (withClauseCteMap == null) {
+            if (withClauseCteMap == null || this.withClauseEnd) {
                 throw _Exceptions.castCriteriaApi();
             }
             if (!(cte instanceof SQLs.CteImpl)) {
@@ -296,13 +298,15 @@ abstract class CriteriaContexts {
             if ((refCte = refCteMap.get(cteImpl.name)) != null && refCte.actualCte == null) {//refCte.actualCte != null,actualCte from outer context
                 final CriteriaContext context;
                 context = ((CriteriaContextSpec) cteImpl.subStatement).getCriteriaContext();
-                if (this.recursive && context instanceof UnionOperationContext
+                if (this.recursive
+                        && context instanceof UnionOperationContext
                         && ((UnionOperationContext) context).isRecursive(cteImpl.name)) {
                     refCte.actualCte = cteImpl;
                     refCteMap.remove(cteImpl.name);
                 } else {
                     throw referenceCteSyntaxError(cteImpl.name);
                 }
+
             }
 
             if (refCteMap.size() == 0) {
@@ -323,7 +327,7 @@ abstract class CriteriaContexts {
 
         private void withClauseEnd() {
             final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
-            if (withClauseCteMap == null) {
+            if (withClauseCteMap == null || this.withClauseEnd) {
                 throw _Exceptions.castCriteriaApi();
             }
             final Map<String, RefCte> refCteMap = this.refCteMap;
@@ -332,14 +336,11 @@ abstract class CriteriaContexts {
                 SQLs.CteImpl cte;
                 for (RefCte refCte : refCteMap.values()) {
                     if (refCte.actualCte != null) {
-                        //here bug
-                        throw new IllegalStateException();
+                        continue;
                     }
                     cte = withClauseCteMap.get(refCte.name);
                     if (cte != null) {
-                        CriteriaContext context;
-                        context = ((CriteriaContextSpec) cte.subStatement).getCriteriaContext();
-
+                        refCte.actualCte = cte;
                     } else if (outerContext != null) {
                         refCte.actualCte = (Cte) outerContext.refCte(refCte.name);
                     } else {
@@ -348,6 +349,7 @@ abstract class CriteriaContexts {
                 }
             }
             this.withClauseCteMap = _CollectionUtils.unmodifiableMap(withClauseCteMap);
+            this.withClauseEnd = true;
         }
 
 
@@ -355,7 +357,7 @@ abstract class CriteriaContexts {
 
     private static abstract class JoinableContext extends AbstractContext {
 
-        private final List<_TableBlock> tableBlockList = new ArrayList<>();
+        private List<_TableBlock> tableBlockList = new ArrayList<>();
 
         Map<String, _TableBlock> aliasToBlock = new HashMap<>();
 
@@ -502,8 +504,20 @@ abstract class CriteriaContexts {
 
         @Override
         public final List<_TableBlock> clear() {
-            super.clear();
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
+            if (aliasToBlock == null) {
+                throw new IllegalStateException("duplication clear");
+            }
+            super.clear();
+            final List<_TableBlock> blockList = _CollectionUtils.unmodifiableList(this.tableBlockList);
+            this.tableBlockList = blockList;//store for recursive checking
+            final int blockSize = blockList.size();
+            if (blockSize == 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            if (blockSize != aliasToBlock.size()) {
+                throw new IllegalStateException("block size not match.");
+            }
             this.aliasToBlock = null;
             aliasToBlock.clear();
 
@@ -517,13 +531,7 @@ abstract class CriteriaContexts {
             }
             this.onClear();
 
-            final Deque<_LeftBracketBlock> bracketStack = this.bracketStack;
-            if (bracketStack != null && bracketStack.size() > 0) {
-                String m = String.format("%s bracket not close in join expression clause.", bracketStack.size());
-                throw new CriteriaException(m);
-            }
-            this.bracketStack = null;
-            return _CollectionUtils.unmodifiableList(this.tableBlockList);
+            return blockList;
         }
 
         abstract void doOnAddBlock(_TableBlock block);
@@ -578,11 +586,22 @@ abstract class CriteriaContexts {
         }
 
         private boolean containCte(final String cteName) {
+            return this.doContainCte(cteName, this.tableBlockList);
+        }
+
+        private boolean doContainCte(final String cteName, final List<? extends _TableBlock> blockList) {
             boolean match = false;
             TableItem item;
-            for (_TableBlock block : this.tableBlockList) {
+            for (_TableBlock block : blockList) {
                 item = block.tableItem();
                 if (item instanceof CteItem && cteName.equals(((CteItem) item).name())) {
+                    match = true;
+                    break;
+                }
+                if (!(item instanceof NestedItems)) {
+                    continue;
+                }
+                if (this.doContainCte(cteName, ((_NestedItems) item).tableBlockList())) {
                     match = true;
                     break;
                 }
@@ -912,18 +931,18 @@ abstract class CriteriaContexts {
 
         private boolean isRecursive(final String cteName) {
             final boolean match;
+            final CriteriaContext targetContext;
             if (this instanceof BracketQueryContext) {
-                match = ((UnionOperationContext) this.leftContext).isRecursive(cteName);
+                targetContext = this.leftContext;
             } else if (this instanceof UnionQueryContext) {
-                final CriteriaContext rightContext;
-                rightContext = ((UnionQueryContext) this).rightContext;
-                if (rightContext instanceof JoinableContext) {
-                    match = ((JoinableContext) rightContext).containCte(cteName);
-                } else {
-                    match = ((UnionOperationContext) rightContext).isRecursive(cteName);
-                }
+                targetContext = ((UnionQueryContext) this).rightContext;
             } else {
                 throw new IllegalStateException("Unknown type context");
+            }
+            if (targetContext instanceof JoinableContext) {
+                match = ((JoinableContext) targetContext).containCte(cteName);
+            } else {
+                match = ((UnionOperationContext) rightContext).isRecursive(cteName);
             }
             return match;
         }

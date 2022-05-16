@@ -9,11 +9,5 @@ package io.army.criteria;
  */
 public interface NestedItems extends TableItem {
 
-    interface TableItemGroupSpec {
-
-        NestedItems asTableGroup();
-
-    }
-
 
 }

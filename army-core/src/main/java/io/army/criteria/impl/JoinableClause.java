@@ -1,11 +1,13 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -540,16 +542,20 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     static abstract class LeftBracketNestedItem<C, LT, LS, LP> implements Statement._LeftBracketClause<C, LT, LS>
             , DialectStatement._DialectLeftBracketClause<LP>, DialectStatement._LeftBracketCteClause<LS>
-            , NestedItems, NestedClauseSupplier {
+            , NestedItems, NestedClauseSupplier, _NestedItems {
 
         final C criteria;
 
-        final List<_TableBlock> blockList = new ArrayList<>();
+
+        final Consumer<_TableBlock> blockConsumer;
+
+        private List<_TableBlock> blockList = new ArrayList<>();
 
         private boolean nestedEnd;
 
         LeftBracketNestedItem(@Nullable C criteria) {
             this.criteria = criteria;
+            this.blockConsumer = this::innerAddBlock;
         }
 
         @Override
@@ -602,12 +608,33 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
         @Override
         public final NestedItems endNested() {
-            if (this.nestedEnd) {
+            final List<_TableBlock> blockList = this.blockList;
+            if (this.nestedEnd || blockList == null || blockList.size() == 0) {
                 throw _Exceptions.castCriteriaApi();
             }
+            this.blockList = _CollectionUtils.unmodifiableList(blockList);
             this.nestedEnd = true;
             return this;
         }
+
+        @Override
+        public final List<? extends _TableBlock> tableBlockList() {
+            if (!this.nestedEnd) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            final List<_TableBlock> blockList = this.blockList;
+            assert blockList != null;
+            return blockList;
+        }
+
+
+        private void innerAddBlock(_TableBlock block) {
+            if (this.nestedEnd) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            this.blockList.add(block);
+        }
+
 
     }//LeftBracketNestedItem
 
