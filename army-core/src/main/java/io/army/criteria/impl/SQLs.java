@@ -462,7 +462,7 @@ public abstract class SQLs extends Functions {
      * </p>
      */
     public static <T extends IDomain> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-        return CriteriaContextStack.peek().qualifiedField(tableAlias, field);
+        return QualifiedFieldImpl.reference(tableAlias, field);
     }
 
     public static DerivedField ref(String derivedTable, String derivedFieldName) {
@@ -524,12 +524,15 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static SelectionGroup derivedGroup(String subQueryAlias) {
-        return SelectionGroups.buildDerivedGroup(subQueryAlias);
+    public static SelectionGroup derivedGroup(String alias) {
+        return CriteriaContextStack.peek().derivedGroup(alias, null);
     }
 
-    public static SelectionGroup derivedGroup(String subQueryAlias, List<String> derivedFieldNameList) {
-        return SelectionGroups.buildDerivedGroup(subQueryAlias, derivedFieldNameList);
+    public static SelectionGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
+        if (derivedFieldNameList.size() == 0) {
+            throw new CriteriaException("derivedFieldNameList must not empty");
+        }
+        return CriteriaContextStack.peek().derivedGroup(alias, derivedFieldNameList);
     }
 
 

@@ -36,12 +36,12 @@ abstract class SelectionGroups {
     }
 
 
-    static SelectionGroup buildDerivedGroup(String subQueryAlias) {
-        return new SubQuerySelectionGroupImpl(subQueryAlias);
+    static DerivedGroup derivedGroup(String alias) {
+        return new DerivedSelectionGroupImpl(alias);
     }
 
-    static SelectionGroup buildDerivedGroup(String subQueryAlias, List<String> derivedFieldNameList) {
-        return new SubQueryListSelectionGroup(subQueryAlias, new ArrayList<>(derivedFieldNameList));
+    static DerivedGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
+        return new DerivedListSelectionGroup(alias, new ArrayList<>(derivedFieldNameList));
     }
 
 
@@ -228,13 +228,13 @@ abstract class SelectionGroups {
 
     }//ChildTableGroup
 
-    private static class SubQuerySelectionGroupImpl implements DerivedGroup, _SelfDescribed {
+    private static class DerivedSelectionGroupImpl implements DerivedGroup, _SelfDescribed {
 
         final String subQueryAlias;
 
         private List<Selection> selectionList;
 
-        private SubQuerySelectionGroupImpl(String subQueryAlias) {
+        private DerivedSelectionGroupImpl(String subQueryAlias) {
             this.subQueryAlias = subQueryAlias;
         }
 
@@ -309,12 +309,12 @@ abstract class SelectionGroups {
     }// SubQuerySelectionGroupImpl
 
 
-    private static final class SubQueryListSelectionGroup extends SubQuerySelectionGroupImpl {
+    private static final class DerivedListSelectionGroup extends DerivedSelectionGroupImpl {
 
 
         private final List<String> derivedFieldNameList;
 
-        private SubQueryListSelectionGroup(String subQueryAlias, List<String> derivedFieldNameList) {
+        private DerivedListSelectionGroup(String subQueryAlias, List<String> derivedFieldNameList) {
             super(subQueryAlias);
             this.derivedFieldNameList = Collections.unmodifiableList(derivedFieldNameList);
         }

@@ -14,18 +14,52 @@ import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
+import java.lang.ref.SoftReference;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 final class QualifiedFieldImpl<T extends IDomain> extends OperationField<T>
         implements QualifiedField<T>, _Selection {
 
+    @SuppressWarnings("unchecked")
+    static <T extends IDomain> QualifiedField<T> reference(final String tableAlias, final FieldMeta<T> field) {
+        final ConcurrentMap<String, FieldReference<?>> fieldMap;
+        fieldMap = CACHE.computeIfAbsent(field, QualifiedFieldImpl::createFieldReferenceMap);
+
+        final FieldReference<?> fieldReference;
+        fieldReference = fieldMap.computeIfAbsent(tableAlias, k -> {
+            final FieldReference<?> reference;
+            reference = new FieldReference<>(new QualifiedFieldImpl<>(tableAlias, field), fieldMap);
+            return reference;
+        });
+
+        QualifiedFieldImpl<?> qualifiedField;
+        qualifiedField = fieldReference.get();
+
+        if (qualifiedField == null
+                || qualifiedField.field != field
+                || qualifiedField.tableAlias.equals(tableAlias)) {
+            qualifiedField = new QualifiedFieldImpl<>(tableAlias, field);
+            fieldMap.put(tableAlias, new FieldReference<>(qualifiedField, fieldMap));
+        }
+        return (QualifiedField<T>) qualifiedField;
+    }
+
+
+    private static ConcurrentMap<String, FieldReference<?>> createFieldReferenceMap(FieldMeta<?> field) {
+        return new ConcurrentHashMap<>();
+    }
+
+    private static final ConcurrentMap<FieldMeta<?>, ConcurrentMap<String, FieldReference<?>>>
+            CACHE = new ConcurrentHashMap<>();
 
     private final String tableAlias;
 
     private final DefaultFieldMeta<T> field;
 
-    QualifiedFieldImpl(final String tableAlias, final FieldMeta<T> field) {
+    private QualifiedFieldImpl(final String tableAlias, final FieldMeta<T> field) {
         this.field = (DefaultFieldMeta<T>) field;
         this.tableAlias = tableAlias;
     }
@@ -130,6 +164,33 @@ final class QualifiedFieldImpl<T extends IDomain> extends OperationField<T>
     public MappingType mappingType() {
         return this.field.mappingType;
     }
+
+
+    private static final class FieldReference<T extends IDomain> extends SoftReference<QualifiedFieldImpl<T>> {
+
+
+        private final ConcurrentMap<String, FieldReference<?>> aliasToRef;
+
+        private FieldReference(QualifiedFieldImpl<T> referent, ConcurrentMap<String, FieldReference<?>> aliasToRef) {
+            super(referent);
+            this.aliasToRef = aliasToRef;
+        }
+
+        @Override
+        public void clear() {
+            final QualifiedFieldImpl<T> referent;
+            referent = this.get();
+            super.clear();
+            if (referent != null) {
+                this.aliasToRef.remove(referent.tableAlias(), this);
+                if (this.aliasToRef.size() == 0) {
+                    CACHE.remove(referent.fieldMeta());
+                }
+            }
+        }
+
+
+    }// FieldReference
 
 
 }

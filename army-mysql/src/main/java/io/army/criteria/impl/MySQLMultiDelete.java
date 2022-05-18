@@ -377,7 +377,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
             throw _Exceptions.castCriteriaApi();
         }
         for (String tableAlias : tableAliasList) {
-            if (!this.criteriaContext.containsTable(tableAlias)) {
+            if (!this.criteriaContext.containTableAlias(tableAlias)) {
                 throw _Exceptions.unknownTableAlias(tableAlias);
             }
         }

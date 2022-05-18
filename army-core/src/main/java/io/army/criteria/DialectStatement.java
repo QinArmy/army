@@ -54,14 +54,13 @@ public interface DialectStatement extends Statement {
 
     interface _DialectSelectClause<C, W extends SQLWords, SR> extends Query.SelectClause<C, W, SR> {
 
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
 
-        <S extends SelectItem> SR select(Supplier<List<Hint>> hints, List<W> modifiers, Function<C, List<S>> function);
+        SR select(Supplier<List<Hint>> hints, List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer);
 
-        <S extends SelectItem> SR select(Supplier<List<Hint>> hints, List<W> modifiers, Supplier<List<S>> supplier);
+        SR select(List<W> modifiers, Consumer<Consumer<SelectItem>> consumer);
 
-        <S extends SelectItem> SR select(List<W> modifiers, Function<C, List<S>> function);
-
-        <S extends SelectItem> SR select(List<W> modifiers, Supplier<List<S>> supplier);
+        SR select(List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer);
 
     }
 

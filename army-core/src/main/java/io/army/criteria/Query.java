@@ -4,6 +4,7 @@ package io.army.criteria;
 import io.army.lang.Nullable;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -42,21 +43,17 @@ public interface Query extends RowSet {
 
         SR select(SelectItem selectItem1, SelectItem selectItem2, SelectItem selectItem3);
 
-        <S extends SelectItem> SR select(Function<C, List<S>> function);
+        SR select(Consumer<Consumer<SelectItem>> consumer);
 
-        SR select(Consumer<List<SelectItem>> consumer);
-
-        <S extends SelectItem> SR select(Supplier<List<S>> supplier);
+        SR select(BiConsumer<C, Consumer<SelectItem>> consumer);
 
         SR select(@Nullable W modifier, SelectItem selectItem);
 
         SR select(@Nullable W modifier, SelectItem selectItem1, SelectItem selectItem2);
 
-        SR select(@Nullable W modifier, Consumer<List<SelectItem>> consumer);
+        SR select(@Nullable W modifier, Consumer<Consumer<SelectItem>> consumer);
 
-        <S extends SelectItem> SR select(@Nullable W modifier, Function<C, List<S>> function);
-
-        <S extends SelectItem> SR select(@Nullable W modifier, Supplier<List<S>> supplier);
+        SR select(@Nullable W modifier, BiConsumer<C, Consumer<SelectItem>> consumer);
 
     }
 
