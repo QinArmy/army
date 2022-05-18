@@ -1,16 +1,22 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.DerivedTable;
+import io.army.criteria.Selection;
+import io.army.criteria.SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.Constant;
 import io.army.dialect._Dialect;
+import io.army.dialect._DqlUtils;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 abstract class SelectionGroups {
 
@@ -41,7 +47,7 @@ abstract class SelectionGroups {
     }
 
     static DerivedGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
-        return new DerivedListSelectionGroup(alias, new ArrayList<>(derivedFieldNameList));
+        return new DerivedFieldGroup(alias, new ArrayList<>(derivedFieldNameList));
     }
 
 
@@ -230,12 +236,12 @@ abstract class SelectionGroups {
 
     private static class DerivedSelectionGroupImpl implements DerivedGroup, _SelfDescribed {
 
-        final String subQueryAlias;
+        final String derivedAlias;
 
         private List<Selection> selectionList;
 
-        private DerivedSelectionGroupImpl(String subQueryAlias) {
-            this.subQueryAlias = subQueryAlias;
+        private DerivedSelectionGroupImpl(String derivedAlias) {
+            this.derivedAlias = derivedAlias;
         }
 
         @Override
@@ -243,49 +249,43 @@ abstract class SelectionGroups {
             if (this.selectionList != null) {
                 throw new IllegalStateException("duplication");
             }
-            if (!this.subQueryAlias.equals(alias)) {
+            if (!this.derivedAlias.equals(alias)) {
                 throw new IllegalArgumentException("subQueryAlias not match.");
             }
-            this.selectionList = createSelectionList(table);
+            if (this instanceof DerivedFieldGroup) {
+                this.selectionList = ((DerivedFieldGroup) this).createSelectionList(table);
+            } else {
+                this.selectionList = Collections.unmodifiableList(_DqlUtils.flatSelectItem(table.selectItemList()));
+            }
+
         }
 
-        List<Selection> createSelectionList(DerivedTable table) {
-            final List<Selection> selectionList = new ArrayList<>();
-            for (SelectItem selectItem : table.selectItemList()) {
-                if (selectItem instanceof Selection) {
-                    selectionList.add((Selection) selectItem);
-                } else if (selectItem instanceof SelectionGroup) {
-                    selectionList.addAll(((SelectionGroup) selectItem).selectionList());
-                } else {
-                    throw _Exceptions.unknownSelectItem(selectItem);
-                }
-            }
-            return Collections.unmodifiableList(selectionList);
-        }
 
         @Override
-        public String tableAlias() {
-            return this.subQueryAlias;
+        public final String tableAlias() {
+            return this.derivedAlias;
         }
 
         @Override
         public final List<Selection> selectionList() {
             final List<Selection> selectionList = this.selectionList;
-            assert selectionList != null;
+            if (selectionList == null) {
+                throw new CriteriaException("currently,couldn't reference selection,please check syntax.");
+            }
             return selectionList;
         }
 
         @Override
         public final void appendSql(final _SqlContext context) {
             final List<Selection> selectionList = this.selectionList;
-            if (_CollectionUtils.isEmpty(selectionList)) {
+            if (selectionList == null || selectionList.size() == 0) {
                 //here bug.
                 throw new CriteriaException("DerivedSelectionGroup no selection.");
             }
             final StringBuilder builder = context.sqlBuilder();
 
             final _Dialect dialect = context.dialect();
-            final String safeAlias = dialect.quoteIfNeed(this.subQueryAlias);
+            final String safeAlias = dialect.quoteIfNeed(this.derivedAlias);
             final int size = selectionList.size();
             Selection selection;
             String safeFieldAlias;
@@ -309,59 +309,33 @@ abstract class SelectionGroups {
     }// SubQuerySelectionGroupImpl
 
 
-    private static final class DerivedListSelectionGroup extends DerivedSelectionGroupImpl {
+    private static final class DerivedFieldGroup extends DerivedSelectionGroupImpl {
 
 
         private final List<String> derivedFieldNameList;
 
-        private DerivedListSelectionGroup(String subQueryAlias, List<String> derivedFieldNameList) {
+        private DerivedFieldGroup(String subQueryAlias, List<String> derivedFieldNameList) {
             super(subQueryAlias);
-            this.derivedFieldNameList = Collections.unmodifiableList(derivedFieldNameList);
+            this.derivedFieldNameList = _CollectionUtils.asUnmodifiableList(derivedFieldNameList);
         }
 
 
-        @Override
-        List<Selection> createSelectionList(DerivedTable table) {
-            final Set<String> filedNameSet = new HashSet<>(this.derivedFieldNameList);
-            final List<Selection> selectionList = new ArrayList<>(filedNameSet.size());
-            for (SelectItem selectItem : table.selectItemList()) {
-
-                if (selectItem instanceof Selection) {
-                    if (filedNameSet.contains(((Selection) selectItem).alias())) {
-                        selectionList.add((Selection) selectItem);
-                    }
-                } else if (selectItem instanceof SelectionGroup) {
-                    for (Selection selection : ((SelectionGroup) selectItem).selectionList()) {
-                        if (filedNameSet.contains(selection.alias())) {
-                            selectionList.add(selection);
-                        }
-                    }
-                } else {
-                    throw _Exceptions.unknownSelectItem(selectItem);
+        private List<Selection> createSelectionList(DerivedTable table) {
+            final List<String> derivedFieldNameList = this.derivedFieldNameList;
+            final List<Selection> selectionList = new ArrayList<>(derivedFieldNameList.size());
+            Selection selection;
+            for (String selectionAlias : derivedFieldNameList) {
+                selection = table.selection(selectionAlias);
+                if (selection == null) {
+                    String m = String.format("unknown derived field %s.%s .", this.derivedAlias, selectionAlias);
+                    throw new CriteriaException(m);
                 }
-            }
-            final int fieldSize, fieldNameSize;
-            fieldSize = selectionList.size();
-            fieldNameSize = filedNameSet.size();
-
-            if (fieldSize < fieldNameSize) {
-                final Set<String> actualNameSet = new HashSet<>();
-                for (Selection selection : selectionList) {
-                    actualNameSet.
-                            add(selection.alias());
-                }
-                final String m;
-                filedNameSet.removeAll(actualNameSet);
-                m = String.format("Not found derived fields[%s] in Derived table[%s]"
-                        , filedNameSet, this.subQueryAlias);
-                throw new CriteriaException(m);
-
+                selectionList.add(selection);
             }
             return Collections.unmodifiableList(selectionList);
         }
 
-
-    }//SubQueryListSelectionGroup
+    }//DerivedFieldGroup
 
 
 }

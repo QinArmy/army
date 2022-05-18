@@ -63,15 +63,15 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     static <C> _WithSpec<C, Select> simpleSelect(@Nullable C criteria) {
-        return new SimpleSelect<>(criteria);
+        return new SimpleSelect<>(CriteriaContexts.primaryQueryContext(criteria));
     }
 
     static <C> _WithSpec<C, SubQuery> subQuery(final boolean lateral, final @Nullable C criteria) {
         final _WithSpec<C, SubQuery> with80Spec;
         if (lateral) {
-            with80Spec = new LateralSimpleSubQuery<>(criteria);
+            with80Spec = new LateralSimpleSubQuery<>(CriteriaContexts.lateralSubQueryContext(criteria));
         } else {
-            with80Spec = new SimpleSubQuery<>(criteria);
+            with80Spec = new SimpleSubQuery<>(CriteriaContexts.subQueryContext(criteria));
         }
         return with80Spec;
     }
@@ -80,9 +80,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     static <C> _WithSpec<C, ScalarExpression> scalarSubQuery(final boolean lateral, final @Nullable C criteria) {
         final _WithSpec<C, ScalarExpression> with80Spec;
         if (lateral) {
-            with80Spec = new LateralSimpleScalarQuery<>(criteria);
+            with80Spec = new LateralSimpleScalarQuery<>(CriteriaContexts.lateralSubQueryContext(criteria));
         } else {
-            with80Spec = new SimpleScalarQuery<>(criteria);
+            with80Spec = new SimpleScalarQuery<>(CriteriaContexts.subQueryContext(criteria));
         }
         return with80Spec;
     }
@@ -91,11 +91,15 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     static <C, Q extends Query> _WithSpec<C, Q> unionAndSelect(final Q left, final UnionType unionType) {
         final _WithSpec<C, ?> with80Spec;
         if (left instanceof Select) {
-            with80Spec = new UnionAndSelect<>((Select) left, unionType);
+            with80Spec = new UnionAndSelect<>((Select) left, unionType, CriteriaContexts.primaryQueryContextFrom(left));
         } else if (left instanceof ScalarSubQuery) {
-            with80Spec = new UnionAndScalarSubQuery<>((ScalarExpression) left, unionType);
+            final CriteriaContext context;
+            context = CriteriaContexts.subQueryContextFrom(left);
+            with80Spec = new UnionAndScalarSubQuery<>((ScalarExpression) left, unionType, context);
         } else if (left instanceof SubQuery) {
-            with80Spec = new UnionAndSubQuery<>((SubQuery) left, unionType);
+            final CriteriaContext context;
+            context = CriteriaContexts.subQueryContextFrom(left);
+            with80Spec = new UnionAndSubQuery<>((SubQuery) left, unionType, context);
         } else {
             throw _Exceptions.unknownRowSetType(left);
         }
@@ -658,19 +662,18 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private static final class SimpleSelect<C> extends MySQL80SimpleQuery<C, Select> implements Select {
 
-        private SimpleSelect(@Nullable C criteria) {
-            super(CriteriaContexts.primaryQueryContext(criteria));
+        private SimpleSelect(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
     }// SimpleSelect
 
-    private static class SimpleSubQuery<C, Q extends SubQuery> extends MySQL80SimpleQuery<C, Q> implements SubQuery
-            , _SelfDescribed {
+    private static class SimpleSubQuery<C, Q extends SubQuery> extends MySQL80SimpleQuery<C, Q> implements SubQuery {
 
         private Map<String, Selection> selectionMap;
 
-        private SimpleSubQuery(@Nullable C criteria) {
-            super(CriteriaContexts.subQueryContext(criteria));
+        private SimpleSubQuery(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
         @Override
@@ -688,8 +691,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static final class LateralSimpleSubQuery<C> extends SimpleSubQuery<C, SubQuery>
             implements _LateralSubQuery {
 
-        private LateralSimpleSubQuery(@Nullable C criteria) {
-            super(criteria);
+        private LateralSimpleSubQuery(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
     }//LateralSimpleSubQuery
@@ -698,8 +701,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static class SimpleScalarQuery<C> extends SimpleSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private SimpleScalarQuery(@Nullable C criteria) {
-            super(criteria);
+        private SimpleScalarQuery(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
     }//SimpleScalarQuery
@@ -707,8 +710,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static final class LateralSimpleScalarQuery<C> extends SimpleScalarQuery<C>
             implements _LateralSubQuery {
 
-        private LateralSimpleScalarQuery(@Nullable C criteria) {
-            super(criteria);
+        private LateralSimpleScalarQuery(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
     }//LateralSimpleScalarQuery
@@ -721,7 +724,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private final UnionType unionType;
 
-        private UnionAndQuery(CriteriaContext criteriaContext, Q left, UnionType unionType) {
+        private UnionAndQuery(Q left, UnionType unionType, CriteriaContext criteriaContext) {
             super(criteriaContext);
             this.left = left;
             this.unionType = unionType;
@@ -742,8 +745,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private static final class UnionAndSelect<C> extends UnionAndQuery<C, Select> implements Select {
 
-        private UnionAndSelect(Select left, UnionType unionType) {
-            super(CriteriaContexts.primaryQueryContext(left), left, unionType);
+        private UnionAndSelect(Select left, UnionType unionType, CriteriaContext criteriaContext) {
+            super(left, unionType, criteriaContext);
         }
 
     }//UnionAndSelect
@@ -753,8 +756,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         private Map<String, Selection> selectionMap;
 
-        private UnionAndSubQuery(Q left, UnionType unionType) {
-            super(CriteriaContexts.subQueryContext(left), left, unionType);
+        private UnionAndSubQuery(Q left, UnionType unionType, CriteriaContext criteriaContext) {
+            super(left, unionType, criteriaContext);
         }
 
         @Override
@@ -773,8 +776,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static final class UnionAndScalarSubQuery<C> extends UnionAndSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
 
-        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType) {
-            super(left, unionType);
+        private UnionAndScalarSubQuery(ScalarExpression left, UnionType unionType, CriteriaContext criteriaContext) {
+            super(left, unionType, criteriaContext);
         }
 
 

@@ -30,13 +30,13 @@ final class UnionSelectContext extends StmtContext implements _UnionQueryContext
     private UnionSelectContext(Select select, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
         this.outerContext = null;
-        this.selectionList = _DqlUtils.flatSelectParts(((_PartRowSet) select).selectItemList());
+        this.selectionList = _DqlUtils.flatSelectItem(((_PartRowSet) select).selectItemList());
     }
 
 
     private UnionSelectContext(Select select, _SelectContext outerContext) {
         super((StmtContext) outerContext);
-        this.selectionList = _DqlUtils.flatSelectParts(((_PartRowSet) select).selectItemList());
+        this.selectionList = _DqlUtils.flatSelectItem(((_PartRowSet) select).selectItemList());
         this.outerContext = outerContext;
     }
 

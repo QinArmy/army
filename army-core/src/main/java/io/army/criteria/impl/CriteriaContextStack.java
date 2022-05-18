@@ -118,7 +118,7 @@ abstract class CriteriaContextStack {
         private ContextStack(final CriteriaContext rootContext) {
             Objects.requireNonNull(rootContext);
             final LinkedList<CriteriaContext> list = new LinkedList<>();
-            list.push(rootContext);
+            list.addLast(rootContext);
             this.list = list;
         }
 
@@ -137,7 +137,7 @@ abstract class CriteriaContextStack {
             if (list.size() == 0) {
                 throw new IllegalStateException("stack error");
             }
-            list.push(subContext);
+            list.addLast(subContext);
         }
 
         @Override
@@ -146,7 +146,7 @@ abstract class CriteriaContextStack {
             if (list.size() == 0) {
                 throw new CriteriaException("Not found any context.");
             }
-            return list.peek();
+            return list.peekLast();
         }
 
         @Override
@@ -155,7 +155,7 @@ abstract class CriteriaContextStack {
             if (list.size() == 0) {
                 throw new IllegalStateException("stack error");
             }
-            return list.get(0);
+            return list.peekFirst();
         }
 
         @Override

@@ -58,9 +58,17 @@ abstract class CriteriaContexts {
         leftContext = (AbstractContext) ((CriteriaContextSpec) query).getCriteriaContext();
 
         final SimpleQueryContext context;
-        context = new SimpleQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
+        if (query instanceof _LateralSubQuery) {
+            context = new LateralSubQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
+        } else {
+            context = new SimpleQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
+        }
         ((AbstractContext) context).varMap = leftContext.varMap;
         return context;
+    }
+
+    static CriteriaContext lateralSubQueryContext(final @Nullable Object criteria) {
+        return new LateralSubQueryContext(CriteriaContextStack.peek(), criteria);
     }
 
 
@@ -240,10 +248,7 @@ abstract class CriteriaContexts {
     /**
      * @return a unmodified map
      */
-    static Map<String, Selection> createSelection(final @Nullable List<? extends SelectItem> selectItemList) {
-        if (selectItemList == null) {
-            throw _Exceptions.castCriteriaApi();
-        }
+    static Map<String, Selection> createSelection(final List<? extends SelectItem> selectItemList) {
         final Map<String, Selection> selectionMap = new HashMap<>();
         //if alias duplication then override
         for (SelectItem item : selectItemList) {
@@ -269,11 +274,11 @@ abstract class CriteriaContexts {
 
         private Map<String, VarExpression> varMap;
 
-        private final CriteriaContext outerContext;
+        final CriteriaContext outerContext;
 
         private boolean recursive;
 
-        private Map<String, SQLs.CteImpl> withClauseCteMap;
+        private Map<String, Syntax.CteImpl> withClauseCteMap;
 
         private Map<String, RefCte> refCteMap;
 
@@ -337,7 +342,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final CteItem refCte(final String cteName) {
-            final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
+            final Map<String, Syntax.CteImpl> withClauseCteMap = this.withClauseCteMap;
             final CriteriaContext outerContext = this.outerContext;
             CteItem tempItem;
             final CteItem cteItem;
@@ -396,7 +401,7 @@ abstract class CriteriaContexts {
 
         @Override
         public List<_TableBlock> clear() {
-            final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
+            final Map<String, Syntax.CteImpl> withClauseCteMap = this.withClauseCteMap;
             if (withClauseCteMap != null) {
                 withClauseCteMap.clear();
                 this.withClauseCteMap = null;
@@ -410,15 +415,15 @@ abstract class CriteriaContexts {
         }
 
         private void addCte(final Cte cte) {
-            final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
+            final Map<String, Syntax.CteImpl> withClauseCteMap = this.withClauseCteMap;
             if (withClauseCteMap == null || this.withClauseEnd) {
                 throw _Exceptions.castCriteriaApi();
             }
-            if (!(cte instanceof SQLs.CteImpl)) {
+            if (!(cte instanceof Syntax.CteImpl)) {
                 String m = String.format("Illegal implementation of %s", Cte.class.getName());
                 throw new CriteriaException(m);
             }
-            final SQLs.CteImpl cteImpl = (SQLs.CteImpl) cte;
+            final Syntax.CteImpl cteImpl = (Syntax.CteImpl) cte;
             if (withClauseCteMap.putIfAbsent(cteImpl.name, cteImpl) != null) {
                 String m = String.format("%s %s duplication.", Cte.class.getName(), cteImpl.name);
                 throw new CriteriaException(m);
@@ -460,7 +465,7 @@ abstract class CriteriaContexts {
         }
 
         private void withClauseEnd() {
-            final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
+            final Map<String, Syntax.CteImpl> withClauseCteMap = this.withClauseCteMap;
             if (withClauseCteMap == null || this.withClauseEnd) {
                 throw _Exceptions.castCriteriaApi();
             }
@@ -619,7 +624,19 @@ abstract class CriteriaContexts {
             //3. clear aliasToRefSelection
             final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefSelection;
             if (aliasToRefSelection != null && aliasToRefSelection.size() > 0) {
-                throw notFoundDerivedField(aliasToRefSelection);
+                if (!(this instanceof LateralSubQueryContext)) {
+                    throw notFoundDerivedField(aliasToRefSelection);
+                }
+                final CriteriaContext outerContext = this.outerContext;
+                assert outerContext != null;
+                for (Map<String, RefDerivedField> fieldMap : aliasToRefSelection.values()) {
+                    for (RefDerivedField field : fieldMap.values()) {
+                        if (field.paramMeta.actual != null) {
+                            continue;
+                        }
+                        field.paramMeta.actual = outerContext.ref(field.tableName, field.fieldName).paramMeta();
+                    }
+                }
             }
             this.aliasToRefSelection = null;
 
@@ -842,7 +859,7 @@ abstract class CriteriaContexts {
     }// MultiDmlContext
 
 
-    private static final class SimpleQueryContext extends JoinableContext {
+    private static class SimpleQueryContext extends JoinableContext {
 
         private List<? extends SelectItem> selectItemList;
 
@@ -857,7 +874,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void onAddDerivedGroup(final DerivedGroup group) {
+        public final void onAddDerivedGroup(final DerivedGroup group) {
             List<DerivedGroup> groupList = this.groupList;
             if (groupList == null) {
                 groupList = new LinkedList<>();
@@ -867,7 +884,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void selectList(List<? extends SelectItem> selectItemList) {
+        public final void selectList(List<? extends SelectItem> selectItemList) {
             if (this.selectItemList != null) {
                 throw _Exceptions.castCriteriaApi();
             }
@@ -875,7 +892,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public Expression ref(final String selectionAlias) {
+        public final Expression ref(final String selectionAlias) {
             Map<String, RefSelection> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 refSelectionMap = new HashMap<>();
@@ -887,7 +904,13 @@ abstract class CriteriaContexts {
         private RefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
-                selectionMap = createSelection(this.selectItemList);
+                final List<? extends SelectItem> selectItemList = this.selectItemList;
+                if (selectItemList == null) {
+                    String m = String.format("currently,couldn't reference %s,please check your syntax."
+                            , Selection.class.getName());
+                    throw new CriteriaException(m);
+                }
+                selectionMap = createSelection(selectItemList);
                 this.selectionMap = selectionMap;
             }
             final Selection selection;
@@ -900,6 +923,14 @@ abstract class CriteriaContexts {
 
 
     }//SimpleQueryContext
+
+    private static final class LateralSubQueryContext extends SimpleQueryContext {
+
+        private LateralSubQueryContext(CriteriaContext outerContext, @Nullable Object criteria) {
+            super(outerContext, criteria);
+        }
+
+    }//LateralSubQueryContext
 
 
     /**

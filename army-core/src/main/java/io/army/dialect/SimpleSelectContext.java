@@ -33,7 +33,7 @@ final class SimpleSelectContext extends MultiTableContext implements _SimpleQuer
     private SimpleSelectContext(Select select, TableContext tableContext, ArmyDialect dialect, Visible visible) {
         super(tableContext, dialect, visible);
         this.outerContext = null;
-        this.selectionList = _DqlUtils.flatSelectParts(((_Query) select).selectItemList());
+        this.selectionList = _DqlUtils.flatSelectItem(((_Query) select).selectItemList());
     }
 
     private SimpleSelectContext(TableContext tableContext, _SelectContext outerContext) {

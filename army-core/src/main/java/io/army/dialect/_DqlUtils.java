@@ -8,9 +8,9 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class _DqlUtils extends _DialectUtils {
+public abstract class _DqlUtils extends _DialectUtils {
 
-    static List<Selection> flatSelectParts(final List<? extends SelectItem> selectPartList) {
+    public static List<Selection> flatSelectItem(final List<? extends SelectItem> selectPartList) {
         final List<Selection> selectionList = new ArrayList<>(selectPartList.size());
         for (SelectItem selectItem : selectPartList) {
             if (selectItem instanceof Selection) {

@@ -9,11 +9,9 @@ import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.stmt.StrictParamValue;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -35,7 +33,7 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static <T extends IDomain> Insert.StandardValueInsertSpec<T, Void> valueInsert(TableMeta<T> table) {
+    public static <T extends IDomain> Insert.StandardValueInsertSpec<Void, T> valueInsert(TableMeta<T> table) {
         return StandardValueInsert.create(table, null);
     }
 
@@ -51,7 +49,7 @@ public abstract class SQLs extends Functions {
      * @param table will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain, C> Insert.StandardValueInsertSpec<T, C> valueInsert(TableMeta<T> table, C criteria) {
+    public static <T extends IDomain, C> Insert.StandardValueInsertSpec<C, T> valueInsert(TableMeta<T> table, C criteria) {
         Objects.requireNonNull(criteria);
         return StandardValueInsert.create(table, criteria);
     }
@@ -525,23 +523,14 @@ public abstract class SQLs extends Functions {
 
 
     public static SelectionGroup derivedGroup(String alias) {
-        return CriteriaContextStack.peek().derivedGroup(alias, null);
+        return SelectionGroups.derivedGroup(alias);
     }
 
     public static SelectionGroup derivedGroup(String alias, List<String> derivedFieldNameList) {
         if (derivedFieldNameList.size() == 0) {
             throw new CriteriaException("derivedFieldNameList must not empty");
         }
-        return CriteriaContextStack.peek().derivedGroup(alias, derivedFieldNameList);
-    }
-
-
-    public static <C> Cte cte(String name, SubStatement subStatement) {
-        return new CteImpl(name, subStatement);
-    }
-
-    public static <C> Cte cte(String name, List<String> aliasLst, SubStatement subStatement) {
-        return new CteImpl(name, aliasLst, subStatement);
+        return SelectionGroups.derivedGroup(alias, derivedFieldNameList);
     }
 
 
@@ -723,53 +712,6 @@ public abstract class SQLs extends Functions {
             return this.second;
         }
     }//BetweenPair
-
-    static final class CteImpl implements Cte {
-
-        final String name;
-
-        final List<String> columnNameList;
-
-        final SubStatement subStatement;
-
-        private CteImpl(String name, SubStatement subStatement) {
-            this.name = name;
-            this.columnNameList = Collections.emptyList();
-            this.subStatement = subStatement;
-        }
-
-
-        private CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
-            this.name = name;
-            this.columnNameList = _CollectionUtils.asUnmodifiableList(columnNameList);
-            this.subStatement = subStatement;
-        }
-
-        @Override
-        public String name() {
-            return this.name;
-        }
-
-        @Override
-        public List<String> columnNameList() {
-            return this.columnNameList;
-        }
-
-        @Override
-        public SubStatement subStatement() {
-            return this.subStatement;
-        }
-
-        @Override
-        public List<? extends SelectItem> selectItemList() {
-            return null;
-        }
-
-        @Override
-        public Selection selection(String derivedFieldName) {
-            return null;
-        }
-    }//CteImpl
 
 
 }
