@@ -25,10 +25,10 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
     public List<Map<String, Object>> findAllCity() {
         final Select stmt;
         stmt = MySQLs.query()
-                .select(list -> {
-                    list.add(SQLs.field("p_of_city", ChinaRegion_.name));
-                    list.add(ChinaCity_.mayorName);
-                    list.add(SQLs.field("province", ChinaRegion_.name).as("province"));
+                .select(consumer -> {
+                    consumer.accept(SQLs.field("p_of_city", ChinaRegion_.name));
+                    consumer.accept(ChinaCity_.mayorName);
+                    consumer.accept(SQLs.field("province", ChinaRegion_.name).as("province"));
                 })
                 .from(ChinaCity_.T, "city")
                 .join(ChinaRegion_.T, "p_of_city")

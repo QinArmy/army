@@ -58,18 +58,11 @@ abstract class CriteriaContexts {
         leftContext = (AbstractContext) ((CriteriaContextSpec) query).getCriteriaContext();
 
         final SimpleQueryContext context;
-        if (query instanceof _LateralSubQuery) {
-            context = new LateralSubQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
-        } else {
-            context = new SimpleQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
-        }
+        context = new SimpleQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
         ((AbstractContext) context).varMap = leftContext.varMap;
         return context;
     }
 
-    static CriteriaContext lateralSubQueryContext(final @Nullable Object criteria) {
-        return new LateralSubQueryContext(CriteriaContextStack.peek(), criteria);
-    }
 
 
     static CriteriaContext bracketContext(final Query left) {
@@ -146,10 +139,6 @@ abstract class CriteriaContexts {
         return selection;
     }
 
-
-    private static CriteriaException dontSupportRefSelection() {
-        return new CriteriaException("Non union query couldn't reference selection of query.");
-    }
 
     private static CriteriaException invalidRef(String subQueryAlias, String fieldName) {
         String m = String.format("ref of %s.%s is invalid.", subQueryAlias, fieldName);
@@ -954,13 +943,6 @@ abstract class CriteriaContexts {
 
     }//SimpleQueryContext
 
-    private static final class LateralSubQueryContext extends SimpleQueryContext {
-
-        private LateralSubQueryContext(CriteriaContext outerContext, @Nullable Object criteria) {
-            super(outerContext, criteria);
-        }
-
-    }//LateralSubQueryContext
 
 
     /**

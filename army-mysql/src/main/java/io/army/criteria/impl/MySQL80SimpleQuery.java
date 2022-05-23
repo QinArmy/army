@@ -67,22 +67,26 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     static <C> _WithSpec<C, SubQuery> subQuery(final boolean lateral, final @Nullable C criteria) {
+        final CriteriaContext context;
+        context = CriteriaContexts.subQueryContext(criteria);
         final _WithSpec<C, SubQuery> with80Spec;
         if (lateral) {
-            with80Spec = new LateralSimpleSubQuery<>(CriteriaContexts.lateralSubQueryContext(criteria));
+            with80Spec = new LateralSimpleSubQuery<>(context);
         } else {
-            with80Spec = new SimpleSubQuery<>(CriteriaContexts.subQueryContext(criteria));
+            with80Spec = new SimpleSubQuery<>(context);
         }
         return with80Spec;
     }
 
 
     static <C> _WithSpec<C, ScalarExpression> scalarSubQuery(final boolean lateral, final @Nullable C criteria) {
+        final CriteriaContext context;
+        context = CriteriaContexts.subQueryContext(criteria);
         final _WithSpec<C, ScalarExpression> with80Spec;
         if (lateral) {
-            with80Spec = new LateralSimpleScalarQuery<>(CriteriaContexts.lateralSubQueryContext(criteria));
+            with80Spec = new LateralSimpleScalarQuery<>(context);
         } else {
-            with80Spec = new SimpleScalarQuery<>(CriteriaContexts.subQueryContext(criteria));
+            with80Spec = new SimpleScalarQuery<>(context);
         }
         return with80Spec;
     }

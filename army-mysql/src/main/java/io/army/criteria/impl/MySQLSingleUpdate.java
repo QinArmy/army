@@ -396,7 +396,6 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         }
         this.recursive = recursive;
         this.cteList = cteList;
-        this.criteriaContext.cteList(recursive, cteList, false);
     }
 
 

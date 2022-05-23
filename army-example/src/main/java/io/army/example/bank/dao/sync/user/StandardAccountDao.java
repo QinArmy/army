@@ -22,18 +22,18 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
 
         final Select stmt;
         stmt = SQLs.query()
-                .select(list -> {
+                .select(consumer -> {
                     // due to SQLs.field("u", BankUser_.userNo) need criteria context,so couldn't create selection list
                     // before SQLs.query().
-                    list.add(SQLs.field("u", BankUser_.userNo));
-                    list.add(SQLs.field("u", BankUser_.userType));
-                    list.add(BankAccount_.accountNo);
-                    list.add(BankAccount_.accountType);
+                    consumer.accept(SQLs.field("u", BankUser_.userNo));
+                    consumer.accept(SQLs.field("u", BankUser_.userType));
+                    consumer.accept(BankAccount_.accountNo);
+                    consumer.accept(BankAccount_.accountType);
 
-                    list.add(SQLs.field("pu", BankUser_.userNo));
-                    list.add(RegisterRecord_.createTime.as("requestTime"));
-                    list.add(RegisterRecord_.handleTime);
-                    list.add(RegisterRecord_.completionTime);
+                    consumer.accept(SQLs.field("pu", BankUser_.userNo));
+                    consumer.accept(RegisterRecord_.createTime.as("requestTime"));
+                    consumer.accept(RegisterRecord_.handleTime);
+                    consumer.accept(RegisterRecord_.completionTime);
 
                 })
                 .from(RegisterRecord_.T, "r")
@@ -54,13 +54,13 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
 
         final Select stmt;
         stmt = SQLs.query()
-                .select(list -> {
-                    list.add(RegisterRecord_.requestNo);
-                    list.add(BankUser_.userNo);
-                    list.add(BankUser_.userType);
-                    list.add(BankAccount_.accountNo);
+                .select(consumer -> {
+                    consumer.accept(RegisterRecord_.requestNo);
+                    consumer.accept(BankUser_.userNo);
+                    consumer.accept(BankUser_.userType);
+                    consumer.accept(BankAccount_.accountNo);
 
-                    list.add(BankAccount_.accountType);
+                    consumer.accept(BankAccount_.accountType);
                 })
                 .from(RegisterRecord_.T, "r")
                 .join(BankUser_.T, "u").on(BankUser_.id.equal(RegisterRecord_.userId))
