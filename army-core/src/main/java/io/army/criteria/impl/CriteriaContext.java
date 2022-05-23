@@ -19,6 +19,8 @@ interface CriteriaContext {
 
     DerivedField ref(String derivedTable, String derivedFieldName);
 
+    DerivedField outerRef(String derivedTable, String derivedFieldName);
+
     Expression ref(String selectionAlias);
 
     /**

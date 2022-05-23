@@ -127,7 +127,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
 
     @Override
     public final SR set(TableField<?> field, @Nullable Object paramOrExp) {
-        return this.setExp(field, SQLs.nullableParam(field, paramOrExp));
+        return this.setExp(field, SQLs._nullableParam(field, paramOrExp));
     }
 
     @Override
@@ -190,7 +190,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.setExp(field, SQLs.nonNullParam(field, value));
+            this.setExp(field, SQLs._nonNullParam(field, value));
         }
         return (SR) this;
     }
@@ -200,7 +200,7 @@ abstract class JoinableUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         final Object value;
         value = paramOrExp.get();
         if (value != null) {
-            this.setExp(field, SQLs.nonNullParam(field, value));
+            this.setExp(field, SQLs._nonNullParam(field, value));
         }
         return (SR) this;
     }

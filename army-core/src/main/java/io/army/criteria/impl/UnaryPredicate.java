@@ -1,8 +1,11 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.DataField;
+import io.army.criteria.NamedParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.dialect.Constant;
 import io.army.dialect._SqlContext;
 import io.army.util._Exceptions;
 
@@ -46,19 +49,31 @@ final class UnaryPredicate extends OperationPredicate {
 
     @Override
     public void appendSql(final _SqlContext context) {
+        final _SelfDescribed expressionOrSubQuery = this.expressionOrSubQuery;
         switch (this.operator) {
             case IS_NOT_NULL:
             case IS_NULL: {
-                this.expressionOrSubQuery.appendSql(context);
-                context.sqlBuilder()
-                        .append(this.operator.rendered());
+                final boolean innerBracket;
+                innerBracket = !(expressionOrSubQuery instanceof DataField
+                        || expressionOrSubQuery instanceof ValueExpression
+                        || expressionOrSubQuery instanceof NamedParam);
+
+                final StringBuilder sqlBuilder = context.sqlBuilder();
+                if (innerBracket) {
+                    sqlBuilder.append(Constant.SPACE_LEFT_BRACKET);
+                }
+                expressionOrSubQuery.appendSql(context);
+                if (innerBracket) {
+                    sqlBuilder.append(Constant.SPACE_RIGHT_BRACKET);
+                }
+                sqlBuilder.append(this.operator.rendered());
             }
             break;
             case EXISTS:
             case NOT_EXISTS: {
                 context.sqlBuilder()
                         .append(this.operator.rendered());
-                this.expressionOrSubQuery.appendSql(context);
+                expressionOrSubQuery.appendSql(context);
             }
             break;
             default:

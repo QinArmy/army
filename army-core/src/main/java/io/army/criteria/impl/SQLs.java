@@ -9,9 +9,11 @@ import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.stmt.StrictParamValue;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -140,13 +142,13 @@ public abstract class SQLs extends Functions {
 
 
     /**
-     * package method
+     * package method that is used by army developer.
      *
      * @param value {@link Expression} or parameter
      */
-    static Expression nonNullParam(final Expression type, final @Nullable Object value) {
+    static Expression _nonNullParam(final Expression type, final @Nullable Object value) {
         if (value == null) {
-            throw new CriteriaException("Right operand of operator must be not null.");
+            throw _Exceptions.expressionIsNull();
         }
         final Expression resultExpression;
         if (value instanceof Expression) {
@@ -164,7 +166,7 @@ public abstract class SQLs extends Functions {
      *
      * @param value {@link Expression} or parameter
      */
-    static Expression nullableParam(final Expression type, final @Nullable Object value) {
+    static Expression _nullableParam(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
@@ -181,7 +183,7 @@ public abstract class SQLs extends Functions {
      *
      * @param value {@link Expression} or parameter
      */
-    static ArmyExpression nullableParam(final @Nullable Object value) {
+    static ArmyExpression _nullableParam(final @Nullable Object value) {
         final Expression expression;
         if (value == null) {
             expression = SQLs.nullParam();
@@ -391,6 +393,7 @@ public abstract class SQLs extends Functions {
         return LiteralExpression.literal(paramMeta, value);
     }
 
+
     /**
      * @param value {@link Expression} or parameter.
      * @see Update._SimpleSetClause#setPairs(List)
@@ -467,6 +470,10 @@ public abstract class SQLs extends Functions {
         return CriteriaContextStack.peek().ref(derivedTable, derivedFieldName);
     }
 
+    public static DerivedField outerRef(String derivedTable, String derivedFieldName) {
+        return CriteriaContextStack.peek().outerRef(derivedTable, derivedFieldName);
+    }
+
 
     public static Expression ref(String selectionAlias) {
         return CriteriaContextStack.peek().ref(selectionAlias);
@@ -533,6 +540,15 @@ public abstract class SQLs extends Functions {
         return SelectionGroups.derivedGroup(alias, derivedFieldNameList);
     }
 
+    public static Cte cte(String name, SubStatement subStatement) {
+        return new CteImpl(name, subStatement);
+    }
+
+    public static Cte cte(String name, List<String> aliasLst, SubStatement subStatement) {
+        return new CteImpl(name, aliasLst, subStatement);
+    }
+
+
 
     /*################################## blow sql key word operate method ##################################*/
 
@@ -549,7 +565,9 @@ public abstract class SQLs extends Functions {
     }
 
     public static <C> IPredicate notExists(Function<C, SubQuery> function) {
-        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(CriteriaContextStack.getTopCriteria()));
+        final C criteria;
+        criteria = CriteriaContextStack.getTopCriteria();
+        return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(criteria));
     }
 
     static <T extends IDomain> ExpressionRow row(List<Expression> columnList) {
@@ -586,12 +604,12 @@ public abstract class SQLs extends Functions {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" DEFAULT");
+            context.sqlBuilder().append(Constant.SPACE_DEFAULT);
         }
 
         @Override
         public String toString() {
-            return " DEFAULT";
+            return Constant.SPACE_DEFAULT;
         }
 
     }// DefaultWord
@@ -714,4 +732,66 @@ public abstract class SQLs extends Functions {
     }//BetweenPair
 
 
+    static final class CteImpl implements Cte {
+
+        final String name;
+
+        final List<String> columnNameList;
+
+        final SubStatement subStatement;
+
+        private CteImpl(String name, SubStatement subStatement) {
+            this.name = name;
+            this.columnNameList = Collections.emptyList();
+            this.subStatement = subStatement;
+        }
+
+
+        private CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
+            this.name = name;
+            this.columnNameList = _CollectionUtils.asUnmodifiableList(columnNameList);
+            this.subStatement = subStatement;
+        }
+
+        @Override
+        public String name() {
+            return this.name;
+        }
+
+        @Override
+        public List<String> columnNameList() {
+            return this.columnNameList;
+        }
+
+        @Override
+        public SubStatement subStatement() {
+            return this.subStatement;
+        }
+
+        @Override
+        public List<? extends SelectItem> selectItemList() {
+            final SubStatement subStatement = this.subStatement;
+            final List<? extends SelectItem> list;
+            if (subStatement instanceof DerivedTable) {
+                list = ((DerivedTable) subStatement).selectItemList();
+            } else {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        @Override
+        public Selection selection(final String derivedFieldName) {
+            final SubStatement subStatement = this.subStatement;
+            final Selection selection;
+            if (subStatement instanceof DerivedTable) {
+                selection = ((DerivedTable) subStatement).selection(derivedFieldName);
+            } else {
+                selection = null;
+            }
+            return selection;
+        }
+
+
+    }//CteImpl
 }

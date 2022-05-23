@@ -31,13 +31,13 @@ abstract class WithCteMultiUpdate<C, SS extends SubStatement, WE, SR, FT, FS, FP
 
     @Override
     public final WE with(String cteName, Supplier<? extends SS> supplier) {
-        CriteriaUtils.withClause(false, Syntax.cte(cteName, supplier.get()), this.criteriaContext, this::doWithCte);
+        CriteriaUtils.withClause(false, SQLs.cte(cteName, supplier.get()), this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE with(String cteName, Function<C, ? extends SS> function) {
-        CriteriaUtils.withClause(false, Syntax.cte(cteName, function.apply(this.criteria))
+        CriteriaUtils.withClause(false, SQLs.cte(cteName, function.apply(this.criteria))
                 , this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
@@ -68,13 +68,13 @@ abstract class WithCteMultiUpdate<C, SS extends SubStatement, WE, SR, FT, FS, FP
 
     @Override
     public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
-        CriteriaUtils.withClause(true, Syntax.cte(cteName, supplier.get()), this.criteriaContext, this::doWithCte);
+        CriteriaUtils.withClause(true, SQLs.cte(cteName, supplier.get()), this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
-        CriteriaUtils.withClause(true, Syntax.cte(cteName, function.apply(this.criteria))
+        CriteriaUtils.withClause(true, SQLs.cte(cteName, function.apply(this.criteria))
                 , this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
