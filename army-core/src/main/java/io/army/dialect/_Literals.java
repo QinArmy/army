@@ -298,7 +298,7 @@ public abstract class _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return Constant.QUOTE + text + Constant.QUOTE;
+        return _Constant.QUOTE + text + _Constant.QUOTE;
     }
 
     public static String timeWithZone(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
@@ -315,7 +315,7 @@ public abstract class _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return Constant.QUOTE + text + Constant.QUOTE;
+        return _Constant.QUOTE + text + _Constant.QUOTE;
     }
 
     public static String date(final SqlType sqlType, final Object nonNull) {
@@ -331,7 +331,7 @@ public abstract class _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return Constant.QUOTE + v.toString() + Constant.QUOTE;
+        return _Constant.QUOTE + v.toString() + _Constant.QUOTE;
     }
 
     public static String datetime(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
@@ -349,7 +349,7 @@ public abstract class _Literals {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
 
-        return Constant.QUOTE + text + Constant.QUOTE;
+        return _Constant.QUOTE + text + _Constant.QUOTE;
     }
 
     public static String dateTimeWithZone(final SqlType sqlType, final ParamMeta paramMeta, final Object nonNull) {
@@ -369,14 +369,14 @@ public abstract class _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return Constant.QUOTE + text + Constant.QUOTE;
+        return _Constant.QUOTE + text + _Constant.QUOTE;
     }
 
     public static String enumLiteral(final SqlType sqlType, final Object nonNull) {
         if (!(nonNull instanceof Enum)) {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return Constant.QUOTE + ((Enum<?>) nonNull).name() + Constant.QUOTE;
+        return _Constant.QUOTE + ((Enum<?>) nonNull).name() + _Constant.QUOTE;
     }
 
     private static String doUnsignedInteger(final SqlType sqlType, final long maxUnsigned, final Object nonNull) {

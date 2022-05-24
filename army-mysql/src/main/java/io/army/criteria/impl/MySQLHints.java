@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Hint;
 import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.mysql.HintStrategy;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -182,16 +182,16 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(HintType.JOIN_FIXED_ORDER.name())
-                    .append(Constant.LEFT_BRACKET);
+                    .append(_Constant.LEFT_PAREN);
             final String queryBlockName = this.queryBlockName;
             if (queryBlockName == null) {
-                builder.append(Constant.RIGHT_BRACKET);
+                builder.append(_Constant.RIGHT_BRACKET);
             } else {
-                builder.append(Constant.SPACE_AT);
+                builder.append(_Constant.SPACE_AT);
                 context.dialect().quoteIfNeed(queryBlockName, builder);
-                builder.append(Constant.SPACE_RIGHT_BRACKET);
+                builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
         }
@@ -238,17 +238,17 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(this.hint.name())
-                    .append(Constant.LEFT_BRACKET);
+                    .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
             final _Dialect dialect = context.dialect();
             if (queryBlockName != null) {
-                builder.append(Constant.SPACE_AT);
+                builder.append(_Constant.SPACE_AT);
                 dialect.quoteIfNeed(queryBlockName, builder);
             }
-            builder.append(Constant.SPACE);
+            builder.append(_Constant.SPACE);
 
             final List<String> tableNameList = this.tableNameList;
             final int size = tableNameList.size();
@@ -256,25 +256,25 @@ abstract class MySQLHints implements _MySQLHint {
             String tableName;
             for (int i = 0, index; i < size; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA_SPACE);
+                    builder.append(_Constant.SPACE_COMMA_SPACE);
                 }
                 if (queryBlockName == null) {
                     dialect.quoteIfNeed(tableNameList.get(i), builder);
                     continue;
                 }
                 tableName = tableNameList.get(i);
-                index = tableName.indexOf(Constant.AT_CHAR);
+                index = tableName.indexOf(_Constant.AT_CHAR);
                 if (index < 0) {
                     dialect.quoteIfNeed(tableName, builder);
                 } else if (index < tableName.length() - 1) {
                     dialect.quoteIfNeed(tableName.substring(0, index), builder)
-                            .append(Constant.AT_CHAR);
+                            .append(_Constant.AT_CHAR);
                     dialect.quoteIfNeed(tableName.substring(index + 1), builder);
                 } else {
                     throw MySQLHints.hintTableNameError(tableName);
                 }
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }//JoinOrder
@@ -317,17 +317,17 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(this.hint.name())
-                    .append(Constant.LEFT_BRACKET);
+                    .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
             final _Dialect dialect = context.dialect();
             if (queryBlockName != null) {
-                builder.append(Constant.SPACE_AT);
+                builder.append(_Constant.SPACE_AT);
                 dialect.quoteIfNeed(queryBlockName, builder);
             }
-            builder.append(Constant.SPACE);
+            builder.append(_Constant.SPACE);
 
             final List<String> tableNameList = this.tableNameList;
             final int size = tableNameList.size();
@@ -335,23 +335,23 @@ abstract class MySQLHints implements _MySQLHint {
             String tableName;
             for (int i = 0, index; i < size; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA_SPACE);
+                    builder.append(_Constant.SPACE_COMMA_SPACE);
                 }
                 tableName = tableNameList.get(i);
-                index = tableName.indexOf(Constant.AT_CHAR);
+                index = tableName.indexOf(_Constant.AT_CHAR);
                 if (queryBlockName != null) {
                     if (index > -1) {
                         throw MySQLHints.hintTableNameError(tableName);
                     }
                 } else if (index > 0 && index < tableName.length() - 1) {
                     dialect.quoteIfNeed(tableName.substring(0, index), builder)
-                            .append(Constant.AT_CHAR);
+                            .append(_Constant.AT_CHAR);
                     dialect.quoteIfNeed(tableName.substring(index + 1), builder);
                 } else {
                     throw MySQLHints.hintTableNameError(tableName);
                 }
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }//TableLevelHint
@@ -398,28 +398,28 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(this.hint.name())
-                    .append(Constant.LEFT_BRACKET);
+                    .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
             final _Dialect dialect = context.dialect();
             if (queryBlockName != null) {
-                builder.append(Constant.SPACE_AT);
+                builder.append(_Constant.SPACE_AT);
                 dialect.quoteIfNeed(queryBlockName, builder);
             }
-            builder.append(Constant.SPACE);
+            builder.append(_Constant.SPACE);
             dialect.quoteIfNeed(this.tableName, builder)
-                    .append(Constant.SPACE);
+                    .append(_Constant.SPACE);
             final List<String> indexNameList = this.indexNameList;
             final int size = indexNameList.size();
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA_SPACE);
+                    builder.append(_Constant.SPACE_COMMA_SPACE);
                 }
                 dialect.quoteIfNeed(indexNameList.get(i), builder);
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }//IndexLevelHint
@@ -450,27 +450,27 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(this.hint.name())
-                    .append(Constant.LEFT_BRACKET);
+                    .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
             final _Dialect dialect = context.dialect();
             if (queryBlockName != null) {
-                builder.append(Constant.SPACE_AT);
+                builder.append(_Constant.SPACE_AT);
                 dialect.quoteIfNeed(queryBlockName, builder);
             }
-            builder.append(Constant.SPACE);
+            builder.append(_Constant.SPACE);
 
             int index = 0;
             for (HintStrategy strategy : this.strategySet) {
                 if (index > 0) {
-                    builder.append(Constant.SPACE_COMMA_SPACE);
+                    builder.append(_Constant.SPACE_COMMA_SPACE);
                 }
                 builder.append(strategy.name());
                 index++;
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }//SbuQueryHint
@@ -491,17 +491,17 @@ abstract class MySQLHints implements _MySQLHint {
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(HintType.MAX_EXECUTION_TIME.name())
-                    .append(Constant.LEFT_BRACKET);
+                    .append(_Constant.LEFT_PAREN);
 
             final Long millis = this.millis;
             if (millis == null) {
-                builder.append(Constant.RIGHT_BRACKET);
+                builder.append(_Constant.RIGHT_BRACKET);
             } else {
-                builder.append(Constant.SPACE)
+                builder.append(_Constant.SPACE)
                         .append(millis)
-                        .append(Constant.SPACE_RIGHT_BRACKET);
+                        .append(_Constant.SPACE_RIGHT_PAREN);
             }
 
         }
@@ -513,7 +513,7 @@ abstract class MySQLHints implements _MySQLHint {
         private final String varValuePair;
 
         private VariableSettingHint(String varValuePair) {
-            if (varValuePair.indexOf(Constant.EQUAL) < 0) {
+            if (varValuePair.indexOf(_Constant.EQUAL) < 0) {
                 throw MySQLHints.varValuePairError(varValuePair);
             }
             MySQLHints.assertNoCommentBoundary(varValuePair);
@@ -523,12 +523,12 @@ abstract class MySQLHints implements _MySQLHint {
         @Override
         public void appendSql(final _SqlContext context) {
             context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(HintType.SET_VAR.name())
-                    .append(Constant.LEFT_BRACKET)
-                    .append(Constant.SPACE)
+                    .append(_Constant.LEFT_PAREN)
+                    .append(_Constant.SPACE)
                     .append(this.varValuePair)
-                    .append(Constant.SPACE_RIGHT_BRACKET);
+                    .append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }//VariableSettingHint
@@ -545,12 +545,12 @@ abstract class MySQLHints implements _MySQLHint {
         @Override
         public void appendSql(final _SqlContext context) {
             context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(HintType.RESOURCE_GROUP.name())
-                    .append(Constant.LEFT_BRACKET)
-                    .append(Constant.SPACE)
+                    .append(_Constant.LEFT_PAREN)
+                    .append(_Constant.SPACE)
                     .append(this.groupName)
-                    .append(Constant.SPACE_RIGHT_BRACKET);
+                    .append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }//ResourceGroupHint
@@ -567,12 +567,12 @@ abstract class MySQLHints implements _MySQLHint {
         @Override
         public void appendSql(final _SqlContext context) {
             context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(HintType.QB_NAME.name())
-                    .append(Constant.LEFT_BRACKET)
-                    .append(Constant.SPACE)
+                    .append(_Constant.LEFT_PAREN)
+                    .append(_Constant.SPACE)
                     .append(this.name)
-                    .append(Constant.SPACE_RIGHT_BRACKET);
+                    .append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }//QbNameHint
@@ -581,12 +581,12 @@ abstract class MySQLHints implements _MySQLHint {
     private static void assertNoCommentBoundary(final String str) {
         final int index, last;
         last = str.length() - 1;
-        index = str.indexOf(Constant.START_CHAR);
+        index = str.indexOf(_Constant.START_CHAR);
         if (index > -1) {
-            if (index < last && str.charAt(index + 1) == Constant.SLASH) {
+            if (index < last && str.charAt(index + 1) == _Constant.SLASH) {
                 throw MySQLHints.varValuePairError(str);
             }
-            if (index > 0 && str.charAt(index - 1) == Constant.SLASH) {
+            if (index > 0 && str.charAt(index - 1) == _Constant.SLASH) {
                 throw MySQLHints.varValuePairError(str);
             }
         }

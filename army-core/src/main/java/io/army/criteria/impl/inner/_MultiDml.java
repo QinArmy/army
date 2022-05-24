@@ -7,6 +7,6 @@ public interface _MultiDml extends _Dml {
     /**
      * @return a unmodifiable list
      */
-    List<? extends _TableBlock> tableBlockList();
+    List<_TableBlock> tableBlockList();
 
 }

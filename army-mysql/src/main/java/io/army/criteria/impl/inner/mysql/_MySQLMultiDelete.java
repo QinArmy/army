@@ -9,7 +9,6 @@ public interface _MySQLMultiDelete extends _MySQLDelete, _MultiDelete, MySQLDele
 
     List<String> tableAliasList();
 
-
     boolean usingSyntax();
 
 

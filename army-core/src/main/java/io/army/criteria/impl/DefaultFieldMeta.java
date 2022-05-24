@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.annotation.*;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
@@ -414,7 +414,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
         context.appendField(this);
 
         context.sqlBuilder()
-                .append(Constant.SPACE_AS_SPACE)
+                .append(_Constant.SPACE_AS_SPACE)
                 .append(this.fieldName);
     }
 

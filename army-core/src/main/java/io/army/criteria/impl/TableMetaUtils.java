@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.*;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
 import io.army.lang.NonNull;
@@ -238,7 +238,7 @@ abstract class TableMetaUtils {
                     String m = String.format("%s index[%s] couldn't start with white space.", table, index.name());
                     throw new MetaException(m);
                 }
-                if (fieldName.indexOf(Constant.SPACE) < 0) {
+                if (fieldName.indexOf(_Constant.SPACE) < 0) {
                     indexFieldNameSet.add(fieldName);
                 } else {
                     final StringTokenizer tokenizer;

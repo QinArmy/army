@@ -81,9 +81,9 @@ import java.util.List;
             final Object value;
             value = paramValue.value();
             if (value == null) {
-                this.sqlBuilder.append(Constant.SPACE_NULL);
+                this.sqlBuilder.append(_Constant.SPACE_NULL);
             } else {
-                this.sqlBuilder.append(Constant.SPACE)
+                this.sqlBuilder.append(_Constant.SPACE)
                         .append(this.dialect.literal(paramMeta, value));
             }
         } else {

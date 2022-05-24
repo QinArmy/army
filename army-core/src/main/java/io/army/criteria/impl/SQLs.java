@@ -1,7 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.dialect.Constant;
+import io.army.criteria.impl.inner._Query;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -35,7 +36,7 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static <T extends IDomain> Insert.StandardValueInsertSpec<Void, T> valueInsert(TableMeta<T> table) {
+    public static <T extends IDomain> Insert._StandardValueInsertSpec<Void, T> valueInsert(TableMeta<T> table) {
         return StandardValueInsert.create(table, null);
     }
 
@@ -51,7 +52,7 @@ public abstract class SQLs extends Functions {
      * @param table will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain, C> Insert.StandardValueInsertSpec<C, T> valueInsert(TableMeta<T> table, C criteria) {
+    public static <T extends IDomain, C> Insert._StandardValueInsertSpec<C, T> valueInsert(TableMeta<T> table, C criteria) {
         Objects.requireNonNull(criteria);
         return StandardValueInsert.create(table, criteria);
     }
@@ -604,12 +605,12 @@ public abstract class SQLs extends Functions {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(Constant.SPACE_DEFAULT);
+            context.sqlBuilder().append(_Constant.SPACE_DEFAULT);
         }
 
         @Override
         public String toString() {
-            return Constant.SPACE_DEFAULT;
+            return _Constant.SPACE_DEFAULT;
         }
 
     }// DefaultWord
@@ -630,7 +631,7 @@ public abstract class SQLs extends Functions {
 
         @Override
         public void appendSql(_SqlContext context) {
-            context.sqlBuilder().append(Constant.SPACE_NULL);
+            context.sqlBuilder().append(_Constant.SPACE_NULL);
         }
 
         @Override
@@ -640,7 +641,7 @@ public abstract class SQLs extends Functions {
 
         @Override
         public String toString() {
-            return Constant.SPACE_NULL;
+            return _Constant.SPACE_NULL;
         }
 
 
@@ -750,6 +751,18 @@ public abstract class SQLs extends Functions {
         private CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
             this.name = name;
             this.columnNameList = _CollectionUtils.asUnmodifiableList(columnNameList);
+            if (subStatement instanceof SubQuery) {
+                final int columnAliasCount, selectionCount;
+                columnAliasCount = columnNameList.size();
+                selectionCount = selectionCount((SubQuery) subStatement);
+                if (columnAliasCount != selectionCount) {
+                    String m;
+                    m = String.format("cte column alias count[%s] and selection count[%s] of SubQuery not match."
+                            , columnAliasCount, selectionCount);
+                    throw new CriteriaException(m);
+                }
+
+            }
             this.subStatement = subStatement;
         }
 
@@ -794,4 +807,20 @@ public abstract class SQLs extends Functions {
 
 
     }//CteImpl
+
+    private static int selectionCount(final SubQuery query) {
+        int count = 0;
+        for (SelectItem selectItem : ((_Query) query).selectItemList()) {
+            if (selectItem instanceof Selection) {
+                count++;
+            } else if (selectItem instanceof SelectionGroup) {
+                count += ((SelectionGroup) selectItem).selectionList().size();
+            } else {
+                throw _Exceptions.unknownSelectItem(selectItem);
+            }
+        }
+        return count;
+    }
+
+
 }

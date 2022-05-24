@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
@@ -104,35 +104,35 @@ final class DualExpression extends OperationExpression {
         final StringBuilder builder = context.sqlBuilder();
 
         if (outerBracket) {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
         }
 
         if (leftInnerBracket) {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
         }
         //1. append left expression
         left.appendSql(context);
 
         if (leftInnerBracket) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
         //2. append operator
         builder.append(this.operator.rendered());
 
         if (rightInnerBracket) {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
         }
 
         //3. append right expression
         right.appendSql(context);
 
         if (rightInnerBracket) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
         if (outerBracket) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
 

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Window;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -55,6 +55,10 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             illegal = true;
         }
         return illegal;
+    }
+
+    static boolean isStandardWindow(Window window) {
+        return window instanceof StandardSimpleWindow;
     }
 
 
@@ -489,16 +493,16 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         //1.window name
         final String windowName = this.windowName;
         if (_StringUtils.hasText(windowName)) {
-            sqlBuilder.append(Constant.SPACE);
+            sqlBuilder.append(_Constant.SPACE);
             dialect.quoteIfNeed(windowName, sqlBuilder)
-                    .append(Constant.SPACE_AS);
+                    .append(_Constant.SPACE_AS);
         }
         //2.(
-        sqlBuilder.append(Constant.SPACE_LEFT_BRACKET);
+        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
         //3.reference window name
         final String refWindowName = this.refWindowName;
         if (refWindowName != null) {
-            sqlBuilder.append(Constant.SPACE);
+            sqlBuilder.append(_Constant.SPACE);
             dialect.quoteIfNeed(refWindowName, sqlBuilder);
         }
         //4.partition_clause
@@ -507,7 +511,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             final int size = partitionByList.size();
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    sqlBuilder.append(Constant.SPACE_COMMA);
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 partitionByList.get(i).appendSql(context);
             }
@@ -518,7 +522,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             final int size = orderByList.size();
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    sqlBuilder.append(Constant.SPACE_COMMA);
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 orderByList.get(i).appendSql(context);
             }
@@ -532,17 +536,17 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             }
             sqlBuilder.append(frameUnits.keyWords);
             if (betweenExtent) {
-                sqlBuilder.append(Constant.SPACE_BETWEEN);
+                sqlBuilder.append(_Constant.SPACE_BETWEEN);
             }
             appendFrameBound(this.frameStartExp, this.frameStartBound, context, sqlBuilder);
             if (betweenExtent) {
-                sqlBuilder.append(Constant.SPACE_AND);
+                sqlBuilder.append(_Constant.SPACE_AND);
                 appendFrameBound(this.frameEndExp, this.frameEndBound, context, sqlBuilder);
             }
 
         }
         //7.)
-        sqlBuilder.append(Constant.SPACE_RIGHT_BRACKET);
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
 
     }

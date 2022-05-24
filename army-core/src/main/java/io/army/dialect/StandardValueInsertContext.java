@@ -188,11 +188,11 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
         if (returnId != null) {
             final StringBuilder builder;
             builder = this.sqlBuilder
-                    .append(Constant.SPACE_RETURNING)
-                    .append(Constant.SPACE);
+                    .append(_Constant.SPACE_RETURNING)
+                    .append(_Constant.SPACE);
 
             this.dialect.quoteIfNeed(returnId.columnName(), builder)
-                    .append(Constant.SPACE_AS_SPACE);
+                    .append(_Constant.SPACE_AS_SPACE);
             this.dialect.quoteIfNeed(returnId.fieldName(), builder);
         }
     }

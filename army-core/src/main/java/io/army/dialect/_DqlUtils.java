@@ -10,6 +10,7 @@ import java.util.List;
 
 public abstract class _DqlUtils extends _DialectUtils {
 
+
     public static List<Selection> flatSelectItem(final List<? extends SelectItem> selectPartList) {
         final List<Selection> selectionList = new ArrayList<>(selectPartList.size());
         for (SelectItem selectItem : selectPartList) {

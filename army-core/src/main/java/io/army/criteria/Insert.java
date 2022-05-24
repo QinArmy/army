@@ -6,6 +6,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -21,7 +23,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface InsertSpec {
+    interface _InsertSpec {
 
         Insert asInsert();
 
@@ -32,13 +34,13 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface OptionClause<OR> {
+    interface _OptionClause<OR> {
 
         OR migration();
 
         /**
          * <p>
-         * When invoking {@link InsertIntoClause#insertInto(TableMeta)} and appropriate field value is null,mode is valid.
+         * When invoking {@link _InsertIntoClause#insertInto(TableMeta)} and appropriate field value is null,mode is valid.
          * </p>
          */
         OR nullHandle(NullHandleMode mode);
@@ -47,13 +49,11 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface InsertIntoClause<C, T extends IDomain, IR> {
+    interface _InsertIntoClause<C, T extends IDomain, IR> {
 
-        IR insertInto(List<FieldMeta<? super T>> fields);
+        IR insertInto(Consumer<Consumer<FieldMeta<? super T>>> consumer);
 
-        IR insertInto(Function<C, List<FieldMeta<? super T>>> function);
-
-        IR insertInto(Supplier<List<FieldMeta<? super T>>> supplier);
+        IR insertInto(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer);
 
         IR insertInto(TableMeta<T> table);
     }
@@ -61,7 +61,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface CommonExpClause<C, T extends IDomain, SR> {
+    interface _CommonExpClause<C, T extends IDomain, SR> {
 
         SR set(FieldMeta<? super T> field, @Nullable Object paramOrExp);
 
@@ -78,31 +78,31 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface ValueClause<C, T extends IDomain> {
+    interface _ValueClause<C, T extends IDomain> {
 
-        InsertSpec value(T domain);
+        _InsertSpec value(T domain);
 
-        InsertSpec value(Function<C, T> function);
+        _InsertSpec value(Function<C, T> function);
 
-        InsertSpec value(Supplier<T> supplier);
+        _InsertSpec value(Supplier<T> supplier);
 
-        InsertSpec value(Function<String, Object> function, String keyName);
+        _InsertSpec value(Function<String, Object> function, String keyName);
 
-        InsertSpec values(List<T> domainList);
+        _InsertSpec values(List<T> domainList);
 
-        InsertSpec values(Function<C, List<T>> function);
+        _InsertSpec values(Function<C, List<T>> function);
 
-        InsertSpec values(Supplier<List<T>> supplier);
+        _InsertSpec values(Supplier<List<T>> supplier);
 
-        InsertSpec values(Function<String, Object> function, String keyName);
+        _InsertSpec values(Function<String, Object> function, String keyName);
     }
 
 
     /**
      * @since 1.0
      */
-    interface StandardValueInsertSpec<C, T extends IDomain>
-            extends Insert.ValueInsertIntoSpec<C, T>, Insert.OptionClause<Insert.ValueInsertIntoSpec<C, T>> {
+    interface _StandardValueInsertSpec<C, T extends IDomain>
+            extends _ValueInsertIntoSpec<C, T>, _OptionClause<_ValueInsertIntoSpec<C, T>> {
 
     }
 
@@ -110,16 +110,16 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface ValueInsertIntoSpec<C, T extends IDomain>
-            extends Insert.InsertIntoClause<C, T, Insert.ValueSpec<C, T>> {
+    interface _ValueInsertIntoSpec<C, T extends IDomain>
+            extends _InsertIntoClause<C, T, _ValueSpec<C, T>> {
 
     }
 
     /**
      * @since 1.0
      */
-    interface ValueSpec<C, T extends IDomain> extends Insert.CommonExpClause<C, T, ValueSpec<C, T>>
-            , Insert.ValueClause<C, T> {
+    interface _ValueSpec<C, T extends IDomain> extends _CommonExpClause<C, T, _ValueSpec<C, T>>
+            , _ValueClause<C, T> {
 
     }
 

@@ -5,7 +5,7 @@ import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Selection;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
@@ -60,7 +60,7 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         }
         final StringBuilder builder;
         builder = context.sqlBuilder()
-                .append(Constant.SPACE_AS_SPACE);
+                .append(_Constant.SPACE_AS_SPACE);
 
         context.dialect()
                 .quoteIfNeed(this.alias, builder);
@@ -94,7 +94,7 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder()
-                .append(Constant.SPACE);
+                .append(_Constant.SPACE);
 
         final TableField<?> field = this.field;
 
@@ -103,12 +103,12 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         } else if (field instanceof QualifiedField) {
             final QualifiedField<?> qualifiedField = (QualifiedField<?>) field;
             builder.append(qualifiedField.tableAlias())
-                    .append(Constant.POINT)
+                    .append(_Constant.POINT)
                     .append(field.columnName());
         } else {
             throw new IllegalStateException(String.format("field[%s] error", this.field));
         }
-        return builder.append(Constant.SPACE_AS_SPACE)
+        return builder.append(_Constant.SPACE_AS_SPACE)
                 .append(this.alias)
                 .toString();
 

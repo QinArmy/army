@@ -618,7 +618,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
 
         @Override
-        public final List<? extends _TableBlock> tableBlockList() {
+        public final List<_TableBlock> tableBlockList() {
             if (!this.nestedEnd) {
                 throw _Exceptions.castCriteriaApi();
             }

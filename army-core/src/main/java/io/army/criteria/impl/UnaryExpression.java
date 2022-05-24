@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
@@ -61,7 +61,7 @@ final class UnaryExpression extends OperationExpression {
         final StringBuilder builder = context.sqlBuilder();
 
         if (outerBracket) {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
         }
 
         builder.append(this.operator.rendered());
@@ -73,17 +73,17 @@ final class UnaryExpression extends OperationExpression {
                 || expression instanceof BracketsExpression);
 
         if (innerBracket) {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
         }
         // append expression
         expression.appendSql(context);
 
         if (innerBracket) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
         if (outerBracket) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }
@@ -105,9 +105,9 @@ final class UnaryExpression extends OperationExpression {
         final StringBuilder builder = new StringBuilder();
 
         if (outerBracket) {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
         }
-        builder.append(Constant.SPACE)
+        builder.append(_Constant.SPACE)
                 .append(this.operator.rendered());
 
         final _Expression expression = this.expression;
@@ -117,17 +117,17 @@ final class UnaryExpression extends OperationExpression {
                 || expression instanceof BracketsExpression);
 
         if (innerBracket) {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
         }
         // append expression
         builder.append(expression);
 
         if (innerBracket) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
         if (outerBracket) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
         return builder.toString();
     }

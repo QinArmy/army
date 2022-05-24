@@ -18,10 +18,10 @@ import io.army.meta.TableMeta;
 final class StandardValueInsert<C, T extends IDomain> extends ValueInsert<
         C,
         T,
-        Insert.ValueInsertIntoSpec<C, T>,//OR
-        Insert.ValueSpec<C, T>, //IR
-        Insert.ValueSpec<C, T>> // SR
-        implements Insert.StandardValueInsertSpec<C, T>, Insert.ValueSpec<C, T>, Insert.ValueInsertIntoSpec<C, T> {
+        Insert._ValueInsertIntoSpec<C, T>,//OR
+        Insert._ValueSpec<C, T>, //IR
+        Insert._ValueSpec<C, T>> // SR
+        implements Insert._StandardValueInsertSpec<C, T>, Insert._ValueSpec<C, T>, Insert._ValueInsertIntoSpec<C, T> {
 
 
     static <C, T extends IDomain> StandardValueInsert<C, T> create(TableMeta<T> table, @Nullable C criteria) {

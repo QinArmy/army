@@ -83,9 +83,9 @@ public abstract class _SingleDmlContext extends StmtContext implements _DmlConte
         final ChildBlock childBlock;
         if (belongOf == this.table) {// field is parent table column.
             this.sqlBuilder
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(this.safeTableAlias)
-                    .append(Constant.POINT);
+                    .append(_Constant.POINT);
 
             this.dialect.safeObjectName(field.columnName(), this.sqlBuilder);
 
@@ -93,9 +93,9 @@ public abstract class _SingleDmlContext extends StmtContext implements _DmlConte
             throw _Exceptions.unknownColumn(null, field);
         } else if (this.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
             this.sqlBuilder
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(childBlock.safeTableAlias)
-                    .append(Constant.POINT);
+                    .append(_Constant.POINT);
 
             this.dialect.safeObjectName(field.columnName(), sqlBuilder);
 
@@ -165,16 +165,16 @@ public abstract class _SingleDmlContext extends StmtContext implements _DmlConte
 
             if (belongOf == this.table) {// field is child table column.
                 sqlBuilder
-                        .append(Constant.SPACE)
+                        .append(_Constant.SPACE)
                         .append(this.safeTableAlias)
-                        .append(Constant.POINT);
+                        .append(_Constant.POINT);
                 dialect.safeObjectName(field.columnName(), sqlBuilder);
             } else if (belongOf == this.parentContext.table) {// field is parent table column.
                 if (this.parentContext.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
                     sqlBuilder
-                            .append(Constant.SPACE)
+                            .append(_Constant.SPACE)
                             .append(this.parentContext.safeTableAlias)
-                            .append(Constant.POINT);
+                            .append(_Constant.POINT);
                     dialect.safeObjectName(field.columnName(), sqlBuilder);
                 } else {
                     //non multi-table update,so convert parent filed as sub query.
@@ -226,7 +226,7 @@ public abstract class _SingleDmlContext extends StmtContext implements _DmlConte
             throw new IllegalArgumentException("parentContext error");
         }
 
-        final String childSafeTableAlias = Constant.FORBID_ALIAS + "temp_c_of_" + childBlock.tableAlias();
+        final String childSafeTableAlias = _Constant.FORBID_ALIAS + "temp_c_of_" + childBlock.tableAlias();
         final _Dialect dialect = parentContext.dialect();
         // convert for validate childBlock
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childBlock.table();
@@ -234,53 +234,53 @@ public abstract class _SingleDmlContext extends StmtContext implements _DmlConte
         final StringBuilder sqlBuilder = parentContext.sqlBuilder();
         sqlBuilder
                 //below sub query left bracket
-                .append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET)
+                .append(_Constant.SPACE)
+                .append(_Constant.LEFT_PAREN)
 
-                .append(Constant.SPACE)
-                .append(Constant.SELECT)
-                .append(Constant.SPACE)
+                .append(_Constant.SPACE)
+                .append(_Constant.SELECT)
+                .append(_Constant.SPACE)
 
                 .append(childSafeTableAlias)
-                .append(Constant.POINT);
+                .append(_Constant.POINT);
 
         dialect.safeObjectName(childField.columnName(), sqlBuilder)
-                .append(Constant.SPACE)
-                .append(Constant.SPACE_FROM)
-                .append(Constant.SPACE);
+                .append(_Constant.SPACE)
+                .append(_Constant.SPACE_FROM)
+                .append(_Constant.SPACE);
 
         dialect.safeObjectName(childTable.tableName(), sqlBuilder);
 
         if (dialect.tableAliasAfterAs()) {
-            sqlBuilder.append(Constant.SPACE)
-                    .append(Constant.SPACE_AS_SPACE);
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(_Constant.SPACE_AS_SPACE);
         }
-        sqlBuilder.append(Constant.SPACE)
+        sqlBuilder.append(_Constant.SPACE)
                 .append(childSafeTableAlias);
 
-        sqlBuilder.append(Constant.SPACE)
-                .append(Constant.SPACE_WHERE)
-                .append(Constant.SPACE)
+        sqlBuilder.append(_Constant.SPACE)
+                .append(_Constant.SPACE_WHERE)
+                .append(_Constant.SPACE)
 
                 .append(childSafeTableAlias)
-                .append(Constant.POINT)
+                .append(_Constant.POINT)
                 .append(_MetaBridge.ID)
 
-                .append(Constant.SPACE_EQUAL_SPACE)
+                .append(_Constant.SPACE_EQUAL_SPACE)
 
                 .append(parentContext.safeTableAlias())
-                .append(Constant.POINT)
+                .append(_Constant.POINT)
                 .append(_MetaBridge.ID)
 
                 //below sub query right bracket
-                .append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+                .append(_Constant.SPACE)
+                .append(_Constant.RIGHT_BRACKET);
     }
 
 
     private static void parentColumnFromSubQuery(final _Block childContext, final FieldMeta<?> parentField) {
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childContext.table();
-        final String parentSafeTable = Constant.FORBID_ALIAS + "temp_p_of_" + childContext.tableAlias();
+        final String parentSafeTable = _Constant.FORBID_ALIAS + "temp_p_of_" + childContext.tableAlias();
 
         final _Dialect dialect = childContext.dialect();
         final ParentTableMeta<?> parentTable = childTable.parentMeta();
@@ -288,68 +288,68 @@ public abstract class _SingleDmlContext extends StmtContext implements _DmlConte
 
         sqlBuilder
                 //below sub query left bracket
-                .append(Constant.SPACE)
-                .append(Constant.LEFT_BRACKET)
+                .append(_Constant.SPACE)
+                .append(_Constant.LEFT_PAREN)
 
-                .append(Constant.SPACE)
-                .append(Constant.SELECT)
-                .append(Constant.SPACE)
+                .append(_Constant.SPACE)
+                .append(_Constant.SELECT)
+                .append(_Constant.SPACE)
 
                 //below target parent column
                 .append(parentSafeTable)
-                .append(Constant.POINT);
+                .append(_Constant.POINT);
 
         dialect.safeObjectName(parentField.columnName(), sqlBuilder)
 
-                .append(Constant.SPACE)
-                .append(Constant.SPACE_FROM)
-                .append(Constant.SPACE);
+                .append(_Constant.SPACE)
+                .append(_Constant.SPACE_FROM)
+                .append(_Constant.SPACE);
 
         dialect.safeObjectName(parentTable.tableName(), sqlBuilder);
 
 
         if (dialect.tableAliasAfterAs()) {
-            sqlBuilder.append(Constant.SPACE)
-                    .append(Constant.SPACE_AS_SPACE);
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(_Constant.SPACE_AS_SPACE);
         }
-        sqlBuilder.append(Constant.SPACE)
+        sqlBuilder.append(_Constant.SPACE)
                 .append(parentSafeTable);
 
         final FieldMeta<?> discriminator = parentTable.discriminator();
 
-        sqlBuilder.append(Constant.SPACE)
+        sqlBuilder.append(_Constant.SPACE)
                 //below where clause
-                .append(Constant.SPACE_WHERE)
-                .append(Constant.SPACE)
+                .append(_Constant.SPACE_WHERE)
+                .append(_Constant.SPACE)
 
                 .append(parentSafeTable)
-                .append(Constant.POINT)
+                .append(_Constant.POINT)
                 .append(_MetaBridge.ID)
 
-                .append(Constant.SPACE_EQUAL_SPACE)
+                .append(_Constant.SPACE_EQUAL_SPACE)
 
                 //below child table id
                 .append(childContext.safeTableAlias())
-                .append(Constant.POINT)
+                .append(_Constant.POINT)
                 .append(_MetaBridge.ID)
 
-                .append(Constant.SPACE_AND)
-                .append(Constant.SPACE)
+                .append(_Constant.SPACE_AND)
+                .append(_Constant.SPACE)
 
                 //below parent table discriminator
                 .append(parentSafeTable)
-                .append(Constant.POINT);
+                .append(_Constant.POINT);
 
         dialect.safeObjectName(discriminator.columnName(), sqlBuilder)
 
-                .append(Constant.SPACE_EQUAL_SPACE)
+                .append(_Constant.SPACE_EQUAL_SPACE)
 
                 //below child table discriminator literal
                 .append(dialect.literal(discriminator, childTable.discriminatorValue()))
 
                 //below sub query right bracket
-                .append(Constant.SPACE)
-                .append(Constant.RIGHT_BRACKET);
+                .append(_Constant.SPACE)
+                .append(_Constant.RIGHT_BRACKET);
 
 
     }

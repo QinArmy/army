@@ -5,7 +5,7 @@ import io.army.criteria.DerivedTable;
 import io.army.criteria.Selection;
 import io.army.criteria.SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._DqlUtils;
 import io.army.dialect._SqlContext;
@@ -99,12 +99,12 @@ abstract class SelectionGroups {
             FieldMeta<T> field;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
                 field = fieldList.get(i);
                 context.appendField(tableAlias, field);
 
-                builder.append(Constant.SPACE_AS_SPACE)
+                builder.append(_Constant.SPACE_AS_SPACE)
                         .append(((DefaultFieldMeta<T>) field).fieldName);
             }
 
@@ -117,13 +117,13 @@ abstract class SelectionGroups {
             int index = 0;
             for (FieldMeta<T> field : this.fieldList) {
                 if (index > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
-                builder.append(Constant.SPACE)
+                builder.append(_Constant.SPACE)
                         .append(this.tableAlias)
-                        .append(Constant.POINT)
+                        .append(_Constant.POINT)
                         .append(field.columnName())
-                        .append(Constant.SPACE_AS_SPACE)
+                        .append(_Constant.SPACE_AS_SPACE)
                         .append(field.fieldName());
                 index++;
             }
@@ -185,7 +185,7 @@ abstract class SelectionGroups {
             FieldMeta<?> field;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
                 field = fieldList.get(i);
                 if (i < parentSize) {
@@ -193,7 +193,7 @@ abstract class SelectionGroups {
                 } else {
                     context.appendField(childAlias, field);
                 }
-                builder.append(Constant.SPACE_AS_SPACE)
+                builder.append(_Constant.SPACE_AS_SPACE)
                         .append(((DefaultFieldMeta<T>) field).fieldName);
 
             }
@@ -213,18 +213,18 @@ abstract class SelectionGroups {
             FieldMeta<?> field;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
-                builder.append(Constant.SPACE);
+                builder.append(_Constant.SPACE);
                 field = fieldList.get(i);
                 if (i < parentSize) {
                     builder.append(parentAlias);
                 } else {
                     builder.append(childAlias);
                 }
-                builder.append(Constant.POINT)
+                builder.append(_Constant.POINT)
                         .append(field.columnName())
-                        .append(Constant.SPACE_AS_SPACE)
+                        .append(_Constant.SPACE_AS_SPACE)
                         .append(field.fieldName());
 
             }
@@ -291,15 +291,15 @@ abstract class SelectionGroups {
             String safeFieldAlias;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
                 selection = selectionList.get(i);
                 safeFieldAlias = dialect.quoteIfNeed(selection.alias());
-                builder.append(Constant.SPACE)
+                builder.append(_Constant.SPACE)
                         .append(safeAlias)
-                        .append(Constant.POINT)
+                        .append(_Constant.POINT)
                         .append(safeFieldAlias)
-                        .append(Constant.SPACE_AS_SPACE)
+                        .append(_Constant.SPACE_AS_SPACE)
                         .append(safeFieldAlias);
             }
 

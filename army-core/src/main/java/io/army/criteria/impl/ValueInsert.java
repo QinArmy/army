@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractInsert<C, T, IR> implements
-        Insert.OptionClause<OR>, Insert.CommonExpClause<C, T, SR>, Insert.ValueClause<C, T>, _ValuesInsert {
+        Insert._OptionClause<OR>, Insert._CommonExpClause<C, T, SR>, Insert._ValueClause<C, T>, _ValuesInsert {
 
 
     private boolean migration;
@@ -111,24 +111,24 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
 
 
     @Override
-    public final InsertSpec value(T domain) {
+    public final _InsertSpec value(T domain) {
         Objects.requireNonNull(domain);
         this.domainList = Collections.singletonList(domain);
         return this;
     }
 
     @Override
-    public final InsertSpec value(Function<C, T> function) {
+    public final _InsertSpec value(Function<C, T> function) {
         return this.value(function.apply(this.criteria));
     }
 
     @Override
-    public final InsertSpec value(Supplier<T> supplier) {
+    public final _InsertSpec value(Supplier<T> supplier) {
         return this.value(supplier.get());
     }
 
     @Override
-    public final InsertSpec value(Function<String, Object> function, String keyName) {
+    public final _InsertSpec value(Function<String, Object> function, String keyName) {
         final Object domain;
         domain = function.apply(keyName);
         if (domain == null || domain.getClass() != this.table.javaType()) {
@@ -138,23 +138,23 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
     }
 
     @Override
-    public final InsertSpec values(List<T> domainList) {
+    public final _InsertSpec values(List<T> domainList) {
         this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
         return this;
     }
 
     @Override
-    public final InsertSpec values(Function<C, List<T>> function) {
+    public final _InsertSpec values(Function<C, List<T>> function) {
         return this.values(function.apply(this.criteria));
     }
 
     @Override
-    public final InsertSpec values(Supplier<List<T>> supplier) {
+    public final _InsertSpec values(Supplier<List<T>> supplier) {
         return this.values(supplier.get());
     }
 
     @Override
-    public final InsertSpec values(Function<String, Object> function, String keyName) {
+    public final _InsertSpec values(Function<String, Object> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (!(value instanceof List)) {

@@ -667,7 +667,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final List<? extends SortItem> groupPartList() {
+    public final List<? extends SortItem> groupByList() {
         return this.groupByList;
     }
 

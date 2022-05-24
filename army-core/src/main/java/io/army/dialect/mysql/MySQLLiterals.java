@@ -1,6 +1,6 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._Literals;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
@@ -35,9 +35,9 @@ abstract class MySQLLiterals extends _Literals {
         final byte[] array = (byte[]) nonNull;
         final StringBuilder builder = new StringBuilder()
                 .append('X')
-                .append(Constant.QUOTE)
+                .append(_Constant.QUOTE)
                 .append(BufferUtils.hexEscapesText(true, array, array.length));
-        return builder.append(Constant.QUOTE)
+        return builder.append(_Constant.QUOTE)
                 .toString();
     }
 
@@ -66,7 +66,7 @@ abstract class MySQLLiterals extends _Literals {
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return "B'" + value + Constant.QUOTE;
+        return "B'" + value + _Constant.QUOTE;
     }
 
 
@@ -95,7 +95,7 @@ abstract class MySQLLiterals extends _Literals {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
         final StringBuilder builder = new StringBuilder()
-                .append(Constant.QUOTE);
+                .append(_Constant.QUOTE);
         Class<?> enumClass = null;
         int index = 0;
         for (Object e : (Set<?>) nonNull) {
@@ -111,12 +111,12 @@ abstract class MySQLLiterals extends _Literals {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
             if (index > 0) {
-                builder.append(Constant.COMMA);
+                builder.append(_Constant.COMMA);
             }
             builder.append(((Enum<?>) e).name());
             index++;
         }
-        return builder.append(Constant.QUOTE)
+        return builder.append(_Constant.QUOTE)
                 .toString();
     }
 
@@ -124,7 +124,7 @@ abstract class MySQLLiterals extends _Literals {
     private static String textEscapes(final String value) {
         final char[] array = value.toCharArray();
         final StringBuilder builder = new StringBuilder(array.length + 5)
-                .append(Constant.QUOTE);
+                .append(_Constant.QUOTE);
         int lastWritten = 0;
         char ch;
         boolean hexEscapes = false;
@@ -132,16 +132,16 @@ abstract class MySQLLiterals extends _Literals {
         for (int i = 0; i < array.length; i++) {
             ch = array[i];
             switch (ch) {
-                case Constant.QUOTE: {
+                case _Constant.QUOTE: {
                     if (i > lastWritten) {
                         builder.append(array, lastWritten, i - lastWritten);
                     }
-                    builder.append(Constant.QUOTE);
+                    builder.append(_Constant.QUOTE);
                     lastWritten = i; // not i+1 as ch wasn't written.
                 }
                 break;
-                case Constant.BACK_SLASH:
-                case Constant.EMPTY_CHAR:
+                case _Constant.BACK_SLASH:
+                case _Constant.EMPTY_CHAR:
                 case '\b':
                 case '\n':
                 case '\r':
@@ -156,13 +156,13 @@ abstract class MySQLLiterals extends _Literals {
         if (hexEscapes) {
             final byte[] bytes;
             bytes = value.getBytes(StandardCharsets.UTF_8);
-            literal = "X'" + BufferUtils.hexEscapesText(true, bytes, bytes.length) + Constant.QUOTE;
+            literal = "X'" + BufferUtils.hexEscapesText(true, bytes, bytes.length) + _Constant.QUOTE;
         } else {
             if (lastWritten < array.length) {
                 builder.append(array, lastWritten, array.length - lastWritten);
             }
             literal = builder
-                    .append(Constant.QUOTE)
+                    .append(_Constant.QUOTE)
                     .toString();
         }
         return literal;

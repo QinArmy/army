@@ -27,7 +27,7 @@ abstract class MultiUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final List<? extends _TableBlock> tableBlockList() {
+    public final List<_TableBlock> tableBlockList() {
         return this.tableBlockList;
     }
 

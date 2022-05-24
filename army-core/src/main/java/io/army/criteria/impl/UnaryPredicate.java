@@ -5,7 +5,7 @@ import io.army.criteria.NamedParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.util._Exceptions;
 
@@ -60,11 +60,11 @@ final class UnaryPredicate extends OperationPredicate {
 
                 final StringBuilder sqlBuilder = context.sqlBuilder();
                 if (innerBracket) {
-                    sqlBuilder.append(Constant.SPACE_LEFT_BRACKET);
+                    sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
                 }
                 expressionOrSubQuery.appendSql(context);
                 if (innerBracket) {
-                    sqlBuilder.append(Constant.SPACE_RIGHT_BRACKET);
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
                 }
                 sqlBuilder.append(this.operator.rendered());
             }

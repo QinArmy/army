@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -50,7 +50,7 @@ final class CollectionParamExpression extends NonOperationExpression {
     @Override
     public void appendSql(final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE_LEFT_BRACKET);
+                .append(_Constant.SPACE_LEFT_PAREN);
 
         final ParamMeta paramMeta = this.paramMeta;
         final boolean optimizing = this.optimizing && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping;
@@ -58,34 +58,34 @@ final class CollectionParamExpression extends NonOperationExpression {
         int index = 0;
         for (Object v : this.value) {
             if (index > 0) {
-                builder.append(Constant.SPACE_COMMA);
+                builder.append(_Constant.SPACE_COMMA);
             }
             if (optimizing) {
-                builder.append(Constant.SPACE)
+                builder.append(_Constant.SPACE)
                         .append(dialect.literal(paramMeta, v));
             } else {
                 context.appendParam(ParamValue.build(paramMeta, v));
             }
             index++;
         }
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder()
-                .append(Constant.SPACE_LEFT_BRACKET);
+                .append(_Constant.SPACE_LEFT_PAREN);
 
         final int size = this.value.size();
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(Constant.SPACE_COMMA);
+                builder.append(_Constant.SPACE_COMMA);
             }
             builder.append(" ?");
             i++;
         }
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
         return builder.toString();
     }
 

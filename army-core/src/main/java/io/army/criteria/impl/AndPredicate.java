@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.IPredicate;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.util._CollectionUtils;
 
@@ -49,7 +49,7 @@ final class AndPredicate extends OperationPredicate {
         final StringBuilder builder = context.sqlBuilder();
 
         for (OperationPredicate p : this.rightList) {
-            builder.append(Constant.SPACE_AND);
+            builder.append(_Constant.SPACE_AND);
             p.appendSql(context);
         }
 
@@ -62,7 +62,7 @@ final class AndPredicate extends OperationPredicate {
         builder.append(this.left);
 
         for (OperationPredicate p : this.rightList) {
-            builder.append(Constant.SPACE_AND);
+            builder.append(_Constant.SPACE_AND);
             builder.append(p);
         }
         return builder.toString();

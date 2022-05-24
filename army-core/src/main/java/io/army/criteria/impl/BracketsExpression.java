@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.TableField;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 
@@ -29,11 +29,11 @@ final class BracketsExpression extends OperationExpression {
     @Override
     public void appendSql(final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE_LEFT_BRACKET);
+                .append(_Constant.SPACE_LEFT_PAREN);
 
         this.expression.appendSql(context);
 
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
 

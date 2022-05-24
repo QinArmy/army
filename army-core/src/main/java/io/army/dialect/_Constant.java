@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-public interface Constant {
+public interface _Constant {
 
     String TRUE = "TRUE";
 
@@ -14,15 +14,21 @@ public interface Constant {
 
     String FORBID_ALIAS = "_army_";
 
+    String WITH = "WITH";
+
+    String SPACE_RECURSIVE = " RECURSIVE";
+
     String SELECT = "SELECT";
 
     String UPDATE = "UPDATE";
 
-    String DELETE_SPACE = "DELETE ";
+    String DELETE = "DELETE";
 
     String DELETE_FROM_SPACE = "DELETE FROM ";
 
     String SPACE_FROM = " FROM";
+
+    String SPACE_USING = " USING";
 
     String SPACE_JOIN_SPACE = " JOIN ";
 
@@ -50,7 +56,7 @@ public interface Constant {
 
     String SPACE_ORDER_BY = " ORDER BY";
 
-    String SPACE_EXISTS = " EXISTS";
+    String SPACE_WINDOW = " WINDOW";
 
     String SPACE_EQUAL = " =";
 
@@ -86,11 +92,13 @@ public interface Constant {
 
     String SPACE_COMMA_SPACE = " , ";
 
-    String SPACE_LEFT_BRACKET = " (";
+    String SPACE_LEFT_PAREN = " (";
 
-    String SPACE_RIGHT_BRACKET = " )";
+    String SPACE_RIGHT_PAREN = " )";
 
     String SPACE_FOR_UPDATE = " FOR UPDATE";
+
+    String SPACE_FOR_SHARE = " FOR SHARE";
 
     String SPACE_LOCK_IN_SHARE_MODE = " LOCK IN SHARE MODE";
 
@@ -102,7 +110,7 @@ public interface Constant {
 
     String SPACE_AT = " @";
 
-    char LEFT_BRACKET = '(';
+    char LEFT_PAREN = '(';
 
     char RIGHT_BRACKET = ')';
 

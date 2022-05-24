@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Selection;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 import io.army.util._Assert;
@@ -41,7 +41,7 @@ final class ExpressionSelection implements _Selection {
         this.expression.appendSql(context);
         final StringBuilder builder;
         builder = context.sqlBuilder()
-                .append(Constant.SPACE_AS_SPACE);
+                .append(_Constant.SPACE_AS_SPACE);
 
         context.dialect()
                 .quoteIfNeed(this.alias, builder);

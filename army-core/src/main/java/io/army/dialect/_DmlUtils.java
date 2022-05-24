@@ -104,26 +104,26 @@ public abstract class _DmlUtils {
         final TableMeta<?> table = block.table();
 
         // 1. INSERT INTO clause
-        builder.append(Constant.INSERT_INTO)
-                .append(Constant.SPACE);
+        builder.append(_Constant.INSERT_INTO)
+                .append(_Constant.SPACE);
         //append table name
         dialect.safeObjectName(table.tableName(), builder);
         final List<FieldMeta<?>> fieldList = block.fieldLis();
         // 1.1 append table fields
-        builder.append(Constant.SPACE_LEFT_BRACKET);
+        builder.append(_Constant.SPACE_LEFT_PAREN);
         int index = 0;
         for (FieldMeta<?> field : fieldList) {
             if (index > 0) {
-                builder.append(Constant.SPACE_COMMA);
+                builder.append(_Constant.SPACE_COMMA);
             }
-            builder.append(Constant.SPACE);
+            builder.append(_Constant.SPACE);
             dialect.safeObjectName(field.columnName(), builder);
             index++;
         }
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
 
         // 2. values clause
-        builder.append(Constant.SPACE_VALUES);
+        builder.append(_Constant.SPACE_VALUES);
 
         final List<IDomain> domainList = context.domainList();
         //2.1 get domainTable and discriminator
@@ -151,17 +151,17 @@ public abstract class _DmlUtils {
 
             }
             if (batch > 0) {
-                builder.append(Constant.SPACE_COMMA);
+                builder.append(_Constant.SPACE_COMMA);
             }
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
             index = 0;
             for (FieldMeta<?> field : fieldList) {
                 if (index > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
                 if (field == discriminator) {
                     assert field != null;
-                    builder.append(Constant.SPACE)
+                    builder.append(_Constant.SPACE)
                             .append(context.discriminatorValue());
                 } else if ((expression = expMap.get(field)) != null) { // common expression have validated
                     context.currentDomain = domain;
@@ -169,7 +169,7 @@ public abstract class _DmlUtils {
                 } else if ((value = accessor.get(domain, field.fieldName())) != null) {
                     final MappingType mappingType = field.mappingType();
                     if (mappingType instanceof _ArmyNoInjectionMapping) {
-                        builder.append(Constant.SPACE)
+                        builder.append(_Constant.SPACE)
                                 .append(dialect.literal(field, value)); // for safe default mapping type, use literal to reduce '?' and add batch insert count.
                     } else {
                         blockContext.appendParam(ParamValue.build(field, value)); // parameter append block context
@@ -185,15 +185,15 @@ public abstract class _DmlUtils {
                         throw _Exceptions.generatorFieldIsNull(field);
                     }
                 } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
-                    builder.append(Constant.SPACE_DEFAULT);
+                    builder.append(_Constant.SPACE_DEFAULT);
                 } else if (field.nullable()) {
-                    builder.append(Constant.SPACE_NULL);
+                    builder.append(_Constant.SPACE_NULL);
                 } else {
                     throw _Exceptions.nonNullField(field);
                 }
                 index++;
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
             batch++;
         }
 

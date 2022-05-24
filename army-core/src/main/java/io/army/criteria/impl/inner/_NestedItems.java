@@ -7,7 +7,7 @@ import java.util.List;
  */
 public interface _NestedItems {
 
-    List<? extends _TableBlock> tableBlockList();
+    List<_TableBlock> tableBlockList();
 
 
 }

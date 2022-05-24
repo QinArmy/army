@@ -288,7 +288,7 @@ class MySQL extends _AbstractDialect {
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         // 1. UPDATE clause
-        sqlBuilder.append(Constant.UPDATE);
+        sqlBuilder.append(_Constant.UPDATE);
 
         //2. child join parent
         this.appendChildJoinParent(childBlock, context);
@@ -335,16 +335,16 @@ class MySQL extends _AbstractDialect {
 
         // 1. delete clause
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.DELETE_SPACE);
+                .append(_Constant.DELETE);
 
         final String safeParentTableAlias, safeChildTableAlias;
         safeChildTableAlias = childBlock.safeTableAlias();
         safeParentTableAlias = context.safeTableAlias();
 
         builder.append(safeChildTableAlias)// child table name
-                .append(Constant.SPACE_COMMA_SPACE)
+                .append(_Constant.SPACE_COMMA_SPACE)
                 .append(safeParentTableAlias)// parent table name
-                .append(Constant.SPACE_FROM);
+                .append(_Constant.SPACE_FROM);
 
         //2. child join parent
         this.appendChildJoinParent(childBlock, context);
@@ -368,11 +368,11 @@ class MySQL extends _AbstractDialect {
         switch (lockMode) {
             case READ:
                 context.sqlBuilder()
-                        .append(Constant.SPACE_LOCK_IN_SHARE_MODE);
+                        .append(_Constant.SPACE_LOCK_IN_SHARE_MODE);
                 break;
             case WRITE:
                 context.sqlBuilder()
-                        .append(Constant.SPACE_FOR_UPDATE);
+                        .append(_Constant.SPACE_FOR_UPDATE);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(lockMode);

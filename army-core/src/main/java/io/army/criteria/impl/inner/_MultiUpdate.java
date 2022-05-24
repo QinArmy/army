@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface _MultiUpdate extends _Update, _MultiDml {
 
-    List<? extends _TableBlock> tableBlockList();
+    List<_TableBlock> tableBlockList();
 
 
 }

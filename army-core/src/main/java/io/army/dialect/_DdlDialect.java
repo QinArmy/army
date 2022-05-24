@@ -41,7 +41,7 @@ public abstract class _DdlDialect implements DdlDialect {
         builder.append("DROP TABLE IF EXISTS ");
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(Constant.SPACE_COMMA_SPACE);
+                builder.append(_Constant.SPACE_COMMA_SPACE);
             }
             dialect.quoteIfNeed(tableList.get(i).tableName(), builder);
         }
@@ -55,7 +55,7 @@ public abstract class _DdlDialect implements DdlDialect {
                 .append("CREATE TABLE IF NOT EXISTS ");
 
         dialect.safeObjectName(table.tableName(), builder)
-                .append(Constant.SPACE_LEFT_BRACKET)
+                .append(_Constant.SPACE_LEFT_PAREN)
                 .append("\n\t");
 
         final List<FieldMeta<T>> fieldList = table.fieldList();
@@ -68,7 +68,7 @@ public abstract class _DdlDialect implements DdlDialect {
         }
         this.index(table, builder);
         builder.append('\n')
-                .append(Constant.SPACE_RIGHT_BRACKET);
+                .append(_Constant.SPACE_RIGHT_PAREN);
 
         appendTableOption(table, builder);
         sqlList.add(builder.toString());
@@ -108,16 +108,16 @@ public abstract class _DdlDialect implements DdlDialect {
 
     protected final void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
         this.dialect.safeObjectName(field.columnName(), builder)
-                .append(Constant.SPACE);
+                .append(_Constant.SPACE);
         final SqlType sqlType;
         sqlType = field.mappingType().map(this.serverMeta);
 
         this.dataType(field, sqlType, builder);
 
         if (field.nullable()) {
-            builder.append(Constant.SPACE_NULL);
+            builder.append(_Constant.SPACE_NULL);
         } else {
-            builder.append(Constant.SPACE_NOT_NULL);
+            builder.append(_Constant.SPACE_NOT_NULL);
         }
 
         final String defaultValue = field.defaultValue();
@@ -155,13 +155,13 @@ public abstract class _DdlDialect implements DdlDialect {
                 this.errorMsgList.add(m);
                 return;
             }
-            builder.append(Constant.LEFT_BRACKET)
+            builder.append(_Constant.LEFT_PAREN)
                     .append(precision)
-                    .append(Constant.RIGHT_BRACKET);
+                    .append(_Constant.RIGHT_BRACKET);
         } else {
-            builder.append(Constant.LEFT_BRACKET)
+            builder.append(_Constant.LEFT_PAREN)
                     .append(defaultValue)
-                    .append(Constant.RIGHT_BRACKET);
+                    .append(_Constant.RIGHT_BRACKET);
         }
 
     }
@@ -177,9 +177,9 @@ public abstract class _DdlDialect implements DdlDialect {
                 timeScaleError(field, type);
                 return;
             }
-            builder.append(Constant.LEFT_BRACKET)
+            builder.append(_Constant.LEFT_PAREN)
                     .append(scale)
-                    .append(Constant.RIGHT_BRACKET);
+                    .append(_Constant.RIGHT_BRACKET);
         }
     }
 
@@ -190,27 +190,27 @@ public abstract class _DdlDialect implements DdlDialect {
         int lastWritten = 0;
         for (int i = 0; i < array.length; i++) {
             switch (array[i]) {
-                case Constant.QUOTE: {
+                case _Constant.QUOTE: {
                     if (i > lastWritten) {
                         builder.append(array, lastWritten, i - lastWritten);
                     }
-                    builder.append(Constant.QUOTE);
+                    builder.append(_Constant.QUOTE);
                     lastWritten = i; // not i+1 as ch wasn't written.
                 }
                 break;
-                case Constant.BACK_SLASH: {
+                case _Constant.BACK_SLASH: {
                     if (i > lastWritten) {
                         builder.append(array, lastWritten, i - lastWritten);
                     }
-                    builder.append(Constant.BACK_SLASH);
+                    builder.append(_Constant.BACK_SLASH);
                     lastWritten = i; // not i+1 as ch wasn't written.
                 }
                 break;
-                case Constant.EMPTY_CHAR: {
+                case _Constant.EMPTY_CHAR: {
                     if (i > lastWritten) {
                         builder.append(array, lastWritten, i - lastWritten);
                     }
-                    builder.append(Constant.BACK_SLASH)
+                    builder.append(_Constant.BACK_SLASH)
                             .append('0');
                     lastWritten = i + 1; //  i+1
                 }
@@ -219,7 +219,7 @@ public abstract class _DdlDialect implements DdlDialect {
                     if (i > lastWritten) {
                         builder.append(array, lastWritten, i - lastWritten);
                     }
-                    builder.append(Constant.BACK_SLASH)
+                    builder.append(_Constant.BACK_SLASH)
                             .append('Z');
                     lastWritten = i + 1; //  i+1
                 }
@@ -231,7 +231,7 @@ public abstract class _DdlDialect implements DdlDialect {
         if (lastWritten < array.length) {
             builder.append(array, lastWritten, array.length - lastWritten);
         }
-        builder.append(Constant.QUOTE);
+        builder.append(_Constant.QUOTE);
     }
 
     /**
@@ -246,28 +246,28 @@ public abstract class _DdlDialect implements DdlDialect {
         for (int i = 0, last = array.length - 1; i < array.length; i++) {
             ch = array[i];
             if (quote) {
-                if (ch == Constant.BACK_SLASH) {
+                if (ch == _Constant.BACK_SLASH) {
                     i++;
                     continue;
-                } else if (ch != Constant.QUOTE) {
+                } else if (ch != _Constant.QUOTE) {
                     continue;
-                } else if (i < last && array[i + 1] == Constant.QUOTE) {
+                } else if (i < last && array[i + 1] == _Constant.QUOTE) {
                     i++;
                     continue;
                 }
                 quote = false;
             } else if (idQuote) {
                 idQuote = false;
-            } else if (ch == Constant.QUOTE) {
+            } else if (ch == _Constant.QUOTE) {
                 quote = true;
             } else if (ch == identifierQuote) {
                 idQuote = true;
-            } else if (ch == Constant.LEFT_BRACKET) {
+            } else if (ch == _Constant.LEFT_PAREN) {
                 if (stack == null) {
                     stack = new LinkedList<>();
                 }
                 stack.push(Boolean.TRUE);
-            } else if (ch == Constant.RIGHT_BRACKET) {
+            } else if (ch == _Constant.RIGHT_BRACKET) {
                 if (stack == null || stack.size() == 0) {
                     // error
                     this.errorMsgList.add(String.format("%s default value ')' not match.", field));
@@ -289,7 +289,7 @@ public abstract class _DdlDialect implements DdlDialect {
             this.errorMsgList.add(m);
         } else if (stack != null && stack.size() > 0) {
             complete = false;
-            String m = String.format("%s default value '%s' not close.", field, Constant.LEFT_BRACKET);
+            String m = String.format("%s default value '%s' not close.", field, _Constant.LEFT_PAREN);
             this.errorMsgList.add(m);
         } else {
             complete = true;
@@ -325,30 +325,30 @@ public abstract class _DdlDialect implements DdlDialect {
                 builder.append(" USING ");
                 dialect.quoteIfNeed(index.type(), builder);
             }
-            builder.append(Constant.SPACE_LEFT_BRACKET);// index left bracket
+            builder.append(_Constant.SPACE_LEFT_PAREN);// index left bracket
 
             final List<IndexFieldMeta<T>> indexFieldList = index.fieldList();
             final int indexFieldSize = indexFieldList.size();
             for (int i = 0; i < indexFieldSize; i++) {
                 if (i > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
                 final IndexFieldMeta<T> indexField;
                 indexField = indexFieldList.get(i);
 
-                builder.append(Constant.SPACE);
+                builder.append(_Constant.SPACE);
                 dialect.quoteIfNeed(indexField.columnName(), builder);
 
                 final Boolean asc = indexField.fieldAsc();
                 if (asc != null) {
                     if (asc) {
-                        builder.append(Constant.SPACE_ASC);
+                        builder.append(_Constant.SPACE_ASC);
                     } else {
-                        builder.append(Constant.SPACE_DESC);
+                        builder.append(_Constant.SPACE_DESC);
                     }
                 }
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET); // index right bracket
+            builder.append(_Constant.SPACE_RIGHT_PAREN); // index right bracket
         }
 
     }
@@ -366,14 +366,14 @@ public abstract class _DdlDialect implements DdlDialect {
     protected static void decimalType(final FieldMeta<?> field, final StringBuilder builder) {
         final int precision = field.precision();
         if (precision > 0) {
-            builder.append(Constant.LEFT_BRACKET)
+            builder.append(_Constant.LEFT_PAREN)
                     .append(field.precision());
             final int scale = field.scale();
             if (scale > -1) {
-                builder.append(Constant.COMMA)
+                builder.append(_Constant.COMMA)
                         .append(scale);
             }
-            builder.append(Constant.RIGHT_BRACKET);
+            builder.append(_Constant.RIGHT_BRACKET);
         }
 
     }

@@ -13,7 +13,7 @@ public interface _Query extends _PartRowSet {
     List<? extends SQLWords> modifierList();
 
 
-    List<? extends _TableBlock> tableBlockList();
+    List<_TableBlock> tableBlockList();
 
     /**
      * @return a unmodifiable list
@@ -23,7 +23,7 @@ public interface _Query extends _PartRowSet {
     /**
      * @return a unmodifiable list
      */
-    List<? extends SortItem> groupPartList();
+    List<? extends SortItem> groupByList();
 
     /**
      * @return a unmodifiable list

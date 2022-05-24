@@ -4,7 +4,7 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
@@ -89,7 +89,7 @@ final class QualifiedFieldImpl<T extends IDomain> extends OperationField<T>
         context.appendField(this.tableAlias, this.field);
 
         context.sqlBuilder()
-                .append(Constant.SPACE_AS_SPACE)
+                .append(_Constant.SPACE_AS_SPACE)
                 .append(this.field.fieldName);
     }
 

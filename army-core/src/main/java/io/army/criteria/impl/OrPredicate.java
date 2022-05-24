@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 
 import java.util.ArrayList;
@@ -51,60 +51,60 @@ final class OrPredicate extends OperationPredicate {
     @Override
     public void appendSql(final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder()
-                .append(Constant.SPACE_LEFT_BRACKET);
+                .append(_Constant.SPACE_LEFT_PAREN);
 
         final OperationPredicate left = this.left;
         if (left instanceof AndPredicate) {
-            builder.append(Constant.SPACE_LEFT_BRACKET); //left inner left bracket
+            builder.append(_Constant.SPACE_LEFT_PAREN); //left inner left bracket
         }
         left.appendSql(context);
         if (left instanceof AndPredicate) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET); //left inner left bracket
+            builder.append(_Constant.SPACE_RIGHT_PAREN); //left inner left bracket
         }
         for (OperationPredicate right : this.rights) {
-            builder.append(Constant.SPACE_OR);
+            builder.append(_Constant.SPACE_OR);
 
             if (right instanceof AndPredicate) {
-                builder.append(Constant.SPACE_LEFT_BRACKET); // inner left bracket
+                builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
             }
 
             right.appendSql(context);
 
             if (right instanceof AndPredicate) {
-                builder.append(Constant.SPACE_RIGHT_BRACKET);// inner right bracket
+                builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
             }
         }
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder(128)
-                .append(Constant.SPACE_LEFT_BRACKET);
+                .append(_Constant.SPACE_LEFT_PAREN);
 
         final OperationPredicate left = this.left;
         if (left instanceof AndPredicate) {
-            builder.append(Constant.SPACE_LEFT_BRACKET); //left inner left bracket
+            builder.append(_Constant.SPACE_LEFT_PAREN); //left inner left bracket
         }
         builder.append(left);
         if (left instanceof AndPredicate) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET); //left inner left bracket
+            builder.append(_Constant.SPACE_RIGHT_PAREN); //left inner left bracket
         }
 
         for (OperationPredicate right : this.rights) {
-            builder.append(Constant.SPACE_OR);
+            builder.append(_Constant.SPACE_OR);
 
             if (right instanceof AndPredicate) {
-                builder.append(Constant.SPACE_LEFT_BRACKET);
+                builder.append(_Constant.SPACE_LEFT_PAREN);
             }
             builder.append(right);
 
             if (right instanceof AndPredicate) {
-                builder.append(Constant.SPACE_RIGHT_BRACKET);
+                builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
         }
 
-        return builder.append(Constant.SPACE_RIGHT_BRACKET)
+        return builder.append(_Constant.SPACE_RIGHT_PAREN)
                 .toString();
     }
 

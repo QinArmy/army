@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.NamedElementParam;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
@@ -62,30 +62,30 @@ final class NamedCollectionParamExpression extends OperationExpression implement
     @Override
     public void appendSql(final _SqlContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder()
-                .append(Constant.SPACE_LEFT_BRACKET);
+                .append(_Constant.SPACE_LEFT_PAREN);
         final int size = this.size;
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                sqlBuilder.append(Constant.SPACE_COMMA);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             context.appendParam(this);
         }
-        sqlBuilder.append(Constant.SPACE_RIGHT_BRACKET);
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
 
     @Override
     public String toString() {
         final StringBuilder sqlBuilder = new StringBuilder()
-                .append(Constant.SPACE_LEFT_BRACKET);
+                .append(_Constant.SPACE_LEFT_PAREN);
         final int size = this.size;
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                sqlBuilder.append(Constant.SPACE_COMMA);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             sqlBuilder.append(" ?");
         }
-        sqlBuilder.append(Constant.SPACE_RIGHT_BRACKET);
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         return sqlBuilder.toString();
     }
 

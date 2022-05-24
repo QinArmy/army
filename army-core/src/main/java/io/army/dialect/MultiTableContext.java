@@ -51,9 +51,9 @@ abstract class MultiTableContext extends StmtContext implements _StmtContext {
         if (safeTableAlias != null) {
             final StringBuilder sqlBuilder;
             sqlBuilder = this.sqlBuilder
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(safeTableAlias)
-                    .append(Constant.POINT);
+                    .append(_Constant.POINT);
             this.dialect.safeObjectName(field.columnName(), sqlBuilder);
         } else if (this instanceof _SubQueryContext) {
             this.appendOuterField(field);
@@ -116,9 +116,9 @@ abstract class MultiTableContext extends StmtContext implements _StmtContext {
         }
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder
-                .append(Constant.SPACE)
+                .append(_Constant.SPACE)
                 .append(safeTableAlias)
-                .append(Constant.POINT);
+                .append(_Constant.POINT);
         this.dialect.safeObjectName(field.columnName(), sqlBuilder);
     }
 

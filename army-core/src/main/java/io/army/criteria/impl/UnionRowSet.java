@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._UnionRowSet;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -42,18 +42,18 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
         if (this instanceof BracketRowSet) {
             final StringBuilder builder = context.sqlBuilder();
             if (builder.length() == 0) {
-                builder.append(Constant.LEFT_BRACKET);
+                builder.append(_Constant.LEFT_PAREN);
             } else {
-                builder.append(Constant.SPACE_LEFT_BRACKET);
+                builder.append(_Constant.SPACE_LEFT_PAREN);
             }
             context.dialect().rowSet(this.left, context);
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         } else if (this instanceof RowSetWithUnion) {
             final _Dialect dialect = context.dialect();
             dialect.rowSet(this.left, context);
 
             context.sqlBuilder()
-                    .append(Constant.SPACE)
+                    .append(_Constant.SPACE)
                     .append(((RowSetWithUnion) this).unionType().keyWords);
 
             dialect.rowSet(((RowSetWithUnion) this).rightRowSet(), context);

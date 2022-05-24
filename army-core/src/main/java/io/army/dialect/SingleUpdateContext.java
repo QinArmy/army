@@ -130,10 +130,10 @@ final class SingleUpdateContext extends StmtContext implements _SingleUpdateCont
             throw _Exceptions.unknownColumn(field);
         }
         final StringBuilder sqlBuilder = this.sqlBuilder;
-        sqlBuilder.append(Constant.SPACE);
+        sqlBuilder.append(_Constant.SPACE);
         if (this.supportAlias) {
             sqlBuilder.append(this.safeTableAlias)
-                    .append(Constant.POINT);
+                    .append(_Constant.POINT);
         }
         this.dialect.safeObjectName(field.columnName(), sqlBuilder);
     }

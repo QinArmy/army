@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._Update;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
@@ -20,8 +21,11 @@ public interface _SingleDeleteContext extends _DeleteContext, _Block {
 
     boolean multiTableUpdateChild();
 
+    _SingleDelete statement();
+
     @Nullable
     _Block childBlock();
+
 
     @Override
     SimpleStmt build();

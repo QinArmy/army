@@ -1,7 +1,7 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect.Constant;
 import io.army.dialect._AbstractDialect;
+import io.army.dialect._Constant;
 import io.army.dialect._DdlDialect;
 import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
@@ -68,7 +68,7 @@ final class MySQLDdl extends _DdlDialect {
             if (result.comment() || result.sqlType() || result.nullable()) {
                 builder.append("CHANGE COLUMN ");
                 dialect.quoteIfNeed(field.columnName(), builder)
-                        .append(Constant.SPACE);
+                        .append(_Constant.SPACE);
                 columnDefinition(field, builder);
                 continue;
             }
@@ -149,17 +149,17 @@ final class MySQLDdl extends _DdlDialect {
                 builder.append(" USING ");
                 dialect.quoteIfNeed(indexType, builder);
             }
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
             final List<IndexFieldMeta<T>> indexFieldList = indexMeta.fieldList();
             final int fieldSize = indexFieldList.size();
             for (int j = 0; j < fieldSize; j++) {
                 if (j > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
-                builder.append(Constant.SPACE);
+                builder.append(_Constant.SPACE);
                 dialect.quoteIfNeed(indexFieldList.get(j).columnName(), builder);
             }
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
 
 
         }
@@ -329,19 +329,19 @@ final class MySQLDdl extends _DdlDialect {
         int index = 0;
         for (Object e : field.elementTypes().get(0).getEnumConstants()) {
             if (index > 0) {
-                builder.append(Constant.SPACE_COMMA);
+                builder.append(_Constant.SPACE_COMMA);
             }
-            builder.append(Constant.QUOTE);
+            builder.append(_Constant.QUOTE);
             if (e instanceof TextEnum) {
                 builder.append(((TextEnum) e).text());
             } else {
                 builder.append(((Enum<?>) e).name());
             }
-            builder.append(Constant.QUOTE);
+            builder.append(_Constant.QUOTE);
 
             index++;
         }
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
     private static void enumType(final FieldMeta<?> field, final StringBuilder builder) {
@@ -349,18 +349,18 @@ final class MySQLDdl extends _DdlDialect {
         int index = 0;
         for (Object e : field.javaType().getEnumConstants()) {
             if (index > 0) {
-                builder.append(Constant.SPACE_COMMA);
+                builder.append(_Constant.SPACE_COMMA);
             }
-            builder.append(Constant.QUOTE);
+            builder.append(_Constant.QUOTE);
             if (e instanceof TextEnum) {
                 builder.append(((TextEnum) e).text());
             } else {
                 builder.append(((Enum<?>) e).name());
             }
-            builder.append(Constant.QUOTE);
+            builder.append(_Constant.QUOTE);
             index++;
         }
-        builder.append(Constant.SPACE_RIGHT_BRACKET);
+        builder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
 

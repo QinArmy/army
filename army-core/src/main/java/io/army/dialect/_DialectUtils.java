@@ -76,9 +76,9 @@ public abstract class _DialectUtils {
         if (!_StringUtils.hasText(tableAlias)) {
             throw new CriteriaException("Alias of table or sub query must has text.");
         }
-        if (tableAlias.startsWith(Constant.FORBID_ALIAS)) {
+        if (tableAlias.startsWith(_Constant.FORBID_ALIAS)) {
             String m = String.format("Error,Alias[%s] of table or sub query start with %s."
-                    , tableAlias, Constant.FORBID_ALIAS);
+                    , tableAlias, _Constant.FORBID_ALIAS);
             throw new CriteriaException(m);
         }
     }
@@ -87,9 +87,9 @@ public abstract class _DialectUtils {
         if (!_StringUtils.hasText(tableAlias)) {
             throw new CriteriaException("Alias of table or sub query must has text.");
         }
-        if (tableAlias.startsWith(Constant.FORBID_ALIAS)) {
+        if (tableAlias.startsWith(_Constant.FORBID_ALIAS)) {
             String m = String.format("Error,Alias[%s] of table or sub query start with %s."
-                    , tableAlias, Constant.FORBID_ALIAS);
+                    , tableAlias, _Constant.FORBID_ALIAS);
             throw new CriteriaException(m);
         }
     }

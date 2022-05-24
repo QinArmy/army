@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 
 /**
@@ -36,12 +36,12 @@ final class NotPredicate extends OperationPredicate {
         final boolean noBracket = !(predicate instanceof OrPredicate);
 
         if (noBracket) {
-            builder.append(Constant.SPACE_LEFT_BRACKET);
+            builder.append(_Constant.SPACE_LEFT_PAREN);
         }
         predicate.appendSql(context);
 
         if (noBracket) {
-            builder.append(Constant.SPACE_RIGHT_BRACKET);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
     }

@@ -6,6 +6,7 @@ import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
@@ -82,8 +83,19 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("Unknown table %s %s ", table, alias));
     }
 
+    public static CriteriaException dontSupportTableItem(TableItem item, String alias) {
+        String m = String.format("Don't support %s %s alias %s .",
+                TableItem.class.getName(), _ClassUtils.safeClassName(item), alias);
+        return new CriteriaException(m);
+    }
 
-    public static CriteriaException unknownStatement(Statement stmt, _Dialect dialect) {
+    public static CriteriaException dontSupportLateralItem(TableItem item, String alias, Dialect dialect) {
+        String m = String.format("%s Don't support LATERAL %s alias %s ."
+                , dialect, _ClassUtils.safeClassName(item), alias);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException unknownStatement(Statement stmt, Dialect dialect) {
         String m = String.format("Unknown %s in %s", stmt.getClass().getName(), dialect);
         return new CriteriaException(m);
     }
@@ -186,6 +198,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("named window must has text name.");
     }
 
+    public static CriteriaException dontSupportWithClause(Dialect dialect) {
+        return new CriteriaException(String.format("%s don't support WITH clause", dialect));
+    }
+
     public static CriteriaException windowNotExists(@Nullable String windowName) {
         return new CriteriaException(String.format("Window[name : %s] not exists.", windowName));
     }
@@ -205,6 +221,19 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException predicateListIsEmpty() {
         return new CriteriaException("predicate list must not empty.");
+    }
+
+    public static CriteriaException joinTypeNoOnClause(_JoinType joinType) {
+        return new CriteriaException(String.format("%s no ON clause.", joinType));
+    }
+
+    public static CriteriaException dontSupportJoinType(_JoinType joinType, Dialect dialect) {
+        return new CriteriaException(String.format("%s don't support %s", dialect, joinType));
+    }
+
+    public static CriteriaException nestedItemIsEmpty(NestedItems nestedItems) {
+        String m = String.format("%s %s is empty.", NestedItems.class.getName(), _ClassUtils.safeClassName(nestedItems));
+        return new CriteriaException(m);
     }
 
     public static CriteriaException sortItemListIsEmpty() {
@@ -430,6 +459,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new SessionUsageException(m);
     }
 
+
     public static NotMatchRowException notMatchRow(GenericSession session, TableMeta<?> table, Object id) {
         String m = String.format("%s update failure,not found match row for %s and id %s.", session, table, id);
         return new NotMatchRowException(m);
@@ -450,6 +480,18 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("ArmyKey %s %s version not compatibility with server %s"
                 , ArmyKey.DIALECT, dialect, meta);
         return new IllegalArgumentException(m);
+    }
+
+
+    public static CriteriaException nestedItemsAliasHasText(String alias) {
+        String m = String.format("%s alias[%s] must be empty.", NestedItems.class.getName(), alias);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException tableItemAliasNoText(TableItem tableItem) {
+        String m = String.format("%s[%s] alias must be not empty."
+                , TableItem.class.getName(), _ClassUtils.safeClassName(tableItem));
+        return new CriteriaException(m);
     }
 
 

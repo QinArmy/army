@@ -19,8 +19,8 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 
 /**
@@ -28,7 +28,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class AbstractInsert<C, T extends IDomain, IR>
-        implements Insert, Insert.InsertSpec, Insert.InsertIntoClause<C, T, IR>, _Insert {
+        implements Insert, Insert._InsertSpec, Insert._InsertIntoClause<C, T, IR>, _Insert {
 
     final TableMeta<T> table;
 
@@ -47,22 +47,19 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
 
 
     @Override
-    public final IR insertInto(List<FieldMeta<? super T>> fields) {
-        if (fields.size() == 0) {
-            throw new CriteriaException("fields must be not empty.");
-        }
-        this.fieldList = _CollectionUtils.unmodifiableList(new ArrayList<>(fields));
+    public final IR insertInto(Consumer<Consumer<FieldMeta<? super T>>> consumer) {
+        final List<FieldMeta<?>> fieldList = new ArrayList<>();
+        consumer.accept(fieldList::add);
+        this.fieldList = _CollectionUtils.unmodifiableList(fieldList);
         return (IR) this;
     }
 
     @Override
-    public final IR insertInto(Function<C, List<FieldMeta<? super T>>> function) {
-        return this.insertInto(function.apply(this.criteriaContext.criteria()));
-    }
-
-    @Override
-    public final IR insertInto(Supplier<List<FieldMeta<? super T>>> supplier) {
-        return this.insertInto(supplier.get());
+    public final IR insertInto(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer) {
+        final List<FieldMeta<?>> fieldList = new ArrayList<>();
+        consumer.accept(this.criteria, fieldList::add);
+        this.fieldList = _CollectionUtils.unmodifiableList(fieldList);
+        return (IR) this;
     }
 
     @Override

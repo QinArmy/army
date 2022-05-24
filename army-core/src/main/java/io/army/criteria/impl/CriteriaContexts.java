@@ -2,14 +2,13 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
-import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -155,39 +154,9 @@ abstract class CriteriaContexts {
         return new CriteriaException(m);
     }
 
-    private static CriteriaException nestedItemsAliasHasText(String alias) {
-        String m = String.format("%s alias[%s] must be empty.", NestedItems.class.getName(), alias);
-        return new CriteriaException(m);
-    }
-
-    private static CriteriaException tableItemAliasNoText(TableItem tableItem) {
-        String m = String.format("%s[%s] alias must be not empty."
-                , TableItem.class.getName(), _ClassUtils.safeClassName(tableItem));
-        return new CriteriaException(m);
-    }
-
-    private static CriteriaException nonRecursiveWithClause(String cteName) {
-        String m = String.format("%s[%s] is not recursive,couldn't reference itself."
-                , Cte.class.getName(), cteName);
-        return new CriteriaException(m);
-    }
-
-    private static CriteriaException nonUnionRecursiveWithClause(String cteName) {
-        String m = String.format("%s[%s] is not not union,couldn't reference itself."
-                , Cte.class.getName(), cteName);
-        return new CriteriaException(m);
-    }
-
-
     private static CriteriaException referenceCteSyntaxError(String cteName) {
         String m = String.format("reference cte[%s] syntax error.", cteName);
         return new CriteriaException(m);
-    }
-
-    private static CriteriaException dontSupportDerivedGroup(String alias) {
-        String m = String.format("current context don't support creating %s for alias[%s]."
-                , DerivedGroup.class.getName(), alias);
-        throw new CriteriaException(m);
     }
 
     private static CriteriaException notFoundDerivedGroup(List<DerivedGroup> groupList) {
@@ -198,7 +167,7 @@ abstract class CriteriaContexts {
         int count = 0;
         for (DerivedGroup group : groupList) {
             if (count > 0) {
-                builder.append(Constant.SPACE_COMMA);
+                builder.append(_Constant.SPACE_COMMA);
             }
             builder.append(group.tableAlias());
             count++;
@@ -222,10 +191,10 @@ abstract class CriteriaContexts {
             alias = e.getKey();
             for (RefDerivedField s : e.getValue().values()) {
                 if (count > 0) {
-                    builder.append(Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
                 builder.append(alias)
-                        .append(Constant.POINT)
+                        .append(_Constant.POINT)
                         .append(s.fieldName);
                 count++;
             }
@@ -521,16 +490,16 @@ abstract class CriteriaContexts {
                 if ("".equals(alias)) {
                     alias = ((CteItem) tableItem).name();//modify alias
                 } else if (!_StringUtils.hasText(alias)) {
-                    throw tableItemAliasNoText(tableItem);
+                    throw _Exceptions.tableItemAliasNoText(tableItem);
                 }
             }
             if (tableItem instanceof NestedItems) {
                 if (_StringUtils.hasText(alias)) {
-                    throw nestedItemsAliasHasText(alias);
+                    throw _Exceptions.nestedItemsAliasHasText(alias);
                 }
                 this.addNestedItems((NestedItems) tableItem);
             } else if (!_StringUtils.hasText(alias)) {
-                throw tableItemAliasNoText(tableItem);
+                throw _Exceptions.tableItemAliasNoText(tableItem);
             } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
                 throw _Exceptions.tableAliasDuplication(alias);
             } else if (tableItem instanceof DerivedTable) {
@@ -808,12 +777,12 @@ abstract class CriteriaContexts {
                     if ("".equals(alias)) {
                         alias = ((CteItem) tableItem).name();//modify alias
                     } else if (!_StringUtils.hasText(alias)) {
-                        throw tableItemAliasNoText(tableItem);
+                        throw _Exceptions.tableItemAliasNoText(tableItem);
                     }
                 }
                 if (tableItem instanceof NestedItems) {
                     if (_StringUtils.hasText(alias)) {
-                        throw nestedItemsAliasHasText(alias);
+                        throw _Exceptions.nestedItemsAliasHasText(alias);
                     }
                     this.addNestedItems((NestedItems) tableItem);
                 } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
@@ -1085,12 +1054,12 @@ abstract class CriteriaContexts {
 
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE);
+                    .append(_Constant.SPACE);
 
             dialect.quoteIfNeed(this.tableName, builder)
-                    .append(Constant.POINT)
+                    .append(_Constant.POINT)
                     .append(safeFieldName)
-                    .append(Constant.SPACE_AS_SPACE)
+                    .append(_Constant.SPACE_AS_SPACE)
                     .append(safeFieldName);
         }
 
@@ -1099,10 +1068,10 @@ abstract class CriteriaContexts {
             final _Dialect dialect = context.dialect();
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE);
+                    .append(_Constant.SPACE);
 
             dialect.quoteIfNeed(this.tableName, builder)
-                    .append(Constant.POINT);
+                    .append(_Constant.POINT);
             dialect.quoteIfNeed(this.selection.alias(), builder);
 
         }
@@ -1172,12 +1141,12 @@ abstract class CriteriaContexts {
             final String safeFieldName = dialect.quoteIfNeed(this.fieldName);
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE);
+                    .append(_Constant.SPACE);
 
             dialect.quoteIfNeed(this.tableName, builder)
-                    .append(Constant.POINT)
+                    .append(_Constant.POINT)
                     .append(safeFieldName)
-                    .append(Constant.SPACE_AS_SPACE)
+                    .append(_Constant.SPACE_AS_SPACE)
                     .append(safeFieldName);
         }
 
@@ -1186,10 +1155,10 @@ abstract class CriteriaContexts {
             final _Dialect dialect = context.dialect();
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE);
+                    .append(_Constant.SPACE);
 
             dialect.quoteIfNeed(this.tableName, builder)
-                    .append(Constant.POINT);
+                    .append(_Constant.POINT);
             dialect.quoteIfNeed(this.fieldName, builder);
         }
 
@@ -1238,7 +1207,7 @@ abstract class CriteriaContexts {
         public void appendSql(final _SqlContext context) {
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE);
+                    .append(_Constant.SPACE);
 
             context.dialect()
                     .quoteIfNeed(this.selection.alias(), builder);
@@ -1276,7 +1245,7 @@ abstract class CriteriaContexts {
             ((_SelfDescribed) this.field).appendSql(context);
             final StringBuilder builder;
             builder = context.sqlBuilder()
-                    .append(Constant.SPACE_AS_SPACE);
+                    .append(_Constant.SPACE_AS_SPACE);
 
             context.dialect()
                     .quoteIfNeed(this.alias, builder);
@@ -1308,7 +1277,7 @@ abstract class CriteriaContexts {
     }//DerivedAliasSelection
 
 
-    private static final class RefCte implements Cte {
+    static final class RefCte implements Cte {
 
         private final String name;
 

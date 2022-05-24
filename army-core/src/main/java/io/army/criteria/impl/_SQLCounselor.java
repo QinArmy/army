@@ -39,10 +39,6 @@ public abstract class _SQLCounselor {
         }
     }
 
-    public static void assertCet(Cte cte) {
-
-    }
-
     protected static CriteriaException instanceNotMatch(Statement statement, Class<?> statementClass) {
         String m = String.format("%s isn't instance of %s"
                 , _ClassUtils.safeClassName(statement), statementClass.getName());

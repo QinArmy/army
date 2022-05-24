@@ -1,6 +1,6 @@
 package io.army.mapping.mysql;
 
-import io.army.dialect.Constant;
+import io.army.dialect._Constant;
 import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -68,7 +68,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
                 throw valueOutRange(sqlType, nonNull, null);
             }
             if (index > 0) {
-                builder.append(Constant.COMMA);
+                builder.append(_Constant.COMMA);
             }
             builder.append(((Enum<?>) e).name());
             index++;

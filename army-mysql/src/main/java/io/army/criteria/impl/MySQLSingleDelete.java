@@ -10,6 +10,7 @@ import io.army.criteria.mysql.MySQLUpdate;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.meta.SimpleTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
@@ -53,7 +54,7 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteS
 
     private List<MySQLWords> modifierList;
 
-    private SingleTableMeta<?> table;
+    private SimpleTableMeta<?> table;
 
     private String alias;
 
@@ -84,7 +85,7 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
-    public final DS deleteFrom(SingleTableMeta<?> table, String alias) {
+    public final DS deleteFrom(SimpleTableMeta<?> table, String alias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -292,8 +293,8 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
-    public final SingleTableMeta<?> table() {
-        final SingleTableMeta<?> table = this.table;
+    public final SimpleTableMeta<?> table() {
+        final SimpleTableMeta<?> table = this.table;
         assert table != null;
         return table;
     }
