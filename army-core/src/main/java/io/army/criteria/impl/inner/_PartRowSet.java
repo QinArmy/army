@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface _PartRowSet extends _Statement, RowSet {
 
-    List<? extends SelectItem> selectItemList();
+    List<SelectItem> selectItemList();
 
     List<? extends SortItem> orderByList();
 

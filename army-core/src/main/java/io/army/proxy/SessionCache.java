@@ -18,6 +18,7 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 final class SessionCache implements _SessionCache {
@@ -198,24 +199,25 @@ final class SessionCache implements _SessionCache {
             versionOperator = versionField::equal;
         }
 
-        final List<ItemPair> itemPairList = new ArrayList<>(changedFieldMap.size());
-        FieldMeta<?> field;
-        for (String fieldName : changedFieldMap.keySet()) {
-            if (table.containField(fieldName)) {
-                field = table.getField(fieldName);
-            } else if (parent == null || !parent.containField(fieldName)) {
-                String m = String.format("Unknown field[%s] for %s", fieldName, table);
-                throw new IllegalStateException(m);
-            } else {
-                field = parent.getField(fieldName);
+        final Consumer<Consumer<ItemPair>> pairConsumer = consumer -> {
+            FieldMeta<?> field;
+            for (String fieldName : changedFieldMap.keySet()) {
+                if (table.containField(fieldName)) {
+                    field = table.getField(fieldName);
+                } else if (parent == null || !parent.containField(fieldName)) {
+                    String m = String.format("Unknown field[%s] for %s", fieldName, table);
+                    throw new IllegalStateException(m);
+                } else {
+                    field = parent.getField(fieldName);
+                }
+                consumer.accept(SQLs.itemPair(field, accessor.get(domain, fieldName)));
             }
-            itemPairList.add(SQLs.itemPair(field, accessor.get(domain, fieldName)));
-        }
+        };
 
         final Update stmt;
         stmt = SQLs.singleUpdate()
                 .update(table, "t")
-                .setPairs(itemPairList)
+                .setPairs(pairConsumer)
                 .where(table.id().equal(id))
                 .ifNonNullAnd(versionOperator, versionValue)
                 .asUpdate();

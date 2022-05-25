@@ -143,7 +143,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
     }
 
     @Override
-    public List<? extends SetLeftItem> targetParts() {
+    public List<? extends SetLeftItem> leftItemList() {
         return this.fieldList;
     }
 
@@ -182,7 +182,7 @@ final class StandardUpdateContext extends _SingleDmlContext implements _DomainUp
 
 
         @Override
-        public List<SetLeftItem> targetParts() {
+        public List<SetLeftItem> leftItemList() {
             return this.fieldList;
         }
 

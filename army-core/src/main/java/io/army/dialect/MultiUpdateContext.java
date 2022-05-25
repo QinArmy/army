@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._MultiUpdate;
-import io.army.criteria.impl.inner._Predicate;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SingleTableMeta;
@@ -37,10 +36,6 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         this.statement = statement;
     }
 
-    @Override
-    public List<_Predicate> predicateList() {
-        return this.statement.predicateList();
-    }
 
     @Override
     public void appendAfterSetClause() {

@@ -11,6 +11,6 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface DataField extends Expression {
+public interface DataField extends Expression, SetLeftItem {
 
 }

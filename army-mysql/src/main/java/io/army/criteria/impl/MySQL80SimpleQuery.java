@@ -220,7 +220,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     public final _LockOfSpec<C, Q> forShare() {
-        this.lockMode = MySQLLockMode.SHARE;
+        this.lockMode = MySQLLockMode.FOR_SHARE;
         return this;
     }
 
@@ -235,7 +235,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final _LockOfSpec<C, Q> ifForShare(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.lockMode = MySQLLockMode.SHARE;
+            this.lockMode = MySQLLockMode.FOR_SHARE;
         }
         return this;
     }
@@ -606,7 +606,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private _LockLockOptionSpec<C, Q> asOfTableAliasList(final boolean unmodified
             , final @Nullable List<String> aliasList) {
         switch (this.lockMode) {
-            case SHARE:
+            case FOR_SHARE:
             case FOR_UPDATE:
                 break;
             case LOCK_IN_SHARE_MODE:
@@ -648,7 +648,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
         switch (lock) {
             case FOR_UPDATE:
-            case SHARE:
+            case FOR_SHARE:
                 this.lockOption = lockOption;
                 break;
             case LOCK_IN_SHARE_MODE:

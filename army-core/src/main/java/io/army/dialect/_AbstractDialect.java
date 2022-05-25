@@ -71,12 +71,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
     public final Stmt insert(final Insert insert, final Visible visible) {
         insert.prepared();
         final Stmt stmt;
-        if (insert instanceof _DialectStatement) {
-            assertDialectInsert(insert);
-            stmt = handleDialectInsert(insert, visible);
-        } else {
+        if (insert instanceof StandardStatement) {
             _SQLCounselor.assertStandardInsert(insert);
             stmt = handleStandardValueInsert((_ValuesInsert) insert, visible);
+        } else {
+            assertDialectInsert(insert);
+            stmt = handleDialectInsert(insert, visible);
         }
         return stmt;
     }
@@ -88,24 +88,32 @@ public abstract class _AbstractDialect implements ArmyDialect {
     public final Stmt update(final Update update, final Visible visible) {
         update.prepared();
         _DmlUtils.assertUpdateSetAndWhereClause((_Update) update);
-        final SimpleStmt simpleStmt;
-        if (!(update instanceof _DialectStatement)) {
+        final _UpdateContext context;
+        if (update instanceof StandardStatement) {
             // assert implementation is standard implementation.
             _SQLCounselor.assertStandardUpdate(update);
-            simpleStmt = handleStandardUpdate((_SingleUpdate) update, visible);
+            final StandardUpdateContext singleContext;
+            singleContext = StandardUpdateContext.create((_SingleUpdate) update, this, visible);
+            final _SetBlock childBlock = singleContext.childBlock();
+            if (childBlock == null || childBlock.leftItemList().size() == 0) {
+                standardSingleTableUpdate(singleContext);
+            } else {
+                stmt = standardChildUpdate(singleContext);
+            }
+            context = singleContext;
         } else if (update instanceof _SingleUpdate) {
             // assert implementation class is legal
             assertDialectUpdate(update);
             final SingleUpdateContext context;
             context = SingleUpdateContext.create((_SingleUpdate) update, this, visible);
-            simpleStmt = dialectSingleUpdate(context);
+            dialectSingleUpdate(context);
         } else if (update instanceof _MultiUpdate) {
             assertDialectUpdate(update);
             final _MultiUpdateContext context;
             context = MultiUpdateContext.create((_MultiUpdate) update, this, visible);
-            simpleStmt = dialectMultiUpdate(context);
+            dialectMultiUpdate(context);
         } else {
-            throw _Exceptions.unknownStatement(update, this);
+            throw _Exceptions.unknownStatement(update, this.dialect);
         }
         final Stmt stmt;
         if (update instanceof _BatchDml) {
@@ -120,27 +128,21 @@ public abstract class _AbstractDialect implements ArmyDialect {
     @Override
     public final Stmt delete(final Delete delete, final Visible visible) {
         delete.prepared();
-        final Stmt stmt;
-        if (delete instanceof _DialectStatement) {
-            assertDialectDelete(delete);
-            final SimpleStmt singleStmt;
-            singleStmt = dialectMultiDelete(delete, visible);
-            if (delete instanceof _BatchDml) {
-                stmt = Stmts.batchDml(singleStmt, ((_BatchDml) delete).paramList());
-            } else {
-                stmt = singleStmt;
-            }
-        } else if (delete instanceof _SingleDelete) {
+        final SimpleStmt singleStmt;
+        if (delete instanceof StandardStatement) {
             _SQLCounselor.assertStandardDelete(delete);
-            final SimpleStmt simpleStmt;
-            simpleStmt = this.handleStandardDelete((_SingleDelete) delete, visible);
-            if (delete instanceof _BatchDml) {
-                stmt = Stmts.batchDml(simpleStmt, ((_BatchDml) delete).paramList());
-            } else {
-                stmt = simpleStmt;
-            }
+            singleStmt = this.handleStandardDelete((_SingleDelete) delete, visible);
+        } else if (delete instanceof _SingleDelete) {
+            final _SingleDeleteContext context;
+            context = StandardDeleteContext.create((_SingleDelete) delete, this, visible);
+            singleStmt = this.dialectSingleDelete(context, (_SingleDelete) delete);
         } else {
             throw _Exceptions.unknownStatement(delete, this);
+        }
+        if (delete instanceof _BatchDml) {
+            stmt = Stmts.batchDml(simpleStmt, ((_BatchDml) delete).paramList());
+        } else {
+            stmt = simpleStmt;
         }
         return stmt;
     }
@@ -175,15 +177,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     @Override
     public final void rowSet(final RowSet rowSet, final _SqlContext original) {
-        //1. assert prepared
-        rowSet.prepared();
-
-        //2. assert sub query implementation class.
-        if (rowSet instanceof StandardQuery) {
-            _SQLCounselor.assertStandardQuery((Query) rowSet);
-        } else {
-            this.assertDialectRowSet(rowSet);
-        }
         //3. parse RowSet
         if (rowSet instanceof Select) {
             this.selectStmt((Select) rowSet, original);
@@ -419,7 +412,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt dialectSingleDelete(_SingleDeleteContext context) {
+    protected SimpleStmt dialectSingleDelete(_SingleDeleteContext context, _SingleDelete stmt) {
         throw new UnsupportedOperationException();
     }
 
@@ -449,7 +442,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     /**
-     * @see #select(Select, _SqlContext)
+     * @see #selectStmt(Select, _SqlContext)
      */
     protected final void standardUnionQuery(final _UnionRowSet query, final _SqlContext context) {
 
@@ -526,7 +519,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
             sqlBuilder.append(_Constant.SPACE_AS);
-            this.subQuery(subQuery, context);
+            this.rowSet(subQuery, context);
 
         }
 
@@ -534,15 +527,15 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     }
 
-    protected final void selectListClause(final List<? extends SelectItem> selectPartList, final _StmtContext context) {
+    protected final void selectListClause(final List<? extends SelectItem> selectItemList, final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder();
-        final int size = selectPartList.size();
+        final int size = selectItemList.size();
         SelectItem selectItem;
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 builder.append(_Constant.SPACE_COMMA);
             }
-            selectItem = selectPartList.get(i);
+            selectItem = selectItemList.get(i);
             if (selectItem instanceof Selection) {
                 ((_Selection) selectItem).appendSelection(context);
             } else if (selectItem instanceof SelectionGroup) {
@@ -582,7 +575,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                         .append(_Constant.SPACE_AS_SPACE);
                 dialect.quoteIfNeed(block.alias(), builder);
             } else if (tableItem instanceof SubQuery) {
-                this.subQuery((SubQuery) tableItem, context);
+                this.subQueryStmt((SubQuery) tableItem, context);
                 builder.append(_Constant.SPACE_AS_SPACE);
                 dialect.quoteIfNeed(block.alias(), builder);
             } else {
@@ -923,8 +916,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected final void dmlWhereClause(_DmlContext context) {
-        final List<_Predicate> predicateList = context.predicateList();
+    protected final void dmlWhereClause(final List<_Predicate> predicateList, final _SqlContext context) {
         final int predicateCount = predicateList.size();
         if (predicateCount == 0) {
             throw _Exceptions.noWhereClause(context);
@@ -1225,7 +1217,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected final List<TableField<?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
 
-        final List<? extends SetLeftItem> targetPartList = clause.targetParts();
+        final List<? extends SetLeftItem> targetPartList = clause.leftItemList();
         final List<? extends SetRightItem> valuePartList = clause.valueParts();
         final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
         final int targetCount = targetPartList.size();
@@ -1254,7 +1246,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 }
                 this.appendRowTarget(clause, (Row) targetPart, conditionFields, context);
                 sqlBuilder.append(_Constant.SPACE_EQUAL);
-                dialect.subQuery((SubQuery) targetPart, context);
+                this.subQueryStmt((SubQuery) targetPart, context);
                 continue;
             }
             if (!(targetPart instanceof TableField)) {
@@ -1316,9 +1308,17 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #rowSet(RowSet, _SqlContext)
      */
     protected final void subQueryStmt(final SubQuery subQuery, final _SqlContext original) {
+        //1. assert prepared
+        subQuery.prepared();
 
+        //2. assert sub query implementation class.
+        if (subQuery instanceof StandardQuery) {
+            _SQLCounselor.assertStandardQuery(subQuery);
+        } else {
+            this.assertDialectRowSet(subQuery);
+        }
         final StringBuilder sqlBuilder = original.sqlBuilder();
-
+        //3. parse sub query
         final boolean outerBrackets;
         outerBrackets = !(original instanceof _SubQueryContext) || original instanceof _SimpleQueryContext;
 
@@ -1355,6 +1355,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #rowSet(RowSet, _SqlContext)
      */
     protected final void valuesStmt(final Values values, final _SqlContext original) {
+        //1. assert prepared
+        values.prepared();
+
+        //2. assert sub query implementation class.
+        this.assertDialectRowSet(values);
         throw new UnsupportedOperationException();
     }
 
@@ -1362,12 +1367,21 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #rowSet(RowSet, _SqlContext)
      */
     private void selectStmt(final Select select, final _SqlContext original) {
-        //1. assert context
+        //1. assert prepared
+        select.prepared();
+
+        //2. assert sub query implementation class.
+        if (select instanceof StandardQuery) {
+            _SQLCounselor.assertStandardQuery(select);
+        } else {
+            this.assertDialectRowSet(select);
+        }
+        //3. assert context
         if (!(original instanceof PrimaryQueryContext)) {
             String m = String.format("Non-primary statement couldn't union %s", Select.class.getName());
             throw new CriteriaException(m);
         }
-        //2.. parse select
+        //4. parse select
         if (select instanceof _UnionRowSet) {
             final _UnionQueryContext context;
             if (original instanceof _UnionQueryContext) {
@@ -1502,22 +1516,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     /**
-     * @see #update(Update, Visible)
-     */
-    private SimpleStmt handleStandardUpdate(final _SingleUpdate update, final Visible visible) {
-        final StandardUpdateContext context;
-        context = StandardUpdateContext.create(update, this, visible);
-        final _SetBlock childBlock = context.childBlock();
-        final SimpleStmt stmt;
-        if (childBlock == null || childBlock.targetParts().size() == 0) {
-            stmt = standardSingleTableUpdate(context);
-        } else {
-            stmt = standardChildUpdate(context);
-        }
-        return stmt;
-    }
-
-    /**
      * @see #delete(Delete, Visible)
      */
     private SimpleStmt handleStandardDelete(final _SingleDelete delete, final Visible visible) {
@@ -1538,9 +1536,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
      * @see #standardChildUpdate(_DomainUpdateContext)
      */
-    private SimpleStmt standardSingleTableUpdate(final StandardUpdateContext context) {
+    private void standardSingleTableUpdate(final StandardUpdateContext context) {
         final _SetBlock childContext = context.childBlock();
-        if (childContext != null && childContext.targetParts().size() > 0) {
+        if (childContext != null && childContext.leftItemList().size() > 0) {
             throw new IllegalArgumentException("context error");
         }
         final _Dialect dialect = context.dialect;
@@ -1583,7 +1581,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (conditionFields.size() > 0) {
             this.conditionUpdate(context.safeTableAlias, conditionFields, context);
         }
-        return context.build();
     }
 
     /**

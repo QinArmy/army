@@ -1,8 +1,6 @@
 package io.army.dialect;
 
 
-import io.army.stmt.SimpleStmt;
-
 /**
  * <p>
  * This interface is base interface of below:
@@ -12,10 +10,7 @@ import io.army.stmt.SimpleStmt;
  *     </ul>
  * </p>
  */
-interface _UpdateContext extends _DmlContext {
+public interface _UpdateContext extends _DmlContext {
 
-
-    @Override
-    SimpleStmt build();
 
 }

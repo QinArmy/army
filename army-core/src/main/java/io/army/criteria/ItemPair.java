@@ -11,8 +11,5 @@ import java.util.List;
  */
 public interface ItemPair {
 
-    SetLeftItem left();
-
-    SetRightItem right();
 
 }

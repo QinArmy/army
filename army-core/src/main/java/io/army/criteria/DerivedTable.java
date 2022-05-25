@@ -17,7 +17,7 @@ import java.util.List;
  */
 public interface DerivedTable extends TableItem {
 
-    List<? extends SelectItem> selectItemList();
+    List<SelectItem> selectItemList();
 
     @Nullable
     Selection selection(String derivedFieldName);

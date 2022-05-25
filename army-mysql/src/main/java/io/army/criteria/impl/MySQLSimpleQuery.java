@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLWords;
+import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
@@ -309,11 +310,6 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
         this.fromOrCrossValid = success;
     }
 
-    final FT noActionAfterPartitionAs() {
-        this.crossJoinEvent(false);
-        return (FT) this;
-    }
-
 
     /*################################## blow private method ##################################*/
 
@@ -350,9 +346,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
 
     enum MySQLLockMode implements SQLWords {
 
-        FOR_UPDATE(" FOR UPDATE"),
-        LOCK_IN_SHARE_MODE(" LOCK IN SHARE MODE"),
-        SHARE(" SHARE");
+        FOR_UPDATE(_Constant.SPACE_FOR_UPDATE),
+        LOCK_IN_SHARE_MODE(_Constant.SPACE_LOCK_IN_SHARE_MODE),
+        FOR_SHARE(_Constant.SPACE_FOR_SHARE);
 
         final String words;
 

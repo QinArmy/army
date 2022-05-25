@@ -53,7 +53,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate equalLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs.nonNullLiteral(this, operand));
+        return DualPredicate.create(this, DualOperator.EQ, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -102,7 +102,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate lessThanLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.nonNullLiteral(this, operand));
+        return DualPredicate.create(this, DualOperator.LT, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -163,7 +163,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate lessEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.nonNullLiteral(this, operand));
+        return DualPredicate.create(this, DualOperator.LE, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -225,7 +225,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate greatThanLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.nonNullLiteral(this, operand));
+        return DualPredicate.create(this, DualOperator.GT, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -287,7 +287,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate greatEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.nonNullLiteral(this, operand));
+        return DualPredicate.create(this, DualOperator.GE, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -349,7 +349,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate notEqualLiteral(Object operand) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.nonNullLiteral(this, operand));
+        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -414,8 +414,8 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final IPredicate betweenLiteral(Object firstOperand, Object secondOperand) {
         final Expression first, second;
-        first = SQLs.nonNullLiteral(this, firstOperand);
-        second = SQLs.nonNullLiteral(this, secondOperand);
+        first = SQLs._nonNullLiteral(this, firstOperand);
+        second = SQLs._nonNullLiteral(this, secondOperand);
         return BetweenPredicate.between(this, first, second);
     }
 
@@ -575,7 +575,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression modLiteral(Object operand) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.nonNullLiteral(this, operand));
+        return DualExpression.create(this, DualOperator.MOD, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -600,7 +600,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression timesLiteral(Object multiplicand) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.nonNullLiteral(this, multiplicand));
+        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs._nonNullLiteral(this, multiplicand));
     }
 
     @Override
@@ -625,7 +625,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression plusLiteral(Object augend) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.nonNullLiteral(this, augend));
+        return DualExpression.create(this, DualOperator.PLUS, SQLs._nonNullLiteral(this, augend));
     }
 
     @Override
@@ -651,7 +651,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression minusLiteral(Object minuend) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.nonNullLiteral(this, minuend));
+        return DualExpression.create(this, DualOperator.MINUS, SQLs._nonNullLiteral(this, minuend));
     }
 
     @Override
@@ -676,7 +676,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression divideLiteral(Object divisor) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.nonNullLiteral(this, divisor));
+        return DualExpression.create(this, DualOperator.DIVIDE, SQLs._nonNullLiteral(this, divisor));
     }
 
     @Override
@@ -706,7 +706,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression bitwiseAndLiteral(Object operand) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.nonNullLiteral(this, operand));
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -731,7 +731,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression bitwiseOrLiteral(Object operand) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.nonNullLiteral(this, operand));
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -756,7 +756,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression xorLiteral(Object operand) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.nonNullLiteral(this, operand));
+        return DualExpression.create(this, DualOperator.XOR, SQLs._nonNullLiteral(this, operand));
     }
 
     @Override
@@ -786,7 +786,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression rightShiftLiteral(Object bitNumber) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.nonNullLiteral(this, bitNumber));
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs._nonNullLiteral(this, bitNumber));
     }
 
     @Override
@@ -811,7 +811,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression leftShiftLiteral(Object bitNumber) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.nonNullLiteral(this, bitNumber));
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs._nonNullLiteral(this, bitNumber));
     }
 
     @Override

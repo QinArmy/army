@@ -254,13 +254,13 @@ final class MySQLDialect extends MySQL {
 
 
     @Override
-    protected SimpleStmt dialectSingleDelete(final _SingleDeleteContext context) {
+    protected SimpleStmt dialectSingleDelete(final _SingleDeleteContext context, final _SingleDelete delete) {
         if (context.dialect() != this) {
             throw illegalDialect();
         }
         assert context.childBlock() == null;
 
-        final _MySQLSingleDelete stmt = (_MySQLSingleDelete) context.statement();
+        final _MySQLSingleDelete stmt = (_MySQLSingleDelete) delete;
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         //1. WITH clause

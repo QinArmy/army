@@ -10,7 +10,7 @@ public interface _SetBlock extends _Block {
 
     boolean hasSelfJoint();
 
-    List<? extends SetLeftItem> targetParts();
+    List<? extends SetLeftItem> leftItemList();
 
     List<? extends SetRightItem> valueParts();
 

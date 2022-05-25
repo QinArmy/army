@@ -1,9 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Query;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.dialect._UpdateContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
@@ -216,7 +219,7 @@ public abstract class SQLs extends Functions {
     /**
      * package method
      */
-    static Expression nonNullLiteral(final Expression type, final @Nullable Object value) {
+    static Expression _nonNullLiteral(final Expression type, final @Nullable Object value) {
         if (value == null) {
             throw new CriteriaException("Right operand of operator must be not null.");
         }
@@ -234,13 +237,15 @@ public abstract class SQLs extends Functions {
     /**
      * package method
      */
-    static Expression nullableLiteral(final Expression type, final @Nullable Object value) {
+    static Expression _nullableLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value instanceof Expression) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression) value;
         } else if (value == null) {
             resultExpression = SQLs.nullWord();
+        } else if (type instanceof ParamMeta) {
+            resultExpression = LiteralExpression.literal((ParamMeta) type, value);
         } else {
             resultExpression = LiteralExpression.literal(type.paramMeta(), value);
         }
@@ -648,10 +653,14 @@ public abstract class SQLs extends Functions {
     }// NullWord
 
 
+    interface ArmyItemPair extends _ItemPair, ItemPair {
+
+    }
+
     /**
      * @see #itemPair(FieldMeta, Object)
      */
-    static final class ItemPairImpl implements ItemPair {
+    static final class ItemPairImpl implements ArmyItemPair {
 
         final SetLeftItem left;
 
@@ -667,18 +676,44 @@ public abstract class SQLs extends Functions {
             this.right = right;
         }
 
-
         @Override
-        public SetLeftItem left() {
-            return this.left;
+        public void appendItemPair(_UpdateContext context) {
+
         }
 
-        @Override
-        public SetRightItem right() {
-            return this.right;
-        }
 
     }//ItemPairImpl
+
+    static final class OperatorItemPair implements ArmyItemPair {
+
+        final DataField field;
+
+        final AssignOperator operator;
+
+        final _Expression value;
+
+        private OperatorItemPair(DataField field, AssignOperator operator, _Expression value) {
+            this.field = field;
+            this.operator = operator;
+            this.value = value;
+        }
+
+        @Override
+        public void appendItemPair(final _UpdateContext context) {
+            final DataField field = this.field;
+            if (field instanceof FieldMeta) {
+
+            } else if (field instanceof QualifiedField) {
+
+            } else if (field instanceof DerivedField) {
+
+            } else {
+
+            }
+        }
+
+
+    }//OperatorItemPair
 
     private static final class AnyTypeNull extends NonOperationExpression
             implements StrictParamValue, ValueExpression {

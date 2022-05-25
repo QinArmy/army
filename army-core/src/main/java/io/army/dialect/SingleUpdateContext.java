@@ -56,11 +56,6 @@ final class SingleUpdateContext extends StmtContext implements _SingleUpdateCont
 
 
     @Override
-    public List<_Predicate> predicateList() {
-        return this.predicateList;
-    }
-
-    @Override
     public _SqlContext context() {
         return this;
     }
