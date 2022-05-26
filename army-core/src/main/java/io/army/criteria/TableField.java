@@ -45,11 +45,12 @@ public interface TableField<T extends IDomain> extends DataField, FieldSelection
      */
     String columnName();
 
-    UpdateMode updateMode();
 
     boolean codec();
 
     boolean nullable();
+
+    UpdateMode updateMode();
 
 
     /**

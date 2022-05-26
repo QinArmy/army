@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Update;
 import io.army.lang.Nullable;
 import io.army.util._Assert;

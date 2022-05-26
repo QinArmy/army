@@ -2,11 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.dialect._UpdateContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
@@ -653,67 +652,76 @@ public abstract class SQLs extends Functions {
     }// NullWord
 
 
-    interface ArmyItemPair extends _ItemPair, ItemPair {
+    static abstract class ArmyItemPair implements ItemPair, _SelfDescribed {
 
-    }
+        final SetRightItem right;
+
+        private ArmyItemPair(SetRightItem right) {
+            this.right = right;
+        }
+    }//ArmyItemPair
 
     /**
      * @see #itemPair(FieldMeta, Object)
      */
-    static final class ItemPairImpl implements ArmyItemPair {
-
-        final SetLeftItem left;
-
-        final SetRightItem right;
-
-        private ItemPairImpl(FieldMeta<?> left, Expression right) {
-            this.left = left;
-            this.right = right;
-        }
-
-        private ItemPairImpl(Row left, SubQuery right) {
-            this.left = left;
-            this.right = right;
-        }
-
-        @Override
-        public void appendItemPair(_UpdateContext context) {
-
-        }
-
-
-    }//ItemPairImpl
-
-    static final class OperatorItemPair implements ArmyItemPair {
+    private static class FieldItemPair extends ArmyItemPair {
 
         final DataField field;
 
-        final AssignOperator operator;
-
-        final _Expression value;
-
-        private OperatorItemPair(DataField field, AssignOperator operator, _Expression value) {
+        private FieldItemPair(DataField field, _Expression right) {
+            super(right);
             this.field = field;
-            this.operator = operator;
-            this.value = value;
         }
 
         @Override
-        public void appendItemPair(final _UpdateContext context) {
+        public final void appendSql(final _SqlContext context) {
             final DataField field = this.field;
-            if (field instanceof FieldMeta) {
-
-            } else if (field instanceof QualifiedField) {
-
-            } else if (field instanceof DerivedField) {
-
-            } else {
+            if (field instanceof DerivedField && !context.dialect().supportQueryUpdate()) {
 
             }
+            ((_SelfDescribed) field).appendSql(context);
+            if (this instanceof OperatorItemPair) {
+                final AssignOperator operator = ((OperatorItemPair) this).operator;
+                context.sqlBuilder()
+                        .append(operator.text);
+            } else {
+                context.sqlBuilder()
+                        .append(_Constant.SPACE_EQUAL);
+
+            }
+            ((_SelfDescribed) this.right).appendSql(context);
+        }
+
+
+    }//FieldItemPair
+
+    private static final class OperatorItemPair extends FieldItemPair {
+
+        final AssignOperator operator;
+
+        private OperatorItemPair(DataField field, AssignOperator operator, _Expression value) {
+            super(field, value);
+            this.operator = operator;
         }
 
 
     }//OperatorItemPair
+
+    private static final class RowItemPair extends ArmyItemPair {
+
+        private final List<? extends DataField> fieldList;
+
+        private RowItemPair(SetRightItem right, List<? extends DataField> fieldList) {
+            super(right);
+            this.fieldList = fieldList;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+
+        }
+
+    }//RowItemPair
 
     private static final class AnyTypeNull extends NonOperationExpression
             implements StrictParamValue, ValueExpression {

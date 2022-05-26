@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._Constant;
@@ -683,8 +684,8 @@ abstract class CriteriaContexts {
                 if (selection == null) {
                     throw invalidRef(alias, field.fieldName);
                 }
-                if (field.paramMeta.actual == null) {
-                    field.paramMeta.actual = selection.paramMeta();
+                if (field.paramMeta.selection == null) {
+                    field.paramMeta.selection = selection;
                     derivedFieldMap.putIfAbsent(field.fieldName, field);
                 }
             }
@@ -1032,6 +1033,11 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public UpdateMode updateMode() {
+            return ((_Selection) this.selection).updateMode();
+        }
+
+        @Override
         public String tableAlias() {
             return this.tableName;
         }
@@ -1119,6 +1125,15 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public UpdateMode updateMode() {
+            final Selection selection = this.paramMeta.selection;
+            if (selection == null) {
+                throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
+            }
+            return ((_Selection) selection).updateMode();
+        }
+
+        @Override
         public String tableAlias() {
             return this.tableName;
         }
@@ -1174,15 +1189,15 @@ abstract class CriteriaContexts {
 
     private static final class DelayParamMeta implements ParamMeta {
 
-        private ParamMeta actual;
+        private Selection selection;
 
         @Override
         public MappingType mappingType() {
-            final ParamMeta actual = this.actual;
-            if (actual == null) {
-                throw new IllegalStateException(String.format("No actual %s", ParamMeta.class.getName()));
+            final Selection selection = this.selection;
+            if (selection == null) {
+                throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
             }
-            return actual.mappingType();
+            return selection.paramMeta().mappingType();
         }
 
     }
@@ -1228,6 +1243,11 @@ abstract class CriteriaContexts {
         private DerivedAliasSelection(DerivedField field, String alias) {
             this.field = field;
             this.alias = alias;
+        }
+
+        @Override
+        public UpdateMode updateMode() {
+            return ((_Selection) this.field).updateMode();
         }
 
         @Override
@@ -1311,7 +1331,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<? extends SelectItem> selectItemList() {
+        public List<SelectItem> selectItemList() {
             final Cte actualCte = this.actualCte;
             if (actualCte == null) {
                 throw new IllegalStateException("No actual cte");

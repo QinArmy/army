@@ -62,6 +62,10 @@ public interface _Dialect {
         return false;
     }
 
+    default boolean supportQueryUpdate() {
+        return false;
+    }
+
 
     String literal(ParamMeta paramMeta, Object nonNull);
 
@@ -86,5 +90,6 @@ public interface _Dialect {
     String defaultFuncName();
 
     boolean multiTableUpdateChild();
+
 
 }

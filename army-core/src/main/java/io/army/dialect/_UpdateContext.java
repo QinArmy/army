@@ -10,7 +10,7 @@ package io.army.dialect;
  *     </ul>
  * </p>
  */
-public interface _UpdateContext extends _DmlContext {
+interface _UpdateContext extends _DmlContext {
 
 
 }

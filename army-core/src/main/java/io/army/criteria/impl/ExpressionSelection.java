@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.UpdateMode;
 import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Selection;
@@ -29,11 +30,17 @@ final class ExpressionSelection implements _Selection {
     public ParamMeta paramMeta() {
         ParamMeta paramMeta = this.expression.paramMeta();
         if (paramMeta instanceof TableField) {
-            // ExpressionSelection couldn't return io.army.criteria.GenericField ,avoid to statement executor
+            // ExpressionSelection couldn't return io.army.criteria.TableField ,avoid to statement executor
             // decode selection .
             paramMeta = paramMeta.mappingType();
         }
         return paramMeta;
+    }
+
+    @Override
+    public UpdateMode updateMode() {
+        //expression selection couldn't be updated.
+        return UpdateMode.IMMUTABLE;
     }
 
     @Override
