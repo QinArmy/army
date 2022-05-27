@@ -66,7 +66,7 @@ abstract class MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA> extends DmlWhereCl
     }
 
     @Override
-    public final List<? extends _TableBlock> tableBlockList() {
+    public final List<_TableBlock> tableBlockList() {
         return this.tableBlockList;
     }
 

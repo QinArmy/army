@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ArmyException;
 import io.army.annotation.*;
+import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
@@ -27,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> implements FieldMeta<T>, _Selection {
+abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implements FieldMeta<T>, _Selection {
 
     private static final String ID = _MetaBridge.ID;
 
@@ -324,6 +325,11 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField<T> imp
         return this.columnName;
     }
 
+    @Override
+    public final TableField tableField() {
+        //return this
+        return this;
+    }
 
     @Override
     public final ParamMeta paramMeta() {

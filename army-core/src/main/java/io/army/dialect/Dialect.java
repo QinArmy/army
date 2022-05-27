@@ -29,6 +29,36 @@ public enum Dialect {
         return this.version;
     }
 
+    public final boolean supportRowLeftItem() {
+        final boolean support;
+        switch (this.database) {
+            case MySQL:
+                support = false;
+                break;
+            case PostgreSQL:
+                support = true;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.database);
+        }
+        return support;
+    }
+
+    public final boolean supportMultiTableUpdate() {
+        final boolean support;
+        switch (this.database) {
+            case MySQL:
+                support = true;
+                break;
+            case PostgreSQL:
+                support = false;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.database);
+        }
+        return support;
+    }
+
     @Override
     public final String toString() {
         return String.format("%s.%s", Dialect.class.getName(), this.name());

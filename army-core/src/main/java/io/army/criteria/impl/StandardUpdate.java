@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.StandardStatement;
+import io.army.criteria.TableField;
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
@@ -22,7 +23,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR, WA>
+abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableField, SR, WR, WA>
         implements Update.StandardUpdateClause<UR>, _SingleUpdate, Update._UpdateSpec, StandardStatement {
 
     static <C> StandardUpdateSpec<C> simple(@Nullable C criteria) {
@@ -78,9 +79,10 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, SR, WR,
     }
 
     @Override
-    void validateDialect(Dialect dialect) {
+    final void validateDialect(Dialect dialect) {
         //no-op
     }
+
 
     @Override
     public final TableMeta<?> table() {

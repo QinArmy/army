@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLQuery;
@@ -34,7 +33,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
-        extends WithCteMultiUpdate<C, SubQuery, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
+        extends WithCteMultiUpdate<C, SubQuery, WE, TableField, SR, UT, US, UP, JT, JS, JP, WR, WA>
         implements MySQLUpdate.MultiUpdateClause<C, UT, US, UP>, MySQLQuery._IndexHintClause<C, IR, UT>
         , MySQLQuery._IndexForJoinClause<C, UT>, MySQLQuery._MySQLJoinClause<C, JT, JS>
         , Statement._CrossJoinClause<C, UT, US>, MySQLQuery._MySQLDialectJoinClause<C, JP>
@@ -53,7 +52,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
     private List<Cte> cteList;
 
-    private List<_MySQLHint> hintList;
+    private List<Hint> hintList;
 
     private List<MySQLWords> modifierList;
 
@@ -313,7 +312,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final List<_MySQLHint> hintList() {
+    public final List<Hint> hintList() {
         return this.hintList;
     }
 
@@ -380,6 +379,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
         this.recursive = recursive;
         this.cteList = cteList;
     }
+
 
     @Override
     public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {

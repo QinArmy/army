@@ -32,6 +32,6 @@ final class RowPredicate extends OperationPredicate {
 
     @Override
     public String toString() {
-        return row + " " + operator.rendered() + " " + rowSubQuery;
+        return row + " " + operator.signText + " " + rowSubQuery;
     }
 }

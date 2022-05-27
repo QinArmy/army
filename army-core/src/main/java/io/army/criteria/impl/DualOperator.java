@@ -6,134 +6,44 @@ package io.army.criteria.impl;
  */
 enum DualOperator {
 
-    PLUS {
-        @Override
-        public String rendered() {
-            return " +";
-        }
-    }, MINUS {
-        @Override
-        public String rendered() {
-            return " -";
-        }
-    }, MOD {
-        @Override
-        public String rendered() {
-            return " %";
-        }
-    }, MULTIPLY {
-        @Override
-        public String rendered() {
-            return " *";
-        }
-    }, DIVIDE {
-        @Override
-        public String rendered() {
-            return " /";
-        }
-    }, BITWISE_AND {
-        @Override
-        public String rendered() {
-            return " &";
-        }
-
-    }, BITWISE_OR {
-        @Override
-        public String rendered() {
-            return " |";
-        }
-
-    }, XOR {
-        @Override
-        public String rendered() {
-            return " ^";
-        }
-
-    }, LEFT_SHIFT {
-        @Override
-        public String rendered() {
-            return " <<";
-        }
-
-    }, RIGHT_SHIFT {
-        @Override
-        public String rendered() {
-            return " >>";
-        }
-
-    },
+    PLUS(" +"),
+    MINUS(" -"),
+    MOD(" %"),
+    MULTIPLY(" *"),
+    DIVIDE(" /"),
+    BITWISE_AND(" &"),
+    BITWISE_OR(" |"),
+    XOR(" ^"),
+    LEFT_SHIFT(" <<"),
+    RIGHT_SHIFT(" >>"),
     /*################################## blow expression dual operator method ##################################*/
 
-    EQ {
-        @Override
-        public String rendered() {
+    EQ(" ="),
+    NOT_EQ(" !="),
+    LT(" <"),
+    LE(" <="),
+    GE(" >="),
+    GT(" >"),
+    IN(" IN"),
+    NOT_IN(" NOT IN"),
+    LIKE(" LIKE"),
+    NOT_LIKE(" NOT LIKE");
 
-            return " =";
-        }
 
-    },
-    NOT_EQ {
-        @Override
-        public String rendered() {
-            return " !=";
-        }
-    },
-    LT {
-        @Override
-        public String rendered() {
-            return " <";
-        }
-    },
-    LE {
-        @Override
-        public String rendered() {
-            return " <=";
-        }
-
-    },
-    GE {
-        @Override
-        public String rendered() {
-            return " >=";
-        }
-
-    },
-    GT {
-        @Override
-        public String rendered() {
-            return " >";
-        }
-
-    }, IN {
-        @Override
-        public String rendered() {
-            return " IN";
-        }
-    },
-    NOT_IN {
-        @Override
-        public String rendered() {
-            return " NOT IN";
-        }
-    },
-    LIKE {
-        @Override
-        public String rendered() {
-            return " LIKE";
-        }
-    },
-    NOT_LIKE {
-        @Override
-        public String rendered() {
-            return " NOT LIKE";
-        }
-    };
-
+    final String signText;
 
     /**
-     * @return one space char and operator
+     * @param signText space and sign
      */
-    abstract String rendered();
+    DualOperator(String signText) {
+        this.signText = signText;
+    }
+
+
+    @Override
+    public final String toString() {
+        return String.format("%s.%s", DualOperator.class.getName(), this.name());
+    }
 
 
 }

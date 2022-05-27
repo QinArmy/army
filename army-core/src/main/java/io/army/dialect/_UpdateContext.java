@@ -1,6 +1,8 @@
 package io.army.dialect;
 
 
+import io.army.criteria.DataField;
+
 /**
  * <p>
  * This interface is base interface of below:
@@ -10,7 +12,9 @@ package io.army.dialect;
  *     </ul>
  * </p>
  */
-interface _UpdateContext extends _DmlContext {
+public interface _UpdateContext extends _SqlContext {
+
+    void appendSetLeftItem(DataField field);
 
 
 }

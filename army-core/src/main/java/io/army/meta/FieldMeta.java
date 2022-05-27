@@ -12,10 +12,12 @@ import java.util.List;
  * <p> this interface representing a Java class then tableMeta column mapping.</p>
  *
  * @param <T> representing Domain Java Type
- * @param <F> representing Domain property Java Type
  */
-public interface FieldMeta<T extends IDomain> extends TableField<T> {
+public interface FieldMeta<T extends IDomain> extends TableField {
 
+
+    @Override
+    TableMeta<T> tableMeta();
 
     boolean primary();
 

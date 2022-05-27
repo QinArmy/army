@@ -85,7 +85,7 @@ public interface _Dialect {
         throw new UnsupportedOperationException();
     }
 
-    Dialect dialect();
+    Dialect dialectMode();
 
     String defaultFuncName();
 

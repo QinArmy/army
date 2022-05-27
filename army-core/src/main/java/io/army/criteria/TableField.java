@@ -2,7 +2,6 @@ package io.army.criteria;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.impl.SQLs;
-import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
@@ -19,14 +18,13 @@ import java.lang.reflect.Field;
  * </ul>
  * </p>
  *
- * @param <T> Domain Java Type
  * @see FieldMeta
  * @see QualifiedField
  */
 @SuppressWarnings("unused")
-public interface TableField<T extends IDomain> extends DataField, FieldSelection, ParamMeta, SetLeftItem {
+public interface TableField extends DataField, FieldSelection, ParamMeta, SetLeftItem {
 
-    TableMeta<T> tableMeta();
+    TableMeta<?> tableMeta();
 
     /**
      * @return domain mapping property java type.

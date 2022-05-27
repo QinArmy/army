@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.domain.IDomain;
+import io.army.meta.TableMeta;
 
 /**
  * <p>
@@ -9,9 +10,11 @@ import io.army.domain.IDomain;
  * </p>
  *
  * @param <T> java type domain.
- * @param <F> java type field.
  */
-public interface QualifiedField<T extends IDomain> extends TableField<T> {
+public interface QualifiedField<T extends IDomain> extends TableField {
+
+    @Override
+    TableMeta<T> tableMeta();
 
     String tableAlias();
 

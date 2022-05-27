@@ -72,8 +72,8 @@ public class MySQLCriteriaUnitTests {
     @Test
     public void simpleBatchSingleUpdate() {
 
-        final Supplier<List<TableField<?>>> supplier = () -> {
-            List<TableField<?>> list = new ArrayList<>();
+        final Supplier<List<TableField>> supplier = () -> {
+            List<TableField> list = new ArrayList<>();
             list.add(ChinaRegion_.name);
             return list;
         };

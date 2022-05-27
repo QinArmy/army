@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Cte;
+import io.army.criteria.DataField;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.SubStatement;
 import io.army.util._Exceptions;
@@ -12,7 +13,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class WithCteSingleUpdate<C, SS extends SubStatement, WE, SR, WR, WA> extends SingleUpdate<C, SR, WR, WA>
+abstract class WithCteSingleUpdate<C, SS extends SubStatement, WE, F extends DataField, SR, WR, WA>
+        extends SingleUpdate<C, F, SR, WR, WA>
         implements DialectStatement._WithCteClause<C, SS, WE> {
 
     WithCteSingleUpdate(CriteriaContext criteriaContext) {

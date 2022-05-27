@@ -79,7 +79,7 @@ final class SingleUpdateContext extends StmtContext implements _SingleUpdateCont
     }
 
     @Override
-    public String validateField(final TableField<?> field) {
+    public String validateField(final TableField field) {
         final TableMeta<?> table = this.table, fieldTable;
         fieldTable = field.tableMeta();
         if (table instanceof ChildTableMeta) {

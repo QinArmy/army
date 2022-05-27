@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.DataField;
 import io.army.criteria.Update;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.util._Exceptions;
@@ -11,8 +12,8 @@ import io.army.util._Exceptions;
  *
  * @since 1.0
  */
-abstract class SingleUpdate<C, SR, WR, WA>
-        extends JoinableUpdate<C, SR, Void, Void, Void, Void, Void, Void, WR, WA>
+abstract class SingleUpdate<C, F extends DataField, SR, WR, WA>
+        extends JoinableUpdate<C, F, SR, Void, Void, Void, Void, Void, Void, WR, WA>
         implements _SingleUpdate, Update._UpdateSpec, Update {
 
 

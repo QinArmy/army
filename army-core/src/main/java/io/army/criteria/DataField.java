@@ -13,5 +13,7 @@ package io.army.criteria;
  */
 public interface DataField extends Expression, Selection {
 
+    String fieldName();
+
 
 }

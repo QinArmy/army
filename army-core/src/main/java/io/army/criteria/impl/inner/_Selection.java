@@ -1,12 +1,16 @@
 package io.army.criteria.impl.inner;
 
-import io.army.annotation.UpdateMode;
 import io.army.criteria.Selection;
+import io.army.criteria.TableField;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 
 public interface _Selection extends Selection {
 
     void appendSelection(_SqlContext context);
 
-    UpdateMode updateMode();
+    @Nullable
+    TableField tableField();
+
+
 }

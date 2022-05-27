@@ -18,7 +18,7 @@ import java.util.Objects;
  */
 final class FieldSelectionImpl implements FieldSelection, _Selection {
 
-    static FieldSelection create(TableField<?> field, String alias) {
+    static FieldSelection create(TableField field, String alias) {
         final FieldSelection selection;
         if (field.fieldName().equals(alias)) {
             selection = field;
@@ -28,31 +28,36 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         return selection;
     }
 
-    private final TableField<?> field;
+    private final TableField field;
 
     private final String alias;
 
-    private FieldSelectionImpl(TableField<?> field, String alias) {
+    private FieldSelectionImpl(TableField field, String alias) {
         this.field = field;
         this.alias = alias;
     }
 
     @Override
+    public TableField tableField() {
+        return this.field;
+    }
+
+    @Override
     public ParamMeta paramMeta() {
-        final TableField<?> field = this.field;
+        final TableField field = this.field;
         return field instanceof FieldMeta ? (FieldMeta<?>) field : field.paramMeta();
     }
 
 
     @Override
     public FieldMeta<?> fieldMeta() {
-        final TableField<?> field = this.field;
+        final TableField field = this.field;
         return field instanceof FieldMeta ? (FieldMeta<?>) field : field.fieldMeta();
     }
 
     @Override
     public void appendSelection(final _SqlContext context) {
-        final TableField<?> field = this.field;
+        final TableField field = this.field;
         if (field instanceof FieldMeta) {
             context.appendField((FieldMeta<?>) field);
         } else {
@@ -96,7 +101,7 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         final StringBuilder builder = new StringBuilder()
                 .append(_Constant.SPACE);
 
-        final TableField<?> field = this.field;
+        final TableField field = this.field;
 
         if (field instanceof FieldMeta) {
             builder.append(field.columnName());

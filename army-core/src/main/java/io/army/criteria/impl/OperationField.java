@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.criteria.TableField;
-import io.army.domain.IDomain;
 
 /**
  * <p>
@@ -14,7 +13,7 @@ import io.army.domain.IDomain;
  *     </ul>
  * </p>
  */
-abstract class OperationField<T extends IDomain> extends OperationExpression implements TableField<T> {
+abstract class OperationField extends OperationExpression implements TableField {
 
 
     @Override

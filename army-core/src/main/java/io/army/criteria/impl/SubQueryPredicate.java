@@ -15,7 +15,7 @@ final class SubQueryPredicate extends OperationPredicate {
         selectItemList = subQuery.selectItemList();
         if (selectItemList.size() != 1 || !(selectItemList.get(0) instanceof Selection)) {
             String m = String.format("Operator %s %s only support column sub query."
-                    , operator.rendered(), subQueryOperator.name());
+                    , operator.signText, subQueryOperator.name());
             throw new CriteriaException(m);
         }
         switch (subQueryOperator) {
@@ -51,17 +51,17 @@ final class SubQueryPredicate extends OperationPredicate {
         this.operand.appendSql(context);
 
         context.sqlBuilder()
-                .append(this.operator.rendered())
+                .append(this.operator.signText)
                 .append(this.subQueryOperator.rendered());
 
-        context.dialect().subQuery(this.subQuery, context);
+        context.dialect().rowSet(this.subQuery, context);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder()
                 .append(this.operand)
-                .append(this.operator.rendered())
+                .append(this.operator.signText)
                 .append(this.subQueryOperator.rendered());
 
         builder.append(this.subQuery);

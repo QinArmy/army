@@ -15,7 +15,7 @@ interface _SetClause {
     List<? extends SetRightItem> rightItemList();
 
 
-    String validateField(TableField<?> field);
+    String validateField(TableField field);
 
 
     boolean supportTableAlias();

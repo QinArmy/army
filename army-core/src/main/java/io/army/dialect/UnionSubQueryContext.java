@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.stmt.Stmt;
+import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
 
 final class UnionSubQueryContext extends StmtContext implements _UnionQueryContext, _SubQueryContext {
@@ -43,7 +43,7 @@ final class UnionSubQueryContext extends StmtContext implements _UnionQueryConte
     }
 
     @Override
-    public Stmt build() {
+    public SimpleStmt build() {
         throw SimpleSubQueryContext.dontSupportBuild();
     }
 

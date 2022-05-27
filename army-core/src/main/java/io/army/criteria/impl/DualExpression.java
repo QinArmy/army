@@ -118,7 +118,7 @@ final class DualExpression extends OperationExpression {
         }
 
         //2. append operator
-        builder.append(this.operator.rendered());
+        builder.append(this.operator.signText);
 
         if (rightInnerBracket) {
             builder.append(_Constant.SPACE_LEFT_PAREN);
@@ -141,7 +141,7 @@ final class DualExpression extends OperationExpression {
 
     @Override
     public String toString() {
-        return String.format("%s %s%s", this.left, this.operator.rendered(), this.right);
+        return String.format("%s %s%s", this.left, this.operator.signText, this.right);
     }
 
     /*################################## blow private static inner class ##################################*/

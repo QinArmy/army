@@ -80,7 +80,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
     }
 
     @Override
-    public String validateField(final TableField<?> field) {
+    public String validateField(final TableField field) {
         final TableMeta<?> belongOf = field.tableMeta();
         //1. get safe table alias of belongOf table
         String safeTableAlias;

@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._IndexHint;
-import io.army.criteria.impl.inner.mysql._MySQLHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLQuery;
@@ -31,7 +30,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
-        extends WithCteSingleUpdate<C, SubQuery, WE, SR, WR, WA>
+        extends WithCteSingleUpdate<C, SubQuery, WE, TableField, SR, WR, WA>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
         , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<C, UR, UP>, MySQLQuery._IndexHintClause<C, IR, UR>
         , MySQLQuery._IndexForOrderByClause<C, UR>, _MySQLWithClause {
@@ -49,7 +48,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
     private List<Cte> cteList;
 
-    private List<_MySQLHint> hintList;
+    private List<Hint> hintList;
 
     private List<MySQLWords> modifierList;
 
@@ -484,7 +483,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public final List<_MySQLHint> hintList() {
+    public final List<Hint> hintList() {
         return this.hintList;
     }
 

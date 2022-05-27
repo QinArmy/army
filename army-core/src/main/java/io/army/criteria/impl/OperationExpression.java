@@ -26,7 +26,7 @@ abstract class OperationExpression implements ArmyExpression {
     public final Selection as(final String alias) {
         final Selection selection;
         if (this instanceof TableField) {
-            selection = FieldSelectionImpl.create((TableField<?>) this, alias);
+            selection = FieldSelectionImpl.create((TableField) this, alias);
         } else if (this instanceof DerivedField) {
             selection = CriteriaContexts.createDerivedSelection((DerivedField) this, alias);
         } else {
@@ -58,7 +58,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate equalNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.EQ, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualPredicate.create(this, DualOperator.EQ, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -107,7 +107,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate lessThanNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.LT, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualPredicate.create(this, DualOperator.LT, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -168,7 +168,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate lessEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.LE, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualPredicate.create(this, DualOperator.LE, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -230,7 +230,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate greatThanNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.GT, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualPredicate.create(this, DualOperator.GT, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -292,7 +292,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate greatEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.GE, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualPredicate.create(this, DualOperator.GE, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -354,7 +354,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate notEqualNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualPredicate.create(this, DualOperator.NOT_EQ, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -470,7 +470,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate inNamed(String paramName, int size) {
-        return DualPredicate.create(this, DualOperator.IN, SQLs.namedParams(paramName, this.paramMeta(), size));
+        return DualPredicate.create(this, DualOperator.IN, SQLs.namedParams(this.paramMeta(), paramName, size));
     }
 
     @Override
@@ -515,7 +515,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate notInNamed(String paramName, int size) {
-        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedParams(paramName, this.paramMeta(), size));
+        return DualPredicate.create(this, DualOperator.NOT_IN, SQLs.namedParams(this.paramMeta(), paramName, size));
     }
 
     @Override
@@ -535,7 +535,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate likeNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.LIKE, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualPredicate.create(this, DualOperator.LIKE, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -555,7 +555,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final IPredicate notLikeNamed(String paramName) {
-        return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualPredicate.create(this, DualOperator.NOT_LIKE, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -580,7 +580,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression modNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.MOD, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.MOD, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -605,7 +605,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression timesNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.MULTIPLY, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -630,7 +630,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression plusNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.PLUS, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.PLUS, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
 
@@ -656,7 +656,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression minusNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.MINUS, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.MINUS, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -681,7 +681,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression divideNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.DIVIDE, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -711,7 +711,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression bitwiseAndNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.BITWISE_AND, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -736,7 +736,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression bitwiseOrNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.BITWISE_OR, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -761,7 +761,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression xorNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.XOR, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.XOR, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -791,7 +791,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression rightShiftNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.RIGHT_SHIFT, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -816,7 +816,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final Expression leftShiftNamed(String paramName) {
-        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.namedParam(paramName, this.paramMeta()));
+        return DualExpression.create(this, DualOperator.LEFT_SHIFT, SQLs.namedParam(this.paramMeta(), paramName));
     }
 
     @Override
@@ -916,7 +916,7 @@ abstract class OperationExpression implements ArmyExpression {
                 throw _Exceptions.unexpectedEnum(operator);
         }
         String m = String.format("%s operator support only %s and %s ,but operand is %s"
-                , operator.rendered(), Expression.class.getName()
+                , operator.signText, Expression.class.getName()
                 , Collection.class.getName()
                 , _ClassUtils.safeClassName(operand));
         return new CriteriaException(m);

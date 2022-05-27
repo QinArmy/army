@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
+import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-final class QualifiedFieldImpl<T extends IDomain> extends OperationField<T>
+final class QualifiedFieldImpl<T extends IDomain> extends OperationField
         implements QualifiedField<T>, _Selection {
 
     @SuppressWarnings("unchecked")
@@ -85,7 +86,13 @@ final class QualifiedFieldImpl<T extends IDomain> extends OperationField<T>
     }
 
     @Override
-    public void appendSelection(_SqlContext context) {
+    public TableField tableField() {
+        // return this
+        return this;
+    }
+
+    @Override
+    public void appendSelection(final _SqlContext context) {
         context.appendField(this.tableAlias, this.field);
 
         context.sqlBuilder()

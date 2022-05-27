@@ -46,7 +46,7 @@ final class MySQLDialect extends MySQL {
 
     MySQLDialect(_DialectEnvironment environment, Dialect dialect) {
         super(environment, dialect);
-        this.asOf80 = this.dialect().version() >= Dialect.MySQL80.version();
+        this.asOf80 = this.dialectMode().version() >= Dialect.MySQL80.version();
     }
 
     @Override
@@ -189,7 +189,7 @@ final class MySQLDialect extends MySQL {
         //8. index hint
         this.indexHintClause(stmt.indexHintList(), sqlBuilder);
         //9. set clause
-        final List<TableField<?>> conditionFields;
+        final List<TableField> conditionFields;
         conditionFields = this.singleTableSetClause(true, context);
         //10. where clause
         this.dmlWhereClause(context);
@@ -239,7 +239,7 @@ final class MySQLDialect extends MySQL {
         //5. table_references (and partition ,index hint)
         this.mysqlTableReferences(stmt.tableBlockList(), context, false);
         //6. set clause
-        final List<TableField<?>> conditionFields;
+        final List<TableField> conditionFields;
         conditionFields = this.multiTableSetClause(context);
         //7. where clause
         this.dmlWhereClause(context);

@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Cte;
+import io.army.criteria.DataField;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.SubStatement;
 import io.army.util._Exceptions;
@@ -19,14 +20,13 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WithCteMultiUpdate<C, SS extends SubStatement, WE, SR, FT, FS, FP, JT, JS, JP, WR, WA>
-        extends MultiUpdate<C, SR, FT, FS, FP, JT, JS, JP, WR, WA>
+abstract class WithCteMultiUpdate<C, SS extends SubStatement, WE, F extends DataField, SR, FT, FS, FP, JT, JS, JP, WR, WA>
+        extends MultiUpdate<C, F, SR, FT, FS, FP, JT, JS, JP, WR, WA>
         implements DialectStatement._WithCteClause<C, SS, WE> {
 
     WithCteMultiUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
-
 
 
     @Override

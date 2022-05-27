@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._Constant;
@@ -62,7 +61,6 @@ abstract class CriteriaContexts {
         ((AbstractContext) context).varMap = leftContext.varMap;
         return context;
     }
-
 
 
     static CriteriaContext bracketContext(final Query left) {
@@ -914,7 +912,6 @@ abstract class CriteriaContexts {
     }//SimpleQueryContext
 
 
-
     /**
      * <p>
      * This class is base class of below :
@@ -1033,8 +1030,13 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public UpdateMode updateMode() {
-            return ((_Selection) this.selection).updateMode();
+        public TableField tableField() {
+            return ((_Selection) this.selection).tableField();
+        }
+
+        @Override
+        public String fieldName() {
+            return this.selection.alias();
         }
 
         @Override
@@ -1125,12 +1127,17 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public UpdateMode updateMode() {
+        public TableField tableField() {
             final Selection selection = this.paramMeta.selection;
             if (selection == null) {
                 throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
             }
-            return ((_Selection) selection).updateMode();
+            return ((_Selection) selection).tableField();
+        }
+
+        @Override
+        public String fieldName() {
+            return this.fieldName;
         }
 
         @Override
@@ -1246,8 +1253,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public UpdateMode updateMode() {
-            return ((_Selection) this.field).updateMode();
+        public TableField tableField() {
+            return ((_Selection) this.field).tableField();
         }
 
         @Override

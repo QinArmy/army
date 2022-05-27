@@ -1,7 +1,5 @@
 package io.army.dialect;
 
-import io.army.stmt.SimpleStmt;
-
 /**
  * <p>
  * This interface is base interface of below:
@@ -15,7 +13,5 @@ import io.army.stmt.SimpleStmt;
  */
 interface PrimaryQueryContext extends _StmtContext {
 
-    @Override
-    SimpleStmt build();
 
 }

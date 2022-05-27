@@ -98,7 +98,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             if (childBlock == null || childBlock.leftItemList().size() == 0) {
                 standardSingleTableUpdate(singleContext);
             } else {
-                stmt = standardChildUpdate(singleContext);
+                standardChildUpdate(singleContext);
             }
             context = singleContext;
         } else if (update instanceof _SingleUpdate) {
@@ -270,7 +270,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     @Override
-    public final Dialect dialect() {
+    public final Dialect dialectMode() {
         return this.dialect;
     }
 
@@ -336,7 +336,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     @Override
     public final String toString() {
         return String.format("[%s dialect:%s,hash:%s]"
-                , this.getClass().getName(), this.dialect(), System.identityHashCode(this));
+                , this.getClass().getName(), this.dialectMode(), System.identityHashCode(this));
     }
 
     /*################################## blow protected template method ##################################*/
@@ -823,7 +823,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected final void conditionUpdate(final List<TableField<?>> conditionFields, final _SetClause clause) {
+    protected final void conditionUpdate(final List<TableField> conditionFields, final _SetClause clause) {
         final _SqlContext context = clause.context();
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
@@ -832,7 +832,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         supportTableAlias = clause.supportTableAlias();
 
         String columnName, safeTableAlias;
-        for (TableField<?> field : conditionFields) {
+        for (TableField field : conditionFields) {
             safeTableAlias = clause.validateField(field);
             columnName = field.columnName();
             sqlBuilder.append(_Constant.SPACE_AND_SPACE);
@@ -872,14 +872,14 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     @Deprecated
-    protected final void conditionUpdate(String safeTableAlias, List<TableField<?>> conditionFields
+    protected final void conditionUpdate(String safeTableAlias, List<TableField> conditionFields
             , _StmtContext context) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
         String columnName;
-        for (TableField<?> field : conditionFields) {
+        for (TableField field : conditionFields) {
             columnName = field.columnName();
             sqlBuilder
                     .append(_Constant.SPACE_AND_SPACE)
@@ -953,7 +953,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
     }
 
-    protected final List<TableField<?>> singleTableSetClause(final boolean first, final _SetClause clause) {
+    protected final List<TableField> singleTableSetClause(final boolean first, final _SetClause clause) {
         final _SqlContext context = clause.context();
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
@@ -966,12 +966,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
             sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
         }
 
-        List<TableField<?>> conditionFieldList = null;
+        List<TableField> conditionFieldList = null;
 
         final int itemSize = leftItemList.size();
         SetLeftItem leftItem;
         SetRightItem rightItem;
-        TableField<?> field;
+        TableField field;
         _Expression expression;
         String tableSafeAlias;
         final boolean supportAlias, supportOnlyDefault, supportRow;
@@ -986,17 +986,17 @@ public abstract class _AbstractDialect implements ArmyDialect {
             rightItem = rightItemList.get(i);
             if (leftItem instanceof Row) {
                 if (!supportRow) {
-                    throw _Exceptions.dontSupportRowLeftItem(dialect.dialect());
+                    throw _Exceptions.dontSupportRowLeftItem(dialect.dialectMode());
                 }
                 if (!(rightItem instanceof SubQuery)) {
                     throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
                 }
                 this.appendRowItem(((Row) leftItem).fieldList(), clause, conditionFieldList);
                 sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-                dialect.subQuery((SubQuery) rightItem, context);
+                dialect.rowSet((SubQuery) rightItem, context);
                 continue;
             }
-            field = (TableField<?>) leftItem;
+            field = (TableField) leftItem;
             if (!(rightItem instanceof _Expression)) {
                 throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
             }
@@ -1063,7 +1063,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         return conditionFieldList;
     }
 
-    protected final List<TableField<?>> multiTableSetClause(final _MultiUpdateContext context) {
+    protected final List<TableField> multiTableSetClause(final _MultiUpdateContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final List<? extends SetLeftItem> leftItemList = context.leftItemList();
@@ -1071,12 +1071,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         sqlBuilder.append(_Constant.SPACE_SET_SPACE);
 
-        List<TableField<?>> conditionFieldList = null;
+        List<TableField> conditionFieldList = null;
 
         final int itemSize = leftItemList.size();
         SetLeftItem leftItem;
         SetRightItem rightItem;
-        TableField<?> field;
+        TableField field;
         _Expression expression;
         String tableSafeAlias;
         final boolean supportOnlyDefault, supportRow;
@@ -1090,7 +1090,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             rightItem = rightItemList.get(i);
             if (leftItem instanceof Row) {
                 if (!supportRow) {
-                    throw _Exceptions.dontSupportRowLeftItem(dialect.dialect());
+                    throw _Exceptions.dontSupportRowLeftItem(dialect.dialectMode());
                 }
                 if (!(rightItem instanceof SubQuery)) {
                     throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
@@ -1100,7 +1100,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 dialect.subQuery((SubQuery) rightItem, context);
                 continue;
             }
-            field = (TableField<?>) leftItem;
+            field = (TableField) leftItem;
             if (!(rightItem instanceof _Expression)) {
                 throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
             }
@@ -1156,8 +1156,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     @Nullable
-    private List<TableField<?>> appendRowItem(final List<TableField<?>> fieldList, final _SetClause clause
-            , @Nullable List<TableField<?>> conditionFieldList) {
+    private List<TableField> appendRowItem(final List<TableField> fieldList, final _SetClause clause
+            , @Nullable List<TableField> conditionFieldList) {
         final _SqlContext context = clause.context();
         final int size = fieldList.size();
         final StringBuilder sqlBuilder = context.sqlBuilder();
@@ -1168,7 +1168,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         supportOnlyDefault = dialect.supportOnlyDefault();
 
         String tableSafeAlias;
-        TableField<?> field;
+        TableField field;
         sqlBuilder.append(_Constant.SPACE_LEFT_PAREN)
                 .append(_Constant.SPACE);
         for (int i = 0; i < size; i++) {
@@ -1215,7 +1215,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected final List<TableField<?>> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
+    protected final List<TableField> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
 
         final List<? extends SetLeftItem> targetPartList = clause.leftItemList();
         final List<? extends SetRightItem> valuePartList = clause.valueParts();
@@ -1233,7 +1233,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
         final boolean supportTableAlias = dialect.setClauseTableAlias();
         final boolean hasSelfJoin = clause.hasSelfJoint();
-        final List<TableField<?>> conditionFields = new ArrayList<>();
+        final List<TableField> conditionFields = new ArrayList<>();
         for (int i = 0; i < targetCount; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1254,7 +1254,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             } else if (!(valuePart instanceof _Expression)) {
                 throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
             }
-            final TableField<?> field = (TableField<?>) targetPart;
+            final TableField field = (TableField) targetPart;
             switch (field.updateMode()) {
                 case UPDATABLE:
                     // no-op
@@ -1411,7 +1411,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #setClause(boolean, _SetBlock, _UpdateContext)
      */
     private void appendRowTarget(final _SetBlock clause, final Row row
-            , List<TableField<?>> conditionFields, final _UpdateContext context) {
+            , List<TableField> conditionFields, final _UpdateContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final _Dialect dialect = context.dialect();
         final boolean supportOnlyDefault = dialect.supportOnlyDefault();
@@ -1421,7 +1421,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         final boolean hasSelfJoin = clause.hasSelfJoint(), supportTableAlias = dialect.setClauseTableAlias();
         sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
         int index = 0;
-        for (TableField<?> field : row.fieldList()) {
+        for (TableField field : row.fieldList()) {
             if (index > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
@@ -1558,7 +1558,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         sqlBuilder.append(_Constant.SPACE)
                 .append(context.safeTableAlias);
 
-        final List<TableField<?>> conditionFields;
+        final List<TableField> conditionFields;
         //2. set clause
         conditionFields = this.setClause(true, context, context);
         //3. where clause

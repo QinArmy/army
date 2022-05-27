@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface Row extends SetLeftItem {
 
-    List<TableField<?>> fieldList();
+    List<TableField> fieldList();
 
 }

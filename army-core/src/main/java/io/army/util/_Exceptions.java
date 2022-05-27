@@ -71,7 +71,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownColumn(TableField<?> field) {
+    public static CriteriaException unknownColumn(TableField field) {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
@@ -101,7 +101,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static CriteriaException immutableField(FieldMeta<?> field) {
+    public static CriteriaException immutableField(DataField field) {
         return new CriteriaException(String.format("%s is immutable.", field));
     }
 
@@ -109,11 +109,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is immutable.", table));
     }
 
-    public static CriteriaException armyManageField(FieldMeta<?> field) {
+    public static CriteriaException armyManageField(TableField field) {
         return new CriteriaException(String.format("%s is managed by Army.", field));
     }
 
-    public static CriteriaException visibleField(Visible visible, TableField<?> field) {
+    public static CriteriaException visibleField(Visible visible, TableField field) {
         String m = String.format("%s mode is %s,%s couldn't present in non-selection expression."
                 , Visible.class.getSimpleName(), visible, field);
         return new CriteriaException(m);
@@ -124,7 +124,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonNullField(FieldMeta<?> field) {
+    public static CriteriaException nonNullField(TableField field) {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
 
@@ -176,7 +176,7 @@ public abstract class _Exceptions extends ExceptionUtils {
                 , SetRightItem.class.getName(), value));
     }
 
-    public static CriteriaException selfJoinNonQualifiedField(TableField<?> field) {
+    public static CriteriaException selfJoinNonQualifiedField(TableField field) {
         return new CriteriaException(String.format("%s self join but %s don't use %s."
                 , field.tableMeta(), field, QualifiedField.class.getName()));
     }
@@ -352,12 +352,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException dontSupportRowLeftItem(Dialect dialect) {
-        String m = String.format("%s don't support ROW in SET clause.", dialect);
+    public static CriteriaException dontSupportRowLeftItem(@Nullable Dialect dialect) {
+        String m = String.format("%s don't support ROW in SET clause.", dialect == null ? "standard" : dialect);
         return new CriteriaException(m);
     }
 
-    public static CriteriaException singleUpdateChildField(TableField<?> field, Dialect dialect) {
+    public static CriteriaException singleUpdateChildField(TableField field, Dialect dialect) {
         String m;
         m = String.format("%s single table update syntax don't support update child table field %s", dialect, field);
         return new CriteriaException(m);

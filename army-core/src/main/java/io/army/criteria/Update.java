@@ -3,7 +3,6 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
 import java.util.function.*;
@@ -33,16 +32,14 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
     interface _SetClause<C, F extends DataField, SR> {
 
         /**
-         * @param consumer supply  non-null and non-empty list.
-         * @see SQLs#itemPair(FieldMeta, Object)
+         * @see SQLs#itemPair(DataField, Object)
          */
         SR setPairs(Consumer<Consumer<ItemPair>> consumer);
 
+        /**
+         * @see SQLs#itemPair(DataField, Object)
+         */
         SR setPairs(BiConsumer<C, Consumer<ItemPair>> consumer);
-
-        SR ifSetPairs(Consumer<Consumer<ItemPair>> consumer);
-
-        SR ifSetPairs(BiConsumer<C, Consumer<ItemPair>> consumer);
 
         SR setExp(F field, Expression value);
 
@@ -53,6 +50,11 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
         SR ifSetExp(F field, Supplier<? extends Expression> supplier);
 
         SR ifSetExp(F field, Function<C, ? extends Expression> function);
+
+
+        SR setDefault(F field);
+
+        SR setNull(F field);
 
     }
 
@@ -65,8 +67,6 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
         SR set(F field, @Nullable Object value);
 
-        SR setDefault(F field);
-
         SR setLiteral(F field, @Nullable Object value);
 
         SR setPlus(F field, Object value);
@@ -77,17 +77,13 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
         SR setMinusLiteral(F field, Object value);
 
-        SR set(F field, BiFunction<DataField, Object, ItemPair> function, Object value);
+        SR set(F field, BiFunction<DataField, Object, ItemPair> operator, Object value);
 
         SR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier);
 
         SR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function);
 
-        SR setLiteral(F field, BiFunction<DataField, Object, ItemPair> function, Object value);
-
-        SR setLiteralExp(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier);
-
-        SR setLiteralExp(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function);
+        SR setLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Object value);
 
         SR ifSet(F field, Supplier<?> supplier);
 
@@ -124,26 +120,23 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
         SR setNamed(F field, String parameterName);
 
+        SR setNullableNamed(F field, String parameterName);
+
+        SR setPlus(F field);
+
+        SR setMinus(F field);
+
         SR set(F field, BiFunction<DataField, Object, ItemPair> operator);
 
         SR setNamed(F field, BiFunction<DataField, Object, ItemPair> operator, String parameterName);
 
-        SR set(Consumer<Consumer<F>> consumer);
+        SR setFields(Consumer<Consumer<F>> consumer);
 
-        SR set(BiConsumer<C, Consumer<F>> consumer);
+        SR setFields(BiConsumer<C, Consumer<F>> consumer);
 
-        SR setNullable(Consumer<Consumer<F>> consumer);
+        SR setNullableFields(Consumer<Consumer<F>> consumer);
 
-        SR setNullable(BiConsumer<C, Consumer<F>> consumer);
-
-        SR ifSet(Consumer<Consumer<F>> consumer);
-
-        SR ifSet(BiConsumer<C, Consumer<F>> consumer);
-
-        SR ifSetNullable(Consumer<Consumer<F>> consumer);
-
-        SR ifSetNullable(BiConsumer<C, Consumer<F>> consumer);
-
+        SR setNullableFields(BiConsumer<C, Consumer<F>> consumer);
     }
 
 
@@ -152,7 +145,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     }
 
-    interface StandardSetSpec<C> extends _SimpleSetClause<C, TableField<?>, StandardWhereSpec<C>> {
+    interface StandardSetSpec<C> extends _SimpleSetClause<C, TableField, StandardWhereSpec<C>> {
 
     }
 
@@ -181,7 +174,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     }
 
-    interface StandardBatchSetSpec<C> extends _BatchSetClause<C, TableField<?>, StandardBatchWhereSpec<C>> {
+    interface StandardBatchSetSpec<C> extends _BatchSetClause<C, TableField, StandardBatchWhereSpec<C>> {
 
 
     }

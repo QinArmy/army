@@ -1,24 +1,26 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Query;
-import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.dialect._UpdateContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.StrictParamValue;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -156,8 +158,8 @@ public abstract class SQLs extends Functions {
         final Expression resultExpression;
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
-        } else if (type instanceof ParamMeta) {
-            resultExpression = ParamExpression.create((ParamMeta) type, value);
+        } else if (type instanceof TableField) {
+            resultExpression = ParamExpression.create((TableField) type, value);
         } else {
             resultExpression = ParamExpression.create(type.paramMeta(), value);
         }
@@ -169,16 +171,16 @@ public abstract class SQLs extends Functions {
      *
      * @param value {@link Expression} or parameter
      */
-    static Expression _nullableParam(final Expression type, final @Nullable Object value) {
+    static ArmyExpression _nullableParam(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
-        } else if (type instanceof ParamMeta) {
-            resultExpression = ParamExpression.create((ParamMeta) type, value);
+        } else if (type instanceof TableField) {
+            resultExpression = ParamExpression.create((TableField) type, value);
         } else {
             resultExpression = ParamExpression.create(type.paramMeta(), value);
         }
-        return resultExpression;
+        return (ArmyExpression) resultExpression;
     }
 
     /**
@@ -218,37 +220,37 @@ public abstract class SQLs extends Functions {
     /**
      * package method
      */
-    static Expression _nonNullLiteral(final Expression type, final @Nullable Object value) {
+    static ArmyExpression _nonNullLiteral(final Expression type, final @Nullable Object value) {
         if (value == null) {
             throw new CriteriaException("Right operand of operator must be not null.");
         }
         final Expression resultExpression;
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
-        } else if (type instanceof ParamMeta) {
-            resultExpression = LiteralExpression.literal((ParamMeta) type, value);
+        } else if (type instanceof TableField) {
+            resultExpression = LiteralExpression.literal((TableField) type, value);
         } else {
             resultExpression = LiteralExpression.literal(type.paramMeta(), value);
         }
-        return resultExpression;
+        return (ArmyExpression) resultExpression;
     }
 
     /**
      * package method
      */
-    static Expression _nullableLiteral(final Expression type, final @Nullable Object value) {
+    static ArmyExpression _nullableLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
-        if (value instanceof Expression) {
+        if (value == null) {
+            resultExpression = SQLs.nullWord();
+        } else if (value instanceof Expression) {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression) value;
-        } else if (value == null) {
-            resultExpression = SQLs.nullWord();
-        } else if (type instanceof ParamMeta) {
-            resultExpression = LiteralExpression.literal((ParamMeta) type, value);
+        } else if (type instanceof TableField) {
+            resultExpression = LiteralExpression.literal((TableField) type, value);
         } else {
             resultExpression = LiteralExpression.literal(type.paramMeta(), value);
         }
-        return resultExpression;
+        return (ArmyExpression) resultExpression;
     }
 
 
@@ -337,7 +339,7 @@ public abstract class SQLs extends Functions {
      *
      * @see Update._BatchSetClause
      */
-    public static NamedParam nullableNamedParam(String name, ParamMeta paramMeta) {
+    public static NamedParam nullableNamedParam(ParamMeta paramMeta, String name) {
         return NamedParamImpl.nullable(name, paramMeta);
     }
 
@@ -348,8 +350,14 @@ public abstract class SQLs extends Functions {
      *
      * @see Update._BatchSetClause
      */
-    public static NamedParam nullableNamedParam(TableField<?> field) {
-        return NamedParamImpl.nullable(field.fieldName(), field);
+    public static NamedParam nullableNamedParam(final DataField field) {
+        final ParamMeta paramMeta;
+        if (field instanceof TableField) {
+            paramMeta = (TableField) field;
+        } else {
+            paramMeta = field.paramMeta();
+        }
+        return NamedParamImpl.nullable(field.fieldName(), paramMeta);
     }
 
 
@@ -363,7 +371,7 @@ public abstract class SQLs extends Functions {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static NamedParam namedParam(String name, ParamMeta paramMeta) {
+    public static NamedParam namedParam(ParamMeta paramMeta, String name) {
         return NamedParamImpl.nonNull(name, paramMeta);
     }
 
@@ -377,15 +385,21 @@ public abstract class SQLs extends Functions {
      * @see SQLs#batchDelete()
      * @see SQLs#batchDelete(Object)
      */
-    public static NamedParam namedParam(TableField<?> field) {
-        return NamedParamImpl.nonNull(field.fieldName(), field);
+    public static NamedParam namedParam(DataField field) {
+        final ParamMeta paramMeta;
+        if (field instanceof TableField) {
+            paramMeta = (TableField) field;
+        } else {
+            paramMeta = field.paramMeta();
+        }
+        return NamedParamImpl.nonNull(field.fieldName(), paramMeta);
     }
 
-    public static Expression namedParams(String name, ParamMeta paramMeta, int size) {
+    public static Expression namedParams(ParamMeta paramMeta, String name, int size) {
         return NamedCollectionParamExpression.named(name, paramMeta, size);
     }
 
-    public static Expression namedParams(TableField<?> field, int size) {
+    public static Expression namedParams(TableField field, int size) {
         return NamedCollectionParamExpression.named(field.fieldName(), field, size);
     }
 
@@ -399,19 +413,79 @@ public abstract class SQLs extends Functions {
     }
 
 
+    public static ItemPair itemPair(final DataField field, final @Nullable Object value) {
+        return SQLs._itemPair(field, null, value);
+    }
+
+
     /**
+     * <p>
+     * package method that is used by army developer.
+     * </p>
+     *
      * @param value {@link Expression} or parameter.
-     * @see Update._SimpleSetClause#setPairs(List)
+     * @see Update._SetClause#setPairs(BiConsumer)
+     * @see Update._SetClause#setPairs(Consumer)
      */
-    public static ItemPair itemPair(FieldMeta<?> field, @Nullable Object value) {
+    static _ItemPair _itemPair(final DataField field, final @Nullable AssignOperator operator
+            , final @Nullable Object value) {
+        if (operator != null && value == null) {
+            throw _Exceptions.expressionIsNull();
+        }
+        if (field instanceof TableField) {
+            final TableField f = (TableField) field;
+            if (f.updateMode() == UpdateMode.IMMUTABLE) {
+                throw _Exceptions.immutableField(field);
+            }
+            final String fieldName = field.fieldName();
+            if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
+                throw _Exceptions.armyManageField(f);
+            }
+
+            if (!f.nullable() && (value == null || ((ArmyExpression) value).isNullableValue())) {
+                throw _Exceptions.nonNullField(f);
+            }
+        }
+
         final Expression valueExp;
         if (value instanceof Expression) {
             valueExp = (Expression) value;
+        } else if (field instanceof TableField) {
+            valueExp = SQLs.param((TableField) field, value);
         } else {
-            valueExp = SQLs.param(field, value);
+            valueExp = SQLs.param(field.paramMeta(), value);
         }
-        return new ItemPairImpl(field, valueExp);
+        final _ItemPair itemPair;
+        if (operator == null) {
+            itemPair = new FieldItemPair(field, (ArmyExpression) valueExp);
+        } else {
+            itemPair = new OperatorItemPair(field, operator, (ArmyExpression) valueExp);
+        }
+        return itemPair;
     }
+
+    /**
+     * <p>
+     * package method that is used by army developer.
+     * </p>
+     */
+    static _ItemPair _itemExpPair(final DataField field, @Nullable Expression value) {
+        assert value != null;
+        return SQLs._itemPair(field, null, value);
+    }
+
+    public static ItemPair itemPair(List<? extends DataField> fieldList, SubQuery subQuery) {
+        return new RowItemPair(fieldList, subQuery);
+    }
+
+    public static ItemPair plusEqual(final DataField field, final @Nullable Object value) {
+        return SQLs._itemPair(field, AssignOperator.PLUS_EQUAL, value);
+    }
+
+    public static ItemPair minusEqual(final DataField field, final @Nullable Object value) {
+        return SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, value);
+    }
+
 
     public static ExpressionPair expPair(final Object first, final Object second) {
         final Expression firstExp, secondExp;
@@ -557,33 +631,22 @@ public abstract class SQLs extends Functions {
 
     /*################################## blow sql key word operate method ##################################*/
 
-    public static IPredicate exists(Supplier<SubQuery> supplier) {
+    public static IPredicate exists(Supplier<? extends SubQuery> supplier) {
         return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, supplier.get());
     }
 
-    public static <C> IPredicate exists(Function<C, SubQuery> function) {
+    public static <C> IPredicate exists(Function<C, ? extends SubQuery> function) {
         return UnaryPredicate.fromSubQuery(UnaryOperator.EXISTS, function.apply(CriteriaContextStack.getTopCriteria()));
     }
 
-    public static IPredicate notExists(Supplier<SubQuery> supplier) {
+    public static IPredicate notExists(Supplier<? extends SubQuery> supplier) {
         return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, supplier.get());
     }
 
-    public static <C> IPredicate notExists(Function<C, SubQuery> function) {
+    public static <C> IPredicate notExists(Function<C, ? extends SubQuery> function) {
         final C criteria;
         criteria = CriteriaContextStack.getTopCriteria();
         return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(criteria));
-    }
-
-    static <T extends IDomain> ExpressionRow row(List<Expression> columnList) {
-        return new ExpressionRowImpl(null);
-    }
-
-    static <T extends IDomain, C> ExpressionRow row(Function<C, List<Expression>> function) {
-       /* return new ExpressionRowImpl(function.apply(
-                CriteriaContextHolder.getContext().criteria()
-        ));*/
-        return null;
     }
 
 
@@ -652,7 +715,7 @@ public abstract class SQLs extends Functions {
     }// NullWord
 
 
-    static abstract class ArmyItemPair implements ItemPair, _SelfDescribed {
+    static abstract class ArmyItemPair implements _ItemPair {
 
         final SetRightItem right;
 
@@ -662,36 +725,46 @@ public abstract class SQLs extends Functions {
     }//ArmyItemPair
 
     /**
-     * @see #itemPair(FieldMeta, Object)
+     * @see #itemPair(DataField, Object)
      */
-    private static class FieldItemPair extends ArmyItemPair {
+    static class FieldItemPair extends ArmyItemPair {
 
         final DataField field;
 
-        private FieldItemPair(DataField field, _Expression right) {
-            super(right);
+        private FieldItemPair(DataField field, ArmyExpression value) {
+            super(value);
             this.field = field;
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendItemPair(final _UpdateContext context) {
             final DataField field = this.field;
-            if (field instanceof DerivedField && !context.dialect().supportQueryUpdate()) {
-
-            }
-            ((_SelfDescribed) field).appendSql(context);
+            //1. append left item
+            context.appendSetLeftItem(field);
+            //2. append operator
             if (this instanceof OperatorItemPair) {
-                final AssignOperator operator = ((OperatorItemPair) this).operator;
-                context.sqlBuilder()
-                        .append(operator.text);
+                ((OperatorItemPair) this).operator.appendOperator(context.dialect().dialectMode(), field, context);
             } else {
                 context.sqlBuilder()
                         .append(_Constant.SPACE_EQUAL);
-
             }
-            ((_SelfDescribed) this.right).appendSql(context);
+            //3. append right item
+            ((_Expression) this.right).appendSql(context);
         }
 
+
+        @Override
+        public final String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(this.field);
+            if (this instanceof OperatorItemPair) {
+                builder.append(((OperatorItemPair) this).operator);
+            } else {
+                builder.append(_Constant.SPACE_EQUAL);
+            }
+            builder.append(this.right);
+            return builder.toString();
+        }
 
     }//FieldItemPair
 
@@ -699,7 +772,7 @@ public abstract class SQLs extends Functions {
 
         final AssignOperator operator;
 
-        private OperatorItemPair(DataField field, AssignOperator operator, _Expression value) {
+        private OperatorItemPair(DataField field, AssignOperator operator, ArmyExpression value) {
             super(field, value);
             this.operator = operator;
         }
@@ -707,18 +780,86 @@ public abstract class SQLs extends Functions {
 
     }//OperatorItemPair
 
-    private static final class RowItemPair extends ArmyItemPair {
+    static final class RowItemPair extends ArmyItemPair {
 
-        private final List<? extends DataField> fieldList;
+        final List<DataField> fieldList;
 
-        private RowItemPair(SetRightItem right, List<? extends DataField> fieldList) {
-            super(right);
-            this.fieldList = fieldList;
+        private RowItemPair(List<? extends DataField> fieldList, SubQuery subQuery) {
+            super(subQuery);
+            final int selectionCount;
+            selectionCount = selectionCount(subQuery);
+            if (fieldList.size() != selectionCount) {
+                String m = String.format("Row column count[%s] and selection count[%s] of SubQuery not match."
+                        , fieldList.size(), selectionCount);
+                throw new CriteriaException(m);
+            }
+            final List<DataField> tempList = new ArrayList<>(fieldList.size());
+            for (DataField field : fieldList) {
+                if (!(field instanceof TableField)) {
+                    tempList.add(field);
+                    continue;
+                }
+                if (((TableField) field).updateMode() == UpdateMode.IMMUTABLE) {
+                    throw _Exceptions.immutableField(field);
+                }
+                final String fieldName = field.fieldName();
+                if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
+                    throw _Exceptions.armyManageField((TableField) field);
+                }
+                tempList.add(field);
+            }
+            this.fieldList = Collections.unmodifiableList(tempList);
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendItemPair(final _UpdateContext context) {
+            final List<? extends DataField> fieldList = this.fieldList;
+            final int fieldSize = fieldList.size();
+            //1. append left paren
+            final StringBuilder sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_LEFT_PAREN);
+            //2. append field list
+            for (int i = 0; i < fieldSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                context.appendSetLeftItem(fieldList.get(i));
+            }
+            //3. append right paren
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
+            //4. append '='
+            sqlBuilder.append(_Constant.SPACE_EQUAL);
+
+            //5. append sub query
+            context.dialect().rowSet((SubQuery) this.right, context);
+
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+
+            //1. append left paren
+            builder.append(_Constant.SPACE_LEFT_PAREN);
+            final List<? extends DataField> fieldList = this.fieldList;
+            final int fieldSize = fieldList.size();
+            //2. append field list
+            for (int i = 0; i < fieldSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                builder.append(fieldList.get(i));
+            }
+            //3. append right paren
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
+
+            //4. append '='
+            builder.append(_Constant.SPACE_EQUAL);
+
+            //5. append sub query
+            builder.append(this.right);
+            return builder.toString();
         }
 
     }//RowItemPair
@@ -825,9 +966,9 @@ public abstract class SQLs extends Functions {
         }
 
         @Override
-        public List<? extends SelectItem> selectItemList() {
+        public List<SelectItem> selectItemList() {
             final SubStatement subStatement = this.subStatement;
-            final List<? extends SelectItem> list;
+            final List<SelectItem> list;
             if (subStatement instanceof DerivedTable) {
                 list = ((DerivedTable) subStatement).selectItemList();
             } else {

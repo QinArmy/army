@@ -58,7 +58,7 @@ final class DualPredicate extends OperationPredicate {
     public void appendSql(_SqlContext context) {
         this.left.appendSql(context);
         context.sqlBuilder()
-                .append(this.operator.rendered());
+                .append(this.operator.signText);
         this.right.appendSql(context);
     }
 

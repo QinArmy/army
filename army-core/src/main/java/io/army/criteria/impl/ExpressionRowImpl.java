@@ -11,14 +11,14 @@ import java.util.List;
 
 final class ExpressionRowImpl implements ExpressionRow, _SelfDescribed {
 
-    private final List<TableField<?>> columnList;
+    private final List<TableField> columnList;
 
-    public ExpressionRowImpl(List<TableField<?>> columnList) {
+    public ExpressionRowImpl(List<TableField> columnList) {
         this.columnList = columnList;
     }
 
     @Override
-    public List<TableField<?>> fieldList() {
+    public List<TableField> fieldList() {
         return null;
     }
 
@@ -48,7 +48,7 @@ final class ExpressionRowImpl implements ExpressionRow, _SelfDescribed {
         StringBuilder builder = new StringBuilder();
         builder.append("ROW(");
         int index = 0;
-        for (TableField<?> fieldMeta : this.columnList) {
+        for (TableField fieldMeta : this.columnList) {
             if (index > 0) {
                 builder.append(",");
             }

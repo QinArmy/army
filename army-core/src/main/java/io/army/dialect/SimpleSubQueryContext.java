@@ -4,7 +4,7 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Query;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.stmt.Stmt;
+import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
 
 final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQueryContext, _SubQueryContext {
@@ -77,7 +77,7 @@ final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQu
     }
 
     @Override
-    public Stmt build() {
+    public SimpleStmt build() {
         throw dontSupportBuild();
     }
 
