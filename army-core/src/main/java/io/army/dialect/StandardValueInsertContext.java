@@ -1,24 +1,24 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
+import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
-import io.army.criteria.NamedParam;
-import io.army.criteria.NonNullNamedParam;
-import io.army.criteria.NullHandleMode;
-import io.army.criteria.Visible;
+import io.army.bean.ReadWrapper;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
+import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
-import io.army.stmt.Stmts;
+import io.army.stmt.StrictParamValue;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * <p>
@@ -43,7 +43,11 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
 
     final boolean migration;
 
-    final SingleTableMeta<?> table;
+    final NullHandleMode nullHandleMode;
+
+    final boolean preferLiteral;
+
+    final TableMeta<?> table;
 
     final List<FieldMeta<?>> fieldList;
 
@@ -53,73 +57,96 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
 
     final List<IDomain> domainList;
 
-    final NullHandleMode nullHandleMode;
-
-    //@see io.army.dialect._DmlUtils.appendStandardValueInsert,for parse comment expression
-    IDomain currentDomain;
-
     private final PrimaryFieldMeta<?> returnId;
 
-    private final ChildBlock childBlock;
+    private final FieldMeta<?> discriminator;
+
+    private final int discriminatorValue;
 
 
-    private StandardValueInsertContext(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
-        super(dialect, visible);
+    //@see io.army.dialect._DmlUtils.appendStandardValueInsert,for parse comment expression
+    private IDomain currentDomain;
 
-        this.migration = insert.isMigration();
-        this.commonExpMap = insert.commonExpMap();
-        this.domainList = insert.domainList();
 
-        if (!this.migration && insert.fieldList().size() == 0) {
-            this.nullHandleMode = insert.nullHandle();
-        } else {
+    /**
+     * create for {@link  ChildTableMeta}
+     */
+    private StandardValueInsertContext(_ValuesInsert stmt, ArmyDialect dialect, Visible visible) {
+        super(dialect, stmt.isPreferLiteral(), visible);
+
+        this.migration = stmt.isMigration();
+        this.preferLiteral = stmt.isPreferLiteral();
+        this.commonExpMap = stmt.commonExpMap();
+        this.domainList = stmt.domainList();
+
+        if (this.migration) {
             this.nullHandleMode = NullHandleMode.INSERT_NULL;
+        } else {
+            this.nullHandleMode = stmt.nullHandle();
         }
-        final TableMeta<?> table = insert.table();
+        final ChildTableMeta<?> table = (ChildTableMeta<?>) stmt.table();
+
+        this.table = table;
+        this.discriminator = table.discriminator();
+        this.discriminatorValue = table.discriminatorValue();
         this.domainAccessor = ObjectAccessorFactory.forBean(table.javaType());
+
+        final List<FieldMeta<?>> childFieldList = stmt.childFieldList();
+        if (childFieldList.size() == 0) {
+            this.fieldList = mergeFieldList(table);
+        } else {
+            this.fieldList = mergeFieldList(table, childFieldList);
+        }
+        this.returnId = null;
+
+    }
+
+    /**
+     * create for {@link  SingleTableMeta}
+     */
+    private StandardValueInsertContext(ArmyDialect dialect, _ValuesInsert stmt, Visible visible) {
+        super(dialect, visible);
+        this.migration = stmt.isMigration();
+        this.preferLiteral = stmt.isPreferLiteral();
+        this.commonExpMap = stmt.commonExpMap();
+        this.domainList = stmt.domainList();
+
+        if (this.migration) {
+            this.nullHandleMode = NullHandleMode.INSERT_NULL;
+        } else {
+            this.nullHandleMode = stmt.nullHandle();
+        }
+        final TableMeta<?> table = stmt.table();
+        if (table instanceof SimpleTableMeta) {
+            this.discriminator = null;
+            this.discriminatorValue = 0;
+        } else {
+            this.discriminator = table.discriminator();
+            this.discriminatorValue = table.discriminatorValue();
+        }
         if (table instanceof ChildTableMeta) {
-            final ChildTableMeta<?> childTable = ((ChildTableMeta<?>) table);
-            this.table = childTable.parentMeta();
-            this.fieldList = _DmlUtils.mergeInsertFields(true, insert);
-            this.childBlock = new ChildBlock(childTable, _DmlUtils.mergeInsertFields(false, insert), this);
+            this.table = ((ChildTableMeta<?>) table).parentMeta();
         } else {
-            this.table = (SingleTableMeta<?>) table;
-            this.fieldList = _DmlUtils.mergeInsertFields(false, insert);
-            this.childBlock = null;
+            this.table = table;
         }
-        if (dialect.supportInsertReturning()) {
-            this.returnId = this.table.id();
+        this.domainAccessor = ObjectAccessorFactory.forBean(table.javaType());
+
+        final List<FieldMeta<?>> fieldList = stmt.fieldList();
+        if (fieldList.size() == 0) {
+            this.fieldList = mergeFieldList(table);
         } else {
+            this.fieldList = mergeFieldList(table, fieldList);
+        }
+        if (!dialect.supportInsertReturning()) {
             this.returnId = null;
+        } else if (table instanceof ChildTableMeta) {
+            this.returnId = ((ChildTableMeta<?>) table).parentMeta().id();
+        } else {
+            this.returnId = table.id();
         }
 
     }
 
-    @Override
-    public _SqlContext getContext() {
-        return this;
-    }
-
-    @Override
-    public List<FieldMeta<?>> fieldLis() {
-        return this.fieldList;
-    }
-
-    @Override
-    public List<IDomain> domainList() {
-        return this.domainList;
-    }
-
-    @Override
-    public String safeTableAlias(TableMeta<?> table, String alias) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int discriminatorValue() {
-        final ChildBlock childBlock = this.childBlock;
-        return childBlock == null ? this.table.discriminatorValue() : childBlock.table.discriminatorValue();
-    }
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?> field) {
@@ -134,72 +161,134 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
     }
 
     @Override
-    public Stmt build() {
+    public String safeTableAlias(TableMeta<?> table, String alias) {
+        throw new UnsupportedOperationException();
+    }
 
-        final PrimaryFieldMeta<?> returnId = this.returnId;
-        final SimpleStmt parentStmt;
-        if (returnId != null) {
-            parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList, returnId);
-        } else if (this.table.id().generatorType() == GeneratorType.POST) {
-            parentStmt = Stmts.post(this.sqlBuilder.toString(), this.paramList, this.domainList, this.domainAccessor
-                    , this.table.id());
+
+    @Override
+    public void appendFieldList() {
+        final List<FieldMeta<?>> fieldList = this.fieldList;
+        final int fieldSize = fieldList.size();
+        final ArmyDialect dialect = this.dialect;
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+
+        dialect.safeObjectName(this.table.tableName(), sqlBuilder)
+                .append(_Constant.SPACE_LEFT_PAREN);
+
+        for (int i = 0; i < fieldSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            dialect.safeObjectName(fieldList.get(i).columnName(), sqlBuilder);
+        }
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+    }
+
+    @Override
+    public void appendValueList() {
+        final List<IDomain> domainList = this.domainList;
+        final List<FieldMeta<?>> fieldList = this.fieldList;
+        final int domainSize = domainList.size();
+        final int fieldSize = fieldList.size();
+
+        final ObjectAccessor accessor = this.domainAccessor;
+        final ArmyDialect dialect = this.dialect;
+        final FieldMeta<?> discriminator = this.discriminator;
+        final Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
+
+        final boolean preferLiteral = this.preferLiteral;
+        final boolean mockEnv = dialect.isMockEnv();
+        final NullHandleMode nullHandleMode = this.nullHandleMode;
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+
+        sqlBuilder.append(_Constant.SPACE_VALUES);
+
+        final FieldValueGenerator generator;
+        final BeanReadWrapper readWrapper;
+        final TableMeta<?> table = this.table;
+        if (table instanceof ChildTableMeta) {
+            generator = null;
+            readWrapper = null;
         } else {
-            parentStmt = Stmts.simple(this.sqlBuilder.toString(), this.paramList);
+            generator = dialect.getFieldValueGenerator();
+            readWrapper = new BeanReadWrapper(accessor);
         }
-        final ChildBlock childBlock = this.childBlock;
-        final Stmt stmt;
-        if (childBlock == null) {
-            stmt = parentStmt;
-        } else {
-            final SimpleStmt childStmt;
-            childStmt = Stmts.simple(childBlock.sqlBuilder.toString(), childBlock.paramList);
-            stmt = Stmts.pair(parentStmt, childStmt);
+        IDomain domain;
+        FieldMeta<?> field;
+        _Expression expression;
+        Object value;
+        MappingType mappingType;
+        for (int domainIndex = 0; domainIndex < domainSize; domainIndex++) {
+            domain = domainList.get(domainIndex);
+            if (generator != null) {
+                //only non-child table
+                readWrapper.domain = domain; // update domain value
+                if (migration) {
+                    generator.validate(table, domain, accessor);
+                } else {
+                    generator.generate(table, domain, accessor, readWrapper);
+                }
+
+            }
+
+            if (domainIndex > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+
+            for (int fieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
+                if (fieldIndex > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                field = fieldList.get(fieldIndex);
+                if (field == discriminator) {
+                    assert field != null;
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(this.discriminatorValue);
+                } else if ((expression = commonExpMap.get(field)) != null) {
+                    this.currentDomain = domain; //update current domain for SubQuery
+                    expression.appendSql(this);
+                } else if ((value = accessor.get(domain, field.fieldName())) != null) {
+                    mappingType = field.mappingType();
+                    if (preferLiteral && mappingType instanceof _ArmyNoInjectionMapping) {//TODO field codec
+                        dialect.literal(mappingType, value, sqlBuilder);
+                    } else {
+                        this.appendParam(ParamValue.build(field, value));
+                    }
+                } else if (field instanceof PrimaryFieldMeta
+                        && table instanceof ChildTableMeta
+                        && ((ChildTableMeta<?>) table).parentMeta().id().generatorType() == GeneratorType.POST) {
+                    this.appendParam(new DelayIdParamValue(field, domain, accessor));
+                } else if (field.generatorType() == GeneratorType.PRECEDE) {
+                    if (!mockEnv) {
+                        throw _Exceptions.generatorFieldIsNull(field);
+                    }
+                    if (preferLiteral) { //TODO field codec
+                        sqlBuilder.append(" mock:{generator}");
+                    } else {
+                        this.appendParam(ParamValue.build(field, null));
+                    }
+
+                } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
+                    sqlBuilder.append(_Constant.SPACE_DEFAULT);
+                } else if (field.nullable()) {
+                    sqlBuilder.append(_Constant.SPACE_NULL);
+                } else {
+                    throw _Exceptions.nonNullField(field);
+                }
+
+            }
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
-        return stmt;
+
     }
 
     @Override
-    public SingleTableMeta<?> table() {
-        return this.table;
-    }
-
-    @Override
-    public boolean migration() {
-        return this.migration;
-    }
-
-    @Override
-    public NullHandleMode nullHandle() {
-        return this.nullHandleMode;
-    }
-
-    @Override
-    public Map<FieldMeta<?>, _Expression> commonExpMap() {
-        return this.commonExpMap;
-    }
-
-    @Override
-    public ObjectAccessor domainAccessor() {
-        return this.domainAccessor;
-    }
-
-    void onParentEnd() {
-        final PrimaryFieldMeta<?> returnId = this.returnId;
-        if (returnId != null) {
-            final StringBuilder builder;
-            builder = this.sqlBuilder
-                    .append(_Constant.SPACE_RETURNING)
-                    .append(_Constant.SPACE);
-
-            this.dialect.quoteIfNeed(returnId.columnName(), builder)
-                    .append(_Constant.SPACE_AS_SPACE);
-            this.dialect.quoteIfNeed(returnId.fieldName(), builder);
-        }
-    }
-
-    @Override
-    public _InsertBlock childBlock() {
-        return this.childBlock;
+    public SimpleStmt build() {
+        return null;
     }
 
 
@@ -222,205 +311,157 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
     }
 
 
-    private static final class ChildBlock extends StmtContext implements _InsertBlock, _SqlContext {
-
-        private final ChildTableMeta<?> table;
-
-        private final List<FieldMeta<?>> fieldList;
-
-        private final StandardValueInsertContext parentContext;
-
-        private ChildBlock(ChildTableMeta<?> table, List<FieldMeta<?>> fieldList
-                , StandardValueInsertContext parentContext) {
-            super(parentContext.dialect, parentContext.visible);
-            this.table = table;
-            this.fieldList = fieldList;
-            this.parentContext = parentContext;
-        }
-
-        @Override
-        public _SqlContext getContext() {
-            return this;
-        }
-
-        @Override
-        public ChildTableMeta<?> table() {
-            return this.table;
-        }
-
-        @Override
-        public List<FieldMeta<?>> fieldLis() {
-            return this.fieldList;
-        }
-
-        @Override
-        public String safeTableAlias(TableMeta<?> table, String alias) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void appendField(String tableAlias, FieldMeta<?> field) {
-            // value insert don't support insert any field in expression
-            throw _Exceptions.unknownColumn(tableAlias, field);
-        }
-
-        @Override
-        public void appendField(FieldMeta<?> field) {
-            // value insert don't support insert any field in expression
-            throw _Exceptions.unknownColumn(null, field);
-        }
-
-        @Override
-        public Stmt build() {
-            throw new UnsupportedOperationException("child block don't support");
-        }
-
-        @Override
-        List<ParamValue> createParamList() {
-            // here,now this.parentContext is null.
-            return new ProxyList(this::handleNamedParam);
-        }
-
-        private ParamValue handleNamedParam(NamedParam namedParam) {
-            return this.parentContext.handleNamedParam(namedParam);
-        }
-
-
-    }//ChildBlock
-
-    private static final class ProxyList implements List<ParamValue> {
-
-        private final List<ParamValue> paramList = new ArrayList<>();
-
-        private final Function<NamedParam, ParamValue> function;
-
-        private ProxyList(Function<NamedParam, ParamValue> function) {
-            this.function = function;
-        }
-
-        @Override
-        public int size() {
-            return this.paramList.size();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return this.paramList.isEmpty();
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            return this.paramList.contains(o);
-        }
-
-        @Override
-        public Iterator<ParamValue> iterator() {
-            return this.paramList.iterator();
-        }
-
-        @Override
-        public Object[] toArray() {
-            return this.paramList.toArray();
-        }
-
-        @SuppressWarnings("all")
-        @Override
-        public <T> T[] toArray(T[] a) {
-            return this.paramList.toArray(a);
-        }
-
-        @Override
-        public boolean add(final ParamValue paramValue) {
-            final ParamValue actual;
-            if (paramValue instanceof NamedParam) {
-                actual = this.function.apply((NamedParam) paramValue);
-            } else {
-                actual = paramValue;
+    private <T extends IDomain> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table) {
+        final List<FieldMeta<T>> fieldList = table.fieldList();
+        final List<FieldMeta<?>> mergeFieldList = new ArrayList<>(fieldList.size());
+        for (FieldMeta<T> field : fieldList) {
+            if (field.insertable()) {
+                mergeFieldList.add(field);
             }
-            return this.paramList.add(actual);
+        }
+        if (mergeFieldList.size() == 0) {
+            String m = String.format("%s no insertable filed.", table);
+            throw new MetaException(m);
+        }
+        return Collections.unmodifiableList(mergeFieldList);
+    }
+
+    private <T extends IDomain> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table
+            , final List<FieldMeta<?>> fieldList) {
+        final List<FieldMeta<?>> mergeFieldList = new ArrayList<>(fieldList.size());
+        final Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
+        for (FieldMeta<?> field : fieldList) {
+            if (!field.insertable()) {
+                throw _Exceptions.nonInsertableField(field);
+            }
+            if (field.tableMeta() != table) {
+                throw _Exceptions.unknownColumn(null, field);
+            }
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                String m = String.format("%s duplication.", field);
+                throw new CriteriaException(m);
+            }
+            mergeFieldList.add(field);
+        }
+
+        for (FieldMeta<?> field : table.fieldChain()) {
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
+                mergeFieldList.add(field);
+            }
+        }
+
+        FieldMeta<?> field;
+
+        field = table.id();
+        if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
+            mergeFieldList.add(field);
+        }
+
+        if (table instanceof ParentTableMeta) {
+            field = table.discriminator();
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
+                mergeFieldList.add(field);
+            }
+        }
+
+        if (!(table instanceof ChildTableMeta)) {
+            field = table.getField(_MetaBridge.CREATE_TIME);
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
+                mergeFieldList.add(field);
+            }
+            if (table.containField(_MetaBridge.UPDATE_TIME)) {
+                field = table.getField(_MetaBridge.UPDATE_TIME);
+                if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
+                    mergeFieldList.add(field);
+                }
+            }
+            if (table.containField(_MetaBridge.VERSION)) {
+                field = table.getField(_MetaBridge.VERSION);
+                if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
+                    mergeFieldList.add(field);
+                }
+            }
+            if (table.containField(_MetaBridge.VISIBLE)) {
+                field = table.getField(_MetaBridge.VISIBLE);
+                if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
+                    mergeFieldList.add(field);
+                }
+            }
+
+        }
+
+
+        if (mergeFieldList.size() == 0) {
+            String m = String.format("%s no insertable filed.", table);
+            throw new CriteriaException(m);
+        }
+        return Collections.unmodifiableList(mergeFieldList);
+    }
+
+
+    private static final class BeanReadWrapper implements ReadWrapper {
+
+
+        private IDomain domain;
+        private final ObjectAccessor accessor;
+
+        private BeanReadWrapper(ObjectAccessor accessor) {
+            this.accessor = accessor;
         }
 
         @Override
-        public boolean remove(Object o) {
-            return this.paramList.remove(o);
+        public boolean isReadable(String propertyName) {
+            return this.accessor.isReadable(propertyName);
         }
 
         @Override
-        public boolean containsAll(Collection<?> c) {
-            return this.paramList.containsAll(c);
+        public Object get(String propertyName) throws ObjectAccessException {
+            return this.accessor.get(this.domain, propertyName);
         }
 
         @Override
-        public boolean addAll(Collection<? extends ParamValue> c) {
-            return this.paramList.addAll(c);
+        public Class<?> getWrappedClass() {
+            return this.accessor.getAccessedType();
         }
 
         @Override
-        public boolean addAll(int index, Collection<? extends ParamValue> c) {
-            return this.paramList.addAll(index, c);
+        public ObjectAccessor getObjectAccessor() {
+            return this.accessor;
+        }
+
+    }//BeanReadWrapper
+
+
+    private static final class DelayIdParamValue implements StrictParamValue {
+
+        private final ParamMeta paramMeta;
+
+        private final IDomain domain;
+
+        private final ObjectAccessor accessor;
+
+        private DelayIdParamValue(ParamMeta paramMeta, IDomain domain, ObjectAccessor accessor) {
+            this.paramMeta = paramMeta;
+            this.domain = domain;
+            this.accessor = accessor;
         }
 
         @Override
-        public boolean removeAll(Collection<?> c) {
-            return this.paramList.removeAll(c);
+        public ParamMeta paramMeta() {
+            return this.paramMeta;
         }
 
         @Override
-        public boolean retainAll(Collection<?> c) {
-            return this.paramList.retainAll(c);
+        public Object value() {
+            final Object value;
+            value = this.accessor.get(this.domain, _MetaBridge.ID);
+            if (value == null) {
+                throw new IllegalStateException("parent insert statement don't execute.");
+            }
+            return value;
         }
 
-        @Override
-        public void clear() {
-            this.paramList.clear();
-        }
-
-        @Override
-        public ParamValue get(int index) {
-            return this.paramList.get(index);
-        }
-
-        @Override
-        public ParamValue set(int index, ParamValue element) {
-            return this.paramList.set(index, element);
-        }
-
-        @Override
-        public void add(int index, ParamValue element) {
-            this.paramList.add(index, element);
-        }
-
-        @Override
-        public ParamValue remove(int index) {
-            return this.paramList.remove(index);
-        }
-
-        @Override
-        public int indexOf(Object o) {
-            return this.paramList.indexOf(o);
-        }
-
-        @Override
-        public int lastIndexOf(Object o) {
-            return this.paramList.lastIndexOf(o);
-        }
-
-        @Override
-        public ListIterator<ParamValue> listIterator() {
-            return this.paramList.listIterator();
-        }
-
-        @Override
-        public ListIterator<ParamValue> listIterator(int index) {
-            return this.paramList.listIterator(index);
-        }
-
-        @Override
-        public List<ParamValue> subList(int fromIndex, int toIndex) {
-            return this.paramList.subList(fromIndex, toIndex);
-        }
-
-    }//ProxyList
+    }
 
 
 }

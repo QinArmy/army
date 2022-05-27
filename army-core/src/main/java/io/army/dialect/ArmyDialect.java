@@ -8,6 +8,10 @@ import io.army.meta.SingleTableMeta;
  */
 interface ArmyDialect extends _Dialect {
 
+    boolean isMockEnv();
+
+    FieldValueGenerator getFieldValueGenerator();
+
     void appendArmyManageFieldsToSetClause(final SingleTableMeta<?> table, final String safeTableAlias
             , final _SqlContext context);
 

@@ -2,12 +2,13 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Insert;
+import io.army.criteria.SubStatement;
 import io.army.criteria.Visible;
-import io.army.criteria.WithElement;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Dialect;
 import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.PairStmt;
@@ -38,6 +39,8 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
 
     private List<FieldMeta<?>> fieldList;
 
+    private List<FieldMeta<?>> childFieldList;
+
 
     AbstractInsert(TableMeta<T> table, CriteriaContext criteriaContext) {
         this.table = table;
@@ -48,17 +51,15 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
 
     @Override
     public final IR insertInto(Consumer<Consumer<FieldMeta<? super T>>> consumer) {
-        final List<FieldMeta<?>> fieldList = new ArrayList<>();
-        consumer.accept(fieldList::add);
-        this.fieldList = _CollectionUtils.unmodifiableList(fieldList);
+        consumer.accept(this::addField);
+        this.prepareFieldList();
         return (IR) this;
     }
 
     @Override
     public final IR insertInto(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer) {
-        final List<FieldMeta<?>> fieldList = new ArrayList<>();
-        consumer.accept(this.criteria, fieldList::add);
-        this.fieldList = _CollectionUtils.unmodifiableList(fieldList);
+        consumer.accept(this.criteria, this::addField);
+        this.prepareFieldList();
         return (IR) this;
     }
 
@@ -68,6 +69,7 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
             throw new CriteriaException("table not match.");
         }
         this.fieldList = Collections.emptyList();
+        this.childFieldList = Collections.emptyList();
         return (IR) this;
     }
 
@@ -87,10 +89,20 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
         return fieldList;
     }
 
+    @Override
+    public final List<FieldMeta<?>> childFieldList() {
+        prepared();
+        final List<FieldMeta<?>> childFieldList = this.childFieldList;
+        if (childFieldList == null) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return childFieldList;
+    }
 
     @Override
     public void clear() {
         this.fieldList = null;
+        this.childFieldList = null;
     }
 
 
@@ -102,7 +114,7 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
     @Override
     public final String toString() {
         final String s;
-        if (!(this instanceof WithElement) && this.isPrepared()) {
+        if (!(this instanceof SubStatement) && this.isPrepared()) {
             s = this.mockAsString(this.defaultDialect(), Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
@@ -111,7 +123,7 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
     }
 
     @Override
-    public final String mockAsString(Dialect dialect, Visible visible, boolean beautify) {
+    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
         final Stmt stmt;
         stmt = mockAsStmt(dialect, visible);
         final StringBuilder builder = new StringBuilder();
@@ -131,11 +143,65 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
 
     @Override
     public final Stmt mockAsStmt(final Dialect dialect, final Visible visible) {
-        if (this instanceof WithElement) {
+        if (this instanceof SubStatement) {
             throw new IllegalStateException("mockAsStmt(DialectMode) support only non-with element statement.");
         }
         this.validateDialect(dialect);
         return _MockDialects.from(dialect).insert(this, visible);
+    }
+
+
+    private void addField(final FieldMeta<?> field) {
+        if (!field.insertable()) {
+            throw _Exceptions.nonInsertableField(field);
+        }
+        final TableMeta<?> belongOf = field.tableMeta();
+        final TableMeta<?> table = this.table;
+        if (belongOf instanceof ChildTableMeta) {
+            if (belongOf != table) {
+                throw _Exceptions.unknownColumn(null, field);
+            }
+            List<FieldMeta<?>> childFieldList = this.childFieldList;
+            if (childFieldList == null) {
+                childFieldList = new ArrayList<>();
+                this.childFieldList = childFieldList;
+            }
+            childFieldList.add(field);
+        } else if (belongOf == table
+                || (table instanceof ChildTableMeta && belongOf == ((ChildTableMeta<?>) table).parentMeta())) {
+            List<FieldMeta<?>> fieldList = this.fieldList;
+            if (fieldList == null) {
+                fieldList = new ArrayList<>();
+                this.fieldList = fieldList;
+            }
+            fieldList.add(field);
+        } else {
+            throw _Exceptions.unknownColumn(null, field);
+        }
+
+    }
+
+    private void prepareFieldList() {
+        final List<FieldMeta<?>> fieldList, childFieldList;
+        fieldList = this.fieldList;
+        childFieldList = this.childFieldList;
+
+        if ((fieldList == null || fieldList.size() == 0)
+                && (childFieldList == null || childFieldList.size() == 0)) {
+            throw new CriteriaException("Not found any Field");
+        }
+
+        if (fieldList == null) {
+            this.fieldList = Collections.emptyList();
+        } else {
+            this.fieldList = _CollectionUtils.unmodifiableList(fieldList);
+        }
+        if (childFieldList == null) {
+            this.childFieldList = Collections.emptyList();
+        } else {
+            this.childFieldList = _CollectionUtils.unmodifiableList(childFieldList);
+        }
+
     }
 
 

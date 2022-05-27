@@ -418,7 +418,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
 
 
     @Override
-    public final String mockAsString(Dialect dialect, Visible visible, boolean beautify) {
+    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
         final SimpleStmt stmt;
         stmt = this.mockAsStmt(dialect, visible);
         return "SELECT sql:\n" + stmt.sql();

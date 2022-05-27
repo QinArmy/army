@@ -1,9 +1,7 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
-import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
@@ -16,7 +14,6 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.ParamValue;
-import io.army.stmt.StrictParamValue;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -83,7 +80,7 @@ public abstract class _DmlUtils {
         final _InsertBlock block;
         final _SqlContext blockContext;
         final TableMeta<?> domainTable;
-        final BeanReadWrapper readWrapper;
+
         if (generator == null) {
             // child table;
             domainTable = null;
@@ -136,7 +133,6 @@ public abstract class _DmlUtils {
         final boolean migration = context.migration();
 
         _Expression expression;
-        GeneratorType generatorType;
         Object value;
         //2.2 append values
         for (IDomain domain : domainList) {
@@ -310,68 +306,8 @@ public abstract class _DmlUtils {
 
     }
 
-    private static final class DelayIdParamValue implements StrictParamValue {
 
-        private final ParamMeta paramMeta;
 
-        private final IDomain domain;
-
-        private final ObjectAccessor accessor;
-
-        private DelayIdParamValue(ParamMeta paramMeta, IDomain domain, ObjectAccessor accessor) {
-            this.paramMeta = paramMeta;
-            this.domain = domain;
-            this.accessor = accessor;
-        }
-
-        @Override
-        public ParamMeta paramMeta() {
-            return this.paramMeta;
-        }
-
-        @Override
-        public Object value() {
-            final Object value;
-            value = this.accessor.get(this.domain, _MetaBridge.ID);
-            if (value == null) {
-                throw new IllegalStateException("parent insert statement don't execute.");
-            }
-            return value;
-        }
-
-    }
-
-    private static final class BeanReadWrapper implements ReadWrapper {
-
-        private final ObjectAccessor accessor;
-
-        private BeanReadWrapper(ObjectAccessor accessor) {
-            this.accessor = accessor;
-        }
-
-        private IDomain domain;
-
-        @Override
-        public boolean isReadable(String propertyName) {
-            return this.accessor.isReadable(propertyName);
-        }
-
-        @Override
-        public Object get(String propertyName) throws ObjectAccessException {
-            return this.accessor.get(this.domain, propertyName);
-        }
-
-        @Override
-        public Class<?> getWrappedClass() {
-            return this.accessor.getAccessedType();
-        }
-
-        @Override
-        public ObjectAccessor getObjectAccessor() {
-            return this.accessor;
-        }
-
-    }//BeanReadWrapper
 
 
 }

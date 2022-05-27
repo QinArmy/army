@@ -40,7 +40,7 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static <T extends IDomain> Insert._StandardValueInsertSpec<Void, T> valueInsert(TableMeta<T> table) {
+    public static <T extends IDomain> Insert._StandardOptimizingOptionSpec<Void, T> valueInsert(TableMeta<T> table) {
         return StandardValueInsert.create(table, null);
     }
 
@@ -56,7 +56,7 @@ public abstract class SQLs extends Functions {
      * @param table will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain, C> Insert._StandardValueInsertSpec<C, T> valueInsert(TableMeta<T> table, C criteria) {
+    public static <T extends IDomain, C> Insert._StandardOptimizingOptionSpec<C, T> valueInsert(TableMeta<T> table, C criteria) {
         Objects.requireNonNull(criteria);
         return StandardValueInsert.create(table, criteria);
     }
@@ -191,7 +191,7 @@ public abstract class SQLs extends Functions {
     static ArmyExpression _nullableParam(final @Nullable Object value) {
         final Expression expression;
         if (value == null) {
-            expression = SQLs.nullParam();
+            expression = StringTypeNull.INSTANCE;
         } else if (value instanceof Expression) {
             expression = (Expression) value;
         } else {
@@ -218,7 +218,7 @@ public abstract class SQLs extends Functions {
     }
 
     /**
-     * package method
+     * package method that is used by army developer.
      */
     static ArmyExpression _nonNullLiteral(final Expression type, final @Nullable Object value) {
         if (value == null) {
@@ -236,7 +236,7 @@ public abstract class SQLs extends Functions {
     }
 
     /**
-     * package method
+     * package method that is used by army developer.
      */
     static ArmyExpression _nullableLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
@@ -262,10 +262,6 @@ public abstract class SQLs extends Functions {
     public static Expression param(final Object value) {
         Objects.requireNonNull(value);
         return ParamExpression.create(_MappingFactory.getDefault(value.getClass()), value);
-    }
-
-    public static Expression nullParam() {
-        return AnyTypeNull.INSTANCE;
     }
 
     /**
@@ -864,12 +860,12 @@ public abstract class SQLs extends Functions {
 
     }//RowItemPair
 
-    private static final class AnyTypeNull extends NonOperationExpression
+    static final class StringTypeNull extends NonOperationExpression
             implements StrictParamValue, ValueExpression {
 
-        private static final AnyTypeNull INSTANCE = new AnyTypeNull();
+        static final StringTypeNull INSTANCE = new StringTypeNull();
 
-        private AnyTypeNull() {
+        private StringTypeNull() {
         }
 
         @Override

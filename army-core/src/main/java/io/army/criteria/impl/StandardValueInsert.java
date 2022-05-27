@@ -21,7 +21,8 @@ final class StandardValueInsert<C, T extends IDomain> extends ValueInsert<
         Insert._ValueInsertIntoSpec<C, T>,//OR
         Insert._ValueSpec<C, T>, //IR
         Insert._ValueSpec<C, T>> // SR
-        implements Insert._StandardValueInsertSpec<C, T>, Insert._ValueSpec<C, T>, Insert._ValueInsertIntoSpec<C, T> {
+        implements Insert._StandardValueInsertSpec<C, T>, Insert._ValueSpec<C, T>, Insert._ValueInsertIntoSpec<C, T>
+        , Insert._StandardOptimizingOptionSpec<C, T> {
 
 
     static <C, T extends IDomain> StandardValueInsert<C, T> create(TableMeta<T> table, @Nullable C criteria) {

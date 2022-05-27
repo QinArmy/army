@@ -31,6 +31,10 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     /*################################## blow multiInsert interfaces ##################################*/
 
+    interface _PreferLiteralOptionClause<OR> {
+        _OptionClause<OR> preferLiteral(boolean prefer);
+    }
+
     /**
      * @since 1.0
      */
@@ -73,6 +77,10 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         SR setNull(FieldMeta<? super T> field);
 
+        SR ifSetExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function);
+
+        SR ifSetExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier);
+
     }
 
     /**
@@ -97,6 +105,12 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
         _InsertSpec values(Function<String, Object> function, String keyName);
     }
 
+
+    interface _StandardOptimizingOptionSpec<C, T extends IDomain>
+            extends _PreferLiteralOptionClause<_ValueInsertIntoSpec<C, T>>
+            , _StandardValueInsertSpec<C, T> {
+
+    }
 
     /**
      * @since 1.0

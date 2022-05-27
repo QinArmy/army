@@ -38,7 +38,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
 
     private final boolean supportMultiTableUpdate;
 
-    private List<_ItemPair> itemPairList = new ArrayList<>();
+    private List<_ItemPair> itemPairList;
 
     private List<_ItemPair> childItemPairList;
 

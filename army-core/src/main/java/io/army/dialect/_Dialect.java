@@ -69,6 +69,8 @@ public interface _Dialect {
 
     String literal(ParamMeta paramMeta, Object nonNull);
 
+    StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
+
 
     String quoteIfNeed(String identifier);
 

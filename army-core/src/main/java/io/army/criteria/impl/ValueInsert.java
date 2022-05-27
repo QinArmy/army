@@ -7,6 +7,7 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
 
@@ -19,8 +20,11 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractInsert<C, T, IR> implements
-        Insert._OptionClause<OR>, Insert._CommonExpClause<C, T, SR>, Insert._ValueClause<C, T>, _ValuesInsert {
+        Insert._OptionClause<OR>, Insert._CommonExpClause<C, T, SR>, Insert._ValueClause<C, T>
+        , Insert._PreferLiteralOptionClause<OR>, _ValuesInsert {
 
+
+    private boolean optimizingParam;
 
     private boolean migration;
 
@@ -52,9 +56,17 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
         _Assert.prepared(this.prepared);
     }
 
+
+    @Override
+    public final _OptionClause<OR> preferLiteral(boolean prefer) {
+        this.optimizingParam = prefer;
+        return this;
+    }
+
     @Override
     public final OR migration() {
         this.migration = true;
+        this.nullHandleMode = NullHandleMode.INSERT_NULL;
         return (OR) this;
     }
 
@@ -67,6 +79,17 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
 
     @Override
     public final SR set(final FieldMeta<? super T> field, final @Nullable Object paramOrExp) {
+        if (!field.insertable()) {
+            throw _Exceptions.nonInsertableField(field);
+        }
+        if (!this.migration) {
+            final String fieldName = field.fieldName();
+            if (field.generatorType() != null
+                    || _MetaBridge.UPDATE_TIME.equals(fieldName)
+                    || _MetaBridge.VERSION.equals(fieldName)) {
+                throw _Exceptions.armyManageField(field);
+            }
+        }
         Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
         if (commonExpMap == null) {
             commonExpMap = new HashMap<>();
@@ -74,7 +97,11 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
         }
         final Expression exp;
         if (paramOrExp == null) {
-            exp = SQLs.nullWord();
+            if (this.optimizingParam) {
+                exp = SQLs.nullWord();
+            } else {
+                exp = SQLs.StringTypeNull.INSTANCE;
+            }
         } else if (paramOrExp instanceof SubQuery && !(paramOrExp instanceof ScalarExpression)) {
             throw _Exceptions.nonScalarSubQuery((SubQuery) paramOrExp);
         } else if (paramOrExp instanceof Expression) {
@@ -91,12 +118,18 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
 
     @Override
     public final SR setExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function) {
-        return this.set(field, function.apply(this.criteria));
+        final Expression expression;
+        expression = function.apply(this.criteria);
+        assert expression != null;
+        return this.set(field, expression);
     }
 
     @Override
     public final SR setExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier) {
-        return this.set(field, supplier.get());
+        final Expression expression;
+        expression = supplier.get();
+        assert expression != null;
+        return this.set(field, expression);
     }
 
     @Override
@@ -109,6 +142,26 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
         return this.set(field, SQLs.nullWord());
     }
 
+
+    @Override
+    public final SR ifSetExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function) {
+        final Expression expression;
+        expression = function.apply(this.criteria);
+        if (expression != null) {
+            this.set(field, expression);
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier) {
+        final Expression expression;
+        expression = supplier.get();
+        if (expression != null) {
+            this.set(field, expression);
+        }
+        return (SR) this;
+    }
 
     @Override
     public final _InsertSpec value(T domain) {
@@ -208,6 +261,11 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
         final NullHandleMode mode = this.nullHandleMode;
         assert mode != null;
         return mode;
+    }
+
+    @Override
+    public final boolean isPreferLiteral() {
+        return this.optimizingParam;
     }
 
     @Override

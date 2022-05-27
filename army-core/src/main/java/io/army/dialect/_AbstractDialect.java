@@ -280,6 +280,15 @@ public abstract class _AbstractDialect implements ArmyDialect {
         return this.environment.serverMeta().database();
     }
 
+    @Override
+    public final boolean isMockEnv() {
+        return this.environment instanceof _MockDialects;
+    }
+
+    @Override
+    public final FieldValueGenerator getFieldValueGenerator() {
+        return this.environment.fieldValuesGenerator();
+    }
 
     /**
      * @see #setClause(boolean, _SetBlock, _UpdateContext)
@@ -400,7 +409,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt dialectSingleUpdate(_SingleUpdateContext context) {
+    protected void dialectSingleUpdate(_SingleUpdateContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -763,7 +772,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected final void discriminator(TableMeta<?> table, String safeTableAlias, _StmtContext context) {
+    protected final void discriminator(TableMeta<?> table, String safeTableAlias, _SqlContext context) {
         final FieldMeta<?> field;
         if (table instanceof ChildTableMeta) {
             field = ((ChildTableMeta<?>) table).discriminator();
@@ -786,7 +795,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     protected final void visiblePredicate(SingleTableMeta<?> table, final @Nullable String safeTableAlias
-            , final _StmtContext context) {
+            , final _SqlContext context) {
 
         final FieldMeta<?> field = table.getField(_MetaBridge.VISIBLE);
         final Boolean visibleValue;
@@ -1503,10 +1512,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
     private Stmt handleStandardValueInsert(final _ValuesInsert insert, final Visible visible) {
         final StandardValueInsertContext context;
         context = StandardValueInsertContext.create(insert, this, visible);
-
         _DmlUtils.appendStandardValueInsert(context, this.environment.fieldValuesGenerator()); // append parent insert to parent context.
         context.onParentEnd(); // parent end event
-
         final _InsertBlock childBlock = context.childBlock();
         if (childBlock != null) {
             _DmlUtils.appendStandardValueInsert(context, null); // append child insert to child context.

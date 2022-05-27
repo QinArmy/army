@@ -375,7 +375,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final String mockAsString(Dialect dialect, Visible visible, boolean beautify) {
+    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
         final Stmt stmt;
         stmt = this.mockAsStmt(dialect, visible);
         final StringBuilder builder = new StringBuilder();

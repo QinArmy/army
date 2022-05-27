@@ -13,6 +13,8 @@ public interface _ValuesInsert extends _Insert {
 
     NullHandleMode nullHandle();
 
+    boolean isPreferLiteral();
+
     Map<FieldMeta<?>, _Expression> commonExpMap();
 
     List<IDomain> domainList();

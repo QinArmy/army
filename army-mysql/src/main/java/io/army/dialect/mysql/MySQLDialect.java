@@ -151,7 +151,7 @@ final class MySQLDialect extends MySQL {
     }
 
     @Override
-    protected SimpleStmt dialectSingleUpdate(final _SingleUpdateContext context) {
+    protected void dialectSingleUpdate(final _SingleUpdateContext context) {
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) context.statement();
         if (context.dialect() != this) {
             throw illegalDialect();
@@ -192,7 +192,7 @@ final class MySQLDialect extends MySQL {
         final List<TableField> conditionFields;
         conditionFields = this.singleTableSetClause(true, context);
         //10. where clause
-        this.dmlWhereClause(context);
+        this.dmlWhereClause(stmt.predicateList(), context);
         //10.1 discriminator
         if (!(table instanceof SimpleTableMeta)) {
             this.discriminator(table, safeTableAlias, context);
@@ -215,7 +215,6 @@ final class MySQLDialect extends MySQL {
             sqlBuilder.append(_Constant.SPACE_LIMIT_SPACE)
                     .append(rowCount);
         }
-        return context.build();
     }
 
     @Override
@@ -290,7 +289,7 @@ final class MySQLDialect extends MySQL {
         this.partitionClause(stmt.partitionList(), sqlBuilder);
 
         //7. where clause
-        this.dmlWhereClause(context);
+        this.dmlWhereClause(stmt.predicateList(), context);
         if (table.containField(_MetaBridge.VISIBLE)) {
             //7.2 append visible
             this.visiblePredicate(table, asOf80 ? safeTableAlias : null, context);
@@ -348,7 +347,7 @@ final class MySQLDialect extends MySQL {
         //6. table_references (and partition ,index hint)
         this.mysqlTableReferences(stmt.tableBlockList(), context, false);
         //7. where clause
-        this.dmlWhereClause(context);
+        this.dmlWhereClause(stmt.predicateList(), context);
         //7.1 append visible
         this.multiDmlVisible(stmt.tableBlockList(), context);
         return context.build();
@@ -395,9 +394,9 @@ final class MySQLDialect extends MySQL {
         }
     }
 
-    private void selectModifiers(List<MySQLWords> modifierList, StringBuilder builder) {
-        for (MySQLWords modifier : modifierList) {
-            switch (modifier) {
+    private void selectModifiers(List<? extends SQLWords> modifierList, StringBuilder builder) {
+        for (SQLWords modifier : modifierList) {
+            switch ((MySQLWords) modifier) {
                 case ALL:
                 case DISTINCT:
                 case DISTINCTROW:

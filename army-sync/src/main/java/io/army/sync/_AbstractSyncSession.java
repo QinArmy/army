@@ -131,17 +131,22 @@ public abstract class _AbstractSyncSession implements SyncSession {
 
     @Override
     public final <T extends IDomain> void save(T domain) {
-        this.save(domain, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
+        this.save(domain, false, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <T extends IDomain> void save(T domain, boolean optimizingParam) {
+        this.save(domain, optimizingParam, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
     public final <T extends IDomain> void save(T domain, Visible visible) {
-        this.save(domain, NullHandleMode.INSERT_DEFAULT, visible);
+        this.save(domain, false, NullHandleMode.INSERT_DEFAULT, visible);
     }
 
     @Override
     public final <T extends IDomain> void save(T domain, NullHandleMode mode) {
-        this.save(domain, mode, Visible.ONLY_VISIBLE);
+        this.save(domain, false, mode, Visible.ONLY_VISIBLE);
     }
 
     @Override
@@ -183,17 +188,22 @@ public abstract class _AbstractSyncSession implements SyncSession {
 
     @Override
     public final <T extends IDomain> void batchSave(List<T> domainList) {
-        this.batchSave(domainList, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
+        this.batchSave(domainList, false, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <T extends IDomain> void batchSave(List<T> domainList, boolean optimizingParam) {
+        this.batchSave(domainList, optimizingParam, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
     public final <T extends IDomain> void batchSave(List<T> domainList, Visible visible) {
-        this.batchSave(domainList, NullHandleMode.INSERT_DEFAULT, visible);
+        this.batchSave(domainList, false, NullHandleMode.INSERT_DEFAULT, visible);
     }
 
     @Override
     public final <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode) {
-        this.batchSave(domainList, mode, Visible.ONLY_VISIBLE);
+        this.batchSave(domainList, false, mode, Visible.ONLY_VISIBLE);
     }
 
     @Override

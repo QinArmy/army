@@ -59,7 +59,7 @@ final class ScalarSubQueryExpression extends OperationExpression implements Scal
 
 
     @Override
-    public String mockAsString(Dialect dialect, Visible visible, boolean beautify) {
+    public String mockAsString(Dialect dialect, Visible visible, boolean none) {
         throw new UnsupportedOperationException("dont support SubQuery.");
     }
 

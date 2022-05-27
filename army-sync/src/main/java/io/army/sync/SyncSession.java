@@ -115,11 +115,13 @@ public interface SyncSession extends GenericSession {
 
     <T extends IDomain> void save(T domain);
 
+    <T extends IDomain> void save(T domain, boolean optimizingParam);
+
     <T extends IDomain> void save(T domain, Visible visible);
 
     <T extends IDomain> void save(T domain, NullHandleMode mode);
 
-    <T extends IDomain> void save(T domain, NullHandleMode mode, Visible visible);
+    <T extends IDomain> void save(T domain, boolean optimizingParam, NullHandleMode mode, Visible visible);
 
     long update(DmlStatement dml);
 
@@ -156,11 +158,13 @@ public interface SyncSession extends GenericSession {
 
     <T extends IDomain> void batchSave(List<T> domainList);
 
+    <T extends IDomain> void batchSave(List<T> domainList, boolean optimizingParam);
+
     <T extends IDomain> void batchSave(List<T> domainList, Visible visible);
 
     <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode);
 
-    <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode, Visible visible);
+    <T extends IDomain> void batchSave(List<T> domainList, boolean optimizingParam, NullHandleMode mode, Visible visible);
 
     /**
      * @return a unmodifiable list

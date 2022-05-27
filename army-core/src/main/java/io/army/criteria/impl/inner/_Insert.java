@@ -14,4 +14,6 @@ public interface _Insert extends _Statement {
      */
     List<FieldMeta<?>> fieldList();
 
+    List<FieldMeta<?>> childFieldList();
+
 }

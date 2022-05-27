@@ -32,7 +32,7 @@ public interface Statement {
 
     boolean isPrepared();
 
-    String mockAsString(Dialect dialect, Visible visible, boolean beautify);
+    String mockAsString(Dialect dialect, Visible visible, boolean none);
 
     Stmt mockAsStmt(Dialect dialect, Visible visible);
 
