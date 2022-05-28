@@ -6,8 +6,8 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Query;
 import io.army.dialect._Constant;
+import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
-import io.army.dialect._UpdateContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
@@ -733,7 +733,7 @@ public abstract class SQLs extends Functions {
         }
 
         @Override
-        public final void appendItemPair(final _UpdateContext context) {
+        public final void appendItemPair(final _SetClauseContext context) {
             final DataField field = this.field;
             //1. append left item
             context.appendSetLeftItem(field);
@@ -808,7 +808,7 @@ public abstract class SQLs extends Functions {
         }
 
         @Override
-        public void appendItemPair(final _UpdateContext context) {
+        public void appendItemPair(final _SetClauseContext context) {
             final List<? extends DataField> fieldList = this.fieldList;
             final int fieldSize = fieldList.size();
             //1. append left paren

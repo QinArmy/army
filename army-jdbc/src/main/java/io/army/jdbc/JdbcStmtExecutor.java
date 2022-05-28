@@ -545,7 +545,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         int index = 0;
         try (ResultSet resultSet = idResultSet) {
             final String primaryKeyName = stmt.primaryKeyName();
-            final PrimaryFieldMeta<?> idField = stmt.idMeta();
+            final PrimaryFieldMeta<?> idField = stmt.idField();
             final Class<?> idJavaType = idField.javaType();
             final ObjectAccessor accessor = stmt.domainAccessor();
             IDomain domain;

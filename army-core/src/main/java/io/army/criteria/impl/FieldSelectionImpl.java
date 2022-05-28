@@ -68,7 +68,7 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
                 .append(_Constant.SPACE_AS_SPACE);
 
         context.dialect()
-                .quoteIfNeed(this.alias, builder);
+                .identifier(this.alias, builder);
     }
 
     @Override

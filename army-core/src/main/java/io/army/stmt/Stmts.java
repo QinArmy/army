@@ -35,6 +35,28 @@ public abstract class Stmts {
         return new MinSimpleStmt(sql, paramList);
     }
 
+    /**
+     * <p>
+     * Post insert for returning id
+     * </p>
+     */
+    public static GeneratedKeyStmt returnId(final StmtParams params) {
+        return null;
+    }
+
+    /**
+     * <p>
+     * Post insert for generated key
+     * </p>
+     */
+    public static GeneratedKeyStmt post(final StmtParams params) {
+        return null;
+    }
+
+    public static SimpleStmt simple(final StmtParams params) {
+        return null;
+    }
+
     public static GeneratedKeyStmt post(String sql, List<ParamValue> paramList
             , List<IDomain> domainList, ObjectAccessor domainAccessor, PrimaryFieldMeta<?> field) {
         return new PostStmt(sql, paramList, domainList, domainAccessor, field);
@@ -370,7 +392,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public PrimaryFieldMeta<?> idMeta() {
+        public PrimaryFieldMeta<?> idField() {
             return this.field;
         }
 

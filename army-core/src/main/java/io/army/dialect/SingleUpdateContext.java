@@ -42,9 +42,9 @@ final class SingleUpdateContext extends StmtContext implements _SingleUpdateCont
         this.table = update.table();
         this.tableAlias = update.tableAlias();
         if (this.table instanceof ChildTableMeta) {
-            this.safeTableAlias = dialect.quoteIfNeed(_DialectUtils.parentAlias(this.tableAlias));
+            this.safeTableAlias = dialect.identifier(_DialectUtils.parentAlias(this.tableAlias));
         } else {
-            this.safeTableAlias = dialect.quoteIfNeed(this.tableAlias);
+            this.safeTableAlias = dialect.identifier(this.tableAlias);
         }
         this.leftItemList = update.leftItemList();
 

@@ -102,7 +102,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
             final Map<String, String> aliasToSafeAlias = getAliasToSafeAlias();
             safeTableAlias = aliasToSafeAlias.get(tableAlias);
             if (safeTableAlias == null) {
-                safeTableAlias = this.dialect.quoteIfNeed(tableAlias);
+                safeTableAlias = this.dialect.identifier(tableAlias);
                 aliasToSafeAlias.put(tableAlias, safeTableAlias);
             }
         }

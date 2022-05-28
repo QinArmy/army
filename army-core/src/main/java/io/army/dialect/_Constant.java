@@ -66,9 +66,7 @@ public interface _Constant {
 
     String SPACE_AS_SPACE = " AS ";
 
-    String INSERT_INTO = "INSERT INTO";
-
-    String VALUE = "VALUE";
+    String INSERT_INTO_SPACE = "INSERT INTO ";
 
     String SPACE_VALUES = " VALUES";
 

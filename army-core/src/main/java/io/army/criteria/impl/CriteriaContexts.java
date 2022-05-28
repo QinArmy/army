@@ -1058,13 +1058,13 @@ abstract class CriteriaContexts {
         public void appendSelection(final _SqlContext context) {
             final _Dialect dialect = context.dialect();
 
-            final String safeFieldName = dialect.quoteIfNeed(this.selection.alias());
+            final String safeFieldName = dialect.identifier(this.selection.alias());
 
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            dialect.quoteIfNeed(this.tableName, builder)
+            dialect.identifier(this.tableName, builder)
                     .append(_Constant.POINT)
                     .append(safeFieldName)
                     .append(_Constant.SPACE_AS_SPACE)
@@ -1078,9 +1078,9 @@ abstract class CriteriaContexts {
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            dialect.quoteIfNeed(this.tableName, builder)
+            dialect.identifier(this.tableName, builder)
                     .append(_Constant.POINT);
-            dialect.quoteIfNeed(this.selection.alias(), builder);
+            dialect.identifier(this.selection.alias(), builder);
 
         }
 
@@ -1160,12 +1160,12 @@ abstract class CriteriaContexts {
         public void appendSelection(final _SqlContext context) {
             final _Dialect dialect = context.dialect();
 
-            final String safeFieldName = dialect.quoteIfNeed(this.fieldName);
+            final String safeFieldName = dialect.identifier(this.fieldName);
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            dialect.quoteIfNeed(this.tableName, builder)
+            dialect.identifier(this.tableName, builder)
                     .append(_Constant.POINT)
                     .append(safeFieldName)
                     .append(_Constant.SPACE_AS_SPACE)
@@ -1179,9 +1179,9 @@ abstract class CriteriaContexts {
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            dialect.quoteIfNeed(this.tableName, builder)
+            dialect.identifier(this.tableName, builder)
                     .append(_Constant.POINT);
-            dialect.quoteIfNeed(this.fieldName, builder);
+            dialect.identifier(this.fieldName, builder);
         }
 
 
@@ -1232,7 +1232,7 @@ abstract class CriteriaContexts {
                     .append(_Constant.SPACE);
 
             context.dialect()
-                    .quoteIfNeed(this.selection.alias(), builder);
+                    .identifier(this.selection.alias(), builder);
         }
 
     }// SelectionExpression
@@ -1275,7 +1275,7 @@ abstract class CriteriaContexts {
                     .append(_Constant.SPACE_AS_SPACE);
 
             context.dialect()
-                    .quoteIfNeed(this.alias, builder);
+                    .identifier(this.alias, builder);
         }
 
         @Override

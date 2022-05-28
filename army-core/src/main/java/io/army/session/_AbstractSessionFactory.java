@@ -4,9 +4,9 @@ import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
 import io.army.codec.JsonCodec;
-import io.army.dialect.FieldValueGenerator;
 import io.army.dialect._AbstractFieldValuesGenerator;
 import io.army.dialect._DialectEnvironment;
+import io.army.dialect._FieldValueGenerator;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
@@ -45,7 +45,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected final SubQueryInsertMode subQueryInsertMode;
 
-    protected final FieldValueGenerator fieldValuesGenerator;
+    protected final _FieldValueGenerator fieldValuesGenerator;
 
     protected final boolean readonly;
 
@@ -147,7 +147,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     }
 
     @Override
-    public final FieldValueGenerator fieldValuesGenerator() {
+    public final _FieldValueGenerator fieldValuesGenerator() {
         return this.fieldValuesGenerator;
     }
 

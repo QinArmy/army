@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.criteria.*;
 import io.army.meta.ParamMeta;
 import io.army.schema._SchemaResult;
-import io.army.session.Database;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
@@ -16,6 +15,14 @@ import java.util.List;
 public interface _Dialect {
 
 
+    /**
+     * @return possibly below type:
+     * <ul>
+     *     <li>{@link SimpleStmt}</li>
+     *     <li>{@link io.army.stmt.GeneratedKeyStmt}</li>
+     *     <li>{@link io.army.stmt.PairStmt}</li>
+     * </ul>
+     */
     Stmt insert(Insert insert, Visible visible);
 
     Stmt update(Update update, Visible visible);
@@ -24,7 +31,7 @@ public interface _Dialect {
 
     SimpleStmt select(Select select, Visible visible);
 
-     void rowSet(RowSet rowSet, _SqlContext original);
+    void rowSet(RowSet rowSet, _SqlContext original);
 
     List<String> startTransaction(Isolation isolation, boolean readonly);
 
@@ -34,54 +41,28 @@ public interface _Dialect {
     }
 
 
-    boolean supportInsertReturning();
-
-
     default StringBuilder safeObjectName(String tableName, StringBuilder builder) {
         return builder;
     }
-//
-//    default String safeObjectName(String objectName){
-//        throw new UnsupportedOperationException();
-//    }
 
-
-    boolean supportZone();
-
-    boolean supportOnlyDefault();
-
-    Database database();
-
-    boolean tableAliasAfterAs();
-
-    boolean singleDeleteHasTableAlias();
-
-    boolean hasRowKeywords();
-
-    default boolean supportRowLeftItem() {
-        return false;
-    }
-
-    default boolean supportQueryUpdate() {
-        return false;
-    }
-
-
+    @Deprecated
     String literal(ParamMeta paramMeta, Object nonNull);
 
     StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
 
 
-    String quoteIfNeed(String identifier);
+    String identifier(String identifier);
 
-    default StringBuilder quoteIfNeed(String identifier, StringBuilder builder) {
+    default StringBuilder identifier(String identifier, StringBuilder builder) {
         return builder;
     }
 
 
     boolean supportSavePoint();
 
+
     boolean setClauseTableAlias();
+
 
     default boolean setClauseSupportRow() {
         throw new UnsupportedOperationException();
@@ -90,8 +71,6 @@ public interface _Dialect {
     Dialect dialectMode();
 
     String defaultFuncName();
-
-    boolean multiTableUpdateChild();
 
 
 }

@@ -51,7 +51,7 @@ final class ExpressionSelection implements _Selection {
                 .append(_Constant.SPACE_AS_SPACE);
 
         context.dialect()
-                .quoteIfNeed(this.alias, builder);
+                .identifier(this.alias, builder);
     }
 
 

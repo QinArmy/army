@@ -5,7 +5,7 @@ import io.army.bean.ReadWrapper;
 import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 
-public interface FieldValueGenerator {
+public interface _FieldValueGenerator {
 
     void generate(TableMeta<?> table, IDomain domain, ObjectAccessor accessor, ReadWrapper readWrapper);
 

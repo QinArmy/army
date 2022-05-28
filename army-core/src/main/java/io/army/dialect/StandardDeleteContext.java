@@ -6,7 +6,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
-final class StandardDeleteContext extends _SingleDmlContext implements _SingleDeleteContext {
+final class StandardDeleteContext extends SingleDmlContext implements _SingleDeleteContext {
 
     static StandardDeleteContext create(_SingleDelete delete, ArmyDialect dialect, Visible visible) {
         return new StandardDeleteContext(delete, dialect, visible);

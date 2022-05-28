@@ -72,7 +72,7 @@ public abstract class _MockDialects {
         }
 
         @Override
-        public FieldValueGenerator fieldValuesGenerator() {
+        public _FieldValueGenerator fieldValuesGenerator() {
             return MockDomainValuesGenerator.INSTANCE;
         }
 

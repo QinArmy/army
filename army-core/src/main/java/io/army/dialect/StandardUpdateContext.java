@@ -22,7 +22,7 @@ import java.util.List;
  * This class representing standard single update context.
  * </p>
  */
-final class StandardUpdateContext extends _SingleDmlContext implements _DomainUpdateContext {
+final class StandardUpdateContext extends SingleDmlContext implements _DomainUpdateContext {
 
     static StandardUpdateContext create(_SingleUpdate update, ArmyDialect dialect, final Visible visible) {
         final StandardUpdateContext context;

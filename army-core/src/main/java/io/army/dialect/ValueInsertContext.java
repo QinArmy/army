@@ -13,9 +13,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.ParamValue;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.StrictParamValue;
+import io.army.stmt.*;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -25,11 +23,15 @@ import java.util.*;
  * This class representing standard value insert context.
  * </p>
  */
-final class StandardValueInsertContext extends StmtContext implements _ValueInsertContext {
+final class ValueInsertContext extends StmtContext implements _ValueInsertContext, InsertStmtParams {
 
-    static StandardValueInsertContext create(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
+    static ValueInsertContext nonChild(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
         checkCommonExpMap(insert);
-        return new StandardValueInsertContext(insert, dialect, visible);
+        return new ValueInsertContext(dialect, insert, visible);
+    }
+
+    static ValueInsertContext child(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
+        return new ValueInsertContext(insert, dialect, visible);
     }
 
 
@@ -57,21 +59,74 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
 
     final List<IDomain> domainList;
 
+    /**
+     * return id for standard criteria api
+     */
     private final PrimaryFieldMeta<?> returnId;
 
     private final FieldMeta<?> discriminator;
 
     private final int discriminatorValue;
 
+    private final String idSelectionAlias;
 
-    //@see io.army.dialect._DmlUtils.appendStandardValueInsert,for parse comment expression
+
     private IDomain currentDomain;
 
 
     /**
+     * create for {@link  SingleTableMeta}
+     */
+    private ValueInsertContext(ArmyDialect dialect, _ValuesInsert stmt, Visible visible) {
+        super(dialect, visible);
+        this.migration = stmt.isMigration();
+        this.preferLiteral = stmt.isPreferLiteral();
+        this.commonExpMap = stmt.commonExpMap();
+        this.domainList = stmt.domainList();
+
+        if (this.migration) {
+            this.nullHandleMode = NullHandleMode.INSERT_NULL;
+        } else {
+            this.nullHandleMode = stmt.nullHandle();
+        }
+        final TableMeta<?> domainTable = stmt.table();
+        if (domainTable instanceof SimpleTableMeta) {
+            this.discriminator = null;
+            this.discriminatorValue = 0;
+        } else {
+            this.discriminator = domainTable.discriminator();
+            this.discriminatorValue = domainTable.discriminatorValue();
+        }
+        if (domainTable instanceof ChildTableMeta) {
+            this.table = ((ChildTableMeta<?>) domainTable).parentMeta();
+        } else {
+            this.table = domainTable;
+        }
+        this.domainAccessor = ObjectAccessorFactory.forBean(domainTable.javaType());
+
+        final List<FieldMeta<?>> fieldList = stmt.fieldList();
+        if (fieldList.size() == 0) {
+            this.fieldList = castFieldList(domainTable);
+        } else {
+            this.fieldList = mergeFieldList(domainTable, fieldList);
+        }
+        if (!(stmt instanceof StandardStatement || dialect.supportInsertReturning())) {
+            this.returnId = null;
+            this.idSelectionAlias = null;
+        } else if (domainTable instanceof ChildTableMeta) {
+            this.returnId = ((ChildTableMeta<?>) domainTable).parentMeta().id();
+            this.idSelectionAlias = this.returnId.fieldName();
+        } else {
+            this.returnId = domainTable.id();
+            this.idSelectionAlias = this.returnId.fieldName();
+        }
+
+    }
+
+    /**
      * create for {@link  ChildTableMeta}
      */
-    private StandardValueInsertContext(_ValuesInsert stmt, ArmyDialect dialect, Visible visible) {
+    private ValueInsertContext(_ValuesInsert stmt, ArmyDialect dialect, Visible visible) {
         super(dialect, stmt.isPreferLiteral(), visible);
 
         this.migration = stmt.isMigration();
@@ -93,57 +148,12 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
 
         final List<FieldMeta<?>> childFieldList = stmt.childFieldList();
         if (childFieldList.size() == 0) {
-            this.fieldList = mergeFieldList(table);
+            this.fieldList = castFieldList(table);
         } else {
             this.fieldList = mergeFieldList(table, childFieldList);
         }
         this.returnId = null;
-
-    }
-
-    /**
-     * create for {@link  SingleTableMeta}
-     */
-    private StandardValueInsertContext(ArmyDialect dialect, _ValuesInsert stmt, Visible visible) {
-        super(dialect, visible);
-        this.migration = stmt.isMigration();
-        this.preferLiteral = stmt.isPreferLiteral();
-        this.commonExpMap = stmt.commonExpMap();
-        this.domainList = stmt.domainList();
-
-        if (this.migration) {
-            this.nullHandleMode = NullHandleMode.INSERT_NULL;
-        } else {
-            this.nullHandleMode = stmt.nullHandle();
-        }
-        final TableMeta<?> table = stmt.table();
-        if (table instanceof SimpleTableMeta) {
-            this.discriminator = null;
-            this.discriminatorValue = 0;
-        } else {
-            this.discriminator = table.discriminator();
-            this.discriminatorValue = table.discriminatorValue();
-        }
-        if (table instanceof ChildTableMeta) {
-            this.table = ((ChildTableMeta<?>) table).parentMeta();
-        } else {
-            this.table = table;
-        }
-        this.domainAccessor = ObjectAccessorFactory.forBean(table.javaType());
-
-        final List<FieldMeta<?>> fieldList = stmt.fieldList();
-        if (fieldList.size() == 0) {
-            this.fieldList = mergeFieldList(table);
-        } else {
-            this.fieldList = mergeFieldList(table, fieldList);
-        }
-        if (!dialect.supportInsertReturning()) {
-            this.returnId = null;
-        } else if (table instanceof ChildTableMeta) {
-            this.returnId = ((ChildTableMeta<?>) table).parentMeta().id();
-        } else {
-            this.returnId = table.id();
-        }
+        this.idSelectionAlias = null;
 
     }
 
@@ -165,6 +175,10 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public TableMeta<?> table() {
+        return this.table;
+    }
 
     @Override
     public void appendFieldList() {
@@ -204,7 +218,7 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
 
         sqlBuilder.append(_Constant.SPACE_VALUES);
 
-        final FieldValueGenerator generator;
+        final _FieldValueGenerator generator;
         final BeanReadWrapper readWrapper;
         final TableMeta<?> table = this.table;
         if (table instanceof ChildTableMeta) {
@@ -224,12 +238,11 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
             if (generator != null) {
                 //only non-child table
                 readWrapper.domain = domain; // update domain value
-                if (migration) {
+                if (this.migration) {
                     generator.validate(table, domain, accessor);
                 } else {
                     generator.generate(table, domain, accessor, readWrapper);
                 }
-
             }
 
             if (domainIndex > 0) {
@@ -238,13 +251,18 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
 
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
-            for (int fieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
-                if (fieldIndex > 0) {
+            for (int fieldIndex = 0, actualFieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
+                field = fieldList.get(fieldIndex);
+                if (!field.insertable()) {
+                    // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
+                    continue;
+                }
+                if (actualFieldIndex > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                field = fieldList.get(fieldIndex);
+                actualFieldIndex++;
+
                 if (field == discriminator) {
-                    assert field != null;
                     sqlBuilder.append(_Constant.SPACE)
                             .append(this.discriminatorValue);
                 } else if ((expression = commonExpMap.get(field)) != null) {
@@ -286,11 +304,58 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
 
     }
 
+
     @Override
     public SimpleStmt build() {
-        return null;
+        final SimpleStmt stmt;
+        if (this.returnId != null) {
+            stmt = Stmts.returnId(this);
+        } else if (this.table.id().generatorType() == GeneratorType.POST) {
+            stmt = Stmts.post(this);
+        } else {
+            stmt = Stmts.simple(this);
+        }
+        return stmt;
     }
 
+    @Override
+    public void appendReturnIdIfNeed() {
+        final PrimaryFieldMeta<?> returnId = this.returnId;
+        if (returnId == null) {
+            return;
+        }
+        final StringBuilder sqlBuilder = this.sqlBuilder
+                .append(_Constant.SPACE_RETURNING)
+                .append(_Constant.SPACE);
+
+        final ArmyDialect dialect = this.dialect;
+        //TODO table alias
+        dialect.safeObjectName(returnId.columnName(), sqlBuilder)
+                .append(_Constant.SPACE_AS_SPACE);
+
+        dialect.identifier(returnId.fieldName(), sqlBuilder);
+    }
+
+    @Override
+    public List<IDomain> domainList() {
+        return this.domainList;
+    }
+
+    @Override
+    public ObjectAccessor domainAccessor() {
+        return this.domainAccessor;
+    }
+
+    @Override
+    public PrimaryFieldMeta<?> returnId() {
+        return this.returnId;
+    }
+
+
+    @Override
+    public String idSelectionAlias() {
+        return this.idSelectionAlias;
+    }
 
     @Override
     List<ParamValue> createParamList() {
@@ -301,7 +366,6 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
         //this.currentDomain @see io.army.dialect._DmlUtils.appendStandardValueInsert
         final IDomain domain = this.currentDomain;
         assert domain != null;
-        this.currentDomain = null; //clear for next
         final Object value;
         value = this.domainAccessor.get(domain, namedParam.name());
         if (value == null && namedParam instanceof NonNullNamedParam) {
@@ -311,22 +375,14 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
     }
 
 
-    private <T extends IDomain> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table) {
-        final List<FieldMeta<T>> fieldList = table.fieldList();
-        final List<FieldMeta<?>> mergeFieldList = new ArrayList<>(fieldList.size());
-        for (FieldMeta<T> field : fieldList) {
-            if (field.insertable()) {
-                mergeFieldList.add(field);
-            }
-        }
-        if (mergeFieldList.size() == 0) {
-            String m = String.format("%s no insertable filed.", table);
-            throw new MetaException(m);
-        }
-        return Collections.unmodifiableList(mergeFieldList);
+    @SuppressWarnings("unchecked")
+    private static <T extends IDomain> List<FieldMeta<?>> castFieldList(final TableMeta<T> table) {
+        final List<?> list;
+        list = table.fieldList();
+        return (List<FieldMeta<?>>) list;
     }
 
-    private <T extends IDomain> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table
+    private static <T extends IDomain> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table
             , final List<FieldMeta<?>> fieldList) {
         final List<FieldMeta<?>> mergeFieldList = new ArrayList<>(fieldList.size());
         final Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
@@ -461,7 +517,7 @@ final class StandardValueInsertContext extends StmtContext implements _ValueInse
             return value;
         }
 
-    }
+    }//DelayIdParamValue
 
 
 }

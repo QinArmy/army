@@ -71,11 +71,11 @@ final class TableContext {
             if (!(tableItem instanceof TableMeta)) {
                 continue;
             }
-            safeAlias = dialect.quoteIfNeed(alias);
+            safeAlias = dialect.identifier(alias);
             if (tableItem instanceof ChildTableMeta && (multiUpdate || visible != Visible.BOTH)) {
                 parentBlock = checkParent((ChildTableMeta<?>) tableItem, alias, blockList, i, multiUpdate);
                 if (parentBlock != null && childSafeAliasToParentSafeAlias != null) {
-                    childSafeAliasToParentSafeAlias.putIfAbsent(safeAlias, dialect.quoteIfNeed(parentBlock.alias()));
+                    childSafeAliasToParentSafeAlias.putIfAbsent(safeAlias, dialect.identifier(parentBlock.alias()));
                 }
             }
 

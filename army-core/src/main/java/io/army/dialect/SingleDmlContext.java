@@ -13,20 +13,20 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-public abstract class _SingleDmlContext extends StmtContext implements _DmlContext, _Block {
+abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Block {
 
-    protected final SingleTableMeta<?> table;
+    final SingleTableMeta<?> table;
 
-    protected final String tableAlias;
+    final String tableAlias;
 
-    protected final String safeTableAlias;
+    final String safeTableAlias;
 
-    protected final List<_Predicate> predicateList;
+    final List<_Predicate> predicateList;
 
-    protected final boolean multiTableUpdateChild;
+    final boolean multiTableUpdateChild;
 
 
-    protected _SingleDmlContext(_SingleDml dml, ArmyDialect dialect, Visible visible) {
+    SingleDmlContext(_SingleDml dml, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
         final TableMeta<?> table = dml.table();
         final String tableAlias = dml.tableAlias();
@@ -37,7 +37,7 @@ public abstract class _SingleDmlContext extends StmtContext implements _DmlConte
         } else {
             this.table = (SingleTableMeta<?>) table;
             this.tableAlias = tableAlias;
-            this.safeTableAlias = dialect.quoteIfNeed(tableAlias);
+            this.safeTableAlias = dialect.identifier(tableAlias);
         }
         this.predicateList = dml.predicateList();
         this.multiTableUpdateChild = dialect.multiTableUpdateChild();
@@ -123,12 +123,12 @@ public abstract class _SingleDmlContext extends StmtContext implements _DmlConte
 
         protected final String safeTableAlias;
 
-        protected final _SingleDmlContext parentContext;
+        protected final SingleDmlContext parentContext;
 
-        protected ChildBlock(ChildTableMeta<?> table, final String tableAlias, _SingleDmlContext parentContext) {
+        protected ChildBlock(ChildTableMeta<?> table, final String tableAlias, SingleDmlContext parentContext) {
             this.table = table;
             this.tableAlias = tableAlias;
-            this.safeTableAlias = parentContext.dialect.quoteIfNeed(tableAlias);
+            this.safeTableAlias = parentContext.dialect.identifier(tableAlias);
             this.parentContext = parentContext;
         }
 

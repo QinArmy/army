@@ -279,7 +279,7 @@ final class MySQLDialect extends MySQL {
         safeTableAlias = context.safeTableAlias();
 
         //5. table name
-        this.quoteIfNeed(table.tableName(), sqlBuilder);
+        this.identifier(table.tableName(), sqlBuilder);
         if (asOf80) {
             sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                     .append(safeTableAlias);
@@ -336,7 +336,7 @@ final class MySQLDialect extends MySQL {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            this.quoteIfNeed(tableAliasList.get(i), sqlBuilder);
+            this.identifier(tableAliasList.get(i), sqlBuilder);
         }
 
         if (usingSyntax) {
@@ -460,7 +460,7 @@ final class MySQLDialect extends MySQL {
                     this.partitionClause(((_MySQLTableBlock) block).partitionList(), sqlBuilder);
                 }
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-                this.quoteIfNeed(alias, sqlBuilder);
+                this.identifier(alias, sqlBuilder);
                 if (block instanceof _MySQLTableBlock) {
                     this.indexHintClause(((_MySQLTableBlock) block).indexHintList(), sqlBuilder);
                 }
@@ -474,7 +474,7 @@ final class MySQLDialect extends MySQL {
                     this.subQueryStmt((SubQuery) tableItem, context);
                 }
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-                this.quoteIfNeed(alias, sqlBuilder);
+                this.identifier(alias, sqlBuilder);
             } else if (tableItem instanceof NestedItems) {
                 if (_StringUtils.hasText(alias)) {
                     throw _Exceptions.nestedItemsAliasHasText(alias);
@@ -485,17 +485,17 @@ final class MySQLDialect extends MySQL {
             } else if (tableItem instanceof Cte) {
                 _MySQLCounselor.assertMySQLCte((Cte) tableItem);
                 sqlBuilder.append(_Constant.SPACE);
-                this.quoteIfNeed(((Cte) tableItem).name(), sqlBuilder);
+                this.identifier(((Cte) tableItem).name(), sqlBuilder);
                 if (_StringUtils.hasText(alias)) {
                     sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-                    this.quoteIfNeed(alias, sqlBuilder);
+                    this.identifier(alias, sqlBuilder);
                 } else if (!"".equals(alias)) {
                     throw _Exceptions.tableItemAliasNoText(tableItem);
                 }
             } else if (tableItem instanceof Values) {
                 this.valuesStmt((Values) tableItem, context);
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-                this.quoteIfNeed(alias, sqlBuilder);
+                this.identifier(alias, sqlBuilder);
             } else {
                 throw _Exceptions.dontSupportTableItem(tableItem, alias);
             }
@@ -542,7 +542,7 @@ final class MySQLDialect extends MySQL {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
             }
-            this.quoteIfNeed(partitionList.get(i), sqlBuilder);
+            this.identifier(partitionList.get(i), sqlBuilder);
         }
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
@@ -568,7 +568,7 @@ final class MySQLDialect extends MySQL {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
                 }
-                this.quoteIfNeed(indexNameList.get(i), sqlBuilder);
+                this.identifier(indexNameList.get(i), sqlBuilder);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
@@ -630,7 +630,7 @@ final class MySQLDialect extends MySQL {
                         if (i > 0) {
                             sqlBuilder.append(_Constant.SPACE_COMMA);
                         }
-                        this.quoteIfNeed(ofList.get(i), sqlBuilder);
+                        this.identifier(ofList.get(i), sqlBuilder);
                     }
                 }
                 if (lockOption != null) {
@@ -660,7 +660,7 @@ final class MySQLDialect extends MySQL {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             sqlBuilder.append(_Constant.AT_CHAR);
-            this.quoteIfNeed(intoList.get(i), sqlBuilder);
+            this.identifier(intoList.get(i), sqlBuilder);
         }
 
     }

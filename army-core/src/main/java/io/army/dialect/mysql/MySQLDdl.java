@@ -61,13 +61,13 @@ final class MySQLDdl extends _DdlDialect {
                 builder.append(" ,\n\t");
             } else {
                 table = field.tableMeta();
-                dialect.quoteIfNeed(table.tableName(), builder)
+                dialect.identifier(table.tableName(), builder)
                         .append("\n\t");
             }
 
             if (result.comment() || result.sqlType() || result.nullable()) {
                 builder.append("CHANGE COLUMN ");
-                dialect.quoteIfNeed(field.columnName(), builder)
+                dialect.identifier(field.columnName(), builder)
                         .append(_Constant.SPACE);
                 columnDefinition(field, builder);
                 continue;
@@ -75,7 +75,7 @@ final class MySQLDdl extends _DdlDialect {
             final String defaultValue;
             defaultValue = field.defaultValue();
             builder.append("ALTER COLUMN ");
-            dialect.quoteIfNeed(field.columnName(), builder);
+            dialect.identifier(field.columnName(), builder);
             if (defaultValue.length() == 0) {
                 builder.append(" DROP DEFAULT");
             } else if (Character.isWhitespace(defaultValue.charAt(0))) {
@@ -109,7 +109,7 @@ final class MySQLDdl extends _DdlDialect {
 
         final _AbstractDialect dialect = this.dialect;
 
-        dialect.quoteIfNeed(table.tableName(), builder)
+        dialect.identifier(table.tableName(), builder)
                 .append("\n\t");
 
         final List<IndexMeta<T>> indexMetaList = table.indexList();
@@ -142,12 +142,12 @@ final class MySQLDdl extends _DdlDialect {
             } else {
                 builder.append("ADD INDEX ");
             }
-            dialect.quoteIfNeed(indexMeta.name(), builder);
+            dialect.identifier(indexMeta.name(), builder);
 
             final String indexType = indexMeta.type();
             if (_StringUtils.hasText(indexType)) {
                 builder.append(" USING ");
-                dialect.quoteIfNeed(indexType, builder);
+                dialect.identifier(indexType, builder);
             }
             builder.append(_Constant.SPACE_LEFT_PAREN);
             final List<IndexFieldMeta<T>> indexFieldList = indexMeta.fieldList();
@@ -157,7 +157,7 @@ final class MySQLDdl extends _DdlDialect {
                     builder.append(_Constant.SPACE_COMMA);
                 }
                 builder.append(_Constant.SPACE);
-                dialect.quoteIfNeed(indexFieldList.get(j).columnName(), builder);
+                dialect.identifier(indexFieldList.get(j).columnName(), builder);
             }
             builder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -187,7 +187,7 @@ final class MySQLDdl extends _DdlDialect {
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
         final _AbstractDialect dialect = this.dialect;
-        dialect.quoteIfNeed(table.tableName(), builder)
+        dialect.identifier(table.tableName(), builder)
                 .append("\n\t");
         for (int i = 0; i < indexNameSize; i++) {
             if (i > 0) {
@@ -207,7 +207,7 @@ final class MySQLDdl extends _DdlDialect {
                 throw new IllegalArgumentException(m);
             }
             builder.append("DROP INDEX ");
-            dialect.quoteIfNeed(indexName, builder);
+            dialect.identifier(indexName, builder);
 
         }
         sqlList.add(builder.toString());

@@ -16,7 +16,7 @@ public interface _DialectEnvironment {
 
     ArmyEnvironment environment();
 
-    FieldValueGenerator fieldValuesGenerator();
+    _FieldValueGenerator fieldValuesGenerator();
 
     MappingEnvironment mappingEnvironment();
 

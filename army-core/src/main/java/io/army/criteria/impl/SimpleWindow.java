@@ -494,7 +494,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         final String windowName = this.windowName;
         if (_StringUtils.hasText(windowName)) {
             sqlBuilder.append(_Constant.SPACE);
-            dialect.quoteIfNeed(windowName, sqlBuilder)
+            dialect.identifier(windowName, sqlBuilder)
                     .append(_Constant.SPACE_AS);
         }
         //2.(
@@ -503,7 +503,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         final String refWindowName = this.refWindowName;
         if (refWindowName != null) {
             sqlBuilder.append(_Constant.SPACE);
-            dialect.quoteIfNeed(refWindowName, sqlBuilder);
+            dialect.identifier(refWindowName, sqlBuilder);
         }
         //4.partition_clause
         final List<_Expression> partitionByList = this.partitionByList;

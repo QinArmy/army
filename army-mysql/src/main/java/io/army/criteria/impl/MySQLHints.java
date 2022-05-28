@@ -190,7 +190,7 @@ abstract class MySQLHints implements _MySQLHint {
                 builder.append(_Constant.RIGHT_BRACKET);
             } else {
                 builder.append(_Constant.SPACE_AT);
-                context.dialect().quoteIfNeed(queryBlockName, builder);
+                context.dialect().identifier(queryBlockName, builder);
                 builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
@@ -246,7 +246,7 @@ abstract class MySQLHints implements _MySQLHint {
             final _Dialect dialect = context.dialect();
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                dialect.quoteIfNeed(queryBlockName, builder);
+                dialect.identifier(queryBlockName, builder);
             }
             builder.append(_Constant.SPACE);
 
@@ -259,17 +259,17 @@ abstract class MySQLHints implements _MySQLHint {
                     builder.append(_Constant.SPACE_COMMA_SPACE);
                 }
                 if (queryBlockName == null) {
-                    dialect.quoteIfNeed(tableNameList.get(i), builder);
+                    dialect.identifier(tableNameList.get(i), builder);
                     continue;
                 }
                 tableName = tableNameList.get(i);
                 index = tableName.indexOf(_Constant.AT_CHAR);
                 if (index < 0) {
-                    dialect.quoteIfNeed(tableName, builder);
+                    dialect.identifier(tableName, builder);
                 } else if (index < tableName.length() - 1) {
-                    dialect.quoteIfNeed(tableName.substring(0, index), builder)
+                    dialect.identifier(tableName.substring(0, index), builder)
                             .append(_Constant.AT_CHAR);
-                    dialect.quoteIfNeed(tableName.substring(index + 1), builder);
+                    dialect.identifier(tableName.substring(index + 1), builder);
                 } else {
                     throw MySQLHints.hintTableNameError(tableName);
                 }
@@ -325,7 +325,7 @@ abstract class MySQLHints implements _MySQLHint {
             final _Dialect dialect = context.dialect();
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                dialect.quoteIfNeed(queryBlockName, builder);
+                dialect.identifier(queryBlockName, builder);
             }
             builder.append(_Constant.SPACE);
 
@@ -344,9 +344,9 @@ abstract class MySQLHints implements _MySQLHint {
                         throw MySQLHints.hintTableNameError(tableName);
                     }
                 } else if (index > 0 && index < tableName.length() - 1) {
-                    dialect.quoteIfNeed(tableName.substring(0, index), builder)
+                    dialect.identifier(tableName.substring(0, index), builder)
                             .append(_Constant.AT_CHAR);
-                    dialect.quoteIfNeed(tableName.substring(index + 1), builder);
+                    dialect.identifier(tableName.substring(index + 1), builder);
                 } else {
                     throw MySQLHints.hintTableNameError(tableName);
                 }
@@ -406,10 +406,10 @@ abstract class MySQLHints implements _MySQLHint {
             final _Dialect dialect = context.dialect();
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                dialect.quoteIfNeed(queryBlockName, builder);
+                dialect.identifier(queryBlockName, builder);
             }
             builder.append(_Constant.SPACE);
-            dialect.quoteIfNeed(this.tableName, builder)
+            dialect.identifier(this.tableName, builder)
                     .append(_Constant.SPACE);
             final List<String> indexNameList = this.indexNameList;
             final int size = indexNameList.size();
@@ -417,7 +417,7 @@ abstract class MySQLHints implements _MySQLHint {
                 if (i > 0) {
                     builder.append(_Constant.SPACE_COMMA_SPACE);
                 }
-                dialect.quoteIfNeed(indexNameList.get(i), builder);
+                dialect.identifier(indexNameList.get(i), builder);
             }
             builder.append(_Constant.SPACE_RIGHT_PAREN);
         }
@@ -458,7 +458,7 @@ abstract class MySQLHints implements _MySQLHint {
             final _Dialect dialect = context.dialect();
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
-                dialect.quoteIfNeed(queryBlockName, builder);
+                dialect.identifier(queryBlockName, builder);
             }
             builder.append(_Constant.SPACE);
 

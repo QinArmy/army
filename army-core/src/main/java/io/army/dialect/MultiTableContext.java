@@ -77,7 +77,7 @@ abstract class MultiTableContext extends StmtContext implements _StmtContext {
             final Map<String, String> aliasToSafeAlias = getAliasToSafeAlias();
             safeAlias = aliasToSafeAlias.get(alias);
             if (safeAlias == null) {
-                safeAlias = this.dialect.quoteIfNeed(alias);
+                safeAlias = this.dialect.identifier(alias);
                 aliasToSafeAlias.put(alias, safeAlias);
             }
         }
@@ -110,7 +110,7 @@ abstract class MultiTableContext extends StmtContext implements _StmtContext {
             final Map<String, String> aliasToSafeAlias = getAliasToSafeAlias();
             safeTableAlias = aliasToSafeAlias.get(tableAlias);
             if (safeTableAlias == null) {
-                safeTableAlias = this.dialect.quoteIfNeed(tableAlias);
+                safeTableAlias = this.dialect.identifier(tableAlias);
                 aliasToSafeAlias.put(tableAlias, safeTableAlias);
             }
         }

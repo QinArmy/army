@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-public abstract class _AbstractFieldValuesGenerator implements FieldValueGenerator {
+public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenerator {
 
     @Override
     public final void generate(final TableMeta<?> table, final IDomain domain

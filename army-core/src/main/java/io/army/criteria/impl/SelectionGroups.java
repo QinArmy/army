@@ -285,7 +285,7 @@ abstract class SelectionGroups {
             final StringBuilder builder = context.sqlBuilder();
 
             final _Dialect dialect = context.dialect();
-            final String safeAlias = dialect.quoteIfNeed(this.derivedAlias);
+            final String safeAlias = dialect.identifier(this.derivedAlias);
             final int size = selectionList.size();
             Selection selection;
             String safeFieldAlias;
@@ -294,7 +294,7 @@ abstract class SelectionGroups {
                     builder.append(_Constant.SPACE_COMMA);
                 }
                 selection = selectionList.get(i);
-                safeFieldAlias = dialect.quoteIfNeed(selection.alias());
+                safeFieldAlias = dialect.identifier(selection.alias());
                 builder.append(_Constant.SPACE)
                         .append(safeAlias)
                         .append(_Constant.POINT)

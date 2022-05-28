@@ -43,7 +43,7 @@ public abstract class _DdlDialect implements DdlDialect {
             if (i > 0) {
                 builder.append(_Constant.SPACE_COMMA_SPACE);
             }
-            dialect.quoteIfNeed(tableList.get(i).tableName(), builder);
+            dialect.identifier(tableList.get(i).tableName(), builder);
         }
         sqlList.add(builder.toString());
     }
@@ -310,20 +310,20 @@ public abstract class _DdlDialect implements DdlDialect {
                     builder.append(" ,\n\tPRIMARY KEY");
                 } else {
                     builder.append(" ,\n\tCONSTRAINT ");
-                    dialect.quoteIfNeed(indexName, builder);
+                    dialect.identifier(indexName, builder);
                 }
             } else if (index.unique()) {
                 builder.append(" ,\n\tUNIQUE ");
-                dialect.quoteIfNeed(index.name(), builder);
+                dialect.identifier(index.name(), builder);
             } else {
                 builder.append(" ,\n\tINDEX ");
-                dialect.quoteIfNeed(index.name(), builder);
+                dialect.identifier(index.name(), builder);
             }
             final String type;
             type = index.type();
             if (_StringUtils.hasText(type)) {
                 builder.append(" USING ");
-                dialect.quoteIfNeed(index.type(), builder);
+                dialect.identifier(index.type(), builder);
             }
             builder.append(_Constant.SPACE_LEFT_PAREN);// index left bracket
 
@@ -337,7 +337,7 @@ public abstract class _DdlDialect implements DdlDialect {
                 indexField = indexFieldList.get(i);
 
                 builder.append(_Constant.SPACE);
-                dialect.quoteIfNeed(indexField.columnName(), builder);
+                dialect.identifier(indexField.columnName(), builder);
 
                 final Boolean asc = indexField.fieldAsc();
                 if (asc != null) {

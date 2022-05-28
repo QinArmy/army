@@ -19,6 +19,6 @@ public interface GeneratedKeyStmt extends SimpleStmt {
 
     List<IDomain> domainList();
 
-    PrimaryFieldMeta<?> idMeta();
+    PrimaryFieldMeta<?> idField();
 
 }

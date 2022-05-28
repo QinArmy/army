@@ -76,7 +76,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             stmt = handleStandardValueInsert((_ValuesInsert) insert, visible);
         } else {
             assertDialectInsert(insert);
-            stmt = handleDialectInsert(insert, visible);
+            throw new UnsupportedOperationException();
         }
         return stmt;
     }
@@ -87,20 +87,18 @@ public abstract class _AbstractDialect implements ArmyDialect {
     @Override
     public final Stmt update(final Update update, final Visible visible) {
         update.prepared();
-        _DmlUtils.assertUpdateSetAndWhereClause((_Update) update);
-        final _UpdateContext context;
         if (update instanceof StandardStatement) {
             // assert implementation is standard implementation.
             _SQLCounselor.assertStandardUpdate(update);
-            final StandardUpdateContext singleContext;
-            singleContext = StandardUpdateContext.create((_SingleUpdate) update, this, visible);
-            final _SetBlock childBlock = singleContext.childBlock();
-            if (childBlock == null || childBlock.leftItemList().size() == 0) {
-                standardSingleTableUpdate(singleContext);
+            final _SingleUpdate s = (_SingleUpdate) update;
+            final TableMeta<?> table = s.table();
+            if (!(table instanceof ChildTableMeta)) {
+
+            } else if (s.childItemPairList().size() == 0) {
+
             } else {
-                standardChildUpdate(singleContext);
+
             }
-            context = singleContext;
         } else if (update instanceof _SingleUpdate) {
             // assert implementation class is legal
             assertDialectUpdate(update);
@@ -247,7 +245,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     @Override
-    public final String quoteIfNeed(final String identifier) {
+    public final String identifier(final String identifier) {
         final String safeIdentifier;
         if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
             safeIdentifier = this.identifierQuote + identifier + this.identifierQuote;
@@ -258,7 +256,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     @Override
-    public final StringBuilder quoteIfNeed(final String identifier, final StringBuilder builder) {
+    public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
         if (!this.identifierCaseSensitivity || this.keyWordSet.contains(identifier)) {
             builder.append(this.identifierQuote)
                     .append(identifier)
@@ -286,7 +284,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     @Override
-    public final FieldValueGenerator getFieldValueGenerator() {
+    public final _FieldValueGenerator getFieldValueGenerator() {
         return this.environment.fieldValuesGenerator();
     }
 
@@ -330,7 +328,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                         .append(_Constant.POINT);
             }
             final FieldMeta<?> version = table.getField(_MetaBridge.VERSION);
-            final String versionColumnName = dialect.quoteIfNeed(version.columnName());
+            final String versionColumnName = dialect.identifier(version.columnName());
             sqlBuilder.append(versionColumnName)
                     .append(_Constant.SPACE_EQUAL_SPACE)
                     .append(safeTableAlias)
@@ -405,9 +403,10 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     /*################################## blow update private method ##################################*/
 
-    protected Stmt handleDialectInsert(Insert insert, Visible visible) {
+    protected void dialectValueInsert(_ValueInsertContext context, _ValuesInsert insert) {
         throw new UnsupportedOperationException();
     }
+
 
     protected void dialectSingleUpdate(_SingleUpdateContext context) {
         throw new UnsupportedOperationException();
@@ -433,7 +432,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     /**
      * @see #handleStandardUpdate(_SingleUpdate, Visible)
      */
-    protected SimpleStmt standardChildUpdate(_DomainUpdateContext context) {
+    protected Stmt standardChildUpdate(_SingleUpdate update, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
@@ -449,6 +448,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     protected void handleDialectTableItem(TableItem tableItem, _SqlContext context) {
 
     }
+
 
     /**
      * @see #selectStmt(Select, _SqlContext)
@@ -513,7 +513,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             subQuery = (SubQuery) cte.subStatement();
 
             sqlBuilder.append(_Constant.SPACE);
-            this.quoteIfNeed(cte.name(), sqlBuilder);// cte name
+            this.identifier(cte.name(), sqlBuilder);// cte name
 
             if (columnAliasList.size() > 0) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
@@ -522,7 +522,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                     if (aliasCount > 0) {
                         sqlBuilder.append(_Constant.SPACE_COMMA);
                     }
-                    this.quoteIfNeed(columnAlias, sqlBuilder);
+                    this.identifier(columnAlias, sqlBuilder);
                     aliasCount++;
                 }
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -580,13 +580,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 }
                 builder.append(_Constant.SPACE);
 
-                dialect.quoteIfNeed(((TableMeta<?>) tableItem).tableName(), builder)
+                dialect.identifier(((TableMeta<?>) tableItem).tableName(), builder)
                         .append(_Constant.SPACE_AS_SPACE);
-                dialect.quoteIfNeed(block.alias(), builder);
+                dialect.identifier(block.alias(), builder);
             } else if (tableItem instanceof SubQuery) {
                 this.subQueryStmt((SubQuery) tableItem, context);
                 builder.append(_Constant.SPACE_AS_SPACE);
-                dialect.quoteIfNeed(block.alias(), builder);
+                dialect.identifier(block.alias(), builder);
             } else {
                 this.handleDialectTableItem(tableItem, context);
             }
@@ -666,10 +666,10 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
             builder.append(_Constant.SPACE);
 
-            dialect.quoteIfNeed(block.alias(), builder)
+            dialect.identifier(block.alias(), builder)
                     .append(_Constant.POINT);
 
-            dialect.quoteIfNeed(visibleField.columnName(), builder)
+            dialect.identifier(visibleField.columnName(), builder)
                     .append(_Constant.SPACE_EQUAL_SPACE)
                     .append(dialect.literal(visibleField, visibleValue));
 
@@ -688,14 +688,14 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         // 1. child table name
         builder.append(_Constant.SPACE);
-        dialect.quoteIfNeed(childBlock.table().tableName(), builder)
+        dialect.identifier(childBlock.table().tableName(), builder)
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeChildTableAlias);
 
         //2. join clause
         builder.append(_Constant.SPACE_JOIN_SPACE);
         // append parent table name
-        dialect.quoteIfNeed(parentBlock.table().tableName(), builder)
+        dialect.identifier(parentBlock.table().tableName(), builder)
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeParentTableAlias);
 
@@ -788,7 +788,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 .append(safeTableAlias)
                 .append(_Constant.POINT);
 
-        dialect.quoteIfNeed(field.columnName(), builder)
+        dialect.identifier(field.columnName(), builder)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(table.discriminatorValue());
     }
@@ -824,7 +824,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             }
 
 
-            dialect.quoteIfNeed(field.columnName(), sqlBuilder)
+            dialect.identifier(field.columnName(), sqlBuilder)
                     .append(_Constant.SPACE_EQUAL_SPACE)
                     .append(dialect.literal(field, visibleValue));
         }
@@ -1475,7 +1475,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 sqlBuilder.append(safeTableAlias)
                         .append(_Constant.POINT);
             }
-            sqlBuilder.append(dialect.quoteIfNeed(field.columnName()));
+            sqlBuilder.append(dialect.identifier(field.columnName()));
             index++;
         }
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -1510,15 +1510,29 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #insert(Insert, Visible)
      */
     private Stmt handleStandardValueInsert(final _ValuesInsert insert, final Visible visible) {
-        final StandardValueInsertContext context;
-        context = StandardValueInsertContext.create(insert, this, visible);
-        _DmlUtils.appendStandardValueInsert(context, this.environment.fieldValuesGenerator()); // append parent insert to parent context.
-        context.onParentEnd(); // parent end event
-        final _InsertBlock childBlock = context.childBlock();
-        if (childBlock != null) {
-            _DmlUtils.appendStandardValueInsert(context, null); // append child insert to child context.
+        final _ValueInsertContext nonChildContext;
+        nonChildContext = ValueInsertContext.nonChild(insert, this, visible);
+
+        _DmlUtils.standardInertIntoTable(nonChildContext);
+
+        nonChildContext.appendFieldList();
+        nonChildContext.appendValueList();
+        nonChildContext.appendReturnIdIfNeed();
+
+        final Stmt stmt;
+        if (insert.table() instanceof ChildTableMeta) {
+            final _ValueInsertContext childContext;
+            childContext = ValueInsertContext.child(insert, this, visible);
+
+            _DmlUtils.standardInertIntoTable(childContext);
+            childContext.appendFieldList();
+            childContext.appendValueList();
+
+            stmt = Stmts.pair(nonChildContext.build(), childContext.build());
+        } else {
+            stmt = nonChildContext.build();
         }
-        return context.build();
+        return stmt;
     }
 
 

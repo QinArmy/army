@@ -1,16 +1,16 @@
 package io.army.dialect;
 
 import io.army.criteria.NamedParam;
+import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.mapping._ArmyNoInjectionMapping;
-import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
+import io.army.stmt.StmtParams;
 import io.army.stmt.StrictParamValue;
 
 import java.util.*;
 import java.util.function.Function;
 
-abstract class StmtContext implements _StmtContext {
+abstract class StmtContext implements _StmtContext, StmtParams {
 
     static final String SPACE_PLACEHOLDER = " ?";
 
@@ -20,7 +20,11 @@ abstract class StmtContext implements _StmtContext {
 
     protected final StringBuilder sqlBuilder;
 
-    protected final List<ParamValue> paramList;
+    private final List<ParamValue> paramList;
+
+    private boolean hasStrictParam;
+
+    boolean hasNamedParam;
 
     protected StmtContext(ArmyDialect dialect, Visible visible) {
         this.dialect = dialect;
@@ -61,14 +65,19 @@ abstract class StmtContext implements _StmtContext {
 
     @Override
     public final void appendParam(final ParamValue paramValue) {
-        if (this instanceof _InsertBlock
-                && !(paramValue instanceof StrictParamValue || paramValue instanceof NamedParam)) {
-            this.valueInsertAppendParam(paramValue);
-        } else {
-            this.sqlBuilder.append(SPACE_PLACEHOLDER);
-            this.paramList.add(paramValue);
+        if (!this.hasStrictParam && paramValue instanceof StrictParamValue) {
+            this.hasStrictParam = true;
         }
+        if (!this.hasNamedParam && paramValue instanceof NamedParam && !(this instanceof _ValueInsertContext)) {
+            this.hasNamedParam = true;
+        }
+        this.sqlBuilder.append(SPACE_PLACEHOLDER);
+        this.paramList.add(paramValue);
+    }
 
+    @Override
+    public final boolean hasStrictParam() {
+        return this.hasStrictParam;
     }
 
     @Override
@@ -76,32 +85,34 @@ abstract class StmtContext implements _StmtContext {
         return this.visible;
     }
 
+    @Override
+    public final String sql() {
+        return this.sqlBuilder.toString();
+    }
+
+    @Override
+    public final List<ParamValue> paramList() {
+        List<ParamValue> paramList = this.paramList;
+        if (paramList instanceof ProxyList) {
+            paramList = ((ProxyList) paramList).paramList;
+        }
+        return paramList;
+    }
+
+    @Override
+    public List<Selection> selectionList() {
+        throw new UnsupportedOperationException();
+    }
+
 
     List<ParamValue> createParamList() {
         return new ArrayList<>();
     }
 
-    private void valueInsertAppendParam(final ParamValue paramValue) {
-        final ParamMeta paramMeta = paramValue.paramMeta();
-        if (paramMeta.mappingType() instanceof _ArmyNoInjectionMapping) {
-            final Object value;
-            value = paramValue.value();
-            if (value == null) {
-                this.sqlBuilder.append(_Constant.SPACE_NULL);
-            } else {
-                this.sqlBuilder.append(_Constant.SPACE)
-                        .append(this.dialect.literal(paramMeta, value));
-            }
-        } else {
-            this.sqlBuilder.append(SPACE_PLACEHOLDER);
-            this.paramList.add(paramValue);
-        }
-    }
-
 
     static final class ProxyList implements List<ParamValue> {
 
-        final List<ParamValue> paramList = new ArrayList<>();
+        private final List<ParamValue> paramList = new ArrayList<>();
 
         private final Function<NamedParam, ParamValue> function;
 
