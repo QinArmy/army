@@ -87,17 +87,15 @@ public abstract class _AbstractDialect implements ArmyDialect {
     @Override
     public final Stmt update(final Update update, final Visible visible) {
         update.prepared();
+        final Stmt stmt;
         if (update instanceof StandardStatement) {
             // assert implementation is standard implementation.
             _SQLCounselor.assertStandardUpdate(update);
             final _SingleUpdate s = (_SingleUpdate) update;
-            final TableMeta<?> table = s.table();
-            if (!(table instanceof ChildTableMeta)) {
-
-            } else if (s.childItemPairList().size() == 0) {
-
+            if (s.table() instanceof ChildTableMeta) {
+                stmt = this.standardChildUpdate(s, visible);
             } else {
-
+                this.standardSingleTableUpdate(s, visible);
             }
         } else if (update instanceof _SingleUpdate) {
             // assert implementation class is legal
@@ -1553,55 +1551,71 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    /**
-     * @see #handleStandardUpdate(_SingleUpdate, Visible)
-     * @see #standardChildUpdate(_DomainUpdateContext)
-     */
-    private void standardSingleTableUpdate(final StandardUpdateContext context) {
-        final _SetBlock childContext = context.childBlock();
-        if (childContext != null && childContext.leftItemList().size() > 0) {
-            throw new IllegalArgumentException("context error");
+    private Stmt standardSingleTableUpdate(final _SingleUpdate update, final Visible visible) {
+        if (!(update instanceof StandardStatement)) {
+            throw new IllegalArgumentException();
         }
-        final _Dialect dialect = context.dialect;
+        final SingleTableMeta<?> table = (SingleTableMeta<?>) update.table();
+        if (update.childItemPairList().size() > 0) {
+            throw _Exceptions.existsChildFieldInSetClause(table);
+        }
+        final List<_ItemPair> itemPairList;
+        itemPairList = update.itemPairList();
+        final int itemPairSize = itemPairList.size();
+        if (itemPairSize == 0) {
+            throw _Exceptions.setClauseNotExists();
+        }
 
-        final SingleTableMeta<?> table = context.table;
+        final SingleUpdateContext context;
+        context = SingleUpdateContext.create(update, this, visible);
+
         final StringBuilder sqlBuilder = context.sqlBuilder;
         // 1. UPDATE clause
         sqlBuilder.append(_Constant.UPDATE)
                 .append(_Constant.SPACE);
 
-        dialect.safeObjectName(table.tableName(), sqlBuilder);
+        this.safeObjectName(table.tableName(), sqlBuilder);
 
-
-        if (dialect.tableAliasAfterAs()) {
+        //1.2 table alias
+        if (this.tableAliasAfterAs()) {
             sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-        }
-        sqlBuilder.append(_Constant.SPACE)
-                .append(context.safeTableAlias);
-
-        final List<TableField> conditionFields;
-        //2. set clause
-        conditionFields = this.setClause(true, context, context);
-        //3. where clause
-        this.dmlWhereClause(context);
-
-        //3.1 append discriminator predicate
-        if (childContext == null) {
-            if (table instanceof ParentTableMeta) {
-                this.discriminator(table, context.safeTableAlias, context);
-            }
         } else {
-            this.discriminator(childContext.table(), context.safeTableAlias, context);
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        sqlBuilder.append(context.safeTableAlias);
+
+        //2. set clause
+        sqlBuilder.append(_Constant.SPACE_SET);
+        for (int i = 0; i < itemPairSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            itemPairList.get(i).appendItemPair(context);
+        }
+        //3. where clause
+        this.dmlWhereClause(update.predicateList(), context);
+
+        //3.1 append condition update field
+        context.appendConditionFields();
+
+        //3.2 append discriminator predicate
+        if (table instanceof ParentTableMeta) {
+            this.discriminator(table, context.safeTableAlias, context);
         }
 
-        //3.2 append visible
+        //3.3 append visible
         if (table.containField(_MetaBridge.VISIBLE)) {
             this.visiblePredicate(table, context.safeTableAlias, context);
         }
-        //3.3 append condition update fields
-        if (conditionFields.size() > 0) {
-            this.conditionUpdate(context.safeTableAlias, conditionFields, context);
+
+
+        final Stmt stmt;
+        if (update instanceof _BatchDml) {
+            stmt = context.build(((_BatchDml) update).paramList());
+        } else {
+            stmt = context.build();
         }
+        return stmt;
     }
 
     /**

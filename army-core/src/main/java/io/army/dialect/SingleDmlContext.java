@@ -1,51 +1,65 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._SingleDml;
-import io.army.lang.Nullable;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.ParentTableMeta;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.ParamValue;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.DmlStmtParams;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.List;
 
-abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Block {
+abstract class SingleDmlContext extends StmtContext implements _DmlContext, _SingleTableContext, DmlStmtParams {
 
-    final SingleTableMeta<?> table;
+    final TableMeta<?> table;
 
     final String tableAlias;
 
     final String safeTableAlias;
 
-    final List<_Predicate> predicateList;
+    final boolean hasVersion;
 
-    final boolean multiTableUpdateChild;
+    private final String safeParentAlias;
 
 
     SingleDmlContext(_SingleDml dml, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
-        final TableMeta<?> table = dml.table();
-        final String tableAlias = dml.tableAlias();
-        if (table instanceof ChildTableMeta) {
-            this.table = ((ChildTableMeta<?>) table).parentMeta();
-            this.tableAlias = _DialectUtils.parentAlias(tableAlias);
-            this.safeTableAlias = this.tableAlias;
+
+        this.table = dml.table();
+        this.tableAlias = dml.tableAlias();
+        this.safeTableAlias = dialect.identifier(this.tableAlias);
+
+        if (this.table instanceof ChildTableMeta) {
+            this.safeParentAlias = dialect.identifier(_DialectUtils.parentAlias(this.tableAlias));
         } else {
-            this.table = (SingleTableMeta<?>) table;
-            this.tableAlias = tableAlias;
-            this.safeTableAlias = dialect.identifier(tableAlias);
+            this.safeParentAlias = null;
         }
-        this.predicateList = dml.predicateList();
-        this.multiTableUpdateChild = dialect.multiTableUpdateChild();
+        this.hasVersion = _DmlUtils.hasOptimistic(dml.predicateList());
     }
 
+    SingleDmlContext(_SingleDml dml, StmtContext outerContext) {
+        super(outerContext);
+
+        this.table = dml.table();
+        this.tableAlias = dml.tableAlias();
+        this.safeTableAlias = this.dialect.identifier(this.tableAlias);
+
+        if (this.table instanceof ChildTableMeta) {
+            this.safeParentAlias = this.dialect.identifier(_DialectUtils.parentAlias(this.tableAlias));
+        } else {
+            this.safeParentAlias = null;
+        }
+        this.hasVersion = _DmlUtils.hasOptimistic(dml.predicateList());
+    }
 
     @Override
-    public final SingleTableMeta<?> table() {
+    public final TableMeta<?> table() {
         return this.table;
     }
 
@@ -60,18 +74,8 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Blo
     }
 
     @Override
-    public final List<_Predicate> predicateList() {
-        return this.predicateList;
-    }
-
-    @Override
     public final void appendField(final String tableAlias, final FieldMeta<?> field) {
-        final ChildBlock childBlock = childBlock();
-        if (childBlock == null) {
-            if (!this.tableAlias.equals(tableAlias)) {
-                throw _Exceptions.unknownColumn(tableAlias, field);
-            }
-        } else if (!childBlock.tableAlias.equals(tableAlias)) {
+        if (!this.tableAlias.equals(tableAlias)) {
             throw _Exceptions.unknownColumn(tableAlias, field);
         }
         this.appendField(field);
@@ -79,229 +83,67 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Blo
 
     @Override
     public final void appendField(final FieldMeta<?> field) {
-        final TableMeta<?> belongOf = field.tableMeta();
-        final ChildBlock childBlock;
-        if (belongOf == this.table) {// field is parent table column.
-            this.sqlBuilder
+
+        final TableMeta<?> fieldTable = field.tableMeta();
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+        final TableMeta<?> table = this.table;
+        if (fieldTable == table) {
+            sqlBuilder
                     .append(_Constant.SPACE)
                     .append(this.safeTableAlias)
                     .append(_Constant.POINT);
-
-            this.dialect.safeObjectName(field.columnName(), this.sqlBuilder);
-
-        } else if ((childBlock = childBlock()) == null || belongOf != childBlock.table) {
-            throw _Exceptions.unknownColumn(null, field);
-        } else if (this.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
-            this.sqlBuilder
-                    .append(_Constant.SPACE)
-                    .append(childBlock.safeTableAlias)
-                    .append(_Constant.POINT);
-
             this.dialect.safeObjectName(field.columnName(), sqlBuilder);
-
+        } else if (table instanceof ChildTableMeta && fieldTable == ((ChildTableMeta<?>) table).parentMeta()) {
+            // parent table filed
+            this.parentColumnFromSubQuery(field);
         } else {
-            //non multi-table update,so convert child table filed as sub query.
-            childColumnFromSubQuery(this, childBlock, field);
+            throw _Exceptions.unknownColumn(field);
         }
 
     }
+
 
     @Override
     public final SimpleStmt build() {
-        return Stmts.dml(this.sqlBuilder.toString(), this.paramList, _DmlUtils.hasOptimistic(this.predicateList));
+        if (this.hasNamedParam) {
+            throw _Exceptions.namedParamInNonBatch();
+        }
+        return Stmts.dml(this);
     }
 
-    @Nullable
-    public abstract ChildBlock childBlock();
-
-
-    protected static class ChildBlock implements _Block {
-
-        protected final ChildTableMeta<?> table;
-
-        protected final String tableAlias;
-
-        protected final String safeTableAlias;
-
-        protected final SingleDmlContext parentContext;
-
-        protected ChildBlock(ChildTableMeta<?> table, final String tableAlias, SingleDmlContext parentContext) {
-            this.table = table;
-            this.tableAlias = tableAlias;
-            this.safeTableAlias = parentContext.dialect.identifier(tableAlias);
-            this.parentContext = parentContext;
+    @Override
+    public final BatchStmt build(List<?> paramList) {
+        if (!this.hasNamedParam) {
+            throw _Exceptions.noNamedParamInBatch();
         }
+        return Stmts.batchDml(this, paramList);
+    }
 
-
-        @Override
-        public final ChildTableMeta<?> table() {
-            return this.table;
-        }
-
-        @Override
-        public final String tableAlias() {
-            return this.tableAlias;
-        }
-
-        @Override
-        public final String safeTableAlias() {
-            return this.safeTableAlias;
-        }
-
-
-        @Override
-        public final void appendField(final String tableAlias, final FieldMeta<?> field) {
-            if (!this.tableAlias.equals(tableAlias)) {
-                throw _Exceptions.unknownColumn(tableAlias, field);
-            }
-            this.appendField(field);
-        }
-
-        @Override
-        public final void appendField(final FieldMeta<?> field) {
-            final TableMeta<?> belongOf = field.tableMeta();
-            final StringBuilder sqlBuilder = this.parentContext.sqlBuilder;
-            final _Dialect dialect = this.parentContext.dialect;
-
-            if (belongOf == this.table) {// field is child table column.
-                sqlBuilder
-                        .append(_Constant.SPACE)
-                        .append(this.safeTableAlias)
-                        .append(_Constant.POINT);
-                dialect.safeObjectName(field.columnName(), sqlBuilder);
-            } else if (belongOf == this.parentContext.table) {// field is parent table column.
-                if (this.parentContext.multiTableUpdateChild) {// parent and child table in multi-table update statement,eg: MySQL multi-table update
-                    sqlBuilder
-                            .append(_Constant.SPACE)
-                            .append(this.parentContext.safeTableAlias)
-                            .append(_Constant.POINT);
-                    dialect.safeObjectName(field.columnName(), sqlBuilder);
-                } else {
-                    //non multi-table update,so convert parent filed as sub query.
-                    parentColumnFromSubQuery(this, field);
-                }
-            } else {
-                throw _Exceptions.unknownColumn(null, field);
-            }
-        }
-
-
-        @Override
-        public final _Dialect dialect() {
-            return this.parentContext.dialect;
-        }
-
-        @Override
-        public final StringBuilder sqlBuilder() {
-            //for dml statement,parent update and child update must in same statement.
-            return this.parentContext.sqlBuilder;
-        }
-
-        @Override
-        public final void appendParam(ParamValue paramValue) {
-            //for dml statement,parent update and child update must in same statement.
-            this.parentContext.appendParam(paramValue);
-        }
-
-        @Override
-        public final Visible visible() {
-            return this.parentContext.visible;
-        }
-
-        @Override
-        public String toString() {
-            return this.parentContext instanceof _DomainUpdateContext
-                    ? "single update child context"
-                    : "single delete child context";
-        }
-
-
-    } // ChildBlock
-
-
-    private static void childColumnFromSubQuery(final _Block parentContext, final _Block childBlock
-            , final FieldMeta<?> childField) {
-
-        if (!(parentContext.table() instanceof ParentTableMeta)) {
-            throw new IllegalArgumentException("parentContext error");
-        }
-
-        final String childSafeTableAlias = _Constant.FORBID_ALIAS + "temp_c_of_" + childBlock.tableAlias();
-        final _Dialect dialect = parentContext.dialect();
-        // convert for validate childBlock
-        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childBlock.table();
-
-        final StringBuilder sqlBuilder = parentContext.sqlBuilder();
-        sqlBuilder
-                //below sub query left bracket
-                .append(_Constant.SPACE)
-                .append(_Constant.LEFT_PAREN)
-
-                .append(_Constant.SPACE)
-                .append(_Constant.SELECT)
-                .append(_Constant.SPACE)
-
-                .append(childSafeTableAlias)
-                .append(_Constant.POINT);
-
-        dialect.safeObjectName(childField.columnName(), sqlBuilder)
-                .append(_Constant.SPACE)
-                .append(_Constant.SPACE_FROM)
-                .append(_Constant.SPACE);
-
-        dialect.safeObjectName(childTable.tableName(), sqlBuilder);
-
-        if (dialect.tableAliasAfterAs()) {
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(_Constant.SPACE_AS_SPACE);
-        }
-        sqlBuilder.append(_Constant.SPACE)
-                .append(childSafeTableAlias);
-
-        sqlBuilder.append(_Constant.SPACE)
-                .append(_Constant.SPACE_WHERE)
-                .append(_Constant.SPACE)
-
-                .append(childSafeTableAlias)
-                .append(_Constant.POINT)
-                .append(_MetaBridge.ID)
-
-                .append(_Constant.SPACE_EQUAL_SPACE)
-
-                .append(parentContext.safeTableAlias())
-                .append(_Constant.POINT)
-                .append(_MetaBridge.ID)
-
-                //below sub query right bracket
-                .append(_Constant.SPACE)
-                .append(_Constant.RIGHT_BRACKET);
+    @Override
+    public final boolean hasVersion() {
+        return this.hasVersion;
     }
 
 
-    private static void parentColumnFromSubQuery(final _Block childContext, final FieldMeta<?> parentField) {
-        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childContext.table();
-        final String parentSafeTable = _Constant.FORBID_ALIAS + "temp_p_of_" + childContext.tableAlias();
+    final void parentColumnFromSubQuery(final FieldMeta<?> parentField) {
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) this.table;
+        final String safeParentAlias = this.safeParentAlias;
+        assert safeParentAlias != null;
 
-        final _Dialect dialect = childContext.dialect();
-        final ParentTableMeta<?> parentTable = childTable.parentMeta();
-        final StringBuilder sqlBuilder = childContext.sqlBuilder();
+        final ArmyDialect dialect = this.dialect;
+        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentField.tableMeta();
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+
 
         sqlBuilder
                 //below sub query left bracket
-                .append(_Constant.SPACE)
-                .append(_Constant.LEFT_PAREN)
-
-                .append(_Constant.SPACE)
-                .append(_Constant.SELECT)
-                .append(_Constant.SPACE)
-
+                .append(_Constant.SPACE_LEFT_PAREN)
+                .append(_Constant.SPACE_SELECT_SPACE)
                 //below target parent column
-                .append(parentSafeTable)
+                .append(safeParentAlias)
                 .append(_Constant.POINT);
 
         dialect.safeObjectName(parentField.columnName(), sqlBuilder)
-
-                .append(_Constant.SPACE)
                 .append(_Constant.SPACE_FROM)
                 .append(_Constant.SPACE);
 
@@ -309,47 +151,41 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Blo
 
 
         if (dialect.tableAliasAfterAs()) {
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(_Constant.SPACE_AS_SPACE);
+            sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+        } else {
+            sqlBuilder.append(_Constant.SPACE);
         }
-        sqlBuilder.append(_Constant.SPACE)
-                .append(parentSafeTable);
+        sqlBuilder.append(safeParentAlias);
 
         final FieldMeta<?> discriminator = parentTable.discriminator();
 
-        sqlBuilder.append(_Constant.SPACE)
-                //below where clause
-                .append(_Constant.SPACE_WHERE)
+        //below where clause
+        sqlBuilder.append(_Constant.SPACE_WHERE)
                 .append(_Constant.SPACE)
 
-                .append(parentSafeTable)
+                .append(safeParentAlias)
                 .append(_Constant.POINT)
                 .append(_MetaBridge.ID)
 
                 .append(_Constant.SPACE_EQUAL_SPACE)
 
                 //below child table id
-                .append(childContext.safeTableAlias())
+                .append(this.safeTableAlias)
                 .append(_Constant.POINT)
                 .append(_MetaBridge.ID)
 
-                .append(_Constant.SPACE_AND)
-                .append(_Constant.SPACE)
+                .append(_Constant.SPACE_AND_SPACE)
 
                 //below parent table discriminator
-                .append(parentSafeTable)
+                .append(safeParentAlias)
                 .append(_Constant.POINT);
 
         dialect.safeObjectName(discriminator.columnName(), sqlBuilder)
 
                 .append(_Constant.SPACE_EQUAL_SPACE)
-
-                //below child table discriminator literal
-                .append(dialect.literal(discriminator, childTable.discriminatorValue()))
-
-                //below sub query right bracket
-                .append(_Constant.SPACE)
-                .append(_Constant.RIGHT_BRACKET);
+                .append(childTable.discriminatorValue())
+                //below sub query right paren
+                .append(_Constant.SPACE_RIGHT_PAREN);
 
 
     }

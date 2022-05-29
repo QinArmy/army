@@ -9,7 +9,6 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.dialect.Dialect;
-import io.army.dialect._Dialect;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
@@ -148,8 +147,17 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 
-    public static MetaException dontSupportOnlyDefault(_Dialect dialect) {
+    public static MetaException dontSupportOnlyDefault(Dialect dialect) {
         return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
+    }
+
+    public static CriteriaException setClauseNotExists() {
+        return new CriteriaException("Not found SET clause,please SET clause");
+    }
+
+    public static CriteriaException existsChildFieldInSetClause(SingleTableMeta<?> table) {
+        String m = String.format("%s present unknown field in SET clause.", table);
+        return new CriteriaException(m);
     }
 
     public static CriteriaException noWhereClause(_SqlContext context) {
@@ -317,9 +325,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException namedParamInNonBatch(NamedParam param) {
-        String m = String.format("Couldn't exist named parameter[%s] in non-batch statement.", param.name());
-        return new CriteriaException(m);
+    public static CriteriaException namedParamInNonBatch() {
+        return new CriteriaException("Couldn't exist named parameter in non-batch statement.");
+    }
+
+    public static CriteriaException noNamedParamInBatch() {
+        return new CriteriaException("Not found named parameter in batch statement.");
     }
 
     public static CriteriaException namedParamsInNonBatch(NamedElementParam param) {

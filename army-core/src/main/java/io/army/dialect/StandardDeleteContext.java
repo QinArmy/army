@@ -46,7 +46,7 @@ final class StandardDeleteContext extends SingleDmlContext implements _SingleDel
 
     @Override
     public boolean multiTableUpdateChild() {
-        return this.multiTableUpdateChild;
+        return this.supportMultiTableDml;
     }
 
     @Override

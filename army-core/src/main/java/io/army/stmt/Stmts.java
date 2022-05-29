@@ -66,6 +66,10 @@ public abstract class Stmts {
         return new MinDmlStmt(sql, paramList, hasOptimistic);
     }
 
+    public static SimpleStmt dml(DmlStmtParams params) {
+        return null;
+    }
+
 
     public static SimpleStmt selectStmt(String sql, List<ParamValue> paramList, List<Selection> selectionList) {
         return new SelectStmt(sql, paramList, selectionList);
@@ -79,8 +83,8 @@ public abstract class Stmts {
         return new PairStmtImpl(parent, child);
     }
 
-    public static BatchStmt batchDml(SimpleStmt stmt, List<?> paramWrapperList) {
-        final List<ParamValue> paramGroup = stmt.paramGroup();
+    public static BatchStmt batchDml(final DmlStmtParams params, List<?> paramWrapperList) {
+        final List<ParamValue> paramGroup = params.paramList();
         final int paramSize = paramGroup.size();
         final List<List<ParamValue>> groupList = new ArrayList<>(paramWrapperList.size());
         final ReadAccessor accessor;
@@ -143,7 +147,7 @@ public abstract class Stmts {
         if (namedParam == null) {
             throw new CriteriaException("Not found any named parameter in batch statement.");
         }
-        return new MinBatchDmlStmt(stmt.sql(), groupList, stmt.hasOptimistic());
+        return new MinBatchDmlStmt(params.sql(), groupList, params.hasVersion());
     }
 
 

@@ -20,6 +20,8 @@ public interface _Constant {
 
     String SELECT = "SELECT";
 
+    String SPACE_SELECT_SPACE = " SELECT ";
+
     String UPDATE = "UPDATE";
 
     String DELETE = "DELETE";

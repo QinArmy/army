@@ -137,7 +137,7 @@ class MySQL extends _AbstractDialect {
     }
 
     @Override
-    public final boolean multiTableUpdateChild() {
+    public final boolean supportMultiUpdate() {
         //MySQL use multi-table update syntax update/delete child table.
         return true;
     }

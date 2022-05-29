@@ -1,156 +1,132 @@
 package io.army.dialect;
 
-import io.army.criteria.*;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._SingleDml;
+import io.army.annotation.UpdateMode;
+import io.army.criteria.DataField;
+import io.army.criteria.QualifiedField;
+import io.army.criteria.TableField;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmts;
+import io.army.stmt.DmlStmtParams;
 import io.army.util._Exceptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
-final class SingleUpdateContext extends StmtContext implements _SingleUpdateContext {
+final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdateContext, DmlStmtParams {
 
-    static SingleUpdateContext create(_SingleUpdate update, ArmyDialect dialect, Visible visible) {
-        return new SingleUpdateContext(update, dialect, visible);
+    static SingleUpdateContext create(_SingleUpdate stmt, ArmyDialect dialect, Visible visible) {
+        return new SingleUpdateContext(stmt, dialect, visible);
+    }
+
+    static SingleUpdateContext create(_SingleUpdate stmt, StmtContext outerContext) {
+        return new SingleUpdateContext(stmt, outerContext);
     }
 
 
-    private final TableMeta<?> table;
+    private List<TableField> conditionFieldList;
 
-    private final String tableAlias;
+    private SingleUpdateContext(_SingleUpdate stmt, ArmyDialect dialect, Visible visible) {
+        super(stmt, dialect, visible);
+    }
 
-    private final String safeTableAlias;
-
-    private final List<? extends SetLeftItem> leftItemList;
-
-    private final List<? extends SetRightItem> rightItemList;
-
-    private final List<_Predicate> predicateList;
-
-    private final boolean supportAlias;
-
-    private final _SingleUpdate statement;
+    private SingleUpdateContext(_SingleUpdate stmt, StmtContext outerContext) {
+        super(stmt, outerContext);
+    }
 
 
-    private SingleUpdateContext(_SingleUpdate update, ArmyDialect dialect, Visible visible) {
-        super(dialect, visible);
-        this.table = update.table();
-        this.tableAlias = update.tableAlias();
-        if (this.table instanceof ChildTableMeta) {
-            this.safeTableAlias = dialect.identifier(_DialectUtils.parentAlias(this.tableAlias));
-        } else {
-            this.safeTableAlias = dialect.identifier(this.tableAlias);
+    @Override
+    public void appendSetLeftItem(final DataField dataField) {
+        if (!(dataField instanceof TableField)) {
+            throw _Exceptions.immutableField(dataField);
         }
-        this.leftItemList = update.leftItemList();
-
-        this.rightItemList = update.rightItemList();
-        this.predicateList = update.predicateList();
-        this.supportAlias = dialect.setClauseTableAlias();
-        this.statement = update;
-    }
-
-
-    @Override
-    public _SqlContext context() {
-        return this;
-    }
-
-    @Override
-    public List<? extends SetLeftItem> leftItemList() {
-        return this.leftItemList;
-    }
-
-    @Override
-    public List<? extends SetRightItem> rightItemList() {
-        return this.rightItemList;
-    }
-
-    @Override
-    public String safeTableAlias(final TableMeta<?> table, final String alias) {
-        if (table != this.table || !this.tableAlias.equals(alias)) {
-            throw _Exceptions.unknownTable(table, alias);
-        }
-        return this.safeTableAlias;
-    }
-
-    @Override
-    public String validateField(final TableField field) {
-        final TableMeta<?> table = this.table, fieldTable;
-        fieldTable = field.tableMeta();
-        if (table instanceof ChildTableMeta) {
-            if (fieldTable != ((ChildTableMeta<?>) table).parentMeta()) {
-                throw _Exceptions.unknownColumn(field);
-            }
-        } else if (fieldTable != table) {
+        final TableField field = (TableField) dataField;
+        if (field.tableMeta() != this.table) {
             throw _Exceptions.unknownColumn(field);
-        } else if (field instanceof QualifiedField
+        }
+        final UpdateMode updateMode = field.updateMode();
+        if (updateMode == UpdateMode.IMMUTABLE) {
+            throw _Exceptions.immutableField(field);
+        }
+        if (field instanceof QualifiedField
                 && !this.tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {
             throw _Exceptions.unknownColumn(field);
         }
-        return this.safeTableAlias;
-    }
-
-    @Override
-    public boolean supportTableAlias() {
-        return this.supportAlias;
-    }
-
-    @Override
-    public boolean supportRow() {
-        return this.dialect.setClauseSupportRow();
-    }
-
-    @Override
-    public void appendField(final String tableAlias, final FieldMeta<?> field) {
-        if (!tableAlias.equals(this.tableAlias)) {
-            throw _Exceptions.unknownColumn(tableAlias, field);
-        }
-        this.appendField(field);
-    }
-
-    @Override
-    public void appendField(final FieldMeta<?> field) {
-        final TableMeta<?> table = this.table, belongOf;
-        belongOf = field.tableMeta();
-        if (table instanceof ChildTableMeta) {
-            if (belongOf != ((ChildTableMeta<?>) table).parentMeta()) {
-                throw _Exceptions.unknownColumn(field);
-            }
-        } else if (belongOf != table) {
-            throw _Exceptions.unknownColumn(field);
-        }
         final StringBuilder sqlBuilder = this.sqlBuilder;
-        sqlBuilder.append(_Constant.SPACE);
-        if (this.supportAlias) {
-            sqlBuilder.append(this.safeTableAlias)
-                    .append(_Constant.POINT);
-        }
+        sqlBuilder
+                .append(_Constant.SPACE)
+                .append(this.safeTableAlias);
         this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+
+        switch (updateMode) {
+            case ONLY_NULL:
+            case ONLY_DEFAULT: {
+                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.dialect.supportOnlyDefault()) {
+                    throw _Exceptions.dontSupportOnlyDefault(this.dialect.dialectMode());
+                }
+                List<TableField> conditionFieldList = this.conditionFieldList;
+                if (conditionFieldList == null) {
+                    conditionFieldList = new ArrayList<>();
+                    this.conditionFieldList = conditionFieldList;
+                }
+                conditionFieldList.add(field);
+            }
+            break;
+            default:
+                //no-op
+        }
     }
 
     @Override
-    public TableMeta<?> table() {
-        return this.table;
+    public void appendConditionFields() {
+        final List<TableField> conditionFieldList = this.conditionFieldList;
+        if (conditionFieldList == null || conditionFieldList.size() == 0) {
+            return;
+        }
+        final String safeTableAlias = this.safeTableAlias;
+        final ArmyDialect dialect = this.dialect;
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+
+        for (TableField field : conditionFieldList) {
+            sqlBuilder.append(_Constant.SPACE_AND_SPACE)
+                    .append(safeTableAlias)
+                    .append(_Constant.POINT);
+
+            dialect.safeObjectName(field.columnName(), sqlBuilder);
+
+            switch (field.updateMode()) {
+                case ONLY_NULL:
+                    sqlBuilder.append(_Constant.SPACE_IS_NULL);
+                    break;
+                case ONLY_DEFAULT: {
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(dialect.defaultFuncName())
+                            .append(_Constant.SPACE_LEFT_PAREN)
+                            .append(_Constant.SPACE)
+                            .append(safeTableAlias)
+                            .append(_Constant.POINT);
+                    dialect.safeObjectName(field.columnName(), sqlBuilder)
+                            .append(_Constant.SPACE_RIGHT_PAREN);
+
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+
+            }
+
+        }
     }
 
     @Override
-    public String safeTableAlias() {
-        return this.safeTableAlias;
-    }
-
-    @Override
-    public _SingleDml statement() {
-        return this.statement;
-    }
-
-    @Override
-    public SimpleStmt build() {
-        return Stmts.dml(this.sqlBuilder.toString(), this.paramList, _DmlUtils.hasOptimistic(this.predicateList));
+    public void appendParentField(final FieldMeta<?> parentField) {
+        if (this.table instanceof ChildTableMeta
+                && parentField.tableMeta() == ((ChildTableMeta<?>) this.table).parentMeta()) {
+            this.parentColumnFromSubQuery(parentField);
+        } else {
+            throw _Exceptions.unknownColumn(parentField);
+        }
     }
 
 

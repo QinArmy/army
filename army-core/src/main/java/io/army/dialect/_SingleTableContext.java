@@ -6,7 +6,9 @@ interface _SingleTableContext extends _StmtContext {
 
     TableMeta<?> table();
 
-    String safeAlias();
+    String tableAlias();
+
+    String safeTableAlias();
 
 
 }

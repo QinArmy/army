@@ -99,7 +99,7 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
-    public boolean multiTableUpdateChild() {
+    public boolean supportMultiUpdate() {
         return false;
     }
 

@@ -739,7 +739,8 @@ public abstract class SQLs extends Functions {
             context.appendSetLeftItem(field);
             //2. append operator
             if (this instanceof OperatorItemPair) {
-                ((OperatorItemPair) this).operator.appendOperator(context.dialect().dialectMode(), field, context);
+                ((OperatorItemPair) this).operator
+                        .appendOperator(context.dialect().dialectMode(), field, context);
             } else {
                 context.sqlBuilder()
                         .append(_Constant.SPACE_EQUAL);

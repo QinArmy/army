@@ -1,6 +1,6 @@
 package io.army.stmt;
 
-public interface UpdateStmtParams extends StmtParams {
+public interface DmlStmtParams extends StmtParams {
 
 
     boolean hasVersion();

@@ -22,7 +22,7 @@ interface ArmyDialect extends _Dialect {
     }
 
 
-    boolean multiTableUpdateChild();
+    boolean supportMultiUpdate();
 
 
     boolean supportZone();
