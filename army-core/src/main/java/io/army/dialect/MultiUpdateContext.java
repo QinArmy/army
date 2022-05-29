@@ -4,6 +4,9 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._MultiUpdate;
 import io.army.criteria.impl.inner._Selection;
+import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.criteria.impl.inner._Update;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.DmlStmtParams;
@@ -21,6 +24,11 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         return new MultiUpdateContext(statement, tableContext, dialect, visible);
     }
 
+    static MultiUpdateContext forChild(_SingleUpdate stmt, ArmyDialect dialect, Visible visible) {
+        final TableContext tableContext;
+        tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), dialect);
+        return new MultiUpdateContext(stmt, tableContext, dialect, visible);
+    }
 
     private final boolean hasVersion;
 
@@ -29,9 +37,9 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
     private List<DataField> conditionFieldList;
 
 
-    private MultiUpdateContext(_MultiUpdate statement, TableContext tableContext, ArmyDialect dialect, Visible visible) {
+    private MultiUpdateContext(_Update stmt, TableContext tableContext, ArmyDialect dialect, Visible visible) {
         super(tableContext, dialect, visible);
-        this.hasVersion = _DmlUtils.hasOptimistic(statement.predicateList());
+        this.hasVersion = _DmlUtils.hasOptimistic(stmt.predicateList());
         this.supportQueryUpdate = dialect.supportQueryUpdate();
     }
 

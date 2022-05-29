@@ -10,7 +10,7 @@ import io.army.stmt.SimpleStmt;
  *
  * @since 1.0
  */
-public interface _StmtContext extends _SqlContext {
+interface _StmtContext extends _SqlContext {
 
     /**
      * for append updateTime field in set clause.

@@ -7,18 +7,19 @@ import io.army.util._Exceptions;
 
 public enum Dialect {
 
-    MySQL56(Database.MySQL, (byte) 56),
-    MySQL57(Database.MySQL, (byte) 57),
-    MySQL80(Database.MySQL, (byte) 80);
+    MySQL55(Database.MySQL, 55),
+    MySQL56(Database.MySQL, 56),
+    MySQL57(Database.MySQL, 57),
+    MySQL80(Database.MySQL, 80);
 
 
     public final Database database;
 
     private final byte version;
 
-    Dialect(Database database, byte version) {
+    Dialect(Database database, int version) {
         this.database = database;
-        this.version = version;
+        this.version = (byte) version;
     }
 
     public final Database database() {

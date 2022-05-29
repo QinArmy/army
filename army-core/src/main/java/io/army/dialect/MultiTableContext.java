@@ -81,8 +81,9 @@ abstract class MultiTableContext extends StmtContext implements _MultiTableConte
         return safeAlias;
     }
 
+
     @Override
-    public final String safeTableAliasOf(final TableMeta<?> table) {
+    public final String saTableAliasOf(final TableMeta<?> table) {
         final String safeAlias;
         safeAlias = this.tableToSafeAlias.get(table);
         if (safeAlias == null) {
@@ -107,6 +108,9 @@ abstract class MultiTableContext extends StmtContext implements _MultiTableConte
 
     @Override
     public final SimpleStmt build() {
+        if (this.hasNamedParam) {
+            throw _Exceptions.namedParamInNonBatch();
+        }
         return Stmts.simple(this);
     }
 

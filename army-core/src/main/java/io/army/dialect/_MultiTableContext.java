@@ -7,8 +7,9 @@ interface _MultiTableContext extends _SqlContext {
 
     String safeTableAlias(TableMeta<?> table, String alias);
 
-    String safeTableAliasOf(TableMeta<?> table);
+    String saTableAliasOf(TableMeta<?> table);
 
     TableItem tableItemOf(String tableAlias);
+
 
 }

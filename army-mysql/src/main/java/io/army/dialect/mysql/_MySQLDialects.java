@@ -21,7 +21,7 @@ public abstract class _MySQLDialects extends _DialectFactory {
             case MySQL56:
             case MySQL57:
             case MySQL80:
-                mySQL = new MySQLDialect(environment, targetDialect);
+                mySQL = MySQLDialect.create(environment, targetDialect);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(targetDialect);

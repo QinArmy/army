@@ -25,6 +25,9 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
 
     final boolean hasVersion;
 
+
+    final boolean supportAlias;
+
     private final String safeParentAlias;
 
 
@@ -41,6 +44,8 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
             this.safeParentAlias = null;
         }
         this.hasVersion = _DmlUtils.hasOptimistic(dml.predicateList());
+        this.supportAlias = !(this instanceof _DeleteContext) || dialect.singleDeleteHasTableAlias();
+
     }
 
     SingleDmlContext(_SingleDml dml, StmtContext outerContext) {
@@ -56,6 +61,7 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
             this.safeParentAlias = null;
         }
         this.hasVersion = _DmlUtils.hasOptimistic(dml.predicateList());
+        this.supportAlias = !(this instanceof _DeleteContext) || dialect.singleDeleteHasTableAlias();
     }
 
     @Override
@@ -88,10 +94,13 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
         final StringBuilder sqlBuilder = this.sqlBuilder;
         final TableMeta<?> table = this.table;
         if (fieldTable == table) {
-            sqlBuilder
-                    .append(_Constant.SPACE)
-                    .append(this.safeTableAlias)
-                    .append(_Constant.POINT);
+            sqlBuilder.append(_Constant.SPACE);
+            if (this.supportAlias) {
+                sqlBuilder.append(this.safeTableAlias);
+            } else {
+                this.dialect.safeObjectName(table.tableName(), sqlBuilder);
+            }
+            sqlBuilder.append(_Constant.POINT);
             this.dialect.safeObjectName(field.columnName(), sqlBuilder);
         } else if (table instanceof ChildTableMeta && fieldTable == ((ChildTableMeta<?>) table).parentMeta()) {
             // parent table filed
@@ -167,11 +176,15 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
                 .append(_Constant.POINT)
                 .append(_MetaBridge.ID)
 
-                .append(_Constant.SPACE_EQUAL_SPACE)
+                .append(_Constant.SPACE_EQUAL_SPACE);
 
-                //below child table id
-                .append(this.safeTableAlias)
-                .append(_Constant.POINT)
+        //below child table id
+        if (this.supportAlias) {
+            sqlBuilder.append(this.safeTableAlias);
+        } else {
+            dialect.safeObjectName(childTable.tableName(), sqlBuilder);
+        }
+        sqlBuilder.append(_Constant.POINT)
                 .append(_MetaBridge.ID)
 
                 .append(_Constant.SPACE_AND_SPACE)

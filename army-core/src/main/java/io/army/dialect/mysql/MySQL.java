@@ -1,7 +1,11 @@
 package io.army.dialect.mysql;
 
 import io.army.criteria.LockMode;
-import io.army.criteria.TableField;
+import io.army.criteria.Update;
+import io.army.criteria.Visible;
+import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._SingleDelete;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
@@ -9,9 +13,10 @@ import io.army.meta.ParamMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.session.Database;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
 
@@ -20,14 +25,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-class MySQL extends _AbstractDialect {
+abstract class MySQL extends _AbstractDialect {
+
+    static MySQL standard(_DialectEnvironment environment, Dialect dialect) {
+        if (dialect.database != Database.MySQL) {
+            throw new IllegalArgumentException();
+        }
+        return new Standard(environment, dialect);
+    }
 
 
-    protected static final char IDENTIFIER_QUOTE = '`';
+    static final char IDENTIFIER_QUOTE = '`';
 
+    final boolean asOf80;
 
     MySQL(_DialectEnvironment environment, Dialect dialect) {
         super(environment, dialect);
+        this.asOf80 = this.dialectMode().version() >= Dialect.MySQL80.version();
     }
 
 
@@ -98,8 +112,7 @@ class MySQL extends _AbstractDialect {
 
     @Override
     public final boolean singleDeleteHasTableAlias() {
-        //always false ,MySQL single delete don't support table alias.
-        return false;
+        return this.asOf80;
     }
 
     @Override
@@ -160,7 +173,7 @@ class MySQL extends _AbstractDialect {
     }
 
     @Override
-    public final String literal(ParamMeta paramMeta, Object nonNull) {
+    public final StringBuilder literal(final ParamMeta paramMeta, final Object nonNull, final StringBuilder sqlBuilder) {
         final SqlType sqlType;
         final MappingType mappingType;
         if (paramMeta instanceof MappingType) {
@@ -267,23 +280,18 @@ class MySQL extends _AbstractDialect {
             default:
                 throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
         }
-        return literal;
+        return sqlBuilder
+                .append(literal);
     }
 
-
     /**
-     * <p>
-     * MySQL {@link _Dialect#multiTableUpdateChild()} always return true
-     * ,so this method always use multi-table syntax update child table.
-     * </p>
-     *
-     * @see _Dialect#multiTableUpdateChild()
+     * @see #update(Update, Visible)
      */
     @Override
-    protected final SimpleStmt standardChildUpdate(final _DomainUpdateContext context) {
+    protected final Stmt standardChildUpdate(final _SingleUpdate update, final Visible visible) {
 
-        final _SetBlock childBlock = context.childBlock();
-        assert childBlock != null;
+        final _MultiUpdateContext context;
+        context = this.createMultiUpdateContext(update, visible);
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
@@ -291,76 +299,78 @@ class MySQL extends _AbstractDialect {
         sqlBuilder.append(_Constant.UPDATE);
 
         //2. child join parent
-        this.appendChildJoinParent(childBlock, context);
+        this.appendChildJoinParent(context, (ChildTableMeta<?>) update.table());
 
-        final List<TableField> childConditionFields, parentConditionFields;
         //3. set clause
-        parentConditionFields = this.setClause(true, context, context);
-        childConditionFields = this.setClause(false, childBlock, context);
+        this.multiTableChildSetClause(update, context);
 
         //4. where clause
-        this.dmlWhereClause(context);
+        this.dmlWhereClause(update.predicateList(), context);
 
-        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childBlock.table();
-        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) context.table();
-        final String safeParentTableAlias = context.safeTableAlias();
-        final String safeChildTableAlias = childBlock.safeTableAlias();
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) update.table();
+        final ParentTableMeta<?> parentTable = childTable.parentMeta();
+        final String safeParentTableAlias = context.saTableAliasOf(parentTable);
 
         //4.1 append discriminator for child
         this.discriminator(childTable, safeParentTableAlias, context);
 
-        //4.2 append visible
+        //4.2 append condition fields
+        context.appendConditionFields();
+
+        //4.3 append visible
         if (parentTable.containField(_MetaBridge.VISIBLE)) {
             this.visiblePredicate(parentTable, safeParentTableAlias, context);
         }
-        //4.3 append child condition update fields
-        if (childConditionFields.size() > 0) {
-            this.conditionUpdate(safeChildTableAlias, childConditionFields, context);
+        final Stmt stmt;
+        if (update instanceof _BatchDml) {
+            stmt = context.build(((_BatchDml) update).paramList());
+        } else {
+            stmt = context.build();
         }
-        //4.4 append parent condition update fields
-        if (parentConditionFields.size() > 0) {
-            this.conditionUpdate(safeParentTableAlias, parentConditionFields, context);
-        }
-        return context.build();
+        return stmt;
     }
 
     @Override
-    protected final SimpleStmt standardChildDelete(final _SingleDeleteContext context) {
-        assert context.multiTableUpdateChild();
-        final _Block childBlock = context.childBlock();
-        assert childBlock != null;
+    protected final Stmt standardChildDelete(final _SingleDelete delete, final Visible visible) {
+        final _MultiDeleteContext context;
+        context = this.createMultiDeleteContext(delete, visible);
 
-        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childBlock.table();
-        final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) context.table();
+        final ChildTableMeta<?> childTable = (ChildTableMeta<?>) delete.table();
+        final ParentTableMeta<?> parentTable = childTable.parentMeta();
 
         // 1. delete clause
         final StringBuilder builder = context.sqlBuilder()
                 .append(_Constant.DELETE);
 
         final String safeParentTableAlias, safeChildTableAlias;
-        safeChildTableAlias = childBlock.safeTableAlias();
-        safeParentTableAlias = context.safeTableAlias();
+        safeChildTableAlias = context.saTableAliasOf(childTable);
+        safeParentTableAlias = context.saTableAliasOf(parentTable);
 
-        builder.append(safeChildTableAlias)// child table name
+        builder.append(safeChildTableAlias)// child table alias
                 .append(_Constant.SPACE_COMMA_SPACE)
                 .append(safeParentTableAlias)// parent table name
                 .append(_Constant.SPACE_FROM);
 
         //2. child join parent
-        this.appendChildJoinParent(childBlock, context);
+        this.appendChildJoinParent(context, childTable);
 
         //3. where clause
-        this.dmlWhereClause(context);
+        this.dmlWhereClause(delete.predicateList(), context);
 
-
-        //3.2 append discriminator for child
+        //3.1 append discriminator for child
         this.discriminator(childTable, safeParentTableAlias, context);
 
-        //3.3 append visible
+        //3.2 append visible
         if (parentTable.containField(_MetaBridge.VISIBLE)) {
             this.visiblePredicate(parentTable, safeParentTableAlias, context);
         }
-        return context.build();
+        final Stmt stmt;
+        if (delete instanceof _BatchDml) {
+            stmt = context.build(((_BatchDml) delete).paramList());
+        } else {
+            stmt = context.build();
+        }
+        return stmt;
     }
 
     @Override
@@ -451,6 +461,15 @@ class MySQL extends _AbstractDialect {
 //                throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
 //        }
 //    }
+
+
+    private static final class Standard extends MySQL {
+
+        private Standard(_DialectEnvironment environment, Dialect dialect) {
+            super(environment, dialect);
+        }
+
+    }//Standard
 
 
 }

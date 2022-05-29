@@ -8,11 +8,12 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.SimpleStmt;
+import io.army.session.Database;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -31,6 +32,13 @@ import java.util.List;
  */
 final class MySQLDialect extends MySQL {
 
+    static MySQLDialect create(_DialectEnvironment environment, Dialect dialect) {
+        if (dialect.database != Database.MySQL) {
+            throw new IllegalArgumentException();
+        }
+        return new MySQLDialect(environment, dialect);
+    }
+
     private static final String SPACE_HINT_START = " /*+";
 
     private static final String SPACE_HINT_END = " */";
@@ -41,11 +49,10 @@ final class MySQLDialect extends MySQL {
 
     private static final String SPACE_INTO = " INTO";
 
-    private final boolean asOf80;
 
-    MySQLDialect(_DialectEnvironment environment, Dialect dialect) {
+    private MySQLDialect(_DialectEnvironment environment, Dialect dialect) {
         super(environment, dialect);
-        this.asOf80 = this.dialectMode().version() >= Dialect.MySQL80.version();
+
     }
 
     @Override
@@ -77,7 +84,7 @@ final class MySQLDialect extends MySQL {
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
         //2. SELECT key word
         sqlBuilder.append(_Constant.SELECT);
         //3. hint comment block
@@ -150,19 +157,16 @@ final class MySQLDialect extends MySQL {
     }
 
     @Override
-    protected void dialectSingleUpdate(final _SingleUpdateContext context, final _SingleUpdate update) {
+    protected void dialectSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
         if (context.dialect() != this) {
             throw illegalDialect();
         }
         final StringBuilder sqlBuilder = context.sqlBuilder();
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
 
         //2. UPDATE key word
-        if (sqlBuilder.length() > 0) {
-            sqlBuilder.append(_Constant.SPACE);
-        }
         sqlBuilder.append(_Constant.UPDATE);
 
         //3. hint comment block
@@ -210,20 +214,17 @@ final class MySQLDialect extends MySQL {
     }
 
     @Override
-    protected void dialectMultiUpdate(final _MultiUpdateContext context, final _MultiUpdate update) {
+    protected void dialectMultiUpdate(final _MultiUpdate update, final _MultiUpdateContext context) {
         if (context.dialect() != this) {
             throw illegalDialect();
         }
         final _MySQLMultiUpdate stmt = (_MySQLMultiUpdate) update;
 
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         //2. UPDATE key word
-        if (sqlBuilder.length() > 0) {
-            sqlBuilder.append(_Constant.SPACE);
-        }
         sqlBuilder.append(_Constant.UPDATE);
 
         //3. hint comment block
@@ -245,17 +246,15 @@ final class MySQLDialect extends MySQL {
 
 
     @Override
-    protected SimpleStmt dialectSingleDelete(final _SingleDeleteContext context, final _SingleDelete delete) {
+    protected void dialectSingleDelete(final _SingleDelete delete, final _SingleDeleteContext context) {
         if (context.dialect() != this) {
             throw illegalDialect();
         }
-        assert context.childBlock() == null;
-
         final _MySQLSingleDelete stmt = (_MySQLSingleDelete) delete;
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
 
         //2. DELETE key word
         sqlBuilder.append(_Constant.DELETE);
@@ -265,14 +264,19 @@ final class MySQLDialect extends MySQL {
         //4. modifier
         this.deleteModifiers(stmt.modifierList(), sqlBuilder);
 
-        final SimpleTableMeta<?> table;
-        table = stmt.table();
+        final SimpleTableMeta<?> table = stmt.table();
+
         final String safeTableAlias;
-        safeTableAlias = context.safeTableAlias();
+        if (this.asOf80) {
+            safeTableAlias = context.safeTableAlias();
+        } else {
+            safeTableAlias = null;
+        }
 
         //5. table name
         this.identifier(table.tableName(), sqlBuilder);
-        if (asOf80) {
+
+        if (safeTableAlias != null) {
             sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                     .append(safeTableAlias);
         }
@@ -282,9 +286,14 @@ final class MySQLDialect extends MySQL {
 
         //7. where clause
         this.dmlWhereClause(stmt.predicateList(), context);
+
+        //7.1 append discriminator
+        if (table instanceof ParentTableMeta) {
+            this.discriminator(table, safeTableAlias, context);
+        }
+        //7.2 append visible
         if (table.containField(_MetaBridge.VISIBLE)) {
-            //7.2 append visible
-            this.visiblePredicate(table, asOf80 ? safeTableAlias : null, context);
+            this.visiblePredicate(table, safeTableAlias, context);
         }
         //8. order by clause
         this.orderByClause(stmt.orderByList(), context);
@@ -295,20 +304,20 @@ final class MySQLDialect extends MySQL {
             sqlBuilder.append(_Constant.SPACE_LIMIT_SPACE)
                     .append(rowCount);
         }
-        return context.build();
+
     }
 
     @Override
-    protected SimpleStmt dialectMultiDelete(final _MultiDeleteContext context) {
+    protected void dialectMultiDelete(final _MultiDelete delete, final _MultiDeleteContext context) {
         if (context.dialect() != this) {
             throw illegalDialect();
         }
-        final _MySQLMultiDelete stmt = (_MySQLMultiDelete) context.statement();
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final _MySQLMultiDelete stmt = (_MySQLMultiDelete) delete;
 
         //1. WITH clause
-        this.mySqlWithClause(stmt.isRecursive(), stmt.cteList(), context);
+        this.mySqlWithClauseAndSpace(stmt.isRecursive(), stmt.cteList(), context);
 
+        final StringBuilder sqlBuilder = context.sqlBuilder();
         //2. DELETE key word
         sqlBuilder.append(_Constant.DELETE);
 
@@ -324,11 +333,19 @@ final class MySQLDialect extends MySQL {
         final List<String> tableAliasList;
         tableAliasList = stmt.tableAliasList();
         final int aliasSize = tableAliasList.size();
+        TableItem tableItem;
+        String tableAlias;
         for (int i = 0; i < aliasSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            this.identifier(tableAliasList.get(i), sqlBuilder);
+            tableAlias = tableAliasList.get(i);
+            tableItem = context.tableItemOf(tableAlias);
+            if (!(tableItem instanceof TableMeta)) {
+                throw _Exceptions.unknownTableAlias(tableAlias);
+            }
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(context.safeTableAlias((TableMeta<?>) tableItem, tableAlias));
         }
 
         if (usingSyntax) {
@@ -342,7 +359,7 @@ final class MySQLDialect extends MySQL {
         this.dmlWhereClause(stmt.predicateList(), context);
         //7.1 append visible
         this.multiDmlVisible(stmt.tableBlockList(), context);
-        return context.build();
+
     }
 
     private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder, final _SqlContext context) {
@@ -568,14 +585,14 @@ final class MySQLDialect extends MySQL {
     }
 
 
-    private void mySqlWithClause(final boolean recursive, final List<Cte> cteList, final _SqlContext context) {
+    private void mySqlWithClauseAndSpace(final boolean recursive, final List<Cte> cteList, final _SqlContext context) {
         if (cteList.size() == 0) {
             return;
         }
         if (!this.asOf80) {
             throw _Exceptions.dontSupportWithClause(this.dialect);
         }
-        this.withSubQuery(recursive, cteList, context, _MySQLCounselor::assertMySQLCte);
+        this.withSubQueryAndSpace(recursive, cteList, context, _MySQLCounselor::assertMySQLCte);
 
     }
 

@@ -10,7 +10,7 @@ package io.army.dialect;
  *     </ul>
  * </p>
  */
-interface _UpdateContext extends _SqlContext, _DmlContext {
+interface _UpdateContext extends _SqlContext, _DmlContext, _SetClauseContext {
 
 
     void appendConditionFields();

@@ -10,7 +10,6 @@ import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
-import io.army.session.Database;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
@@ -102,7 +101,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             assertDialectUpdate(update);
             final _SingleUpdateContext context;
             context = SingleUpdateContext.create((_SingleUpdate) update, this, visible);
-            dialectSingleUpdate(context, (_SingleUpdate) update);
+            dialectSingleUpdate((_SingleUpdate) update, context);
             if (update instanceof _BatchDml) {
                 stmt = context.build(((_BatchDml) update).paramList());
             } else {
@@ -112,7 +111,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             assertDialectUpdate(update);
             final _MultiUpdateContext context;
             context = MultiUpdateContext.create((_MultiUpdate) update, this, visible);
-            dialectMultiUpdate(context);
+            dialectMultiUpdate((_MultiUpdate) update, context);
             if (update instanceof _BatchDml) {
                 stmt = context.build(((_BatchDml) update).paramList());
             } else {
@@ -128,22 +127,39 @@ public abstract class _AbstractDialect implements ArmyDialect {
     @Override
     public final Stmt delete(final Delete delete, final Visible visible) {
         delete.prepared();
-        final SimpleStmt singleStmt;
+        final Stmt stmt;
         if (delete instanceof StandardStatement) {
             _SQLCounselor.assertStandardDelete(delete);
-            singleStmt = this.handleStandardDelete((_SingleDelete) delete, visible);
+            final _SingleDelete s = (_SingleDelete) delete;
+            if (s.table() instanceof ChildTableMeta) {
+                stmt = this.standardChildDelete(s, visible);
+            } else {
+                stmt = this.handleStandardDelete(s, visible);
+            }
         } else if (delete instanceof _SingleDelete) {
+            this.assertDialectDelete(delete);
             final _SingleDeleteContext context;
-            context = StandardDeleteContext.create((_SingleDelete) delete, this, visible);
-            singleStmt = this.dialectSingleDelete(context, (_SingleDelete) delete);
+            context = SingleDeleteContext.create((_SingleDelete) delete, this, visible);
+            this.dialectSingleDelete((_SingleDelete) delete, context);
+            if (delete instanceof _BatchDml) {
+                stmt = context.build(((_BatchDml) delete).paramList());
+            } else {
+                stmt = context.build();
+            }
+        } else if (delete instanceof _MultiDelete) {
+            this.assertDialectDelete(delete);
+            final _MultiDeleteContext context;
+            context = MultiDeleteContext.create((_MultiDelete) delete, this, visible);
+            this.dialectMultiDelete((_MultiDelete) delete, context);
+            if (delete instanceof _BatchDml) {
+                stmt = context.build(((_BatchDml) delete).paramList());
+            } else {
+                stmt = context.build();
+            }
         } else {
-            throw _Exceptions.unknownStatement(delete, this);
+            throw _Exceptions.unknownStatement(delete, this.dialect);
         }
-        if (delete instanceof _BatchDml) {
-            stmt = Stmts.batchDml(simpleStmt, ((_BatchDml) delete).paramList());
-        } else {
-            stmt = simpleStmt;
-        }
+
         return stmt;
     }
 
@@ -276,11 +292,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     @Override
-    public final Database database() {
-        return this.environment.serverMeta().database();
-    }
-
-    @Override
     public final boolean isMockEnv() {
         return this.environment instanceof _MockDialects;
     }
@@ -289,11 +300,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
     public final _FieldValueGenerator getFieldValueGenerator() {
         return this.environment.fieldValuesGenerator();
     }
-
-    /**
-     * @see #setClause(boolean, _SetBlock, _UpdateContext)
-     */
-
 
     @Override
     public final String toString() {
@@ -363,19 +369,19 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected void dialectSingleUpdate(_SingleUpdateContext context, _SingleUpdate update) {
+    protected void dialectSingleUpdate(_SingleUpdate update, _SingleUpdateContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected void dialectMultiUpdate(_MultiUpdateContext context, _MultiUpdate update) {
+    protected void dialectMultiUpdate(_MultiUpdate update, _MultiUpdateContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt dialectMultiDelete(_MultiDeleteContext context) {
+    protected void dialectMultiDelete(final _MultiDelete delete, _MultiDeleteContext context) {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt dialectSingleDelete(_SingleDeleteContext context, _SingleDelete stmt) {
+    protected void dialectSingleDelete(_SingleDelete delete, _SingleDeleteContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -384,14 +390,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    /**
-     * @see #handleStandardUpdate(_SingleUpdate, Visible)
-     */
     protected Stmt standardChildUpdate(_SingleUpdate update, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
-    protected SimpleStmt standardChildDelete(_SingleDeleteContext context) {
+    protected Stmt standardChildDelete(_SingleDelete delete, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
@@ -402,6 +405,18 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected void handleDialectTableItem(TableItem tableItem, _SqlContext context) {
 
+    }
+
+    protected final _SingleUpdateContext createChildUpdateContext(final _SingleUpdate stmt, final Visible visible) {
+        return SingleUpdateContext.create(stmt, this, visible);
+    }
+
+    protected final _MultiUpdateContext createMultiUpdateContext(final _SingleUpdate stmt, final Visible visible) {
+        return MultiUpdateContext.forChild(stmt, this, visible);
+    }
+
+    protected final _MultiDeleteContext createMultiDeleteContext(final _SingleDelete stmt, final Visible visible) {
+        return MultiDeleteContext.forChild(stmt, this, visible);
     }
 
 
@@ -444,7 +459,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected final void withSubQuery(final boolean recursive, final List<Cte> cteList
+    protected final void withSubQueryAndSpace(final boolean recursive, final List<Cte> cteList
             , final _SqlContext context, final Consumer<Cte> assetConsumer) {
         final int cteSize = cteList.size();
         if (cteSize == 0) {
@@ -489,7 +504,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
             this.rowSet(subQuery, context);
 
         }
-
+        // append space prior to primary statement
+        sqlBuilder.append(_Constant.SPACE);
 
     }
 
@@ -516,6 +532,38 @@ public abstract class _AbstractDialect implements ArmyDialect {
         this.appendUpdateTimeAndVersion((SingleTableMeta<?>) context.table(), context.safeTableAlias(), context);
     }
 
+    protected final void multiTableChildSetClause(final _SingleUpdate stmt, final _MultiUpdateContext context) {
+        final List<_ItemPair> itemPairList, childItemPairList;
+        itemPairList = stmt.itemPairList();
+        childItemPairList = stmt.childItemPairList();
+
+        final int itemSize, childSize;
+        itemSize = itemPairList.size();
+        childSize = childItemPairList.size();
+
+        if (itemSize == 0 && childSize == 0) {
+            throw _Exceptions.setClauseNotExists();
+        }
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        sqlBuilder.append(_Constant.SPACE_SET);
+        for (int i = 0; i < itemSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            itemPairList.get(i).appendItemPair(context);
+        }
+
+        for (int i = 0; i < childSize; i++) {
+            if (i > 0 || itemSize > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            childItemPairList.get(i).appendItemPair(context);
+        }
+
+        final ParentTableMeta<?> parent = ((ChildTableMeta<?>) stmt.table()).parentMeta();
+        this.appendUpdateTimeAndVersion(parent, context.saTableAliasOf(parent), context);
+    }
+
     protected final void multiTableSetClause(final _MultiUpdate stmt, final _MultiUpdateContext context) {
         if (stmt.childItemPairList().size() > 0) {
             throw _Exceptions.existsChildFieldInMultiTableSetClause();
@@ -526,22 +574,30 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (itemPairSize == 0) {
             throw _Exceptions.setClauseNotExists();
         }
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        sqlBuilder.append(_Constant.SPACE_SET);
-        final Map<String, Boolean> aliasMap = new HashMap<>();
+
+        final Map<Object, Boolean> aliasOrTableMap = new HashMap<>();
 
         final Consumer<DataField> fieldConsumer = field -> {
             if (field instanceof FieldMeta) {
-                aliasMap.putIfAbsent(context.safeTableAliasOf(((FieldMeta<?>) field).tableMeta()), Boolean.TRUE);
+                final TableMeta<?> table = ((FieldMeta<?>) field).tableMeta();
+                if (table instanceof SingleTableMeta) {
+                    aliasOrTableMap.putIfAbsent(table, Boolean.TRUE);
+                }
             } else if (field instanceof QualifiedField) {
-                aliasMap.putIfAbsent(((QualifiedField<?>) field).tableAlias(), Boolean.TRUE);
+                if (((QualifiedField<?>) field).tableMeta() instanceof SingleTableMeta) {
+                    aliasOrTableMap.putIfAbsent(((QualifiedField<?>) field).tableAlias(), Boolean.TRUE);
+                }
             } else {
-                aliasMap.putIfAbsent(((DerivedField) field).tableAlias(), Boolean.TRUE);
+                aliasOrTableMap.putIfAbsent(((DerivedField) field).tableAlias(), Boolean.TRUE);
             }
 
         };
-        _ItemPair pair;
 
+        //1. append SET key word
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        sqlBuilder.append(_Constant.SPACE_SET);
+        //2. append item pairs in SET clause
+        _ItemPair pair;
         for (int i = 0; i < itemPairSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -560,20 +616,29 @@ public abstract class _AbstractDialect implements ArmyDialect {
             }
         }
 
+        //3. append updateTime and visible for multi-table update target table
+        SingleTableMeta<?> singleTable;
         TableItem tableItem;
         String safeTableAlias;
-        for (String tableAlias : aliasMap.keySet()) {
-            tableItem = context.tableItemOf(tableAlias);
-            if (tableItem instanceof SingleTableMeta) {
-                safeTableAlias = context.safeTableAlias((SingleTableMeta<?>) tableItem, tableAlias);
-                this.appendUpdateTimeAndVersion((SingleTableMeta<?>) tableItem, safeTableAlias, context);
-            } else if (tableItem instanceof DerivedTable) {
+        for (Object aliasOrTable : aliasOrTableMap.keySet()) {
+            if (aliasOrTable instanceof SingleTableMeta) {
+                singleTable = (SingleTableMeta<?>) aliasOrTable;
+                safeTableAlias = context.saTableAliasOf(singleTable);
+            } else if (!(aliasOrTable instanceof String)) {
+                //here bug
+                throw new IllegalStateException();
+            } else if ((tableItem = context.tableItemOf((String) aliasOrTable)) instanceof SingleTableMeta) {
+                singleTable = (SingleTableMeta<?>) tableItem;
+                safeTableAlias = context.safeTableAlias(singleTable, (String) aliasOrTable);
+            } else {
                 //TODO eg:oracle
                 throw new UnsupportedOperationException();
             }
-
+            this.appendUpdateTimeAndVersion(singleTable, safeTableAlias, context);
         }
 
+        //clear
+        aliasOrTableMap.clear();
 
     }
 
@@ -722,22 +787,23 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected final void appendChildJoinParent(final _Block childBlock, final _Block parentBlock) {
-        final String safeChildTableAlias = childBlock.safeTableAlias();
-        final String safeParentTableAlias = parentBlock.safeTableAlias();
-        final StringBuilder builder = parentBlock.sqlBuilder();
-        final _Dialect dialect = parentBlock.dialect();
+    protected final void appendChildJoinParent(final _MultiTableContext context, final ChildTableMeta<?> child) {
+        final ParentTableMeta<?> parent = child.parentMeta();
+
+        final String safeChildTableAlias = context.saTableAliasOf(child);
+        final String safeParentTableAlias = context.saTableAliasOf(parent);
+        final StringBuilder builder = context.sqlBuilder();
 
         // 1. child table name
         builder.append(_Constant.SPACE);
-        dialect.identifier(childBlock.table().tableName(), builder)
+        this.safeObjectName(child.tableName(), builder)
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeChildTableAlias);
 
         //2. join clause
         builder.append(_Constant.SPACE_JOIN_SPACE);
         // append parent table name
-        dialect.identifier(parentBlock.table().tableName(), builder)
+        this.safeObjectName(parent.tableName(), builder)
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeParentTableAlias);
 
@@ -814,7 +880,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected final void discriminator(TableMeta<?> table, String safeTableAlias, _SqlContext context) {
+    protected final void discriminator(final TableMeta<?> table, final @Nullable String safeTableAlias
+            , final _SqlContext context) {
         final FieldMeta<?> field;
         if (table instanceof ChildTableMeta) {
             field = ((ChildTableMeta<?>) table).discriminator();
@@ -823,20 +890,24 @@ public abstract class _AbstractDialect implements ArmyDialect {
         } else {
             throw new IllegalArgumentException("table error");
         }
-        final _Dialect dialect = context.dialect();
-        final StringBuilder builder;
-        builder = context.sqlBuilder()
-                .append(_Constant.SPACE_AND_SPACE)
-                .append(safeTableAlias)
-                .append(_Constant.POINT);
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        sqlBuilder.append(_Constant.SPACE_AND_SPACE);
+        if (safeTableAlias != null) {
+            sqlBuilder.append(safeTableAlias);
+        } else if (table instanceof SingleTableMeta && context instanceof _SingleDeleteContext) {
+            this.safeObjectName(table.tableName(), sqlBuilder);
+        } else {
+            throw new IllegalArgumentException();
+        }
+        sqlBuilder.append(_Constant.POINT);
 
-        dialect.identifier(field.columnName(), builder)
+        this.safeObjectName(field.columnName(), sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(table.discriminatorValue());
     }
 
 
-    protected final void visiblePredicate(SingleTableMeta<?> table, final @Nullable String safeTableAlias
+    protected final void visiblePredicate(final SingleTableMeta<?> table, final @Nullable String safeTableAlias
             , final _SqlContext context) {
 
         final FieldMeta<?> field = table.getField(_MetaBridge.VISIBLE);
@@ -855,113 +926,20 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 throw _Exceptions.unexpectedEnum(context.visible());
         }
         if (visibleValue != null) {
-            final _Dialect dialect = context.dialect();
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
+            final StringBuilder sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE_AND_SPACE);
-
             if (safeTableAlias != null) {
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
+                sqlBuilder.append(safeTableAlias);
+            } else if (context instanceof _SingleDeleteContext) {
+                this.safeObjectName(table.tableName(), sqlBuilder);
+            } else {
+                throw new IllegalArgumentException();
             }
+            sqlBuilder.append(_Constant.POINT);
+            this.identifier(field.columnName(), sqlBuilder)
+                    .append(_Constant.SPACE_EQUAL_SPACE);
 
-
-            dialect.identifier(field.columnName(), sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL_SPACE)
-                    .append(dialect.literal(field, visibleValue));
-        }
-
-    }
-
-
-    protected final void conditionUpdate(final List<TableField> conditionFields, final _SetClause clause) {
-        final _SqlContext context = clause.context();
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        final _Dialect dialect = context.dialect();
-        final boolean supportOnlyDefault, supportTableAlias;
-        supportOnlyDefault = dialect.supportOnlyDefault();
-        supportTableAlias = clause.supportTableAlias();
-
-        String columnName, safeTableAlias;
-        for (TableField field : conditionFields) {
-            safeTableAlias = clause.validateField(field);
-            columnName = field.columnName();
-            sqlBuilder.append(_Constant.SPACE_AND_SPACE);
-
-            if (supportTableAlias) {
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
-            }
-            dialect.safeObjectName(columnName, sqlBuilder);
-
-            switch (field.updateMode()) {
-                case ONLY_NULL:
-                    sqlBuilder.append(_Constant.SPACE_IS_NULL);
-                    break;
-                case ONLY_DEFAULT: {
-                    if (!supportOnlyDefault) {
-                        throw _Exceptions.dontSupportOnlyDefault(dialect);
-                    }
-                    sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE)
-                            .append(dialect.defaultFuncName())
-                            .append(_Constant.SPACE_LEFT_PAREN);
-
-                    if (supportTableAlias) {
-                        sqlBuilder.append(safeTableAlias)
-                                .append(_Constant.POINT);
-                    }
-                    dialect.safeObjectName(columnName, sqlBuilder)
-                            .append(_Constant.SPACE_RIGHT_PAREN);
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(field.updateMode());
-            }
-
-        }
-    }
-
-
-    @Deprecated
-    protected final void conditionUpdate(String safeTableAlias, List<TableField> conditionFields
-            , _StmtContext context) {
-
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        final _Dialect dialect = context.dialect();
-        final boolean supportOnlyDefault = dialect.supportOnlyDefault();
-        String columnName;
-        for (TableField field : conditionFields) {
-            columnName = field.columnName();
-            sqlBuilder
-                    .append(_Constant.SPACE_AND_SPACE)
-                    .append(_Constant.SPACE)
-                    .append(safeTableAlias)
-                    .append(_Constant.POINT);
-
-            dialect.safeObjectName(columnName, sqlBuilder);
-
-            switch (field.updateMode()) {
-                case ONLY_NULL:
-                    sqlBuilder.append(_Constant.SPACE_IS_NULL);
-                    break;
-                case ONLY_DEFAULT: {
-                    if (!supportOnlyDefault) {
-                        throw _Exceptions.dontSupportOnlyDefault(dialect);
-                    }
-                    sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE)
-                            .append(dialect.defaultFuncName())
-                            .append(_Constant.SPACE_LEFT_PAREN)
-                            .append(safeTableAlias)
-                            .append(_Constant.POINT);
-
-                    dialect.safeObjectName(columnName, sqlBuilder)
-                            .append(_Constant.SPACE_RIGHT_PAREN);
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(field.updateMode());
-            }
-
+            this.literal(field.mappingType(), visibleValue, sqlBuilder);
         }
 
     }
@@ -983,7 +961,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     }
 
-    protected final void multiDmlVisible(final List<? extends _TableBlock> blockList, final _StmtContext context) {
+    protected final void multiDmlVisible(final List<? extends _TableBlock> blockList, final _MultiTableContext context) {
         if (context.visible() == Visible.BOTH) {
             return;
         }
@@ -1002,356 +980,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
             safeTableAlias = context.safeTableAlias(table, block.alias());
             this.visiblePredicate(table, safeTableAlias, context);
         }
-    }
-
-    protected final List<TableField> singleTableSetClause(final boolean first, final _SetClause clause) {
-        final _SqlContext context = clause.context();
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        final _Dialect dialect = context.dialect();
-        final List<? extends SetLeftItem> leftItemList = clause.leftItemList();
-        final List<? extends SetRightItem> rightItemList = clause.rightItemList();
-
-        if (first) {
-            sqlBuilder.append(_Constant.SPACE_SET_SPACE);
-        } else {
-            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-        }
-
-        List<TableField> conditionFieldList = null;
-
-        final int itemSize = leftItemList.size();
-        SetLeftItem leftItem;
-        SetRightItem rightItem;
-        TableField field;
-        _Expression expression;
-        String tableSafeAlias;
-        final boolean supportAlias, supportOnlyDefault, supportRow;
-        supportAlias = clause.supportTableAlias();
-        supportOnlyDefault = dialect.supportOnlyDefault();
-        supportRow = clause.supportRow();
-        for (int i = 0; i < itemSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            }
-            leftItem = leftItemList.get(i);
-            rightItem = rightItemList.get(i);
-            if (leftItem instanceof Row) {
-                if (!supportRow) {
-                    throw _Exceptions.dontSupportRowLeftItem(dialect.dialectMode());
-                }
-                if (!(rightItem instanceof SubQuery)) {
-                    throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
-                }
-                this.appendRowItem(((Row) leftItem).fieldList(), clause, conditionFieldList);
-                sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-                dialect.rowSet((SubQuery) rightItem, context);
-                continue;
-            }
-            field = (TableField) leftItem;
-            if (!(rightItem instanceof _Expression)) {
-                throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
-            }
-            tableSafeAlias = clause.validateField(field);
-            switch (field.updateMode()) {
-                case UPDATABLE:
-                    // no-op
-                    break;
-                case IMMUTABLE:
-                    throw _Exceptions.immutableField(field.fieldMeta());
-                case ONLY_DEFAULT: {
-                    if (!supportOnlyDefault) {
-                        throw _Exceptions.dontSupportOnlyDefault(dialect);
-                    }
-                    if (conditionFieldList == null) {
-                        conditionFieldList = new ArrayList<>();
-                    }
-                    conditionFieldList.add(field);
-                }
-                break;
-                case ONLY_NULL: {
-                    if (conditionFieldList == null) {
-                        conditionFieldList = new ArrayList<>();
-                    }
-                    conditionFieldList.add(field);
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(field.updateMode());
-            }
-            expression = (_Expression) rightItem;
-            if (!field.nullable() && expression.isNullableValue()) {
-                throw _Exceptions.nonNullField(field.fieldMeta());
-            }
-            if (supportAlias) {
-                sqlBuilder.append(tableSafeAlias)
-                        .append(_Constant.POINT);
-            }
-            dialect.safeObjectName(field.columnName(), sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL);
-            expression.appendSql(context);
-
-        }
-
-        if (clause instanceof _SingleSetClause) {
-            final _SingleSetClause singleSetClause = (_SingleSetClause) clause;
-            final TableMeta<?> table;
-            table = singleSetClause.table();
-            if (table instanceof ChildTableMeta) {
-                this.appendUpdateTimeAndVersion(((ChildTableMeta<?>) table).parentMeta()
-                        , singleSetClause.safeTableAlias(), context);
-            } else {
-                this.appendUpdateTimeAndVersion((SingleTableMeta<?>) table
-                        , singleSetClause.safeTableAlias(), context);
-            }
-        }
-        if (conditionFieldList == null) {
-            conditionFieldList = Collections.emptyList();
-        } else if (conditionFieldList.size() == 1) {
-            conditionFieldList = Collections.singletonList(conditionFieldList.get(0));
-        } else {
-            conditionFieldList = Collections.unmodifiableList(conditionFieldList);
-        }
-        return conditionFieldList;
-    }
-
-    protected final List<TableField> multiTableSetClause(final _MultiUpdateContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        final _Dialect dialect = context.dialect();
-        final List<? extends SetLeftItem> leftItemList = context.leftItemList();
-        final List<? extends SetRightItem> rightItemList = context.rightItemList();
-
-        sqlBuilder.append(_Constant.SPACE_SET_SPACE);
-
-        List<TableField> conditionFieldList = null;
-
-        final int itemSize = leftItemList.size();
-        SetLeftItem leftItem;
-        SetRightItem rightItem;
-        TableField field;
-        _Expression expression;
-        String tableSafeAlias;
-        final boolean supportOnlyDefault, supportRow;
-        supportOnlyDefault = dialect.supportOnlyDefault();
-        supportRow = dialect.setClauseSupportRow();
-        for (int i = 0; i < itemSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            }
-            leftItem = leftItemList.get(i);
-            rightItem = rightItemList.get(i);
-            if (leftItem instanceof Row) {
-                if (!supportRow) {
-                    throw _Exceptions.dontSupportRowLeftItem(dialect.dialectMode());
-                }
-                if (!(rightItem instanceof SubQuery)) {
-                    throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
-                }
-                this.appendRowItem(((Row) leftItem).fieldList(), context, conditionFieldList);
-                sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
-                dialect.subQuery((SubQuery) rightItem, context);
-                continue;
-            }
-            field = (TableField) leftItem;
-            if (!(rightItem instanceof _Expression)) {
-                throw _Exceptions.setTargetAndValuePartNotMatch(leftItem, rightItem);
-            }
-            tableSafeAlias = context.validateField(field);
-            switch (field.updateMode()) {
-                case UPDATABLE:
-                    // no-op
-                    break;
-                case IMMUTABLE:
-                    throw _Exceptions.immutableField(field.fieldMeta());
-                case ONLY_DEFAULT: {
-                    if (!supportOnlyDefault) {
-                        throw _Exceptions.dontSupportOnlyDefault(dialect);
-                    }
-                    if (conditionFieldList == null) {
-                        conditionFieldList = new ArrayList<>();
-                    }
-                    conditionFieldList.add(field);
-                }
-                break;
-                case ONLY_NULL: {
-                    if (conditionFieldList == null) {
-                        conditionFieldList = new ArrayList<>();
-                    }
-                    conditionFieldList.add(field);
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(field.updateMode());
-            }
-            expression = (_Expression) rightItem;
-            if (!field.nullable() && expression.isNullableValue()) {
-                throw _Exceptions.nonNullField(field.fieldMeta());
-            }
-            sqlBuilder.append(tableSafeAlias)
-                    .append(_Constant.POINT);
-            dialect.safeObjectName(field.columnName(), sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL);
-            expression.appendSql(context);
-        }// for
-        // update updateTime and version fields
-        context.appendAfterSetClause();
-
-        if (conditionFieldList == null) {
-            conditionFieldList = Collections.emptyList();
-        } else if (conditionFieldList.size() == 1) {
-            conditionFieldList = Collections.singletonList(conditionFieldList.get(0));
-        } else {
-            conditionFieldList = Collections.unmodifiableList(conditionFieldList);
-        }
-        return conditionFieldList;
-    }
-
-
-    @Nullable
-    private List<TableField> appendRowItem(final List<TableField> fieldList, final _SetClause clause
-            , @Nullable List<TableField> conditionFieldList) {
-        final _SqlContext context = clause.context();
-        final int size = fieldList.size();
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        final _Dialect dialect = context.dialect();
-
-        final boolean supportAlias, supportOnlyDefault;
-        supportAlias = clause.supportTableAlias();
-        supportOnlyDefault = dialect.supportOnlyDefault();
-
-        String tableSafeAlias;
-        TableField field;
-        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN)
-                .append(_Constant.SPACE);
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            }
-            field = fieldList.get(i);
-            tableSafeAlias = clause.validateField(field);
-            switch (field.updateMode()) {
-                case UPDATABLE:
-                    // no-op
-                    break;
-                case IMMUTABLE:
-                    throw _Exceptions.immutableField(field.fieldMeta());
-                case ONLY_DEFAULT: {
-                    if (!supportOnlyDefault) {
-                        throw _Exceptions.dontSupportOnlyDefault(dialect);
-                    }
-                    if (conditionFieldList == null) {
-                        conditionFieldList = new ArrayList<>();
-                    }
-                    conditionFieldList.add(field);
-                }
-                break;
-                case ONLY_NULL: {
-                    if (conditionFieldList == null) {
-                        conditionFieldList = new ArrayList<>();
-                    }
-                    conditionFieldList.add(field);
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(field.updateMode());
-            }
-            if (supportAlias) {
-                sqlBuilder.append(tableSafeAlias)
-                        .append(_Constant.POINT);
-            }
-            dialect.safeObjectName(field.columnName(), sqlBuilder);
-
-        }
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-        return conditionFieldList;
-    }
-
-
-    protected final List<TableField> setClause(final boolean first, final _SetBlock clause, final _UpdateContext context) {
-
-        final List<? extends SetLeftItem> targetPartList = clause.leftItemList();
-        final List<? extends SetRightItem> valuePartList = clause.valueParts();
-        final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
-        final int targetCount = targetPartList.size();
-
-        final _Dialect dialect = context.dialect();
-        final boolean supportOnlyDefault = dialect.supportOnlyDefault();
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-
-        if (first) {
-            sqlBuilder.append(_Constant.SPACE_SET);
-        } else {
-            sqlBuilder.append(_Constant.SPACE_COMMA);
-        }
-        final boolean supportTableAlias = dialect.setClauseTableAlias();
-        final boolean hasSelfJoin = clause.hasSelfJoint();
-        final List<TableField> conditionFields = new ArrayList<>();
-        for (int i = 0; i < targetCount; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-            }
-            final SetLeftItem targetPart = targetPartList.get(i);
-            final SetRightItem valuePart = valuePartList.get(i);
-            if (targetPart instanceof Row) {
-                if (!(valuePart instanceof SubQuery)) {
-                    throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
-                }
-                this.appendRowTarget(clause, (Row) targetPart, conditionFields, context);
-                sqlBuilder.append(_Constant.SPACE_EQUAL);
-                this.subQueryStmt((SubQuery) targetPart, context);
-                continue;
-            }
-            if (!(targetPart instanceof TableField)) {
-                throw _Exceptions.unknownSetTargetPart(targetPart);
-            } else if (!(valuePart instanceof _Expression)) {
-                throw _Exceptions.setTargetAndValuePartNotMatch(targetPart, valuePart);
-            }
-            final TableField field = (TableField) targetPart;
-            switch (field.updateMode()) {
-                case UPDATABLE:
-                    // no-op
-                    break;
-                case IMMUTABLE:
-                    throw _Exceptions.immutableField(field.fieldMeta());
-                case ONLY_DEFAULT: {
-                    if (!supportOnlyDefault) {
-                        throw _Exceptions.dontSupportOnlyDefault(dialect);
-                    }
-                    conditionFields.add(field);
-                }
-                break;
-                case ONLY_NULL:
-                    conditionFields.add(field);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(field.updateMode());
-            }
-            if (FORBID_SET_FIELD.contains(field.fieldName())) {
-                throw _Exceptions.armyManageField(field.fieldMeta());
-            }
-            if (hasSelfJoin && !(field instanceof QualifiedField)) {
-                throw _Exceptions.selfJoinNonQualifiedField(field);
-            }
-            if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {
-                throw _Exceptions.unknownColumn((QualifiedField<?>) field);
-            }
-            sqlBuilder.append(_Constant.SPACE);
-            if (supportTableAlias) {
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
-            }
-            dialect.safeObjectName(field.columnName(), sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL);
-
-            if (!field.nullable() && ((_Expression) valuePart).isNullableValue()) {
-                throw _Exceptions.nonNullField(field.fieldMeta());
-            }
-            ((_Expression) valuePart).appendSql(context);
-        }
-        final TableMeta<?> table = clause.table();
-        if (table instanceof SingleTableMeta) {
-            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) table, safeTableAlias, context);
-        }
-        return Collections.unmodifiableList(conditionFields);
     }
 
 
@@ -1466,7 +1094,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
             , final _StmtContext context) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
-        final _Dialect dialect = context.dialect();
         final FieldMeta<?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
         final Class<?> javaType = updateTime.javaType();
         final Temporal updateTimeValue;
@@ -1480,18 +1107,19 @@ public abstract class _AbstractDialect implements ArmyDialect {
             String m = String.format("%s don't support java type[%s]", updateTime, javaType);
             throw new MetaException(m);
         }
-        final boolean supportTableAlias = dialect.setClauseTableAlias();
+        final boolean supportTableAlias = this.setClauseTableAlias();
         sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
         if (supportTableAlias) {
             sqlBuilder.append(safeTableAlias)
                     .append(_Constant.POINT);
         }
-        dialect.safeObjectName(updateTime.columnName(), sqlBuilder)
+        this.safeObjectName(updateTime.columnName(), sqlBuilder)
                 .append(_Constant.SPACE_EQUAL);
 
         if (context.hasStrictParam()) {
             context.appendParam(ParamValue.build(updateTime.mappingType(), updateTimeValue));
         } else {
+            sqlBuilder.append(_Constant.SPACE);
             this.literal(updateTime.mappingType(), updateTimeValue, sqlBuilder);
         }
 
@@ -1502,7 +1130,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                         .append(_Constant.POINT);
             }
             final FieldMeta<?> version = table.getField(_MetaBridge.VERSION);
-            final String versionColumnName = dialect.identifier(version.columnName());
+            final String versionColumnName = this.identifier(version.columnName());
             sqlBuilder.append(versionColumnName)
                     .append(_Constant.SPACE_EQUAL_SPACE)
                     .append(safeTableAlias)
@@ -1512,71 +1140,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         }
 
-    }
-
-    /**
-     * @see #setClause(boolean, _SetBlock, _UpdateContext)
-     */
-    private void appendRowTarget(final _SetBlock clause, final Row row
-            , List<TableField> conditionFields, final _UpdateContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        final _Dialect dialect = context.dialect();
-        final boolean supportOnlyDefault = dialect.supportOnlyDefault();
-
-        final TableMeta<?> table = clause.table();
-        final String tableAlias = clause.tableAlias(), safeTableAlias = clause.safeTableAlias();
-        final boolean hasSelfJoin = clause.hasSelfJoint(), supportTableAlias = dialect.setClauseTableAlias();
-        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-        int index = 0;
-        for (TableField field : row.fieldList()) {
-            if (index > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-            }
-            switch (field.updateMode()) {
-                case UPDATABLE:
-                    // no-op
-                    break;
-                case IMMUTABLE:
-                    throw _Exceptions.immutableField(field.fieldMeta());
-                case ONLY_DEFAULT: {
-                    if (!supportOnlyDefault) {
-                        throw _Exceptions.dontSupportOnlyDefault(dialect);
-                    }
-                    conditionFields.add(field);
-                }
-                break;
-                case ONLY_NULL: {
-                    conditionFields.add(field);
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(field.updateMode());
-            }
-            if (field.tableMeta() != table) {
-                if (field instanceof QualifiedField) {
-                    throw _Exceptions.unknownColumn((QualifiedField<?>) field);
-                } else {
-                    throw _Exceptions.unknownColumn(tableAlias, field.fieldMeta());
-                }
-            }
-            if (FORBID_SET_FIELD.contains(field.fieldName())) {
-                throw _Exceptions.armyManageField(field.fieldMeta());
-            }
-            if (hasSelfJoin && !(field instanceof QualifiedField)) {
-                throw _Exceptions.selfJoinNonQualifiedField(field);
-            }
-            if (field instanceof QualifiedField && !tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {
-                throw _Exceptions.unknownColumn((QualifiedField<?>) field);
-            }
-            sqlBuilder.append(_Constant.SPACE);
-            if (supportTableAlias) {
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
-            }
-            sqlBuilder.append(dialect.identifier(field.columnName()));
-            index++;
-        }
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
 
@@ -1637,15 +1200,44 @@ public abstract class _AbstractDialect implements ArmyDialect {
     /**
      * @see #delete(Delete, Visible)
      */
-    private SimpleStmt handleStandardDelete(final _SingleDelete delete, final Visible visible) {
-        final StandardDeleteContext context;
-        context = StandardDeleteContext.create(delete, this, visible);
-        final _Block childBlock = context.childBlock();
-        final SimpleStmt stmt;
-        if (childBlock == null) {
-            stmt = standardSingleTableDelete(context);
+    private Stmt handleStandardDelete(final _SingleDelete delete, final Visible visible) {
+
+        final SingleDeleteContext context;
+        context = SingleDeleteContext.create(delete, this, visible);
+
+        final SingleTableMeta<?> table = (SingleTableMeta<?>) context.table;
+
+        final StringBuilder sqlBuilder = context.sqlBuilder;
+
+        //1. DELETE key words
+        sqlBuilder.append(_Constant.DELETE_FROM_SPACE);
+
+        //2. table name
+        this.safeObjectName(table.tableName(), sqlBuilder);
+
+        final String safeTableAlias;
+        if (context.supportAlias) {
+            safeTableAlias = context.safeTableAlias;
+            sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                    .append(safeTableAlias);
         } else {
-            stmt = standardChildDelete(context);
+            safeTableAlias = null;
+        }
+        //3. WHERE clause
+        this.dmlWhereClause(delete.predicateList(), context);
+        //3.1 append discriminator
+        if (table instanceof ParentTableMeta) {
+            this.discriminator(table, safeTableAlias, context);
+        }
+        //3.2 append visible
+        if (table.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(table, safeTableAlias, context);
+        }
+        final Stmt stmt;
+        if (delete instanceof _BatchDml) {
+            stmt = context.build(((_BatchDml) delete).paramList());
+        } else {
+            stmt = context.build();
         }
         return stmt;
     }
@@ -1711,43 +1303,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
         return stmt;
     }
 
-    /**
-     * @see #handleStandardDelete(_SingleDelete, Visible)
-     */
-    private SimpleStmt standardSingleTableDelete(final StandardDeleteContext context) {
-        if (context.childBlock != null) {
-            throw new IllegalArgumentException();
-        }
-        final _Dialect dialect = context.dialect;
-        final SingleTableMeta<?> table = context.table;
-        final StringBuilder sqlBuilder = context.sqlBuilder;
-
-        // 1. DELETE clause
-        sqlBuilder.append(_Constant.DELETE_FROM_SPACE)
-                .append(_Constant.SPACE);
-
-        dialect.safeObjectName(table.tableName(), sqlBuilder);
-
-        if (dialect.tableAliasAfterAs()) {
-            sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-        }
-        sqlBuilder.append(_Constant.SPACE)
-                .append(context.safeTableAlias);
-
-        //2. where clause
-        this.dmlWhereClause(context);
-
-        //2.1 append discriminator predicate
-        if (table instanceof ParentTableMeta) {
-            this.discriminator(table, context.safeTableAlias, context);
-        }
-        //2.2 append visible
-        if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, context.safeTableAlias, context);
-        }
-        return context.build();
-    }
-
 
     private void standardSimpleQuery(_StandardQuery query, _SqlContext context) {
         //1. select clause
@@ -1755,7 +1310,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         //2. select list clause
         this.selectListClause(query.selectItemList(), context);
         //3. from clause
-        final List<? extends _TableBlock> blockList = query.tableBlockList();
+        final List<_TableBlock> blockList = query.tableBlockList();
         this.standardFromClause(blockList, context);
         //4. where clause
 

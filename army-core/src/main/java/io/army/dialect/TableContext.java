@@ -41,6 +41,20 @@ final class TableContext {
     }
 
 
+    static TableContext forChild(final ChildTableMeta<?> table, final String tableAlias, final ArmyDialect dialect) {
+        final Map<String, TableItem> aliasToTable = new HashMap<>(4);
+        aliasToTable.put(tableAlias, table);
+        final String parentAlias = _DialectUtils.parentAlias(tableAlias);
+        aliasToTable.put(parentAlias, table.parentMeta());
+
+        final Map<TableMeta<?>, String> tableToSafeAlias = new HashMap<>(4);
+        tableToSafeAlias.put(table, dialect.identifier(tableAlias));
+        tableToSafeAlias.put(table.parentMeta(), dialect.identifier(parentAlias));
+
+        return new TableContext(aliasToTable, tableToSafeAlias, null);
+    }
+
+
     static TableContext createContext(List<? extends _TableBlock> blockList, _Dialect dialect
             , final Visible visible, final boolean multiUpdate) {
         final Map<String, TableItem> aliasToTable = new HashMap<>((int) (blockList.size() / 0.75F));

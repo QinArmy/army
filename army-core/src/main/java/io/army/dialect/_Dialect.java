@@ -46,7 +46,9 @@ public interface _Dialect {
     }
 
     @Deprecated
-    String literal(ParamMeta paramMeta, Object nonNull);
+    default String literal(ParamMeta paramMeta, Object nonNull) {
+        throw new UnsupportedOperationException();
+    }
 
     StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
 

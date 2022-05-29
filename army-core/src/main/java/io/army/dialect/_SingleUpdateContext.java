@@ -9,7 +9,6 @@ import io.army.meta.FieldMeta;
  */
 public interface _SingleUpdateContext extends _UpdateContext, _SingleTableContext, _SetClauseContext {
 
-
     void appendParentField(FieldMeta<?> parentField);
 
 }
