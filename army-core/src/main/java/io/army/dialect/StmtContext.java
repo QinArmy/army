@@ -65,11 +65,17 @@ abstract class StmtContext implements _StmtContext, StmtParams {
 
     @Override
     public final void appendParam(final ParamValue paramValue) {
-        if (!this.hasStrictParam && paramValue instanceof StrictParamValue) {
-            this.hasStrictParam = true;
-        }
-        if (!this.hasNamedParam && paramValue instanceof NamedParam && !(this instanceof _ValueInsertContext)) {
-            this.hasNamedParam = true;
+        if (paramValue instanceof NamedParam) {
+            if (!this.hasNamedParam) {
+                this.hasNamedParam = true;
+            }
+            if (!this.hasStrictParam) {
+                this.hasStrictParam = true;
+            }
+        } else if (paramValue instanceof StrictParamValue) {
+            if (!this.hasStrictParam) {
+                this.hasStrictParam = true;
+            }
         }
         this.sqlBuilder.append(SPACE_PLACEHOLDER);
         this.paramList.add(paramValue);

@@ -4,12 +4,14 @@ import io.army.criteria.TableItem;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.HashMap;
 import java.util.Map;
 
-abstract class MultiTableContext extends StmtContext implements _StmtContext {
+abstract class MultiTableContext extends StmtContext implements _MultiTableContext, _StmtContext {
 
     final Map<String, TableItem> aliasToTable;
 
@@ -55,10 +57,10 @@ abstract class MultiTableContext extends StmtContext implements _StmtContext {
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
             this.dialect.safeObjectName(field.columnName(), sqlBuilder);
-        } else if (this instanceof _SubQueryContext) {
-            this.appendOuterField(field);
         } else if (this.aliasToTable.containsValue(fieldTable)) {
             throw _Exceptions.selfJoinNonQualifiedField(field);
+        } else if (this instanceof _SubQueryContext) {
+            this.appendOuterField(field);
         } else {
             throw _Exceptions.unknownColumn(field);
         }
@@ -74,16 +76,39 @@ abstract class MultiTableContext extends StmtContext implements _StmtContext {
         safeAlias = this.tableToSafeAlias.get(table);
         if (safeAlias == null) {
             // table self-join
-            final Map<String, String> aliasToSafeAlias = getAliasToSafeAlias();
-            safeAlias = aliasToSafeAlias.get(alias);
-            if (safeAlias == null) {
-                safeAlias = this.dialect.identifier(alias);
-                aliasToSafeAlias.put(alias, safeAlias);
+            safeAlias = getAliasToSafeAlias().computeIfAbsent(alias, this.dialect::identifier);
+        }
+        return safeAlias;
+    }
+
+    @Override
+    public final String safeTableAliasOf(final TableMeta<?> table) {
+        final String safeAlias;
+        safeAlias = this.tableToSafeAlias.get(table);
+        if (safeAlias == null) {
+            if (this.aliasToTable.containsValue(table)) {
+                throw _Exceptions.tableSelfJoin(table);
+            } else {
+                throw _Exceptions.unknownTable(table, "");
             }
         }
         return safeAlias;
     }
 
+    @Override
+    public final TableItem tableItemOf(final String tableAlias) {
+        final TableItem tableItem;
+        tableItem = this.aliasToTable.get(tableAlias);
+        if (tableItem == null) {
+            throw _Exceptions.unknownTableAlias(tableAlias);
+        }
+        return tableItem;
+    }
+
+    @Override
+    public final SimpleStmt build() {
+        return Stmts.simple(this);
+    }
 
     void appendOuterField(String tableAlias, FieldMeta<?> field) {
         throw new UnsupportedOperationException();
@@ -106,13 +131,8 @@ abstract class MultiTableContext extends StmtContext implements _StmtContext {
         String safeTableAlias;
         safeTableAlias = this.tableToSafeAlias.get(field.tableMeta());
         if (safeTableAlias == null) {
-            // belongOf self-join
-            final Map<String, String> aliasToSafeAlias = getAliasToSafeAlias();
-            safeTableAlias = aliasToSafeAlias.get(tableAlias);
-            if (safeTableAlias == null) {
-                safeTableAlias = this.dialect.identifier(tableAlias);
-                aliasToSafeAlias.put(tableAlias, safeTableAlias);
-            }
+            //  self-join
+            safeTableAlias = getAliasToSafeAlias().computeIfAbsent(tableAlias, this.dialect::identifier);
         }
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder

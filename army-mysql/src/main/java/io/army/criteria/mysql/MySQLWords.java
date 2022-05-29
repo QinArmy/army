@@ -26,18 +26,18 @@ public enum MySQLWords implements SQLWords.Modifier {
     IGNORE(" IGNORE", 2);
 
 
-    public final String modifier;
+    public final String words;
 
     public final byte number;
 
-    MySQLWords(String modifier, int number) {
-        this.modifier = modifier;
+    MySQLWords(String words, int number) {
+        this.words = words;
         this.number = (byte) number;
     }
 
     @Override
     public final String render() {
-        return this.modifier;
+        return this.words;
     }
 
     @Override

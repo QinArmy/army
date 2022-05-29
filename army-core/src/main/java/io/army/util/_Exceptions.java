@@ -70,16 +70,20 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownColumn(TableField field) {
+    public static CriteriaException unknownColumn(DataField field) {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
     public static CriteriaException unknownTableAlias(String alias) {
-        return new CriteriaException(String.format("Unknown table alais %s", alias));
+        return new CriteriaException(String.format("Unknown table alias %s", alias));
     }
 
     public static CriteriaException unknownTable(TableMeta<?> table, String alias) {
         return new CriteriaException(String.format("Unknown table %s %s ", table, alias));
+    }
+
+    public static CriteriaException tableSelfJoin(TableMeta<?> table) {
+        return new CriteriaException(String.format("%s self-join", table));
     }
 
     public static CriteriaException dontSupportTableItem(TableItem item, String alias) {
@@ -160,6 +164,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException existsChildFieldInMultiTableSetClause() {
+        return new CriteriaException("Exists child filed in multi-table SET clause.");
+    }
+
     public static CriteriaException noWhereClause(_SqlContext context) {
         return new CriteriaException(String.format("%s no where clause.", context));
     }
@@ -184,7 +192,7 @@ public abstract class _Exceptions extends ExceptionUtils {
                 , SetRightItem.class.getName(), value));
     }
 
-    public static CriteriaException selfJoinNonQualifiedField(TableField field) {
+    public static CriteriaException selfJoinNonQualifiedField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s self join but %s don't use %s."
                 , field.tableMeta(), field, QualifiedField.class.getName()));
     }

@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Hint;
-import io.army.criteria.impl.inner.mysql._MySQLHint;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
 import io.army.dialect._Dialect;
@@ -21,11 +21,11 @@ import java.util.List;
  *
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/optimizer-hints.html">Optimizer Hints</a>
  */
-abstract class MySQLHints implements _MySQLHint {
+abstract class MySQLHints implements Hint, _SelfDescribed {
 
     @Nullable
-    static _MySQLHint castHint(final Hint hint) {
-        final _MySQLHint h;
+    static MySQLHints castHint(final Hint hint) {
+        final MySQLHints h;
         if (hint instanceof MySQLHints) {
             h = (MySQLHints) hint;
         } else {

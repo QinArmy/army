@@ -8,6 +8,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.DmlStmtParams;
 import io.army.util._Exceptions;
 
@@ -52,6 +53,10 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
         if (field instanceof QualifiedField
                 && !this.tableAlias.equals(((QualifiedField<?>) field).tableAlias())) {
             throw _Exceptions.unknownColumn(field);
+        }
+        final String fieldName = field.fieldName();
+        if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
+            throw _Exceptions.armyManageField(field);
         }
         final StringBuilder sqlBuilder = this.sqlBuilder;
         sqlBuilder

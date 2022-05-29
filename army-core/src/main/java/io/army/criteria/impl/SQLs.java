@@ -723,7 +723,7 @@ public abstract class SQLs extends Functions {
     /**
      * @see #itemPair(DataField, Object)
      */
-    static class FieldItemPair extends ArmyItemPair {
+    static class FieldItemPair extends ArmyItemPair implements _ItemPair._FieldItemPair {
 
         final DataField field;
 
@@ -749,6 +749,10 @@ public abstract class SQLs extends Functions {
             ((_Expression) this.right).appendSql(context);
         }
 
+        @Override
+        public final DataField field() {
+            return this.field;
+        }
 
         @Override
         public final String toString() {
@@ -777,7 +781,7 @@ public abstract class SQLs extends Functions {
 
     }//OperatorItemPair
 
-    static final class RowItemPair extends ArmyItemPair {
+    static final class RowItemPair extends ArmyItemPair implements _ItemPair._RowItemPair {
 
         final List<DataField> fieldList;
 
@@ -831,6 +835,11 @@ public abstract class SQLs extends Functions {
             //5. append sub query
             context.dialect().rowSet((SubQuery) this.right, context);
 
+        }
+
+        @Override
+        public List<? extends DataField> rowFieldList() {
+            return this.fieldList;
         }
 
         @Override
