@@ -36,6 +36,11 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
+    public StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder) {
+        return null;
+    }
+
+    @Override
     protected final char identifierQuote() {
         return _Constant.DOUBLE_QUOTE;
     }

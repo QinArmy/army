@@ -5,7 +5,6 @@ import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
@@ -50,10 +49,6 @@ final class UnionSelectContext extends StmtContext implements _UnionQueryContext
         throw _Exceptions.unknownColumn(null, field);
     }
 
-    @Override
-    public String safeTableAlias(TableMeta<?> table, String alias) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public SimpleStmt build() {
@@ -61,7 +56,12 @@ final class UnionSelectContext extends StmtContext implements _UnionQueryContext
         if (outerContext != null) {
             throw new IllegalStateException("This context is inner context, don't support create Stmt.");
         }
-        return Stmts.selectStmt(this.sqlBuilder.toString(), this.paramList, this.selectionList);
+        return Stmts.queryStmt(this);
+    }
+
+    @Override
+    public List<Selection> selectionList() {
+        return this.selectionList;
     }
 
 

@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.lang.Nullable;
+import io.army.session.Database;
 import io.army.util._ClassUtils;
 
 public abstract class _SQLCounselor {
@@ -39,9 +41,24 @@ public abstract class _SQLCounselor {
         }
     }
 
+    public static void assertStandardNestedItems(@Nullable NestedItems nestedItems) {
+        if (!(nestedItems instanceof StandardNestedItems)) {
+            throw illegalNestedItems(nestedItems, null);
+        }
+    }
+
     protected static CriteriaException instanceNotMatch(Statement statement, Class<?> statementClass) {
         String m = String.format("%s isn't instance of %s"
                 , _ClassUtils.safeClassName(statement), statementClass.getName());
+        throw new CriteriaException(m);
+    }
+
+
+    static CriteriaException illegalNestedItems(@Nullable NestedItems nestedItem, @Nullable Database database) {
+        String m = String.format("Illegal %s %s for %s"
+                , NestedItems.class.getName()
+                , _ClassUtils.safeClassName(nestedItem)
+                , database == null ? "standard" : database);
         throw new CriteriaException(m);
     }
 

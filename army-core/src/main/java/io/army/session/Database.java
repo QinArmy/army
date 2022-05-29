@@ -7,7 +7,13 @@ public enum Database {
     Oracle,
     PostgreSQL,
     H2,
-    Firebird
+    Firebird;
+
+
+    @Override
+    public final String toString() {
+        return String.format("%s.%s", Database.class.getName(), this.name());
+    }
 
 
 }

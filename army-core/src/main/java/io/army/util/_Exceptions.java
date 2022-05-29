@@ -8,6 +8,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner._DialectStatement;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
@@ -60,6 +61,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException nonStandardTableBlock(_TableBlock block) {
+        String m = String.format("%s is non-standard %s", _ClassUtils.safeClassName(block), _TableBlock.class.getName());
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException unknownColumn(@Nullable String tableAlias, FieldMeta<?> fieldMeta) {
         final String m;
         if (tableAlias == null) {
@@ -92,9 +98,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException dontSupportLateralItem(TableItem item, String alias, Dialect dialect) {
+    public static CriteriaException dontSupportLateralItem(TableItem item, String alias, @Nullable Dialect dialect) {
         String m = String.format("%s Don't support LATERAL %s alias %s ."
-                , dialect, _ClassUtils.safeClassName(item), alias);
+                , dialect == null ? "Standard" : dialect, _ClassUtils.safeClassName(item), alias);
         return new CriteriaException(m);
     }
 
@@ -281,6 +287,18 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException noFromClause() {
         return new CriteriaException("Not found from clause.");
+    }
+
+    public static CriteriaException tableBlockListIsEmpty(boolean nested) {
+        final CriteriaException e;
+        if (nested) {
+            final String m;
+            m = String.format("%s must not empty.", NestedItems.class.getName());
+            e = new CriteriaException(m);
+        } else {
+            e = noFromClause();
+        }
+        return e;
     }
 
     public static CriteriaException standardDontSupportHint() {

@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._UnionRowSet;
+import io.army.session.Database;
 
 public abstract class _MySQLCounselor extends _SQLCounselor {
 
@@ -69,7 +70,7 @@ public abstract class _MySQLCounselor extends _SQLCounselor {
 
     public static void assertNestedItems(final NestedItems nestedItems) {
         if (!(nestedItems instanceof MySQLNestedItems || nestedItems instanceof StandardNestedItems)) {
-            throw new CriteriaException(String.format("Illegal %s", NestedItems.class.getName()));
+            throw illegalNestedItems(nestedItems, Database.MySQL);
         }
 
     }

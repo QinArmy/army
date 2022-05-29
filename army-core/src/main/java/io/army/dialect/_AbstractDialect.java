@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.ArmyException;
 import io.army.criteria.*;
+import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._SQLCounselor;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
@@ -16,6 +17,7 @@ import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -183,9 +185,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
         } else {
             context = SimpleSelectContext.create(select, this, visible);
             if (select instanceof StandardQuery) {
-                this.standardSimpleQuery((_StandardQuery) select, context);
+                this.standardSimpleQuery((_StandardQuery) select, (_MultiTableContext) context);
             } else {
-                this.dialectSimpleQuery(context, (_Query) select);
+                this.dialectSimpleQuery((_Query) select, (_MultiTableContext) context);
             }
         }
         return context.build();
@@ -385,7 +387,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         throw new UnsupportedOperationException();
     }
 
-    protected void dialectSimpleQuery(_Query query, _StmtContext context) {
+    protected void dialectSimpleQuery(_Query query, _MultiTableContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -399,15 +401,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    protected void handleDialectTableBlock(_TableBlock block, _SqlContext context) {
-
-    }
-
-    protected void handleDialectTableItem(TableItem tableItem, _SqlContext context) {
-
-    }
-
-    protected final _SingleUpdateContext createChildUpdateContext(final _SingleUpdate stmt, final Visible visible) {
+    protected final _SingleUpdateContext createSingleUpdateContext(final _SingleUpdate stmt, final Visible visible) {
         return SingleUpdateContext.create(stmt, this, visible);
     }
 
@@ -448,7 +442,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (size == 0) {
             throw new CriteriaException("ON clause must not empty");
         }
-        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final StringBuilder sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_ON);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_AND);
@@ -644,8 +639,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     protected final void selectListClause(final List<? extends SelectItem> selectItemList, final _SqlContext context) {
-        final StringBuilder builder = context.sqlBuilder();
+
         final int size = selectItemList.size();
+        if (size == 0) {
+            throw _Exceptions.selectListIsEmpty();
+        }
+        final StringBuilder builder = context.sqlBuilder();
         SelectItem selectItem;
         for (int i = 0; i < size; i++) {
             if (i > 0) {
@@ -664,64 +663,95 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     }
 
-    protected final void standardFromClause(final List<? extends _TableBlock> tableBlockList, final _SqlContext context) {
-        final int size = tableBlockList.size();
-        if (size == 0) {
-            throw _Exceptions.noFromClause();
+    /**
+     * @see #standardSimpleQuery(_StandardQuery, _MultiTableContext)
+     */
+    protected final void standardTableReferences(final List<_TableBlock> tableBlockList
+            , final _MultiTableContext context, final boolean nested) {
+        final int blockSize = tableBlockList.size();
+        if (blockSize == 0) {
+            throw _Exceptions.tableBlockListIsEmpty(nested);
         }
 
-        final StringBuilder builder = context.sqlBuilder()
-                .append(_Constant.SPACE_FROM);
-        final _Dialect dialect = context.dialect();
-
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        _TableBlock block;
+        TableItem tableItem;
+        _JoinType joinType;
+        List<_Predicate> predicateList;
         final boolean supportTableOnly = this.supportTableOnly();
-        for (int i = 0; i < size; i++) {
-            final _TableBlock block = tableBlockList.get(i);
-            if (i > 0) {
-                builder.append(block.jointType().render());
+        for (int i = 0; i < blockSize; i++) {
+            block = tableBlockList.get(i);
+            if (block instanceof _DialectTableBlock) {
+                throw _Exceptions.nonStandardTableBlock(block);
             }
-            final TableItem tableItem = block.tableItem();
+            joinType = block.jointType();
+            if (i > 0) {
+                sqlBuilder.append(joinType.keyWords);
+            } else if (joinType != _JoinType.NONE) {
+                throw _Exceptions.unexpectedEnum(joinType);
+            }
+            tableItem = block.tableItem();
             if (tableItem instanceof TableMeta) {
                 if (supportTableOnly) {
-                    builder.append(_Constant.SPACE_ONLY);
+                    sqlBuilder.append(_Constant.SPACE_ONLY);
                 }
-                builder.append(_Constant.SPACE);
-
-                dialect.identifier(((TableMeta<?>) tableItem).tableName(), builder)
-                        .append(_Constant.SPACE_AS_SPACE);
-                dialect.identifier(block.alias(), builder);
+                sqlBuilder.append(_Constant.SPACE);
+                this.identifier(((TableMeta<?>) tableItem).tableName(), sqlBuilder)
+                        .append(_Constant.SPACE_AS_SPACE)
+                        .append(context.safeTableAlias(block.alias()));
             } else if (tableItem instanceof SubQuery) {
-                this.subQueryStmt((SubQuery) tableItem, context);
-                builder.append(_Constant.SPACE_AS_SPACE);
-                dialect.identifier(block.alias(), builder);
-            } else {
-                this.handleDialectTableItem(tableItem, context);
-            }
-            if (block instanceof _DialectTableBlock) {
-                this.handleDialectTableBlock(block, context);
-            }
-            if (i == 0) {
-                continue;
-            }
-            final List<_Predicate> onPredicates = block.predicateList();
-            final int onSize = onPredicates.size();
-            if (onSize > 0) {
-                builder.append(_Constant.SPACE_ON);
-            }
-            for (int j = 0; j < onSize; j++) {
-                if (j > 0) {
-                    builder.append(_Constant.SPACE_AND);
+                if (tableItem instanceof _LateralSubQuery) {
+                    throw _Exceptions.dontSupportLateralItem(tableItem, block.alias(), null);
                 }
-                onPredicates.get(j).appendSql(context);
+                this.subQueryStmt((SubQuery) tableItem, context);
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                        .append(context.safeTableAlias(block.alias()));
+            } else if (tableItem instanceof NestedItems) {
+                _SQLCounselor.assertStandardNestedItems((NestedItems) tableItem);
+                if (_StringUtils.hasText(block.alias())) {
+                    throw _Exceptions.nestedItemsAliasHasText(block.alias());
+                }
+                this.standardTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
+            } else {
+                throw _Exceptions.dontSupportTableItem(tableItem, block.alias());
             }
+
+            // on clause
+            switch (joinType) {
+                case LEFT_JOIN:
+                case JOIN:
+                case RIGHT_JOIN:
+                case FULL_JOIN: {
+                    predicateList = block.predicateList();
+                    if (!nested || predicateList.size() > 0) {
+                        this.onClause(predicateList, context);
+                    }
+                }
+                break;
+                case NONE:
+                case CROSS_JOIN: {
+                    if (block.predicateList().size() > 0) {
+                        throw _Exceptions.joinTypeNoOnClause(joinType);
+                    }
+                }
+                break;
+                case STRAIGHT_JOIN:
+                    throw _Exceptions.castCriteriaApi();
+                default:
+                    throw _Exceptions.unexpectedEnum(joinType);
+            }
+
 
         }// for
 
 
     }
 
-    protected final void queryWhereClause(final List<_TableBlock> blockList
-            , final List<_Predicate> predicateList, final _SqlContext context) {
+    /**
+     * @see #standardSimpleQuery(_StandardQuery, _MultiTableContext)
+     */
+    protected final void queryWhereClause(final List<_TableBlock> tableBlockList, final List<_Predicate> predicateList
+            , final _MultiTableContext context) {
         final int predicateSize = predicateList.size();
         final Visible visible = context.visible();
         if (predicateSize == 0 && visible == Visible.BOTH) {
@@ -729,10 +759,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
         //1. append where key word
         final StringBuilder builder = context.sqlBuilder();
-
-        if (predicateSize > 0) {
-            builder.append(_Constant.SPACE_WHERE);
-        }
+        builder.append(_Constant.SPACE_WHERE);
         //2. append where predicates
         for (int i = 0; i < predicateSize; i++) {
             if (i > 0) {
@@ -741,48 +768,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
             predicateList.get(i).appendSql(context);
         }
 
-        if (visible == Visible.BOTH) {
-            return;
+        if (visible != Visible.BOTH) {
+            this.multiTableVisible(tableBlockList, context, predicateSize == 0);
         }
-        final Boolean visibleValue = visible.visible;
-        assert visibleValue != null;
-
-        final _Dialect dialect = context.dialect();
-
-        final int blockSize = blockList.size();
-
-        TableItem tableItem;
-        FieldMeta<?> visibleField;
-        _TableBlock block;
-        //3. append visible
-        for (int i = 0, outputCount = 0; i < blockSize; i++) {
-            block = blockList.get(i);
-            tableItem = block.tableItem();
-            if (!(tableItem instanceof SingleTableMeta)
-                    || !((SingleTableMeta<?>) tableItem).containField(_MetaBridge.VISIBLE)) {
-                continue;
-            }
-
-            if (outputCount > 0 || predicateSize > 0) {
-                builder.append(_Constant.SPACE_AND);
-            } else {
-                builder.append(_Constant.SPACE_WHERE);
-            }
-
-            visibleField = ((SingleTableMeta<?>) tableItem).getField(_MetaBridge.VISIBLE);
-
-            builder.append(_Constant.SPACE);
-
-            dialect.identifier(block.alias(), builder)
-                    .append(_Constant.POINT);
-
-            dialect.identifier(visibleField.columnName(), builder)
-                    .append(_Constant.SPACE_EQUAL_SPACE)
-                    .append(dialect.literal(visibleField, visibleValue));
-
-            outputCount++;
-
-        }// for
 
     }
 
@@ -876,7 +864,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         } else if (rowCount >= 0) {
             context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
                     .append(rowCount);
-        }
+        }//TODO
     }
 
 
@@ -907,8 +895,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
+    /**
+     * @see #multiTableVisible(List, _MultiTableContext, boolean)
+     */
     protected final void visiblePredicate(final SingleTableMeta<?> table, final @Nullable String safeTableAlias
-            , final _SqlContext context) {
+            , final _SqlContext context, final boolean firstPredicate) {
 
         final FieldMeta<?> field = table.getField(_MetaBridge.VISIBLE);
         final Boolean visibleValue;
@@ -926,8 +917,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 throw _Exceptions.unexpectedEnum(context.visible());
         }
         if (visibleValue != null) {
-            final StringBuilder sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AND_SPACE);
+            final StringBuilder sqlBuilder = context.sqlBuilder();
+            if (firstPredicate) {
+                sqlBuilder.append(_Constant.SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE_AND_SPACE);
+            }
             if (safeTableAlias != null) {
                 sqlBuilder.append(safeTableAlias);
             } else if (context instanceof _SingleDeleteContext) {
@@ -961,13 +956,15 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     }
 
-    protected final void multiDmlVisible(final List<? extends _TableBlock> blockList, final _MultiTableContext context) {
-        if (context.visible() == Visible.BOTH) {
-            return;
-        }
+    /**
+     * @see #standardSimpleQuery(_StandardQuery, _MultiTableContext)
+     */
+    protected final void multiTableVisible(final List<_TableBlock> blockList, final _MultiTableContext context
+            , final boolean firstPredicate) {
         TableItem tableItem;
         String safeTableAlias;
         SingleTableMeta<?> table;
+        int count = 0;
         for (_TableBlock block : blockList) {
             tableItem = block.tableItem();
             if (!(tableItem instanceof SingleTableMeta)) {
@@ -977,9 +974,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
             if (!table.containField(_MetaBridge.VISIBLE)) {
                 continue;
             }
-            safeTableAlias = context.safeTableAlias(table, block.alias());
-            this.visiblePredicate(table, safeTableAlias, context);
+            safeTableAlias = context.safeTableAlias(block.alias());
+            this.visiblePredicate(table, safeTableAlias, context, firstPredicate && count == 0);
+            count++;
         }
+
     }
 
 
@@ -1156,7 +1155,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                     String m = String.format("Standard query api support only %s", Distinct.class.getName());
                     throw new CriteriaException(m);
                 }
-                builder.append(modifier.render());
+                builder.append(((Distinct) modifier).keyWords);
             }
             break;
             default:
@@ -1231,7 +1230,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
         //3.2 append visible
         if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, safeTableAlias, context);
+            this.visiblePredicate(table, safeTableAlias, context, false);
         }
         final Stmt stmt;
         if (delete instanceof _BatchDml) {
@@ -1291,7 +1290,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         //3.3 append visible
         if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, context.safeTableAlias, context);
+            this.visiblePredicate(table, context.safeTableAlias, context, false);
         }
 
         final Stmt stmt;
@@ -1304,16 +1303,23 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-    private void standardSimpleQuery(_StandardQuery query, _SqlContext context) {
+    /**
+     * @see #select(Select, Visible)
+     * @see #selectStmt(Select, _SqlContext)
+     * @see #subQueryStmt(SubQuery, _SqlContext)
+     * @see #lateralSubQuery(SubQuery, _SqlContext)
+     */
+    private void standardSimpleQuery(final _StandardQuery query, final _MultiTableContext context) {
         //1. select clause
         this.standardSelectClause(query.modifierList(), context);
         //2. select list clause
         this.selectListClause(query.selectItemList(), context);
         //3. from clause
+        context.sqlBuilder()
+                .append(_Constant.SPACE_FROM);
         final List<_TableBlock> blockList = query.tableBlockList();
-        this.standardFromClause(blockList, context);
+        this.standardTableReferences(blockList, context, false);
         //4. where clause
-
         this.queryWhereClause(blockList, query.predicateList(), context);
 
         //5. groupBy clause

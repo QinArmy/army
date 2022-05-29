@@ -319,7 +319,7 @@ abstract class MySQL extends _AbstractDialect {
 
         //4.3 append visible
         if (parentTable.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(parentTable, safeParentTableAlias, context);
+            this.visiblePredicate(parentTable, safeParentTableAlias, context, false);
         }
         final Stmt stmt;
         if (update instanceof _BatchDml) {
@@ -362,7 +362,7 @@ abstract class MySQL extends _AbstractDialect {
 
         //3.2 append visible
         if (parentTable.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(parentTable, safeParentTableAlias, context);
+            this.visiblePredicate(parentTable, safeParentTableAlias, context, false);
         }
         final Stmt stmt;
         if (delete instanceof _BatchDml) {

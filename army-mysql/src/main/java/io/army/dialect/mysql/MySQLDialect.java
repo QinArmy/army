@@ -76,7 +76,7 @@ final class MySQLDialect extends MySQL {
     }
 
     @Override
-    protected void dialectSimpleQuery(final _Query query, final _StmtContext context) {
+    protected void dialectSimpleQuery(final _Query query, final _MultiTableContext context) {
         if (context.dialect() != this) {
             throw illegalDialect();
         }
@@ -200,7 +200,7 @@ final class MySQLDialect extends MySQL {
 
         //10.3 append visible
         if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, safeTableAlias, context);
+            this.visiblePredicate(table, safeTableAlias, context, false);
         }
         //11. order by clause
         this.orderByClause(stmt.orderByList(), context);
@@ -240,7 +240,7 @@ final class MySQLDialect extends MySQL {
         //7.2 append condition update fields
         context.appendConditionFields();
         //7.3 append visible
-        this.multiDmlVisible(stmt.tableBlockList(), context);
+        this.multiTableVisible(stmt.tableBlockList(), context, false);
 
     }
 
@@ -293,7 +293,7 @@ final class MySQLDialect extends MySQL {
         }
         //7.2 append visible
         if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, safeTableAlias, context);
+            this.visiblePredicate(table, safeTableAlias, context, false);
         }
         //8. order by clause
         this.orderByClause(stmt.orderByList(), context);
@@ -358,7 +358,7 @@ final class MySQLDialect extends MySQL {
         //7. where clause
         this.dmlWhereClause(stmt.predicateList(), context);
         //7.1 append visible
-        this.multiDmlVisible(stmt.tableBlockList(), context);
+        this.multiTableVisible(stmt.tableBlockList(), context, false);
 
     }
 
@@ -426,11 +426,11 @@ final class MySQLDialect extends MySQL {
     }
 
 
-    private void mysqlTableReferences(final List<_TableBlock> blockList, final _StmtContext context
+    private void mysqlTableReferences(final List<_TableBlock> blockList, final _MultiTableContext context
             , final boolean nested) {
         final int blockSize = blockList.size();
         if (blockSize == 0) {
-            throw new CriteriaException("No table_references");
+            throw _Exceptions.tableBlockListIsEmpty(nested);
         }
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
@@ -485,6 +485,7 @@ final class MySQLDialect extends MySQL {
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else if (tableItem instanceof NestedItems) {
+                _MySQLCounselor.assertNestedItems((NestedItems) tableItem);
                 if (_StringUtils.hasText(alias)) {
                     throw _Exceptions.nestedItemsAliasHasText(alias);
                 }

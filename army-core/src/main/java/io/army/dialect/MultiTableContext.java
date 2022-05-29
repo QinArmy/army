@@ -81,6 +81,13 @@ abstract class MultiTableContext extends StmtContext implements _MultiTableConte
         return safeAlias;
     }
 
+    @Override
+    public final String safeTableAlias(final String alias) {
+        if (this.aliasToTable.get(alias) == null) {
+            throw _Exceptions.unknownTableAlias(alias);
+        }
+        return this.getAliasToSafeAlias().computeIfAbsent(alias, this.dialect::identifier);
+    }
 
     @Override
     public final String saTableAliasOf(final TableMeta<?> table) {

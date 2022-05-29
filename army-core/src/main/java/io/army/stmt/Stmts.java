@@ -71,7 +71,7 @@ public abstract class Stmts {
     }
 
 
-    public static SimpleStmt selectStmt(String sql, List<ParamValue> paramList, List<Selection> selectionList) {
+    public static SimpleStmt queryStmt(StmtParams params) {
         return new SelectStmt(sql, paramList, selectionList);
     }
 
