@@ -8,13 +8,16 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Update;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.SingleTableMeta;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 final class MultiUpdateContext extends MultiTableContext implements _MultiUpdateContext, DmlStmtParams {
 
@@ -37,10 +40,35 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
     private List<DataField> conditionFieldList;
 
 
+    private Map<SingleTableMeta<?>, String> tableToAlias;
+
+
     private MultiUpdateContext(_Update stmt, TableContext tableContext, ArmyDialect dialect, Visible visible) {
         super(tableContext, dialect, visible);
         this.hasVersion = _DmlUtils.hasOptimistic(stmt.predicateList());
         this.supportQueryUpdate = dialect.supportQueryUpdate();
+    }
+
+    @Override
+    public String tableAliasOf(final SingleTableMeta<?> table) {
+        final String safeTableAlias;
+        safeTableAlias = this.tableToSafeAlias.get(table);
+        if (safeTableAlias == null) {
+            throw _Exceptions.tableSelfJoin(table);
+        }
+
+        final String tableAlias;
+        if (this.aliasToTable.get(safeTableAlias) == table) {
+            tableAlias = safeTableAlias;
+        } else {
+            Map<SingleTableMeta<?>, String> tableToAlias = this.tableToAlias;
+            if (tableToAlias == null) {
+                tableToAlias = new HashMap<>();
+                this.tableToAlias = tableToAlias;
+            }
+            tableAlias = tableToAlias.computeIfAbsent(table, this::findSingleTableAlias);
+        }
+        return tableAlias;
     }
 
 
@@ -202,6 +230,24 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
     @Override
     public boolean hasVersion() {
         return this.hasVersion;
+    }
+
+
+    /**
+     * @see #tableAliasOf(SingleTableMeta)
+     */
+    private String findSingleTableAlias(final SingleTableMeta<?> table) {
+        String tableAlias = null;
+        for (Map.Entry<String, TableItem> e : this.aliasToTable.entrySet()) {
+            if (e.getValue() == table) {
+                tableAlias = e.getKey();
+            }
+        }
+        if (tableAlias == null) {
+            // no bug, never here.
+            throw new IllegalStateException();
+        }
+        return tableAlias;
     }
 
 
