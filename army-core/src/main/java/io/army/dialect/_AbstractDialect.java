@@ -565,14 +565,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
             throw _Exceptions.setClauseNotExists();
         }
 
-        final Map<Object, Boolean> aliasOrTableMap = new HashMap<>();
+        final Map<String, Boolean> aliasOrTableMap = new HashMap<>();
 
         final Consumer<DataField> fieldConsumer = field -> {
             if (field instanceof FieldMeta) {
-                //TODO fix me,可能重复输出  updateTime 和 version
                 final TableMeta<?> table = ((FieldMeta<?>) field).tableMeta();
                 if (table instanceof SingleTableMeta) {
-                    aliasOrTableMap.putIfAbsent(table, Boolean.TRUE);
+                    aliasOrTableMap.putIfAbsent(context.tableAliasOf((SingleTableMeta<?>) table), Boolean.TRUE);
                 }
             } else if (field instanceof QualifiedField) {
                 if (((QualifiedField<?>) field).tableMeta() instanceof SingleTableMeta) {
@@ -603,27 +602,32 @@ public abstract class _AbstractDialect implements ArmyDialect {
                     fieldConsumer.accept(field);
                 }
             } else {
+                //no bug,never here
                 throw new IllegalStateException("unknown item pair");
             }
+        }
+
+        if (aliasOrTableMap.size() == 0) {
+            //no bug,never here
+            throw new IllegalStateException();
         }
 
         //3. append updateTime and visible for multi-table update target table
         SingleTableMeta<?> singleTable;
         TableItem tableItem;
         String safeTableAlias;
-        for (Object aliasOrTable : aliasOrTableMap.keySet()) {
-            if (aliasOrTable instanceof SingleTableMeta) {
-                singleTable = (SingleTableMeta<?>) aliasOrTable;
-                safeTableAlias = context.saTableAliasOf(singleTable);
-            } else if (!(aliasOrTable instanceof String)) {
-                //here bug
-                throw new IllegalStateException();
-            } else if ((tableItem = context.tableItemOf((String) aliasOrTable)) instanceof SingleTableMeta) {
+        for (String tableAlias : aliasOrTableMap.keySet()) {
+            tableItem = context.tableItemOf(tableAlias);
+
+            if (tableItem instanceof SingleTableMeta) {
                 singleTable = (SingleTableMeta<?>) tableItem;
-                safeTableAlias = context.safeTableAlias(singleTable, (String) aliasOrTable);
-            } else {
+                safeTableAlias = context.safeTableAlias(singleTable, tableAlias);
+            } else if (tableItem instanceof DerivedTable) {
                 //TODO eg:oracle
-                throw new UnsupportedOperationException();
+                throw _Exceptions.immutableTable(tableItem);
+            } else {
+                //no bug,never here
+                throw new IllegalStateException();
             }
             this.appendUpdateTimeAndVersion(singleTable, safeTableAlias, context);
         }

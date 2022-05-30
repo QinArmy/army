@@ -114,8 +114,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is immutable.", field));
     }
 
-    public static CriteriaException immutableTable(TableMeta<?> table) {
-        return new CriteriaException(String.format("%s is immutable.", table));
+    public static CriteriaException immutableTable(TableItem tableItem) {
+        return new CriteriaException(String.format("%s is immutable.", tableItem));
     }
 
     public static CriteriaException armyManageField(TableField field) {
