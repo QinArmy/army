@@ -72,7 +72,7 @@ public abstract class Stmts {
 
 
     public static SimpleStmt queryStmt(StmtParams params) {
-        return new SelectStmt(sql, paramList, selectionList);
+        return new QueryStmt(params);
     }
 
     public static SimpleStmt simple(String sql, List<ParamValue> paramList, Selection selection) {
@@ -98,7 +98,7 @@ public abstract class Stmts {
             ParamValue param;
             for (int i = 0; i < paramSize; i++) {
                 param = paramGroup.get(i);
-                if (param instanceof StrictParamValue) {
+                if (!(param instanceof NamedParam)) {
                     group.add(param);
                 } else if (param instanceof NamedElementParam) {
                     namedParam = ((NamedParam) param);
@@ -117,7 +117,7 @@ public abstract class Stmts {
                     for (Object element : collection) {
                         if (paramGroup.get(index) != namedParam) {
                             //here expression bug
-                            throw new CriteriaException("NamedElementParam not match");
+                            throw _Exceptions.namedElementParamNotMatch(size, index - i);
                         }
                         group.add(ParamValue.build(paramMeta, element));
                         index++;
@@ -126,15 +126,13 @@ public abstract class Stmts {
                         throw _Exceptions.namedCollectionParamSizeError((NamedElementParam) namedParam, index - i);
                     }
                     i = index - 1;
-                } else if (param instanceof NamedParam) {
+                } else {
                     namedParam = ((NamedParam) param);
                     value = accessor.get(paramObject, namedParam.name());
                     if (value == null && param instanceof NonNullNamedParam) {
                         throw _Exceptions.nonNullNamedParam((NonNullNamedParam) param);
                     }
                     group.add(ParamValue.build(param.paramMeta(), value));
-                } else {
-                    throw _Exceptions.unknownParamValue(param);
                 }
             }
 
@@ -314,7 +312,7 @@ public abstract class Stmts {
         }
     }//MinBatchDmlStmt
 
-    private static final class SelectStmt implements SimpleStmt {
+    private static final class QueryStmt implements SimpleStmt {
 
         private final String sql;
 
@@ -322,10 +320,10 @@ public abstract class Stmts {
 
         private final List<Selection> selectionList;
 
-        private SelectStmt(String sql, List<ParamValue> paramGroup, List<Selection> selectionList) {
-            this.sql = sql;
-            this.paramGroup = _CollectionUtils.unmodifiableList(paramGroup);
-            this.selectionList = _CollectionUtils.unmodifiableList(selectionList);
+        private QueryStmt(StmtParams params) {
+            this.sql = params.sql();
+            this.paramGroup = params.paramList();
+            this.selectionList = params.selectionList();
         }
 
         @Override
@@ -357,6 +355,8 @@ public abstract class Stmts {
         public String toString() {
             return this.sql;
         }
+
+
     }//SelectStmt
 
     private static final class PostStmt implements GeneratedKeyStmt {

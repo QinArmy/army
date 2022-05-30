@@ -38,7 +38,7 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
 
     @Override
     public BatchStmt build(List<?> paramList) {
-        if (!this.hasNamedParam) {
+        if (!this.hasNamedParam()) {
             throw _Exceptions.noNamedParamInBatch();
         }
         return Stmts.batchDml(this, paramList);

@@ -5,15 +5,22 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.NullHandleMode;
+import io.army.criteria.StandardStatement;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.*;
+import io.army.stmt.InsertStmtParams;
+import io.army.stmt.ParamValue;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -168,11 +175,6 @@ final class ValueInsertContext extends StmtContext implements _ValueInsertContex
     public void appendField(FieldMeta<?> field) {
         // value insert don't support insert any field in expression
         throw _Exceptions.unknownColumn(null, field);
-    }
-
-    @Override
-    public String safeTableAlias(TableMeta<?> table, String alias) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -357,23 +359,14 @@ final class ValueInsertContext extends StmtContext implements _ValueInsertContex
         return this.idSelectionAlias;
     }
 
-    @Override
-    List<ParamValue> createParamList() {
-        return new ProxyList(this::handleNamedParam);
-    }
 
-    private ParamValue handleNamedParam(final NamedParam namedParam) {
-        //this.currentDomain @see io.army.dialect._DmlUtils.appendStandardValueInsert
+    @Nullable
+    @Override
+    Object readNamedParam(final String name) {
         final IDomain domain = this.currentDomain;
         assert domain != null;
-        final Object value;
-        value = this.domainAccessor.get(domain, namedParam.name());
-        if (value == null && namedParam instanceof NonNullNamedParam) {
-            throw _Exceptions.nonNullNamedParam((NonNullNamedParam) namedParam);
-        }
-        return ParamValue.build(namedParam.paramMeta(), value);
+        return this.domainAccessor.get(domain, name);
     }
-
 
     @SuppressWarnings("unchecked")
     private static <T extends IDomain> List<FieldMeta<?>> castFieldList(final TableMeta<T> table) {
@@ -488,7 +481,7 @@ final class ValueInsertContext extends StmtContext implements _ValueInsertContex
     }//BeanReadWrapper
 
 
-    private static final class DelayIdParamValue implements StrictParamValue {
+    private static final class DelayIdParamValue implements ParamValue {
 
         private final ParamMeta paramMeta;
 

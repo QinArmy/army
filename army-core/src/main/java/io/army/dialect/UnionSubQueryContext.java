@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
 
@@ -29,17 +28,13 @@ final class UnionSubQueryContext extends StmtContext implements _UnionQueryConte
 
     @Override
     public void appendThisField(String tableAlias, FieldMeta<?> field) {
-        this.appendThisField(field);
+        throw _Exceptions.unknownColumn(tableAlias, field);
     }
 
-    @Override
-    public String safeTableAlias(TableMeta<?> table, String alias) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public void appendThisField(FieldMeta<?> field) {
-        throw new UnsupportedOperationException("Union sub query context don't support this operation.");
+        throw _Exceptions.unknownColumn(null, field);
     }
 
     @Override

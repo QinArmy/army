@@ -51,8 +51,7 @@ abstract class MultiTableContext extends StmtContext implements _MultiTableConte
         final String safeTableAlias;
         safeTableAlias = this.tableToSafeAlias.get(fieldTable);
         if (safeTableAlias != null) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = this.sqlBuilder
+            final StringBuilder sqlBuilder = this.sqlBuilder
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
@@ -115,7 +114,7 @@ abstract class MultiTableContext extends StmtContext implements _MultiTableConte
 
     @Override
     public final SimpleStmt build() {
-        if (this.hasNamedParam) {
+        if (this.hasNamedParam()) {
             throw _Exceptions.namedParamInNonBatch();
         }
         return Stmts.simple(this);

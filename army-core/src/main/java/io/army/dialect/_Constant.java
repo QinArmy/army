@@ -30,6 +30,8 @@ public interface _Constant {
 
     String SPACE_FROM = " FROM";
 
+    String SPACE_LATERAL = " LATERAL";
+
     String SPACE_USING = " USING";
 
     String SPACE_JOIN_SPACE = " JOIN ";
@@ -81,6 +83,14 @@ public interface _Constant {
     String SPACE_SET_SPACE = " SET ";
 
     String SPACE_LIMIT_SPACE = " LIMIT ";
+
+    String SPACE_FETCH_SPACE = " FETCH ";
+
+    String SPACE_OFFSET_SPACE = " OFFSET ";
+
+    String SPACE_ROW = " ROW";
+
+    String SPACE_ROWS = " ROWS";
 
     String SPACE_IS_NULL = " IS NULL";
 

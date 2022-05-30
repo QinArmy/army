@@ -15,7 +15,6 @@ import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
-import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -41,11 +40,11 @@ import java.util.function.Consumer;
 public abstract class _AbstractDialect implements ArmyDialect {
 
 
-    private static final Collection<String> FORBID_SET_FIELD = ArrayUtils.asUnmodifiableList(
-            _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION);
-
     public final _DialectEnvironment environment;
 
+    /**
+     * a unmodified set
+     */
     protected final Set<String> keyWordSet;
 
     protected final char identifierQuote;
@@ -58,7 +57,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         this.environment = environment;
         this.dialect = dialect;
         this.identifierQuote = identifierQuote();
-        this.identifierCaseSensitivity = this.identifierCaseSensitivity();
+        this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
         this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(environment.serverMeta()));
     }
 
@@ -185,9 +184,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
         } else {
             context = SimpleSelectContext.create(select, this, visible);
             if (select instanceof StandardQuery) {
-                this.standardSimpleQuery((_StandardQuery) select, (_MultiTableContext) context);
+                this.standardSimpleQuery((_StandardQuery) select, (_SimpleQueryContext) context);
             } else {
-                this.dialectSimpleQuery((_Query) select, (_MultiTableContext) context);
+                this.dialectSimpleQuery((_Query) select, (_SimpleQueryContext) context);
             }
         }
         return context.build();
@@ -321,7 +320,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected abstract char identifierQuote();
 
-    protected abstract boolean identifierCaseSensitivity();
+    protected abstract boolean isIdentifierCaseSensitivity();
 
     protected abstract DdlDialect createDdlDialect();
 
@@ -387,7 +386,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         throw new UnsupportedOperationException();
     }
 
-    protected void dialectSimpleQuery(_Query query, _MultiTableContext context) {
+    protected void dialectSimpleQuery(_Query query, _SimpleQueryContext context) {
         throw new UnsupportedOperationException();
     }
 
@@ -425,17 +424,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (orderByList.size() > 0) {
             this.orderByClause(orderByList, context);
         }
-        this.limitClause(query.offset(), query.rowCount(), context);
+        this.standardLimitClause(query.offset(), query.rowCount(), context);
     }
 
     protected void standardLockClause(LockMode lockMode, _SqlContext context) {
         throw new UnsupportedOperationException();
     }
 
-
-    protected final void lateralSubQuery(SubQuery subQuery, _SqlContext outerContext) {
-        //TODO
-    }
 
     protected final void onClause(final List<_Predicate> predicateList, final _SqlContext context) {
         final int size = predicateList.size();
@@ -515,8 +510,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (itemPairSize == 0) {
             throw _Exceptions.setClauseNotExists();
         }
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        sqlBuilder.append(_Constant.SPACE_SET);
+        final StringBuilder sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_SET);
         for (int i = 0; i < itemPairSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -574,6 +569,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         final Consumer<DataField> fieldConsumer = field -> {
             if (field instanceof FieldMeta) {
+                //TODO fix me,可能重复输出  updateTime 和 version
                 final TableMeta<?> table = ((FieldMeta<?>) field).tableMeta();
                 if (table instanceof SingleTableMeta) {
                     aliasOrTableMap.putIfAbsent(table, Boolean.TRUE);
@@ -664,7 +660,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     /**
-     * @see #standardSimpleQuery(_StandardQuery, _MultiTableContext)
+     * @see #standardSimpleQuery(_StandardQuery, _SimpleQueryContext)
      */
     protected final void standardTableReferences(final List<_TableBlock> tableBlockList
             , final _MultiTableContext context, final boolean nested) {
@@ -698,7 +694,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 sqlBuilder.append(_Constant.SPACE);
                 this.identifier(((TableMeta<?>) tableItem).tableName(), sqlBuilder)
                         .append(_Constant.SPACE_AS_SPACE)
-                        .append(context.safeTableAlias(block.alias()));
+                        .append(context.safeTableAlias((TableMeta<?>) tableItem, block.alias()));
             } else if (tableItem instanceof SubQuery) {
                 if (tableItem instanceof _LateralSubQuery) {
                     throw _Exceptions.dontSupportLateralItem(tableItem, block.alias(), null);
@@ -748,7 +744,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     /**
-     * @see #standardSimpleQuery(_StandardQuery, _MultiTableContext)
+     * @see #standardSimpleQuery(_StandardQuery, _SimpleQueryContext)
      */
     protected final void queryWhereClause(final List<_TableBlock> tableBlockList, final List<_Predicate> predicateList
             , final _MultiTableContext context) {
@@ -758,8 +754,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
             return;
         }
         //1. append where key word
-        final StringBuilder builder = context.sqlBuilder();
-        builder.append(_Constant.SPACE_WHERE);
+        final StringBuilder builder = context.sqlBuilder()
+                .append(_Constant.SPACE_WHERE);
         //2. append where predicates
         for (int i = 0; i < predicateSize; i++) {
             if (i > 0) {
@@ -855,18 +851,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     }
 
-    protected final void limitClause(final long offset, final long rowCount, final _SqlContext context) {
-        if (offset >= 0 && rowCount >= 0) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
-                    .append(offset)
-                    .append(_Constant.SPACE_COMMA_SPACE)
-                    .append(rowCount);
-        } else if (rowCount >= 0) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
-                    .append(rowCount);
-        }//TODO
-    }
-
+    protected abstract void standardLimitClause(final long offset, final long rowCount, final _SqlContext context);
 
     protected final void discriminator(final TableMeta<?> table, final @Nullable String safeTableAlias
             , final _SqlContext context) {
@@ -957,7 +942,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     /**
-     * @see #standardSimpleQuery(_StandardQuery, _MultiTableContext)
+     * @see #standardSimpleQuery(_StandardQuery, _SimpleQueryContext)
      */
     protected final void multiTableVisible(final List<_TableBlock> blockList, final _MultiTableContext context
             , final boolean firstPredicate) {
@@ -985,46 +970,36 @@ public abstract class _AbstractDialect implements ArmyDialect {
     /**
      * @see #rowSet(RowSet, _SqlContext)
      */
-    protected final void subQueryStmt(final SubQuery subQuery, final _SqlContext original) {
+    protected final void subQueryStmt(final SubQuery subQuery, final _SqlContext outerContext) {
         //1. assert prepared
         subQuery.prepared();
 
         //2. assert sub query implementation class.
-        if (subQuery instanceof StandardQuery) {
+        if (subQuery instanceof _LateralSubQuery) {
+            throw _Exceptions.lateralSubQueryErrorPosition();
+        } else if (subQuery instanceof StandardQuery) {
             _SQLCounselor.assertStandardQuery(subQuery);
         } else {
             this.assertDialectRowSet(subQuery);
         }
-        final StringBuilder sqlBuilder = original.sqlBuilder();
         //3. parse sub query
-        final boolean outerBrackets;
-        outerBrackets = !(original instanceof _SubQueryContext) || original instanceof _SimpleQueryContext;
+        this.parseSubQuery(subQuery, outerContext);
+    }
 
-        if (outerBrackets) {
-            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);// append space left bracket before select key word
-        }
-        if (subQuery instanceof _UnionRowSet) {
-            final _UnionQueryContext context;
-            if (original instanceof _SubQueryContext && original instanceof _UnionQueryContext) {
-                context = (_UnionQueryContext) original;
-            } else {
-                context = UnionSubQueryContext.create(original);
-            }
-            this.standardUnionQuery((_UnionRowSet) subQuery, context);
-        } else {
-            sqlBuilder.append(_Constant.SPACE); //append space before parse sub query
-            final SimpleSubQueryContext context;
-            context = SimpleSubQueryContext.create(subQuery, original);//create new simple sub query context
-            if (subQuery instanceof StandardQuery) {
-                this.standardSimpleQuery((_StandardQuery) subQuery, context);
-            } else {
-                this.dialectSimpleQuery((_Query) subQuery, context);
-            }
-        }
-
-        if (outerBrackets) {
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);// append space left bracket after sub query end.
-        }
+    /**
+     * @see #dialectSimpleQuery(_Query, _SimpleQueryContext)
+     */
+    protected final void lateralSubQuery(final _JoinType joinType, final SubQuery subQuery
+            , final _MultiTableContext outerContext) {
+        //1. assert prepared
+        subQuery.prepared();
+        //2. assert dialect sub query
+        this.assertDialectRowSet(subQuery);
+        //3. append key word LATERAL
+        outerContext.sqlBuilder()
+                .append(_Constant.SPACE_LATERAL);
+        //4. parse sub query
+        this.parseSubQuery(subQuery, outerContext);
 
     }
 
@@ -1040,6 +1015,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
         this.assertDialectRowSet(values);
         throw new UnsupportedOperationException();
     }
+
+
+    /*################################## blow private method ##################################*/
 
     /**
      * @see #rowSet(RowSet, _SqlContext)
@@ -1086,6 +1064,46 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     /**
+     * @see #subQueryStmt(SubQuery, _SqlContext)
+     * @see #lateralSubQuery(_JoinType, SubQuery, _MultiTableContext)
+     */
+    private void parseSubQuery(final SubQuery subQuery, final _SqlContext outerContext) {
+
+        final StringBuilder sqlBuilder = outerContext.sqlBuilder();
+        //3. parse sub query
+        final boolean outerBrackets;
+        outerBrackets = !(outerContext instanceof _SubQueryContext) || outerContext instanceof _SimpleQueryContext;
+
+        if (outerBrackets) {
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);// append space left bracket before select key word
+        }
+        if (subQuery instanceof _UnionRowSet) {
+            final _UnionQueryContext context;
+            if (outerContext instanceof _SubQueryContext && outerContext instanceof _UnionQueryContext) {
+                context = (_UnionQueryContext) outerContext;
+            } else {
+                context = UnionSubQueryContext.create(outerContext);
+            }
+            this.standardUnionQuery((_UnionRowSet) subQuery, context);
+        } else {
+            sqlBuilder.append(_Constant.SPACE); //append space before parse sub query
+            final SimpleSubQueryContext context;
+            context = SimpleSubQueryContext.create(subQuery, outerContext);//create new simple sub query context
+            if (subQuery instanceof StandardQuery) {
+                this.standardSimpleQuery((_StandardQuery) subQuery, context);
+            } else {
+                this.dialectSimpleQuery((_Query) subQuery, context);
+            }
+        }
+
+        if (outerBrackets) {
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);// append space left bracket after sub query end.
+        }
+
+    }
+
+
+    /**
      * @see #singleTableSetClause(_SingleUpdate, _SingleUpdateContext)
      * @see #multiTableSetClause(_MultiUpdate, _MultiUpdateContext)
      */
@@ -1115,7 +1133,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         this.safeObjectName(updateTime.columnName(), sqlBuilder)
                 .append(_Constant.SPACE_EQUAL);
 
-        if (context.hasStrictParam()) {
+        if (context.hasParam()) {
             context.appendParam(ParamValue.build(updateTime.mappingType(), updateTimeValue));
         } else {
             sqlBuilder.append(_Constant.SPACE);
@@ -1307,9 +1325,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #select(Select, Visible)
      * @see #selectStmt(Select, _SqlContext)
      * @see #subQueryStmt(SubQuery, _SqlContext)
-     * @see #lateralSubQuery(SubQuery, _SqlContext)
+     * @see #lateralSubQuery(_JoinType, SubQuery, _MultiTableContext)
      */
-    private void standardSimpleQuery(final _StandardQuery query, final _MultiTableContext context) {
+    private void standardSimpleQuery(final _StandardQuery query, final _SimpleQueryContext context) {
         //1. select clause
         this.standardSelectClause(query.modifierList(), context);
         //2. select list clause
@@ -1332,7 +1350,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         this.orderByClause(query.orderByList(), context);
 
         //7. limit clause
-        this.limitClause(query.offset(), query.rowCount(), context);
+        this.standardLimitClause(query.offset(), query.rowCount(), context);
 
         //8. lock clause
         final LockMode lock = query.lockMode();

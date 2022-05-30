@@ -76,7 +76,7 @@ final class MySQLDialect extends MySQL {
     }
 
     @Override
-    protected void dialectSimpleQuery(final _Query query, final _MultiTableContext context) {
+    protected void dialectSimpleQuery(final _Query query, final _SimpleQueryContext context) {
         if (context.dialect() != this) {
             throw illegalDialect();
         }
@@ -131,7 +131,7 @@ final class MySQLDialect extends MySQL {
         }
 
         //11. LIMIT clause
-        this.limitClause(stmt.offset(), stmt.rowCount(), context);
+        this.standardLimitClause(stmt.offset(), stmt.rowCount(), context);
 
         final List<String> intoList;
         intoList = stmt.intoVarList();
@@ -478,7 +478,7 @@ final class MySQLDialect extends MySQL {
                     if (asOf80) {
                         throw _Exceptions.dontSupportLateralItem(tableItem, alias, this.dialect);
                     }
-                    this.lateralSubQuery((SubQuery) tableItem, context);
+                    this.lateralSubQuery(joinType, (SubQuery) tableItem, context);
                 } else {
                     this.subQueryStmt((SubQuery) tableItem, context);
                 }

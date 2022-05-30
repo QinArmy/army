@@ -114,7 +114,7 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
 
     @Override
     public final SimpleStmt build() {
-        if (this.hasNamedParam) {
+        if (this.hasNamedParam()) {
             throw _Exceptions.namedParamInNonBatch();
         }
         return Stmts.dml(this);
@@ -122,7 +122,7 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
 
     @Override
     public final BatchStmt build(List<?> paramList) {
-        if (!this.hasNamedParam) {
+        if (!this.hasNamedParam()) {
             throw _Exceptions.noNamedParamInBatch();
         }
         return Stmts.batchDml(this, paramList);

@@ -1,12 +1,10 @@
 package io.army.dialect.postgre;
 
-import io.army.dialect.Dialect;
-import io.army.dialect._AbstractDialect;
-import io.army.dialect._Constant;
-import io.army.dialect._DialectEnvironment;
+import io.army.dialect.*;
 import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
 import io.army.tx.Isolation;
+import io.army.util._Exceptions;
 
 import java.util.List;
 import java.util.Set;
@@ -46,7 +44,7 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
-    protected final boolean identifierCaseSensitivity() {
+    protected final boolean isIdentifierCaseSensitivity() {
         //Postgre identifier not case sensitivity
         return false;
     }
@@ -59,6 +57,21 @@ class Postgre11DmlDialect extends _AbstractDialect {
     @Override
     public String literal(ParamMeta paramMeta, Object nonNull) {
         return null;
+    }
+
+    @Override
+    protected final void standardLimitClause(final long offset, final long rowCount, final _SqlContext context) {
+        if (offset >= 0L && rowCount >= 0L) {
+            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
+                    .append(rowCount)
+                    .append(_Constant.SPACE_OFFSET_SPACE)
+                    .append(offset);
+        } else if (rowCount >= 0L) {
+            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
+                    .append(rowCount);
+        } else if (offset >= 0L) {
+            throw _Exceptions.standardLimitClauseError(offset, rowCount);
+        }
     }
 
     @Override

@@ -14,7 +14,7 @@ import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.StrictParamValue;
+import io.army.stmt.ParamValue;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -870,8 +870,7 @@ public abstract class SQLs extends Functions {
 
     }//RowItemPair
 
-    static final class StringTypeNull extends NonOperationExpression
-            implements StrictParamValue, ValueExpression {
+    static final class StringTypeNull extends NonOperationExpression implements ParamValue, ValueExpression {
 
         static final StringTypeNull INSTANCE = new StringTypeNull();
 

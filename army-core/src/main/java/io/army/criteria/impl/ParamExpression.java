@@ -3,9 +3,9 @@ package io.army.criteria.impl;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
-import io.army.stmt.StrictParamValue;
+import io.army.stmt.ParamValue;
 
-final class ParamExpression extends OperationExpression implements ValueExpression, StrictParamValue {
+final class ParamExpression extends OperationExpression implements ValueExpression, ParamValue {
 
 
     static ValueExpression create(final ParamMeta paramMeta, final @Nullable Object value) {

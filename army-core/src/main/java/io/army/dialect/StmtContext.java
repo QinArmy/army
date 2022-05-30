@@ -1,15 +1,26 @@
 package io.army.dialect;
 
-import io.army.criteria.NamedParam;
-import io.army.criteria.Selection;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
+import io.army.lang.Nullable;
+import io.army.meta.ParamMeta;
 import io.army.stmt.ParamValue;
 import io.army.stmt.StmtParams;
-import io.army.stmt.StrictParamValue;
+import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * <p>
+ * This class is base class of all the implementation of {@link  _SqlContext}.
+ * </p>
+ *
+ * @since 1.0
+ */
 abstract class StmtContext implements _StmtContext, StmtParams {
 
     static final String SPACE_PLACEHOLDER = " ?";
@@ -20,27 +31,35 @@ abstract class StmtContext implements _StmtContext, StmtParams {
 
     protected final StringBuilder sqlBuilder;
 
-    private final List<ParamValue> paramList;
-
-    private boolean hasStrictParam;
-
-    boolean hasNamedParam;
+    /**
+     * paramConsumer must be private
+     */
+    private final ParamConsumer paramConsumer;
 
     protected StmtContext(ArmyDialect dialect, Visible visible) {
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
-        this.paramList = new ArrayList<>();
+        this.paramConsumer = new ParamConsumer();
     }
 
+    /**
+     * <p>
+     * This Constructor is invoked the implementation of {@link  _ValueInsertContext}.
+     * </p>
+     */
     protected StmtContext(ArmyDialect dialect, boolean preferLiteral, Visible visible) {
+        if (!(this instanceof _ValueInsertContext)) {
+            throw new IllegalStateException();
+        }
+
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
         if (preferLiteral) {
-            this.paramList = this.createParamList();
+            this.paramConsumer = new ValueInsertParamConsumer(this::readNamedParam);
         } else {
-            this.paramList = new ArrayList<>();
+            this.paramConsumer = new ParamConsumer();
         }
     }
 
@@ -48,7 +67,7 @@ abstract class StmtContext implements _StmtContext, StmtParams {
         this.dialect = outerContext.dialect;
         this.visible = outerContext.visible;
         this.sqlBuilder = outerContext.sqlBuilder;
-        this.paramList = outerContext.paramList;
+        this.paramConsumer = outerContext.paramConsumer;
     }
 
 
@@ -65,31 +84,25 @@ abstract class StmtContext implements _StmtContext, StmtParams {
 
     @Override
     public final void appendParam(final ParamValue paramValue) {
-        if (paramValue instanceof NamedParam) {
-            if (!this.hasNamedParam) {
-                this.hasNamedParam = true;
-            }
-            if (!this.hasStrictParam) {
-                this.hasStrictParam = true;
-            }
-        } else if (paramValue instanceof StrictParamValue) {
-            if (!this.hasStrictParam) {
-                this.hasStrictParam = true;
-            }
-        }
         this.sqlBuilder.append(SPACE_PLACEHOLDER);
-        this.paramList.add(paramValue);
+        this.paramConsumer.accept(paramValue);
     }
 
     @Override
-    public final boolean hasStrictParam() {
-        return this.hasStrictParam;
+    public final boolean hasParam() {
+        return this.paramConsumer.paramList.size() > 0;
+    }
+
+    @Override
+    public final boolean hasNamedParam() {
+        return this.paramConsumer.hasNamedParam;
     }
 
     @Override
     public final Visible visible() {
         return this.visible;
     }
+
 
     @Override
     public final String sql() {
@@ -98,11 +111,7 @@ abstract class StmtContext implements _StmtContext, StmtParams {
 
     @Override
     public final List<ParamValue> paramList() {
-        List<ParamValue> paramList = this.paramList;
-        if (paramList instanceof ProxyList) {
-            paramList = ((ProxyList) paramList).paramList;
-        }
-        return paramList;
+        return _CollectionUtils.unmodifiableList(this.paramConsumer.paramList);
     }
 
     @Override
@@ -111,145 +120,136 @@ abstract class StmtContext implements _StmtContext, StmtParams {
     }
 
 
-    List<ParamValue> createParamList() {
-        return new ArrayList<>();
+    @Nullable
+    Object readNamedParam(String name) {
+        throw new UnsupportedOperationException();
     }
 
 
-    static final class ProxyList implements List<ParamValue> {
+    /**
+     * This class must be private class
+     */
+    private static class ParamConsumer implements Consumer<ParamValue> {
 
-        private final List<ParamValue> paramList = new ArrayList<>();
+        final ArrayList<ParamValue> paramList = new ArrayList<>();
 
-        private final Function<NamedParam, ParamValue> function;
+        boolean hasNamedParam;
 
-        ProxyList(Function<NamedParam, ParamValue> function) {
+        private ParamConsumer() {
+
+        }
+
+        @Override
+        public final void accept(final ParamValue paramValue) {
+            if (paramValue instanceof NamedParam) {
+                if (!this.hasNamedParam) {
+                    this.hasNamedParam = true;
+                }
+            }
+
+            if (!(this instanceof ValueInsertParamConsumer)) {
+                this.paramList.add(paramValue);
+            } else if (paramValue instanceof NamedParam) {
+                ((ValueInsertParamConsumer) this).acceptNamed((NamedParam) paramValue);
+            } else if (((ValueInsertParamConsumer) this).namedElementParam == null) {
+                this.paramList.add(paramValue);
+            } else {
+                final ValueInsertParamConsumer consumer = (ValueInsertParamConsumer) this;
+                throw _Exceptions.namedElementParamNotMatch(consumer.size, consumer.count);
+            }
+
+        }
+
+    }// ParamConsumer
+
+    private static final class ValueInsertParamConsumer extends ParamConsumer {
+
+        private final Function<String, Object> function;
+
+        private NamedElementParam namedElementParam;
+
+        private int size;
+
+        private int count;
+
+        private ValueInsertParamConsumer(Function<String, Object> function) {
             this.function = function;
         }
 
-        @Override
-        public int size() {
-            return this.paramList.size();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return this.paramList.isEmpty();
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            return this.paramList.contains(o);
-        }
-
-        @Override
-        public Iterator<ParamValue> iterator() {
-            return this.paramList.iterator();
-        }
-
-        @Override
-        public Object[] toArray() {
-            return this.paramList.toArray();
-        }
-
-        @SuppressWarnings("all")
-        @Override
-        public <T> T[] toArray(T[] a) {
-            return this.paramList.toArray(a);
-        }
-
-        @Override
-        public boolean add(final ParamValue paramValue) {
-            final ParamValue actual;
-            if (paramValue instanceof NamedParam) {
-                actual = this.function.apply((NamedParam) paramValue);
+        private void acceptNamed(final NamedParam namedParam) {
+            final NamedElementParam namedElementParam = this.namedElementParam;
+            if (namedElementParam != null) {
+                if (namedParam != namedElementParam) {
+                    throw _Exceptions.namedElementParamNotMatch(this.size, count);
+                }
+                this.count++;
+                if (this.count == this.size) {
+                    this.readNamedElementParam();
+                } else if (this.count > this.size) {
+                    //here bug
+                    throw new IllegalStateException("count error");
+                }
+            } else if (namedParam instanceof NamedElementParam) {
+                final NamedElementParam elementParam = (NamedElementParam) namedParam;
+                final int size = elementParam.size();
+                if (size < 1) {
+                    throw _Exceptions.namedElementParamSizeError(elementParam);
+                }
+                this.namedElementParam = (NamedElementParam) namedParam;
+                this.size = size;
+                this.count = 1;
+                if (size == 1) {
+                    this.readNamedElementParam();
+                }
             } else {
-                actual = paramValue;
+                final Object value;
+                value = this.function.apply(namedParam.name());
+                if (value == null && namedParam instanceof NonNullNamedParam) {
+                    throw _Exceptions.nonNullNamedParam((NonNullNamedParam) namedParam);
+                }
+                // add actual ParamValue
+                this.paramList.add(ParamValue.build(namedParam.paramMeta(), value));
             }
-            return this.paramList.add(actual);
+
         }
 
-        @Override
-        public boolean remove(Object o) {
-            return this.paramList.remove(o);
+
+        private void readNamedElementParam() {
+            final NamedElementParam elementParam = this.namedElementParam;
+            assert elementParam != null;
+
+            final int size = this.size;
+
+            assert this.count == size;
+            assert size == elementParam.size();
+
+            final Object value;
+            value = this.function.apply(elementParam.name());
+            if (!(value instanceof Collection)) {
+                throw _Exceptions.namedCollectionParamNotMatch(elementParam, value);
+            }
+            final Collection<?> collection = (Collection<?>) value;
+            if (collection.size() != size) {
+                throw _Exceptions.namedCollectionParamSizeError(elementParam, collection.size());
+            }
+            final ParamMeta paramMeta = elementParam.paramMeta();
+            int elementCount = 0;
+            for (Object element : collection) {
+                this.paramList.add(ParamValue.build(paramMeta, element));
+                elementCount++;
+            }
+
+            if (elementCount != size) {
+                throw _Exceptions.namedCollectionParamSizeError(elementParam, elementCount);
+            }
+
+            //clear namedElementParam
+            this.namedElementParam = null;
+            this.size = 0;
+            this.count = 0;
         }
 
-        @SuppressWarnings("all")
-        @Override
-        public boolean containsAll(Collection<?> c) {
-            return this.paramList.containsAll(c);
-        }
-
-        @Override
-        public boolean addAll(Collection<? extends ParamValue> c) {
-            return this.paramList.addAll(c);
-        }
-
-        @Override
-        public boolean addAll(int index, Collection<? extends ParamValue> c) {
-            return this.paramList.addAll(index, c);
-        }
-
-        @Override
-        public boolean removeAll(Collection<?> c) {
-            return this.paramList.removeAll(c);
-        }
-
-        @Override
-        public boolean retainAll(Collection<?> c) {
-            return this.paramList.retainAll(c);
-        }
-
-        @Override
-        public void clear() {
-            this.paramList.clear();
-        }
-
-        @Override
-        public ParamValue get(int index) {
-            return this.paramList.get(index);
-        }
-
-        @Override
-        public ParamValue set(int index, ParamValue element) {
-            return this.paramList.set(index, element);
-        }
-
-        @Override
-        public void add(int index, ParamValue element) {
-            this.paramList.add(index, element);
-        }
-
-        @Override
-        public ParamValue remove(int index) {
-            return this.paramList.remove(index);
-        }
-
-        @Override
-        public int indexOf(Object o) {
-            return this.paramList.indexOf(o);
-        }
-
-        @Override
-        public int lastIndexOf(Object o) {
-            return this.paramList.lastIndexOf(o);
-        }
-
-        @Override
-        public ListIterator<ParamValue> listIterator() {
-            return this.paramList.listIterator();
-        }
-
-        @Override
-        public ListIterator<ParamValue> listIterator(int index) {
-            return this.paramList.listIterator(index);
-        }
-
-        @Override
-        public List<ParamValue> subList(int fromIndex, int toIndex) {
-            return this.paramList.subList(fromIndex, toIndex);
-        }
-
-    }//ProxyList
+    }//ValueInsertParamConsumer
 
 
 }

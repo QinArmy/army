@@ -157,7 +157,7 @@ abstract class MySQL extends _AbstractDialect {
 
 
     @Override
-    protected final boolean identifierCaseSensitivity() {
+    protected final boolean isIdentifierCaseSensitivity() {
         //MySQL Identifier Case Sensitivity
         return true;
     }
@@ -282,6 +282,22 @@ abstract class MySQL extends _AbstractDialect {
         }
         return sqlBuilder
                 .append(literal);
+    }
+
+    @Override
+    protected final void standardLimitClause(final long offset, final long rowCount, _SqlContext context) {
+        if (offset >= 0L && rowCount >= 0L) {
+            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
+                    .append(offset)
+                    .append(_Constant.SPACE_COMMA_SPACE)
+                    .append(rowCount);
+        } else if (rowCount >= 0L) {
+            context.sqlBuilder().append(_Constant.SPACE_LIMIT_SPACE)
+                    .append(rowCount);
+        } else if (offset >= 0L) {
+            throw _Exceptions.standardLimitClauseError(offset, rowCount);
+        }
+
     }
 
     /**

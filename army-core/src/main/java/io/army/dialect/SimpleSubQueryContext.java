@@ -4,7 +4,6 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Query;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
 
 final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQueryContext, _SubQueryContext {
@@ -39,8 +38,8 @@ final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQu
         final String safeTableAlias;
         safeTableAlias = this.tableToSafeAlias.get(fieldTable);
         if (safeTableAlias != null) {
-            final StringBuilder sqlBuilder = this.sqlBuilder;
-            sqlBuilder.append(_Constant.SPACE)
+            final StringBuilder sqlBuilder = this.sqlBuilder
+                    .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
             this.dialect.safeObjectName(field.columnName(), sqlBuilder);
@@ -74,11 +73,6 @@ final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQu
         } else {
             outerContext.appendField(field);
         }
-    }
-
-    @Override
-    public SimpleStmt build() {
-        throw dontSupportBuild();
     }
 
 

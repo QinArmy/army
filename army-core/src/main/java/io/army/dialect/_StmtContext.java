@@ -15,7 +15,9 @@ interface _StmtContext extends _SqlContext {
     /**
      * for append updateTime field in set clause.
      */
-    boolean hasStrictParam();
+    boolean hasParam();
+
+    boolean hasNamedParam();
 
     SimpleStmt build();
 

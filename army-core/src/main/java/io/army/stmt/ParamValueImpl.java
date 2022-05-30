@@ -3,7 +3,7 @@ package io.army.stmt;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 
-final class ParamValueImpl implements StrictParamValue {
+final class ParamValueImpl implements ParamValue {
 
     private final ParamMeta paramMeta;
 

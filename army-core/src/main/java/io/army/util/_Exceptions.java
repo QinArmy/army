@@ -289,6 +289,28 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("Not found from clause.");
     }
 
+    public static CriteriaException standardLimitClauseError(final long offset, final long rowCount) {
+        String m;
+        m = String.format("standard api limit clause offset[%s] non-negative so rowCount[%s] must non-negative"
+                , offset, rowCount);
+        throw new CriteriaException(m);
+
+    }
+
+    public static CriteriaException namedElementParamSizeError(NamedElementParam param) {
+        String m = String.format("%s size[%s] error", NamedElementParam.class.getName(), param.size());
+        throw new CriteriaException(m);
+    }
+
+    public static CriteriaException lateralSubQueryErrorPosition() {
+        return new CriteriaException("LATERAL sub query present in error position");
+    }
+
+    public static CriteriaException namedElementParamNotMatch(int size, int actualSize) {
+        String m = String.format("NamedElementParam not match,expected %s but %s .", size, actualSize);
+        throw new CriteriaException(m);
+    }
+
     public static CriteriaException tableBlockListIsEmpty(boolean nested) {
         final CriteriaException e;
         if (nested) {
