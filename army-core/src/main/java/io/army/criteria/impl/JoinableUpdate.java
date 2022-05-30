@@ -49,6 +49,12 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
         this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
         this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();
+
+        if (this instanceof SubStatement) {
+            CriteriaContextStack.push(criteriaContext);
+        } else {
+            CriteriaContextStack.setContextStack(criteriaContext);
+        }
     }
 
     JoinableUpdate(CriteriaContext criteriaContext) {
@@ -56,6 +62,12 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
         this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
         this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();
+
+        if (this instanceof SubStatement) {
+            CriteriaContextStack.push(criteriaContext);
+        } else {
+            CriteriaContextStack.setContextStack(criteriaContext);
+        }
     }
 
     /*################################## blow SetClause method ##################################*/
@@ -357,9 +369,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
     @Override
     public final Update asUpdate() {
         _Assert.nonPrepared(this.prepared);
-        if (this instanceof SingleUpdate) {
-            this.criteriaContext.clear();
-        }
+        this.criteriaContext.clear();
         if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {

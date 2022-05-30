@@ -107,7 +107,7 @@ public abstract class _DialectUtils {
     static void standardInertIntoTable(final _ValueInsertContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
-        context.dialect().safeObjectName(context.table().tableName(), sqlBuilder);
+        ((ArmyDialect) context.dialect()).safeObjectName(context.table(), sqlBuilder);
     }
 
 

@@ -33,7 +33,7 @@ final class MySQLDdl extends _DdlDialect {
     public void modifyTableComment(final TableMeta<?> table, final List<String> sqlList) {
         final StringBuilder builder = new StringBuilder()
                 .append("ALTER TABLE ");
-        this.dialect.safeObjectName(table.tableName(), builder);
+        this.dialect.safeObjectName(table, builder);
         appendComment(table.comment(), builder);
 
     }

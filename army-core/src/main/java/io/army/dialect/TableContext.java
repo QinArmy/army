@@ -55,7 +55,7 @@ final class TableContext {
     }
 
 
-    static TableContext createContext(List<? extends _TableBlock> blockList, _Dialect dialect
+    static TableContext createContext(List<? extends _TableBlock> blockList, ArmyDialect dialect
             , final Visible visible, final boolean multiUpdate) {
         final Map<String, TableItem> aliasToTable = new HashMap<>((int) (blockList.size() / 0.75F));
         final Map<TableMeta<?>, String> tableToSafeAlias = new HashMap<>((int) (blockList.size() / 0.75F));

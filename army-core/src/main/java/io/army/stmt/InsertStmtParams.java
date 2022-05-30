@@ -16,7 +16,8 @@ public interface InsertStmtParams extends StmtParams {
     @Nullable
     PrimaryFieldMeta<?> returnId();
 
-    String idSelectionAlias();
+    @Nullable
+    String idReturnAlias();
 
 
 }

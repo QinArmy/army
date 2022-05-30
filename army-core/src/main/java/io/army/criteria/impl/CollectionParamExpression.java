@@ -61,8 +61,7 @@ final class CollectionParamExpression extends NonOperationExpression {
                 builder.append(_Constant.SPACE_COMMA);
             }
             if (optimizing) {
-                builder.append(_Constant.SPACE)
-                        .append(dialect.literal(paramMeta, v));
+                dialect.spaceAndLiteral(paramMeta, v, builder);
             } else {
                 context.appendParam(ParamValue.build(paramMeta, v));
             }

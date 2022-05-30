@@ -4,6 +4,7 @@ import io.army.criteria.TableItem;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.DmlStmtParams;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
@@ -55,7 +56,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+            this.dialect.safeObjectName(field, sqlBuilder);
         } else if (this.aliasToTable.containsValue(fieldTable)) {
             throw _Exceptions.selfJoinNonQualifiedField(field);
         } else if (this instanceof SubQueryContext) {
@@ -117,7 +118,13 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
         if (this.hasNamedParam()) {
             throw _Exceptions.namedParamInNonBatch();
         }
-        return Stmts.simple(this);
+        final SimpleStmt stmt;
+        if (this instanceof DmlStmtParams) {
+            stmt = Stmts.dml((DmlStmtParams) this);
+        } else {
+            stmt = Stmts.minSimple(this);
+        }
+        return stmt;
     }
 
     void appendOuterField(String tableAlias, FieldMeta<?> field) {
@@ -149,7 +156,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
                 .append(_Constant.SPACE)
                 .append(safeTableAlias)
                 .append(_Constant.POINT);
-        this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+        this.dialect.safeObjectName(field, sqlBuilder);
     }
 
 

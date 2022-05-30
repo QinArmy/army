@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._MultiDelete;
@@ -10,6 +11,7 @@ import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
+import java.util.Collections;
 import java.util.List;
 
 final class MultiDeleteContext extends MultiTableContext implements _MultiDeleteContext, DmlStmtParams {
@@ -47,6 +49,11 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
     @Override
     public boolean hasVersion() {
         return this.hasVersion;
+    }
+
+    @Override
+    public List<Selection> selectionList() {
+        return Collections.emptyList();
     }
 
 

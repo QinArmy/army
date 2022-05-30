@@ -197,6 +197,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             default:
                 throw _Exceptions.unexpectedEnum(joinType);
         }
+        this.criteriaContext.onAddBlock(tableBlock);
         return tableBlock;
     }
 

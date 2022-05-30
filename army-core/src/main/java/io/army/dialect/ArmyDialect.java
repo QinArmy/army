@@ -1,5 +1,7 @@
 package io.army.dialect;
 
+import io.army.meta.DatabaseObject;
+
 /**
  * package interface
  */
@@ -36,6 +38,12 @@ interface ArmyDialect extends _Dialect {
 
     _FieldValueGenerator getFieldValueGenerator();
 
+
+    String defaultFuncName();
+
+    String safeObjectName(DatabaseObject object);
+
+    StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder);
 
 
 }

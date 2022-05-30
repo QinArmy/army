@@ -335,6 +335,11 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @Override
+    public final String objectName() {
+        return this.tableName;
+    }
+
+    @Override
     public final String tableName() {
         return this.tableName;
     }

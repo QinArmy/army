@@ -11,7 +11,10 @@ import io.army.example.pill.domain.User_;
 import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.UserType;
 import io.army.stmt.BatchStmt;
+import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
+import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -20,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 public class StandardCriteriaUnitTests {
@@ -28,17 +32,36 @@ public class StandardCriteriaUnitTests {
 
     @Test
     public void insertParent() {
-
+        System.out.println(ChinaRegion_.visible.mappingType().getClass().getName());
         final Insert insert;
         insert = SQLs.valueInsert(ChinaRegion_.T)
+                .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
-                .set(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
-                .set(ChinaRegion_.visible, true)
+                .setLiteral(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
+                .setLiteral(ChinaRegion_.visible, true)
                 .values(this::createRegionList)
                 .asInsert();
 
-        for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), insert.mockAsString(mode, Visible.ONLY_VISIBLE, true));
+        for (Dialect dialect : Dialect.values()) {
+            Stmt stmt;
+            stmt = insert.mockAsStmt(dialect, Visible.ONLY_VISIBLE);
+            assertTrue(stmt instanceof GeneratedKeyStmt);
+            GeneratedKeyStmt keyStmt = (GeneratedKeyStmt) stmt;
+
+            LOG.debug("{}:\n {}", dialect.name(), stmt);
+            switch (dialect.database) {
+                case MySQL:
+                    assertNull(keyStmt.idField());
+                    assertNull(keyStmt.idReturnAlias());
+                    break;
+                case PostgreSQL:
+                case Oracle:
+                case H2:
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(dialect.database);
+            }
+
         }
 
     }
@@ -48,6 +71,7 @@ public class StandardCriteriaUnitTests {
     public void insertChild() {
         final Insert insert;
         insert = SQLs.valueInsert(ChinaProvince_.T)
+                .preferLiteral(true)
                 .insertInto(ChinaProvince_.T)
                 .values(this::createProvinceList)
                 .asInsert();
@@ -71,7 +95,7 @@ public class StandardCriteriaUnitTests {
                 .setPlus(ChinaRegion_.regionGdp, addGdp)
                 .where(ChinaRegion_.id::between, map::get, "firstId", "secondId")
                 .and(ChinaRegion_.name.equal("江湖"))
-                .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
+                .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqualLiteral(BigDecimal.ZERO))
                 .asUpdate();
 
         for (Dialect mode : Dialect.values()) {
@@ -217,7 +241,7 @@ public class StandardCriteriaUnitTests {
                 .having(User_.userType.equal(UserType.PERSON))// group by is empty ,so having clause no action
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
-                .lock(LockMode.WRITE)
+                .lock(LockMode.READ)
                 .asQuery();
 
         for (Dialect dialect : Dialect.values()) {
@@ -360,7 +384,7 @@ public class StandardCriteriaUnitTests {
         List<ChinaRegion<?>> domainList = new ArrayList<>();
         ChinaRegion<?> region;
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             region = new ChinaRegion<>();
             region.setId((long) i);
             region.setName("江湖" + i);

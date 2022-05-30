@@ -12,11 +12,16 @@ import java.util.List;
  * @see IndexMeta
  * @see IndexFieldMeta
  */
-public interface TableMeta<T extends IDomain> extends TableItem, Meta {
+public interface TableMeta<T extends IDomain> extends TableItem, DatabaseObject {
 
 
     Class<T> javaType();
 
+    /**
+     * <p>
+     * Table name,Equivalence : {@link  FieldMeta#objectName()}
+     * </p>
+     */
     String tableName();
 
     boolean immutable();

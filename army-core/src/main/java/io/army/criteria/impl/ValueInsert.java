@@ -19,9 +19,9 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractInsert<C, T, IR> implements
+abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends AbstractInsert<C, T, IR> implements
         Insert._OptionClause<OR>, Insert._CommonExpClause<C, T, SR>, Insert._ValueClause<C, T>
-        , Insert._PreferLiteralOptionClause<OR>, _ValuesInsert {
+        , Insert._PreferLiteralOptionClause<PO>, _ValuesInsert {
 
 
     private boolean optimizingParam;
@@ -58,9 +58,9 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
 
 
     @Override
-    public final _OptionClause<OR> preferLiteral(boolean prefer) {
+    public final PO preferLiteral(boolean prefer) {
         this.optimizingParam = prefer;
-        return this;
+        return (PO) this;
     }
 
     @Override
@@ -78,7 +78,7 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
     }
 
     @Override
-    public final SR set(final FieldMeta<? super T> field, final @Nullable Object paramOrExp) {
+    public final SR set(final FieldMeta<? super T> field, final @Nullable Object value) {
         if (!field.insertable()) {
             throw _Exceptions.nonInsertableField(field);
         }
@@ -96,24 +96,29 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
             this.commonExpMap = commonExpMap;
         }
         final Expression exp;
-        if (paramOrExp == null) {
+        if (value == null) {
             if (this.optimizingParam) {
                 exp = SQLs.nullWord();
             } else {
                 exp = SQLs.StringTypeNull.INSTANCE;
             }
-        } else if (paramOrExp instanceof SubQuery && !(paramOrExp instanceof ScalarExpression)) {
-            throw _Exceptions.nonScalarSubQuery((SubQuery) paramOrExp);
-        } else if (paramOrExp instanceof Expression) {
-            exp = (Expression) paramOrExp;
+        } else if (value instanceof SubQuery && !(value instanceof ScalarExpression)) {
+            throw _Exceptions.nonScalarSubQuery((SubQuery) value);
+        } else if (value instanceof Expression) {
+            exp = (Expression) value;
         } else {
-            exp = SQLs.param(field, paramOrExp);
+            exp = SQLs.param(field, value);
         }
         if (commonExpMap.putIfAbsent(field, (ArmyExpression) exp) != null) {
             String m = String.format("duplication common expression for %s.", field);
             throw new CriteriaException(m);
         }
         return (SR) this;
+    }
+
+    @Override
+    public final SR setLiteral(FieldMeta<? super T> field, @Nullable Object value) {
+        return this.set(field, SQLs._nullableLiteral(field, value));
     }
 
     @Override
@@ -144,21 +149,61 @@ abstract class ValueInsert<C, T extends IDomain, OR, IR, SR> extends AbstractIns
 
 
     @Override
-    public final SR ifSetExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function) {
-        final Expression expression;
-        expression = function.apply(this.criteria);
-        if (expression != null) {
-            this.set(field, expression);
+    public final SR ifSet(FieldMeta<? super T> field, Function<C, ?> function) {
+        final Object value;
+        value = function.apply(this.criteria);
+        if (value != null) {
+            this.set(field, value);
         }
         return (SR) this;
     }
 
     @Override
-    public final SR ifSetExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier) {
-        final Expression expression;
-        expression = supplier.get();
-        if (expression != null) {
-            this.set(field, expression);
+    public final SR ifSet(FieldMeta<? super T> field, Supplier<?> supplier) {
+        final Object value;
+        value = supplier.get();
+        if (value != null) {
+            this.set(field, value);
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSet(FieldMeta<? super T> field, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.set(field, value);
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetLiteral(FieldMeta<? super T> field, Supplier<?> supplier) {
+        final Object value;
+        value = supplier.get();
+        if (value != null) {
+            this.set(field, SQLs._nonNullLiteral(field, value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetLiteral(FieldMeta<? super T> field, Function<C, ?> function) {
+        final Object value;
+        value = function.apply(this.criteria);
+        if (value != null) {
+            this.set(field, SQLs._nonNullLiteral(field, value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetLiteral(FieldMeta<? super T> field, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (value != null) {
+            this.set(field, SQLs._nonNullLiteral(field, value));
         }
         return (SR) this;
     }

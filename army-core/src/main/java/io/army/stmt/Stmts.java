@@ -18,30 +18,8 @@ import java.util.function.Function;
 
 public abstract class Stmts {
 
-    protected Stmts() {
+    private Stmts() {
         throw new UnsupportedOperationException();
-    }
-
-
-    public static GroupStmt group(List<Stmt> stmtList) {
-        return null;
-    }
-
-    public static GroupStmt group(Stmt stmt1, Stmt stmt2) {
-        return null;
-    }
-
-    public static SimpleStmt simple(String sql, List<ParamValue> paramList) {
-        return new MinSimpleStmt(sql, paramList);
-    }
-
-    /**
-     * <p>
-     * Post insert for returning id
-     * </p>
-     */
-    public static GeneratedKeyStmt returnId(final StmtParams params) {
-        return null;
     }
 
     /**
@@ -49,41 +27,29 @@ public abstract class Stmts {
      * Post insert for generated key
      * </p>
      */
-    public static GeneratedKeyStmt post(final StmtParams params) {
-        return null;
+    public static GeneratedKeyStmt post(final InsertStmtParams params) {
+        return new PostStmt(params);
     }
 
-    public static SimpleStmt simple(final StmtParams params) {
-        return null;
+    public static io.army.stmt.SimpleStmt minSimple(final StmtParams params) {
+        return new MinSimpleStmt(params);
     }
 
-    public static GeneratedKeyStmt post(String sql, List<ParamValue> paramList
-            , List<IDomain> domainList, ObjectAccessor domainAccessor, PrimaryFieldMeta<?> field) {
-        return new PostStmt(sql, paramList, domainList, domainAccessor, field);
-    }
-
-    public static SimpleStmt dml(String sql, List<ParamValue> paramList, boolean hasOptimistic) {
-        return new MinDmlStmt(sql, paramList, hasOptimistic);
-    }
 
     public static SimpleStmt dml(DmlStmtParams params) {
-        return null;
+        return new SimpleDmlStmt(params);
     }
 
 
-    public static SimpleStmt queryStmt(StmtParams params) {
+    public static io.army.stmt.SimpleStmt queryStmt(StmtParams params) {
         return new QueryStmt(params);
     }
 
-    public static SimpleStmt simple(String sql, List<ParamValue> paramList, Selection selection) {
-        return null;
-    }
-
-    public static PairStmt pair(SimpleStmt parent, SimpleStmt child) {
+    public static PairStmt pair(io.army.stmt.SimpleStmt parent, io.army.stmt.SimpleStmt child) {
         return new PairStmtImpl(parent, child);
     }
 
-    public static BatchStmt batchDml(final DmlStmtParams params, List<?> paramWrapperList) {
+    public static BatchStmt batchDml(final DmlStmtParams params, final List<?> paramWrapperList) {
         final List<ParamValue> paramGroup = params.paramList();
         final int paramSize = paramGroup.size();
         final List<List<ParamValue>> groupList = new ArrayList<>(paramWrapperList.size());
@@ -145,19 +111,19 @@ public abstract class Stmts {
         if (namedParam == null) {
             throw new CriteriaException("Not found any named parameter in batch statement.");
         }
-        return new MinBatchDmlStmt(params.sql(), groupList, params.hasVersion());
+        return new MinBatchDmlStmt(params, groupList);
     }
 
 
-    private static final class MinSimpleStmt implements SimpleStmt {
+    private static final class MinSimpleStmt implements io.army.stmt.SimpleStmt {
 
         private final String sql;
 
         private final List<ParamValue> paramGroup;
 
-        private MinSimpleStmt(String sql, List<ParamValue> paramGroup) {
-            this.sql = sql;
-            this.paramGroup = _CollectionUtils.unmodifiableList(paramGroup);
+        private MinSimpleStmt(StmtParams params) {
+            this.sql = params.sql();
+            this.paramGroup = params.paramList();
         }
 
         @Override
@@ -195,22 +161,22 @@ public abstract class Stmts {
 
     private static final class PairStmtImpl implements PairStmt {
 
-        private final SimpleStmt parent;
+        private final io.army.stmt.SimpleStmt parent;
 
-        private final SimpleStmt child;
+        private final io.army.stmt.SimpleStmt child;
 
-        private PairStmtImpl(SimpleStmt parent, SimpleStmt child) {
+        private PairStmtImpl(io.army.stmt.SimpleStmt parent, io.army.stmt.SimpleStmt child) {
             this.parent = parent;
             this.child = child;
         }
 
         @Override
-        public SimpleStmt parentStmt() {
+        public io.army.stmt.SimpleStmt parentStmt() {
             return this.parent;
         }
 
         @Override
-        public SimpleStmt childStmt() {
+        public io.army.stmt.SimpleStmt childStmt() {
             return this.child;
         }
 
@@ -227,18 +193,21 @@ public abstract class Stmts {
     }
 
 
-    private static final class MinDmlStmt implements SimpleStmt {
+    private static final class SimpleDmlStmt implements SimpleStmt {
 
         private final String sql;
 
         private final List<ParamValue> paramGroup;
 
+        private final List<Selection> selectionList;
+
         private final boolean hasOptimistic;
 
-        private MinDmlStmt(String sql, List<ParamValue> paramGroup, boolean hasOptimistic) {
-            this.sql = sql;
-            this.paramGroup = _CollectionUtils.unmodifiableList(paramGroup);
-            this.hasOptimistic = hasOptimistic;
+        private SimpleDmlStmt(DmlStmtParams params) {
+            this.sql = params.sql();
+            this.paramGroup = params.paramList();
+            this.selectionList = params.selectionList();
+            this.hasOptimistic = params.hasVersion();
         }
 
         @Override
@@ -258,7 +227,7 @@ public abstract class Stmts {
 
         @Override
         public List<Selection> selectionList() {
-            return Collections.emptyList();
+            return this.selectionList;
         }
 
         @Override
@@ -280,10 +249,10 @@ public abstract class Stmts {
 
         private final boolean hasOptimistic;
 
-        private MinBatchDmlStmt(String sql, List<List<ParamValue>> paramGroupList, boolean hasOptimistic) {
-            this.sql = sql;
+        private MinBatchDmlStmt(DmlStmtParams params, List<List<ParamValue>> paramGroupList) {
+            this.sql = params.sql();
             this.paramGroupList = Collections.unmodifiableList(paramGroupList);
-            this.hasOptimistic = hasOptimistic;
+            this.hasOptimistic = params.hasVersion();
         }
 
         @Override
@@ -312,7 +281,7 @@ public abstract class Stmts {
         }
     }//MinBatchDmlStmt
 
-    private static final class QueryStmt implements SimpleStmt {
+    private static final class QueryStmt implements io.army.stmt.SimpleStmt {
 
         private final String sql;
 
@@ -365,24 +334,30 @@ public abstract class Stmts {
 
         private final List<ParamValue> paramGroup;
 
+        private final List<Selection> selectionList;
+
         private final List<IDomain> domainList;
 
         private final ObjectAccessor domainAccessor;
 
         private final PrimaryFieldMeta<?> field;
 
-        private PostStmt(String sql, List<ParamValue> paramGroup, List<IDomain> domainList
-                , ObjectAccessor domainAccessor, PrimaryFieldMeta<?> field) {
-            this.sql = sql;
-            this.paramGroup = Collections.unmodifiableList(paramGroup);
-            this.domainList = domainList;
-            this.domainAccessor = domainAccessor;
-            this.field = field;
+        private final String idAlias;
+
+        private PostStmt(InsertStmtParams params) {
+            this.sql = params.sql();
+            this.paramGroup = params.paramList();
+            this.selectionList = params.selectionList();
+            this.domainList = params.domainList();
+
+            this.domainAccessor = params.domainAccessor();
+            this.field = params.returnId();
+            this.idAlias = params.idReturnAlias();
         }
 
         @Override
-        public String primaryKeyName() {
-            return this.field.fieldName();
+        public String idReturnAlias() {
+            return this.idAlias;
         }
 
         @Override
@@ -417,7 +392,7 @@ public abstract class Stmts {
 
         @Override
         public List<Selection> selectionList() {
-            return Collections.emptyList();
+            return this.selectionList;
         }
 
 

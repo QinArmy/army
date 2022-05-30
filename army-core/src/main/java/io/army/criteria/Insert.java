@@ -31,8 +31,8 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     /*################################## blow multiInsert interfaces ##################################*/
 
-    interface _PreferLiteralOptionClause<OR> {
-        _OptionClause<OR> preferLiteral(boolean prefer);
+    interface _PreferLiteralOptionClause<PO> {
+        PO preferLiteral(boolean prefer);
     }
 
     /**
@@ -67,7 +67,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      */
     interface _CommonExpClause<C, T extends IDomain, SR> {
 
-        SR set(FieldMeta<? super T> field, @Nullable Object paramOrExp);
+        SR set(FieldMeta<? super T> field, @Nullable Object value);
+
+        SR setLiteral(FieldMeta<? super T> field, @Nullable Object value);
 
         SR setExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function);
 
@@ -77,9 +79,17 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         SR setNull(FieldMeta<? super T> field);
 
-        SR ifSetExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function);
+        SR ifSet(FieldMeta<? super T> field, Supplier<?> supplier);
 
-        SR ifSetExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier);
+        SR ifSet(FieldMeta<? super T> field, Function<C, ?> function);
+
+        SR ifSet(FieldMeta<? super T> field, Function<String, ?> function, String keyName);
+
+        SR ifSetLiteral(FieldMeta<? super T> field, Supplier<?> supplier);
+
+        SR ifSetLiteral(FieldMeta<? super T> field, Function<C, ?> function);
+
+        SR ifSetLiteral(FieldMeta<? super T> field, Function<String, ?> function, String keyName);
 
     }
 
@@ -106,16 +116,16 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _StandardOptimizingOptionSpec<C, T extends IDomain>
-            extends _PreferLiteralOptionClause<_ValueInsertIntoSpec<C, T>>
-            , _StandardValueInsertSpec<C, T> {
+    interface _StandardLiteralOptionSpec<C, T extends IDomain>
+            extends _PreferLiteralOptionClause<_StandardOptionSpec<C, T>>
+            , _StandardOptionSpec<C, T> {
 
     }
 
     /**
      * @since 1.0
      */
-    interface _StandardValueInsertSpec<C, T extends IDomain>
+    interface _StandardOptionSpec<C, T extends IDomain>
             extends _ValueInsertIntoSpec<C, T>, _OptionClause<_ValueInsertIntoSpec<C, T>> {
 
     }

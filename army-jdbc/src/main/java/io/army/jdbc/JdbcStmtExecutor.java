@@ -517,7 +517,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
             throw valueInsertDomainWrapperSizeError(insertedRows, domainList.size());
         }
 
-        final String primaryKeyName = stmt.primaryKeyName();
+        final String primaryKeyName = stmt.idReturnAlias();
         if (!_MetaBridge.ID.equals(primaryKeyName)) {
             String m = String.format("%s primaryKeyName error", GeneratedKeyStmt.class.getName());
             throw new IllegalArgumentException(m);
@@ -544,7 +544,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         final List<IDomain> domainList = stmt.domainList();
         int index = 0;
         try (ResultSet resultSet = idResultSet) {
-            final String primaryKeyName = stmt.primaryKeyName();
+            final String primaryKeyName = stmt.idReturnAlias();
             final PrimaryFieldMeta<?> idField = stmt.idField();
             final Class<?> idJavaType = idField.javaType();
             final ObjectAccessor accessor = stmt.domainAccessor();

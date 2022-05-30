@@ -32,6 +32,12 @@ public abstract class _MockDialects {
     private static _Dialect createDialect(final Dialect mode) {
         final ServerMeta meta;
         switch (mode) {
+            case MySQL55:
+                meta = new MockServerMeta("MySQL", Database.MySQL, "5.5.36", 5, 5);
+                break;
+            case MySQL56:
+                meta = new MockServerMeta("MySQL", Database.MySQL, "5.6.36", 5, 6);
+                break;
             case MySQL57:
                 meta = new MockServerMeta("MySQL", Database.MySQL, "5.7.36", 5, 7);
                 break;

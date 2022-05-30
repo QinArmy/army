@@ -11,10 +11,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
-import io.army.stmt.ParamValue;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
-import io.army.stmt.Stmts;
+import io.army.stmt.*;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -97,6 +94,10 @@ public abstract class _AbstractDialect implements ArmyDialect {
             } else {
                 stmt = this.standardSingleTableUpdate(s, visible);
             }
+            if (update instanceof _BatchDml && !(stmt instanceof BatchStmt)) {
+                //no bug,never here
+                throw new IllegalStateException("create stmt error");
+            }
         } else if (update instanceof _SingleUpdate) {
             // assert implementation class is legal
             assertDialectUpdate(update);
@@ -121,6 +122,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         } else {
             throw _Exceptions.unknownStatement(update, this.dialect);
         }
+
         return stmt;
     }
 
@@ -136,6 +138,10 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 stmt = this.standardChildDelete(s, visible);
             } else {
                 stmt = this.handleStandardDelete(s, visible);
+            }
+            if (delete instanceof _BatchDml && !(stmt instanceof BatchStmt)) {
+                //no bug,never here
+                throw new IllegalStateException("create stmt error");
             }
         } else if (delete instanceof _SingleDelete) {
             this.assertDialectDelete(delete);
@@ -160,7 +166,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
         } else {
             throw _Exceptions.unknownStatement(delete, this.dialect);
         }
-
         return stmt;
     }
 
@@ -784,14 +789,14 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         // 1. child table name
         builder.append(_Constant.SPACE);
-        this.safeObjectName(child.tableName(), builder)
+        this.safeObjectName(child, builder)
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeChildTableAlias);
 
         //2. join clause
         builder.append(_Constant.SPACE_JOIN_SPACE);
         // append parent table name
-        this.safeObjectName(parent.tableName(), builder)
+        this.safeObjectName(parent, builder)
                 .append(_Constant.SPACE_AS_SPACE)
                 .append(safeParentTableAlias);
 
@@ -872,13 +877,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (safeTableAlias != null) {
             sqlBuilder.append(safeTableAlias);
         } else if (table instanceof SingleTableMeta && context instanceof _SingleDeleteContext) {
-            this.safeObjectName(table.tableName(), sqlBuilder);
+            this.safeObjectName(table, sqlBuilder);
         } else {
             throw new IllegalArgumentException();
         }
         sqlBuilder.append(_Constant.POINT);
 
-        this.safeObjectName(field.columnName(), sqlBuilder)
+        this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(table.discriminatorValue());
     }
@@ -915,15 +920,15 @@ public abstract class _AbstractDialect implements ArmyDialect {
             if (safeTableAlias != null) {
                 sqlBuilder.append(safeTableAlias);
             } else if (context instanceof _SingleDeleteContext) {
-                this.safeObjectName(table.tableName(), sqlBuilder);
+                this.safeObjectName(table, sqlBuilder);
             } else {
                 throw new IllegalArgumentException();
             }
             sqlBuilder.append(_Constant.POINT);
-            this.identifier(field.columnName(), sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL_SPACE);
+            this.safeObjectName(field, sqlBuilder)
+                    .append(_Constant.SPACE_EQUAL);
 
-            this.literal(field.mappingType(), visibleValue, sqlBuilder);
+            this.spaceAndLiteral(field.mappingType(), visibleValue, sqlBuilder);
         }
 
     }
@@ -1138,14 +1143,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
             sqlBuilder.append(safeTableAlias)
                     .append(_Constant.POINT);
         }
-        this.safeObjectName(updateTime.columnName(), sqlBuilder)
+        this.safeObjectName(updateTime, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL);
 
         if (context.hasParam()) {
             context.appendParam(ParamValue.build(updateTime.mappingType(), updateTimeValue));
         } else {
-            sqlBuilder.append(_Constant.SPACE);
-            this.literal(updateTime.mappingType(), updateTimeValue, sqlBuilder);
+            this.spaceAndLiteral(updateTime.mappingType(), updateTimeValue, sqlBuilder);
         }
 
         if (table.containField(_MetaBridge.VERSION)) {
@@ -1238,7 +1242,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         sqlBuilder.append(_Constant.DELETE_FROM_SPACE);
 
         //2. table name
-        this.safeObjectName(table.tableName(), sqlBuilder);
+        this.safeObjectName(table, sqlBuilder);
 
         final String safeTableAlias;
         if (context.supportAlias) {
@@ -1291,7 +1295,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         sqlBuilder.append(_Constant.UPDATE)
                 .append(_Constant.SPACE);
 
-        this.safeObjectName(table.tableName(), sqlBuilder);
+        this.safeObjectName(table, sqlBuilder);
 
         //1.2 table alias
         if (this.tableAliasAfterAs()) {

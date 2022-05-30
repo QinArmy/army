@@ -5,10 +5,7 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.NullHandleMode;
-import io.army.criteria.StandardStatement;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
@@ -113,18 +110,15 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
 
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
         if (fieldList.size() == 0) {
-            this.fieldList = castFieldList(domainTable);
+            this.fieldList = castFieldList(this.table);
         } else {
-            this.fieldList = mergeFieldList(domainTable, fieldList);
+            this.fieldList = mergeFieldList(this.table, fieldList);
         }
-        if (!(stmt instanceof StandardStatement || dialect.supportInsertReturning())) {
+        if (stmt instanceof StandardStatement || !dialect.supportInsertReturning()) {
             this.returnId = null;
             this.idSelectionAlias = null;
-        } else if (domainTable instanceof ChildTableMeta) {
-            this.returnId = ((ChildTableMeta<?>) domainTable).parentMeta().id();
-            this.idSelectionAlias = this.returnId.fieldName();
         } else {
-            this.returnId = domainTable.id();
+            this.returnId = this.table.id();
             this.idSelectionAlias = this.returnId.fieldName();
         }
 
@@ -187,16 +181,21 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
         final List<FieldMeta<?>> fieldList = this.fieldList;
         final int fieldSize = fieldList.size();
         final ArmyDialect dialect = this.dialect;
-        final StringBuilder sqlBuilder = this.sqlBuilder;
-
-        dialect.safeObjectName(this.table.tableName(), sqlBuilder)
+        final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_LEFT_PAREN);
 
-        for (int i = 0; i < fieldSize; i++) {
-            if (i > 0) {
+        FieldMeta<?> field;
+        for (int i = 0, actualIndex = 0; i < fieldSize; i++) {
+            field = fieldList.get(i);
+            if (!field.insertable()) {
+                // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
+                continue;
+            }
+            if (actualIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            dialect.safeObjectName(fieldList.get(i).columnName(), sqlBuilder);
+            dialect.safeObjectName(fieldList.get(i), sqlBuilder);
+            actualIndex++;
         }
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
@@ -273,7 +272,7 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
                 } else if ((value = accessor.get(domain, field.fieldName())) != null) {
                     mappingType = field.mappingType();
                     if (preferLiteral && mappingType instanceof _ArmyNoInjectionMapping) {//TODO field codec
-                        dialect.literal(mappingType, value, sqlBuilder);
+                        dialect.spaceAndLiteral(mappingType, value, sqlBuilder);
                     } else {
                         this.appendParam(ParamValue.build(field, value));
                     }
@@ -310,12 +309,10 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
     @Override
     public SimpleStmt build() {
         final SimpleStmt stmt;
-        if (this.returnId != null) {
-            stmt = Stmts.returnId(this);
-        } else if (this.table.id().generatorType() == GeneratorType.POST) {
+        if (this.table.id().generatorType() == GeneratorType.POST) {
             stmt = Stmts.post(this);
         } else {
-            stmt = Stmts.simple(this);
+            stmt = Stmts.minSimple(this);
         }
         return stmt;
     }
@@ -331,8 +328,8 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
                 .append(_Constant.SPACE);
 
         final ArmyDialect dialect = this.dialect;
-        //TODO table alias
-        dialect.safeObjectName(returnId.columnName(), sqlBuilder)
+        //TODO for dialect table alias
+        dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);
 
         dialect.identifier(returnId.fieldName(), sqlBuilder);
@@ -349,13 +346,18 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
     }
 
     @Override
+    public List<Selection> selectionList() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public PrimaryFieldMeta<?> returnId() {
         return this.returnId;
     }
 
 
     @Override
-    public String idSelectionAlias() {
+    public String idReturnAlias() {
         return this.idSelectionAlias;
     }
 

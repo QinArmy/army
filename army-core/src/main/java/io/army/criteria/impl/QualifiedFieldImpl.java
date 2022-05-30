@@ -168,6 +168,11 @@ final class QualifiedFieldImpl<T extends IDomain> extends OperationField
     }
 
     @Override
+    public String objectName() {
+        return this.field.columnName;
+    }
+
+    @Override
     public MappingType mappingType() {
         return this.field.mappingType;
     }

@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.NonNull;
 import io.army.mapping._MappingFactory;
@@ -42,9 +41,8 @@ final class LiteralExpression extends OperationExpression implements ValueExpres
 
     @Override
     public void appendSql(final _SqlContext context) {
-        context.sqlBuilder()
-                .append(_Constant.SPACE)
-                .append(context.dialect().literal(this.paramMeta, this.literal));
+        context.dialect()
+                .spaceAndLiteral(this.paramMeta, this.literal, context.sqlBuilder());
     }
 
 

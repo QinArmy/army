@@ -8,6 +8,6 @@ spring:
         password: army123
     bank:
       primary:
-        url: jdbc:mysql://localhost:3306/army_bank?sslMode=DISABLED
+        url: jdbc:mysql://localhost:3306/army_bank
         username: army_w
         password: army123

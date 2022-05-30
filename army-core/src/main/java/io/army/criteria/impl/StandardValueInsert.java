@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Insert;
+import io.army.criteria.StandardStatement;
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -18,11 +19,12 @@ import io.army.meta.TableMeta;
 final class StandardValueInsert<C, T extends IDomain> extends ValueInsert<
         C,
         T,
+        Insert._StandardOptionSpec<C, T>,
         Insert._ValueInsertIntoSpec<C, T>,//OR
         Insert._ValueSpec<C, T>, //IR
         Insert._ValueSpec<C, T>> // SR
-        implements Insert._StandardValueInsertSpec<C, T>, Insert._ValueSpec<C, T>, Insert._ValueInsertIntoSpec<C, T>
-        , Insert._StandardOptimizingOptionSpec<C, T> {
+        implements Insert._StandardOptionSpec<C, T>, Insert._ValueSpec<C, T>, Insert._ValueInsertIntoSpec<C, T>
+        , Insert._StandardLiteralOptionSpec<C, T>, StandardStatement {
 
 
     static <C, T extends IDomain> StandardValueInsert<C, T> create(TableMeta<T> table, @Nullable C criteria) {

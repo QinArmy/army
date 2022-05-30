@@ -3,6 +3,7 @@ package io.army.criteria;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.impl.SQLs;
 import io.army.mapping.MappingType;
+import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
@@ -22,7 +23,7 @@ import java.lang.reflect.Field;
  * @see QualifiedField
  */
 @SuppressWarnings("unused")
-public interface TableField extends DataField, FieldSelection, ParamMeta, SetLeftItem {
+public interface TableField extends DataField, FieldSelection, ParamMeta, SetLeftItem, DatabaseObject {
 
     TableMeta<?> tableMeta();
 
@@ -39,6 +40,10 @@ public interface TableField extends DataField, FieldSelection, ParamMeta, SetLef
     String fieldName();
 
     /**
+     * <p>
+     * Equivalence : {@link  FieldMeta#objectName()}
+     * </p>
+     *
      * @return column name(lower case).
      */
     String columnName();

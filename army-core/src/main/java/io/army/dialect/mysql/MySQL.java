@@ -8,10 +8,7 @@ import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
 import io.army.mapping.MappingType;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.ParamMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.ServerMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.Database;
 import io.army.sqltype.MySqlType;
@@ -66,8 +63,23 @@ abstract class MySQL extends _AbstractDialect {
         return stmtList;
     }
 
+
     @Override
-    public final StringBuilder safeObjectName(final String objectName, final StringBuilder builder) {
+    public final boolean supportQueryUpdate() {
+        return false;
+    }
+
+    @Override
+    public final String safeObjectName(final DatabaseObject object) {
+        final StringBuilder builder = new StringBuilder();
+        return this.safeObjectName(object, builder)
+                .toString();
+    }
+
+    @Override
+    public final StringBuilder safeObjectName(final DatabaseObject object, final StringBuilder builder) {
+        final String objectName;
+        objectName = object.objectName();
         if (this.keyWordSet.contains(objectName)) {
             builder.append(IDENTIFIER_QUOTE)
                     .append(objectName)
@@ -173,7 +185,9 @@ abstract class MySQL extends _AbstractDialect {
     }
 
     @Override
-    public final StringBuilder literal(final ParamMeta paramMeta, final Object nonNull, final StringBuilder sqlBuilder) {
+    public final StringBuilder spaceAndLiteral(final ParamMeta paramMeta, final Object nonNull, final StringBuilder sqlBuilder) {
+        sqlBuilder.append(_Constant.SPACE);
+
         final SqlType sqlType;
         final MappingType mappingType;
         if (paramMeta instanceof MappingType) {
@@ -280,8 +294,7 @@ abstract class MySQL extends _AbstractDialect {
             default:
                 throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
         }
-        return sqlBuilder
-                .append(literal);
+        return sqlBuilder.append(literal);
     }
 
     @Override
@@ -355,14 +368,15 @@ abstract class MySQL extends _AbstractDialect {
         final ParentTableMeta<?> parentTable = childTable.parentMeta();
 
         // 1. delete clause
-        final StringBuilder builder = context.sqlBuilder()
+        final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(_Constant.DELETE);
 
         final String safeParentTableAlias, safeChildTableAlias;
         safeChildTableAlias = context.saTableAliasOf(childTable);
         safeParentTableAlias = context.saTableAliasOf(parentTable);
 
-        builder.append(safeChildTableAlias)// child table alias
+        sqlBuilder.append(_Constant.SPACE)
+                .append(safeChildTableAlias)// child table alias
                 .append(_Constant.SPACE_COMMA_SPACE)
                 .append(safeParentTableAlias)// parent table name
                 .append(_Constant.SPACE_FROM);
@@ -392,10 +406,16 @@ abstract class MySQL extends _AbstractDialect {
     @Override
     protected final void standardLockClause(final LockMode lockMode, final _SqlContext context) {
         switch (lockMode) {
-            case READ:
-                context.sqlBuilder()
-                        .append(_Constant.SPACE_LOCK_IN_SHARE_MODE);
-                break;
+            case READ: {
+                if (this.asOf80) {
+                    context.sqlBuilder()
+                            .append(_Constant.SPACE_FOR_SHARE);
+                } else {
+                    context.sqlBuilder()
+                            .append(_Constant.SPACE_LOCK_IN_SHARE_MODE);
+                }
+            }
+            break;
             case WRITE:
                 context.sqlBuilder()
                         .append(_Constant.SPACE_FOR_UPDATE);

@@ -54,7 +54,7 @@ public abstract class _DdlDialect implements DdlDialect {
         final StringBuilder builder = new StringBuilder(128)
                 .append("CREATE TABLE IF NOT EXISTS ");
 
-        dialect.safeObjectName(table.tableName(), builder)
+        dialect.safeObjectName(table, builder)
                 .append(_Constant.SPACE_LEFT_PAREN)
                 .append("\n\t");
 
@@ -95,7 +95,7 @@ public abstract class _DdlDialect implements DdlDialect {
                 builder.append(" ,\n\t");
             } else {
                 table = field.tableMeta();
-                dialect.safeObjectName(table.tableName(), builder)
+                dialect.safeObjectName(table, builder)
                         .append(" ADD COLUMN (\n\t");
             }
             //TODO 新增的 时间类型列应该有默认值,否则 mysql 会以 00000-00-00 作为默认值.
@@ -107,7 +107,7 @@ public abstract class _DdlDialect implements DdlDialect {
 
 
     protected final void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
-        this.dialect.safeObjectName(field.columnName(), builder)
+        this.dialect.safeObjectName(field, builder)
                 .append(_Constant.SPACE);
         final SqlType sqlType;
         sqlType = field.mappingType().map(this.serverMeta);

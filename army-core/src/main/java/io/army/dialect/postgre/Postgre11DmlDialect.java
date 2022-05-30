@@ -1,6 +1,7 @@
 package io.army.dialect.postgre;
 
 import io.army.dialect.*;
+import io.army.meta.DatabaseObject;
 import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
 import io.army.tx.Isolation;
@@ -34,7 +35,7 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
-    public StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder) {
+    public StringBuilder spaceAndLiteral(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder) {
         return null;
     }
 
@@ -54,9 +55,30 @@ class Postgre11DmlDialect extends _AbstractDialect {
         return PostgreDdl.create(this);
     }
 
+
     @Override
-    public String literal(ParamMeta paramMeta, Object nonNull) {
+    public boolean supportRowLeftItem() {
+        return super.supportRowLeftItem();
+    }
+
+    @Override
+    public boolean supportQueryUpdate() {
+        return super.supportQueryUpdate();
+    }
+
+    @Override
+    public String safeObjectName(DatabaseObject object) {
         return null;
+    }
+
+    @Override
+    public StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder) {
+        return builder;
+    }
+
+    @Override
+    public boolean setClauseSupportRow() {
+        return super.setClauseSupportRow();
     }
 
     @Override

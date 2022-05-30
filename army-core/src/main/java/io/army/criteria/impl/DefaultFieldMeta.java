@@ -321,6 +321,11 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
     }
 
     @Override
+    public final String objectName() {
+        return this.columnName;
+    }
+
+    @Override
     public final String columnName() {
         return this.columnName;
     }

@@ -38,7 +38,7 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static <T extends IDomain> Insert._StandardOptimizingOptionSpec<Void, T> valueInsert(TableMeta<T> table) {
+    public static <T extends IDomain> Insert._StandardLiteralOptionSpec<Void, T> valueInsert(TableMeta<T> table) {
         return StandardValueInsert.create(table, null);
     }
 
@@ -54,7 +54,7 @@ public abstract class SQLs extends Functions {
      * @param table will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain, C> Insert._StandardOptimizingOptionSpec<C, T> valueInsert(TableMeta<T> table, C criteria) {
+    public static <T extends IDomain, C> Insert._StandardLiteralOptionSpec<C, T> valueInsert(TableMeta<T> table, C criteria) {
         Objects.requireNonNull(criteria);
         return StandardValueInsert.create(table, criteria);
     }
@@ -475,7 +475,9 @@ public abstract class SQLs extends Functions {
                 throw _Exceptions.armyManageField(f);
             }
 
-            if (!f.nullable() && (value == null || ((ArmyExpression) value).isNullableValue())) {
+            if (!f.nullable()
+                    && (value == null
+                    || (value instanceof Expression && ((ArmyExpression) value).isNullableValue()))) {
                 throw _Exceptions.nonNullField(f);
             }
         }

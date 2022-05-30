@@ -18,6 +18,7 @@ public abstract class _MySQLDialects extends _DialectFactory {
         targetDialect = targetDialect(environment, Database.MySQL);
         final MySQL mySQL;
         switch (targetDialect) {
+            case MySQL55:
             case MySQL56:
             case MySQL57:
             case MySQL80:

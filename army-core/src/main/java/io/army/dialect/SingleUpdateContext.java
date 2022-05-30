@@ -58,11 +58,11 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
         if (_MetaBridge.UPDATE_TIME.equals(fieldName) || _MetaBridge.VERSION.equals(fieldName)) {
             throw _Exceptions.armyManageField(field);
         }
-        final StringBuilder sqlBuilder = this.sqlBuilder;
-        sqlBuilder
+        final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE)
-                .append(this.safeTableAlias);
-        this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+                .append(this.safeTableAlias)
+                .append(_Constant.POINT);
+        this.dialect.safeObjectName(field, sqlBuilder);
 
         switch (updateMode) {
             case ONLY_NULL:
@@ -93,13 +93,14 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
         final ArmyDialect dialect = this.dialect;
         final StringBuilder sqlBuilder = this.sqlBuilder;
 
+        String safeColumnName;
         for (TableField field : conditionFieldList) {
             sqlBuilder.append(_Constant.SPACE_AND_SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
 
-            dialect.safeObjectName(field.columnName(), sqlBuilder);
-
+            safeColumnName = dialect.safeObjectName(field);
+            sqlBuilder.append(safeColumnName);
             switch (field.updateMode()) {
                 case ONLY_NULL:
                     sqlBuilder.append(_Constant.SPACE_IS_NULL);
@@ -110,8 +111,8 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
                             .append(_Constant.SPACE_LEFT_PAREN)
                             .append(_Constant.SPACE)
                             .append(safeTableAlias)
-                            .append(_Constant.POINT);
-                    dialect.safeObjectName(field.columnName(), sqlBuilder)
+                            .append(_Constant.POINT)
+                            .append(safeColumnName)
                             .append(_Constant.SPACE_RIGHT_PAREN);
 
                 }

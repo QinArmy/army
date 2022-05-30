@@ -178,7 +178,7 @@ final class MySQLDialect extends MySQL {
         final SingleTableMeta<?> table = (SingleTableMeta<?>) context.table();
         final String safeTableAlias = context.safeTableAlias();
         sqlBuilder.append(_Constant.SPACE);
-        this.safeObjectName(table.tableName(), sqlBuilder);
+        this.safeObjectName(table, sqlBuilder);
 
         //6. partition
         this.partitionClause(stmt.partitionList(), sqlBuilder);
@@ -464,7 +464,7 @@ final class MySQLDialect extends MySQL {
             if (tableItem instanceof TableMeta) {
                 sqlBuilder.append(_Constant.SPACE);
                 table = (TableMeta<?>) tableItem;
-                this.safeObjectName(table.tableName(), sqlBuilder);
+                this.safeObjectName(table, sqlBuilder);
                 if (block instanceof _MySQLTableBlock) {
                     this.partitionClause(((_MySQLTableBlock) block).partitionList(), sqlBuilder);
                 }

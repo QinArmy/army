@@ -87,6 +87,9 @@ public enum Dialect {
         switch (meta.major()) {
             case 5:
                 switch (meta.minor()) {
+                    case 5:
+                        dialect = Dialect.MySQL55;
+                        break;
                     case 6:
                         dialect = Dialect.MySQL56;
                         break;

@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.meta.ChildTableMeta;
@@ -13,6 +14,7 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
+import java.util.Collections;
 import java.util.List;
 
 abstract class SingleDmlContext extends StatementContext implements DmlContext, _SingleTableContext, DmlStmtParams {
@@ -30,6 +32,8 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
 
     private final String safeParentAlias;
 
+    private final List<Selection> selectionList;
+
 
     SingleDmlContext(_SingleDml dml, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
@@ -45,6 +49,7 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         }
         this.hasVersion = _DialectUtils.hasOptimistic(dml.predicateList());
         this.supportAlias = !(this instanceof DeleteContext) || dialect.singleDeleteHasTableAlias();
+        this.selectionList = Collections.emptyList();
 
     }
 
@@ -62,6 +67,7 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         }
         this.hasVersion = _DialectUtils.hasOptimistic(dml.predicateList());
         this.supportAlias = !(this instanceof DeleteContext) || dialect.singleDeleteHasTableAlias();
+        this.selectionList = Collections.emptyList();
     }
 
     @Override
@@ -98,10 +104,10 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
             if (this.supportAlias) {
                 sqlBuilder.append(this.safeTableAlias);
             } else {
-                this.dialect.safeObjectName(table.tableName(), sqlBuilder);
+                this.dialect.safeObjectName(table, sqlBuilder);
             }
             sqlBuilder.append(_Constant.POINT);
-            this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+            this.dialect.safeObjectName(field, sqlBuilder);
         } else if (table instanceof ChildTableMeta && fieldTable == ((ChildTableMeta<?>) table).parentMeta()) {
             // parent table filed
             this.parentColumnFromSubQuery(field);
@@ -133,6 +139,10 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         return this.hasVersion;
     }
 
+    @Override
+    public final List<Selection> selectionList() {
+        return this.selectionList;
+    }
 
     final void parentColumnFromSubQuery(final FieldMeta<?> parentField) {
         final ChildTableMeta<?> childTable = (ChildTableMeta<?>) this.table;
@@ -141,10 +151,7 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
 
         final ArmyDialect dialect = this.dialect;
         final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentField.tableMeta();
-        final StringBuilder sqlBuilder = this.sqlBuilder;
-
-
-        sqlBuilder
+        final StringBuilder sqlBuilder = this.sqlBuilder
                 //below sub query left bracket
                 .append(_Constant.SPACE_LEFT_PAREN)
                 .append(_Constant.SPACE_SELECT_SPACE)
@@ -152,11 +159,11 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
                 .append(safeParentAlias)
                 .append(_Constant.POINT);
 
-        dialect.safeObjectName(parentField.columnName(), sqlBuilder)
+        dialect.safeObjectName(parentField, sqlBuilder)
                 .append(_Constant.SPACE_FROM)
                 .append(_Constant.SPACE);
 
-        dialect.safeObjectName(parentTable.tableName(), sqlBuilder);
+        dialect.safeObjectName(parentTable, sqlBuilder);
 
 
         if (dialect.tableAliasAfterAs()) {
@@ -182,18 +189,16 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         if (this.supportAlias) {
             sqlBuilder.append(this.safeTableAlias);
         } else {
-            dialect.safeObjectName(childTable.tableName(), sqlBuilder);
+            dialect.safeObjectName(childTable, sqlBuilder);
         }
         sqlBuilder.append(_Constant.POINT)
                 .append(_MetaBridge.ID)
-
                 .append(_Constant.SPACE_AND_SPACE)
-
                 //below parent table discriminator
                 .append(safeParentAlias)
                 .append(_Constant.POINT);
 
-        dialect.safeObjectName(discriminator.columnName(), sqlBuilder)
+        dialect.safeObjectName(discriminator, sqlBuilder)
 
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(childTable.discriminatorValue())

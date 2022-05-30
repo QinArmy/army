@@ -41,23 +41,19 @@ public interface _Dialect {
     }
 
 
-    default StringBuilder safeObjectName(String tableName, StringBuilder builder) {
-        return builder;
-    }
+    /**
+     * <p>
+     * Append space and literal
+     * </p>
+     */
+    StringBuilder spaceAndLiteral(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
 
-    @Deprecated
-    default String literal(ParamMeta paramMeta, Object nonNull) {
-        throw new UnsupportedOperationException();
-    }
-
-    StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
-
-
-    String identifier(String identifier);
 
     default StringBuilder identifier(String identifier, StringBuilder builder) {
         return builder;
     }
+
+    String identifier(String identifier);
 
 
     boolean supportSavePoint();
@@ -72,7 +68,6 @@ public interface _Dialect {
 
     Dialect dialectMode();
 
-    String defaultFuncName();
 
 
 }

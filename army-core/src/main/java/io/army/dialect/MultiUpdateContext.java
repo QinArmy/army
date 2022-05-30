@@ -14,10 +14,7 @@ import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 final class MultiUpdateContext extends MultiTableContext implements _MultiUpdateContext, DmlStmtParams {
 
@@ -108,7 +105,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.safeObjectName(field.fieldName(), sqlBuilder);
+            this.dialect.identifier(field.fieldName(), sqlBuilder);
         } else if (dataField instanceof FieldMeta) {
             final FieldMeta<?> field = (FieldMeta<?>) dataField;
             final String safeTableAlias;
@@ -121,7 +118,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+            this.dialect.safeObjectName(field, sqlBuilder);
         } else if (dataField instanceof QualifiedField) {
             final QualifiedField<?> field = (QualifiedField<?>) dataField;
             final String tableAlias = field.tableAlias();
@@ -135,7 +132,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.safeObjectName(field.columnName(), sqlBuilder);
+            this.dialect.safeObjectName(field, sqlBuilder);
         } else {
             throw _Exceptions.immutableField(dataField);
         }
@@ -187,16 +184,15 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
                     .append(_Constant.POINT);
 
             if (field instanceof TableField) {
-                objectName = ((TableField) field).columnName();
-                dialect.safeObjectName(objectName, sqlBuilder);
+                objectName = dialect.safeObjectName((TableField) field);
                 updateMode = ((TableField) field).updateMode();
             } else {
-                objectName = field.fieldName();
-                dialect.safeObjectName(objectName, sqlBuilder);
+                objectName = dialect.identifier(field.fieldName());
                 tableField = ((_Selection) field).tableField();
                 assert tableField != null;
                 updateMode = tableField.updateMode();
             }
+            sqlBuilder.append(objectName);
             switch (updateMode) {
                 case ONLY_NULL:
                     sqlBuilder.append(_Constant.SPACE_IS_NULL);
@@ -207,9 +203,9 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
                             .append(_Constant.SPACE_LEFT_PAREN)
                             .append(_Constant.SPACE)
                             .append(safeTableAlias)
-                            .append(_Constant.POINT);
-                    dialect.safeObjectName(objectName, sqlBuilder)
-                            .append(_Constant.SPACE_RIGHT_PAREN);
+                            .append(_Constant.POINT)
+                            .append(objectName);
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
                 }
                 break;
@@ -235,6 +231,10 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         return this.hasVersion;
     }
 
+    @Override
+    public List<Selection> selectionList() {
+        return Collections.emptyList();
+    }
 
     /**
      * @see #tableAliasOf(SingleTableMeta)

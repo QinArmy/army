@@ -17,8 +17,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WithCteValueInsert<C, T extends IDomain, SS extends SubStatement, WE, OR, IR, SR>
-        extends ValueInsert<C, T, OR, IR, SR>
+abstract class WithCteValueInsert<C, T extends IDomain, SS extends SubStatement, WE, PO, OR, IR, SR>
+        extends ValueInsert<C, T, PO, OR, IR, SR>
         implements DialectStatement._WithCteClause<C, SS, WE> {
 
 
