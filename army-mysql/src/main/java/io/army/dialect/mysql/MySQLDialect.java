@@ -264,7 +264,7 @@ final class MySQLDialect extends MySQL {
         //4. modifier
         this.deleteModifiers(stmt.modifierList(), sqlBuilder);
 
-        final SimpleTableMeta<?> table = stmt.table();
+        final SingleTableMeta<?> table = stmt.table();
 
         final String safeTableAlias;
         if (this.asOf80) {

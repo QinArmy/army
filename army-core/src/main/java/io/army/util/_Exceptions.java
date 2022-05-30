@@ -377,6 +377,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("Couldn't exist named parameter in non-batch statement.");
     }
 
+    public static CriteriaException namedParamInNonBatch(NamedParam namedParam) {
+        String m = String.format("Couldn't exist %s[%s] in non-batch statement."
+                , NamedParam.class.getName(), namedParam.name());
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException noNamedParamInBatch() {
         return new CriteriaException("Not found named parameter in batch statement.");
     }

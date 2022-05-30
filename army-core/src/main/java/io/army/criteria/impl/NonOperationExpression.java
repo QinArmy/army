@@ -395,7 +395,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate inParam(Object operand) {
+    public final IPredicate inOptimizing(Object operand) {
         throw unsupportedOperation();
     }
 
@@ -420,7 +420,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notInParam(Object operand) {
+    public final IPredicate notInOptimizing(Object operand) {
         throw unsupportedOperation();
     }
 

@@ -426,10 +426,9 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             return this.session.queryAsMap(statement, mapConstructor, listConstructor, visible);
         }
 
-
         @Override
-        public <T extends IDomain> void save(T domain, NullHandleMode mode, Visible visible) {
-            this.session.save(domain, mode, visible);
+        public <T extends IDomain> void save(T domain, boolean preferLiteral, NullHandleMode mode, Visible visible) {
+            this.session.save(domain, preferLiteral, mode, visible);
         }
 
         @Override
@@ -450,8 +449,8 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode, Visible visible) {
-            this.session.batchSave(domainList, mode, visible);
+        public <T extends IDomain> void batchSave(List<T> domainList, boolean preferLiteral, NullHandleMode mode, Visible visible) {
+            this.session.batchSave(domainList, preferLiteral, mode, visible);
         }
 
         @Override

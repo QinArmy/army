@@ -74,7 +74,7 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
 
 
     @Override
-    Dialect defaultDialect() {
+    final Dialect defaultDialect() {
         return Dialect.MySQL57;
     }
 
@@ -83,6 +83,23 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
         //no-op
     }
 
+    @Override
+    final boolean isSupportRowLeftItem() {
+        // false ,standard don't support row left item
+        return false;
+    }
+
+    @Override
+    final boolean isSupportMultiTableUpdate() {
+        // false ,standard don't support multi-table update
+        return false;
+    }
+
+    @Override
+    final Dialect dialect() {
+        // no dialect
+        return null;
+    }
 
     @Override
     public final TableMeta<?> table() {

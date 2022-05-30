@@ -360,6 +360,23 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     }
 
     @Override
+    final boolean isSupportRowLeftItem() {
+        //false ,MySQL 8.0 don't support row left item
+        return false;
+    }
+
+    @Override
+    final boolean isSupportMultiTableUpdate() {
+        // true ,this is multi-table update
+        return true;
+    }
+
+    @Override
+    final Dialect dialect() {
+        return Dialect.MySQL80;
+    }
+
+    @Override
     final Dialect defaultDialect() {
         return MySQLUtils.defaultDialect(this);
     }

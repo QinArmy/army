@@ -32,9 +32,7 @@ import java.util.function.Supplier;
 @SuppressWarnings({"unused"})
 public abstract class SQLs extends Functions {
 
-    /**
-     * protected constructor, application developer can extend this util class.
-     */
+
     protected SQLs() {
         throw new UnsupportedOperationException();
     }
@@ -61,7 +59,7 @@ public abstract class SQLs extends Functions {
         return StandardValueInsert.create(table, criteria);
     }
 
-    public static Update.StandardUpdateSpec<Void> singleUpdate() {
+    public static Update.StandardUpdateSpec<Void> domainUpdate() {
         return StandardUpdate.simple(null);
     }
 
@@ -69,48 +67,87 @@ public abstract class SQLs extends Functions {
      * @param criteria a object instance, map or bean
      * @param <C>      criteria java type used to create dynamic update and sub query
      */
-    public static <C> Update.StandardUpdateSpec<C> singleUpdate(C criteria) {
+    public static <C> Update.StandardUpdateSpec<C> domainUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardUpdate.simple(criteria);
     }
 
+
     /**
-     * @see #nullableNamedParam(String, ParamMeta)
+     * <p>
+     * Batch domain update
+     * </p>
+     *
+     * @see #namedParam(DataField)
+     * @see #namedParam(ParamMeta, String)
+     * @see #namedParams(TableField, int)
+     * @see #namedParams(ParamMeta, String, int)
+     * @see #nullableNamedParam(DataField)
+     * @see #nullableNamedParam(ParamMeta, String)
      */
-    public static Update.StandardBatchUpdateSpec<Void> batchUpdate() {
+    public static Update.StandardBatchUpdateSpec<Void> batchDomainUpdate() {
         return StandardUpdate.batch(null);
     }
 
     /**
-     * @param criteria a object instance, map or bean
+     * <p>
+     * Batch domain update
+     * </p>
+     *
+     * @param criteria a criteria object , map or bean
      * @param <C>      criteria java type used to create dynamic batch update and sub query
-     * @see #nullableNamedParam(String, ParamMeta)
+     * @see #namedParam(DataField)
+     * @see #namedParam(ParamMeta, String)
+     * @see #namedParams(TableField, int)
+     * @see #namedParams(ParamMeta, String, int)
+     * @see #nullableNamedParam(DataField)
+     * @see #nullableNamedParam(ParamMeta, String)
      */
-    public static <C> Update.StandardBatchUpdateSpec<C> batchUpdate(C criteria) {
+    public static <C> Update.StandardBatchUpdateSpec<C> batchDomainUpdate(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardUpdate.batch(criteria);
     }
 
-    public static Delete.StandardDeleteSpec<Void> singleDelete() {
+    public static Delete.StandardDeleteSpec<Void> domainDelete() {
         return StandardDelete.simple(null);
     }
 
-    public static <C> Delete.StandardDeleteSpec<C> singleDelete(C criteria) {
+    public static <C> Delete.StandardDeleteSpec<C> domainDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardDelete.simple(criteria);
     }
 
     /**
-     * @see #nullableNamedParam(String, ParamMeta)
+     * <p>
+     * Batch domain delete
+     * </p>
+     *
+     * @see #namedParam(DataField)
+     * @see #namedParam(ParamMeta, String)
+     * @see #namedParams(TableField, int)
+     * @see #namedParams(ParamMeta, String, int)
+     * @see #nullableNamedParam(DataField)
+     * @see #nullableNamedParam(ParamMeta, String)
      */
-    public static Delete.StandardBatchDeleteSpec<Void> batchDelete() {
+    public static Delete.StandardBatchDeleteSpec<Void> batchDomainDelete() {
         return StandardDelete.batch(null);
     }
 
     /**
-     * @see #nullableNamedParam(String, ParamMeta)
+     * <p>
+     * Batch domain delete
+     * </p>
+     *
+     * @param criteria a criteria object , map or bean
+     * @param <C>      criteria java type used to create dynamic batch update and sub query
+     * @see #namedParam(DataField)
+     * @see #namedParam(ParamMeta, String)
+     * @see #namedParams(TableField, int)
+     * @see #namedParams(ParamMeta, String, int)
+     * @see #nullableNamedParam(DataField)
+     * @see #nullableNamedParam(ParamMeta, String)
      */
-    public static <C> Delete.StandardBatchDeleteSpec<C> batchDelete(C criteria) {
+    public static <C> Delete.StandardBatchDeleteSpec<C> batchDomainDelete(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardDelete.batch(criteria);
     }
@@ -362,10 +399,10 @@ public abstract class SQLs extends Functions {
      * Create non-null named parameter expression for batch update(or delete)
      * </p>
      *
-     * @see SQLs#batchUpdate()
-     * @see SQLs#batchUpdate(Object)
-     * @see SQLs#batchDelete()
-     * @see SQLs#batchDelete(Object)
+     * @see SQLs#batchDomainUpdate()
+     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#batchDomainDelete()
+     * @see SQLs#batchDomainDelete(Object)
      */
     public static NamedParam namedParam(ParamMeta paramMeta, String name) {
         return NamedParamImpl.nonNull(name, paramMeta);
@@ -376,10 +413,10 @@ public abstract class SQLs extends Functions {
      * Create non-null named parameter expression for batch update(or delete)
      * </p>
      *
-     * @see SQLs#batchUpdate()
-     * @see SQLs#batchUpdate(Object)
-     * @see SQLs#batchDelete()
-     * @see SQLs#batchDelete(Object)
+     * @see SQLs#batchDomainUpdate()
+     * @see SQLs#batchDomainUpdate(Object)
+     * @see SQLs#batchDomainDelete()
+     * @see SQLs#batchDomainDelete(Object)
      */
     public static NamedParam namedParam(DataField field) {
         final ParamMeta paramMeta;

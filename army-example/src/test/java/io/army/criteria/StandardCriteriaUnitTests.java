@@ -65,7 +65,7 @@ public class StandardCriteriaUnitTests {
         map.put("secondId", "3");
 
         final Update update;
-        update = SQLs.singleUpdate()
+        update = SQLs.domainUpdate()
                 .update(ChinaRegion_.T, "c")
                 .set(ChinaRegion_.name, "武侠江湖")
                 .setPlus(ChinaRegion_.regionGdp, addGdp)
@@ -83,7 +83,7 @@ public class StandardCriteriaUnitTests {
     public void updateChild() {
         final BigDecimal addGdp = new BigDecimal("888.8");
         final Update update;
-        update = SQLs.singleUpdate()
+        update = SQLs.domainUpdate()
                 .update(ChinaProvince_.T, "p")
                 .set(ChinaProvince_.name, "武侠江湖")
                 .setPlusLiteral(ChinaProvince_.regionGdp, addGdp)
@@ -107,7 +107,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void batchUpdateParent() {
         final Update update;
-        update = SQLs.batchUpdate()
+        update = SQLs.batchDomainUpdate()
                 .update(ChinaProvince_.T, "p")
                 .setPlus(ChinaProvince_.regionGdp)
                 .set(ChinaProvince_.governor)
@@ -133,7 +133,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void updateParentWithOnlyNullMode() {
         final Update update;
-        update = SQLs.singleUpdate()
+        update = SQLs.domainUpdate()
                 .update(User_.T, "u")
                 .set(User_.identityType, IdentityType.PERSON)
                 .set(User_.identityId, 888)
@@ -150,7 +150,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void deleteParent() {
         final Delete delete;
-        delete = SQLs.singleDelete()
+        delete = SQLs.domainDelete()
                 .deleteFrom(ChinaRegion_.T, "r")
                 .where(ChinaRegion_.id.equal(1))
                 .and(ChinaRegion_.name.equal("马鱼腮角"))
@@ -169,7 +169,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void deleteChild() {
         final Delete delete;
-        delete = SQLs.singleDelete()
+        delete = SQLs.domainDelete()
                 .deleteFrom(ChinaProvince_.T, "p")
                 .where(ChinaProvince_.id.equal(1))
                 .and(ChinaProvince_.name.equal("江南省"))
@@ -188,7 +188,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void batchDeleteChild() {
         final Delete delete;
-        delete = SQLs.batchDelete()
+        delete = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaProvince_.T, "p")
                 .where(ChinaProvince_.id.equalNamed())
                 .and(ChinaProvince_.name.equalNamed())

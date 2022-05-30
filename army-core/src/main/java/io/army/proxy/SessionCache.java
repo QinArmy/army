@@ -215,7 +215,7 @@ final class SessionCache implements _SessionCache {
         };
 
         final Update stmt;
-        stmt = SQLs.singleUpdate()
+        stmt = SQLs.domainUpdate()
                 .update(table, "t")
                 .setPairs(pairConsumer)
                 .where(table.id().equal(id))

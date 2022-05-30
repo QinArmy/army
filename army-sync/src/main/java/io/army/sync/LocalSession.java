@@ -216,7 +216,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> void save(final T domain, final boolean optimizingParam
+    public <T extends IDomain> void save(final T domain, final boolean preferLiteral
             , final NullHandleMode mode, final Visible visible) {
         final TableMeta<T> table;
         table = (TableMeta<T>) this.sessionFactory.tableMeta(domain.getClass());
@@ -226,7 +226,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         }
         final Insert stmt;
         stmt = SQLs.valueInsert(table)
-                .preferLiteral(optimizingParam)
+                .preferLiteral(preferLiteral)
                 .nullHandle(mode)
                 .insertInto(table)
                 .value(domain)
@@ -265,7 +265,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> void batchSave(final List<T> domainList, final boolean optimizing
+    public <T extends IDomain> void batchSave(final List<T> domainList, final boolean preferLiteral
             , final NullHandleMode mode, final Visible visible) {
         final Class<T> domainClass;
         domainClass = (Class<T>) domainList.get(0).getClass();
@@ -277,7 +277,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
         }
         final Insert stmt;
         stmt = SQLs.valueInsert(table)
-                .preferLiteral(optimizing)
+                .preferLiteral(preferLiteral)
                 .nullHandle(mode)
                 .insertInto(table)
                 .values(domainList)

@@ -443,7 +443,7 @@ abstract class OperationExpression implements ArmyExpression {
         if (operand instanceof Expression) {
             exp = (Expression) operand;
         } else if (operand instanceof Collection) {
-            exp = SQLs.optimizingParams(this.paramMeta(), (Collection<?>) operand);
+            exp = SQLs.params(this.paramMeta(), (Collection<?>) operand);
         } else if (operand instanceof SubQuery) {
             throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
         } else {
@@ -453,12 +453,12 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate inParam(final Object operand) {
+    public final IPredicate inOptimizing(final Object operand) {
         final Expression exp;
         if (operand instanceof Expression) {
             exp = (Expression) operand;
         } else if (operand instanceof Collection) {
-            exp = SQLs.params(this.paramMeta(), (Collection<?>) operand);
+            exp = SQLs.optimizingParams(this.paramMeta(), (Collection<?>) operand);
         } else if (operand instanceof SubQuery) {
             throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
         } else {
@@ -489,7 +489,7 @@ abstract class OperationExpression implements ArmyExpression {
         if (operand instanceof Expression) {
             exp = (Expression) operand;
         } else if (operand instanceof Collection) {
-            exp = SQLs.optimizingParams(this.paramMeta(), (Collection<?>) operand);
+            exp = SQLs.params(this.paramMeta(), (Collection<?>) operand);
         } else if (operand instanceof SubQuery) {
             throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
         } else {
@@ -499,12 +499,12 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate notInParam(Object operand) {
+    public final IPredicate notInOptimizing(Object operand) {
         final Expression exp;
         if (operand instanceof Expression) {
             exp = (Expression) operand;
         } else if (operand instanceof Collection) {
-            exp = SQLs.params(this.paramMeta(), (Collection<?>) operand);
+            exp = SQLs.optimizingParams(this.paramMeta(), (Collection<?>) operand);
         } else if (operand instanceof SubQuery) {
             throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
         } else {

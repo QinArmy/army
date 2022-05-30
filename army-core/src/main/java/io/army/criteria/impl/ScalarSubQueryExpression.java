@@ -22,7 +22,7 @@ final class ScalarSubQueryExpression extends OperationExpression implements Scal
     }
 
     @Override
-    public List<? extends SelectItem> selectItemList() {
+    public List<SelectItem> selectItemList() {
         return this.subQuery.selectItemList();
     }
 
@@ -54,7 +54,7 @@ final class ScalarSubQueryExpression extends OperationExpression implements Scal
 
     @Override
     public void appendSql(final _SqlContext context) {
-        context.dialect().subQuery(this.subQuery, context);
+        context.dialect().rowSet(this.subQuery, context);
     }
 
 

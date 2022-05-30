@@ -38,7 +38,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.equal({@link SQLs#namedParam(String paramName, ParamMeta this)}})
+     * Equivalence : this.equal({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate equalNamed(String paramName);
@@ -81,7 +81,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.lessThan({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.lessThan({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate lessThanNamed(String paramName);
@@ -113,7 +113,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.lessEqual({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.lessEqual({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate lessEqualNamed(String paramName);
@@ -145,7 +145,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.greatThan({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.greatThan({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate greatThanNamed(String paramName);
@@ -181,7 +181,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.greatEqual({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.greatEqual({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate greatEqualNamed(String operand);
@@ -217,7 +217,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.notEqual({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.notEqual({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate notEqualNamed(String paramName);
@@ -265,11 +265,11 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      * Equivalence : this.in({@link SQLs#params(ParamMeta, Collection)})
      * </p>
      */
-    IPredicate inParam(Object operand);
+    IPredicate inOptimizing(Object operand);
 
     /**
      * <p>
-     * Equivalence : this.in({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.in({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate inNamed(String paramName, int size);
@@ -290,11 +290,11 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
      * Equivalence : this.notIn({@link SQLs#params(ParamMeta, Collection)})
      * </p>
      */
-    IPredicate notInParam(Object operand);
+    IPredicate notInOptimizing(Object operand);
 
     /**
      * <p>
-     * Equivalence : this.notIn({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.notIn({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate notInNamed(String paramName, int size);
@@ -308,7 +308,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.like({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.like({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate likeNamed(String paramName);
@@ -323,7 +323,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.notLike({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.notLike({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     IPredicate notLikeNamed(String paramName);
@@ -344,7 +344,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.mod({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.mod({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression modNamed(String paramName);
@@ -365,7 +365,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.multiply({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.multiply({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression timesNamed(String paramName);
@@ -385,7 +385,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.plus({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.plus({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression plusNamed(String paramName);
@@ -405,7 +405,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.minus({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.minus({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression minusNamed(String paramName);
@@ -426,7 +426,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.divide({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.divide({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression divideNamed(String paramName);
@@ -453,7 +453,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.bitwiseAnd({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.bitwiseAnd({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression bitwiseAndNamed(String paramName);
@@ -484,7 +484,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.bitwiseOr({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.bitwiseOr({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression bitwiseOrNamed(String paramName);
@@ -514,7 +514,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.xor({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.xor({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression xorNamed(String paramName);
@@ -551,7 +551,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.rightShift({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.rightShift({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression rightShiftNamed(String paramName);
@@ -581,7 +581,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Equivalence : this.leftShift({@link SQLs#namedParam(String, ParamMeta)})
+     * Equivalence : this.leftShift({@link SQLs#namedParam(ParamMeta, String)})
      * </p>
      */
     Expression leftShiftNamed(String paramName);

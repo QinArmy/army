@@ -1,9 +1,9 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.MySQLs;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.example.bank.domain.account.BankAccount_;
-import io.army.example.bank.domain.user.ChinaCity_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
 import io.army.example.common.Criteria;
@@ -55,7 +55,7 @@ public class MySQLCriteriaUnitTests {
         };
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(supplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaCity_.T)
+                .update(supplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaRegion_.T)
                 .partition("p2", "p1").as("t")
                 .useIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))
                 .set(ChinaRegion_.name, "五指礁")
@@ -72,19 +72,19 @@ public class MySQLCriteriaUnitTests {
     @Test
     public void simpleBatchSingleUpdate() {
 
-        final Supplier<List<TableField>> supplier = () -> {
-            List<TableField> list = new ArrayList<>();
-            list.add(ChinaRegion_.name);
-            return list;
-        };
         final Update stmt;
         stmt = MySQLs.batchSingleUpdate()
                 .update(ChinaRegion_.T, "t")
-                .set(supplier)
+                .setFields(clause -> {
+                    clause.accept(ChinaRegion_.name);
+                    clause.accept(ChinaRegion_.regionGdp);
+                })
                 .where(ChinaRegion_.id.equalNamed())
                 .limit(10)
                 .paramList(Collections::emptyList)
                 .asUpdate();
+
+        System.out.println(stmt);
     }
 
 
@@ -212,7 +212,7 @@ public class MySQLCriteriaUnitTests {
                     .ignoreIndex(Collections.singletonList("idx_account_id"))
                     .on(User_.id::equal, BankAccount_.id)
                     .ifSet(User_.nickName, map::get, "newNickName")
-                    .ifSetPlus(BankAccount_.balance, map::get, "amount")
+                    .ifSet(BankAccount_.balance, SQLs::plusEqual, map::get, "amount")
                     .where(User_.identityId::equalLiteral, map::get, "identityId")
                     .ifAnd(User_.nickName::equal, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")

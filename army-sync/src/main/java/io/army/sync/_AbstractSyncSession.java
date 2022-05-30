@@ -192,8 +192,8 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
-    public final <T extends IDomain> void batchSave(List<T> domainList, boolean optimizingParam) {
-        this.batchSave(domainList, optimizingParam, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
+    public final <T extends IDomain> void batchSave(List<T> domainList, boolean preferLiteral) {
+        this.batchSave(domainList, preferLiteral, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override

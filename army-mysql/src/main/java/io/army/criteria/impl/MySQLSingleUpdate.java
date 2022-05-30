@@ -446,7 +446,17 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         }
     }
 
+    @Override
+    final boolean isSupportRowLeftItem() {
+        //false, MySQL 8.0 don't support row left item
+        return false;
+    }
 
+    @Override
+    final boolean isSupportMultiTableUpdate() {
+        //false, this is single-table update
+        return false;
+    }
 
     /*################################## blow _MySQLSingleUpdate method ##################################*/
 

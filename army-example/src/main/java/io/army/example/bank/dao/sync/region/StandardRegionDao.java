@@ -11,7 +11,6 @@ import io.army.example.common.BeanUtils;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -52,7 +51,10 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
 
         final Insert stmt;
         stmt = SQLs.valueInsert(ChinaCity_.T)
-                .insertInto(Arrays.asList(ChinaCity_.name, ChinaCity_.parentId))
+                .insertInto(consumer -> {
+                    consumer.accept(ChinaCity_.name);
+                    consumer.accept(ChinaCity_.parentId);
+                })
                 .setExp(ChinaCity_.parentId, provinceIdSubQuery)
                 .values(domainList)
                 .asInsert();

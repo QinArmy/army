@@ -47,19 +47,15 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
     JoinableUpdate(ClauseSupplier clauseSupplier, CriteriaContext criteriaContext) {
         super(clauseSupplier, criteriaContext.criteria());
         this.criteriaContext = criteriaContext;
-        final Dialect dialect;
-        dialect = this.dialect();
-        this.supportRowLeftItem = dialect != null && dialect.supportRowLeftItem();
-        this.supportMultiTableUpdate = dialect != null && dialect.supportMultiTableUpdate();
+        this.supportRowLeftItem = this.isSupportRowLeftItem();
+        this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();
     }
 
     JoinableUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext.criteria());
         this.criteriaContext = criteriaContext;
-        final Dialect dialect;
-        dialect = this.dialect();
-        this.supportRowLeftItem = dialect != null && dialect.supportRowLeftItem();
-        this.supportMultiTableUpdate = dialect != null && dialect.supportMultiTableUpdate();
+        this.supportRowLeftItem = this.isSupportRowLeftItem();
+        this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();
     }
 
     /*################################## blow SetClause method ##################################*/
@@ -422,6 +418,11 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
     void onClear() {
 
     }
+
+    abstract boolean isSupportRowLeftItem();
+
+    abstract boolean isSupportMultiTableUpdate();
+
 
     @Nullable
     abstract Dialect dialect();
