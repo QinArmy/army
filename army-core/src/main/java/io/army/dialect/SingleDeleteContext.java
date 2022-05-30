@@ -15,7 +15,7 @@ final class SingleDeleteContext extends SingleDmlContext implements _SingleDelet
         super(dml, dialect, visible);
     }
 
-    private SingleDeleteContext(_SingleDml dml, StmtContext outerContext) {
+    private SingleDeleteContext(_SingleDml dml, StatementContext outerContext) {
         super(dml, outerContext);
     }
 

@@ -30,7 +30,7 @@ import java.util.*;
  * This class representing standard value insert context.
  * </p>
  */
-final class ValueInsertContext extends StmtContext implements _ValueInsertContext, InsertStmtParams {
+final class ValueInsertContext extends StatementContext implements _ValueInsertContext, InsertStmtParams {
 
     static ValueInsertContext nonChild(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
         checkCommonExpMap(insert);
@@ -45,7 +45,7 @@ final class ValueInsertContext extends StmtContext implements _ValueInsertContex
     private static void checkCommonExpMap(_ValuesInsert insert) {
         final TableMeta<?> table = insert.table();
         for (Map.Entry<FieldMeta<?>, _Expression> e : insert.commonExpMap().entrySet()) {
-            _DmlUtils.checkInsertExpField(table, e.getKey(), e.getValue());
+            _DialectUtils.checkInsertExpField(table, e.getKey(), e.getValue());
         }
     }
 

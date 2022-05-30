@@ -4,14 +4,18 @@ import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
 
-final class UnionSubQueryContext extends StmtContext implements _UnionQueryContext, _SubQueryContext {
+class UnionSubQueryContext extends StatementContext implements UnionQueryContext, SubQueryContext {
 
     static UnionSubQueryContext create(_SqlContext outerContext) {
-        return new UnionSubQueryContext((StmtContext) outerContext);
+        return new UnionSubQueryContext((StatementContext) outerContext);
+    }
+
+    static UnionSubQueryContext forLateral(_SqlContext outerContext) {
+        return new LateralUnionSubQueryContext((StatementContext) outerContext);
     }
 
 
-    private UnionSubQueryContext(StmtContext outerContext) {
+    private UnionSubQueryContext(StatementContext outerContext) {
         super(outerContext);
     }
 
@@ -41,6 +45,16 @@ final class UnionSubQueryContext extends StmtContext implements _UnionQueryConte
     public SimpleStmt build() {
         throw SimpleSubQueryContext.dontSupportBuild();
     }
+
+
+    private static final class LateralUnionSubQueryContext extends UnionSubQueryContext
+            implements LateralSubQueryContext {
+
+        private LateralUnionSubQueryContext(StatementContext outerContext) {
+            super(outerContext);
+        }
+
+    }// LateralUnionSubQueryContext
 
 
 }

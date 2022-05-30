@@ -5,6 +5,14 @@ import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.stmt.ParamValue;
 
+/**
+ * <p>
+ * This interface representing sql context,that is used by {@link  _Dialect} and the implementation of criteria api,
+ * for example {@link  io.army.criteria.impl.inner._Expression}.
+ * </p>
+ *
+ * @since 1.0
+ */
 public interface _SqlContext {
 
 

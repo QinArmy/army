@@ -177,7 +177,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
 
         //3. parse select
-        final _SelectContext context;
+        final StmtContext context;
         if (select instanceof _UnionRowSet) {
             context = UnionSelectContext.create(select, this, visible);
             this.standardUnionQuery((_UnionRowSet) select, context);
@@ -980,7 +980,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         //2. assert sub query implementation class.
         if (subQuery instanceof _LateralSubQuery) {
-            throw _Exceptions.lateralSubQueryErrorPosition();
+            if (!(outerContext instanceof LateralSubQueryContext && outerContext instanceof UnionQueryContext)) {
+                throw _Exceptions.lateralSubQueryErrorPosition();
+            }
         } else if (subQuery instanceof StandardQuery) {
             _SQLCounselor.assertStandardQuery(subQuery);
         } else {
@@ -1043,11 +1045,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
         //4. parse select
         if (select instanceof _UnionRowSet) {
-            final _UnionQueryContext context;
-            if (original instanceof _UnionQueryContext) {
-                context = (_UnionQueryContext) original;
+            final UnionQueryContext context;
+            if (original instanceof UnionQueryContext) {
+                context = (UnionQueryContext) original;
             } else {
-                context = UnionSelectContext.create(select, (_SelectContext) original);
+                context = UnionSelectContext.create(select, (SelectContext) original);
             }
             this.standardUnionQuery((_UnionRowSet) select, context);
         } else {
@@ -1056,7 +1058,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 builder.append(_Constant.SPACE); // append space before select key word
             }
             final SimpleSelectContext context;
-            context = SimpleSelectContext.create(select, (_SelectContext) original);//create new simple select context
+            context = SimpleSelectContext.create(select, (SelectContext) original);//create new simple select context
             if (select instanceof StandardQuery) {
                 this.standardSimpleQuery((_StandardQuery) select, context);
             } else {
@@ -1075,16 +1077,18 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         final StringBuilder sqlBuilder = outerContext.sqlBuilder();
         //3. parse sub query
-        final boolean outerBrackets;
-        outerBrackets = !(outerContext instanceof _SubQueryContext) || outerContext instanceof _SimpleQueryContext;
+        final boolean outerParen;
+        outerParen = !(outerContext instanceof SubQueryContext) || outerContext instanceof _SimpleQueryContext;
 
-        if (outerBrackets) {
+        if (outerParen) {
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);// append space left bracket before select key word
         }
         if (subQuery instanceof _UnionRowSet) {
-            final _UnionQueryContext context;
-            if (outerContext instanceof _SubQueryContext && outerContext instanceof _UnionQueryContext) {
-                context = (_UnionQueryContext) outerContext;
+            final UnionQueryContext context;
+            if (outerContext instanceof SubQueryContext && outerContext instanceof UnionQueryContext) {
+                context = (UnionQueryContext) outerContext;
+            } else if (subQuery instanceof _LateralSubQuery) {
+                context = UnionSubQueryContext.forLateral(outerContext);
             } else {
                 context = UnionSubQueryContext.create(outerContext);
             }
@@ -1100,7 +1104,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             }
         }
 
-        if (outerBrackets) {
+        if (outerParen) {
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);// append space left bracket after sub query end.
         }
 
@@ -1112,7 +1116,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #multiTableSetClause(_MultiUpdate, _MultiUpdateContext)
      */
     private void appendUpdateTimeAndVersion(final SingleTableMeta<?> table, final String safeTableAlias
-            , final _StmtContext context) {
+            , final StmtContext context) {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final FieldMeta<?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
@@ -1195,7 +1199,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         final _ValueInsertContext nonChildContext;
         nonChildContext = ValueInsertContext.nonChild(insert, this, visible);
 
-        _DmlUtils.standardInertIntoTable(nonChildContext);
+        _DialectUtils.standardInertIntoTable(nonChildContext);
 
         nonChildContext.appendFieldList();
         nonChildContext.appendValueList();
@@ -1206,7 +1210,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             final _ValueInsertContext childContext;
             childContext = ValueInsertContext.child(insert, this, visible);
 
-            _DmlUtils.standardInertIntoTable(childContext);
+            _DialectUtils.standardInertIntoTable(childContext);
             childContext.appendFieldList();
             childContext.appendValueList();
 

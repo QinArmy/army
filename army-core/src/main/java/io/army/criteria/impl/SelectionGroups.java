@@ -7,7 +7,7 @@ import io.army.criteria.SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._Dialect;
-import io.army.dialect._DqlUtils;
+import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.meta.*;
@@ -255,7 +255,7 @@ abstract class SelectionGroups {
             if (this instanceof DerivedFieldGroup) {
                 this.selectionList = ((DerivedFieldGroup) this).createSelectionList(table);
             } else {
-                this.selectionList = Collections.unmodifiableList(_DqlUtils.flatSelectItem(table.selectItemList()));
+                this.selectionList = Collections.unmodifiableList(_DialectUtils.flatSelectItem(table.selectItemList()));
             }
 
         }

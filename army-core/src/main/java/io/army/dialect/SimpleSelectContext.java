@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._Query;
 
 import java.util.List;
 
-final class SimpleSelectContext extends MultiTableContext implements _SimpleQueryContext, _SelectContext {
+final class SimpleSelectContext extends MultiTableContext implements _SimpleQueryContext, SelectContext {
 
 
     static SimpleSelectContext create(Select select, ArmyDialect dialect, Visible visible) {
@@ -16,7 +16,7 @@ final class SimpleSelectContext extends MultiTableContext implements _SimpleQuer
         return new SimpleSelectContext(select, tableContext, dialect, visible);
     }
 
-    static SimpleSelectContext create(Select select, _SelectContext outerContext) {
+    static SimpleSelectContext create(Select select, SelectContext outerContext) {
         final TableContext tableContext;
         tableContext = TableContext.createContext(((_Query) select).tableBlockList()
                 , outerContext.dialect(), outerContext.visible(), false);
@@ -27,12 +27,12 @@ final class SimpleSelectContext extends MultiTableContext implements _SimpleQuer
 
     private SimpleSelectContext(Select select, TableContext tableContext, ArmyDialect dialect, Visible visible) {
         super(tableContext, dialect, visible);
-        this.selectionList = _DqlUtils.flatSelectItem(((_Query) select).selectItemList());
+        this.selectionList = _DialectUtils.flatSelectItem(((_Query) select).selectItemList());
     }
 
-    private SimpleSelectContext(Select select, TableContext tableContext, _SelectContext outerContext) {
-        super(tableContext, (StmtContext) outerContext);
-        this.selectionList = _DqlUtils.flatSelectItem(((_Query) select).selectItemList());
+    private SimpleSelectContext(Select select, TableContext tableContext, SelectContext outerContext) {
+        super(tableContext, (StatementContext) outerContext);
+        this.selectionList = _DialectUtils.flatSelectItem(((_Query) select).selectItemList());
     }
 
 

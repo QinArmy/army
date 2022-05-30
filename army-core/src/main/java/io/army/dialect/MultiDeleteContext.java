@@ -32,7 +32,7 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
 
     private MultiDeleteContext(_Delete delete, TableContext tableContext, ArmyDialect dialect, Visible visible) {
         super(tableContext, dialect, visible);
-        this.hasVersion = _DmlUtils.hasOptimistic(delete.predicateList());
+        this.hasVersion = _DialectUtils.hasOptimistic(delete.predicateList());
     }
 
 

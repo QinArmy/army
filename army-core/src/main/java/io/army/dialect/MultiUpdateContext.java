@@ -45,7 +45,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
 
     private MultiUpdateContext(_Update stmt, TableContext tableContext, ArmyDialect dialect, Visible visible) {
         super(tableContext, dialect, visible);
-        this.hasVersion = _DmlUtils.hasOptimistic(stmt.predicateList());
+        this.hasVersion = _DialectUtils.hasOptimistic(stmt.predicateList());
         this.supportQueryUpdate = dialect.supportQueryUpdate();
     }
 
@@ -223,6 +223,9 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
 
     @Override
     public BatchStmt build(List<?> paramList) {
+        if (!this.hasNamedParam()) {
+            throw _Exceptions.noNamedParamInBatch();
+        }
         return Stmts.batchDml(this, paramList);
     }
 

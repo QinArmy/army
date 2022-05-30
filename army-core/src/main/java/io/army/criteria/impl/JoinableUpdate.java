@@ -446,6 +446,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
                 this.doAddItemPair((SQLs.ArmyItemPair) pair);
             }
         } else if (!(pair instanceof SQLs.RowItemPair)) {
+            //no bug,never here
             throw new IllegalStateException("unknown ItemPair");
         } else if (!this.supportRowLeftItem) {
             throw _Exceptions.dontSupportRowLeftItem(this.dialect());

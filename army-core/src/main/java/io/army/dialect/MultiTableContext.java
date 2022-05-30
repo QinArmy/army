@@ -11,7 +11,7 @@ import io.army.util._Exceptions;
 import java.util.HashMap;
 import java.util.Map;
 
-abstract class MultiTableContext extends StmtContext implements _MultiTableContext, _StmtContext {
+abstract class MultiTableContext extends StatementContext implements _MultiTableContext, StmtContext {
 
     final Map<String, TableItem> aliasToTable;
 
@@ -27,7 +27,7 @@ abstract class MultiTableContext extends StmtContext implements _MultiTableConte
 
     }
 
-    MultiTableContext(TableContext tableContext, StmtContext outerContext) {
+    MultiTableContext(TableContext tableContext, StatementContext outerContext) {
         super(outerContext);
         this.aliasToTable = tableContext.aliasToTable;
         this.tableToSafeAlias = tableContext.tableToSafeAlias;
@@ -37,7 +37,7 @@ abstract class MultiTableContext extends StmtContext implements _MultiTableConte
     public final void appendField(final String tableAlias, final FieldMeta<?> field) {
         if (this.aliasToTable.get(tableAlias) == field.tableMeta()) {
             this.appendSafeField(tableAlias, field);
-        } else if (this instanceof _SubQueryContext) {
+        } else if (this instanceof SubQueryContext) {
             this.appendOuterField(tableAlias, field);
         } else {
             throw _Exceptions.unknownColumn(tableAlias, field);
@@ -58,7 +58,7 @@ abstract class MultiTableContext extends StmtContext implements _MultiTableConte
             this.dialect.safeObjectName(field.columnName(), sqlBuilder);
         } else if (this.aliasToTable.containsValue(fieldTable)) {
             throw _Exceptions.selfJoinNonQualifiedField(field);
-        } else if (this instanceof _SubQueryContext) {
+        } else if (this instanceof SubQueryContext) {
             this.appendOuterField(field);
         } else {
             throw _Exceptions.unknownColumn(field);

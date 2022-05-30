@@ -21,7 +21,7 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
         return new SingleUpdateContext(stmt, dialect, visible);
     }
 
-    static SingleUpdateContext create(_SingleUpdate stmt, StmtContext outerContext) {
+    static SingleUpdateContext create(_SingleUpdate stmt, StatementContext outerContext) {
         return new SingleUpdateContext(stmt, outerContext);
     }
 
@@ -32,7 +32,7 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
         super(stmt, dialect, visible);
     }
 
-    private SingleUpdateContext(_SingleUpdate stmt, StmtContext outerContext) {
+    private SingleUpdateContext(_SingleUpdate stmt, StatementContext outerContext) {
         super(stmt, outerContext);
     }
 

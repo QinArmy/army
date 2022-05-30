@@ -8,12 +8,5 @@ public final class NotSupportDialectException extends ArmyException {
         super(message);
     }
 
-    public NotSupportDialectException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public NotSupportDialectException(Throwable cause) {
-        super(cause);
-    }
 
 }

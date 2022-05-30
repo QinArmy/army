@@ -2,7 +2,18 @@ package io.army.dialect;
 
 import io.army.meta.FieldMeta;
 
-public interface _SubQueryContext extends _StmtContext {
+/**
+ * <p>
+ * Package interface,this interface representing sub query context.
+ * </p>
+ *
+ * @see SelectContext
+ * @see UnionQueryContext
+ * @see LateralSubQueryContext
+ * @see _SimpleQueryContext
+ * @since 1.0
+ */
+interface SubQueryContext extends _SqlContext {
 
     /**
      * <p>

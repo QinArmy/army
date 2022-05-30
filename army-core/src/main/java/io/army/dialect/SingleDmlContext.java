@@ -15,7 +15,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-abstract class SingleDmlContext extends StmtContext implements _DmlContext, _SingleTableContext, DmlStmtParams {
+abstract class SingleDmlContext extends StatementContext implements DmlContext, _SingleTableContext, DmlStmtParams {
 
     final TableMeta<?> table;
 
@@ -43,12 +43,12 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
         } else {
             this.safeParentAlias = null;
         }
-        this.hasVersion = _DmlUtils.hasOptimistic(dml.predicateList());
-        this.supportAlias = !(this instanceof _DeleteContext) || dialect.singleDeleteHasTableAlias();
+        this.hasVersion = _DialectUtils.hasOptimistic(dml.predicateList());
+        this.supportAlias = !(this instanceof DeleteContext) || dialect.singleDeleteHasTableAlias();
 
     }
 
-    SingleDmlContext(_SingleDml dml, StmtContext outerContext) {
+    SingleDmlContext(_SingleDml dml, StatementContext outerContext) {
         super(outerContext);
 
         this.table = dml.table();
@@ -60,8 +60,8 @@ abstract class SingleDmlContext extends StmtContext implements _DmlContext, _Sin
         } else {
             this.safeParentAlias = null;
         }
-        this.hasVersion = _DmlUtils.hasOptimistic(dml.predicateList());
-        this.supportAlias = !(this instanceof _DeleteContext) || dialect.singleDeleteHasTableAlias();
+        this.hasVersion = _DialectUtils.hasOptimistic(dml.predicateList());
+        this.supportAlias = !(this instanceof DeleteContext) || dialect.singleDeleteHasTableAlias();
     }
 
     @Override

@@ -288,6 +288,7 @@ public class MySQLCriteriaUnitTests {
                     .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
                     .paramList(paramListSupplier)
                     .asUpdate();
+
             System.out.println(stmt);
 
         };//mock dao method end
