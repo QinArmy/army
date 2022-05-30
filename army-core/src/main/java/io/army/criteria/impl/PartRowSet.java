@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.Dialect;
 import io.army.dialect._MockDialects;
+import io.army.lang.Nullable;
 import io.army.stmt.SimpleStmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
@@ -21,7 +22,7 @@ import java.util.function.Supplier;
 abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, LR, SP>
         extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
         implements CriteriaContextSpec, _PartRowSet, Statement._OrderByClause<C, OR>, Query._LimitClause<C, LR>
-        , Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>, RowSet.RowSetSpec<Q>, _SelfDescribed {
+        , Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>, RowSet._RowSetSpec<Q>, _SelfDescribed {
 
     final CriteriaContext criteriaContext;
 
@@ -64,18 +65,18 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
                 throw asQueryMethodError();
             }
             final UnionAndRowSet unionAndRowSet = (UnionAndRowSet) this;
-            spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), thisQuery);
+
+            spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), simpleBracket(thisQuery));
         } else if (!(thisQuery instanceof ScalarSubQueryExpression)) {
             throw asQueryMethodError();
         } else if (((ScalarSubQueryExpression) thisQuery).subQuery != this) {
             throw asQueryMethodError();
         } else {
             final UnionAndRowSet unionAndRowSet = (UnionAndRowSet) this;
-            spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), thisQuery);
+            spec = createUnionRowSet(unionAndRowSet.leftRowSet(), unionAndRowSet.unionType(), simpleBracket(thisQuery));
         }
         return spec;
     }
-
 
     @Override
     public final UR union(Function<C, ? extends RowSet> function) {
@@ -85,6 +86,17 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     @Override
     public final UR union(Supplier<? extends RowSet> supplier) {
         return this.createUnionRowSet(this.asQuery(), UnionType.UNION, supplier.get());
+    }
+
+    @Override
+    public final UR ifUnion(Function<C, ? extends RowSet> function) {
+        return this.ifUnion(UnionType.UNION, function.apply(this.criteria));
+    }
+
+
+    @Override
+    public final UR ifUnion(Supplier<? extends RowSet> supplier) {
+        return this.ifUnion(UnionType.UNION, supplier.get());
     }
 
     @Override
@@ -103,6 +115,16 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     }
 
     @Override
+    public final UR ifUnionAll(Function<C, ? extends RowSet> function) {
+        return this.ifUnion(UnionType.UNION_ALL, function.apply(this.criteria));
+    }
+
+    @Override
+    public final UR ifUnionAll(Supplier<? extends RowSet> supplier) {
+        return this.ifUnion(UnionType.UNION_ALL, supplier.get());
+    }
+
+    @Override
     public final SP unionAll() {
         return this.asUnionAndRowSet(UnionType.UNION_ALL);
     }
@@ -115,6 +137,16 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     @Override
     public final UR unionDistinct(Supplier<? extends RowSet> supplier) {
         return this.createUnionRowSet(this.asQuery(), UnionType.UNION_DISTINCT, supplier.get());
+    }
+
+    @Override
+    public final UR ifUnionDistinct(Function<C, ? extends RowSet> function) {
+        return this.ifUnion(UnionType.UNION_DISTINCT, function.apply(this.criteria));
+    }
+
+    @Override
+    public final UR ifUnionDistinct(Supplier<? extends RowSet> supplier) {
+        return this.ifUnion(UnionType.UNION_DISTINCT, supplier.get());
     }
 
     @Override
@@ -466,6 +498,8 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
 
     abstract UR createBracketQuery(RowSet rowSet);
 
+    abstract UR getNoActionUnionRowSet(RowSet rowSet);
+
     abstract void internalClear();
 
     abstract UR createUnionRowSet(RowSet left, UnionType unionType, RowSet right);
@@ -484,6 +518,27 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
         query = internalAsRowSet(fromAsQueryMethod);
         this.prepared = true;
         return query;
+    }
+
+    /**
+     * @see #bracket()
+     */
+    private RowSet simpleBracket(final Q thisQuery) {
+        final RowSet._RowSetSpec<? extends RowSet> rowSetSpec;
+        rowSetSpec = (RowSet._RowSetSpec<?>) createBracketQuery(thisQuery);
+        return rowSetSpec.asQuery();
+    }
+
+    private UR ifUnion(final UnionType unionType, final @Nullable RowSet right) {
+        final UR u;
+        if (right == null) {
+            u = this.getNoActionUnionRowSet(this.asQuery());
+        } else if (right.isPrepared()) {
+            u = this.createUnionRowSet(this.asQuery(), unionType, right);
+        } else {
+            throw new CriteriaException("Right RowSet non-prepared.");
+        }
+        return u;
     }
 
 

@@ -31,7 +31,6 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
         implements MySQL80Query, MySQL80Query._UnionOrderBySpec<C, Q>, _UnionRowSet {
 
     static <C, Q extends Query> _UnionOrderBySpec<C, Q> bracketQuery(final RowSet rowSet) {
-        rowSet.prepared();
 
         final CriteriaContext context;
         context = CriteriaContexts.bracketContext((Query) rowSet);
@@ -93,6 +92,32 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
         return (_UnionOrderBySpec<C, Q>) spec;
     }
 
+    static <C, Q extends Query> _UnionOrderBySpec<C, Q> noActionQuery(final RowSet rowSet) {
+        final CriteriaContext context;
+        context = CriteriaContexts.noActionContext(rowSet);
+        final _UnionOrderBySpec<C, ?> spec;
+        if (rowSet instanceof Select) {
+            spec = new NoActionSelect<>((Select) rowSet, context);
+        } else if (rowSet instanceof ScalarSubQuery) {
+            final ScalarExpression left = (ScalarExpression) rowSet;
+            if (rowSet instanceof _LateralSubQuery) {
+                spec = new LateralNoActionScalarSubQuery<>(left, context);
+            } else {
+                spec = new NoActionScalarSubQuery<>(left, context);
+            }
+        } else if (rowSet instanceof SubQuery) {
+            final SubQuery left = (SubQuery) rowSet;
+            if (rowSet instanceof _LateralSubQuery) {
+                spec = new LateralNoActionSubQuery<>(left, context);
+            } else {
+                spec = new NoActionSubQuery<>(left, context);
+            }
+        } else {
+            throw _Exceptions.unknownRowSetType(rowSet);
+        }
+        return (_UnionOrderBySpec<C, Q>) spec;
+    }
+
     private static CriteriaException errorRight(Class<? extends Query> clazz) {
         String m = String.format("MySQL 8.0 %s api UNION clause support only %s and %s."
                 , clazz.getSimpleName(), clazz.getName(), Values.class.getName());
@@ -128,6 +153,12 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
     }
 
     @Override
+    final _UnionOrderBySpec<C, Q> getNoActionUnionRowSet(RowSet rowSet) {
+        assert rowSet != this;
+        return this;
+    }
+
+    @Override
     final _WithSpec<C, Q> asUnionAndRowSet(UnionType unionType) {
         return MySQL80SimpleQuery.unionAndSelect(this.asQuery(), unionType);
     }
@@ -143,7 +174,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
     }//BracketSelect
 
     private static class BracketSubQuery<C, Q extends SubQuery> extends MySQL80UnionQuery<C, Q>
-            implements _SubQuery, BracketRowSet {
+            implements SubQuery, BracketRowSet {
 
         private BracketSubQuery(Q left, CriteriaContext context) {
             super(left, context);
@@ -179,6 +210,55 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
         }
 
     }//LateralBracketScalarSubQuery
+
+
+    private static final class NoActionSelect<C> extends MySQL80UnionQuery<C, Select>
+            implements Select, NoActionRowSet {
+
+        private NoActionSelect(Select left, CriteriaContext context) {
+            super(left, context);
+        }
+
+
+    }//NoActionSelect
+
+    private static class NoActionSubQuery<C, Q extends SubQuery> extends MySQL80UnionQuery<C, Q>
+            implements SubQuery, NoActionRowSet {
+
+        private NoActionSubQuery(Q left, CriteriaContext context) {
+            super(left, context);
+        }
+
+
+    }//NoActionSubQuery
+
+    private static final class LateralNoActionSubQuery<C> extends NoActionSubQuery<C, SubQuery>
+            implements _LateralSubQuery {
+
+        private LateralNoActionSubQuery(SubQuery left, CriteriaContext context) {
+            super(left, context);
+        }
+
+    }//LateralNoActionSubQuery
+
+
+    private static class NoActionScalarSubQuery<C> extends NoActionSubQuery<C, ScalarExpression>
+            implements ScalarSubQuery {
+
+        private NoActionScalarSubQuery(ScalarExpression left, CriteriaContext context) {
+            super(left, context);
+        }
+
+    }//NoActionScalarSubQuery
+
+    private static final class LateralNoActionScalarSubQuery<C> extends NoActionScalarSubQuery<C>
+            implements _LateralSubQuery {
+
+        private LateralNoActionScalarSubQuery(ScalarExpression left, CriteriaContext context) {
+            super(left, context);
+        }
+
+    }//LateralNoActionScalarSubQuery
 
     private static abstract class UnionQuery<C, Q extends Query> extends MySQL80UnionQuery<C, Q>
             implements RowSetWithUnion {

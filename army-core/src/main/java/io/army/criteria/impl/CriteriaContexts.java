@@ -66,7 +66,7 @@ abstract class CriteriaContexts {
     static CriteriaContext bracketContext(final Query left) {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
-        final List<? extends SelectItem> selectItemList = ((_Query) left).selectItemList();
+        final List<? extends SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -79,10 +79,27 @@ abstract class CriteriaContexts {
         return context;
     }
 
+    static CriteriaContext noActionContext(final RowSet rowSet) {
+        final AbstractContext leftContext;
+        leftContext = (AbstractContext) ((CriteriaContextSpec) rowSet).getCriteriaContext();
+
+        final List<? extends SelectItem> selectItemList = ((_PartRowSet) rowSet).selectItemList();
+        final CriteriaContext outerContext;
+        if (rowSet instanceof SubStatement) {
+            outerContext = CriteriaContextStack.peek();
+        } else {
+            outerContext = null;
+        }
+        final NoActionQueryContext context;
+        context = new NoActionQueryContext(outerContext, leftContext, selectItemList);
+        ((AbstractContext) context).varMap = leftContext.varMap;
+        return context;
+    }
+
     static CriteriaContext unionContext(final Query left, final RowSet right) {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
-        final List<? extends SelectItem> selectItemList = ((_Query) left).selectItemList();
+        final List<? extends SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -994,8 +1011,18 @@ abstract class CriteriaContexts {
             super(outerContext, leftContext, selectItemList);
         }
 
+    }//BracketQueryContext
 
-    }
+
+    private static final class NoActionQueryContext extends UnionOperationContext {
+
+        private NoActionQueryContext(@Nullable CriteriaContext outerContext, CriteriaContext leftContext
+                , List<? extends SelectItem> selectItemList) {
+            super(outerContext, leftContext, selectItemList);
+        }
+
+    }//NoActionQueryContext
+
 
     private static final class UnionQueryContext extends UnionOperationContext {
 

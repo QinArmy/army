@@ -21,7 +21,6 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         if (!(query instanceof Query)) {
             throw _Exceptions.unknownRowSetType(query);
         }
-        query.prepared();
         final _UnionOrderBySpec<C, ?> unionSpec;
         final CriteriaContext criteriaContext;
         criteriaContext = CriteriaContexts.bracketContext((Query) query);
@@ -80,6 +79,25 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     }
 
 
+    static <C, Q extends Query> _UnionOrderBySpec<C, Q> noActionQuery(final RowSet rowSet) {
+
+        final CriteriaContext criteriaContext;
+        criteriaContext = CriteriaContexts.noActionContext(rowSet);
+
+        final _UnionOrderBySpec<C, ?> spec;
+        if (rowSet instanceof Select) {
+            spec = new NoActionSelect<>((Select) rowSet, criteriaContext);
+        } else if (rowSet instanceof ScalarSubQuery) {
+            spec = new NoActionScalarSubQuery<>((ScalarExpression) rowSet, criteriaContext);
+        } else if (rowSet instanceof SubQuery) {
+            spec = new NoActionSubQuery<>((SubQuery) rowSet, criteriaContext);
+        } else {
+            throw _Exceptions.unknownRowSetType(rowSet);
+        }
+        return (_UnionOrderBySpec<C, Q>) spec;
+    }
+
+
     private StandardUnionQuery(Q left, CriteriaContext criteriaContext) {
         super(left, criteriaContext);
 
@@ -93,6 +111,12 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     @Override
     final _UnionOrderBySpec<C, Q> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
         return unionQuery((Q) left, unionType, right);
+    }
+
+    @Override
+    final _UnionOrderBySpec<C, Q> getNoActionUnionRowSet(RowSet rowSet) {
+        assert rowSet != this;
+        return this;
     }
 
     @Override
@@ -139,6 +163,33 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         }
 
     }//BracketScalarSubQuery
+
+    private static final class NoActionSelect<C> extends StandardUnionQuery<C, Select>
+            implements Select, NoActionRowSet {
+
+        private NoActionSelect(Select left, CriteriaContext criteriaContext) {
+            super(left, criteriaContext);
+        }
+
+    }//NoActionSelect
+
+    private static class NoActionSubQuery<C, Q extends SubQuery> extends StandardUnionQuery<C, Q>
+            implements SubQuery, NoActionRowSet {
+
+        private NoActionSubQuery(Q left, CriteriaContext criteriaContext) {
+            super(left, criteriaContext);
+        }
+
+    }//NoActionSubQuery
+
+
+    private static class NoActionScalarSubQuery<C> extends NoActionSubQuery<C, ScalarExpression>
+            implements ScalarSubQuery {
+        private NoActionScalarSubQuery(ScalarExpression left, CriteriaContext criteriaContext) {
+            super(left, criteriaContext);
+        }
+
+    }//NoActionScalarSubQuery
 
     /**
      * <p>

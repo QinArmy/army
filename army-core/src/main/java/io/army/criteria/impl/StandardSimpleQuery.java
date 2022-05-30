@@ -177,6 +177,10 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return StandardUnionQuery.unionQuery((Q) left, unionType, right);
     }
 
+    @Override
+    final _UnionOrderBySpec<C, Q> getNoActionUnionRowSet(RowSet rowSet) {
+        return StandardUnionQuery.noActionQuery(rowSet);
+    }
 
     @Override
     public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {

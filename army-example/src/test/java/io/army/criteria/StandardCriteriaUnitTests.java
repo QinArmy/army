@@ -287,8 +287,7 @@ public class StandardCriteriaUnitTests {
                 .having(User_.userType.equal(UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
-                .lock(LockMode.WRITE)
-                .bracket()
+                .bracket()// bracket this simple query
 
                 .union()
 
@@ -301,8 +300,7 @@ public class StandardCriteriaUnitTests {
                 .having(User_.userType.equal(UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
-                .lock(LockMode.WRITE)
-                .bracket()
+                .bracket() // bracket this simple query
 
                 .unionAll()
 
@@ -315,11 +313,12 @@ public class StandardCriteriaUnitTests {
                 .having(User_.userType.equal(UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
-                .lock(LockMode.WRITE)
-                .bracket()
-                .orderBy(SQLs.ref(User_.ID))
-                .limit(0, 5)
-                .bracket()
+                .bracket()// bracket this simple query
+
+                .bracket() // bracket whole union query
+                .orderBy(SQLs.ref(User_.ID)) // order by whole union query
+                .limit(0, 5)// limit whole union query
+
                 .asQuery();
 
         for (Dialect dialect : Dialect.values()) {

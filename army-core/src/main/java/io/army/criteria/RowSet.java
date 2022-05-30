@@ -13,7 +13,7 @@ package io.army.criteria;
  */
 public interface RowSet extends Statement {
 
-    interface RowSetSpec<R extends RowSet> {
+    interface _RowSetSpec<R extends RowSet> {
 
         R asQuery();
 

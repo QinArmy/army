@@ -57,7 +57,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
                     .append(((RowSetWithUnion) this).unionType().keyWords);
 
             dialect.rowSet(((RowSetWithUnion) this).rightRowSet(), context);
-        } else {
+        } else if (!(this instanceof NoActionRowSet)) {
             throw new IllegalStateException("error implementation");
         }
     }
@@ -124,15 +124,17 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     /*################################## blow JoinableClause method ##################################*/
 
 
-
-
-
     @Override
     final void crossJoinEvent(boolean success) {
         throw _Exceptions.castCriteriaApi();
     }
 
     interface BracketRowSet {
+
+    }
+
+    interface NoActionRowSet {
+
 
     }
 

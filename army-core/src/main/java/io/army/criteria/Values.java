@@ -9,7 +9,7 @@ package io.army.criteria;
  */
 public interface Values extends RowSet, DerivedTable {
 
-    interface ValuesSpec extends RowSetSpec<Values> {
+    interface ValuesSpec extends _RowSetSpec<Values> {
 
     }
 

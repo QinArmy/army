@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 public interface Query extends RowSet {
 
 
-    interface _QuerySpec<Q extends Query> extends RowSet.RowSetSpec<Q> {
+    interface _QuerySpec<Q extends Query> extends _RowSetSpec<Q> {
 
     }
 
@@ -106,13 +106,26 @@ public interface Query extends RowSet {
 
         UR union(Supplier<? extends RowSet> supplier);
 
-        UR unionAll(Function<C, ? extends RowSet> function);
+        UR ifUnion(Function<C, ? extends RowSet> function);
 
-        UR unionDistinct(Function<C, ? extends RowSet> function);
+        UR ifUnion(Supplier<? extends RowSet> supplier);
+
+        UR unionAll(Function<C, ? extends RowSet> function);
 
         UR unionAll(Supplier<? extends RowSet> supplier);
 
+        UR ifUnionAll(Function<C, ? extends RowSet> function);
+
+        UR ifUnionAll(Supplier<? extends RowSet> supplier);
+
+        UR unionDistinct(Function<C, ? extends RowSet> function);
+
         UR unionDistinct(Supplier<? extends RowSet> supplier);
+
+        UR ifUnionDistinct(Function<C, ? extends RowSet> function);
+
+        UR ifUnionDistinct(Supplier<? extends RowSet> supplier);
+
     }
 
 

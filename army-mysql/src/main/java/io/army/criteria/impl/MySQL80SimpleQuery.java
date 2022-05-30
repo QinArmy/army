@@ -417,6 +417,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return MySQL80UnionQuery.unionQuery((Q) left, unionType, right);
     }
 
+    @Override
+    final _UnionOrderBySpec<C, Q> getNoActionUnionRowSet(RowSet rowSet) {
+        return MySQL80UnionQuery.noActionQuery(rowSet);
+    }
 
     @Override
     final void doWithCte(boolean recursive, List<Cte> cteList) {
