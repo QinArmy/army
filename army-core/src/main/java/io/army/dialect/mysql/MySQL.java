@@ -10,7 +10,6 @@ import io.army.dialect.*;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.Database;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
@@ -185,8 +184,7 @@ abstract class MySQL extends _AbstractDialect {
     }
 
     @Override
-    public final StringBuilder spaceAndLiteral(final ParamMeta paramMeta, final Object nonNull, final StringBuilder sqlBuilder) {
-        sqlBuilder.append(_Constant.SPACE);
+    public final StringBuilder literal(final ParamMeta paramMeta, final Object nonNull, final StringBuilder sqlBuilder) {
 
         final SqlType sqlType;
         final MappingType mappingType;

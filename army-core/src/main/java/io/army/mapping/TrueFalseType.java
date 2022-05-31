@@ -1,8 +1,8 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
+import io.army.dialect.Database;
 import io.army.meta.ServerMeta;
-import io.army.session.Database;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreType;

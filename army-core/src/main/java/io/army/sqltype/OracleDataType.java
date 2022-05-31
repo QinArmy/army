@@ -1,6 +1,6 @@
 package io.army.sqltype;
 
-import io.army.session.Database;
+import io.army.dialect.Database;
 
 public enum OracleDataType implements SqlType {
 

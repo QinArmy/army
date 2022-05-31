@@ -12,6 +12,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
+ * <p>
+ * This interface representing INSERT statement.
+ * </p>
+ *
  * @since 1.0
  */
 public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
@@ -21,6 +25,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /*################################## blow interfaces  ##################################*/
 
     /**
+     * <p>
+     * This interface representing the capacity ending INSERT statement.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
      * @since 1.0
      */
     interface _InsertSpec {
@@ -31,7 +44,20 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     /*################################## blow multiInsert interfaces ##################################*/
 
-    interface _PreferLiteralOptionClause<PO> {
+    /**
+     * <p>
+     * This interface representing the option prefer output literal when output {@link IDomain} column,but not contain
+     * comment expression
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @since 1.0
+     */
+    interface _PreferLiteralClause<PO> {
         PO preferLiteral(boolean prefer);
     }
 
@@ -117,7 +143,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
 
     interface _StandardLiteralOptionSpec<C, T extends IDomain>
-            extends _PreferLiteralOptionClause<_StandardOptionSpec<C, T>>
+            extends _PreferLiteralClause<_StandardOptionSpec<C, T>>
             , _StandardOptionSpec<C, T> {
 
     }

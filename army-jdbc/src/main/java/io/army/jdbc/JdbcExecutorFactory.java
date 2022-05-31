@@ -1,12 +1,12 @@
 package io.army.jdbc;
 
 import io.army.codec.JsonCodec;
+import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.SyncKey;
 import io.army.mapping.MappingEnvironment;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.session.Database;
 import io.army.sync.executor.ExecutorEnvironment;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.MetaExecutor;

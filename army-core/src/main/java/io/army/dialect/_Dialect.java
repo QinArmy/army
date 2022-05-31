@@ -43,10 +43,10 @@ public interface _Dialect {
 
     /**
      * <p>
-     * Append space and literal
+     * Append  literal
      * </p>
      */
-    StringBuilder spaceAndLiteral(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
+    StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
 
 
     default StringBuilder identifier(String identifier, StringBuilder builder) {
@@ -67,7 +67,6 @@ public interface _Dialect {
     }
 
     Dialect dialectMode();
-
 
 
 }

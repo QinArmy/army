@@ -1,4 +1,4 @@
-package io.army.session;
+package io.army.dialect;
 
 
 public enum Database {

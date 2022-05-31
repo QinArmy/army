@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.dialect.mysql._MySQLDialectFactory;
 import io.army.env.ArmyKey;
 import io.army.meta.ServerMeta;
-import io.army.session.Database;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.InvocationTargetException;

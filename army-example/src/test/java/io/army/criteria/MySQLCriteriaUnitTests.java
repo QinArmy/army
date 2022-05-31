@@ -3,11 +3,10 @@ package io.army.criteria;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.mysql.MySQLWords;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.account.BankAccount_;
-import io.army.example.bank.domain.user.ChinaCity_;
-import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.example.bank.domain.user.RegionType;
+import io.army.example.bank.domain.user.*;
 import io.army.example.common.Criteria;
 import io.army.example.pill.domain.User_;
 import org.slf4j.Logger;
@@ -38,7 +37,8 @@ public class MySQLCriteriaUnitTests {
                 .orderBy(ChinaRegion_.id.desc())
                 .limit(criteria::getRowCount)
                 .asUpdate();
-        LOG.debug("MySQL single update:\n{}", stmt);
+
+        printStmt(stmt);
 
 
     }
@@ -68,7 +68,8 @@ public class MySQLCriteriaUnitTests {
                 .orderBy(ChinaRegion_.name.desc())
                 .limit(map::get, "rowCount")
                 .asUpdate();
-        LOG.debug("MySQL single update:\n{}", stmt);
+
+        printStmt(stmt);
     }
 
     @Test
@@ -102,9 +103,7 @@ public class MySQLCriteriaUnitTests {
                 .paramList(paramList)
                 .asUpdate();
 
-        for (Dialect dialect : Dialect.values()) {
-            LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
     }
 
 
@@ -133,9 +132,7 @@ public class MySQLCriteriaUnitTests {
                     .ifLimit(map::get, "rowCount")
                     .asDelete();
 
-            for (Dialect dialect : Dialect.values()) {
-                LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-            }
+            printStmt(stmt);
         };
 
 
@@ -195,9 +192,7 @@ public class MySQLCriteriaUnitTests {
                     .paramList(paramList)
                     .asDelete();
 
-            for (Dialect dialect : Dialect.values()) {
-                LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-            }
+            printStmt(stmt);
         }; // mock dao method end
 
 
@@ -240,9 +235,7 @@ public class MySQLCriteriaUnitTests {
                     .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
                     .asDelete();
 
-            for (Dialect dialect : Dialect.values()) {
-                LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-            }
+            printStmt(stmt);
         };
 
 
@@ -293,9 +286,7 @@ public class MySQLCriteriaUnitTests {
                     .paramList(paramList)
                     .asDelete();
 
-            for (Dialect dialect : Dialect.values()) {
-                LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-            }
+            printStmt(stmt);
         };
 
 
@@ -340,7 +331,8 @@ public class MySQLCriteriaUnitTests {
                     .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
                     .ifNonNullAnd(BankAccount_.balance::plus, map.get("amount"), Expression::greatEqualLiteral, 0)
                     .asUpdate();
-            System.out.println(stmt);
+
+            printStmt(stmt);
 
         };//mock dao method end
 
@@ -410,7 +402,7 @@ public class MySQLCriteriaUnitTests {
                     .paramList(paramListSupplier)
                     .asUpdate();
 
-            System.out.println(stmt);
+            printStmt(stmt);
 
         };//mock dao method end
 
@@ -430,6 +422,84 @@ public class MySQLCriteriaUnitTests {
         //below,mock dao method invoking
         daoMethod.accept(map);
 
+
+    }
+
+
+    @Test
+    public void singleSelect() {
+
+        final Consumer<Map<String, Object>> mockDaoMethod = criteria -> {
+
+            final Select stmt;
+            stmt = MySQLs.query()
+                    .select(SQLs.group(Captcha_.T, "c"))
+                    .from(Captcha_.T, "c")
+                    .where(Captcha_.id.inOptimizing(criteria.get("ids")))
+                    .and(Captcha_.createTime::between, criteria::get, "startTime", "endTime")
+                    .and(Captcha_.deadline.greatEqualLiteral(LocalDateTime.now()))
+                    .asQuery();
+
+            printStmt(stmt);
+
+        };
+
+
+        final LocalDateTime now = LocalDateTime.now();
+        final Map<String, Object> map = new HashMap<>();
+
+
+        map.put("ids", Arrays.asList(11, 22, 33, 44, 55, 66, 77));
+        map.put("startTime", now.minusDays(5));
+        map.put("endTime", now.plusDays(5));
+
+        mockDaoMethod.accept(map);
+
+    }
+
+    @Test
+    public void multiSelect() {
+        final Consumer<Map<String, Object>> mockDaoMethod = criteria -> {
+
+            final Select stmt;
+            stmt = MySQLs.query()
+                    .select(SQLs.group(BankUser_.T, "u"))
+                    .from(BankUser_.T, "u")
+                    .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.id)
+                    .where(BankUser_.id.inOptimizing(criteria.get("ids")))
+                    .and(BankAccount_.createTime::between, criteria::get, "startTime", "endTime")
+                    .and(BankUser_.updateTime.greatEqualLiteral(LocalDateTime.now()))
+                    .and(SQLs.exists(() -> MySQLs.subQuery()
+                            .select(RegisterRecord_.id)
+                            .from(RegisterRecord_.T, "r")
+                            .where(RegisterRecord_.userId::equal, BankUser_.id)
+                            .asQuery()))
+                    .asQuery();
+
+            printStmt(stmt);
+
+        };
+
+
+        final LocalDateTime now = LocalDateTime.now();
+        final Map<String, Object> map = new HashMap<>();
+
+
+        map.put("ids", Arrays.asList(11, 22, 33, 44, 55, 66, 77));
+        map.put("startTime", now.minusDays(5));
+        map.put("endTime", now.plusDays(5));
+
+        mockDaoMethod.accept(map);
+    }
+
+
+    private void printStmt(final Statement statement) {
+        for (Dialect dialect : Dialect.values()) {
+            if (dialect.database != Database.MySQL) {
+                continue;
+            }
+            LOG.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        }
 
     }
 

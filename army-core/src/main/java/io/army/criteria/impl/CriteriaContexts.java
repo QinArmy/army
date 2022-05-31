@@ -498,6 +498,8 @@ abstract class CriteriaContexts {
             if (aliasToBlock == null) {
                 throw _Exceptions.castCriteriaApi();
             }
+            final List<_TableBlock> tableBlockList = this.tableBlockList;
+            final int oldBlockSize = tableBlockList.size();
 
             final TableItem tableItem = block.tableItem();
             String alias = block.alias();
@@ -522,7 +524,11 @@ abstract class CriteriaContexts {
                 this.doOnAddDerived((DerivedTable) tableItem, alias);
             }
 
-            this.tableBlockList.add(block); //add to list
+            if (tableBlockList.size() != oldBlockSize) {
+                // no bug,never here
+                throw new IllegalStateException("addNestedItems error");
+            }
+            tableBlockList.add(block); //add to list
 
         }
 

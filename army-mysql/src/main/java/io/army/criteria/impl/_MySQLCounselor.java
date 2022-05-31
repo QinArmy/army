@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._UnionRowSet;
-import io.army.session.Database;
+import io.army.dialect.Database;
 
 public abstract class _MySQLCounselor extends _SQLCounselor {
 

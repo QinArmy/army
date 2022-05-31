@@ -35,7 +35,7 @@ class Postgre11DmlDialect extends _AbstractDialect {
     }
 
     @Override
-    public StringBuilder spaceAndLiteral(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder) {
+    public StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder) {
         return null;
     }
 

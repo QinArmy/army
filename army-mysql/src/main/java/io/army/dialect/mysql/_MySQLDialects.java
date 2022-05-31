@@ -1,9 +1,9 @@
 package io.army.dialect.mysql;
 
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._DialectEnvironment;
 import io.army.dialect._DialectFactory;
-import io.army.session.Database;
 import io.army.util._Exceptions;
 
 @SuppressWarnings("unused")

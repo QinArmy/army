@@ -7,8 +7,8 @@ import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLValues;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.session.Database;
 import io.army.util._Exceptions;
 
 /**

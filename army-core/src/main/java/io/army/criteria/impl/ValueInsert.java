@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends AbstractInsert<C, T, IR> implements
         Insert._OptionClause<OR>, Insert._CommonExpClause<C, T, SR>, Insert._ValueClause<C, T>
-        , Insert._PreferLiteralOptionClause<PO>, _ValuesInsert {
+        , Insert._PreferLiteralClause<PO>, _ValuesInsert {
 
 
     private boolean optimizingParam;

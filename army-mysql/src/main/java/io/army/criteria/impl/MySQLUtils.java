@@ -4,9 +4,9 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLWords;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
-import io.army.session.Database;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;

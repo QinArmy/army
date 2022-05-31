@@ -1,15 +1,14 @@
 package io.army.sync;
 
 import io.army.lang.Nullable;
-import io.army.session.*;
+import io.army.session.GenericSession;
+import io.army.session.GenericSessionFactory;
+import io.army.session.SessionException;
+import io.army.session.SessionFactoryException;
 
 /**
  * This interface representing single database(or single schema).
  * This interface run only below:
- * <ul>
- *     <li>{@link FactoryMode#NO_SHARDING}</li>
- *     <li>{@link FactoryMode#TABLE_SHARDING}</li>
- * </ul>
  */
 public interface SessionFactory extends GenericSessionFactory, AutoCloseable {
 

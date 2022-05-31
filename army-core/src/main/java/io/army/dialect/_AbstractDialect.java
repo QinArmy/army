@@ -928,7 +928,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
             this.safeObjectName(field, sqlBuilder)
                     .append(_Constant.SPACE_EQUAL);
 
-            this.spaceAndLiteral(field.mappingType(), visibleValue, sqlBuilder);
+            sqlBuilder.append(_Constant.SPACE);
+            this.literal(field.mappingType(), visibleValue, sqlBuilder);
         }
 
     }
@@ -1149,7 +1150,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (context.hasParam()) {
             context.appendParam(ParamValue.build(updateTime.mappingType(), updateTimeValue));
         } else {
-            this.spaceAndLiteral(updateTime.mappingType(), updateTimeValue, sqlBuilder);
+            sqlBuilder.append(_Constant.SPACE);
+            this.literal(updateTime.mappingType(), updateTimeValue, sqlBuilder);
         }
 
         if (table.containField(_MetaBridge.VERSION)) {

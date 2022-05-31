@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.dialect.Database;
 import io.army.lang.Nullable;
-import io.army.session.Database;
 import io.army.util._ClassUtils;
 
 public abstract class _SQLCounselor {

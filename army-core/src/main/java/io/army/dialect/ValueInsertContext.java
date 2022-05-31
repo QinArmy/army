@@ -272,7 +272,8 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
                 } else if ((value = accessor.get(domain, field.fieldName())) != null) {
                     mappingType = field.mappingType();
                     if (preferLiteral && mappingType instanceof _ArmyNoInjectionMapping) {//TODO field codec
-                        dialect.spaceAndLiteral(mappingType, value, sqlBuilder);
+                        sqlBuilder.append(_Constant.SPACE);
+                        dialect.literal(mappingType, value, sqlBuilder);
                     } else {
                         this.appendParam(ParamValue.build(field, value));
                     }

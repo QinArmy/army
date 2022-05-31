@@ -49,7 +49,7 @@ final class CollectionParamExpression extends NonOperationExpression {
 
     @Override
     public void appendSql(final _SqlContext context) {
-        final StringBuilder builder = context.sqlBuilder()
+        final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_LEFT_PAREN);
 
         final ParamMeta paramMeta = this.paramMeta;
@@ -58,16 +58,17 @@ final class CollectionParamExpression extends NonOperationExpression {
         int index = 0;
         for (Object v : this.value) {
             if (index > 0) {
-                builder.append(_Constant.SPACE_COMMA);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             if (optimizing) {
-                dialect.spaceAndLiteral(paramMeta, v, builder);
+                sqlBuilder.append(_Constant.SPACE);
+                dialect.literal(paramMeta, v, sqlBuilder);
             } else {
                 context.appendParam(ParamValue.build(paramMeta, v));
             }
             index++;
         }
-        builder.append(_Constant.SPACE_RIGHT_PAREN);
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
 

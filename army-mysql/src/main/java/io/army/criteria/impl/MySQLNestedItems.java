@@ -8,9 +8,9 @@ import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.session.Database;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 

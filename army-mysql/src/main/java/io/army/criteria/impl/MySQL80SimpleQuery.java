@@ -6,10 +6,10 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
 import io.army.criteria.mysql.MySQL80Query;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.session.Database;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -402,7 +402,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     final void validateDialect(Dialect mode) {
-        if (mode.database() != Database.MySQL || mode.version() < 80) {
+        if (mode.database() != Database.MySQL) {
             throw _Exceptions.stmtDontSupportDialect(mode);
         }
     }

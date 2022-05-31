@@ -2,7 +2,6 @@ package io.army.dialect;
 
 
 import io.army.meta.ServerMeta;
-import io.army.session.Database;
 import io.army.util._Exceptions;
 
 public enum Dialect {

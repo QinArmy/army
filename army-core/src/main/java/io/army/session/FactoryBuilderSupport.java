@@ -24,7 +24,6 @@ public abstract class FactoryBuilderSupport {
 
     protected Collection<FieldCodec> fieldCodecs;
 
-    protected FactoryMode factoryMode = FactoryMode.NO_SHARDING;
 
     protected int tableCountPerDatabase = 1;
 

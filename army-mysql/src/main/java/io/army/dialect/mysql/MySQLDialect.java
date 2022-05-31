@@ -10,7 +10,6 @@ import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.Database;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -97,6 +96,7 @@ final class MySQLDialect extends MySQL {
         final List<_TableBlock> tableBlockList;
         tableBlockList = stmt.tableBlockList();
         //6. FROM clause
+        sqlBuilder.append(_Constant.SPACE_FROM);
         this.mysqlTableReferences(tableBlockList, context, false);
         //7. WHERE clause
         this.queryWhereClause(tableBlockList, stmt.predicateList(), context);
@@ -447,14 +447,14 @@ final class MySQLDialect extends MySQL {
             alias = block.alias();
 
             if (tableItem instanceof TableMeta) {
-                sqlBuilder.append(_Constant.SPACE);
+                sqlBuilder.append(_Constant.SPACE);//space prior to  table name
                 table = (TableMeta<?>) tableItem;
                 this.safeObjectName(table, sqlBuilder);
                 if (block instanceof _MySQLTableBlock) {
                     this.partitionClause(((_MySQLTableBlock) block).partitionList(), sqlBuilder);
                 }
-                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
-                this.identifier(alias, sqlBuilder);
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE)
+                        .append(context.safeTableAlias(table, block.alias()));
                 if (block instanceof _MySQLTableBlock) {
                     this.indexHintClause(((_MySQLTableBlock) block).indexHintList(), sqlBuilder);
                 }

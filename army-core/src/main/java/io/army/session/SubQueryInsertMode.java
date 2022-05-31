@@ -4,6 +4,7 @@ public enum SubQueryInsertMode {
 
     SUPPORT,
     ONLY_MIGRATION,
+
     NEVER
 
 
