@@ -40,7 +40,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
         if (this.command != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.command = MySQLIndexHint.Command.USER_INDEX;
+        this.command = MySQLIndexHint.Command.USE_INDEX;
         return (IR) this;
     }
 
@@ -94,7 +94,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
 
     @Override
     public final IC useIndex(List<String> indexList) {
-        this.addIndexHint(MySQLIndexHint.Command.USER_INDEX, null, indexList);
+        this.addIndexHint(MySQLIndexHint.Command.USE_INDEX, null, indexList);
         return (IC) this;
     }
 
@@ -227,7 +227,7 @@ abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C
         if (this.command != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        if (indexNames == null || indexNames.size() > 0) {
+        if (indexNames == null || indexNames.size() == 0) {
             throw MySQLUtils.indexListIsEmpty();
         }
         List<MySQLIndexHint> indexHintList = this.indexHintList;

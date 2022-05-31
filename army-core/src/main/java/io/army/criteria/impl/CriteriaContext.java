@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
+import io.army.meta.TableMeta;
 
 import java.util.List;
 
@@ -41,7 +42,8 @@ interface CriteriaContext {
 
     boolean isExistWindow(String windowName);
 
-    boolean containTableAlias(String tableAlias);
+    @Nullable
+    TableMeta<?> getTable(String tableAlias);
 
 
     @Nullable

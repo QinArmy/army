@@ -33,29 +33,29 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    static boolean isUpdateModifier(final MySQLWords modifier) {
+    static boolean isNotUpdateModifier(final MySQLWords modifier) {
         final boolean match;
         switch (modifier) {
             case LOW_PRIORITY:
             case IGNORE:
-                match = true;
+                match = false;
                 break;
             default:
-                match = false;
+                match = true;
         }
         return match;
     }
 
-    static boolean isDeleteModifier(final MySQLWords modifier) {
+    static boolean isNotDeleteModifier(final MySQLWords modifier) {
         final boolean match;
         switch (modifier) {
             case LOW_PRIORITY:
             case QUICK:
             case IGNORE:
-                match = true;
+                match = false;
                 break;
             default:
-                match = false;
+                match = true;
         }
         return match;
     }

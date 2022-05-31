@@ -44,7 +44,7 @@ final class MySQLIndexHint implements _IndexHint {
 
     enum Command implements SQLWords {
 
-        USER_INDEX(" USER INDEX"),
+        USE_INDEX(" USE INDEX"),
         IGNORE_INDEX(" IGNORE INDEX"),
         FORCE_INDEX(" FORCE INDEX");
 

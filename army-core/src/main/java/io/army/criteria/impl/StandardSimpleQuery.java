@@ -269,7 +269,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
      * @see #subQuery(Object)
      */
     private static class SimpleSubQuery<C, Q extends SubQuery> extends StandardSimpleQuery<C, Q>
-            implements SubQuery, _SelfDescribed {
+            implements SubQuery {
 
         private Map<String, Selection> selectionMap;
 

@@ -77,7 +77,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
         this.table = table;
         return this.createPartitionClause();
     }
@@ -88,7 +88,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
         this.table = table;
         return this.createPartitionClause();
     }
@@ -100,7 +100,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;
@@ -113,7 +113,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;
@@ -137,7 +137,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
     @Override
     public final IR useIndex() {
-        this.command = MySQLIndexHint.Command.USER_INDEX;
+        this.command = MySQLIndexHint.Command.USE_INDEX;
         return (IR) this;
     }
 
@@ -156,7 +156,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     @Override
     public final IR ifUseIndex(Predicate<C> predicate) {
         if (predicate.test(this.criteria)) {
-            this.command = MySQLIndexHint.Command.USER_INDEX;
+            this.command = MySQLIndexHint.Command.USE_INDEX;
         } else {
             this.command = null;
         }
@@ -188,7 +188,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         if (this.command != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        return this.addIndexHint(MySQLIndexHint.Command.USER_INDEX, false, indexList);
+        return this.addIndexHint(MySQLIndexHint.Command.USE_INDEX, false, indexList);
     }
 
     @Override
@@ -212,7 +212,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         final List<String> indexList;
         indexList = function.apply(this.criteria);
         if (indexList != null && indexList.size() > 0) {
-            this.addIndexHint(MySQLIndexHint.Command.USER_INDEX, false, indexList);
+            this.addIndexHint(MySQLIndexHint.Command.USE_INDEX, false, indexList);
         }
         return (UR) this;
     }

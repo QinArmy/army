@@ -3,7 +3,9 @@ package io.army.criteria;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.mysql.MySQLWords;
+import io.army.dialect.Dialect;
 import io.army.example.bank.domain.account.BankAccount_;
+import io.army.example.bank.domain.user.ChinaCity_;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
 import io.army.example.common.Criteria;
@@ -15,7 +17,6 @@ import org.testng.annotations.Test;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -58,11 +59,12 @@ public class MySQLCriteriaUnitTests {
                 .update(supplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaRegion_.T)
                 .partition("p2", "p1").as("t")
                 .useIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))
+                .ignoreIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))
                 .set(ChinaRegion_.name, "五指礁")
                 .setPlusLiteral(ChinaRegion_.regionGdp, 100)
                 .where(ChinaRegion_.name.equal(""))
                 .and(ChinaRegion_.parentId.equal(map.get("parentId")).or(ChinaRegion_.regionType.equalLiteral(RegionType.CITY)))
-                .ifAnd(ChinaRegion_.regionGdp::greatEqualLiteral, map::get, "regionGdp")
+                .and(ChinaRegion_.regionGdp.plusLiteral(100).greatEqualLiteral(0))
                 .orderBy(ChinaRegion_.name.desc())
                 .limit(map::get, "rowCount")
                 .asUpdate();
@@ -71,6 +73,22 @@ public class MySQLCriteriaUnitTests {
 
     @Test
     public void simpleBatchSingleUpdate() {
+
+        final List<Map<String, Object>> paramList = new ArrayList<>(3);
+        Map<String, Object> paramMap;
+
+        paramMap = new HashMap<>();
+        paramMap.put(ChinaRegion_.ID, 3);
+        paramMap.put(ChinaRegion_.NAME, "五指礁");
+        paramMap.put(ChinaRegion_.REGION_GDP, 100);
+        paramList.add(paramMap);
+
+        paramMap = new HashMap<>();
+        paramMap.put(ChinaRegion_.ID, 8L);
+        paramMap.put(ChinaRegion_.NAME, "荒海");
+        paramMap.put(ChinaRegion_.REGION_GDP, new BigDecimal("324342"));
+        paramList.add(paramMap);
+
 
         final Update stmt;
         stmt = MySQLs.batchSingleUpdate()
@@ -81,10 +99,12 @@ public class MySQLCriteriaUnitTests {
                 })
                 .where(ChinaRegion_.id.equalNamed())
                 .limit(10)
-                .paramList(Collections::emptyList)
+                .paramList(paramList)
                 .asUpdate();
 
-        System.out.println(stmt);
+        for (Dialect dialect : Dialect.values()) {
+            LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        }
     }
 
 
@@ -113,7 +133,9 @@ public class MySQLCriteriaUnitTests {
                     .ifLimit(map::get, "rowCount")
                     .asDelete();
 
-            System.out.println(stmt);
+            for (Dialect dialect : Dialect.values()) {
+                LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            }
         };
 
 
@@ -173,7 +195,9 @@ public class MySQLCriteriaUnitTests {
                     .paramList(paramList)
                     .asDelete();
 
-            System.out.println(stmt);
+            for (Dialect dialect : Dialect.values()) {
+                LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            }
         }; // mock dao method end
 
 
@@ -188,6 +212,103 @@ public class MySQLCriteriaUnitTests {
         //below,mock dao method invoking
         daoMethod.accept(map);
 
+    }
+
+    @Test
+    public void multiDelete() {
+
+        //daoMethod mock dao method
+        final Consumer<Map<String, Object>> daoMethod = map -> {
+
+            final Supplier<List<Hint>> hintSupplier = () -> {
+                final List<Hint> hintList = new ArrayList<>(2);
+                hintList.add(MySQLs.qbName("regionDelete"));
+                hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
+                return hintList;
+            };
+
+            final List<MySQLWords> modifierList;
+            modifierList = Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE);
+            final List<String> deleteTarget = Arrays.asList("c", "r");
+            final Delete stmt;
+            stmt = MySQLs.multiDelete()
+                    .delete(hintSupplier, modifierList, deleteTarget)
+                    .from(ChinaCity_.T).partition("P1").as("c")
+                    .join(ChinaRegion_.T).partition("P1").as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
+                    .where(ChinaRegion_.createTime::betweenLiteral, map::get, "startTime", "endTIme")
+                    .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")
+                    .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
+                    .asDelete();
+
+            for (Dialect dialect : Dialect.values()) {
+                LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            }
+        };
+
+
+        final Map<String, Object> map = new HashMap<>();
+        final LocalDateTime now = LocalDateTime.now();
+        map.put("startTime", now.minusDays(15));
+        map.put("endTIme", now.plusDays(6));
+        map.put("version", "0");
+
+        //map.put("rowCount",(byte)36);
+
+        //below,mock dao method invoking
+        daoMethod.accept(map);
+    }
+
+    @Test
+    public void batchMultiDelete() {
+
+        //daoMethod mock dao method
+        final Consumer<Map<String, Object>> daoMethod = map -> {
+
+            final Supplier<List<Hint>> hintSupplier = () -> {
+                final List<Hint> hintList = new ArrayList<>(2);
+                hintList.add(MySQLs.qbName("regionDelete"));
+                hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
+                return hintList;
+            };
+
+            final List<Map<String, Object>> paramList = new ArrayList<>();
+            paramList.add(Collections.singletonMap(ChinaCity_.ID, "33"));
+            paramList.add(Collections.singletonMap(ChinaCity_.ID, (byte) 22));
+            paramList.add(Collections.singletonMap(ChinaCity_.ID, (short) 44));
+            paramList.add(Collections.singletonMap(ChinaCity_.ID, 22));
+            paramList.add(Collections.singletonMap(ChinaCity_.ID, 88L));
+
+            final List<MySQLWords> modifierList;
+            modifierList = Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE);
+            final List<String> deleteTarget = Arrays.asList("c", "r");
+            final Delete stmt;
+            stmt = MySQLs.batchMultiDelete()
+                    .delete(hintSupplier, modifierList, deleteTarget)
+                    .from(ChinaCity_.T).partition("P1").as("c")
+                    .join(ChinaRegion_.T).partition("P1").as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
+                    .where(ChinaRegion_.id.equalNamed())
+                    .and(ChinaRegion_.createTime::betweenLiteral, map::get, "startTime", "endTIme")
+                    .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")
+                    .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
+                    .paramList(paramList)
+                    .asDelete();
+
+            for (Dialect dialect : Dialect.values()) {
+                LOG.debug("{}:\n{}", dialect.name(), stmt.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            }
+        };
+
+
+        final Map<String, Object> map = new HashMap<>();
+        final LocalDateTime now = LocalDateTime.now();
+        map.put("startTime", now.minusDays(15));
+        map.put("endTIme", now.plusDays(6));
+        map.put("version", "0");
+
+        //map.put("rowCount",(byte)36);
+
+        //below,mock dao method invoking
+        daoMethod.accept(map);
     }
 
     @Test
@@ -298,7 +419,7 @@ public class MySQLCriteriaUnitTests {
 
         map.put("amount", "888888.88");
         map.put("startTime", now.minusDays(15));
-        map.put("endTIme", now.plusDays(6));
+        map.put("endTime", now.plusDays(6));
         map.put("version", "0");
 
         map.put("identityId", "6668888");
@@ -308,8 +429,6 @@ public class MySQLCriteriaUnitTests {
 
         //below,mock dao method invoking
         daoMethod.accept(map);
-
-        BiFunction<? extends Expression, Object, IPredicate> function = Expression::equal;
 
 
     }

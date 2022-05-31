@@ -180,10 +180,14 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException expressionIsNull() {
         String m = String.format("expression must be non-null,if you want to output NULL,than use %s.%s or %s.%s."
-                , SQLs.class.getName(), "nullWord()", SQLs.class.getName(), "nullParam()");
+                , SQLs.class.getName(), "nullWord()", SQLs.class.getName(), "nullParam(ParamMeta)");
         return new CriteriaException(m);
     }
 
+    public static CriteriaException deleteChildButNoParent(ChildTableMeta<?> child) {
+        String m = String.format("You delete %s but no %s.", child, child.parentMeta());
+        return new CriteriaException(m);
+    }
 
     public static CriteriaException unknownSetTargetPart(SetLeftItem target) {
         return new CriteriaException(String.format("Unknown %s type[%s].", SetLeftItem.class.getName(), target));

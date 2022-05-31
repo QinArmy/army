@@ -17,7 +17,6 @@ import java.util.function.Supplier;
  * </ul>
  * </p>
  *
- * @see MySQL57Query
  * @see MySQL80Query
  * @since 1.0
  */

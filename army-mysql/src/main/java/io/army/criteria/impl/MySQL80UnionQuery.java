@@ -5,6 +5,8 @@ import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._SubQuery;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL80Query;
+import io.army.criteria.mysql.MySQLQuery;
+import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Dialect;
 import io.army.session.Database;
 import io.army.util._Exceptions;
@@ -64,12 +66,14 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
         context = CriteriaContexts.unionContext(left, right);
 
         if (left instanceof Select) {
-            if (!(right instanceof Select || right instanceof Values)) {
+            if (!((right instanceof Select && (right instanceof MySQLQuery || right instanceof StandardQuery))
+                    || (right instanceof Values && right instanceof MySQLValues))) {
                 throw errorRight(Select.class);
             }
             spec = new UnionSelect<>((Select) left, unionType, right, context);
         } else if (left instanceof ScalarSubQuery) {
-            if (!(right instanceof ScalarSubQuery || right instanceof Values)) {
+            if (!((right instanceof ScalarSubQuery && (right instanceof MySQLQuery || right instanceof StandardQuery))
+                    || (right instanceof SubValues && right instanceof MySQLValues))) {
                 throw errorRight(ScalarSubQuery.class);
             }
             if (left instanceof _LateralSubQuery) {
@@ -78,7 +82,8 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
                 spec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType, right, context);
             }
         } else if (left instanceof SubQuery) {
-            if (!(right instanceof SubQuery || right instanceof Values)) {
+            if (!((right instanceof SubQuery && (right instanceof MySQLQuery || right instanceof StandardQuery))
+                    || (right instanceof SubValues && right instanceof MySQLValues))) {
                 throw errorRight(SubQuery.class);
             }
             if (left instanceof _LateralSubQuery) {

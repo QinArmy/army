@@ -8,16 +8,16 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.SimpleTableMeta;
-import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.Database;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -273,8 +273,9 @@ final class MySQLDialect extends MySQL {
             safeTableAlias = null;
         }
 
-        //5. table name
-        this.identifier(table.tableName(), sqlBuilder);
+        //5. FROM clause
+        sqlBuilder.append(_Constant.SPACE_FROM_SPACE);
+        this.safeObjectName(table, sqlBuilder);
 
         if (safeTableAlias != null) {
             sqlBuilder.append(_Constant.SPACE_AS_SPACE)
@@ -330,23 +331,7 @@ final class MySQLDialect extends MySQL {
         if (usingSyntax) {
             sqlBuilder.append(_Constant.SPACE_FROM);
         }
-        final List<String> tableAliasList;
-        tableAliasList = stmt.tableAliasList();
-        final int aliasSize = tableAliasList.size();
-        TableItem tableItem;
-        String tableAlias;
-        for (int i = 0; i < aliasSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-            }
-            tableAlias = tableAliasList.get(i);
-            tableItem = context.tableItemOf(tableAlias);
-            if (!(tableItem instanceof TableMeta)) {
-                throw _Exceptions.unknownTableAlias(tableAlias);
-            }
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(context.safeTableAlias((TableMeta<?>) tableItem, tableAlias));
-        }
+        this.tableAliasList(stmt.tableAliasList(), context);
 
         if (usingSyntax) {
             sqlBuilder.append(_Constant.SPACE_USING);
@@ -542,6 +527,56 @@ final class MySQLDialect extends MySQL {
 
     }
 
+
+    /**
+     * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
+     */
+    private void tableAliasList(final List<String> tableAliasList, final _MultiDeleteContext context) {
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        final int aliasSize = tableAliasList.size();
+        assert aliasSize > 0;
+        TableItem tableItem;
+        String tableAlias;
+
+        Map<ParentTableMeta<?>, Boolean> parentMap = null;
+        List<ChildTableMeta<?>> childList = null;
+        for (int i = 0; i < aliasSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            tableAlias = tableAliasList.get(i);
+            tableItem = context.tableItemOf(tableAlias);
+            if (!(tableItem instanceof TableMeta)) {
+                throw _Exceptions.unknownTableAlias(tableAlias);
+            }
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(context.safeTableAlias((TableMeta<?>) tableItem, tableAlias));
+
+            if (tableItem instanceof ChildTableMeta) {
+                if (childList == null) {
+                    childList = new ArrayList<>();
+                }
+                childList.add((ChildTableMeta<?>) tableItem);
+            } else if (tableItem instanceof ParentTableMeta) {
+                if (parentMap == null) {
+                    parentMap = new HashMap<>();
+                }
+                parentMap.putIfAbsent((ParentTableMeta<?>) tableItem, Boolean.TRUE);
+            }
+
+        }
+
+        if (childList != null) {
+            for (ChildTableMeta<?> child : childList) {
+                if (parentMap == null || !parentMap.containsKey(child.parentMeta())) {
+                    throw _Exceptions.deleteChildButNoParent(child);
+                }
+            }
+            childList.clear();
+        }
+
+    }
+
     private void partitionClause(final List<String> partitionList, final StringBuilder sqlBuilder) {
         final int partitionSize = partitionList.size();
         if (partitionSize == 0) {
@@ -563,8 +598,11 @@ final class MySQLDialect extends MySQL {
         }
         SQLWords purpose;
         List<String> indexNameList;
-        int indexSize;
+        int indexSize, hintIndex = 0;
         for (_IndexHint indexHint : indexHintList) {
+            if (hintIndex > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
             sqlBuilder.append(indexHint.command().render());
             purpose = indexHint.purpose();
             if (purpose != null) {
@@ -581,7 +619,9 @@ final class MySQLDialect extends MySQL {
                 this.identifier(indexNameList.get(i), sqlBuilder);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            hintIndex++;
         }
+
 
     }
 

@@ -353,9 +353,8 @@ abstract class CriteriaUtils {
                     preLevel = level;
                     if (tempList == null) {
                         tempList = new ArrayList<>(size);
-                    } else {
-                        tempList.add(modifier);
                     }
+                    tempList.add(modifier);
                 }
                 modifierList = Collections.unmodifiableList(tempList);
             }

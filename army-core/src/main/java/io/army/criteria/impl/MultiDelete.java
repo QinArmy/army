@@ -27,6 +27,11 @@ abstract class MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA> extends DmlWhereCl
     MultiDelete(CriteriaContext criteriaContext) {
         super(criteriaContext.criteria());
         this.criteriaContext = criteriaContext;
+        if (this instanceof SubStatement) {
+            CriteriaContextStack.push(this.criteriaContext);
+        } else {
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
     }
 
     @Override

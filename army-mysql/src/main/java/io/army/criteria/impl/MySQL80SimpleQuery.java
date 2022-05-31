@@ -628,7 +628,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             tableAliasList = new ArrayList<>(aliasList.size());
         }
         for (String alias : aliasList) {
-            if (!this.criteriaContext.containTableAlias(alias)) {
+            if (this.criteriaContext.getTable(alias) == null) {
                 String m = String.format("unknown table alias[%s] in this query block.", alias);
                 throw new CriteriaException(m);
             }

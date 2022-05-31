@@ -51,7 +51,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final IR useIndex() {
         if (this.fromOrCrossValid) {
-            this.command = MySQLIndexHint.Command.USER_INDEX;
+            this.command = MySQLIndexHint.Command.USE_INDEX;
         } else {
             this.command = null;
         }
@@ -81,7 +81,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final IR ifUseIndex(Predicate<C> predicate) {
         if (this.fromOrCrossValid && predicate.test(this.criteria)) {
-            this.command = MySQLIndexHint.Command.USER_INDEX;
+            this.command = MySQLIndexHint.Command.USE_INDEX;
         } else {
             this.command = null;
         }
@@ -111,7 +111,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     @Override
     public final FT useIndex(List<String> indexList) {
         if (this.fromOrCrossValid) {
-            this.addIndexHint(MySQLIndexHint.Command.USER_INDEX, null, indexList);
+            this.addIndexHint(MySQLIndexHint.Command.USE_INDEX, null, indexList);
         }
         return (FT) this;
     }
@@ -138,7 +138,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
             final List<String> list;
             list = function.apply(this.criteria);
             if (list != null && list.size() > 0) {
-                this.addIndexHint(MySQLIndexHint.Command.USER_INDEX, null, list);
+                this.addIndexHint(MySQLIndexHint.Command.USE_INDEX, null, list);
             }
         }
         return (FT) this;

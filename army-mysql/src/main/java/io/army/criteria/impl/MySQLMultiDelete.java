@@ -11,13 +11,13 @@ import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -74,7 +74,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isDeleteModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotDeleteModifier);
         this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
         this.usingSyntax = false;
         return this;
@@ -87,7 +87,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isDeleteModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotDeleteModifier);
         this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
         this.usingSyntax = false;
         return this;
@@ -117,7 +117,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isDeleteModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotDeleteModifier);
         this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
         this.usingSyntax = true;
         return this;
@@ -130,7 +130,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isDeleteModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotDeleteModifier);
         this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
         this.usingSyntax = true;
         return this;
@@ -376,11 +376,41 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         if (tableAliasList == null) {
             throw _Exceptions.castCriteriaApi();
         }
+        Map<ParentTableMeta<?>, Boolean> parentMap = null;
+        List<ChildTableMeta<?>> childList = null;
+        TableMeta<?> table;
         for (String tableAlias : tableAliasList) {
-            if (!this.criteriaContext.containTableAlias(tableAlias)) {
+            table = this.criteriaContext.getTable(tableAlias);
+            if (table == null) {
                 throw _Exceptions.unknownTableAlias(tableAlias);
             }
+            if (table instanceof ParentTableMeta) {
+                if (parentMap == null) {
+                    parentMap = new HashMap<>();
+                }
+                parentMap.putIfAbsent((ParentTableMeta<?>) table, Boolean.TRUE);
+            } else if (table instanceof ChildTableMeta) {
+                if (childList == null) {
+                    childList = new ArrayList<>();
+                }
+                childList.add((ChildTableMeta<?>) table);
+            }
+
         }
+
+        if (childList != null) {
+            for (ChildTableMeta<?> child : childList) {
+                if (parentMap == null || !parentMap.containsKey(child.parentMeta())) {
+                    throw _Exceptions.deleteChildButNoParent(child);
+                }
+            }
+            childList.clear();
+        }
+
+        if (parentMap != null) {
+            parentMap.clear();
+        }
+
     }
 
     @Override

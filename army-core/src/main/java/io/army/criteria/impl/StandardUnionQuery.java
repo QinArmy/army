@@ -53,22 +53,22 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
         criteriaContext = CriteriaContexts.unionContext(left, right);
         final _UnionOrderBySpec<C, ?> unionSpec;
         if (left instanceof Select) {
-            if (!(right instanceof Select)) {
-                String m = String.format("standard query api support only %s.", Select.class.getName());
+            if (!(right instanceof Select && right instanceof StandardQuery)) {
+                String m = String.format("standard query api support only standard %s.", Select.class.getName());
                 throw new CriteriaException(m);
             }
             unionSpec = new UnionSelect<>((Select) left, unionType, (Select) right, criteriaContext);
         } else if (left instanceof ScalarSubQuery) {
-            if (!(right instanceof ScalarExpression)) {
+            if (!(right instanceof ScalarExpression && right instanceof StandardQuery)) {
                 String m;
-                m = String.format("standard scalar sub query api support only %s.", ScalarExpression.class.getName());
+                m = String.format("standard scalar sub query api support only standard %s.", ScalarExpression.class.getName());
                 throw new CriteriaException(m);
             }
             unionSpec = new UnionScalarSubQuery<>((ScalarExpression) left, unionType
                     , (ScalarExpression) right, criteriaContext);
         } else if (left instanceof SubQuery) {
-            if (!(right instanceof SubQuery)) {
-                String m = String.format("standard sub query api support only %s.", SubQuery.class.getName());
+            if (!(right instanceof SubQuery && right instanceof StandardQuery)) {
+                String m = String.format("standard sub query api support only standard %s.", SubQuery.class.getName());
                 throw new CriteriaException(m);
             }
             unionSpec = new UnionSubQuery<>((SubQuery) left, unionType, (SubQuery) right, criteriaContext);

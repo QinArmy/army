@@ -30,6 +30,8 @@ public interface _Constant {
 
     String SPACE_FROM = " FROM";
 
+    String SPACE_FROM_SPACE = " FROM ";
+
     String SPACE_LATERAL = " LATERAL";
 
     String SPACE_USING = " USING";

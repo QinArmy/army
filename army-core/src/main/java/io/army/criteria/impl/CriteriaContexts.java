@@ -285,7 +285,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public boolean containTableAlias(String tableAlias) {
+        public TableMeta<?> getTable(String tableAlias) {
             throw new CriteriaException("current context don't support containTableAlias(tableAlias)");
         }
 
@@ -549,10 +549,17 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final boolean containTableAlias(final String tableAlias) {
+        public final TableMeta<?> getTable(final String tableAlias) {
             final _TableBlock block;
             block = this.aliasToBlock.get(tableAlias);
-            return block != null && block.tableItem() instanceof TableMeta;
+            final TableItem tableItem;
+            final TableMeta<?> table;
+            if (block != null && ((tableItem = block.tableItem()) instanceof TableMeta)) {
+                table = (TableMeta<?>) tableItem;
+            } else {
+                table = null;
+            }
+            return table;
         }
 
 

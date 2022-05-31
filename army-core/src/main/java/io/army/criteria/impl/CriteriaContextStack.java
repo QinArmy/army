@@ -128,7 +128,7 @@ abstract class CriteriaContextStack {
             if (list.size() < 2) {
                 throw new CriteriaException("Sub query create error");
             }
-            return list.pop();
+            return list.pollLast();
         }
 
         @Override
@@ -165,7 +165,7 @@ abstract class CriteriaContextStack {
                 case 0:
                     throw new IllegalStateException("stack error");
                 case 1: {
-                    if (rootContext != list.get(0)) {
+                    if (rootContext != list.peekFirst()) {
                         throw new CriteriaException("Root context not match,reject clear context stack.");
                     }
                     list.clear();

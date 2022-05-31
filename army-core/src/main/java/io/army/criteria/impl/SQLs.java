@@ -259,7 +259,7 @@ public abstract class SQLs extends Functions {
      */
     static ArmyExpression _nonNullLiteral(final Expression type, final @Nullable Object value) {
         if (value == null) {
-            throw new CriteriaException("Right operand of operator must be not null.");
+            throw _Exceptions.expressionIsNull();
         }
         final Expression resultExpression;
         if (value instanceof Expression) {
@@ -290,6 +290,9 @@ public abstract class SQLs extends Functions {
         return (ArmyExpression) resultExpression;
     }
 
+    public static Expression nullParam(ParamMeta type) {
+        return ParamExpression.create(type, null);
+    }
 
     /**
      * <p>
@@ -932,7 +935,7 @@ public abstract class SQLs extends Functions {
             return null;
         }
 
-    }//NullParam
+    }//StringTypeNull
 
 
     /**

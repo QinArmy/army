@@ -412,7 +412,7 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate betweenLiteral(Object firstOperand, Object secondOperand) {
+    public final IPredicate betweenLiteral(final Object firstOperand, final Object secondOperand) {
         final Expression first, second;
         first = SQLs._nonNullLiteral(this, firstOperand);
         second = SQLs._nonNullLiteral(this, secondOperand);

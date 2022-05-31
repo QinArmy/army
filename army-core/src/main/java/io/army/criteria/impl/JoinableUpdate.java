@@ -369,7 +369,10 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
     @Override
     public final Update asUpdate() {
         _Assert.nonPrepared(this.prepared);
-        this.criteriaContext.clear();
+        if (this instanceof SingleUpdate) {
+            /// only single update clear context.
+            this.criteriaContext.clear();
+        }
         if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {

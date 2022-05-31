@@ -240,7 +240,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
         @Override
         public final IR useIndex() {
             if (this.bracketCrossValid) {
-                this.command = MySQLIndexHint.Command.USER_INDEX;
+                this.command = MySQLIndexHint.Command.USE_INDEX;
             } else {
                 this.command = null;
             }
@@ -270,7 +270,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
         @Override
         public final IR ifUseIndex(Predicate<C> predicate) {
             if (this.bracketCrossValid && predicate.test(this.criteria)) {
-                this.command = MySQLIndexHint.Command.USER_INDEX;
+                this.command = MySQLIndexHint.Command.USE_INDEX;
             } else {
                 this.command = null;
             }
@@ -300,7 +300,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
         @Override
         public final IC useIndex(List<String> indexList) {
             if (this.bracketCrossValid) {
-                this.indexHint(MySQLIndexHint.Command.USER_INDEX, null, indexList);
+                this.indexHint(MySQLIndexHint.Command.USE_INDEX, null, indexList);
             }
             return (IC) this;
         }
@@ -327,7 +327,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
                 final List<String> indexNameList;
                 indexNameList = function.apply(this.criteria);
                 if (indexNameList != null && indexNameList.size() > 0) {
-                    this.indexHint(MySQLIndexHint.Command.USER_INDEX, null, indexNameList);
+                    this.indexHint(MySQLIndexHint.Command.USE_INDEX, null, indexNameList);
                 }
             }
             return (IC) this;

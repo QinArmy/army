@@ -368,7 +368,7 @@ public class StandardCriteriaUnitTests {
     /**
      * @see #simpleSubQuerySelectItem()
      */
-    private SubQuery userInfo(Map<String, Object> criteria) {
+    private SubQuery userInfo(final Map<String, Object> criteria) {
         return SQLs.subQuery()
                 .select(SQLs.literal(1).as("one"), SQLs.group(User_.T, "u"))
                 .from(User_.T, "u")
