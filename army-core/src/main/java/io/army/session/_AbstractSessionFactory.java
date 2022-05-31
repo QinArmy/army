@@ -5,7 +5,7 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
 import io.army.codec.JsonCodec;
 import io.army.dialect._AbstractFieldValuesGenerator;
-import io.army.dialect._DialectEnvironment;
+import io.army.dialect._DialectEnv;
 import io.army.dialect._FieldValueGenerator;
 import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
@@ -29,7 +29,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-public abstract class _AbstractSessionFactory implements GenericSessionFactory, _DialectEnvironment {
+public abstract class _AbstractSessionFactory implements GenericSessionFactory, _DialectEnv {
 
     private static final ConcurrentMap<String, Boolean> FACTORY_MAP = new ConcurrentHashMap<>(3);
 
@@ -153,7 +153,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     @Override
     public final JsonCodec jsonCodec() {
-        return _DialectEnvironment.super.jsonCodec();
+        return _DialectEnv.super.jsonCodec();
     }
 
 

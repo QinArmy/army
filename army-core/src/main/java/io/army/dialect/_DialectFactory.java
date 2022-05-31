@@ -15,7 +15,7 @@ public abstract class _DialectFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static _Dialect createDialect(_DialectEnvironment environment) {
+    public static _Dialect createDialect(_DialectEnv environment) {
         final Database database = environment.serverMeta().database();
         final _Dialect dialect;
         switch (database) {
@@ -39,7 +39,7 @@ public abstract class _DialectFactory {
      */
     @SuppressWarnings("unchecked")
     protected static <T extends _AbstractDialect> T invokeFactoryMethod(Class<T> dialectType, String className
-            , _DialectEnvironment environment) {
+            , _DialectEnv environment) {
         final Class<?> clazz;
         try {
             clazz = Class.forName(className);
@@ -49,13 +49,13 @@ public abstract class _DialectFactory {
         final String methodName = "create";
         try {
             final Method method;
-            method = clazz.getMethod(methodName, _DialectEnvironment.class);
+            method = clazz.getMethod(methodName, _DialectEnv.class);
             final int modifiers = method.getModifiers();
             if (!(Modifier.isPublic(modifiers)
                     && Modifier.isStatic(modifiers)
                     && dialectType.isAssignableFrom(method.getReturnType()))) {
                 String m = String.format("Not found factory method,public static %s %s(%s) in class %s"
-                        , className, methodName, _DialectEnvironment.class.getName(), className);
+                        , className, methodName, _DialectEnv.class.getName(), className);
                 throw new RuntimeException(m);
             }
             final T dialect;
@@ -64,7 +64,7 @@ public abstract class _DialectFactory {
             return dialect;
         } catch (NoSuchMethodException e) {
             String m = String.format("Not found factory method,public static %s %s(%s) in class %s"
-                    , className, methodName, _DialectEnvironment.class.getName(), className);
+                    , className, methodName, _DialectEnv.class.getName(), className);
             throw new RuntimeException(m, e);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
@@ -72,7 +72,7 @@ public abstract class _DialectFactory {
 
     }
 
-    protected static Dialect targetDialect(final _DialectEnvironment environment, final Database database) {
+    protected static Dialect targetDialect(final _DialectEnv environment, final Database database) {
         final ServerMeta meta = environment.serverMeta();
         if (meta.database() != database) {
             String m = String.format("%s database isn't %s", meta, database);

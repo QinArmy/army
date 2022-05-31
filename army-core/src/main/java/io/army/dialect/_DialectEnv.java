@@ -8,7 +8,7 @@ import io.army.meta.ServerMeta;
 
 import java.time.ZoneOffset;
 
-public interface _DialectEnvironment {
+public interface _DialectEnv {
 
     ServerMeta serverMeta();
 

@@ -12,7 +12,7 @@ import java.util.Set;
 
 class Postgre11DmlDialect extends _AbstractDialect {
 
-    Postgre11DmlDialect(_DialectEnvironment environment, Dialect dialect) {
+    Postgre11DmlDialect(_DialectEnv environment, Dialect dialect) {
         super(environment, dialect);
     }
 

@@ -37,7 +37,7 @@ import java.util.function.Consumer;
 public abstract class _AbstractDialect implements ArmyDialect {
 
 
-    public final _DialectEnvironment environment;
+    public final _DialectEnv environment;
 
     /**
      * a unmodified set
@@ -50,7 +50,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected final Dialect dialect;
 
-    protected _AbstractDialect(_DialectEnvironment environment, Dialect dialect) {
+    protected _AbstractDialect(_DialectEnv environment, Dialect dialect) {
         this.environment = environment;
         this.dialect = dialect;
         this.identifierQuote = identifierQuote();
@@ -577,11 +577,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 final TableMeta<?> table = ((FieldMeta<?>) field).tableMeta();
                 if (table instanceof SingleTableMeta) {
                     aliasOrTableMap.putIfAbsent(context.tableAliasOf((SingleTableMeta<?>) table), Boolean.TRUE);
+                } else if (table instanceof ChildTableMeta) {
+                    aliasOrTableMap.putIfAbsent(context.tableAliasOf(((ChildTableMeta<?>) table).parentMeta()), Boolean.TRUE);
                 }
             } else if (field instanceof QualifiedField) {
-                if (((QualifiedField<?>) field).tableMeta() instanceof SingleTableMeta) {
-                    aliasOrTableMap.putIfAbsent(((QualifiedField<?>) field).tableAlias(), Boolean.TRUE);
-                }
+                aliasOrTableMap.putIfAbsent(((QualifiedField<?>) field).tableAlias(), Boolean.TRUE);
             } else {
                 aliasOrTableMap.putIfAbsent(((DerivedField) field).tableAlias(), Boolean.TRUE);
             }

@@ -57,7 +57,7 @@ public abstract class _MockDialects {
     }
 
 
-    private static final class MockEnvironment extends _MockDialects implements _DialectEnvironment {
+    private static final class MockEnvironment extends _MockDialects implements _DialectEnv {
 
         private final ArmyEnvironment env;
 

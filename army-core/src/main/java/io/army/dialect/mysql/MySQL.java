@@ -23,7 +23,7 @@ import java.util.Set;
 
 abstract class MySQL extends _AbstractDialect {
 
-    static MySQL standard(_DialectEnvironment environment, Dialect dialect) {
+    static MySQL standard(_DialectEnv environment, Dialect dialect) {
         if (dialect.database != Database.MySQL) {
             throw new IllegalArgumentException();
         }
@@ -35,7 +35,7 @@ abstract class MySQL extends _AbstractDialect {
 
     final boolean asOf80;
 
-    MySQL(_DialectEnvironment environment, Dialect dialect) {
+    MySQL(_DialectEnv environment, Dialect dialect) {
         super(environment, dialect);
         this.asOf80 = this.dialectMode().version() >= Dialect.MySQL80.version();
     }
@@ -499,7 +499,7 @@ abstract class MySQL extends _AbstractDialect {
 
     private static final class Standard extends MySQL {
 
-        private Standard(_DialectEnvironment environment, Dialect dialect) {
+        private Standard(_DialectEnv environment, Dialect dialect) {
             super(environment, dialect);
         }
 

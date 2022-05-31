@@ -31,7 +31,7 @@ import java.util.Map;
  */
 final class MySQLDialect extends MySQL {
 
-    static MySQLDialect create(_DialectEnvironment environment, Dialect dialect) {
+    static MySQLDialect create(_DialectEnv environment, Dialect dialect) {
         if (dialect.database != Database.MySQL) {
             throw new IllegalArgumentException();
         }
@@ -49,7 +49,7 @@ final class MySQLDialect extends MySQL {
     private static final String SPACE_INTO = " INTO";
 
 
-    private MySQLDialect(_DialectEnvironment environment, Dialect dialect) {
+    private MySQLDialect(_DialectEnv environment, Dialect dialect) {
         super(environment, dialect);
 
     }
@@ -571,7 +571,7 @@ final class MySQLDialect extends MySQL {
                 if (parentMap == null || !parentMap.containsKey(child.parentMeta())) {
                     throw _Exceptions.deleteChildButNoParent(child);
                 }
-            }
+            }//TODO search parent
             childList.clear();
         }
 

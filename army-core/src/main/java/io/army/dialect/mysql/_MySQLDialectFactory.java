@@ -2,7 +2,7 @@ package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
 import io.army.dialect._Dialect;
-import io.army.dialect._DialectEnvironment;
+import io.army.dialect._DialectEnv;
 import io.army.dialect._DialectFactory;
 import io.army.util._ClassUtils;
 
@@ -12,7 +12,7 @@ public abstract class _MySQLDialectFactory extends _DialectFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static _Dialect createDialect(final _DialectEnvironment environment) {
+    public static _Dialect createDialect(final _DialectEnv environment) {
         final String className = "io.army.dialect.mysql._MySQLDialects";
         final MySQL _dialect;
         if (_ClassUtils.isPresent(className, MySQL.class.getClassLoader())) {

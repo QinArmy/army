@@ -5,6 +5,7 @@ import io.army.criteria.NestedItems;
 import io.army.criteria.TableItem;
 import io.army.criteria.Visible;
 import io.army.criteria.impl._JoinType;
+import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
@@ -15,7 +16,10 @@ import io.army.modelgen._MetaBridge;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -27,16 +31,16 @@ final class TableContext {
 
     final Map<TableMeta<?>, String> tableToSafeAlias;
 
-    final Map<String, String> childSafeAliasToParentSafeAlias;
+    final Map<String, String> childAliasToParentAlias;
 
     private TableContext(Map<String, TableItem> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias
-            , @Nullable Map<String, String> childSafeAliasToParentSafeAlias) {
+            , @Nullable Map<String, String> childAliasToParentAlias) {
         this.aliasToTable = _CollectionUtils.unmodifiableMap(aliasToTable);
         this.tableToSafeAlias = _CollectionUtils.unmodifiableMap(tableToSafeAlias);
-        if (childSafeAliasToParentSafeAlias == null) {
-            this.childSafeAliasToParentSafeAlias = Collections.emptyMap();
+        if (childAliasToParentAlias == null) {
+            this.childAliasToParentAlias = Collections.emptyMap();
         } else {
-            this.childSafeAliasToParentSafeAlias = Collections.unmodifiableMap(childSafeAliasToParentSafeAlias);
+            this.childAliasToParentAlias = _CollectionUtils.unmodifiableMap(childAliasToParentAlias);
         }
     }
 
@@ -56,146 +60,116 @@ final class TableContext {
 
 
     static TableContext createContext(List<? extends _TableBlock> blockList, ArmyDialect dialect
-            , final Visible visible, final boolean multiUpdate) {
-        final Map<String, TableItem> aliasToTable = new HashMap<>((int) (blockList.size() / 0.75F));
-        final Map<TableMeta<?>, String> tableToSafeAlias = new HashMap<>((int) (blockList.size() / 0.75F));
+            , final Visible visible, final boolean multiDml) {
+        final Context context;
+        context = new Context(dialect, visible, multiDml, blockList.size());
+        iterateTableReferences(blockList, context);
+        return new TableContext(context.aliasToTable, context.tableToSafeAlias, context.childAliasToParentAlias);
+    }
 
-        final Map<String, String> childSafeAliasToParentSafeAlias;
-        if (multiUpdate) {
-            childSafeAliasToParentSafeAlias = new HashMap<>();
-        } else {
-            childSafeAliasToParentSafeAlias = null;
-        }
 
-        final Set<TableMeta<?>> selfJoinSet = new HashSet<>();
-        final int size = blockList.size();
-        _TableBlock block, parentBlock;
-        String safeAlias;
-        for (int i = 0; i < size; i++) {
+    private static void iterateTableReferences(final List<? extends _TableBlock> blockList, final Context context) {
+
+        final Map<String, TableItem> aliasToTable = context.aliasToTable;
+        final Map<TableMeta<?>, String> tableToSafeAlias = context.tableToSafeAlias;
+        final Map<String, String> childAliasToParentAlias = context.childAliasToParentAlias;
+        final Map<TableMeta<?>, Boolean> selfJoinMap = context.selfJoinMap;
+
+        final ArmyDialect dialect = context.dialect;
+        final Visible visible = context.visible;
+
+        final boolean dml = childAliasToParentAlias != null;
+
+        _TableBlock block, neighborBlock;
+        String safeAlias, alias;
+        TableItem tableItem;
+        ParentTableMeta<?> parent;
+        _JoinType joinType;
+        final int blockSize = blockList.size(), lastIndex = blockSize - 1;
+        for (int i = 0; i < blockSize; i++) {
             block = blockList.get(i);
-            final TableItem tableItem = block.tableItem();
-            final String alias = block.alias();
+            tableItem = block.tableItem();
+
             if (tableItem instanceof NestedItems) {
-                throw new UnsupportedOperationException();
+                iterateTableReferences(((_NestedItems) tableItem).tableBlockList(), context);
+                continue;
             }
+
+            alias = block.alias();
             _DialectUtils.validateTableAlias(alias);
             if (aliasToTable.putIfAbsent(alias, tableItem) != null) {
-                throw _Exceptions.tableAliasDuplication(block.alias());
+                throw _Exceptions.tableAliasDuplication(alias);
             }
             if (!(tableItem instanceof TableMeta)) {
                 continue;
             }
             safeAlias = dialect.identifier(alias);
-            if (tableItem instanceof ChildTableMeta && (multiUpdate || visible != Visible.BOTH)) {
-                parentBlock = checkParent((ChildTableMeta<?>) tableItem, alias, blockList, i, multiUpdate);
-                if (parentBlock != null && childSafeAliasToParentSafeAlias != null) {
-                    childSafeAliasToParentSafeAlias.putIfAbsent(safeAlias, dialect.identifier(parentBlock.alias()));
-                }
-            }
-
-            if (selfJoinSet.contains(tableItem)) {
-                continue;
-            }
-            if (tableToSafeAlias.putIfAbsent((TableMeta<?>) tableItem, safeAlias) != null) {
+            if (!selfJoinMap.containsKey(tableItem)
+                    && tableToSafeAlias.putIfAbsent((TableMeta<?>) tableItem, safeAlias) != null) {
                 //this table self-join
                 tableToSafeAlias.remove(tableItem);
-                selfJoinSet.add((TableMeta<?>) tableItem);
+                selfJoinMap.put((TableMeta<?>) tableItem, Boolean.TRUE);
             }
-        }
-        return new TableContext(aliasToTable, tableToSafeAlias, childSafeAliasToParentSafeAlias);
-    }
 
-    @Nullable
-    private static _TableBlock checkParent(final ChildTableMeta<?> child, final String childAlias
-            , final List<? extends _TableBlock> blockList, final int index, final boolean multiUpdate) {
-
-        final ParentTableMeta<?> parent = child.parentMeta();
-        if (!multiUpdate && !parent.containField(_MetaBridge.VISIBLE)) {
-            return null;
-        }
-
-        final int size = blockList.size();
-        _TableBlock block;
-        rightFor:
-        for (int i = index + 1; i < size; i++) {
-            block = blockList.get(i);
-
-            switch (block.jointType()) {
+            if (!(tableItem instanceof ChildTableMeta && (dml || visible != Visible.BOTH))) {
+                continue;
+            }
+            parent = ((ChildTableMeta<?>) tableItem).parentMeta();
+            if (!(dml || parent.containField(_MetaBridge.VISIBLE))) {
+                continue;
+            }
+            joinType = block.jointType();
+            switch (joinType) {
                 case JOIN:
-                case STRAIGHT_JOIN:
-                case CROSS_JOIN:
-                    //non out join
-                    break;
-                case LEFT_JOIN:
-                case RIGHT_JOIN:
-                case FULL_JOIN:
-                    break rightFor;
-                case NONE:
-                    String m = String.format("Table that alias is %s join type[%s] error."
-                            , block.alias(), _JoinType.NONE);
-                    throw new CriteriaException(m);
-                default:
-                    throw _Exceptions.unexpectedEnum(block.jointType());
-
-            }
-            if (block.tableItem() == parent && isParentChildJoin(block.predicateList())) {
-                // validate success.
-                return block;
-            }
-
-        }// for
-
-        _TableBlock parentBlock = null;
-
-        leftFor:
-        for (int i = index - 1; i > -1; i--) {
-            block = blockList.get(i);
-            switch (block.jointType()) {
-                case JOIN:
-                case STRAIGHT_JOIN:
-                case CROSS_JOIN:
-                    //no-op,not out join
-                    break;
-                case NONE: {
-                    if (i != 0) {
-                        String m = String.format("Table that alias is %s join type[%s] error."
-                                , block.alias(), _JoinType.NONE);
-                        throw new CriteriaException(m);
+                case STRAIGHT_JOIN: {
+                    if (i == lastIndex) {
+                        break;
+                    }
+                    neighborBlock = blockList.get(i + 1);
+                    if (neighborBlock.tableItem() != parent) {
+                        break;
+                    }
+                    if (isParentChildJoin((ChildTableMeta<?>) tableItem, neighborBlock.predicateList())) {
+                        continue;
                     }
                 }
                 break;
-                case LEFT_JOIN:
-                case RIGHT_JOIN:
-                case FULL_JOIN:
-                    break leftFor;
                 default:
-                    throw _Exceptions.unexpectedEnum(block.jointType());
-
+                    //no-op
             }
-            if (block.tableItem() == parent && isParentChildJoin(block.predicateList())) {
-                // validate success.
-                parentBlock = block;
+
+            if (i == 0) {
+                throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
+            }
+            switch (joinType) {
+                case JOIN:
+                case STRAIGHT_JOIN: {
+                    neighborBlock = blockList.get(i - 1);
+                    if (neighborBlock.tableItem() != parent) {
+                        throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
+                    }
+                    if (!isParentChildJoin((ChildTableMeta<?>) tableItem, neighborBlock.predicateList())) {
+                        throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
+                    }
+                }
                 break;
+                default:
+                    throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
             }
 
-        }// for
 
-        if (parentBlock == null && parent.containField(_MetaBridge.VISIBLE)) {
-            String m;
-            m = String.format(
-                    "%s mode isn't %s and %s contain %s field\n,but %s that alias is '%s' don't inner join(%s) %s."
-                    , Visible.class.getSimpleName(), Visible.BOTH
-                    , parent, _MetaBridge.VISIBLE
-                    , child, childAlias
-                    , "exists on predicate child.id = parent.id", parent);
-            throw new CriteriaException(m);
         }
-        return parentBlock;
+
+
     }
 
-    private static boolean isParentChildJoin(final List<_Predicate> onPredicates) {
+    private static CriteriaException noInnerJoinParent(final ChildTableMeta<?> child, final String alias, final boolean dml) {
+        return new CriteriaException("");
+    }
+
+    private static boolean isParentChildJoin(final ChildTableMeta<?> child, final List<_Predicate> predicateList) {
         boolean match = false;
-        for (_Predicate predicate : onPredicates) {
+        for (_Predicate predicate : predicateList) {
             if (predicate.isParentChildJoin()) {
                 match = true;
                 break;
@@ -203,6 +177,39 @@ final class TableContext {
         }
         return match;
     }
+
+    private static final class Context {
+
+        private final ArmyDialect dialect;
+
+        private final Visible visible;
+
+        private final Map<String, TableItem> aliasToTable;
+
+        private final Map<TableMeta<?>, String> tableToSafeAlias;
+
+        private final Map<TableMeta<?>, Boolean> selfJoinMap;
+
+        private final Map<String, String> childAliasToParentAlias;
+
+        private Context(ArmyDialect dialect, Visible visible, boolean multiDml, int blockSize) {
+            this.dialect = dialect;
+            this.visible = visible;
+            this.aliasToTable = new HashMap<>((int) (blockSize / 0.75F));
+            this.tableToSafeAlias = new HashMap<>((int) (blockSize / 0.75F));
+
+            this.selfJoinMap = new HashMap<>();
+            if (multiDml) {
+                this.childAliasToParentAlias = new HashMap<>();
+            } else {
+                this.childAliasToParentAlias = null;
+            }
+
+
+        }
+
+
+    }//Context
 
 
 }
