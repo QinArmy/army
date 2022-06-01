@@ -80,29 +80,31 @@ final class TableContext {
 
         final boolean dml = childAliasToParentAlias != null;
 
-        _TableBlock block, neighborBlock;
+        _TableBlock block, parentBlock;
         String safeAlias, alias;
         TableItem tableItem;
         ParentTableMeta<?> parent;
-        _JoinType joinType;
         final int blockSize = blockList.size(), lastIndex = blockSize - 1;
         for (int i = 0; i < blockSize; i++) {
             block = blockList.get(i);
             tableItem = block.tableItem();
 
             if (tableItem instanceof NestedItems) {
+                // recursively iterate
                 iterateTableReferences(((_NestedItems) tableItem).tableBlockList(), context);
                 continue;
             }
 
             alias = block.alias();
             _DialectUtils.validateTableAlias(alias);
+            //1. create alias to tableItem map
             if (aliasToTable.putIfAbsent(alias, tableItem) != null) {
                 throw _Exceptions.tableAliasDuplication(alias);
             }
             if (!(tableItem instanceof TableMeta)) {
                 continue;
             }
+            //2. create TableMeta to safe table alias map
             safeAlias = dialect.identifier(alias);
             if (!selfJoinMap.containsKey(tableItem)
                     && tableToSafeAlias.putIfAbsent((TableMeta<?>) tableItem, safeAlias) != null) {
@@ -110,7 +112,7 @@ final class TableContext {
                 tableToSafeAlias.remove(tableItem);
                 selfJoinMap.put((TableMeta<?>) tableItem, Boolean.TRUE);
             }
-
+            //3. create child alias to parent alias map
             if (!(tableItem instanceof ChildTableMeta && (dml || visible != Visible.BOTH))) {
                 continue;
             }
@@ -118,64 +120,215 @@ final class TableContext {
             if (!(dml || parent.containField(_MetaBridge.VISIBLE))) {
                 continue;
             }
+            //3.1 find parent from right
+            if (i < lastIndex) {
+                parentBlock = findParentFromRight(parent, blockList, i + 1, false);
+                if (parentBlock != null && parentBlock != ContinueBlock.INSTANCE) {
+                    //no bug,assert success
+                    assert parentBlock.tableItem() == parent;
+                    if (childAliasToParentAlias != null
+                            && childAliasToParentAlias.putIfAbsent(alias, parentBlock.alias()) != null) {
+                        //no bug,never here
+                        throw new IllegalStateException();
+                    }
+                    continue;
+                }
+            }
+
+            if (i < 1) {
+                throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
+            }
+            //3.2 find parent from left
+            parentBlock = findParentFromLeft(parent, blockList, i - 1);
+
+            if (parentBlock == null || parentBlock == ContinueBlock.INSTANCE) {
+                throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
+            }
+            //no bug,assert success
+            assert parentBlock.tableItem() == parent;
+
+            if (childAliasToParentAlias != null
+                    && childAliasToParentAlias.putIfAbsent(alias, parentBlock.alias()) != null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+
+
+        }// for
+
+
+    }
+
+
+    /**
+     * @return null : find failure
+     */
+    @Nullable
+    private static _TableBlock findParentFromRight(final ParentTableMeta<?> parent
+            , final List<? extends _TableBlock> blockList, final int fromIndex, final boolean nested) {
+        final int blockSize = blockList.size();
+
+        _TableBlock block, parentBlock = ContinueBlock.INSTANCE;
+        TableItem tableItem;
+        outerFor:
+        for (int i = fromIndex; i < blockSize; i++) {
+            block = blockList.get(i);
+            switch (block.jointType()) {
+                case JOIN:
+                case STRAIGHT_JOIN:
+                    break;
+                case NONE: {
+                    if (!(nested && i == 0)) {
+                        // find failure
+                        parentBlock = null;
+                        break outerFor;
+                    }
+                }
+                break;
+                default:
+                    // find failure
+                    parentBlock = null;
+                    break outerFor;
+            }
+
+            tableItem = block.tableItem();
+            if (tableItem instanceof NestedItems) {
+                parentBlock = findParentFromRight(parent, ((_NestedItems) tableItem).tableBlockList(), 0, true);
+                if (parentBlock != ContinueBlock.INSTANCE) {
+                    // success or failure
+                    break;
+                }
+                continue;
+            }
+
+            if (!(tableItem instanceof TableMeta)) {
+                // find failure
+                parentBlock = null;
+                break;
+            }
+
+            if (isNotIdsEquals((TableMeta<?>) tableItem, block.alias(), block.predicateList())) {
+                // find failure
+                parentBlock = null;
+                break;
+            }
+
+            if (tableItem == parent) {
+                //find success
+                parentBlock = block;
+                break;
+            }
+
+
+        }// for
+
+        return parentBlock;
+    }
+
+
+    /**
+     * @return null : find failure
+     */
+    @Nullable
+    private static _TableBlock findParentFromLeft(final ParentTableMeta<?> parent
+            , final List<? extends _TableBlock> blockList, final int fromIndex) {
+
+        _TableBlock block, parentBlock = ContinueBlock.INSTANCE;
+        TableItem tableItem;
+        List<? extends _TableBlock> nestedBlockList;
+        _JoinType joinType;
+        outerFor:
+        for (int i = fromIndex; i > -1; i--) {
+            block = blockList.get(i);
             joinType = block.jointType();
             switch (joinType) {
                 case JOIN:
-                case STRAIGHT_JOIN: {
-                    if (i == lastIndex) {
-                        break;
-                    }
-                    neighborBlock = blockList.get(i + 1);
-                    if (neighborBlock.tableItem() != parent) {
-                        break;
-                    }
-                    if (isParentChildJoin((ChildTableMeta<?>) tableItem, neighborBlock.predicateList())) {
-                        continue;
+                case STRAIGHT_JOIN:
+                    break;
+                case NONE: {
+                    if (i != 0) {
+                        // find failure
+                        parentBlock = null;
+                        break outerFor;
                     }
                 }
                 break;
                 default:
-                    //no-op
+                    // find failure
+                    parentBlock = null;
+                    break outerFor;
             }
 
-            if (i == 0) {
-                throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
-            }
-            switch (joinType) {
-                case JOIN:
-                case STRAIGHT_JOIN: {
-                    neighborBlock = blockList.get(i - 1);
-                    if (neighborBlock.tableItem() != parent) {
-                        throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
-                    }
-                    if (!isParentChildJoin((ChildTableMeta<?>) tableItem, neighborBlock.predicateList())) {
-                        throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
-                    }
+            tableItem = block.tableItem();
+            if (tableItem instanceof NestedItems) {
+                nestedBlockList = ((_NestedItems) tableItem).tableBlockList();
+                parentBlock = findParentFromLeft(parent, nestedBlockList, nestedBlockList.size() - 1);
+                if (parentBlock != ContinueBlock.INSTANCE) {
+                    // success or failure
+                    break;
                 }
+                continue;
+            }
+
+            if (!(tableItem instanceof TableMeta)) {
+                // find failure
+                parentBlock = null;
                 break;
-                default:
-                    throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
+            }
+
+            if (joinType == _JoinType.NONE) {
+                if (i < blockList.size() - 1
+                        && isNotIdsEquals((TableMeta<?>) tableItem, block.alias(), blockList.get(i + 1).predicateList())) {
+                    // find failure
+                    parentBlock = null;
+                    break;
+                }
+            } else if (isNotIdsEquals((TableMeta<?>) tableItem, block.alias(), block.predicateList())) {
+                // find failure
+                parentBlock = null;
+                break;
+            }
+
+            if (tableItem == parent) {
+                //find success
+                parentBlock = block;
+                break;
             }
 
 
-        }
+        }// for
 
-
+        return parentBlock;
     }
 
-    private static CriteriaException noInnerJoinParent(final ChildTableMeta<?> child, final String alias, final boolean dml) {
-        return new CriteriaException("");
-    }
 
-    private static boolean isParentChildJoin(final ChildTableMeta<?> child, final List<_Predicate> predicateList) {
-        boolean match = false;
+    private static boolean isNotIdsEquals(final TableMeta<?> table, final String alias
+            , final List<_Predicate> predicateList) {
+        boolean isNot = true;
         for (_Predicate predicate : predicateList) {
-            if (predicate.isParentChildJoin()) {
-                match = true;
+            if (predicate.isIdsEquals(table, alias)) {
+                isNot = false;
                 break;
             }
         }
-        return match;
+        return isNot;
+    }
+
+    private static CriteriaException noInnerJoinParent(final ChildTableMeta<?> child, final String alias
+            , final boolean dml) {
+        final String reason;
+        if (dml) {
+            reason = String.format("%s as %s no inner join(%s) parent %s in multi-table DML statement."
+                    , child, alias, "exists on predicate child.id = parent.id", child.parentMeta());
+        } else {
+            reason = String.format(
+                    "%s mode isn't %s and %s contain %s field\n,but %s that alias is '%s' don't inner join(%s) %s."
+                    , Visible.class.getSimpleName(), Visible.BOTH
+                    , child.parentMeta(), _MetaBridge.VISIBLE
+                    , child, alias
+                    , "exists on predicate child.id = parent.id", child.parentMeta());
+        }
+        return new CriteriaException(reason);
     }
 
     private static final class Context {
@@ -210,6 +363,33 @@ final class TableContext {
 
 
     }//Context
+
+
+    private static final class ContinueBlock implements _TableBlock {
+
+        private static final ContinueBlock INSTANCE = new ContinueBlock();
+
+        @Override
+        public _JoinType jointType() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TableItem tableItem() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String alias() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<_Predicate> predicateList() {
+            throw new UnsupportedOperationException();
+        }
+
+    }//ContinueBlock
 
 
 }

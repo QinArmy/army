@@ -29,28 +29,6 @@ public abstract class _DialectUtils {
     }
 
 
-
-
-
-    /*################################## blow package method ##################################*/
-
-
-
-    public static String parentAlias(final String tableAlias) {
-        return "p_of_" + tableAlias;
-    }
-
-    public static void validateTableAlias(final String tableAlias) {
-        if (!_StringUtils.hasText(tableAlias)) {
-            throw new CriteriaException("Alias of table or sub query must has text.");
-        }
-        if (tableAlias.startsWith(_Constant.FORBID_ALIAS)) {
-            String m = String.format("Error,Alias[%s] of table or sub query start with %s."
-                    , tableAlias, _Constant.FORBID_ALIAS);
-            throw new CriteriaException(m);
-        }
-    }
-
     public static List<Selection> flatSelectItem(final List<? extends SelectItem> selectPartList) {
         final List<Selection> selectionList = new ArrayList<>(selectPartList.size());
         for (SelectItem selectItem : selectPartList) {
@@ -65,16 +43,6 @@ public abstract class _DialectUtils {
         return selectionList;
     }
 
-    public static boolean hasOptimistic(List<_Predicate> predicateList) {
-        boolean match = false;
-        for (_Predicate predicate : predicateList) {
-            if (predicate.isOptimistic()) {
-                match = true;
-                break;
-            }
-        }
-        return match;
-    }
 
     public static void checkInsertExpField(final TableMeta<?> table, final FieldMeta<?> field
             , final _Expression value) {
@@ -103,6 +71,38 @@ public abstract class _DialectUtils {
             throw _Exceptions.insertExpDontSupportField(field);
         }
     }
+
+
+    /*################################## blow package method ##################################*/
+
+
+    static String parentAlias(final String tableAlias) {
+        return "p_of_" + tableAlias;
+    }
+
+    static void validateTableAlias(final String tableAlias) {
+        if (!_StringUtils.hasText(tableAlias)) {
+            throw new CriteriaException("Alias of table or sub query must has text.");
+        }
+        if (tableAlias.startsWith(_Constant.FORBID_ALIAS)) {
+            String m = String.format("Error,Alias[%s] of table or sub query start with %s."
+                    , tableAlias, _Constant.FORBID_ALIAS);
+            throw new CriteriaException(m);
+        }
+    }
+
+
+    static boolean hasOptimistic(List<_Predicate> predicateList) {
+        boolean match = false;
+        for (_Predicate predicate : predicateList) {
+            if (predicate.isOptimistic()) {
+                match = true;
+                break;
+            }
+        }
+        return match;
+    }
+
 
     static void standardInertIntoTable(final _ValueInsertContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();

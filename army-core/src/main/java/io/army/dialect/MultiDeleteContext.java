@@ -13,12 +13,13 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 final class MultiDeleteContext extends MultiTableContext implements _MultiDeleteContext, DmlStmtParams {
 
     static MultiDeleteContext create(_MultiDelete stmt, ArmyDialect dialect, Visible visible) {
         final TableContext tableContext;
-        tableContext = TableContext.createContext(stmt.tableBlockList(), dialect, visible, false);
+        tableContext = TableContext.createContext(stmt.tableBlockList(), dialect, visible, true);
 
         return new MultiDeleteContext(stmt, tableContext, dialect, visible);
     }
@@ -30,13 +31,32 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
     }
 
 
+    private final Map<String, String> childAliasToParentAlias;
     private final boolean hasVersion;
+
 
     private MultiDeleteContext(_Delete delete, TableContext tableContext, ArmyDialect dialect, Visible visible) {
         super(tableContext, dialect, visible);
+        this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
         this.hasVersion = _DialectUtils.hasOptimistic(delete.predicateList());
     }
 
+
+    @Override
+    public String parentAlias(final String childAlias) {
+        final String parentAlias;
+        parentAlias = this.childAliasToParentAlias.get(childAlias);
+        if (parentAlias == null) {
+            // no bug,never here
+            if (this.aliasToTable.containsKey(childAlias)) {
+                //TableContext no bug,never here
+                throw new IllegalStateException(String.format("Not found parent alias for %s.", childAlias));
+            } else {
+                throw _Exceptions.unknownTableAlias(childAlias);
+            }
+        }
+        return parentAlias;
+    }
 
     @Override
     public BatchStmt build(List<?> paramList) {

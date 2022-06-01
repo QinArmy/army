@@ -98,6 +98,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+
     public static CriteriaException dontSupportLateralItem(TableItem item, String alias, @Nullable Dialect dialect) {
         String m = String.format("%s Don't support LATERAL %s alias %s ."
                 , dialect == null ? "Standard" : dialect, _ClassUtils.safeClassName(item), alias);
@@ -184,7 +185,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException deleteChildButNoParent(ChildTableMeta<?> child) {
+    public static CriteriaException deleteChildButNoParent(ChildTableMeta<?> child, String alias) {
         String m = String.format("You delete %s but no %s.", child, child.parentMeta());
         return new CriteriaException(m);
     }

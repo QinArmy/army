@@ -224,12 +224,13 @@ public class MySQLCriteriaUnitTests {
 
             final List<MySQLWords> modifierList;
             modifierList = Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE);
-            final List<String> deleteTarget = Arrays.asList("c", "r");
+            final List<String> deleteTarget = Arrays.asList("c", "r", "u");
             final Delete stmt;
             stmt = MySQLs.multiDelete()
                     .delete(hintSupplier, modifierList, deleteTarget)
                     .from(ChinaCity_.T).partition("P1").as("c")
                     .join(ChinaRegion_.T).partition("P1").as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
+                    .join(BankUser_.T, "u").on(BankUser_.id::equal, ChinaCity_.id)
                     .where(ChinaRegion_.createTime::betweenLiteral, map::get, "startTime", "endTIme")
                     .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")
                     .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")
@@ -303,7 +304,7 @@ public class MySQLCriteriaUnitTests {
     }
 
     @Test
-    public void multiUpdate57WithMapCriteria() {
+    public void multiUpdateWithMapCriteria() {
         //daoMethod mock dao method
         final Consumer<Map<String, Object>> daoMethod = map -> {
 
@@ -316,17 +317,17 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.multiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), User_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), BankUser_.T)
                     .partition("P1").as("u")
                     .useIndex()
                     .forJoin(Collections.singletonList("PRIMARY"))
                     .join(BankAccount_.T, "a")
                     .ignoreIndex(Collections.singletonList("idx_account_id"))
-                    .on(User_.id::equal, BankAccount_.id)
-                    .ifSet(User_.nickName, map::get, "newNickName")
+                    .on(BankUser_.id::equal, BankAccount_.id)
+                    .ifSet(BankUser_.nickName, map::get, "newNickName")
                     .ifSet(BankAccount_.balance, SQLs::plusEqual, map::get, "amount")
-                    .where(User_.identityId::equalLiteral, map::get, "identityId")
-                    .ifAnd(User_.nickName::equal, map::get, "oldNickName")
+                    .where(BankUser_.partnerUserId::equalLiteral, map::get, "identityId")
+                    .ifAnd(BankUser_.nickName::equal, map::get, "oldNickName")
                     .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
                     .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
                     .ifNonNullAnd(BankAccount_.balance::plus, map.get("amount"), Expression::greatEqualLiteral, 0)
@@ -354,24 +355,90 @@ public class MySQLCriteriaUnitTests {
     }
 
     @Test
-    public void batchMultiUpdate57WithMapCriteria() {
+    public void multiUpdateChildFromLeft() {
+        //daoMethod mock dao method
+        final Consumer<Map<String, Object>> daoMethod = map -> {
 
-        final Supplier<List<Map<String, Object>>> paramListSupplier = () -> {
-            final List<Map<String, Object>> list = new ArrayList<>();
-            Map<String, Object> paramMap;
+            final Update stmt;
+            stmt = MySQLs.multiUpdate()
+                    .update(BankUser_.T, "u")
+                    .join(Person_.T, "p").on(BankUser_.id::equal, Person_.id)
+                    .join(PartnerUser_.T, "up").on(BankUser_.id::equal, PartnerUser_.id)
+                    .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.userId)
+                    .set(BankUser_.nickName, map.get("newNickName"))
+                    .ifSet(BankAccount_.balance, SQLs::plusEqual, map::get, "amount")
+                    .where(BankUser_.partnerUserId::equalLiteral, map::get, "identityId")
+                    .ifAnd(BankUser_.nickName::equal, map::get, "oldNickName")
+                    .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
+                    .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
+                    .ifNonNullAnd(BankAccount_.balance::plus, map.get("amount"), Expression::greatEqualLiteral, 0)
+                    .asUpdate();
 
-            paramMap = new HashMap<>();
-            paramMap.put("nickName", "索隆1");
-            paramMap.put("balance", "666888.00");
-            list.add(paramMap);
+            printStmt(stmt);
 
-            paramMap = new HashMap<>();
-            paramMap.put("nickName", "索隆2");
-            paramMap.put("balance", new BigDecimal("888666.00"));
-            list.add(paramMap);
-            return list;
-        };
+        };//mock dao method end
 
+        final Map<String, Object> map = new HashMap<>();
+        final LocalDateTime now = LocalDateTime.now();
+
+        map.put("amount", "888888.88");
+        map.put("startTime", now.minusDays(15));
+        map.put("endTIme", now.plusDays(6));
+        map.put("version", "8");
+
+        map.put("identityId", "6668888");
+        map.put("oldNickName", "zoro");
+        map.put("newNickName", "索隆");
+
+        //below,mock dao method invoking
+        daoMethod.accept(map);
+
+    }
+
+
+    @Test
+    public void multiUpdateChildFromRight() {
+        //daoMethod mock dao method
+        final Consumer<Map<String, Object>> daoMethod = map -> {
+
+            final Update stmt;
+            stmt = MySQLs.multiUpdate()
+                    .update(PartnerUser_.T, "up")
+                    .join(BankUser_.T, "u").on(BankUser_.id::equal, PartnerUser_.id)
+                    .join(BankAccount_.T, "a").on(BankUser_.id::equal, BankAccount_.userId)
+                    .set(BankUser_.nickName, map.get("newNickName"))
+                    .set(PartnerUser_.legalPersonId, "66666666")
+                    .ifSet(BankAccount_.balance, SQLs::plusEqual, map::get, "amount")
+                    .where(BankUser_.partnerUserId::equalLiteral, map::get, "identityId")
+                    .ifAnd(BankUser_.nickName::equal, map::get, "oldNickName")
+                    .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
+                    .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
+                    .ifNonNullAnd(BankAccount_.balance::plus, map.get("amount"), Expression::greatEqualLiteral, 0)
+                    .asUpdate();
+
+            printStmt(stmt);
+
+        };//mock dao method end
+
+        final Map<String, Object> map = new HashMap<>();
+        final LocalDateTime now = LocalDateTime.now();
+
+        map.put("amount", "888888.88");
+        map.put("startTime", now.minusDays(15));
+        map.put("endTIme", now.plusDays(6));
+        map.put("version", "8");
+
+        map.put("identityId", "6668888");
+        map.put("oldNickName", "zoro");
+        map.put("newNickName", "索隆");
+
+        //below,mock dao method invoking
+        daoMethod.accept(map);
+
+    }
+
+    @Test
+    public void batchMultiUpdateWithMapCriteria() {
         //daoMethod mock dao method
         final Consumer<Map<String, Object>> daoMethod = map -> {
 
@@ -381,6 +448,19 @@ public class MySQLCriteriaUnitTests {
                 hintList.add(MySQLs.orderIndex("regionDelete", "r", Collections.singletonList("PRIMARY")));
                 return hintList;
             };
+
+            final List<Map<String, Object>> paramList = new ArrayList<>();
+            Map<String, Object> paramMap;
+
+            paramMap = new HashMap<>();
+            paramMap.put("nickName", "索隆1");
+            paramMap.put("balance", "666888.00");
+            paramList.add(paramMap);
+
+            paramMap = new HashMap<>();
+            paramMap.put("nickName", "索隆2");
+            paramMap.put("balance", new BigDecimal("888666.00"));
+            paramList.add(paramMap);
 
 
             final Update stmt;
@@ -399,7 +479,7 @@ public class MySQLCriteriaUnitTests {
                     .and(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
                     .ifAnd(BankAccount_.createTime::betweenLiteral, map::get, "startTime", "endTime")
                     .ifAnd(BankAccount_.version::equalLiteral, map::get, "version")
-                    .paramList(paramListSupplier)
+                    .paramList(paramList)
                     .asUpdate();
 
             printStmt(stmt);

@@ -5,5 +5,6 @@ package io.army.dialect;
  */
 public interface _MultiDeleteContext extends DeleteContext, _MultiTableContext {
 
+    String parentAlias(String childAlias);
 
 }

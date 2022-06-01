@@ -10,13 +10,11 @@ import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -331,7 +329,8 @@ final class MySQLDialect extends MySQL {
         if (usingSyntax) {
             sqlBuilder.append(_Constant.SPACE_FROM);
         }
-        this.tableAliasList(stmt.tableAliasList(), context);
+        final Map<String, ParentTableMeta<?>> aliasToLonelyParent;
+        aliasToLonelyParent = this.tableAliasList(stmt.tableAliasList(), context);
 
         if (usingSyntax) {
             sqlBuilder.append(_Constant.SPACE_USING);
@@ -342,7 +341,12 @@ final class MySQLDialect extends MySQL {
         this.mysqlTableReferences(stmt.tableBlockList(), context, false);
         //7. where clause
         this.dmlWhereClause(stmt.predicateList(), context);
-        //7.1 append visible
+
+        //7.1 append lonely parent discriminator
+        for (Map.Entry<String, ParentTableMeta<?>> e : aliasToLonelyParent.entrySet()) {
+            this.discriminator(e.getValue(), context.safeTableAlias(e.getKey()), context);
+        }
+        //7.2 append visible
         this.multiTableVisible(stmt.tableBlockList(), context, false);
 
     }
@@ -529,17 +533,21 @@ final class MySQLDialect extends MySQL {
 
 
     /**
+     * @return a unmodified map
      * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
      */
-    private void tableAliasList(final List<String> tableAliasList, final _MultiDeleteContext context) {
+    private Map<String, ParentTableMeta<?>> tableAliasList(final List<String> tableAliasList
+            , final _MultiDeleteContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         final int aliasSize = tableAliasList.size();
         assert aliasSize > 0;
         TableItem tableItem;
         String tableAlias;
 
-        Map<ParentTableMeta<?>, Boolean> parentMap = null;
-        List<ChildTableMeta<?>> childList = null;
+        //io.army.dialect.TableContext no bug,below correctly run.
+        final Set<String> aliasSet = new HashSet<>((int) (aliasSize / 0.75F));
+        final Map<String, String> childToParent = new HashMap<>((int) (aliasSize / 0.75F));
+
         for (int i = 0; i < aliasSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -552,29 +560,51 @@ final class MySQLDialect extends MySQL {
             sqlBuilder.append(_Constant.SPACE)
                     .append(context.safeTableAlias((TableMeta<?>) tableItem, tableAlias));
 
-            if (tableItem instanceof ChildTableMeta) {
-                if (childList == null) {
-                    childList = new ArrayList<>();
-                }
-                childList.add((ChildTableMeta<?>) tableItem);
-            } else if (tableItem instanceof ParentTableMeta) {
-                if (parentMap == null) {
-                    parentMap = new HashMap<>();
-                }
-                parentMap.putIfAbsent((ParentTableMeta<?>) tableItem, Boolean.TRUE);
+            if (!aliasSet.add(tableAlias)) {
+                throw duplicationDelete(tableAlias);
             }
 
+            if (!(tableItem instanceof ChildTableMeta)) {
+                continue;
+            }
+
+            if (childToParent.putIfAbsent(tableAlias, context.parentAlias(tableAlias)) != null) {
+                //aliasSet no bug,never here
+                throw new IllegalStateException();
+            }
+
+        }//for
+
+        //firstly, check parent of child
+        for (Map.Entry<String, String> e : childToParent.entrySet()) {
+            if (!aliasSet.contains(e.getValue())) {
+                tableAlias = e.getKey();
+                ChildTableMeta<?> child = (ChildTableMeta<?>) context.tableItemOf(tableAlias);
+                throw _Exceptions.deleteChildButNoParent(child, tableAlias);
+            }
         }
 
-        if (childList != null) {
-            for (ChildTableMeta<?> child : childList) {
-                if (parentMap == null || !parentMap.containsKey(child.parentMeta())) {
-                    throw _Exceptions.deleteChildButNoParent(child);
-                }
-            }//TODO search parent
-            childList.clear();
-        }
+        //secondly, remove the parent that exists child.
+        aliasSet.removeAll(childToParent.values());
+        //finally, create aliasToParent
+        Map<String, ParentTableMeta<?>> aliasToLonelyParent = null;
+        for (String alias : aliasSet) {
+            tableItem = context.tableItemOf(alias);
+            if (!(tableItem instanceof ParentTableMeta)) {
+                continue;
+            }
+            if (aliasToLonelyParent == null) {
+                aliasToLonelyParent = new HashMap<>();
+            }
+            aliasToLonelyParent.put(alias, (ParentTableMeta<?>) tableItem);
 
+        }
+        if (aliasToLonelyParent == null) {
+            aliasToLonelyParent = Collections.emptyMap();
+        } else {
+            aliasToLonelyParent = _CollectionUtils.unmodifiableMap(aliasToLonelyParent);
+        }
+        return aliasToLonelyParent;
     }
 
     private void partitionClause(final List<String> partitionList, final StringBuilder sqlBuilder) {
@@ -728,6 +758,11 @@ final class MySQLDialect extends MySQL {
     private CriteriaException dontSupportOfTableList() {
         return new CriteriaException(String.format("%s don't support OF clause in lock clause"
                 , this.dialect));
+    }
+
+    private static CriteriaException duplicationDelete(String alias) {
+        String m = String.format("Duplication delete table %s .", alias);
+        return new CriteriaException(m);
     }
 
 

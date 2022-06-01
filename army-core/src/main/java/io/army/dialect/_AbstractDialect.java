@@ -570,23 +570,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
             throw _Exceptions.setClauseNotExists();
         }
 
-        final Map<String, Boolean> aliasOrTableMap = new HashMap<>();
-
-        final Consumer<DataField> fieldConsumer = field -> {
-            if (field instanceof FieldMeta) {
-                final TableMeta<?> table = ((FieldMeta<?>) field).tableMeta();
-                if (table instanceof SingleTableMeta) {
-                    aliasOrTableMap.putIfAbsent(context.tableAliasOf((SingleTableMeta<?>) table), Boolean.TRUE);
-                } else if (table instanceof ChildTableMeta) {
-                    aliasOrTableMap.putIfAbsent(context.tableAliasOf(((ChildTableMeta<?>) table).parentMeta()), Boolean.TRUE);
-                }
-            } else if (field instanceof QualifiedField) {
-                aliasOrTableMap.putIfAbsent(((QualifiedField<?>) field).tableAlias(), Boolean.TRUE);
-            } else {
-                aliasOrTableMap.putIfAbsent(((DerivedField) field).tableAlias(), Boolean.TRUE);
-            }
-
-        };
+        //store SingleTableMeta alias
+        final Map<String, Boolean> aliasMap = new HashMap<>();
 
         //1. append SET key word
         final StringBuilder sqlBuilder = context.sqlBuilder();
@@ -601,18 +586,18 @@ public abstract class _AbstractDialect implements ArmyDialect {
             pair.appendItemPair(context);
 
             if (pair instanceof _ItemPair._FieldItemPair) {
-                fieldConsumer.accept(((_ItemPair._FieldItemPair) pair).field());
+                aliasMap.putIfAbsent(context.singleTableAliasOf(((_ItemPair._FieldItemPair) pair).field()), Boolean.TRUE);
             } else if (pair instanceof _ItemPair._RowItemPair) {
                 for (DataField field : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
-                    fieldConsumer.accept(field);
+                    aliasMap.putIfAbsent(context.singleTableAliasOf(field), Boolean.TRUE);
                 }
             } else {
                 //no bug,never here
-                throw new IllegalStateException("unknown item pair");
+                throw new IllegalStateException();
             }
         }
 
-        if (aliasOrTableMap.size() == 0) {
+        if (aliasMap.size() == 0) {
             //no bug,never here
             throw new IllegalStateException();
         }
@@ -621,7 +606,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         SingleTableMeta<?> singleTable;
         TableItem tableItem;
         String safeTableAlias;
-        for (String tableAlias : aliasOrTableMap.keySet()) {
+        for (String tableAlias : aliasMap.keySet()) {
             tableItem = context.tableItemOf(tableAlias);
 
             if (tableItem instanceof SingleTableMeta) {
@@ -638,7 +623,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
 
         //clear
-        aliasOrTableMap.clear();
+        aliasMap.clear();
 
     }
 

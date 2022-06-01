@@ -2,10 +2,11 @@ package io.army.criteria.impl;
 
 import io.army.criteria.IPredicate;
 import io.army.criteria.NamedParam;
+import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping._MappingFactory;
-import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -90,27 +91,35 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final boolean isParentChildJoin() {
+    public final boolean isIdsEquals(final TableMeta<?> table, final String alias) {
         final boolean match;
         final DualPredicate predicate;
+        final TableMeta<?> leftTable;
+
         if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
             match = false;
         } else if (!(predicate.left instanceof TableField && predicate.right instanceof TableField)) {
             match = false;
-        } else if (_MetaBridge.ID.equals(((TableField) predicate.left).fieldName())
-                && _MetaBridge.ID.equals(((TableField) predicate.right).fieldName())) {
-            final TableMeta<?> leftTable, rightTable;
-            leftTable = ((TableField) predicate.left).tableMeta();
-            rightTable = ((TableField) predicate.right).tableMeta();
-            if (leftTable instanceof ChildTableMeta) {
-                match = ((ChildTableMeta<?>) leftTable).parentMeta() == rightTable;
-            } else if (rightTable instanceof ChildTableMeta) {
-                match = ((ChildTableMeta<?>) rightTable).parentMeta() == leftTable;
+        } else if (!(_MetaBridge.ID.equals(((TableField) predicate.left).fieldName())
+                && _MetaBridge.ID.equals(((TableField) predicate.right).fieldName()))) {
+            match = false;
+        } else if ((leftTable = ((TableField) predicate.left).tableMeta()) != table
+                && ((TableField) predicate.right).tableMeta() != table) {
+            match = false;
+        } else if ((leftTable == table)) {
+            final TableField leftField = (TableField) predicate.left;
+            if (leftField instanceof FieldMeta) {
+                match = true;
             } else {
-                match = false;
+                match = ((QualifiedField<?>) leftField).tableAlias().equals(alias);
             }
         } else {
-            match = false;
+            final TableField rightField = (TableField) predicate.right;
+            if (rightField instanceof FieldMeta) {
+                match = true;
+            } else {
+                match = ((QualifiedField<?>) rightField).tableAlias().equals(alias);
+            }
         }
         return match;
     }

@@ -8,13 +8,16 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Update;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 final class MultiUpdateContext extends MultiTableContext implements _MultiUpdateContext, DmlStmtParams {
 
@@ -30,44 +33,53 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         return new MultiUpdateContext(stmt, tableContext, dialect, visible);
     }
 
+
+    private final Map<String, String> childAliasToParentAlias;
     private final boolean hasVersion;
 
     private final boolean supportQueryUpdate;
 
+
     private List<DataField> conditionFieldList;
-
-
-    private Map<SingleTableMeta<?>, String> tableToAlias;
 
 
     private MultiUpdateContext(_Update stmt, TableContext tableContext, ArmyDialect dialect, Visible visible) {
         super(tableContext, dialect, visible);
+        this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
         this.hasVersion = _DialectUtils.hasOptimistic(stmt.predicateList());
         this.supportQueryUpdate = dialect.supportQueryUpdate();
     }
 
+
     @Override
-    public String tableAliasOf(final SingleTableMeta<?> table) {
-        final String safeTableAlias;
-        safeTableAlias = this.tableToSafeAlias.get(table);
-        if (safeTableAlias == null) {
-            throw _Exceptions.tableSelfJoin(table);
-        }
-
-        final String tableAlias;
-        if (this.aliasToTable.get(safeTableAlias) == table) {
-            tableAlias = safeTableAlias;
-        } else {
-            Map<SingleTableMeta<?>, String> tableToAlias = this.tableToAlias;
-            if (tableToAlias == null) {
-                tableToAlias = new HashMap<>();
-                this.tableToAlias = tableToAlias;
+    public String singleTableAliasOf(final DataField dataField) {
+        final String singleTableAlias;
+        if (!(dataField instanceof TableField)) {
+            //TODO
+            throw new UnsupportedOperationException();
+        } else if (dataField instanceof FieldMeta) {
+            final TableMeta<?> fieldTable;
+            fieldTable = ((FieldMeta<?>) dataField).tableMeta();
+            if (fieldTable instanceof ChildTableMeta) {
+                singleTableAlias = this.childAliasToParentAlias.get(findTableAlias(fieldTable));
+                // TableContext no bug,assert success
+                assert singleTableAlias != null;
+            } else {
+                singleTableAlias = findTableAlias(fieldTable);
             }
-            tableAlias = tableToAlias.computeIfAbsent(table, this::findSingleTableAlias);
+        } else {
+            final TableMeta<?> fieldTable;
+            fieldTable = ((QualifiedField<?>) dataField).tableMeta();
+            if (fieldTable instanceof ChildTableMeta) {
+                singleTableAlias = this.childAliasToParentAlias.get(((QualifiedField<?>) dataField).tableAlias());
+                // TableContext no bug,assert success
+                assert singleTableAlias != null;
+            } else {
+                singleTableAlias = ((QualifiedField<?>) dataField).tableAlias();
+            }
         }
-        return tableAlias;
+        return singleTableAlias;
     }
-
 
     @Override
     public void appendSetLeftItem(final DataField dataField) {
@@ -236,10 +248,17 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         return Collections.emptyList();
     }
 
-    /**
-     * @see #tableAliasOf(SingleTableMeta)
-     */
-    private String findSingleTableAlias(final SingleTableMeta<?> table) {
+
+    private String findTableAlias(final TableMeta<?> table) {
+        final String safeTableAlias;
+        safeTableAlias = this.tableToSafeAlias.get(table);
+        if (safeTableAlias == null) {
+            // no bug, never here.
+            throw _Exceptions.tableSelfJoin(table);
+        }
+        if (this.aliasToTable.get(safeTableAlias) == table) {
+            return safeTableAlias;
+        }
         String tableAlias = null;
         for (Map.Entry<String, TableItem> e : this.aliasToTable.entrySet()) {
             if (e.getValue() == table) {
@@ -248,7 +267,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         }
         if (tableAlias == null) {
             // no bug, never here.
-            throw new IllegalStateException();
+            throw new IllegalStateException(String.format("Not found alias of %s", table));
         }
         return tableAlias;
     }

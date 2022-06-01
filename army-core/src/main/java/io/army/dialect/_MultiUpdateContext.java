@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.DataField;
 import io.army.meta.SingleTableMeta;
 
 public interface _MultiUpdateContext extends UpdateContext, _MultiTableContext, _SetClauseContext {
@@ -7,10 +8,13 @@ public interface _MultiUpdateContext extends UpdateContext, _MultiTableContext, 
 
     /**
      * <p>
-     * This method for multi-table SET clause.
+     *     <ul>
+     *         <li>dataField table is {@link  SingleTableMeta},return table alias</li>
+     *         <li>dataField table is {@link  io.army.meta.ChildTableMeta} return {@link  io.army.meta.ParentTableMeta} alias</li>
+     *     </ul>
      * </p>
      */
-    String tableAliasOf(SingleTableMeta<?> table);
+    String singleTableAliasOf(DataField dataField);
 
 
 }
