@@ -6,7 +6,7 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.dialect.Database;
 
-public abstract class _MySQLCounselor extends _SQLCounselor {
+public abstract class _MySQLConsultant extends _SQLConsultant {
 
 
     public static void assertUpdate(final Update update) {

@@ -10,7 +10,7 @@ import io.army.criteria.mysql.MySQLUpdate;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
-import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -52,7 +52,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
     private List<MySQLWords> modifierList;
 
-    private SingleTableMeta<?> table;
+    private TableMeta<?> table;
 
     private String tableAlias;
 
@@ -72,7 +72,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, SingleTableMeta<?> table) {
+    public final UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -83,7 +83,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public final UP update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, SingleTableMeta<?> table) {
+    public final UP update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -95,7 +95,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
     @Override
     public final UR update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
-            , SingleTableMeta<?> table, String tableAlias) {
+            , TableMeta<?> table, String tableAlias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
         }
@@ -107,7 +107,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public final UR update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, SingleTableMeta<?> table
+    public final UR update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table
             , String tableAlias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
@@ -120,13 +120,13 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public final UP update(SingleTableMeta<?> table) {
+    public final UP update(TableMeta<?> table) {
         this.table = table;
         return this.createPartitionClause();
     }
 
     @Override
-    public final UR update(SingleTableMeta<?> table, String tableAlias) {
+    public final UR update(TableMeta<?> table, String tableAlias) {
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;
@@ -471,7 +471,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public final SingleTableMeta<?> table() {
+    public final TableMeta<?> table() {
         prepared();
         return this.table;
     }

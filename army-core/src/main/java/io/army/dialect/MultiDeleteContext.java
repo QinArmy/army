@@ -19,7 +19,7 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
 
     static MultiDeleteContext create(_MultiDelete stmt, ArmyDialect dialect, Visible visible) {
         final TableContext tableContext;
-        tableContext = TableContext.createContext(stmt.tableBlockList(), dialect, visible, true);
+        tableContext = TableContext.forDelete(stmt, dialect, visible);
 
         return new MultiDeleteContext(stmt, tableContext, dialect, visible);
     }

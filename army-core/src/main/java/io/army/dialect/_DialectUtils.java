@@ -1,11 +1,9 @@
 package io.army.dialect;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.SelectItem;
-import io.army.criteria.Selection;
-import io.army.criteria.SelectionGroup;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -108,6 +106,47 @@ public abstract class _DialectUtils {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
         ((ArmyDialect) context.dialect()).safeObjectName(context.table(), sqlBuilder);
+    }
+
+    static void appendConditionFields(final _SingleUpdateContext context
+            , final @Nullable List<TableField> conditionFieldList) {
+        if (conditionFieldList == null || conditionFieldList.size() == 0) {
+            return;
+        }
+        final String safeTableAlias = context.safeTableAlias();
+        final ArmyDialect dialect = (ArmyDialect) context.dialect();
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+
+        String safeColumnName;
+        for (TableField field : conditionFieldList) {
+            sqlBuilder.append(_Constant.SPACE_AND_SPACE)
+                    .append(safeTableAlias)
+                    .append(_Constant.POINT);
+
+            safeColumnName = dialect.safeObjectName(field);
+            sqlBuilder.append(safeColumnName);
+            switch (field.updateMode()) {
+                case ONLY_NULL:
+                    sqlBuilder.append(_Constant.SPACE_IS_NULL);
+                    break;
+                case ONLY_DEFAULT: {
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(dialect.defaultFuncName())
+                            .append(_Constant.SPACE_LEFT_PAREN)
+                            .append(_Constant.SPACE)
+                            .append(safeTableAlias)
+                            .append(_Constant.POINT)
+                            .append(safeColumnName)
+                            .append(_Constant.SPACE_RIGHT_PAREN);
+
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(field.updateMode());
+
+            }
+
+        }
     }
 
 

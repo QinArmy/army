@@ -1,7 +1,6 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
-import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -36,20 +35,20 @@ public interface MySQLUpdate extends Update {
     interface _SingleUpdateClause<C, UT, UP> {
 
         UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
-                , SingleTableMeta<?> table);
+                , TableMeta<?> table);
 
         UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
-                , SingleTableMeta<?> table, String tableAlias);
+                , TableMeta<?> table, String tableAlias);
 
         UP update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
-                , SingleTableMeta<?> table);
+                , TableMeta<?> table);
 
         UT update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
-                , SingleTableMeta<?> table, String tableAlias);
+                , TableMeta<?> table, String tableAlias);
 
-        UP update(SingleTableMeta<?> table);
+        UP update(TableMeta<?> table);
 
-        UT update(SingleTableMeta<?> table, String tableAlias);
+        UT update(TableMeta<?> table, String tableAlias);
 
     }
 

@@ -15,6 +15,7 @@ import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +56,8 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
     private boolean usingSyntax;
 
     private List<String> tableAliasList;
+
+    private List<_Pair<String, TableMeta<?>>> deleteTablePairList;
 
     _OnClause<C, DS> noActionOnClause;
 
@@ -240,11 +243,12 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         return this.usingSyntax;
     }
 
-    @Override
-    public final List<String> tableAliasList() {
-        return this.tableAliasList;
-    }
 
+    @Override
+    public final List<_Pair<String, TableMeta<?>>> deleteTableList() {
+        prepared();
+        return this.deleteTablePairList;
+    }
 
     @Override
     public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {
@@ -376,19 +380,35 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         if (tableAliasList == null) {
             throw _Exceptions.castCriteriaApi();
         }
-        for (String tableAlias : tableAliasList) {
-            if (this.criteriaContext.getTable(tableAlias) == null) {
+        List<_Pair<String, TableMeta<?>>> pairList;
+        TableMeta<?> table;
+        if (tableAliasList.size() == 1) {
+            final String tableAlias = tableAliasList.get(0);
+            table = this.criteriaContext.getTable(tableAlias);
+            if (table == null) {
                 throw _Exceptions.unknownTableAlias(tableAlias);
             }
-
-
+            pairList = Collections.singletonList(_Pair.create(tableAlias, table));
+        } else {
+            pairList = new ArrayList<>(tableAliasList.size());
+            for (String tableAlias : tableAliasList) {
+                table = this.criteriaContext.getTable(tableAlias);
+                if (table == null) {
+                    throw _Exceptions.unknownTableAlias(tableAlias);
+                }
+                pairList.add(_Pair.create(tableAlias, table));
+            }
+            pairList = Collections.unmodifiableList(pairList);
         }
-
-
+        this.deleteTablePairList = pairList;
     }
 
     @Override
     final void onAsDelete() {
+        if (this.deleteTablePairList == null) {
+            //no bug,never here
+            throw new IllegalStateException();
+        }
         if (this.cteList == null) {
             this.cteList = Collections.emptyList();
         }

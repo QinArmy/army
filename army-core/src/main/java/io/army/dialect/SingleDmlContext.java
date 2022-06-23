@@ -27,7 +27,6 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
 
     final boolean hasVersion;
 
-
     final boolean supportAlias;
 
     private final String safeParentAlias;
@@ -52,6 +51,7 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         this.selectionList = Collections.emptyList();
 
     }
+
 
     SingleDmlContext(_SingleDml dml, StatementContext outerContext) {
         super(outerContext);

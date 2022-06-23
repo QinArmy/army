@@ -23,7 +23,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
 
     static MultiUpdateContext create(_MultiUpdate statement, ArmyDialect dialect, Visible visible) {
         final TableContext tableContext;
-        tableContext = TableContext.createContext(statement.tableBlockList(), dialect, visible, true);
+        tableContext = TableContext.forUpdate(statement, dialect, visible);
         return new MultiUpdateContext(statement, tableContext, dialect, visible);
     }
 

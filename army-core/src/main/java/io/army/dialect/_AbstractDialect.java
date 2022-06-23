@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.ArmyException;
 import io.army.criteria.*;
 import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl._SQLCounselor;
+import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -69,7 +69,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         insert.prepared();
         final Stmt stmt;
         if (insert instanceof StandardStatement) {
-            _SQLCounselor.assertStandardInsert(insert);
+            _SQLConsultant.assertStandardInsert(insert);
             stmt = handleStandardValueInsert((_ValuesInsert) insert, visible);
         } else {
             assertDialectInsert(insert);
@@ -87,7 +87,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         final Stmt stmt;
         if (update instanceof StandardStatement) {
             // assert implementation is standard implementation.
-            _SQLCounselor.assertStandardUpdate(update);
+            _SQLConsultant.assertStandardUpdate(update);
             final _SingleUpdate s = (_SingleUpdate) update;
             if (s.table() instanceof ChildTableMeta) {
                 stmt = this.standardChildUpdate(s, visible);
@@ -101,8 +101,16 @@ public abstract class _AbstractDialect implements ArmyDialect {
         } else if (update instanceof _SingleUpdate) {
             // assert implementation class is legal
             assertDialectUpdate(update);
+            final _SingleUpdate singleUpdate = (_SingleUpdate) update;
+            final TableMeta<?> table = singleUpdate.table();
             final _SingleUpdateContext context;
-            context = SingleUpdateContext.create((_SingleUpdate) update, this, visible);
+            if (!(table instanceof ChildTableMeta)) {
+                context = SingleUpdateContext.create(singleUpdate, this, visible);
+            } else if (singleUpdate.childItemPairList().size() == 0) {
+                context = OnlyParentUpdateContext.create(singleUpdate, this, visible);
+            } else {
+                throw new CriteriaException("Single update syntax don't support child filed.");
+            }
             dialectSingleUpdate((_SingleUpdate) update, context);
             if (update instanceof _BatchDml) {
                 stmt = context.build(((_BatchDml) update).paramList());
@@ -132,7 +140,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         delete.prepared();
         final Stmt stmt;
         if (delete instanceof StandardStatement) {
-            _SQLCounselor.assertStandardDelete(delete);
+            _SQLConsultant.assertStandardDelete(delete);
             final _SingleDelete s = (_SingleDelete) delete;
             if (s.table() instanceof ChildTableMeta) {
                 stmt = this.standardChildDelete(s, visible);
@@ -176,7 +184,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         //2. assert select implementation class.
         if (select instanceof StandardQuery) {
-            _SQLCounselor.assertStandardQuery(select);
+            _SQLConsultant.assertStandardQuery(select);
         } else {
             this.assertDialectRowSet(select);
         }
@@ -697,7 +705,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE)
                         .append(context.safeTableAlias(block.alias()));
             } else if (tableItem instanceof NestedItems) {
-                _SQLCounselor.assertStandardNestedItems((NestedItems) tableItem);
+                _SQLConsultant.assertStandardNestedItems((NestedItems) tableItem);
                 if (_StringUtils.hasText(block.alias())) {
                     throw _Exceptions.nestedItemsAliasHasText(block.alias());
                 }
@@ -975,7 +983,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 throw _Exceptions.lateralSubQueryErrorPosition();
             }
         } else if (subQuery instanceof StandardQuery) {
-            _SQLCounselor.assertStandardQuery(subQuery);
+            _SQLConsultant.assertStandardQuery(subQuery);
         } else {
             this.assertDialectRowSet(subQuery);
         }
@@ -1025,7 +1033,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         //2. assert sub query implementation class.
         if (select instanceof StandardQuery) {
-            _SQLCounselor.assertStandardQuery(select);
+            _SQLConsultant.assertStandardQuery(select);
         } else {
             this.assertDialectRowSet(select);
         }

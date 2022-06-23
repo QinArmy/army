@@ -1,15 +1,12 @@
 package io.army.dialect;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.NestedItems;
-import io.army.criteria.TableItem;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._TableBlock;
+import io.army.criteria.impl._Pair;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
@@ -58,13 +55,86 @@ final class TableContext {
         return new TableContext(aliasToTable, tableToSafeAlias, null);
     }
 
+    static TableContext forUpdate(final _MultiUpdate stmt, final ArmyDialect dialect, final Visible visible) {
 
-    static TableContext createContext(List<? extends _TableBlock> blockList, ArmyDialect dialect
-            , final Visible visible, final boolean multiDml) {
+        Map<ChildTableMeta<?>, Boolean> childMap = null;
+        for (_ItemPair pair : stmt.itemPairList()) {
+            if (pair instanceof _ItemPair._FieldItemPair) {
+                childMap = handleUpdateField(((_ItemPair._FieldItemPair) pair).field(), childMap);
+            } else if (pair instanceof _ItemPair._RowItemPair) {
+                for (DataField dataField : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
+                    childMap = handleUpdateField(dataField, childMap);
+                }
+            } else {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+        }
+        final List<? extends _TableBlock> blockList;
+        blockList = stmt.tableBlockList();
+
         final Context context;
-        context = new Context(dialect, visible, multiDml, blockList.size());
+        context = new Context(dialect, childMap, visible, blockList.size());
         iterateTableReferences(blockList, context);
         return new TableContext(context.aliasToTable, context.tableToSafeAlias, context.childAliasToParentAlias);
+    }
+
+
+    static TableContext forDelete(final _MultiDelete stmt, final ArmyDialect dialect, final Visible visible) {
+        final List<_Pair<String, TableMeta<?>>> pairList;
+        pairList = stmt.deleteTableList();
+        final int pairSize = pairList.size();
+        assert pairSize > 0;
+
+        Map<ChildTableMeta<?>, Boolean> childMap = null;
+        TableMeta<?> table;
+        for (_Pair<String, TableMeta<?>> pair : pairList) {
+            table = pair.second;
+            if (!(table instanceof ChildTableMeta)) {
+                continue;
+            }
+            if (childMap == null) {
+                childMap = new HashMap<>();
+            }
+            childMap.putIfAbsent((ChildTableMeta<?>) table, Boolean.TRUE);
+        }
+
+        final List<? extends _TableBlock> blockList = stmt.tableBlockList();
+        final Context context;
+        context = new Context(dialect, childMap, visible, blockList.size());
+        iterateTableReferences(blockList, context);
+        return new TableContext(context.aliasToTable, context.tableToSafeAlias, context.childAliasToParentAlias);
+    }
+
+
+    static TableContext forQuery(List<? extends _TableBlock> blockList, ArmyDialect dialect, final Visible visible) {
+        final Context context;
+        context = new Context(dialect, null, visible, blockList.size());
+        iterateTableReferences(blockList, context);
+        return new TableContext(context.aliasToTable, context.tableToSafeAlias, context.childAliasToParentAlias);
+    }
+
+
+    /**
+     * @see #forUpdate(_MultiUpdate, ArmyDialect, Visible)
+     */
+    @Nullable
+    private static Map<ChildTableMeta<?>, Boolean> handleUpdateField(final DataField dataField
+            , @Nullable Map<ChildTableMeta<?>, Boolean> childMap) {
+        if (!(dataField instanceof TableField)) {
+            //TODO
+            throw new UnsupportedOperationException();
+        }
+        final TableMeta<?> table;
+        table = ((TableField) dataField).tableMeta();
+        if (!(table instanceof ChildTableMeta)) {
+            return childMap;
+        }
+        if (childMap == null) {
+            childMap = new HashMap<>();
+        }
+        childMap.putIfAbsent((ChildTableMeta<?>) table, Boolean.TRUE);
+        return childMap;
     }
 
 
@@ -73,17 +143,19 @@ final class TableContext {
         final Map<String, TableItem> aliasToTable = context.aliasToTable;
         final Map<TableMeta<?>, String> tableToSafeAlias = context.tableToSafeAlias;
         final Map<String, String> childAliasToParentAlias = context.childAliasToParentAlias;
+        final Map<ChildTableMeta<?>, Boolean> childMap = context.childMap;
+
         final Map<TableMeta<?>, Boolean> selfJoinMap = context.selfJoinMap;
 
         final ArmyDialect dialect = context.dialect;
         final Visible visible = context.visible;
 
-        final boolean dml = childAliasToParentAlias != null;
-
         _TableBlock block, parentBlock;
-        String safeAlias, alias;
+        String safeAlias, alias, parentAlias;
         TableItem tableItem;
         ParentTableMeta<?> parent;
+        ChildTableMeta<?> child;
+        TableField parentId;
         final int blockSize = blockList.size(), lastIndex = blockSize - 1;
         for (int i = 0; i < blockSize; i++) {
             block = blockList.get(i);
@@ -113,130 +185,80 @@ final class TableContext {
                 selfJoinMap.put((TableMeta<?>) tableItem, Boolean.TRUE);
             }
             //3. create child alias to parent alias map
-            if (!(tableItem instanceof ChildTableMeta && (dml || visible != Visible.BOTH))) {
+            if (!(tableItem instanceof ChildTableMeta)) {
                 continue;
             }
-            parent = ((ChildTableMeta<?>) tableItem).parentMeta();
-            if (!(dml || parent.containField(_MetaBridge.VISIBLE))) {
+            child = (ChildTableMeta<?>) tableItem;
+            parent = child.parentMeta();
+            if (!childMap.containsKey(child)
+                    && !(visible != Visible.BOTH && parent.containField(_MetaBridge.VISIBLE))) {
                 continue;
             }
             //3.1 find parent from right
-            if (i < lastIndex) {
-                parentBlock = findParentFromRight(parent, blockList, i + 1, false);
-                if (parentBlock != null && parentBlock != ContinueBlock.INSTANCE) {
-                    //no bug,assert success
-                    assert parentBlock.tableItem() == parent;
-                    if (childAliasToParentAlias != null
-                            && childAliasToParentAlias.putIfAbsent(alias, parentBlock.alias()) != null) {
-                        //no bug,never here
-                        throw new IllegalStateException();
-                    }
-                    continue;
-                }
-            }
-
-            if (i < 1) {
-                throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
-            }
-            //3.2 find parent from left
-            parentBlock = findParentFromLeft(parent, blockList, i - 1);
-
-            if (parentBlock == null || parentBlock == ContinueBlock.INSTANCE) {
-                throw noInnerJoinParent((ChildTableMeta<?>) tableItem, alias, dml);
-            }
-            //no bug,assert success
-            assert parentBlock.tableItem() == parent;
-
-            if (childAliasToParentAlias != null
-                    && childAliasToParentAlias.putIfAbsent(alias, parentBlock.alias()) != null) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
-
-
-        }// for
-
-
-    }
-
-
-    /**
-     * @return null : find failure
-     */
-    @Nullable
-    private static _TableBlock findParentFromRight(final ParentTableMeta<?> parent
-            , final List<? extends _TableBlock> blockList, final int fromIndex, final boolean nested) {
-        final int blockSize = blockList.size();
-
-        _TableBlock block, parentBlock = ContinueBlock.INSTANCE;
-        TableItem tableItem;
-        outerFor:
-        for (int i = fromIndex; i < blockSize; i++) {
-            block = blockList.get(i);
-            switch (block.jointType()) {
-                case JOIN:
-                case STRAIGHT_JOIN:
-                    break;
-                case NONE: {
-                    if (!(nested && i == 0)) {
-                        // find failure
-                        parentBlock = null;
-                        break outerFor;
-                    }
-                }
-                break;
-                default:
-                    // find failure
-                    parentBlock = null;
-                    break outerFor;
-            }
-
-            tableItem = block.tableItem();
-            if (tableItem instanceof NestedItems) {
-                parentBlock = findParentFromRight(parent, ((_NestedItems) tableItem).tableBlockList(), 0, true);
-                if (parentBlock != ContinueBlock.INSTANCE) {
-                    // success or failure
-                    break;
+            if (i < lastIndex && nextIsParent(child, alias, (parentBlock = blockList.get(i + 1)))) {
+                if (childAliasToParentAlias != null) {
+                    childAliasToParentAlias.putIfAbsent(alias, parentBlock.alias());
                 }
                 continue;
             }
 
-            if (!(tableItem instanceof TableMeta)) {
-                // find failure
-                parentBlock = null;
-                break;
+            //3.2 find parent from left
+            if (i == 0 || (parentId = findParentId(child, alias, block.predicateList())) == null) {
+                throw noInnerJoinParent(child, alias, context);
+            }
+            if (parentId instanceof FieldMeta) {
+                parentAlias = null;
+            } else {
+                parentAlias = ((QualifiedField<?>) parentId).tableAlias();
             }
 
-            if (isNotIdsEquals((TableMeta<?>) tableItem, block.alias(), block.predicateList())) {
-                // find failure
-                parentBlock = null;
-                break;
+            parentBlock = findParentFromLeft(child, parentAlias, blockList, i - 1);
+            if (parentBlock == null) {
+                throw noInnerJoinParent(child, alias, context);
             }
+            assert parentBlock.tableItem() == parent;
 
-            if (tableItem == parent) {
-                //find success
-                parentBlock = block;
-                break;
+            if (childAliasToParentAlias != null) {
+                childAliasToParentAlias.putIfAbsent(alias, parentBlock.alias());
             }
-
 
         }// for
 
-        return parentBlock;
+
+    }
+
+
+    @Nullable
+    private static boolean nextIsParent(final ChildTableMeta<?> child, final String childAlias
+            , final _TableBlock block) {
+        final boolean match;
+        switch (block.jointType()) {
+            case JOIN:
+            case STRAIGHT_JOIN: {
+                match = block.tableItem() == child.parentMeta()
+                        && findParentId(child, childAlias, block.predicateList()) != null;
+            }
+            break;
+            default://no-op
+                match = false;
+        }
+        return match;
+
     }
 
 
     /**
-     * @return null : find failure
+     * @return null : finding failure
      */
     @Nullable
-    private static _TableBlock findParentFromLeft(final ParentTableMeta<?> parent
+    private static _TableBlock findParentFromLeft(final ChildTableMeta<?> child, final @Nullable String parentAlias
             , final List<? extends _TableBlock> blockList, final int fromIndex) {
 
-        _TableBlock block, parentBlock = ContinueBlock.INSTANCE;
+        final ParentTableMeta<?> parent = child.parentMeta();
+        _TableBlock block, parentBlock = null;
         TableItem tableItem;
-        List<? extends _TableBlock> nestedBlockList;
         _JoinType joinType;
+        TableField parentId;
         outerFor:
         for (int i = fromIndex; i > -1; i--) {
             block = blockList.get(i);
@@ -247,54 +269,45 @@ final class TableContext {
                     break;
                 case NONE: {
                     if (i != 0) {
-                        // find failure
-                        parentBlock = null;
+                        // finding failure
                         break outerFor;
                     }
                 }
                 break;
                 default:
-                    // find failure
-                    parentBlock = null;
+                    // finding failure
                     break outerFor;
             }
 
             tableItem = block.tableItem();
-            if (tableItem instanceof NestedItems) {
-                nestedBlockList = ((_NestedItems) tableItem).tableBlockList();
-                parentBlock = findParentFromLeft(parent, nestedBlockList, nestedBlockList.size() - 1);
-                if (parentBlock != ContinueBlock.INSTANCE) {
-                    // success or failure
+            if (!(tableItem instanceof TableMeta)) {
+                // finding failure
+                break;
+            }
+            if (tableItem instanceof ChildTableMeta && ((ChildTableMeta<?>) tableItem).parentMeta() == parent) {
+                //brother table
+                parentId = findParentId((ChildTableMeta<?>) tableItem, block.alias(), block.predicateList());
+                if (parentId == null) {
+                    // finding failure
+                    break;
+                }
+                if (!(parentId instanceof QualifiedField)) {
+                    continue;
+                }
+                if (parentAlias != null
+                        && !parentAlias.equals(((QualifiedField<?>) parentId).tableAlias())) {
+                    // finding failure
                     break;
                 }
                 continue;
             }
 
-            if (!(tableItem instanceof TableMeta)) {
-                // find failure
-                parentBlock = null;
+            if (tableItem != parent || (parentAlias != null && !parentAlias.equals(block.alias()))) {
+                // finding failure
                 break;
             }
-
-            if (joinType == _JoinType.NONE) {
-                if (i < blockList.size() - 1
-                        && isNotIdsEquals((TableMeta<?>) tableItem, block.alias(), blockList.get(i + 1).predicateList())) {
-                    // find failure
-                    parentBlock = null;
-                    break;
-                }
-            } else if (isNotIdsEquals((TableMeta<?>) tableItem, block.alias(), block.predicateList())) {
-                // find failure
-                parentBlock = null;
-                break;
-            }
-
-            if (tableItem == parent) {
-                //find success
-                parentBlock = block;
-                break;
-            }
-
+            parentBlock = block;
+            break;
 
         }// for
 
@@ -302,22 +315,23 @@ final class TableContext {
     }
 
 
-    private static boolean isNotIdsEquals(final TableMeta<?> table, final String alias
+    @Nullable
+    private static TableField findParentId(final ChildTableMeta<?> child, final String alias
             , final List<_Predicate> predicateList) {
-        boolean isNot = true;
+        TableField parentId = null;
         for (_Predicate predicate : predicateList) {
-            if (predicate.isIdsEquals(table, alias)) {
-                isNot = false;
+            parentId = predicate.findParentId(child, alias);
+            if (parentId != null) {
                 break;
             }
         }
-        return isNot;
+        return parentId;
     }
 
     private static CriteriaException noInnerJoinParent(final ChildTableMeta<?> child, final String alias
-            , final boolean dml) {
+            , final Context context) {
         final String reason;
-        if (dml) {
+        if (context.childAliasToParentAlias != null) {
             reason = String.format("%s as %s no inner join(%s) parent %s in multi-table DML statement."
                     , child, alias, "exists on predicate child.id = parent.id", child.parentMeta());
         } else {
@@ -343,53 +357,30 @@ final class TableContext {
 
         private final Map<TableMeta<?>, Boolean> selfJoinMap;
 
+        private final Map<ChildTableMeta<?>, Boolean> childMap;
+
         private final Map<String, String> childAliasToParentAlias;
 
-        private Context(ArmyDialect dialect, Visible visible, boolean multiDml, int blockSize) {
+        private Context(ArmyDialect dialect, @Nullable Map<ChildTableMeta<?>, Boolean> childMap, Visible visible
+                , int blockSize) {
             this.dialect = dialect;
             this.visible = visible;
             this.aliasToTable = new HashMap<>((int) (blockSize / 0.75F));
             this.tableToSafeAlias = new HashMap<>((int) (blockSize / 0.75F));
 
             this.selfJoinMap = new HashMap<>();
-            if (multiDml) {
-                this.childAliasToParentAlias = new HashMap<>();
-            } else {
+            if (childMap == null) {
                 this.childAliasToParentAlias = null;
+                this.childMap = Collections.emptyMap();
+            } else {
+                this.childAliasToParentAlias = new HashMap<>();
+                this.childMap = _CollectionUtils.unmodifiableMap(childMap);
             }
-
 
         }
 
 
     }//Context
-
-
-    private static final class ContinueBlock implements _TableBlock {
-
-        private static final ContinueBlock INSTANCE = new ContinueBlock();
-
-        @Override
-        public _JoinType jointType() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public TableItem tableItem() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String alias() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<_Predicate> predicateList() {
-            throw new UnsupportedOperationException();
-        }
-
-    }//ContinueBlock
 
 
 }

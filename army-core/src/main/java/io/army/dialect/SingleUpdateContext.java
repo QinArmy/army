@@ -85,44 +85,7 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
 
     @Override
     public void appendConditionFields() {
-        final List<TableField> conditionFieldList = this.conditionFieldList;
-        if (conditionFieldList == null || conditionFieldList.size() == 0) {
-            return;
-        }
-        final String safeTableAlias = this.safeTableAlias;
-        final ArmyDialect dialect = this.dialect;
-        final StringBuilder sqlBuilder = this.sqlBuilder;
-
-        String safeColumnName;
-        for (TableField field : conditionFieldList) {
-            sqlBuilder.append(_Constant.SPACE_AND_SPACE)
-                    .append(safeTableAlias)
-                    .append(_Constant.POINT);
-
-            safeColumnName = dialect.safeObjectName(field);
-            sqlBuilder.append(safeColumnName);
-            switch (field.updateMode()) {
-                case ONLY_NULL:
-                    sqlBuilder.append(_Constant.SPACE_IS_NULL);
-                    break;
-                case ONLY_DEFAULT: {
-                    sqlBuilder.append(_Constant.SPACE)
-                            .append(dialect.defaultFuncName())
-                            .append(_Constant.SPACE_LEFT_PAREN)
-                            .append(_Constant.SPACE)
-                            .append(safeTableAlias)
-                            .append(_Constant.POINT)
-                            .append(safeColumnName)
-                            .append(_Constant.SPACE_RIGHT_PAREN);
-
-                }
-                break;
-                default:
-                    throw _Exceptions.unexpectedEnum(field.updateMode());
-
-            }
-
-        }
+       _DialectUtils.appendConditionFields(this, this.conditionFieldList);
     }
 
     @Override

@@ -230,7 +230,7 @@ public class MySQLCriteriaUnitTests {
                     .delete(hintSupplier, modifierList, deleteTarget)
                     .from(ChinaCity_.T).partition("P1").as("c")
                     .join(ChinaRegion_.T).partition("P1").as("r").on(ChinaCity_.id::equal, ChinaRegion_.id)
-                    .join(BankUser_.T, "u").on(BankUser_.id::equal, ChinaCity_.id)
+                    .join(BankUser_.T, "u").on(BankUser_.id::equal, ChinaCity_.id)// delete lonely parent testing
                     .where(ChinaRegion_.createTime::betweenLiteral, map::get, "startTime", "endTIme")
                     .and(ChinaRegion_.updateTime::between, map::get, "startTime", "endTIme")
                     .ifAnd(ChinaRegion_.version::equalLiteral, map::get, "version")

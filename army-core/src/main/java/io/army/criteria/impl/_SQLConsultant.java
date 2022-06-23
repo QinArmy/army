@@ -5,9 +5,10 @@ import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.util._ClassUtils;
 
-public abstract class _SQLCounselor {
+public abstract class _SQLConsultant {
+    // consultant
 
-    _SQLCounselor() {
+    _SQLConsultant() {
         throw new UnsupportedOperationException();
     }
 

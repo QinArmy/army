@@ -2,7 +2,8 @@ package io.army.dialect.mysql;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl._MySQLCounselor;
+import io.army.criteria.impl._MySQLConsultant;
+import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLWords;
@@ -59,17 +60,17 @@ final class MySQLDialect extends MySQL {
 
     @Override
     protected void assertDialectUpdate(Update update) {
-        _MySQLCounselor.assertUpdate(update);
+        _MySQLConsultant.assertUpdate(update);
     }
 
     @Override
     protected void assertDialectDelete(Delete delete) {
-        _MySQLCounselor.assertDelete(delete);
+        _MySQLConsultant.assertDelete(delete);
     }
 
     @Override
     protected void assertDialectRowSet(RowSet rowSet) {
-        _MySQLCounselor.assertRowSet(rowSet);
+        _MySQLConsultant.assertRowSet(rowSet);
     }
 
     @Override
@@ -330,7 +331,7 @@ final class MySQLDialect extends MySQL {
             sqlBuilder.append(_Constant.SPACE_FROM);
         }
         final Map<String, ParentTableMeta<?>> aliasToLonelyParent;
-        aliasToLonelyParent = this.tableAliasList(stmt.tableAliasList(), context);
+        aliasToLonelyParent = this.tableAliasList(stmt.deleteTableList(), context);
 
         if (usingSyntax) {
             sqlBuilder.append(_Constant.SPACE_USING);
@@ -357,7 +358,7 @@ final class MySQLDialect extends MySQL {
         }
         sqlBuilder.append(SPACE_HINT_START);
         for (Hint hint : hintList) {
-            _MySQLCounselor.assertHint(hint);
+            _MySQLConsultant.assertHint(hint);
             ((_SelfDescribed) hint).appendSql(context);
         }
         sqlBuilder.append(SPACE_HINT_END);
@@ -474,7 +475,7 @@ final class MySQLDialect extends MySQL {
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else if (tableItem instanceof NestedItems) {
-                _MySQLCounselor.assertNestedItems((NestedItems) tableItem);
+                _MySQLConsultant.assertNestedItems((NestedItems) tableItem);
                 if (_StringUtils.hasText(alias)) {
                     throw _Exceptions.nestedItemsAliasHasText(alias);
                 }
@@ -482,7 +483,7 @@ final class MySQLDialect extends MySQL {
             } else if (!asOf80) {
                 throw _Exceptions.dontSupportTableItem(tableItem, alias);
             } else if (tableItem instanceof Cte) {
-                _MySQLCounselor.assertMySQLCte((Cte) tableItem);
+                _MySQLConsultant.assertMySQLCte((Cte) tableItem);
                 sqlBuilder.append(_Constant.SPACE);
                 this.identifier(((Cte) tableItem).name(), sqlBuilder);
                 if (_StringUtils.hasText(alias)) {
@@ -536,25 +537,26 @@ final class MySQLDialect extends MySQL {
      * @return a unmodified map
      * @see #dialectMultiDelete(_MultiDelete, _MultiDeleteContext)
      */
-    private Map<String, ParentTableMeta<?>> tableAliasList(final List<String> tableAliasList
+    private Map<String, ParentTableMeta<?>> tableAliasList(final List<_Pair<String, TableMeta<?>>> deleteTablePairList
             , final _MultiDeleteContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        final int aliasSize = tableAliasList.size();
+
+        final int aliasSize = deleteTablePairList.size();
         assert aliasSize > 0;
         TableItem tableItem;
         String tableAlias;
-
+        _Pair<String, TableMeta<?>> pair;
         //io.army.dialect.TableContext no bug,below correctly run.
         final Set<String> aliasSet = new HashSet<>((int) (aliasSize / 0.75F));
         final Map<String, String> childToParent = new HashMap<>((int) (aliasSize / 0.75F));
-
+        final StringBuilder sqlBuilder = context.sqlBuilder();
         for (int i = 0; i < aliasSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            tableAlias = tableAliasList.get(i);
+            pair = deleteTablePairList.get(i);
+            tableAlias = pair.first;
             tableItem = context.tableItemOf(tableAlias);
-            if (!(tableItem instanceof TableMeta)) {
+            if (tableItem != pair.second) {
                 throw _Exceptions.unknownTableAlias(tableAlias);
             }
             sqlBuilder.append(_Constant.SPACE)
@@ -663,7 +665,7 @@ final class MySQLDialect extends MySQL {
         if (!this.asOf80) {
             throw _Exceptions.dontSupportWithClause(this.dialect);
         }
-        this.withSubQueryAndSpace(recursive, cteList, context, _MySQLCounselor::assertMySQLCte);
+        this.withSubQueryAndSpace(recursive, cteList, context, _MySQLConsultant::assertMySQLCte);
 
     }
 
@@ -683,7 +685,7 @@ final class MySQLDialect extends MySQL {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             window = windowList.get(i);
-            _MySQLCounselor.assertWindow(window);
+            _MySQLConsultant.assertWindow(window);
             ((_SelfDescribed) window).appendSql(context);
         }
 

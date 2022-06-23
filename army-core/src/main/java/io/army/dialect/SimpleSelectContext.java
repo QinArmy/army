@@ -12,14 +12,14 @@ final class SimpleSelectContext extends MultiTableContext implements _SimpleQuer
 
     static SimpleSelectContext create(Select select, ArmyDialect dialect, Visible visible) {
         final TableContext tableContext;
-        tableContext = TableContext.createContext(((_Query) select).tableBlockList(), dialect, visible, false);
+        tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), dialect, visible);
         return new SimpleSelectContext(select, tableContext, dialect, visible);
     }
 
     static SimpleSelectContext create(Select select, SelectContext outerContext) {
         final TableContext tableContext;
-        tableContext = TableContext.createContext(((_Query) select).tableBlockList()
-                , (ArmyDialect) outerContext.dialect(), outerContext.visible(), false);
+        tableContext = TableContext.forQuery(((_Query) select).tableBlockList()
+                , (ArmyDialect) outerContext.dialect(), outerContext.visible());
         return new SimpleSelectContext(select, tableContext, outerContext);
     }
 

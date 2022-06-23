@@ -6,6 +6,7 @@ import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping._MappingFactory;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
@@ -91,37 +92,38 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
     }
 
     @Override
-    public final boolean isIdsEquals(final TableMeta<?> table, final String alias) {
-        final boolean match;
+    public final TableField findParentId(final ChildTableMeta<?> child, final String alias) {
+        final TableField parentId;
         final DualPredicate predicate;
-        final TableMeta<?> leftTable;
+        final TableMeta<?> leftTable, rightTable;
+        final TableField leftField, rightField;
+
 
         if (!(this instanceof DualPredicate) || (predicate = (DualPredicate) this).operator != DualOperator.EQ) {
-            match = false;
+            parentId = null;
         } else if (!(predicate.left instanceof TableField && predicate.right instanceof TableField)) {
-            match = false;
-        } else if (!(_MetaBridge.ID.equals(((TableField) predicate.left).fieldName())
-                && _MetaBridge.ID.equals(((TableField) predicate.right).fieldName()))) {
-            match = false;
-        } else if ((leftTable = ((TableField) predicate.left).tableMeta()) != table
-                && ((TableField) predicate.right).tableMeta() != table) {
-            match = false;
-        } else if ((leftTable == table)) {
-            final TableField leftField = (TableField) predicate.left;
-            if (leftField instanceof FieldMeta) {
-                match = true;
+            parentId = null;
+        } else if (!((leftField = (TableField) predicate.left).fieldName().equals(_MetaBridge.ID)
+                && (rightField = (TableField) predicate.right).fieldName().equals(_MetaBridge.ID))) {
+            parentId = null;
+        } else if ((leftTable = leftField.tableMeta()) != child & (rightTable = rightField.tableMeta()) != child) {
+            parentId = null;
+        } else if ((leftTable == child && rightTable == child.parentMeta())) {
+            if (leftField instanceof FieldMeta || ((QualifiedField<?>) leftField).tableAlias().equals(alias)) {
+                parentId = rightField;
             } else {
-                match = ((QualifiedField<?>) leftField).tableAlias().equals(alias);
+                parentId = null;
+            }
+        } else if (rightTable == child && leftTable == child.parentMeta()) {
+            if (rightField instanceof FieldMeta || ((QualifiedField<?>) rightField).tableAlias().equals(alias)) {
+                parentId = leftField;
+            } else {
+                parentId = null;
             }
         } else {
-            final TableField rightField = (TableField) predicate.right;
-            if (rightField instanceof FieldMeta) {
-                match = true;
-            } else {
-                match = ((QualifiedField<?>) rightField).tableAlias().equals(alias);
-            }
+            parentId = null;
         }
-        return match;
+        return parentId;
     }
 
     /*################################## blow private method ##################################*/
