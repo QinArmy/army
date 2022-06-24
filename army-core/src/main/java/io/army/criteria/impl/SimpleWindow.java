@@ -32,7 +32,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         , Window._AsClause<AR>, Window._LeftBracketClause<C, LR>, Window._PartitionByExpClause<C, PR>
         , Statement._OrderByClause<C, OR>, Window._FrameUnitsClause<C, FR, FC>, Window._FrameBetweenClause<C, BR, BC>
         , Window._FrameExpBoundClause<MA>, Window._FrameBetweenAndClause<C, FC, NC>, Window._FrameNonExpBoundClause<MB>
-        , Statement._RightBracketClause<R> {
+        , Statement._RightParenClause<R> {
 
 
     static <C, R> Window._SimpleAsClause<C, R> standard(String windowName, R stmt) {
@@ -472,7 +472,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
     @Override
-    public final R rightBracket() {
+    public final R rightParen() {
         _Assert.nonPrepared(this.prepared);
         if (this.refWindowName == null
                 && this.partitionByList == null

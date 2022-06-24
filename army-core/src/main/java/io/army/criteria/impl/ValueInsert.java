@@ -19,76 +19,45 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends AbstractInsert<C, T, IR> implements
-        Insert._OptionClause<OR>, Insert._CommonExpClause<C, T, SR>, Insert._ValueClause<C, T>
-        , Insert._PreferLiteralClause<PO>, _ValuesInsert {
+abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement<C, T, IR>
+        implements _ValuesInsert, Insert._ColumnListClause<C, T, IR>, Insert._CommonExpClause<C, T, IR>
+        , Insert._ValueClause<C, T, VR> {
 
+    private final boolean preferLiteral;
 
-    private boolean optimizingParam;
+    private final boolean migration;
 
-    private boolean migration;
-
-    private NullHandleMode nullHandleMode = NullHandleMode.INSERT_DEFAULT;
-
-    private boolean prepared;
+    private final NullHandleMode nullHandleMode;
 
     private Map<FieldMeta<?>, _Expression> commonExpMap;
 
     private List<IDomain> domainList;
 
-    ValueInsert(TableMeta<T> table, CriteriaContext criteriaContext) {
-        super(table, criteriaContext);
-        if (this instanceof SubStatement) {
-            CriteriaContextStack.push(this.criteriaContext);
-        } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        }
+    private boolean prepared;
 
-    }
+    ValueInsert(ValueInsetOptionClause<C, ?, ?> optionClause, TableMeta<T> table) {
+        super(optionClause.criteriaContext, table);
+        this.preferLiteral = optionClause.preferLiteral;
+        this.migration = optionClause.migration;
+        this.nullHandleMode = optionClause.nullHandleMode;
 
-    @Override
-    public final boolean isPrepared() {
-        return this.prepared;
-    }
-
-    @Override
-    public final void prepared() {
-        _Assert.prepared(this.prepared);
     }
 
 
     @Override
-    public final PO preferLiteral(boolean prefer) {
-        this.optimizingParam = prefer;
-        return (PO) this;
-    }
-
-    @Override
-    public final OR migration() {
-        this.migration = true;
-        this.nullHandleMode = NullHandleMode.INSERT_NULL;
-        return (OR) this;
-    }
-
-    @Override
-    public final OR nullHandle(NullHandleMode mode) {
-        Objects.requireNonNull(mode);
-        this.nullHandleMode = mode;
-        return (OR) this;
-    }
-
-    @Override
-    public final SR set(final FieldMeta<? super T> field, final @Nullable Object value) {
+    public final IR common(final FieldMeta<? super T> field, final @Nullable Object value) {
         if (!field.insertable()) {
-            throw _Exceptions.nonInsertableField(field);
+            throw CriteriaContextStack.criteriaError(_Exceptions::nonInsertableField, field);
         }
-        if (!this.migration) {
-            final String fieldName = field.fieldName();
-            if (field.generatorType() != null
-                    || _MetaBridge.UPDATE_TIME.equals(fieldName)
-                    || _MetaBridge.VERSION.equals(fieldName)) {
-                throw _Exceptions.armyManageField(field);
-            }
+        final String fieldName = field.fieldName();
+        if (_MetaBridge.UPDATE_TIME.equals(fieldName)
+                || _MetaBridge.VERSION.equals(fieldName)
+                || _MetaBridge.CREATE_TIME.equals(fieldName)) {
+            String m = String.format("Common expression don't support %s", field);
+            throw CriteriaContextStack.criteriaError(m);
+        }
+        if (!this.migration && field.generatorType() != null) {
+            throw CriteriaContextStack.criteriaError(_Exceptions::armyManageField, field);
         }
         Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
         if (commonExpMap == null) {
@@ -97,13 +66,13 @@ abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends Abstrac
         }
         final Expression exp;
         if (value == null) {
-            if (this.optimizingParam) {
+            if (this.preferLiteral) {
                 exp = SQLs.nullWord();
             } else {
-                exp = SQLs.StringTypeNull.INSTANCE;
+                exp = SQLs._nullParam();
             }
         } else if (value instanceof SubQuery && !(value instanceof ScalarExpression)) {
-            throw _Exceptions.nonScalarSubQuery((SubQuery) value);
+            throw CriteriaContextStack.criteriaError(_Exceptions::nonScalarSubQuery, (SubQuery) value);
         } else if (value instanceof Expression) {
             exp = (Expression) value;
         } else {
@@ -111,122 +80,126 @@ abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends Abstrac
         }
         if (commonExpMap.putIfAbsent(field, (ArmyExpression) exp) != null) {
             String m = String.format("duplication common expression for %s.", field);
-            throw new CriteriaException(m);
+            throw CriteriaContextStack.criteriaError(m);
         }
-        return (SR) this;
+        return (IR) this;
     }
 
     @Override
-    public final SR setLiteral(FieldMeta<? super T> field, @Nullable Object value) {
-        return this.set(field, SQLs._nullableLiteral(field, value));
+    public final IR commonLiteral(FieldMeta<? super T> field, @Nullable Object value) {
+        return this.common(field, SQLs._nullableLiteral(field, value));
     }
 
     @Override
-    public final SR setExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function) {
+    public final IR commonExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function) {
         final Expression expression;
         expression = function.apply(this.criteria);
-        assert expression != null;
-        return this.set(field, expression);
+        if (expression == null) {
+            throw CriteriaContextStack.criteriaError("return null,not expression.");
+        }
+        return this.common(field, expression);
     }
 
     @Override
-    public final SR setExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier) {
+    public final IR commonExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier) {
         final Expression expression;
         expression = supplier.get();
-        assert expression != null;
-        return this.set(field, expression);
+        if (expression == null) {
+            throw CriteriaContextStack.criteriaError("return null,not expression.");
+        }
+        return this.common(field, expression);
     }
 
     @Override
-    public final SR setDefault(FieldMeta<? super T> field) {
-        return this.set(field, SQLs.defaultWord());
+    public final IR commonDefault(FieldMeta<? super T> field) {
+        return this.common(field, SQLs.defaultWord());
     }
 
     @Override
-    public final SR setNull(FieldMeta<? super T> field) {
-        return this.set(field, SQLs.nullWord());
+    public final IR commonNull(FieldMeta<? super T> field) {
+        return this.common(field, SQLs.nullWord());
     }
 
 
     @Override
-    public final SR ifSet(FieldMeta<? super T> field, Function<C, ?> function) {
+    public final IR ifCommon(FieldMeta<? super T> field, Function<C, ?> function) {
         final Object value;
         value = function.apply(this.criteria);
         if (value != null) {
-            this.set(field, value);
+            this.common(field, value);
         }
-        return (SR) this;
+        return (IR) this;
     }
 
     @Override
-    public final SR ifSet(FieldMeta<? super T> field, Supplier<?> supplier) {
+    public final IR ifCommon(FieldMeta<? super T> field, Supplier<?> supplier) {
         final Object value;
         value = supplier.get();
         if (value != null) {
-            this.set(field, value);
+            this.common(field, value);
         }
-        return (SR) this;
+        return (IR) this;
     }
 
     @Override
-    public final SR ifSet(FieldMeta<? super T> field, Function<String, ?> function, String keyName) {
+    public final IR ifCommon(FieldMeta<? super T> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.set(field, value);
+            this.common(field, value);
         }
-        return (SR) this;
+        return (IR) this;
     }
 
     @Override
-    public final SR ifSetLiteral(FieldMeta<? super T> field, Supplier<?> supplier) {
+    public final IR ifCommonLiteral(FieldMeta<? super T> field, Supplier<?> supplier) {
         final Object value;
         value = supplier.get();
         if (value != null) {
-            this.set(field, SQLs._nonNullLiteral(field, value));
+            this.common(field, SQLs._nonNullLiteral(field, value));
         }
-        return (SR) this;
+        return (IR) this;
     }
 
     @Override
-    public final SR ifSetLiteral(FieldMeta<? super T> field, Function<C, ?> function) {
+    public final IR ifCommonLiteral(FieldMeta<? super T> field, Function<C, ?> function) {
         final Object value;
         value = function.apply(this.criteria);
         if (value != null) {
-            this.set(field, SQLs._nonNullLiteral(field, value));
+            this.common(field, SQLs._nonNullLiteral(field, value));
         }
-        return (SR) this;
+        return (IR) this;
     }
 
     @Override
-    public final SR ifSetLiteral(FieldMeta<? super T> field, Function<String, ?> function, String keyName) {
+    public final IR ifCommonLiteral(FieldMeta<? super T> field, Function<String, ?> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.set(field, SQLs._nonNullLiteral(field, value));
+            this.common(field, SQLs._nonNullLiteral(field, value));
         }
-        return (SR) this;
+        return (IR) this;
     }
 
     @Override
-    public final _InsertSpec value(T domain) {
-        Objects.requireNonNull(domain);
+    public final VR value(T domain) {
+        CriteriaContextStack.assertNonNull(domain, "domain must non-null");
         this.domainList = Collections.singletonList(domain);
-        return this;
+        return (VR) this;
     }
 
     @Override
-    public final _InsertSpec value(Function<C, T> function) {
+    public final VR value(Function<C, T> function) {
         return this.value(function.apply(this.criteria));
     }
 
     @Override
-    public final _InsertSpec value(Supplier<T> supplier) {
+    public final VR value(Supplier<T> supplier) {
         return this.value(supplier.get());
     }
 
     @Override
-    public final _InsertSpec value(Function<String, Object> function, String keyName) {
+    public final VR value(Function<String, Object> function, String keyName) {
         final Object domain;
         domain = function.apply(keyName);
         if (domain == null || domain.getClass() != this.table.javaType()) {
@@ -236,23 +209,17 @@ abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends Abstrac
     }
 
     @Override
-    public final _InsertSpec values(List<T> domainList) {
-        this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
-        return this;
+    public final VR values(Function<C, List<T>> function) {
+        return this.internalValues(function.apply(this.criteria));
     }
 
     @Override
-    public final _InsertSpec values(Function<C, List<T>> function) {
-        return this.values(function.apply(this.criteria));
+    public final VR values(Supplier<List<T>> supplier) {
+        return this.internalValues(supplier.get());
     }
 
     @Override
-    public final _InsertSpec values(Supplier<List<T>> supplier) {
-        return this.values(supplier.get());
-    }
-
-    @Override
-    public final _InsertSpec values(Function<String, Object> function, String keyName) {
+    public final VR values(Function<String, Object> function, String keyName) {
         final Object value;
         value = function.apply(keyName);
         if (!(value instanceof List)) {
@@ -270,7 +237,7 @@ abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends Abstrac
             list.add((IDomain) domain);
         }
         this.domainList = Collections.unmodifiableList(list);
-        return this;
+        return (VR) this;
     }
 
     @Override
@@ -297,20 +264,29 @@ abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends Abstrac
     }
 
     @Override
+    public final boolean isPrepared() {
+        return this.prepared;
+    }
+
+    @Override
+    public final void prepared() {
+        _Assert.prepared(this.prepared);
+    }
+
+
+    @Override
     public final boolean isMigration() {
         return this.migration;
     }
 
     @Override
     public final NullHandleMode nullHandle() {
-        final NullHandleMode mode = this.nullHandleMode;
-        assert mode != null;
-        return mode;
+        return this.nullHandleMode;
     }
 
     @Override
     public final boolean isPreferLiteral() {
-        return this.optimizingParam;
+        return this.preferLiteral;
     }
 
     @Override
@@ -328,7 +304,6 @@ abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends Abstrac
     public final void clear() {
         super.clear();
         this.prepared = false;
-        this.migration = false;
         this.commonExpMap = null;
         this.domainList = null;
         this.onClear();
@@ -340,6 +315,20 @@ abstract class ValueInsert<C, T extends IDomain, PO, OR, IR, SR> extends Abstrac
 
     void onAsInsert() {
 
+    }
+
+
+    private VR internalValues(@Nullable List<T> domainList) {
+        final int size;
+        if (domainList == null || (size = domainList.size()) == 0) {
+            throw CriteriaContextStack.criteriaError("domainList must non-empty");
+        }
+        if (size == 1) {
+            this.domainList = Collections.singletonList(domainList.get(0));
+        } else {
+            this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
+        }
+        return (VR) this;
     }
 
     private CriteriaException domainTypeNotMatch(@Nullable Object domain) {

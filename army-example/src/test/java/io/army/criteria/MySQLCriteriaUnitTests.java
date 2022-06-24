@@ -56,7 +56,7 @@ public class MySQLCriteriaUnitTests {
         };
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(supplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaRegion_.T)
+                .update(supplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaCity_.T)
                 .partition("p2", "p1").as("t")
                 .useIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))
                 .ignoreIndex().forOrderBy(Collections.singletonList("uni_name_region_type"))

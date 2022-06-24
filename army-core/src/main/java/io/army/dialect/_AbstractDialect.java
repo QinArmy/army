@@ -531,8 +531,14 @@ public abstract class _AbstractDialect implements ArmyDialect {
             }
             itemPairList.get(i).appendItemPair(context);
         }
-
-        this.appendUpdateTimeAndVersion((SingleTableMeta<?>) context.table(), context.safeTableAlias(), context);
+        final TableMeta<?> table = stmt.table();
+        final SingleTableMeta<?> singleTable;
+        if (table instanceof ChildTableMeta) {
+            singleTable = ((ChildTableMeta<?>) table).parentMeta();
+        } else {
+            singleTable = (SingleTableMeta<?>) table;
+        }
+        this.appendUpdateTimeAndVersion(singleTable, context.safeTableAlias(), context);
     }
 
     protected final void multiTableChildSetClause(final _SingleUpdate stmt, final _MultiUpdateContext context) {

@@ -307,7 +307,7 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
     interface _SimpleAsClause<C, R> extends _AsClause<_SimpleLeftBracketClause<C, R>> {
@@ -326,7 +326,7 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
     interface _SimpleLeftBracketClause<C, R>
@@ -350,7 +350,7 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
     interface _SimplePartitionBySpec<C, R> extends _PartitionByExpClause<C, _SimpleOrderBySpec<C, R>>
@@ -374,7 +374,7 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
     interface _SimpleOrderBySpec<C, R> extends Statement._OrderByClause<C, _SimpleFrameUnitsSpec<C, R>>
@@ -388,7 +388,7 @@ public interface Window {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link _FrameUnitsClause}</li>
-     *          <li>{@link Statement._RightBracketClause}</li>
+     *          <li>{@link Statement._RightParenClause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -398,12 +398,12 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java type
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
     interface _SimpleFrameUnitsSpec<C, R>
             extends _FrameUnitsClause<C, _SimpleFrameBetweenClause<C, R>, _SimpleFrameEndNonExpBoundClause<R>>
-            , Statement._RightBracketClause<R> {
+            , Statement._RightParenClause<R> {
 
     }
 
@@ -418,7 +418,7 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
     interface _SimpleFrameBetweenClause<C, R>
@@ -438,7 +438,7 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
     interface _SimpleFrameBetweenAndClause<C, R>
@@ -458,7 +458,7 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
     interface _SimpleFrameNonExpBoundClause<C, R> extends _FrameNonExpBoundClause<Statement._Clause> {
@@ -495,7 +495,7 @@ public interface Window {
      * </p>
      *
      * @param <C> criteria object java type
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
     interface _SimpleFrameExpBoundClause<C, R> extends _FrameExpBoundClause<Statement._Clause> {
@@ -525,7 +525,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
     interface _SimpleFrameEndNonExpBoundClause<R> extends _FrameNonExpBoundClause<Statement._Clause> {
@@ -534,19 +534,19 @@ public interface Window {
          * {@inheritDoc}
          */
         @Override
-        Statement._RightBracketClause<R> currentRow();
+        Statement._RightParenClause<R> currentRow();
 
         /**
          * {@inheritDoc}
          */
         @Override
-        Statement._RightBracketClause<R> unboundedPreceding();
+        Statement._RightParenClause<R> unboundedPreceding();
 
         /**
          * {@inheritDoc}
          */
         @Override
-        Statement._RightBracketClause<R> unboundedFollowing();
+        Statement._RightParenClause<R> unboundedFollowing();
 
 
     }
@@ -561,7 +561,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <R> {@link Statement._RightBracketClause#rightBracket()} return java typ
+     * @param <R> {@link Statement._RightParenClause#rightParen()} return java typ
      * @since 1.0
      */
     interface _SimpleFrameEndExpBoundClause<R> extends _FrameExpBoundClause<Statement._Clause> {
@@ -570,13 +570,13 @@ public interface Window {
          * {@inheritDoc}
          */
         @Override
-        Statement._RightBracketClause<R> preceding();
+        Statement._RightParenClause<R> preceding();
 
         /**
          * {@inheritDoc}
          */
         @Override
-        Statement._RightBracketClause<R> following();
+        Statement._RightParenClause<R> following();
 
     }
 

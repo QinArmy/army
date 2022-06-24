@@ -1,14 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SQLWords;
-import io.army.criteria.TableItem;
-import io.army.criteria.impl.inner._NoTableBlock;
-import io.army.criteria.impl.inner._Predicate;
-
-import java.util.List;
 
 
-public enum _JoinType implements SQLWords, _NoTableBlock {
+public enum _JoinType implements SQLWords {
 
     NONE(" "),
     LEFT_JOIN(" LEFT JOIN"),
@@ -40,26 +35,6 @@ public enum _JoinType implements SQLWords, _NoTableBlock {
         return String.format("%s.%s", _JoinType.class.getName(), this.name());
     }
 
-
-    @Override
-    public final TableItem tableItem() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final String alias() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final _JoinType jointType() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final List<_Predicate> predicateList() {
-        throw new UnsupportedOperationException();
-    }
 
 
 }

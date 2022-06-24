@@ -9,7 +9,10 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.ParentTableMeta;
+import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -155,6 +158,9 @@ final class MySQLDialect extends MySQL {
 
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/update.html">Single-table syntax</a>
+     */
     @Override
     protected void dialectSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
@@ -174,7 +180,13 @@ final class MySQLDialect extends MySQL {
         this.updateModifiers(stmt.modifierList(), sqlBuilder);
 
         //5. table name
-        final SingleTableMeta<?> table = (SingleTableMeta<?>) context.table();
+        final TableMeta<?> table = context.table();
+        final SingleTableMeta<?> singleTable;
+        if (table instanceof ChildTableMeta) {
+            singleTable = ((ChildTableMeta<?>) table).parentMeta();
+        } else {
+            singleTable = (SingleTableMeta<?>) table;
+        }
         final String safeTableAlias = context.safeTableAlias();
         sqlBuilder.append(_Constant.SPACE);
         this.safeObjectName(table, sqlBuilder);
@@ -191,15 +203,15 @@ final class MySQLDialect extends MySQL {
         //10. where clause
         this.dmlWhereClause(stmt.predicateList(), context);
         //10.1 discriminator
-        if (!(table instanceof SimpleTableMeta)) {
+        if (singleTable instanceof ParentTableMeta) {
             this.discriminator(table, safeTableAlias, context);
         }
         //10.2 append condition update fields
         context.appendConditionFields();
 
         //10.3 append visible
-        if (table.containField(_MetaBridge.VISIBLE)) {
-            this.visiblePredicate(table, safeTableAlias, context, false);
+        if (singleTable.containField(_MetaBridge.VISIBLE)) {
+            this.visiblePredicate(singleTable, safeTableAlias, context, false);
         }
         //11. order by clause
         this.orderByClause(stmt.orderByList(), context);

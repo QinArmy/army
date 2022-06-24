@@ -641,7 +641,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     static abstract class NoActionOnOrJoinBlock<C, FT, FS, FP, JT, JS, JP>
             extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
-            implements Statement._OnClause<C, FS>, Statement._RightBracketClause<NestedItems> {
+            implements Statement._OnClause<C, FS>, Statement._RightParenClause<NestedItems> {
 
 
         protected NoActionOnOrJoinBlock(NestedClauseSupplier suppler, @Nullable C criteria) {
@@ -685,7 +685,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
 
         @Override
-        public final NestedItems rightBracket() {
+        public final NestedItems rightParen() {
             return ((NestedClauseSupplier) this.clauseSupplier).endNested();
         }
 
@@ -700,7 +700,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     static abstract class OnOrJoinBlock<C, FT, FS, FP, JT, JS, JP>
             extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
-            implements Statement._OnClause<C, FS>, _TableBlock, Statement._RightBracketClause<NestedItems> {
+            implements Statement._OnClause<C, FS>, _TableBlock, Statement._RightParenClause<NestedItems> {
 
         final _JoinType joinType;
 
@@ -797,7 +797,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
 
         @Override
-        public final NestedItems rightBracket() {
+        public final NestedItems rightParen() {
             return ((NestedClauseSupplier) this.clauseSupplier).endNested();
         }
 

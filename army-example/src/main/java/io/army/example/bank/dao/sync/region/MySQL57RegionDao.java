@@ -55,7 +55,7 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
                     consumer.accept(ChinaCity_.name);
                     consumer.accept(ChinaCity_.parentId);
                 })
-                .setExp(ChinaCity_.parentId, provinceIdSubQuery)
+                .commonExp(ChinaCity_.parentId, provinceIdSubQuery)
                 .values(domainList)
                 .asInsert();
         this.sessionContext.currentSession().update(stmt);

@@ -94,9 +94,9 @@ public interface Statement {
      * @param <RR> next clause java type
      * @since 1.0
      */
-    interface _RightBracketClause<RR> extends _Clause {
+    interface _RightParenClause<RR> extends _Clause {
 
-        RR rightBracket();
+        RR rightParen();
 
     }
 

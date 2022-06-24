@@ -66,93 +66,38 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      */
     interface _OptionClause<OR> {
 
-        OR migration();
+        OR migration(boolean migration);
 
-        /**
-         * <p>
-         * When invoking {@link _InsertIntoClause#insertInto(TableMeta)} and appropriate field value is null,mode is valid.
-         * </p>
-         */
         OR nullHandle(NullHandleMode mode);
     }
 
-    /**
-     * @since 1.0
-     */
-    interface _InsertIntoClause<C, T extends IDomain, IR> {
 
-        IR insertInto(Consumer<Consumer<FieldMeta<? super T>>> consumer);
+    interface _IntoClause<C, T extends IDomain, NR> {
 
-        IR insertInto(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer);
+        NR into(TableMeta<T> table);
 
-        IR insertInto(TableMeta<T> table);
-    }
+        _ColumnClause<T, NR> into(FieldMeta<? extends T> field);
 
-    /**
-     * @since 1.0
-     */
-    interface _CommonExpClause<C, T extends IDomain, SR> {
+        NR into(Consumer<Consumer<FieldMeta<? super T>>> consumer);
 
-        SR set(FieldMeta<? super T> field, @Nullable Object value);
-
-        SR setLiteral(FieldMeta<? super T> field, @Nullable Object value);
-
-        SR setExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function);
-
-        SR setExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier);
-
-        SR setDefault(FieldMeta<? super T> field);
-
-        SR setNull(FieldMeta<? super T> field);
-
-        SR ifSet(FieldMeta<? super T> field, Supplier<?> supplier);
-
-        SR ifSet(FieldMeta<? super T> field, Function<C, ?> function);
-
-        SR ifSet(FieldMeta<? super T> field, Function<String, ?> function, String keyName);
-
-        SR ifSetLiteral(FieldMeta<? super T> field, Supplier<?> supplier);
-
-        SR ifSetLiteral(FieldMeta<? super T> field, Function<C, ?> function);
-
-        SR ifSetLiteral(FieldMeta<? super T> field, Function<String, ?> function, String keyName);
+        NR into(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer);
 
     }
 
-    /**
-     * @since 1.0
-     */
-    interface _ValueClause<C, T extends IDomain> {
 
-        _InsertSpec value(T domain);
+    interface _ColumnClause<T extends IDomain, IR> extends _RightParenClause<IR> {
 
-        _InsertSpec value(Function<C, T> function);
-
-        _InsertSpec value(Supplier<T> supplier);
-
-        _InsertSpec value(Function<String, Object> function, String keyName);
-
-        _InsertSpec values(List<T> domainList);
-
-        _InsertSpec values(Function<C, List<T>> function);
-
-        _InsertSpec values(Supplier<List<T>> supplier);
-
-        _InsertSpec values(Function<String, Object> function, String keyName);
-    }
-
-
-    interface _StandardLiteralOptionSpec<C, T extends IDomain>
-            extends _PreferLiteralClause<_StandardOptionSpec<C, T>>
-            , _StandardOptionSpec<C, T> {
+        _ColumnClause<T, IR> comma(FieldMeta<? super T> field);
 
     }
 
-    /**
-     * @since 1.0
-     */
-    interface _StandardOptionSpec<C, T extends IDomain>
-            extends _ValueInsertIntoSpec<C, T>, _OptionClause<_ValueInsertIntoSpec<C, T>> {
+    interface _ColumnListClause<C, T extends IDomain, IR> {
+
+        _RightParenClause<IR> leftParen(Consumer<Consumer<FieldMeta<? super T>>> consumer);
+
+        _RightParenClause<IR> leftParen(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer);
+
+        _ColumnClause<T, IR> leftParen(FieldMeta<? super T> field);
 
     }
 
@@ -160,16 +105,89 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface _ValueInsertIntoSpec<C, T extends IDomain>
-            extends _InsertIntoClause<C, T, _ValueSpec<C, T>> {
+    interface _CommonExpClause<C, T extends IDomain, CR> {
+
+        CR common(FieldMeta<? super T> field, @Nullable Object value);
+
+        CR commonLiteral(FieldMeta<? super T> field, @Nullable Object value);
+
+        CR commonExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function);
+
+        CR commonExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier);
+
+        CR commonDefault(FieldMeta<? super T> field);
+
+        CR commonNull(FieldMeta<? super T> field);
+
+        CR ifCommon(FieldMeta<? super T> field, Supplier<?> supplier);
+
+        CR ifCommon(FieldMeta<? super T> field, Function<C, ?> function);
+
+        CR ifCommon(FieldMeta<? super T> field, Function<String, ?> function, String keyName);
+
+        CR ifCommonLiteral(FieldMeta<? super T> field, Supplier<?> supplier);
+
+        CR ifCommonLiteral(FieldMeta<? super T> field, Function<C, ?> function);
+
+        CR ifCommonLiteral(FieldMeta<? super T> field, Function<String, ?> function, String keyName);
 
     }
 
     /**
      * @since 1.0
      */
-    interface _ValueSpec<C, T extends IDomain> extends _CommonExpClause<C, T, _ValueSpec<C, T>>
-            , _ValueClause<C, T> {
+    interface _ValueClause<C, T extends IDomain, VR> {
+
+        VR value(T domain);
+
+        VR value(Function<C, T> function);
+
+        VR value(Supplier<T> supplier);
+
+        VR value(Function<String, Object> function, String keyName);
+
+        VR values(Function<C, List<T>> function);
+
+        VR values(Supplier<List<T>> supplier);
+
+        VR values(Function<String, Object> function, String keyName);
+    }
+
+
+    interface _StandardLiteralOptionSpec<C>
+            extends _PreferLiteralClause<_StandardOptionSpec<C>>, _StandardOptionSpec<C> {
+
+    }
+
+    /**
+     * @since 1.0
+     */
+    interface _StandardOptionSpec<C>
+            extends _StandardInsertIntoClause<C>, _OptionClause<_StandardInsertIntoClause<C>> {
+
+    }
+
+
+    /**
+     * @since 1.0
+     */
+    interface _StandardInsertIntoClause<C> {
+
+        <T extends IDomain> _StandardColumnsSpec<C, T> insertInto(TableMeta<T> table);
+
+    }
+
+    interface _StandardColumnsSpec<C, T extends IDomain>
+            extends _ColumnListClause<C, T, _StandardValueSpec<C, T>>, _StandardValueSpec<C, T> {
+
+    }
+
+    /**
+     * @since 1.0
+     */
+    interface _StandardValueSpec<C, T extends IDomain> extends _CommonExpClause<C, T, _StandardValueSpec<C, T>>
+            , _ValueClause<C, T, _InsertSpec> {
+
 
     }
 

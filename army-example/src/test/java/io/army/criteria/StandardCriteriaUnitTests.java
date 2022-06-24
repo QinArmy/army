@@ -37,8 +37,8 @@ public class StandardCriteriaUnitTests {
         insert = SQLs.valueInsert(ChinaRegion_.T)
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
-                .setLiteral(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
-                .setLiteral(ChinaRegion_.visible, true)
+                .commonLiteral(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
+                .commonLiteral(ChinaRegion_.visible, true)
                 .values(this::createRegionList)
                 .asInsert();
 

@@ -9,21 +9,23 @@ public enum MySQLWords implements SQLWords.Modifier {
     DISTINCT(" DISTINCT", 0),
     DISTINCTROW(" DISTINCTROW", 0),
 
-    HIGH_PRIORITY(" HIGH_PRIORITY", 1),
+    HIGH_PRIORITY(" HIGH_PRIORITY", 2),
 
-    STRAIGHT_JOIN(" STRAIGHT_JOIN", 2),
+    STRAIGHT_JOIN(" STRAIGHT_JOIN", 3),
 
-    SQL_SMALL_RESULT(" SQL_SMALL_RESULT", 3),
-    SQL_BIG_RESULT(" SQL_BIG_RESULT", 4),
-    SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT", 5),
+    SQL_SMALL_RESULT(" SQL_SMALL_RESULT", 4),
+    SQL_BIG_RESULT(" SQL_BIG_RESULT", 5),
+    SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT", 6),
 
-    SQL_NO_CACHE(" SQL_NO_CACHE", 6),
-    SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS", 7),
+    SQL_NO_CACHE(" SQL_NO_CACHE", 7),
+    SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS", 8),
 
-    /*################################## blow UPDATE/DELETE modifiers ##################################*/
+    /*################################## blow INSERT/UPDATE/DELETE modifiers ##################################*/
     LOW_PRIORITY(" LOW_PRIORITY", 0),
+    DELAYED(" DELAYED", 1),
+
     QUICK(" QUICK", 1),
-    IGNORE(" IGNORE", 2);
+    IGNORE(" IGNORE", 3);
 
 
     public final String words;

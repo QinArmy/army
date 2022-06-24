@@ -819,7 +819,7 @@ public interface MySQL80Query extends MySQLQuery {
      *          <li>{@link _CrossJoinClause}</li>
      *          <li>{@link _MySQLDialectJoinClause}</li>
      *          <li>{@link _DialectCrossJoinClause}</li>
-     *          <li> {@link _RightBracketClause}</li>
+     *          <li> {@link _RightParenClause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -836,7 +836,7 @@ public interface MySQL80Query extends MySQLQuery {
             , _CrossJoinClause<C, _NestedIndexHintJoinSpec<C>, _NestedJoinSpec<C>>
             , _MySQLDialectJoinClause<C, _NestedPartitionOnClause<C>>
             , _DialectCrossJoinClause<C, _NestedPartitionJoinClause<C>>
-            , _RightBracketClause<NestedItems> {
+            , _RightParenClause<NestedItems> {
 
 
     }

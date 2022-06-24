@@ -29,7 +29,8 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("unchecked")
 abstract class AbstractInsert<C, T extends IDomain, IR>
-        implements Insert, Insert._InsertSpec, Insert._InsertIntoClause<C, T, IR>, _Insert {
+        implements Insert, Insert._InsertSpec, Insert._InsertIntoClause<C, T, IR>, _Insert
+        , Insert._ColumnClause<T, IR> {
 
     final TableMeta<T> table;
 
@@ -73,6 +74,25 @@ abstract class AbstractInsert<C, T extends IDomain, IR>
         return (IR) this;
     }
 
+    @Override
+    public final _ColumnClause<T, IR> insertInto(FieldMeta<? super T> field) {
+        final List<FieldMeta<?>> fieldList = new ArrayList<>();
+        fieldList.add(field);
+        this.fieldList = fieldList;
+        return this;
+    }
+
+    @Override
+    public final _ColumnClause<T, IR> comma(FieldMeta<? super T> field) {
+        this.fieldList.add(field);
+        return this;
+    }
+
+    @Override
+    public final IR rightParen() {
+        this.fieldList = Collections.unmodifiableList(this.fieldList);
+        return (IR) this;
+    }
 
     @Override
     public final TableMeta<?> table() {

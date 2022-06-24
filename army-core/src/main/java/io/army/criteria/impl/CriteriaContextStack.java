@@ -5,6 +5,8 @@ import io.army.lang.Nullable;
 
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -95,6 +97,25 @@ abstract class CriteriaContextStack {
         String m;
         m = "Criteria instance and current context criteria instance not match,couldn't create sub query or with clause.";
         return new CriteriaException(m);
+    }
+
+
+    static CriteriaException criteriaError(Supplier<CriteriaException> supplier) {
+        return supplier.get();
+    }
+
+    static void assertNonNull(@Nullable Object obj, String message) {
+        if (obj == null) {
+            throw new NullPointerException(message);
+        }
+    }
+
+    static <T> CriteriaException criteriaError(Function<T, CriteriaException> function, T input) {
+        return function.apply(input);
+    }
+
+    static CriteriaException criteriaError(String message) {
+        return new CriteriaException(message);
     }
 
 

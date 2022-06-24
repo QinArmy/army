@@ -38,8 +38,8 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static <T extends IDomain> Insert._StandardLiteralOptionSpec<Void, T> valueInsert(TableMeta<T> table) {
-        return StandardValueInsert.create(table, null);
+    public static Insert._StandardLiteralOptionSpec<Void> valueInsert() {
+        return StandardValueInsert.create(null);
     }
 
     /**
@@ -51,12 +51,11 @@ public abstract class SQLs extends Functions {
      *     </ul>
      * </p>
      *
-     * @param table will insert to table meta
      * @return a standard insert api object.
      */
-    public static <T extends IDomain, C> Insert._StandardLiteralOptionSpec<C, T> valueInsert(TableMeta<T> table, C criteria) {
+    public static <C> Insert._StandardLiteralOptionSpec<C> valueInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardValueInsert.create(table, criteria);
+        return StandardValueInsert.create(criteria);
     }
 
     public static Update.StandardUpdateSpec<Void> domainUpdate() {
@@ -292,6 +291,15 @@ public abstract class SQLs extends Functions {
 
     public static Expression nullParam(ParamMeta type) {
         return ParamExpression.create(type, null);
+    }
+
+    /**
+     * <p>
+     * package method that is used by army developer.
+     * </p>
+     */
+    static Expression _nullParam() {
+        return StringTypeNull.INSTANCE;
     }
 
     /**
@@ -570,6 +578,9 @@ public abstract class SQLs extends Functions {
     public static Expression nullWord() {
         return SQLs.NullWord.INSTANCE;
     }
+
+
+
 
 
     /*################################## blow sql reference method ##################################*/
@@ -912,9 +923,9 @@ public abstract class SQLs extends Functions {
 
     }//RowItemPair
 
-    static final class StringTypeNull extends NonOperationExpression implements ParamValue, ValueExpression {
+    private static final class StringTypeNull extends NonOperationExpression implements ParamValue, ValueExpression {
 
-        static final StringTypeNull INSTANCE = new StringTypeNull();
+        private static final StringTypeNull INSTANCE = new StringTypeNull();
 
         private StringTypeNull() {
         }
