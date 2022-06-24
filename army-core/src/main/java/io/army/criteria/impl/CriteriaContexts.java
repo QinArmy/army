@@ -541,9 +541,6 @@ abstract class CriteriaContexts {
             }
             final _TableBlock block;
             block = tableBlockList.get(tableBlockList.size() - 1);
-            if (block instanceof _NoTableBlock) {
-                throw _Exceptions.castCriteriaApi();
-            }
             switch (block.jointType()) {
                 case NONE:
                 case CROSS_JOIN:

@@ -50,11 +50,11 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
                 .asQuery();
 
         final Insert stmt;
-        stmt = SQLs.valueInsert(ChinaCity_.T)
-                .insertInto(consumer -> {
-                    consumer.accept(ChinaCity_.name);
-                    consumer.accept(ChinaCity_.parentId);
-                })
+        stmt = SQLs.valueInsert()
+                .insertInto(ChinaCity_.T)
+                .leftParen(ChinaCity_.name)
+                .comma(ChinaCity_.parentId)
+                .rightParen()
                 .commonExp(ChinaCity_.parentId, provinceIdSubQuery)
                 .values(domainList)
                 .asInsert();

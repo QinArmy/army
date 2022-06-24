@@ -66,11 +66,10 @@ abstract class InsertStatement<C, T extends IDomain, IR> implements Insert, Inse
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public final IR rightParen() {
         this.finishFieldList();
-        return (IR) this;
+        return this.endColumnList();
     }
 
 
@@ -104,14 +103,17 @@ abstract class InsertStatement<C, T extends IDomain, IR> implements Insert, Inse
     }
 
 
+    abstract IR endColumnList();
+
+
     @Override
     public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

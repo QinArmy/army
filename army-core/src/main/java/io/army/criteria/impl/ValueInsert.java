@@ -209,13 +209,27 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement
     }
 
     @Override
+    public VR values(List<T> domainList) {
+        final int size;
+        if ((size = domainList.size()) == 0) {
+            throw CriteriaContextStack.criteriaError("domainList must non-empty");
+        }
+        if (size == 1) {
+            this.domainList = Collections.singletonList(domainList.get(0));
+        } else {
+            this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
+        }
+        return (VR) this;
+    }
+
+    @Override
     public final VR values(Function<C, List<T>> function) {
-        return this.internalValues(function.apply(this.criteria));
+        return this.values(function.apply(this.criteria));
     }
 
     @Override
     public final VR values(Supplier<List<T>> supplier) {
-        return this.internalValues(supplier.get());
+        return this.values(supplier.get());
     }
 
     @Override
@@ -317,19 +331,6 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement
 
     }
 
-
-    private VR internalValues(@Nullable List<T> domainList) {
-        final int size;
-        if (domainList == null || (size = domainList.size()) == 0) {
-            throw CriteriaContextStack.criteriaError("domainList must non-empty");
-        }
-        if (size == 1) {
-            this.domainList = Collections.singletonList(domainList.get(0));
-        } else {
-            this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
-        }
-        return (VR) this;
-    }
 
     private CriteriaException domainTypeNotMatch(@Nullable Object domain) {
         final String m;

@@ -2,7 +2,9 @@ package io.army.criteria;
 
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -146,6 +148,8 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         VR value(Function<String, Object> function, String keyName);
 
+        VR values(List<T> domainList);
+
         VR values(Function<C, List<T>> function);
 
         VR values(Supplier<List<T>> supplier);
@@ -188,6 +192,32 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     interface _StandardValueSpec<C, T extends IDomain> extends _CommonExpClause<C, T, _StandardValueSpec<C, T>>
             , _ValueClause<C, T, _InsertSpec> {
 
+
+    }
+
+
+    interface _SubQueryClause<C, SR> {
+
+        _RightParenClause<SR> leftParen(Supplier<? extends SubQuery> supplier);
+
+        _RightParenClause<SR> leftParen(Function<C, ? extends SubQuery> function);
+    }
+
+    interface _StandardSubQueryInsertClause<C> {
+
+        <T extends IDomain> _ColumnListClause<C, T, _StandardSubQuerySpec<C>> insertInto(SingleTableMeta<T> table);
+
+        <T extends IDomain> _ColumnListClause<C, T, _StandardParentSubQuerySpec<C, T>> insertInto(ChildTableMeta<T> table);
+
+    }
+
+    interface _StandardSubQuerySpec<C> extends _SubQueryClause<C, Insert._InsertSpec> {
+
+
+    }
+
+    interface _StandardParentSubQuerySpec<C, T extends IDomain>
+            extends _SubQueryClause<C, _ColumnListClause<C, T, _StandardSubQuerySpec<C>>> {
 
     }
 

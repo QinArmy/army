@@ -316,6 +316,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     @Override
+    public final String printStmt(final Stmt stmt, final boolean beautify) {
+        return beautify ? stmt.printSql(this::beautifySql) : stmt.printSql(_AbstractDialect::nonBeautifySql);
+    }
+
+
+    @Override
     public final String toString() {
         return String.format("[%s dialect:%s,hash:%s]"
                 , this.getClass().getName(), this.dialectMode(), System.identityHashCode(this));
@@ -350,6 +356,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
         throw new CriteriaException(m);
     }
 
+    protected String beautifySql(String sql) {
+        return sql;
+    }
 
     /*################################## blow delete template method ##################################*/
 
@@ -1374,8 +1383,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
-
-    /*################################## blow delete private method ##################################*/
+    private static String nonBeautifySql(String sql) {
+        return sql;
+    }
 
 
     protected static IllegalArgumentException illegalDialect() {

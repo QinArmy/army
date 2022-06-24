@@ -17,13 +17,13 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WithCteValueInsert<C, T extends IDomain, SS extends SubStatement, WE, PO, OR, IR, SR>
-        extends ValueInsert<C, T, PO, OR, IR, SR>
+abstract class WithCteValueInsert<C, T extends IDomain, SS extends SubStatement, WE, IR, VR>
+        extends ValueInsert<C, T, IR, VR>
         implements DialectStatement._WithCteClause<C, SS, WE> {
 
 
-    WithCteValueInsert(TableMeta<T> table, CriteriaContext criteriaContext) {
-        super(table, criteriaContext);
+    WithCteValueInsert(ValueInsetOptionClause<C, ?, ?> optionClause, TableMeta<T> table) {
+        super(optionClause, table);
     }
 
 

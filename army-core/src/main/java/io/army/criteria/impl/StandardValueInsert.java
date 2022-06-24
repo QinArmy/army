@@ -31,6 +31,10 @@ final class StandardValueInsert<C, T extends IDomain> extends ValueInsert<
         super(optionClause, table);
     }
 
+    @Override
+    _StandardValueSpec<C, T> endColumnList() {
+        return this;
+    }
 
     private static final class InsertOption<C> extends ValueInsetOptionClause<
             C,

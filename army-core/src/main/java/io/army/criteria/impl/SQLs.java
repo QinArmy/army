@@ -4,7 +4,6 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
-import io.army.criteria.impl.inner._Query;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
@@ -56,6 +55,15 @@ public abstract class SQLs extends Functions {
     public static <C> Insert._StandardLiteralOptionSpec<C> valueInsert(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardValueInsert.create(criteria);
+    }
+
+    public static Insert._StandardSubQueryInsertClause<Void> subQueryInsert() {
+        return StandardSubQueryInsert.create(null);
+    }
+
+    public static <C> Insert._StandardSubQueryInsertClause<C> subQueryInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        return StandardSubQueryInsert.create(criteria);
     }
 
     public static Update.StandardUpdateSpec<Void> domainUpdate() {
@@ -841,7 +849,7 @@ public abstract class SQLs extends Functions {
         private RowItemPair(List<? extends DataField> fieldList, SubQuery subQuery) {
             super(subQuery);
             final int selectionCount;
-            selectionCount = selectionCount(subQuery);
+            selectionCount = CriteriaUtils.selectionCount(subQuery);
             if (fieldList.size() != selectionCount) {
                 String m = String.format("Row column count[%s] and selection count[%s] of SubQuery not match."
                         , fieldList.size(), selectionCount);
@@ -996,7 +1004,7 @@ public abstract class SQLs extends Functions {
             if (subStatement instanceof SubQuery) {
                 final int columnAliasCount, selectionCount;
                 columnAliasCount = columnNameList.size();
-                selectionCount = selectionCount((SubQuery) subStatement);
+                selectionCount = CriteriaUtils.selectionCount((SubQuery) subStatement);
                 if (columnAliasCount != selectionCount) {
                     String m;
                     m = String.format("cte column alias count[%s] and selection count[%s] of SubQuery not match."
@@ -1049,20 +1057,6 @@ public abstract class SQLs extends Functions {
 
 
     }//CteImpl
-
-    private static int selectionCount(final SubQuery query) {
-        int count = 0;
-        for (SelectItem selectItem : ((_Query) query).selectItemList()) {
-            if (selectItem instanceof Selection) {
-                count++;
-            } else if (selectItem instanceof SelectionGroup) {
-                count += ((SelectionGroup) selectItem).selectionList().size();
-            } else {
-                throw _Exceptions.unknownSelectItem(selectItem);
-            }
-        }
-        return count;
-    }
 
 
 }

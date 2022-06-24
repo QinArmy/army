@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._Query;
 import io.army.lang.Nullable;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -15,6 +16,11 @@ abstract class CriteriaUtils {
 
     CriteriaUtils() {
         throw new UnsupportedOperationException();
+    }
+
+
+    static String noActionSqlBeautifier(String sql) {
+        return sql;
     }
 
 
@@ -416,6 +422,21 @@ abstract class CriteriaUtils {
     private static CriteriaException illegalWindow(Window window) {
         String m = String.format("window %s is illegal", _ClassUtils.safeClassName(window));
         return new CriteriaException(m);
+    }
+
+
+    static int selectionCount(final SubQuery query) {
+        int count = 0;
+        for (SelectItem selectItem : ((_Query) query).selectItemList()) {
+            if (selectItem instanceof Selection) {
+                count++;
+            } else if (selectItem instanceof SelectionGroup) {
+                count += ((SelectionGroup) selectItem).selectionList().size();
+            } else {
+                throw _Exceptions.unknownSelectItem(selectItem);
+            }
+        }
+        return count;
     }
 
 

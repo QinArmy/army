@@ -69,4 +69,7 @@ public interface _Dialect {
     Dialect dialectMode();
 
 
+    String printStmt(Stmt stmt, boolean beautify);
+
+
 }
