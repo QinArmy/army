@@ -41,10 +41,9 @@ public abstract class _TableMetaFactory {
         return DefaultTableMeta.getParentTableMeta(domainClass);
     }
 
-    public static <S extends IDomain, T extends S> ChildTableMeta<T> getChildTableMeta(
-            ParentTableMeta<S> parentTableMeta, Class<T> domainClass) {
-
-        return DefaultTableMeta.getChildTableMeta(parentTableMeta, domainClass);
+    public static <P extends IDomain, T extends IDomain> ComplexTableMeta<P, T> getChildTableMeta(
+            ParentTableMeta<P> parent, Class<T> domainClass) {
+        return DefaultTableMeta.getChildTableMeta(parent, domainClass);
     }
 
     /**

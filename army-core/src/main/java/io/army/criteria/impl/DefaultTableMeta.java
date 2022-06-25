@@ -65,7 +65,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return parent;
     }
 
-    static <S extends IDomain, T extends S> ChildTableMeta<T> getChildTableMeta(final ParentTableMeta<S> parent
+    static <P extends IDomain, T extends IDomain> ComplexTableMeta<P, T> getChildTableMeta(final ParentTableMeta<P> parent
             , final Class<T> domainClass) {
         if (!(parent instanceof DefaultParentTable) || !parent.javaType().isAssignableFrom(domainClass)) {
             throw new IllegalArgumentException("parentTableMeta error");
@@ -78,7 +78,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
                 throw new IllegalArgumentException("parentTableMeta error");
             }
         }
-        return child;
+        return (ComplexTableMeta<P, T>) child;
     }
 
 
@@ -157,7 +157,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private static <S extends IDomain, T extends S> ChildTableMeta<T> createChildTableMeta(final Class<T> domainClass) {
+    private static <P extends IDomain, T extends P> ChildTableMeta<T> createChildTableMeta(final Class<T> domainClass) {
         synchronized (DefaultChildTable.class) {
             final ChildTableMeta<T> child;
             child = getChildFromCache(domainClass);
@@ -176,8 +176,8 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
                 String m = String.format("Not found parent domain for domain[%s].", domainClass.getName());
                 throw new IllegalArgumentException(m);
             }
-            final DefaultChildTable<S, T> childTable;
-            childTable = new DefaultChildTable<>(getParentTableMeta((Class<S>) parentClass), domainClass);
+            final DefaultChildTable<P, T> childTable;
+            childTable = new DefaultChildTable<>(getParentTableMeta((Class<P>) parentClass), domainClass);
             if (INSTANCE_MAP.putIfAbsent(domainClass, childTable) != null) {
                 String m = String.format("Domain[%s] duplication.", domainClass);
                 throw new MetaException(m);
@@ -540,7 +540,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     private static final class DefaultChildTable<P extends IDomain, T extends P> extends DefaultTableMeta<T>
-            implements ChildTableMeta<T> {
+            implements ComplexTableMeta<P, T> {
 
         private final ParentTableMeta<P> parentTableMeta;
 
@@ -560,7 +560,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
-        public ParentTableMeta<? super T> parentMeta() {
+        public ParentTableMeta<P> parentMeta() {
             return this.parentTableMeta;
         }
 

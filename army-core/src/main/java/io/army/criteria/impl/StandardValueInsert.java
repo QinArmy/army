@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Insert;
 import io.army.criteria.StandardStatement;
+import io.army.criteria.Visible;
+import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -34,6 +36,18 @@ final class StandardValueInsert<C, T extends IDomain> extends ValueInsert<
     @Override
     _StandardValueSpec<C, T> endColumnList() {
         return this;
+    }
+
+
+    @Override
+    public String toString() {
+        final String s;
+        if (isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
     }
 
     private static final class InsertOption<C> extends ValueInsetOptionClause<

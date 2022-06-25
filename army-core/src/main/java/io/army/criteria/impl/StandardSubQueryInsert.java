@@ -10,10 +10,7 @@ import io.army.dialect._Dialect;
 import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.stmt.Stmt;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
@@ -36,17 +33,16 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
     }
 
     @Override
-    public <T extends IDomain> Insert._ColumnListClause<C, T, Insert._StandardSubQuerySpec<C>> insertInto(SingleTableMeta<T> table) {
+    public <T extends IDomain> Insert._SingleColumnListClause<C, T, Insert._StandardSubQuerySpec<C>> insertInto(SingleTableMeta<T> table) {
         CriteriaContextStack.assertNonNull(table, "table");
         return new SingleTableColumns<>(this.criteriaContext, table);
     }
 
     @Override
-    public <T extends IDomain> Insert._ColumnListClause<C, T, Insert._StandardParentSubQuerySpec<C, T>> insertInto(ChildTableMeta<T> table) {
+    public <P extends IDomain, T extends IDomain> Insert._StandardParentColumnsSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table) {
         CriteriaContextStack.assertNonNull(table, "table");
         return new ParentTableColumns<>(this.criteriaContext, table);
     }
-
 
     private static final class SingleTableColumns<C, T extends IDomain>
             extends SubQueryInsertSupport.SubQueryColumn<C, T, Insert._StandardSubQuerySpec<C>> {
@@ -163,21 +159,25 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
     }//SingleTableSubQuery
 
 
-    private static final class ParentTableColumns<C, T extends IDomain>
-            extends SubQueryInsertSupport.SubQueryColumn<C, T, Insert._StandardParentSubQuerySpec<C, T>>
-            implements Insert._ColumnListClause<C, T, Insert._StandardParentSubQuerySpec<C, T>> {
+    private static final class ParentTableColumns<C, P extends IDomain, T extends IDomain>
+            extends SubQueryInsertSupport.SubQueryColumn<C, P, Insert._StandardParentSubQueryClause<C, T>>
+            implements Insert._StandardParentColumnsSpec<C, P, T> {
 
-        private ParentTableColumns(CriteriaContext criteriaContext, ChildTableMeta<T> table) {
-            super(criteriaContext, table);
+
+        private final ComplexTableMeta<P, T> childTable;
+
+        private ParentTableColumns(CriteriaContext criteriaContext, ComplexTableMeta<P, T> table) {
+            super(criteriaContext, table.parentMeta());
+            this.childTable = table;
         }
 
         @Override
-        public Insert._StandardParentSubQuerySpec<C, T> rightParen() {
+        public Insert._StandardParentSubQueryClause<C, T> rightParen() {
             final List<FieldMeta<?>> fieldList = this.fieldList;
             if (fieldList.size() == 0) {
                 throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
             }
-            return new ParenTableSubQueryClause<>(this.criteriaContext, (ChildTableMeta<T>) this.table, fieldList);
+            return new ParenTableSubQueryClause<>(this.criteriaContext, this.childTable, fieldList);
         }
 
 
@@ -185,8 +185,8 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
 
 
     private static final class ParenTableSubQueryClause<C, T extends IDomain>
-            extends SubQueryInsertSupport.SubQueryClause<C, Insert._ColumnListClause<C, T, Insert._StandardSubQuerySpec<C>>>
-            implements Insert._StandardParentSubQuerySpec<C, T> {
+            extends SubQueryInsertSupport.SubQueryClause<C, Insert._StandardChildColumnsSpec<C, T>>
+            implements Insert._StandardParentSubQueryClause<C, T> {
 
         private final ChildTableMeta<T> table;
 
@@ -201,7 +201,7 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
         }
 
         @Override
-        public Insert._ColumnListClause<C, T, Insert._StandardSubQuerySpec<C>> rightParen() {
+        public Insert._StandardChildColumnsSpec<C, T> rightParen() {
             final SubQuery subQuery = this.subQuery;
             if (subQuery == null) {
                 throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
@@ -214,7 +214,8 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
 
 
     private static final class ChildTableColumns<C, T extends IDomain>
-            extends SubQueryInsertSupport.SubQueryColumn<C, T, Insert._StandardSubQuerySpec<C>> {
+            extends SubQueryInsertSupport.SubQueryColumn<C, T, Insert._StandardSubQuerySpec<C>>
+            implements Insert._StandardChildColumnsSpec<C, T> {
 
         private final List<FieldMeta<?>> parentFieldList;
 

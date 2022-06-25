@@ -2,7 +2,7 @@ package io.army.criteria;
 
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
+import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
@@ -74,32 +74,35 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _IntoClause<C, T extends IDomain, NR> {
+    interface _ComplexColumnClause<T extends IDomain, IR> extends _RightParenClause<IR> {
 
-        NR into(TableMeta<T> table);
-
-        _ColumnClause<T, NR> into(FieldMeta<? extends T> field);
-
-        NR into(Consumer<Consumer<FieldMeta<? super T>>> consumer);
-
-        NR into(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer);
+        _ComplexColumnClause<T, IR> comma(FieldMeta<? super T> field);
 
     }
 
-
-    interface _ColumnClause<T extends IDomain, IR> extends _RightParenClause<IR> {
-
-        _ColumnClause<T, IR> comma(FieldMeta<? super T> field);
-
-    }
-
-    interface _ColumnListClause<C, T extends IDomain, IR> {
+    interface _ComplexColumnListClause<C, T extends IDomain, IR> {
 
         _RightParenClause<IR> leftParen(Consumer<Consumer<FieldMeta<? super T>>> consumer);
 
         _RightParenClause<IR> leftParen(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer);
 
-        _ColumnClause<T, IR> leftParen(FieldMeta<? super T> field);
+        _ComplexColumnClause<T, IR> leftParen(FieldMeta<? super T> field);
+
+    }
+
+    interface _SingleColumnClause<T extends IDomain, IR> extends _RightParenClause<IR> {
+
+        _SingleColumnClause<T, IR> comma(FieldMeta<T> field);
+
+    }
+
+    interface _SingleColumnListClause<C, T extends IDomain, IR> {
+
+        _RightParenClause<IR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer);
+
+        _RightParenClause<IR> leftParen(BiConsumer<C, Consumer<FieldMeta<T>>> consumer);
+
+        _SingleColumnClause<T, IR> leftParen(FieldMeta<T> field);
 
     }
 
@@ -182,7 +185,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
     interface _StandardColumnsSpec<C, T extends IDomain>
-            extends _ColumnListClause<C, T, _StandardValueSpec<C, T>>, _StandardValueSpec<C, T> {
+            extends _ComplexColumnListClause<C, T, _StandardValueSpec<C, T>>, _StandardValueSpec<C, T> {
 
     }
 
@@ -205,9 +208,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     interface _StandardSubQueryInsertClause<C> {
 
-        <T extends IDomain> _ColumnListClause<C, T, _StandardSubQuerySpec<C>> insertInto(SingleTableMeta<T> table);
+        <T extends IDomain> _SingleColumnListClause<C, T, _StandardSubQuerySpec<C>> insertInto(SingleTableMeta<T> table);
 
-        <T extends IDomain> _ColumnListClause<C, T, _StandardParentSubQuerySpec<C, T>> insertInto(ChildTableMeta<T> table);
+        <P extends IDomain, T extends IDomain> _StandardParentColumnsSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table);
 
     }
 
@@ -216,8 +219,18 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
-    interface _StandardParentSubQuerySpec<C, T extends IDomain>
-            extends _SubQueryClause<C, _ColumnListClause<C, T, _StandardSubQuerySpec<C>>> {
+    interface _StandardParentColumnsSpec<C, P extends IDomain, T extends IDomain>
+            extends _SingleColumnListClause<C, P, _StandardParentSubQueryClause<C, T>> {
+
+    }
+
+    interface _StandardParentSubQueryClause<C, T extends IDomain>
+            extends _SubQueryClause<C, _StandardChildColumnsSpec<C, T>> {
+
+    }
+
+    interface _StandardChildColumnsSpec<C, T extends IDomain>
+            extends _SingleColumnListClause<C, T, _StandardSubQuerySpec<C>> {
 
     }
 

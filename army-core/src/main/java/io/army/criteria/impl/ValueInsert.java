@@ -3,15 +3,22 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ValuesInsert;
+import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
+import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.stmt.Stmt;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -19,15 +26,26 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement<C, T, IR>
-        implements _ValuesInsert, Insert._ColumnListClause<C, T, IR>, Insert._CommonExpClause<C, T, IR>
-        , Insert._ValueClause<C, T, VR> {
+abstract class ValueInsert<C, T extends IDomain, IR, VR> implements Insert, Insert._ComplexColumnListClause<C, T, IR>
+        , Insert._ComplexColumnClause<T, IR>, Statement._RightParenClause<IR>, Insert._InsertSpec
+        , _ValuesInsert, Insert._CommonExpClause<C, T, IR>, Insert._ValueClause<C, T, VR> {
+
+
+    final CriteriaContext criteriaContext;
+
+    final C criteria;
 
     private final boolean preferLiteral;
 
     private final boolean migration;
 
     private final NullHandleMode nullHandleMode;
+
+    final TableMeta<T> table;
+
+    private List<FieldMeta<?>> fieldList;
+
+    private List<FieldMeta<?>> childFieldList;
 
     private Map<FieldMeta<?>, _Expression> commonExpMap;
 
@@ -36,11 +54,47 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement
     private boolean prepared;
 
     ValueInsert(ValueInsetOptionClause<C, ?, ?> optionClause, TableMeta<T> table) {
-        super(optionClause.criteriaContext, table);
+        this.criteriaContext = optionClause.criteriaContext;
+        this.criteria = criteriaContext.criteria();
+        this.table = table;
         this.preferLiteral = optionClause.preferLiteral;
+
         this.migration = optionClause.migration;
         this.nullHandleMode = optionClause.nullHandleMode;
 
+    }
+
+
+    @Override
+    public final _RightParenClause<IR> leftParen(Consumer<Consumer<FieldMeta<? super T>>> consumer) {
+        consumer.accept(this::addField);
+        this.finishFieldList();
+        return this;
+    }
+
+    @Override
+    public final _RightParenClause<IR> leftParen(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer) {
+        consumer.accept(this.criteria, this::addField);
+        this.finishFieldList();
+        return this;
+    }
+
+    @Override
+    public final _ComplexColumnClause<T, IR> leftParen(FieldMeta<? super T> field) {
+        this.addField(field);
+        return this;
+    }
+
+    @Override
+    public final _ComplexColumnClause<T, IR> comma(FieldMeta<? super T> field) {
+        this.addField(field);
+        return this;
+    }
+
+    @Override
+    public final IR rightParen() {
+        this.finishFieldList();
+        return this.endColumnList();
     }
 
 
@@ -277,6 +331,20 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement
         return this;
     }
 
+
+    @Override
+    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+        final _Dialect d;
+        d = _MockDialects.from(dialect);
+        return d.printStmt(d.insert(this, visible), none);
+    }
+
+    @Override
+    public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+        return _MockDialects.from(dialect).insert(this, visible);
+    }
+
+
     @Override
     public final boolean isPrepared() {
         return this.prepared;
@@ -303,6 +371,30 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement
         return this.preferLiteral;
     }
 
+
+    @Override
+    public final TableMeta<?> table() {
+        return this.table;
+    }
+
+    @Override
+    public final List<FieldMeta<?>> fieldList() {
+        List<FieldMeta<?>> fieldList = this.fieldList;
+        if (fieldList == null) {
+            fieldList = Collections.emptyList();
+        }
+        return fieldList;
+    }
+
+    @Override
+    public final List<FieldMeta<?>> childFieldList() {
+        List<FieldMeta<?>> childFieldList = this.childFieldList;
+        if (childFieldList == null) {
+            childFieldList = Collections.emptyList();
+        }
+        return childFieldList;
+    }
+
     @Override
     public final Map<FieldMeta<?>, _Expression> commonExpMap() {
         prepared();
@@ -316,9 +408,11 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement
 
     @Override
     public final void clear() {
-        super.clear();
         this.prepared = false;
+        this.fieldList = null;
+        this.childFieldList = null;
         this.commonExpMap = null;
+
         this.domainList = null;
         this.onClear();
     }
@@ -328,6 +422,60 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> extends InsertStatement
     }
 
     void onAsInsert() {
+
+    }
+
+    abstract IR endColumnList();
+
+
+    private void addField(final FieldMeta<?> field) {
+        if (!field.insertable()) {
+            throw CriteriaContextStack.criteriaError(_Exceptions::nonInsertableField, field);
+        }
+        final TableMeta<?> fieldTable = field.tableMeta();
+        final TableMeta<?> table = this.table;
+
+        if (fieldTable instanceof ChildTableMeta) {
+            if (fieldTable != table) {
+                throw CriteriaContextStack.criteriaError(_Exceptions::unknownColumn, field);
+            }
+            List<FieldMeta<?>> childFieldList = this.childFieldList;
+            if (childFieldList == null) {
+                childFieldList = new ArrayList<>();
+            }
+            childFieldList.add(field);
+        } else if (fieldTable == table
+                || (table instanceof ChildTableMeta && fieldTable == ((ChildTableMeta<?>) table).parentMeta())) {
+            List<FieldMeta<?>> fieldList = this.fieldList;
+            if (fieldList == null) {
+                fieldList = new ArrayList<>();
+            }
+            fieldList.add(field);
+        } else {
+            throw CriteriaContextStack.criteriaError(_Exceptions::unknownColumn, field);
+        }
+
+
+    }
+
+
+    private void finishFieldList() {
+        final List<FieldMeta<?>> fieldList, childFieldList;
+        fieldList = this.fieldList;
+        childFieldList = this.childFieldList;
+        if ((fieldList == null || fieldList.size() == 0) && (childFieldList == null || childFieldList.size() == 0)) {
+            throw CriteriaContextStack.criteriaError("Column list must not empty.");
+        }
+        if (fieldList == null) {
+            this.fieldList = Collections.emptyList();
+        } else {
+            this.fieldList = Collections.unmodifiableList(fieldList);
+        }
+        if (childFieldList == null) {
+            this.childFieldList = Collections.emptyList();
+        } else {
+            this.childFieldList = Collections.unmodifiableList(childFieldList);
+        }
 
     }
 

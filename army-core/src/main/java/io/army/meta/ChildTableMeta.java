@@ -9,7 +9,7 @@ public interface ChildTableMeta<T extends IDomain> extends TableMeta<T> {
     @Override
     FieldMeta<? super T> discriminator();
 
-    ParentTableMeta<? super T> parentMeta();
+    ParentTableMeta<?> parentMeta();
 
     int discriminatorValue();
 

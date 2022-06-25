@@ -22,8 +22,8 @@ abstract class SubQueryInsertSupport {
         throw new UnsupportedOperationException();
     }
 
-    static abstract class SubQueryColumn<C, T extends IDomain, IR> implements Insert._ColumnListClause<C, T, IR>
-            , Insert._ColumnClause<T, IR>, Statement._RightParenClause<IR> {
+    static abstract class SubQueryColumn<C, T extends IDomain, IR> implements Insert._SingleColumnListClause<C, T, IR>
+            , Insert._SingleColumnClause<T, IR>, Statement._RightParenClause<IR> {
 
         final CriteriaContext criteriaContext;
 
@@ -37,25 +37,25 @@ abstract class SubQueryInsertSupport {
         }
 
         @Override
-        public final Statement._RightParenClause<IR> leftParen(Consumer<Consumer<FieldMeta<? super T>>> consumer) {
+        public final Statement._RightParenClause<IR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer) {
             consumer.accept(this::addField);
             return this;
         }
 
         @Override
-        public final Statement._RightParenClause<IR> leftParen(BiConsumer<C, Consumer<FieldMeta<? super T>>> consumer) {
+        public final Statement._RightParenClause<IR> leftParen(BiConsumer<C, Consumer<FieldMeta<T>>> consumer) {
             consumer.accept(this.criteriaContext.criteria(), this::addField);
             return this;
         }
 
         @Override
-        public final Insert._ColumnClause<T, IR> leftParen(FieldMeta<? super T> field) {
+        public final Insert._SingleColumnClause<T, IR> leftParen(FieldMeta<T> field) {
             this.addField(field);
             return this;
         }
 
         @Override
-        public final Insert._ColumnClause<T, IR> comma(FieldMeta<? super T> field) {
+        public final Insert._SingleColumnClause<T, IR> comma(FieldMeta<T> field) {
             this.addField(field);
             return this;
         }

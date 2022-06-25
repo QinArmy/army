@@ -7,7 +7,10 @@ import io.army.annotation.Table;
 import io.army.lang.Nullable;
 
 import javax.annotation.processing.Filer;
-import javax.lang.model.element.*;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.FileObject;
@@ -16,7 +19,6 @@ import java.io.PrintWriter;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -300,7 +302,7 @@ final class SourceCodeCreator {
                 builder.append("import io.army.meta.SimpleTableMeta;\n");
                 break;
             case CHILD:
-                builder.append("import io.army.meta.ChildTableMeta;\n");
+                builder.append("import io.army.meta.ComplexTableMeta;\n");
                 break;
             case PARENT:
                 builder.append("import io.army.meta.ParentTableMeta;\n");
@@ -315,8 +317,11 @@ final class SourceCodeCreator {
     private static void appendParentClassImport(final StringBuilder builder, final TypeElement tableElement
             , final TypeElement parentElement) {
         if (!isSameClassName(tableElement, parentElement) && !isSamePackage(tableElement, parentElement)) {
+            final String parentClassName = MetaUtils.getClassName(parentElement);
             builder.append("import ")
-                    .append(MetaUtils.getClassName(parentElement))
+                    .append(parentClassName)
+                    .append(";\nimport ")
+                    .append(parentClassName)
                     .append(_MetaBridge.META_CLASS_NAME_SUFFIX)
                     .append(";\n");
         }
@@ -397,7 +402,7 @@ final class SourceCodeCreator {
             parentClassName = null;
         } else {
             methodName = "getChildTableMeta";
-            tableMetaName = "ChildTableMeta";
+            tableMetaName = "ComplexTableMeta";
             if (isSameClassName(element, parentElement)) {
                 parentClassName = MetaUtils.getClassName(parentElement);
             } else {
@@ -405,31 +410,41 @@ final class SourceCodeCreator {
             }
         }
 
-        final List<? extends TypeParameterElement> paramList;
-        paramList = element.getTypeParameters();
-        final int paramSize = paramList.size();
+        final int paramSize = element.getTypeParameters().size(), parentParamSize;
+        if (parentElement == null) {
+            parentParamSize = 0;
+        } else {
+            parentParamSize = parentElement.getTypeParameters().size();
+        }
 
         builder.append(FIELD_PREFIX)
                 .append(tableMetaName)
                 .append('<');
 
-        final int domainStart;
+        final int complexStart, domainStart;
+        complexStart = builder.length();
+        if (parentClassName != null) {
+            builder.append(parentClassName);
+            if (parentParamSize > 0) {
+                appendParamWildcard(builder, parentParamSize);
+            }
+            builder.append(',');
+        }
         domainStart = builder.length();
         builder.append(simpleClassName);
 
-        final String domainName;
         if (paramSize > 0) {
-            builder.append('<');
-            for (int i = 0; i < paramSize; i++) {
-                if (i > 0) {
-                    builder.append(',');
-                }
-                builder.append('?');
-            }
-            builder.append('>');
-            domainName = builder.substring(domainStart, builder.length());
-        } else {
+            appendParamWildcard(builder, paramSize);
+        }
+
+        final String complexName, domainName;
+        if (paramSize == 0 && parentParamSize == 0 && parentClassName == null) {
             domainName = simpleClassName;
+            complexName = simpleClassName;
+        } else {
+            final int length = builder.length();
+            domainName = builder.substring(domainStart, length);
+            complexName = builder.substring(complexStart, length);
         }
         builder.append("> ")
                 .append(_MetaBridge.TABLE_META)
@@ -465,11 +480,11 @@ final class SourceCodeCreator {
                     .append('\t')
                     .append(tableMetaName)
                     .append('<')
-                    .append(domainName)
+                    .append(complexName)
                     .append("> tempMeta = (")
                     .append(tableMetaName)
                     .append('<')
-                    .append(domainName)
+                    .append(complexName)
                     .append(">)temp;\n")
                     .append(MEMBER_PRE)
                     .append('\t')
@@ -524,6 +539,17 @@ final class SourceCodeCreator {
                 .append("}\n\n");
 
         return domainName;
+    }
+
+    private static void appendParamWildcard(final StringBuilder builder, final int paramSize) {
+        builder.append('<');
+        for (int i = 0; i < paramSize; i++) {
+            if (i > 0) {
+                builder.append(',');
+            }
+            builder.append('?');
+        }
+        builder.append('>');
     }
 
 

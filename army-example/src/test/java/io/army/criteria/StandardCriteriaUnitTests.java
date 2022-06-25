@@ -2,10 +2,7 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
-import io.army.example.bank.domain.user.ChinaProvince;
-import io.army.example.bank.domain.user.ChinaProvince_;
-import io.army.example.bank.domain.user.ChinaRegion;
-import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.Person_;
 import io.army.example.pill.domain.User_;
 import io.army.example.pill.struct.IdentityType;
@@ -365,6 +362,76 @@ public class StandardCriteriaUnitTests {
         }
     }
 
+    @Test
+    public void singleTableSubQueryInsert() {
+        final Insert stmt;
+        stmt = SQLs.subQueryInsert()
+                .insertInto(ChinaRegion_.T)
+                .leftParen(ChinaRegion_.id)
+                .comma(ChinaRegion_.createTime)
+                .comma(ChinaRegion_.updateTime)
+                .comma(ChinaRegion_.regionType)
+                .comma(ChinaRegion_.regionGdp)
+                .rightParen()
+                .leftParen(() -> SQLs.subQuery()
+                        .select(consumer -> {
+                            consumer.accept(ChinaRegion_.id);
+                            consumer.accept(ChinaRegion_.createTime);
+                            consumer.accept(ChinaRegion_.updateTime);
+                            consumer.accept(ChinaRegion_.regionType);
+                            consumer.accept(ChinaRegion_.regionGdp);
+                        })
+                        .from(ChinaRegion_.T, "r")
+                        .asQuery())
+                .rightParen()
+                .asInsert();
+
+        printStmt(stmt);
+    }
+
+    @Test
+    public void childTableSubQueryInsert() {
+        final Insert stmt;
+        stmt = SQLs.subQueryInsert()
+                .insertInto(ChinaCity_.T)
+
+                .leftParen(ChinaRegion_.id)
+                .comma(ChinaRegion_.createTime)
+                .comma(ChinaRegion_.updateTime)
+                .comma(ChinaRegion_.regionType)
+                .comma(ChinaRegion_.regionGdp)
+                .rightParen()
+                // below sub query is test case,not real.
+                .leftParen(() -> SQLs.subQuery()
+                        .select(consumer -> {
+                            consumer.accept(ChinaRegion_.id);
+                            consumer.accept(ChinaRegion_.createTime);
+                            consumer.accept(ChinaRegion_.updateTime);
+                            consumer.accept(ChinaRegion_.regionType);
+                            consumer.accept(ChinaRegion_.regionGdp);
+                        })
+                        .from(ChinaRegion_.T, "r")
+                        .asQuery())
+                .rightParen()
+
+                .leftParen(ChinaCity_.id)
+                .comma(ChinaCity_.mayorName)
+                .rightParen()
+                // below sub query is test case,not real.
+                .leftParen(() -> SQLs.subQuery()
+                        .select(consumer -> {
+                            consumer.accept(ChinaCity_.id);
+                            consumer.accept(ChinaCity_.mayorName);
+                        })
+                        .from(ChinaCity_.T, "r")
+                        .asQuery())
+                .rightParen()
+                .asInsert();
+
+        printStmt(stmt);
+    }
+
+
     /**
      * @see #simpleSubQuerySelectItem()
      */
@@ -405,6 +472,14 @@ public class StandardCriteriaUnitTests {
             domainList.add(p);
         }
         return domainList;
+    }
+
+
+    private static void printStmt(final Statement statement) {
+        for (Dialect dialect : Dialect.values()) {
+            LOG.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        }
+
     }
 
 }
