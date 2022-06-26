@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
@@ -8,10 +9,7 @@ import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -63,12 +61,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
         PO preferLiteral(boolean prefer);
     }
 
+    interface _MigrationOptionClause<OR> {
+
+        OR migration(boolean migration);
+    }
+
     /**
      * @since 1.0
      */
-    interface _OptionClause<OR> {
-
-        OR migration(boolean migration);
+    interface _OptionClause<OR> extends _MigrationOptionClause<OR> {
 
         OR nullHandle(NullHandleMode mode);
     }
@@ -160,6 +161,75 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
         VR values(Function<String, Object> function, String keyName);
     }
 
+    interface _OnDuplicateKeyUpdateClause<UR> {
+
+        UR onDuplicateKeyUpdate();
+
+    }
+
+
+    interface _OnDuplicateKeySetClause<C, F extends TableField, UR> {
+
+
+        /**
+         * @see SQLs#itemPair(DataField, Object)
+         */
+        UR setPairs(Consumer<Consumer<ItemPair>> consumer);
+
+        /**
+         * @see SQLs#itemPair(DataField, Object)
+         */
+        UR setPairs(BiConsumer<C, Consumer<ItemPair>> consumer);
+
+        UR setExp(F field, Supplier<? extends Expression> supplier);
+
+        UR setExp(F field, Function<C, ? extends Expression> function);
+
+        UR setDefault(F field);
+
+        UR setNull(F field);
+
+        UR set(F field, @Nullable Object value);
+
+        UR setLiteral(F field, @Nullable Object value);
+
+
+        UR set(F field, BiFunction<DataField, Object, ItemPair> operator, Object value);
+
+        UR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier);
+
+        UR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function);
+
+        UR setLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Object value);
+
+    }
+
+
+    interface _OnDuplicateKeyAliasSetClause<C, UR> {
+
+        UR setExp(String columnAlias, Supplier<? extends Expression> supplier);
+
+        UR setExp(String columnAlias, Function<C, ? extends Expression> function);
+
+        UR setDefault(String columnAlias);
+
+        UR setNull(String columnAlias);
+
+        UR set(String columnAlias, @Nullable Object value);
+
+        UR setLiteral(String columnAlias, @Nullable Object value);
+
+
+        UR set(String columnAlias, BiFunction<DataField, Object, ItemPair> operator, Object value);
+
+        UR setExp(String columnAlias, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier);
+
+        UR setExp(String columnAlias, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function);
+
+        UR setLiteral(String columnAlias, BiFunction<DataField, Object, ItemPair> operator, Object value);
+
+    }
+
 
     interface _StandardLiteralOptionSpec<C>
             extends _PreferLiteralClause<_StandardOptionSpec<C>>, _StandardOptionSpec<C> {
@@ -201,18 +271,24 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     interface _SubQueryClause<C, SR> {
 
-        _RightParenClause<SR> leftParen(Supplier<? extends SubQuery> supplier);
+        SR space(Supplier<? extends SubQuery> supplier);
 
-        _RightParenClause<SR> leftParen(Function<C, ? extends SubQuery> function);
+        SR space(Function<C, ? extends SubQuery> function);
     }
 
     interface _StandardSubQueryInsertClause<C> {
 
-        <T extends IDomain> _SingleColumnListClause<C, T, _StandardSubQuerySpec<C>> insertInto(SingleTableMeta<T> table);
+        <T extends IDomain> _StandardSingleColumnsSpec<C, T> insertInto(SingleTableMeta<T> table);
 
         <P extends IDomain, T extends IDomain> _StandardParentColumnsSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table);
 
     }
+
+    interface _StandardSingleColumnsSpec<C, T extends IDomain>
+            extends _SingleColumnListClause<C, T, _StandardSubQuerySpec<C>> {
+
+    }
+
 
     interface _StandardSubQuerySpec<C> extends _SubQueryClause<C, Insert._InsertSpec> {
 
@@ -225,12 +301,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
     interface _StandardParentSubQueryClause<C, T extends IDomain>
-            extends _SubQueryClause<C, _StandardChildColumnsSpec<C, T>> {
-
-    }
-
-    interface _StandardChildColumnsSpec<C, T extends IDomain>
-            extends _SingleColumnListClause<C, T, _StandardSubQuerySpec<C>> {
+            extends _SubQueryClause<C, _StandardSingleColumnsSpec<C, T>> {
 
     }
 

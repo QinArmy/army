@@ -573,6 +573,47 @@ public class MySQLCriteriaUnitTests {
     }
 
 
+    @Test
+    public void valueInsert() {
+        final Insert stmt;
+        stmt = MySQLs.valueInset()
+                .preferLiteral(true)
+                .insert(Collections::emptyList, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
+                .into(ChinaCity_.T)
+                .partition("P1", "P2")
+                .values(this::createCityList)
+                .onDuplicateKeyUpdate()
+                .set(ChinaCity_.updateTime, LocalDateTime.now())
+                .set(ChinaCity_.version, SQLs::plusEqual, 1)
+                .asInsert();
+        printStmt(stmt);
+    }
+
+    @Test
+    public void assignmentInsert() {
+        final Insert stmt;
+        stmt = MySQLs.assignmentInsert()
+                .insert(Collections::emptyList, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
+                .into(ChinaCity_.T)
+                .partition("P1", "P2")
+                .set(ChinaCity_.mayorName, "脉兽秀秀")
+                .setDefault(ChinaCity_.regionGdp)
+                .as("c")
+                .leftParen(ChinaCity_.ID)
+                .rightParen()
+                .onDuplicateKeyUpdate()
+                .set(ChinaCity_.updateTime, LocalDateTime.now())
+                .set(ChinaCity_.version, SQLs::plusEqual, 1)
+                .asInsert();
+        printStmt(stmt);
+    }
+
+
+    private List<ChinaCity> createCityList() {
+        return Collections.emptyList();
+    }
+
+
     private void printStmt(final Statement statement) {
         for (Dialect dialect : Dialect.values()) {
             if (dialect.database != Database.MySQL) {

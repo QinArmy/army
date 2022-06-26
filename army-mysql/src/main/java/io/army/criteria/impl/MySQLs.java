@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDelete;
+import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -15,6 +16,24 @@ public abstract class MySQLs extends MySQLSyntax {
      * protected constructor, application developer can extend this util class.
      */
     protected MySQLs() {
+    }
+
+    public static MySQLInsert._LiteralOptionSpec<Void> valueInset() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLInsert._LiteralOptionSpec<C> valueInset(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    public static MySQLInsert._AssignmentInsertOptionSpec<Void> assignmentInsert() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLInsert._AssignmentInsertOptionSpec<C> assignmentInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
     }
 
     public static MySQL80Query._WithSpec<Void, Select> query() {
@@ -84,9 +103,9 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-  public static MySQLUpdate._WithAndMultiUpdateSpec<Void> multiUpdate() {
-      return MySQLMultiUpdate.simple(null);
-  }
+    public static MySQLUpdate._WithAndMultiUpdateSpec<Void> multiUpdate() {
+        return MySQLMultiUpdate.simple(null);
+    }
 
     public static <C> MySQLUpdate._WithAndMultiUpdateSpec<C> multiUpdate(C criteria) {
         Objects.requireNonNull(criteria);

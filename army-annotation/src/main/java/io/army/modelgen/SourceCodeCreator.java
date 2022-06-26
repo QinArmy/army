@@ -95,7 +95,11 @@ final class SourceCodeCreator {
 
             commentBuilder = new StringBuilder()
                     .append(COMMENT_PREFIX)
-                    .append("/**  ")
+                    .append("/** {@link ")
+                    .append(simpleClassName)
+                    .append('#')
+                    .append(fieldName)
+                    .append(" } ")
                     .append(getComment(field))
                     .append(" */\n");
 
@@ -380,15 +384,6 @@ final class SourceCodeCreator {
 
     private static String appendStaticBlock(final TypeElement element, final String simpleClassName
             , @Nullable final TypeElement parentElement, int fieldCount, final StringBuilder builder) {
-
-        final Table table = element.getAnnotation(Table.class);
-
-        builder.append(FIELD_PREFIX)
-                .append(" String ")
-                .append(_MetaBridge.TABLE_NAME)
-                .append(" = \"")
-                .append(table.name())
-                .append("\";\n\n");
 
         final String parentClassName, methodName, tableMetaName;
         if (parentElement == null) {

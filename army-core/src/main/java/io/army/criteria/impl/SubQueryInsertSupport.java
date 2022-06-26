@@ -88,17 +88,20 @@ abstract class SubQueryInsertSupport {
         }
 
         @Override
-        public Statement._RightParenClause<SR> leftParen(Supplier<? extends SubQuery> supplier) {
+        public SR space(Supplier<? extends SubQuery> supplier) {
             return this.acceptSubQuery(supplier.get());
         }
 
         @Override
-        public Statement._RightParenClause<SR> leftParen(Function<C, ? extends SubQuery> function) {
+        public SR space(Function<C, ? extends SubQuery> function) {
             return this.acceptSubQuery(function.apply(this.criteriaContext.criteria()));
         }
 
 
-        private Statement._RightParenClause<SR> acceptSubQuery(final @Nullable SubQuery subQuery) {
+        abstract SR endSubQuery();
+
+
+        private SR acceptSubQuery(final @Nullable SubQuery subQuery) {
             CriteriaContextStack.assertNonNull(subQuery, "subQuery must non-null.");
             final int selectionCount;
             selectionCount = CriteriaUtils.selectionCount(subQuery);
@@ -108,7 +111,7 @@ abstract class SubQueryInsertSupport {
                 throw CriteriaContextStack.criteriaError(m);
             }
             this.subQuery = subQuery;
-            return this;
+            return this.endSubQuery();
         }
 
 

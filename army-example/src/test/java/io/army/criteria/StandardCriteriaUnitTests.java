@@ -373,17 +373,17 @@ public class StandardCriteriaUnitTests {
                 .comma(ChinaRegion_.regionType)
                 .comma(ChinaRegion_.regionGdp)
                 .rightParen()
-                .leftParen(() -> SQLs.subQuery()
+                // below sub query is test case,not real.
+                .space(() -> SQLs.subQuery()
                         .select(consumer -> {
                             consumer.accept(ChinaRegion_.id);
                             consumer.accept(ChinaRegion_.createTime);
                             consumer.accept(ChinaRegion_.updateTime);
-                            consumer.accept(ChinaRegion_.regionType);
+                            consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
                             consumer.accept(ChinaRegion_.regionGdp);
                         })
                         .from(ChinaRegion_.T, "r")
                         .asQuery())
-                .rightParen()
                 .asInsert();
 
         printStmt(stmt);
@@ -402,30 +402,28 @@ public class StandardCriteriaUnitTests {
                 .comma(ChinaRegion_.regionGdp)
                 .rightParen()
                 // below sub query is test case,not real.
-                .leftParen(() -> SQLs.subQuery()
+                .space(() -> SQLs.subQuery()
                         .select(consumer -> {
                             consumer.accept(ChinaRegion_.id);
                             consumer.accept(ChinaRegion_.createTime);
                             consumer.accept(ChinaRegion_.updateTime);
-                            consumer.accept(ChinaRegion_.regionType);
+                            consumer.accept(SQLs.literal(RegionType.CITY).as(ChinaRegion_.REGION_TYPE));
                             consumer.accept(ChinaRegion_.regionGdp);
                         })
                         .from(ChinaRegion_.T, "r")
                         .asQuery())
-                .rightParen()
 
                 .leftParen(ChinaCity_.id)
                 .comma(ChinaCity_.mayorName)
                 .rightParen()
                 // below sub query is test case,not real.
-                .leftParen(() -> SQLs.subQuery()
+                .space(() -> SQLs.subQuery()
                         .select(consumer -> {
                             consumer.accept(ChinaCity_.id);
                             consumer.accept(ChinaCity_.mayorName);
                         })
                         .from(ChinaCity_.T, "r")
                         .asQuery())
-                .rightParen()
                 .asInsert();
 
         printStmt(stmt);
