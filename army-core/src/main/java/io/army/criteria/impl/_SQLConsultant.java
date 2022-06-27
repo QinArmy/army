@@ -37,8 +37,8 @@ public abstract class _SQLConsultant {
     }
 
     public static void assertStandardInsert(Insert insert) {
-        if (!(insert instanceof StandardValueInsert)) {
-            throw instanceNotMatch(insert, StandardValueInsert.class);
+        if (!(insert instanceof StandardInserts)) {
+            throw instanceNotMatch(insert, StandardInserts.class);
         }
     }
 

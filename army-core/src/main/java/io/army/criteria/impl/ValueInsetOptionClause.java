@@ -5,7 +5,7 @@ import io.army.criteria.NullHandleMode;
 import io.army.criteria.SubStatement;
 
 abstract class ValueInsetOptionClause<C, PO, OR>
-        implements Insert._PreferLiteralClause<PO>, Insert._OptionClause<OR> {
+        implements Insert._PreferLiteralClause<PO>, Insert.NullOptionClause<OR> {
 
 
     final CriteriaContext criteriaContext;

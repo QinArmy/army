@@ -2,11 +2,15 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
-import io.army.example.bank.domain.user.*;
+import io.army.domain.IDomain;
+import io.army.example.bank.domain.user.ChinaProvince;
+import io.army.example.bank.domain.user.ChinaRegion;
+import io.army.example.bank.domain.user.RegionType;
 import io.army.example.pill.domain.Person_;
 import io.army.example.pill.domain.User_;
 import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.UserType;
+import io.army.meta.SingleTableMeta;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.SimpleStmt;
@@ -27,11 +31,34 @@ public class StandardCriteriaUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardCriteriaUnitTests.class);
 
+
+    public <T extends IDomain> void myTest(SingleTableMeta<T> table) {
+        T domain = null;
+        final Insert stmt;
+        stmt = SQLs.domainInsert()
+                .insertInto(table)
+                .leftParen(table.getField(""))
+                .comma(table.getField(""))
+                .rightParen()
+                .common(table.getField(""), 0)
+                .values()
+
+                .leftParen(table.getField(""), 0)
+                .comma(table.getField(""), 0)
+                .rightParen()
+
+                .leftParen(table.getField(""), 0)
+                .comma(table.getField(""), 0)
+                .rightParen()
+
+                .asInsert();
+    }
+
     @Test
     public void insertParent() {
         System.out.println(ChinaRegion_.visible.mappingType().getClass().getName());
         final Insert insert;
-        insert = SQLs.valueInsert(ChinaRegion_.T)
+        insert = SQLs.domainInsert(ChinaRegion_.T)
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
                 .commonLiteral(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
@@ -67,7 +94,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void insertChild() {
         final Insert insert;
-        insert = SQLs.valueInsert(ChinaProvince_.T)
+        insert = SQLs.domainInsert(ChinaProvince_.T)
                 .preferLiteral(true)
                 .insertInto(ChinaProvince_.T)
                 .values(this::createProvinceList)

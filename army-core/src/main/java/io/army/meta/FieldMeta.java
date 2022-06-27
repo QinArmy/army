@@ -1,6 +1,5 @@
 package io.army.meta;
 
-import io.army.annotation.GeneratorType;
 import io.army.criteria.TableField;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -59,8 +58,6 @@ public interface FieldMeta<T extends IDomain> extends TableField {
 
     String defaultValue();
 
-    @Nullable
-    GeneratorType generatorType();
 
     /**
      * <p>

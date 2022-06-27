@@ -104,6 +104,13 @@ abstract class CriteriaContextStack {
         return supplier.get();
     }
 
+
+    static void assertNonNull(@Nullable Object obj) {
+        if (obj == null) {
+            throw new NullPointerException();
+        }
+    }
+
     static void assertNonNull(@Nullable Object obj, String message) {
         if (obj == null) {
             throw new NullPointerException(message);

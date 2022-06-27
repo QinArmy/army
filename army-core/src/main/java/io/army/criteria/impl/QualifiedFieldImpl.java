@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
@@ -177,6 +178,15 @@ final class QualifiedFieldImpl<T extends IDomain> extends OperationField
         return this.field.mappingType;
     }
 
+    @Override
+    public boolean insertable() {
+        return this.field.insertable;
+    }
+
+    @Override
+    public GeneratorType generatorType() {
+        return this.field.generatorType;
+    }
 
     private static final class FieldReference<T extends IDomain> extends SoftReference<QualifiedFieldImpl<T>> {
 

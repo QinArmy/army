@@ -147,7 +147,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
 
     final boolean nullable;
 
-    private final boolean insertable;
+     final boolean insertable;
 
     final UpdateMode updateMode;
 
@@ -157,7 +157,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
 
     private final GeneratorMeta generatorMeta;
 
-    private final GeneratorType generatorType;
+    final GeneratorType generatorType;
 
     private final List<Class<?>> elementTypeList;
 

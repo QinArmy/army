@@ -6,7 +6,8 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.dao.sync.BankSyncBaseDao;
-import io.army.example.bank.domain.user.*;
+import io.army.example.bank.domain.user.ChinaCity;
+import io.army.example.bank.domain.user.RegionType;
 import io.army.example.common.BaseService;
 import io.army.example.common.BeanUtils;
 import org.springframework.context.annotation.Profile;
@@ -50,7 +51,7 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
                 .asQuery();
 
         final Insert stmt;
-        stmt = SQLs.valueInsert()
+        stmt = SQLs.domainInsert()
                 .insertInto(ChinaCity_.T)
                 .leftParen(ChinaCity_.name).comma(ChinaCity_.parentId)
                 .rightParen()

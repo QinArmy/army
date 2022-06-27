@@ -154,7 +154,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonInsertableField(FieldMeta<?> field) {
+    public static CriteriaException nonInsertableField(TableField field) {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 

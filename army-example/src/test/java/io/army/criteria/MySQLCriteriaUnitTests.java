@@ -6,7 +6,8 @@ import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.account.BankAccount_;
-import io.army.example.bank.domain.user.*;
+import io.army.example.bank.domain.user.ChinaCity;
+import io.army.example.bank.domain.user.RegionType;
 import io.army.example.common.Criteria;
 import io.army.example.pill.domain.User_;
 import org.slf4j.Logger;
@@ -583,8 +584,8 @@ public class MySQLCriteriaUnitTests {
                 .partition("P1", "P2")
                 .values(this::createCityList)
                 .onDuplicateKeyUpdate()
-                .set(ChinaCity_.updateTime, LocalDateTime.now())
-                .set(ChinaCity_.version, SQLs::plusEqual, 1)
+                .comma(ChinaCity_.updateTime, LocalDateTime.now())
+                .comma(ChinaCity_.version, SQLs::plusEqual, 1)
                 .asInsert();
         printStmt(stmt);
     }

@@ -4,6 +4,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
+import java.util.Map;
 
 public interface _Insert extends _Statement {
 
@@ -15,5 +16,14 @@ public interface _Insert extends _Statement {
     List<FieldMeta<?>> fieldList();
 
     List<FieldMeta<?>> childFieldList();
+
+
+    interface _CommonExpInsert {
+
+
+        Map<FieldMeta<?>, _Expression> commonExpMap();
+
+    }
+
 
 }

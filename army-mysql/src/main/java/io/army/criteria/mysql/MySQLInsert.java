@@ -52,15 +52,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
         RR row(Function<C, ? extends Expression> function);
     }
 
-    interface _RowValueClause<C, VR> {
 
-        VR comma(Expression value);
-
-        VR comma(Supplier<? extends Expression> supplier);
-
-        VR comma(Function<C, ? extends Expression> function);
-
-    }
 
 
     interface _OnDuplicateKeyFieldSetSpec<C, T extends IDomain>
@@ -97,7 +89,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _ValueInsertOptionSpec<C> extends Insert._OptionClause<_ValueInsertSpec<C>>, _ValueInsertSpec<C> {
+    interface _ValueInsertOptionSpec<C> extends NullOptionClause<_ValueInsertSpec<C>>, _ValueInsertSpec<C> {
 
     }
 
@@ -121,12 +113,12 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _ComplexColumnListSpec<C, T extends IDomain> extends _ComplexColumnListClause<C, T, _ValuesSpec<C, T>>
+    interface _ComplexColumnListSpec<C, T extends IDomain> extends _ColumnListClause<C, T, _ValuesSpec<C, T>>
             , _ValuesSpec<C, T> {
 
     }
 
-    interface _ValuesSpec<C, T extends IDomain> extends Insert._ValueClause<C, T, _ColumnAliasAsSpec<C, T>> {
+    interface _ValuesSpec<C, T extends IDomain> extends _DomainValueClause<C, T, _ColumnAliasAsSpec<C, T>> {
 
     }
 

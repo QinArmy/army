@@ -6,8 +6,8 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._DomainInsert;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -29,17 +29,17 @@ import java.util.*;
  */
 final class ValueInsertContext extends StatementContext implements _ValueInsertContext, InsertStmtParams {
 
-    static ValueInsertContext nonChild(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
+    static ValueInsertContext nonChild(_DomainInsert insert, ArmyDialect dialect, Visible visible) {
         checkCommonExpMap(insert);
         return new ValueInsertContext(dialect, insert, visible);
     }
 
-    static ValueInsertContext child(_ValuesInsert insert, ArmyDialect dialect, Visible visible) {
+    static ValueInsertContext child(_DomainInsert insert, ArmyDialect dialect, Visible visible) {
         return new ValueInsertContext(insert, dialect, visible);
     }
 
 
-    private static void checkCommonExpMap(_ValuesInsert insert) {
+    private static void checkCommonExpMap(_DomainInsert insert) {
         final TableMeta<?> table = insert.table();
         for (Map.Entry<FieldMeta<?>, _Expression> e : insert.commonExpMap().entrySet()) {
             _DialectUtils.checkInsertExpField(table, e.getKey(), e.getValue());
@@ -81,7 +81,7 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
     /**
      * create for {@link  SingleTableMeta}
      */
-    private ValueInsertContext(ArmyDialect dialect, _ValuesInsert stmt, Visible visible) {
+    private ValueInsertContext(ArmyDialect dialect, _DomainInsert stmt, Visible visible) {
         super(dialect, visible);
         this.migration = stmt.isMigration();
         this.preferLiteral = stmt.isPreferLiteral();
@@ -127,7 +127,7 @@ final class ValueInsertContext extends StatementContext implements _ValueInsertC
     /**
      * create for {@link  ChildTableMeta}
      */
-    private ValueInsertContext(_ValuesInsert stmt, ArmyDialect dialect, Visible visible) {
+    private ValueInsertContext(_DomainInsert stmt, ArmyDialect dialect, Visible visible) {
         super(dialect, stmt.isPreferLiteral(), visible);
 
         this.migration = stmt.isMigration();

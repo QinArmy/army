@@ -70,7 +70,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         final Stmt stmt;
         if (insert instanceof StandardStatement) {
             _SQLConsultant.assertStandardInsert(insert);
-            stmt = handleStandardValueInsert((_ValuesInsert) insert, visible);
+            stmt = handleStandardValueInsert((_DomainInsert) insert, visible);
         } else {
             assertDialectInsert(insert);
             throw new UnsupportedOperationException();
@@ -387,7 +387,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     /*################################## blow update private method ##################################*/
 
-    protected void dialectValueInsert(_ValueInsertContext context, _ValuesInsert insert) {
+    protected void dialectValueInsert(_ValueInsertContext context, _DomainInsert insert) {
         throw new UnsupportedOperationException();
     }
 
@@ -1209,7 +1209,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     /**
      * @see #insert(Insert, Visible)
      */
-    private Stmt handleStandardValueInsert(final _ValuesInsert insert, final Visible visible) {
+    private Stmt handleStandardValueInsert(final _DomainInsert insert, final Visible visible) {
         final _ValueInsertContext nonChildContext;
         nonChildContext = ValueInsertContext.nonChild(insert, this, visible);
 

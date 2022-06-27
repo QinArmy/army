@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._DomainInsert;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._ValuesInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._MockDialects;
@@ -11,12 +11,14 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
 import io.army.util._Assert;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -26,9 +28,9 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class ValueInsert<C, T extends IDomain, IR, VR> implements Insert, Insert._ComplexColumnListClause<C, T, IR>
-        , Insert._ComplexColumnClause<T, IR>, Statement._RightParenClause<IR>, Insert._InsertSpec
-        , _ValuesInsert, Insert._CommonExpClause<C, T, IR>, Insert._ValueClause<C, T, VR> {
+abstract class ValueInsert<C, T extends IDomain, IR, VR> implements Insert, Insert._ColumnListClause<C, T, IR>
+        , Insert._StaticColumnClause<T, IR>, Statement._RightParenClause<IR>, Insert._InsertSpec
+        , _DomainInsert, Insert._CommonExpClause<C, T, IR>, Insert._DomainValueClause<C, T, VR> {
 
 
     final CriteriaContext criteriaContext;
@@ -80,13 +82,13 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> implements Insert, Inse
     }
 
     @Override
-    public final _ComplexColumnClause<T, IR> leftParen(FieldMeta<? super T> field) {
+    public final _StaticColumnClause<T, IR> leftParen(FieldMeta<? super T> field) {
         this.addField(field);
         return this;
     }
 
     @Override
-    public final _ComplexColumnClause<T, IR> comma(FieldMeta<? super T> field) {
+    public final _StaticColumnClause<T, IR> comma(FieldMeta<? super T> field) {
         this.addField(field);
         return this;
     }
@@ -95,144 +97,6 @@ abstract class ValueInsert<C, T extends IDomain, IR, VR> implements Insert, Inse
     public final IR rightParen() {
         this.finishFieldList();
         return this.endColumnList();
-    }
-
-
-    @Override
-    public final IR common(final FieldMeta<? super T> field, final @Nullable Object value) {
-        if (!field.insertable()) {
-            throw CriteriaContextStack.criteriaError(_Exceptions::nonInsertableField, field);
-        }
-        final String fieldName = field.fieldName();
-        if (_MetaBridge.UPDATE_TIME.equals(fieldName)
-                || _MetaBridge.VERSION.equals(fieldName)
-                || _MetaBridge.CREATE_TIME.equals(fieldName)) {
-            String m = String.format("Common expression don't support %s", field);
-            throw CriteriaContextStack.criteriaError(m);
-        }
-        if (!this.migration && field.generatorType() != null) {
-            throw CriteriaContextStack.criteriaError(_Exceptions::armyManageField, field);
-        }
-        Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
-        if (commonExpMap == null) {
-            commonExpMap = new HashMap<>();
-            this.commonExpMap = commonExpMap;
-        }
-        final Expression exp;
-        if (value == null) {
-            if (this.preferLiteral) {
-                exp = SQLs.nullWord();
-            } else {
-                exp = SQLs._nullParam();
-            }
-        } else if (value instanceof SubQuery && !(value instanceof ScalarExpression)) {
-            throw CriteriaContextStack.criteriaError(_Exceptions::nonScalarSubQuery, (SubQuery) value);
-        } else if (value instanceof Expression) {
-            exp = (Expression) value;
-        } else {
-            exp = SQLs.param(field, value);
-        }
-        if (commonExpMap.putIfAbsent(field, (ArmyExpression) exp) != null) {
-            String m = String.format("duplication common expression for %s.", field);
-            throw CriteriaContextStack.criteriaError(m);
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final IR commonLiteral(FieldMeta<? super T> field, @Nullable Object value) {
-        return this.common(field, SQLs._nullableLiteral(field, value));
-    }
-
-    @Override
-    public final IR commonExp(FieldMeta<? super T> field, Function<C, ? extends Expression> function) {
-        final Expression expression;
-        expression = function.apply(this.criteria);
-        if (expression == null) {
-            throw CriteriaContextStack.criteriaError("return null,not expression.");
-        }
-        return this.common(field, expression);
-    }
-
-    @Override
-    public final IR commonExp(FieldMeta<? super T> field, Supplier<? extends Expression> supplier) {
-        final Expression expression;
-        expression = supplier.get();
-        if (expression == null) {
-            throw CriteriaContextStack.criteriaError("return null,not expression.");
-        }
-        return this.common(field, expression);
-    }
-
-    @Override
-    public final IR commonDefault(FieldMeta<? super T> field) {
-        return this.common(field, SQLs.defaultWord());
-    }
-
-    @Override
-    public final IR commonNull(FieldMeta<? super T> field) {
-        return this.common(field, SQLs.nullWord());
-    }
-
-
-    @Override
-    public final IR ifCommon(FieldMeta<? super T> field, Function<C, ?> function) {
-        final Object value;
-        value = function.apply(this.criteria);
-        if (value != null) {
-            this.common(field, value);
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final IR ifCommon(FieldMeta<? super T> field, Supplier<?> supplier) {
-        final Object value;
-        value = supplier.get();
-        if (value != null) {
-            this.common(field, value);
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final IR ifCommon(FieldMeta<? super T> field, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.common(field, value);
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final IR ifCommonLiteral(FieldMeta<? super T> field, Supplier<?> supplier) {
-        final Object value;
-        value = supplier.get();
-        if (value != null) {
-            this.common(field, SQLs._nonNullLiteral(field, value));
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final IR ifCommonLiteral(FieldMeta<? super T> field, Function<C, ?> function) {
-        final Object value;
-        value = function.apply(this.criteria);
-        if (value != null) {
-            this.common(field, SQLs._nonNullLiteral(field, value));
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final IR ifCommonLiteral(FieldMeta<? super T> field, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.common(field, SQLs._nonNullLiteral(field, value));
-        }
-        return (IR) this;
     }
 
     @Override

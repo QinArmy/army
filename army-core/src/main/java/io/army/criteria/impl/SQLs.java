@@ -37,25 +37,25 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static Insert._StandardLiteralOptionSpec<Void> valueInsert() {
-        return StandardValueInsert.create(null);
+    public static Insert._StandardDomainOptionSpec<Void> domainInsert() {
+        return StandardInserts.domainInsert(null);
     }
 
-    /**
-     * create a standard insert api object.
-     * <p>
-     *     <ul>
-     *         <li>see {@code io.army.sync.GenericSyncApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>
-     *         <li> see {@code io.army.reactive.GenericReactiveApiSession#valueInsert(io.army.criteria.Insert, io.army.criteria.Visible)}</li>
-     *     </ul>
-     * </p>
-     *
-     * @return a standard insert api object.
-     */
-    public static <C> Insert._StandardLiteralOptionSpec<C> valueInsert(C criteria) {
+    public static <C> Insert._StandardDomainOptionSpec<C> domainInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardValueInsert.create(criteria);
+        return StandardInserts.domainInsert(criteria);
     }
+
+
+    public static Insert._StandardValueOptionSpec<Void> valueInsert() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> Insert._StandardValueOptionSpec<C> valueInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
 
     public static Insert._StandardSubQueryInsertClause<Void> subQueryInsert() {
         return StandardSubQueryInsert.create(null);

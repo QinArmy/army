@@ -45,7 +45,7 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
     }
 
     private static final class SingleTableColumns<C, T extends IDomain>
-            extends SubQueryInsertSupport.SubQueryColumn<C, T, Insert._StandardSubQuerySpec<C>>
+            extends InsertSupport.SubQueryColumn<C, T, Insert._StandardSubQuerySpec<C>>
             implements Insert._StandardSingleColumnsSpec<C, T> {
 
         private SingleTableColumns(CriteriaContext criteriaContext, SingleTableMeta<T> table) {
@@ -66,7 +66,7 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
     }//SingleTableColumns
 
     private static final class SingleTableSubQueryInsert<C>
-            extends SubQueryInsertSupport.SubQueryClause<C, Insert._InsertSpec>
+            extends InsertSupport.SubQueryClause<C, Insert._InsertSpec>
             implements Insert._InsertSpec, Insert, StandardStatement, _SubQueryInsert, Insert._StandardSubQuerySpec<C> {
 
         private final SingleTableMeta<?> table;
@@ -161,7 +161,7 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
 
 
     private static final class ParentTableColumns<C, P extends IDomain, T extends IDomain>
-            extends SubQueryInsertSupport.SubQueryColumn<C, P, Insert._StandardParentSubQueryClause<C, T>>
+            extends InsertSupport.SubQueryColumn<C, P, Insert._StandardParentSubQueryClause<C, T>>
             implements Insert._StandardParentColumnsSpec<C, P, T> {
 
 
@@ -186,7 +186,7 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
 
 
     private static final class ParenTableSubQueryClause<C, T extends IDomain>
-            extends SubQueryInsertSupport.SubQueryClause<C, Insert._StandardSingleColumnsSpec<C, T>>
+            extends InsertSupport.SubQueryClause<C, Insert._StandardSingleColumnsSpec<C, T>>
             implements Insert._StandardParentSubQueryClause<C, T> {
 
         private final ChildTableMeta<T> table;
@@ -215,7 +215,7 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
 
 
     private static final class ChildTableColumns<C, T extends IDomain>
-            extends SubQueryInsertSupport.SubQueryColumn<C, T, Insert._StandardSubQuerySpec<C>>
+            extends InsertSupport.SubQueryColumn<C, T, Insert._StandardSubQuerySpec<C>>
             implements Insert._StandardSingleColumnsSpec<C, T> {
 
         private final List<FieldMeta<?>> parentFieldList;
@@ -242,7 +242,7 @@ final class StandardSubQueryInsert<C> implements Insert._StandardSubQueryInsertC
 
 
     private static final class ChildSubQueryInsert<C>
-            extends SubQueryInsertSupport.SubQueryClause<C, Insert._InsertSpec>
+            extends InsertSupport.SubQueryClause<C, Insert._InsertSpec>
             implements Insert._InsertSpec, Insert, StandardStatement, _SubQueryInsert, Insert._StandardSubQuerySpec<C> {
 
         private final ChildTableMeta<?> table;

@@ -225,7 +225,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             throw new IllegalArgumentException(m);
         }
         final Insert stmt;
-        stmt = SQLs.valueInsert(table)
+        stmt = SQLs.domainInsert(table)
                 .preferLiteral(preferLiteral)
                 .nullHandle(mode)
                 .insertInto(table)
@@ -276,7 +276,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             throw new IllegalArgumentException(m);
         }
         final Insert stmt;
-        stmt = SQLs.valueInsert(table)
+        stmt = SQLs.domainInsert(table)
                 .preferLiteral(preferLiteral)
                 .nullHandle(mode)
                 .insertInto(table)
@@ -451,10 +451,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             affectedRows = this.stmtExecutor.insert(stmt, tx == null ? 0 : tx.nextTimeout());
 
             //4. validate value insert affected rows
-            if (insert instanceof _ValuesInsert
-                    && affectedRows != ((_ValuesInsert) insert).domainList().size()) {
+            if (insert instanceof _DomainInsert
+                    && affectedRows != ((_DomainInsert) insert).domainList().size()) {
                 String m = String.format("value list size is %s,but affected %s rows."
-                        , ((_ValuesInsert) insert).domainList().size(), affectedRows);
+                        , ((_DomainInsert) insert).domainList().size(), affectedRows);
                 throw new ExecutorExecutionException(m);
             }
             return affectedRows;
