@@ -334,13 +334,13 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
 
     interface _StandardStaticValueLeftParenClause<C, F extends TableField>
-            extends _StaticValueLeftParenClause<C, F, _StaticColumnValueClause<C, F, _InsertSpec>> {
+            extends _StaticValueLeftParenClause<C, F, _InsertSpec> {
 
     }
 
 
     interface _StandardStaticValuesLeftParenClause<C, F extends TableField>
-            extends _StaticValueLeftParenClause<C, F, _StaticColumnValueClause<C, F, _StandardStaticValuesLeftParenSpec<C, F>>> {
+            extends _StaticValueLeftParenClause<C, F, _StandardStaticValuesLeftParenSpec<C, F>> {
 
     }
 

@@ -58,12 +58,12 @@ public abstract class SQLs extends Functions {
 
 
     public static Insert._StandardSubQueryInsertClause<Void> subQueryInsert() {
-        return StandardSubQueryInsert.create(null);
+       throw new UnsupportedOperationException();
     }
 
     public static <C> Insert._StandardSubQueryInsertClause<C> subQueryInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardSubQueryInsert.create(criteria);
+        throw new UnsupportedOperationException();
     }
 
     public static Update.StandardUpdateSpec<Void> domainUpdate() {

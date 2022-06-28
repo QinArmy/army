@@ -26,13 +26,14 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.3.3</version>
-            <scope>test</scope>
+            <optional>true</optional>
         </dependency>
 
         <!--  optional jdbc driver    -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.28</version>
             <optional>true</optional>
         </dependency>
         <dependency>

@@ -168,6 +168,7 @@ abstract class InsertSupport {
             return map;
         }
 
+
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
             final _Dialect d;
@@ -446,6 +447,11 @@ abstract class InsertSupport {
             this.commonExpMap = null;
         }
 
+        @Override
+        public final boolean isMigration() {
+            return this.migration;
+        }
+
         final void unmodifiedCommonExpMap() {
             final Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
             if (map == null) {
@@ -549,10 +555,6 @@ abstract class InsertSupport {
             return (VR) this;
         }
 
-        @Override
-        public final boolean isMigration() {
-            return this.migration;
-        }
 
         @Override
         public final NullHandleMode nullHandle() {

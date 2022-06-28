@@ -211,31 +211,37 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public _StandardStaticValueLeftParenClause<C, F> value() {
-            return null;
+            this.unmodifiedCommonExpMap();
+            return new StandardStaticValueColumnsClause<>(this);
         }
 
         @Override
         public _InsertSpec value(Consumer<ColumnConsumer<F>> consumer) {
+            this.unmodifiedCommonExpMap();
             return null;
         }
 
         @Override
         public _InsertSpec value(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            this.unmodifiedCommonExpMap();
             return null;
         }
 
         @Override
         public _StandardStaticValuesLeftParenClause<C, F> values() {
+            this.unmodifiedCommonExpMap();
             return null;
         }
 
         @Override
         public _InsertSpec values(Consumer<RowConstructor<F>> consumer) {
+            this.unmodifiedCommonExpMap();
             return null;
         }
 
         @Override
         public _InsertSpec values(BiConsumer<C, RowConstructor<F>> consumer) {
+            this.unmodifiedCommonExpMap();
             return null;
         }
 
@@ -243,6 +249,7 @@ abstract class StandardInserts extends InsertSupport {
         public void prepared() {
 
         }
+
 
         @Override
         public boolean isPrepared() {
@@ -258,7 +265,8 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardValueInsert
 
     private static final class StandardStaticValueColumnsClause<C, F extends TableField>
-            extends StaticValueColumnClause<C, F, Insert._InsertSpec> {
+            extends StaticValueColumnClause<C, F, Insert._InsertSpec>
+            implements Insert._StandardStaticValueLeftParenClause<C, F> {
 
         final StandardValueClause<?, ?, ?> clause;
 
@@ -271,6 +279,7 @@ abstract class StandardInserts extends InsertSupport {
             this.clause = clause;
             this.commonExpMap = clause.commonExpMap();
         }
+
 
         @Override
         public Insert._InsertSpec rightParen() {

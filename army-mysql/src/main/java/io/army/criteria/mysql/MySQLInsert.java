@@ -89,7 +89,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _ValueInsertOptionSpec<C> extends NullOptionClause<_ValueInsertSpec<C>>, _ValueInsertSpec<C> {
+    interface _ValueInsertOptionSpec<C> {
 
     }
 
@@ -113,8 +113,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _ComplexColumnListSpec<C, T extends IDomain> extends _ColumnListClause<C, T, _ValuesSpec<C, T>>
-            , _ValuesSpec<C, T> {
+    interface _ComplexColumnListSpec<C, T extends IDomain> extends _ValuesSpec<C, T> {
 
     }
 

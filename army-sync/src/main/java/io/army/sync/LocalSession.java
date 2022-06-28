@@ -2,7 +2,6 @@ package io.army.sync;
 
 import io.army.ArmyException;
 import io.army.criteria.*;
-import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner.*;
 import io.army.domain.IDomain;
 import io.army.env.ArmyKey;
@@ -224,15 +223,15 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             String m = String.format("Not found %s for %s.", TableMeta.class.getName(), domain.getClass().getName());
             throw new IllegalArgumentException(m);
         }
-        final Insert stmt;
-        stmt = SQLs.domainInsert(table)
-                .preferLiteral(preferLiteral)
-                .nullHandle(mode)
-                .insertInto(table)
-                .value(domain)
-                .asInsert();
-
-        this.insert(stmt, visible);
+//        final Insert stmt;
+//        stmt = SQLs.domainInsert(table)
+//                .nullHandle(mode)
+//                .preferLiteral(preferLiteral)
+//                .insertInto(table)
+//                .value(domain)
+//                .asInsert();
+//
+//        this.insert(stmt, visible);
     }
 
 
@@ -275,14 +274,14 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             String m = String.format("Not found %s for %s.", TableMeta.class.getName(), domainClass);
             throw new IllegalArgumentException(m);
         }
-        final Insert stmt;
-        stmt = SQLs.domainInsert(table)
-                .preferLiteral(preferLiteral)
-                .nullHandle(mode)
-                .insertInto(table)
-                .values(domainList)
-                .asInsert();
-        this.insert(stmt, visible);
+//        final Insert stmt;
+//        stmt = SQLs.domainInsert(table)
+//                .preferLiteral(preferLiteral)
+//                .nullHandle(mode)
+//                .insertInto(table)
+//                .values(domainList)
+//                .asInsert();
+//        this.insert(stmt, visible);
     }
 
     @Override

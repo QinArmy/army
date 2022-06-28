@@ -39,7 +39,7 @@
 
         <mssql-jdbc.version>8.2.2.jre13</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
-        <mysql.versioin>8.0.27</mysql.versioin>
+        <mysql.versioin>8.0.28</mysql.versioin>
         <!-- javax  -->
         <jsr305.version>3.0.2</jsr305.version>
         <army.version>${project.version}</army.version>
@@ -134,17 +134,6 @@
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
                 <version>${jsr305.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>42.3.3</version>
-            </dependency>
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>${mysql.versioin}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>

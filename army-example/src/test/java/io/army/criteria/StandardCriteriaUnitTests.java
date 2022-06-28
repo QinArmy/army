@@ -33,25 +33,25 @@ public class StandardCriteriaUnitTests {
 
 
     public <T extends IDomain> void myTest(SingleTableMeta<T> table) {
-        T domain = null;
-        final Insert stmt;
-        stmt = SQLs.domainInsert()
-                .insertInto(table)
-                .leftParen(table.getField(""))
-                .comma(table.getField(""))
-                .rightParen()
-                .common(table.getField(""), 0)
-                .values()
-
-                .leftParen(table.getField(""), 0)
-                .comma(table.getField(""), 0)
-                .rightParen()
-
-                .leftParen(table.getField(""), 0)
-                .comma(table.getField(""), 0)
-                .rightParen()
-
-                .asInsert();
+//        T domain = null;
+//        final Insert stmt;
+//        stmt = SQLs.domainInsert()
+//                .insertInto(table)
+//                .leftParen(table.getField(""))
+//                .comma(table.getField(""))
+//                .rightParen()
+//                .common(table.getField(""), 0)
+//                .values()
+//
+//                .leftParen(table.getField(""), 0)
+//                .comma(table.getField(""), 0)
+//                .rightParen()
+//
+//                .leftParen(table.getField(""), 0)
+//                .comma(table.getField(""), 0)
+//                .rightParen()
+//
+//                .asInsert();
     }
 
     @Test

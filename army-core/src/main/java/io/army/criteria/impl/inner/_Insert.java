@@ -24,7 +24,6 @@ public interface _Insert extends _Statement {
 
         boolean isMigration();
 
-
         Map<FieldMeta<?>, _Expression> commonExpMap();
 
     }
