@@ -205,15 +205,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _StaticValueLeftParenClause<C, F extends TableField, LR> {
+    interface _StaticValueLeftParenClause<C, F extends TableField, VR> {
 
-        LR leftParen(F field, @Nullable Object value);
+        _StaticColumnValueClause<C, F, VR> leftParen(F field, @Nullable Object value);
 
-        LR leftParenLiteral(F field, @Nullable Object value);
+        _StaticColumnValueClause<C, F, VR> leftParenLiteral(F field, @Nullable Object value);
 
-        LR leftParenExp(F field, Supplier<? extends Expression> supplier);
+        _StaticColumnValueClause<C, F, VR> leftParenExp(F field, Supplier<? extends Expression> supplier);
 
-        LR leftParenExp(F field, Function<C, ? extends Expression> supplier);
+        _StaticColumnValueClause<C, F, VR> leftParenExp(F field, Function<C, ? extends Expression> function);
 
     }
 

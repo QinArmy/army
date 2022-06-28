@@ -17,8 +17,12 @@ public interface _Insert extends _Statement {
 
     List<FieldMeta<?>> childFieldList();
 
+    Map<FieldMeta<?>, Boolean> fieldMap();
 
-    interface _CommonExpInsert {
+
+    interface _CommonExpInsert extends _Insert {
+
+        boolean isMigration();
 
 
         Map<FieldMeta<?>, _Expression> commonExpMap();

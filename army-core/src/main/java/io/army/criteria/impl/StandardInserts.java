@@ -1,9 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Insert;
-import io.army.criteria.NullHandleMode;
-import io.army.criteria.StandardStatement;
-import io.army.criteria.TableField;
+import io.army.criteria.*;
+import io.army.criteria.impl.inner._Expression;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -11,6 +9,11 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * <p>
@@ -28,6 +31,10 @@ abstract class StandardInserts extends InsertSupport {
 
     static <C> Insert._StandardDomainOptionSpec<C> domainInsert(@Nullable C criteria) {
         return new StandardDomainOptionClause<>(criteria);
+    }
+
+    static <C> Insert._StandardValueOptionSpec<C> valueInsert(@Nullable C criteria) {
+        return new StandardValueInsertOptionClause<>(criteria);
     }
 
 
@@ -144,6 +151,183 @@ abstract class StandardInserts extends InsertSupport {
 
 
     }//StandardDomainInsert
+
+
+    private static final class StandardValueInsertOptionClause<C>
+            implements Insert._StandardValueOptionSpec<C>, InsertOptions {
+
+        private final CriteriaContext criteriaContext;
+
+        private boolean migration;
+
+        public StandardValueInsertOptionClause(@Nullable C criteria) {
+            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
+
+        @Override
+        public Insert._StandardValueInsertIntoClause<C> migration(boolean migration) {
+            this.migration = migration;
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> Insert._StandardColumnsSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
+            return new StandardValueClause<>(this.criteriaContext, this, table);
+        }
+
+        @Override
+        public <T extends IDomain> Insert._StandardColumnsSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
+            return new StandardValueClause<>(this.criteriaContext, this, table);
+        }
+
+        @Override
+        public boolean isMigration() {
+            return this.migration;
+        }
+
+        @Override
+        public NullHandleMode nullHandle() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isPreferLiteral() {
+            //always false
+            return false;
+        }
+
+
+    }//StandardValueInsertOptionClause
+
+    private static final class StandardValueClause<C, T extends IDomain, F extends TableField>
+            extends CommonExpClause<C, F, Insert._StandardCommonExpSpec<C, T, F>, Insert._StandardCommonExpSpec<C, T, F>>
+            implements Insert._StandardColumnsSpec<C, T, F> {
+
+
+        private StandardValueClause(CriteriaContext criteriaContext, InsertOptions options, TableMeta<?> table) {
+            super(criteriaContext, options, table);
+        }
+
+        @Override
+        public _StandardStaticValueLeftParenClause<C, F> value() {
+            return null;
+        }
+
+        @Override
+        public _InsertSpec value(Consumer<ColumnConsumer<F>> consumer) {
+            return null;
+        }
+
+        @Override
+        public _InsertSpec value(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            return null;
+        }
+
+        @Override
+        public _StandardStaticValuesLeftParenClause<C, F> values() {
+            return null;
+        }
+
+        @Override
+        public _InsertSpec values(Consumer<RowConstructor<F>> consumer) {
+            return null;
+        }
+
+        @Override
+        public _InsertSpec values(BiConsumer<C, RowConstructor<F>> consumer) {
+            return null;
+        }
+
+        @Override
+        public void prepared() {
+
+        }
+
+        @Override
+        public boolean isPrepared() {
+            return false;
+        }
+
+        @Override
+        _StandardCommonExpSpec<C, T, F> columnListEnd() {
+            return null;
+        }
+
+
+    }//StandardValueInsert
+
+    private static final class StandardStaticValueColumnsClause<C, F extends TableField>
+            extends StaticValueColumnClause<C, F, Insert._InsertSpec> {
+
+        final StandardValueClause<?, ?, ?> clause;
+
+        final Map<FieldMeta<?>, _Expression> commonExpMap;
+
+        final Map<FieldMeta<?>, _Expression> valueMap = new HashMap<>();
+
+        private StandardStaticValueColumnsClause(StandardValueClause<C, ?, F> clause) {
+            super(clause.criteriaContext);
+            this.clause = clause;
+            this.commonExpMap = clause.commonExpMap();
+        }
+
+        @Override
+        public Insert._InsertSpec rightParen() {
+            Map<FieldMeta<?>, _Expression> valueMap = this.valueMap;
+            return new StandardValueInsert(this.clause, valueMap);
+        }
+
+        @Override
+        void addValuePair(final FieldMeta<?> field, final _Expression value) {
+            if (!this.clause.containField(field)) {
+
+            }
+            if (this.commonExpMap.containsKey(field)) {
+
+            }
+            if (this.valueMap.putIfAbsent(field, value) != null) {
+
+            }
+        }
+
+
+    }//StaticValueClause
+
+    static final class StandardValueInsert extends ValueInsertStatement implements Insert._InsertSpec {
+
+        private boolean prepared;
+
+        private StandardValueInsert(_CommonExpInsert clause, Map<FieldMeta<?>, _Expression> rowValues) {
+            super(clause, rowValues);
+        }
+
+        @Override
+        public Insert asInsert() {
+            _Assert.nonPrepared(this.prepared);
+            this.prepared = true;
+            return this;
+        }
+
+        @Override
+        public void prepared() {
+            _Assert.prepared(this.prepared);
+
+        }
+
+        @Override
+        public boolean isPrepared() {
+            return this.prepared;
+        }
+
+        @Override
+        public void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = false;
+        }
+
+
+    }//StandardValueInsert
 
 
 }

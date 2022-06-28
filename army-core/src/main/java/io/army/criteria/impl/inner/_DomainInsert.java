@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface _DomainInsert extends _Insert, _Insert._CommonExpInsert {
 
-    boolean isMigration();
 
     NullHandleMode nullHandle();
 

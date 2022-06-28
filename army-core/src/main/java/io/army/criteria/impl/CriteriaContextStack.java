@@ -111,6 +111,12 @@ abstract class CriteriaContextStack {
         }
     }
 
+    static void assertTrue(boolean b) {
+        if (!b) {
+            throw new IllegalArgumentException();
+        }
+    }
+
     static void assertNonNull(@Nullable Object obj, String message) {
         if (obj == null) {
             throw new NullPointerException(message);

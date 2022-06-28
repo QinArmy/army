@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._DomainInsert;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._ValueInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._MockDialects;
@@ -60,7 +61,10 @@ abstract class InsertSupport {
 
         private List<FieldMeta<?>> childFieldList;
 
+        private Map<FieldMeta<?>, Boolean> fieldMap;
+
         ColumnsClause(CriteriaContext criteriaContext, boolean migration, TableMeta<?> table) {
+            CriteriaContextStack.assertNonNull(table);
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
             this.migration = migration;
@@ -97,14 +101,11 @@ abstract class InsertSupport {
             fieldList = this.fieldList;
             childFieldList = this.childFieldList;
 
-            if ((fieldList == null || fieldList.size() == 0)
-                    && (childFieldList == null || childFieldList.size() == 0)) {
-                throw CriteriaContextStack.criteriaError("column list must non-empty");
-            }
-
+            final int size, childSize;
             if (fieldList == null) {
                 this.fieldList = Collections.emptyList();
-            } else if (fieldList.size() == 1) {
+                size = 0;
+            } else if ((size = fieldList.size()) == 1) {
                 this.fieldList = Collections.singletonList(fieldList.get(0));
             } else {
                 this.fieldList = Collections.unmodifiableList(fieldList);
@@ -112,11 +113,22 @@ abstract class InsertSupport {
 
             if (childFieldList == null) {
                 this.childFieldList = Collections.emptyList();
-            } else if (childFieldList.size() == 1) {
+                childSize = 0;
+            } else if ((childSize = childFieldList.size()) == 1) {
                 this.childFieldList = Collections.singletonList(childFieldList.get(0));
             } else {
                 this.childFieldList = Collections.unmodifiableList(childFieldList);
             }
+
+            if (size == 0 && childSize == 0) {
+                throw CriteriaContextStack.criteriaError("column list must non-empty");
+            }
+            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            if (fieldMap == null || fieldMap.size() != size + childSize) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            this.fieldMap = Collections.unmodifiableMap(fieldMap);
             return this.columnListEnd();
         }
 
@@ -147,6 +159,16 @@ abstract class InsertSupport {
         }
 
         @Override
+        public final Map<FieldMeta<?>, Boolean> fieldMap() {
+            Map<FieldMeta<?>, Boolean> map = this.fieldMap;
+            if (map == null) {
+                map = Collections.emptyMap();
+                this.fieldMap = map;
+            }
+            return map;
+        }
+
+        @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
             final _Dialect d;
             d = _MockDialects.from(dialect);
@@ -165,9 +187,28 @@ abstract class InsertSupport {
         public void clear() {
             this.fieldList = null;
             this.childFieldList = null;
+            this.fieldMap = null;
         }
 
         abstract RR columnListEnd();
+
+
+        final boolean containField(final FieldMeta<?> field) {
+            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            final TableMeta<?> table, fieldTable;
+            table = this.table;
+            final boolean match;
+            if (fieldMap != null) {
+                match = fieldMap.containsKey(field);
+            } else if ((fieldTable = field.tableMeta()) instanceof ChildTableMeta) {
+                match = fieldTable == table;
+            } else if (table instanceof ChildTableMeta) {
+                match = fieldTable == ((ChildTableMeta<?>) table).parentMeta();
+            } else {
+                match = fieldTable == table;
+            }
+            return match;
+        }
 
 
         private void addField(final F field) {
@@ -220,6 +261,16 @@ abstract class InsertSupport {
                     fieldList = new ArrayList<>();
                     this.fieldList = fieldList;
                 }
+            }
+
+            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            if (fieldMap == null) {
+                fieldMap = new HashMap<>();
+                this.fieldMap = fieldMap;
+            }
+            if (fieldMap.putIfAbsent((FieldMeta<?>) field, Boolean.TRUE) != null) {
+                String m = String.format("%s duplication", field);
+                throw CriteriaContextStack.criteriaError(m);
             }
 
         }
@@ -526,6 +577,167 @@ abstract class InsertSupport {
             this.domainList = null;
         }
     }//DomainValueClause
+
+
+    static abstract class StaticValueColumnClause<C, F extends TableField, VR>
+            implements Insert._StaticValueLeftParenClause<C, F, VR>, Insert._StaticColumnValueClause<C, F, VR> {
+
+        final CriteriaContext criteriaContext;
+
+        final C criteria;
+
+        StaticValueColumnClause(CriteriaContext criteriaContext) {
+            this.criteriaContext = criteriaContext;
+            this.criteria = criteriaContext.criteria();
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, F, VR> leftParen(F field, @Nullable Object value) {
+            this.addValuePair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+            return this;
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, F, VR> leftParenLiteral(F field, @Nullable Object value) {
+            this.addValuePair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, F, VR> leftParenExp(F field, Supplier<? extends Expression> supplier) {
+            final Expression exp;
+            exp = supplier.get();
+            CriteriaContextStack.assertTrue(exp instanceof ArmyExpression);
+            this.addValuePair((FieldMeta<?>) field, (ArmyExpression) exp);
+            return this;
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, F, VR> leftParenExp(F field, Function<C, ? extends Expression> function) {
+            final Expression exp;
+            exp = function.apply(this.criteria);
+            CriteriaContextStack.assertTrue(exp instanceof ArmyExpression);
+            this.addValuePair((FieldMeta<?>) field, (ArmyExpression) exp);
+            return this;
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, F, VR> comma(F field, @Nullable Object value) {
+            this.addValuePair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+            return this;
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, F, VR> commaLiteral(F field, @Nullable Object value) {
+            this.addValuePair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, F, VR> commaExp(F field, Supplier<? extends Expression> supplier) {
+            final Expression exp;
+            exp = supplier.get();
+            CriteriaContextStack.assertTrue(exp instanceof ArmyExpression);
+            this.addValuePair((FieldMeta<?>) field, (ArmyExpression) exp);
+            return this;
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, F, VR> commaExp(F field, Function<C, ? extends Expression> function) {
+            final Expression exp;
+            exp = function.apply(this.criteria);
+            CriteriaContextStack.assertTrue(exp instanceof ArmyExpression);
+            this.addValuePair((FieldMeta<?>) field, (ArmyExpression) exp);
+            return this;
+        }
+
+        abstract void addValuePair(FieldMeta<?> field, _Expression value);
+
+
+    }//StaticValueColumnClause
+
+
+    static abstract class ValueInsertStatement implements Insert, _ValueInsert {
+
+        private final boolean migration;
+
+        private final TableMeta<?> table;
+
+        private final List<FieldMeta<?>> fieldList;
+
+        private final List<FieldMeta<?>> childFieldList;
+
+        private final Map<FieldMeta<?>, Boolean> fieldMap;
+
+        private final Map<FieldMeta<?>, _Expression> commonExpMap;
+
+
+        private final List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+
+
+        ValueInsertStatement(_Insert._CommonExpInsert clause, Map<FieldMeta<?>, _Expression> rowValues) {
+            this.migration = clause.isMigration();
+            this.table = clause.table();
+            this.fieldList = clause.fieldList();
+            this.childFieldList = clause.childFieldList();
+
+            this.fieldMap = clause.fieldMap();
+            this.commonExpMap = clause.commonExpMap();
+            this.rowValuesList = Collections.singletonList(Collections.unmodifiableMap(rowValues));
+        }
+
+
+        @Override
+        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            final _Dialect d;
+            d = _MockDialects.from(dialect);
+            final Stmt stmt;
+            stmt = d.insert(this, visible);
+            return d.printStmt(stmt, none);
+        }
+
+        @Override
+        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+            return _MockDialects.from(dialect).insert(this, visible);
+        }
+
+        @Override
+        public final TableMeta<?> table() {
+            return this.table;
+        }
+
+        @Override
+        public final List<FieldMeta<?>> fieldList() {
+            return this.fieldList;
+        }
+
+        @Override
+        public final List<FieldMeta<?>> childFieldList() {
+            return this.childFieldList;
+        }
+
+        @Override
+        public final Map<FieldMeta<?>, Boolean> fieldMap() {
+            return this.fieldMap;
+        }
+
+        @Override
+        public final boolean isMigration() {
+            return this.migration;
+        }
+
+        @Override
+        public final Map<FieldMeta<?>, _Expression> commonExpMap() {
+            return this.commonExpMap;
+        }
+
+        @Override
+        public final List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
+            return this.rowValuesList;
+        }
+
+
+    }//ValueInsertStatement
 
 
     static abstract class SubQueryColumn<C, T extends IDomain, IR> implements Insert._SingleColumnListClause<C, T, IR>
