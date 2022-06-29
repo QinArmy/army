@@ -48,22 +48,22 @@ public abstract class SQLs extends Functions {
 
 
     public static Insert._StandardValueOptionSpec<Void> valueInsert() {
-        throw new UnsupportedOperationException();
+        return StandardInserts.valueInsert(null);
     }
 
     public static <C> Insert._StandardValueOptionSpec<C> valueInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return StandardInserts.valueInsert(criteria);
     }
 
 
-    public static Insert._StandardSubQueryInsertClause<Void> subQueryInsert() {
-       throw new UnsupportedOperationException();
+    public static Insert._StandardSubQueryInsertClause<Void> rowSetInsert() {
+        return StandardInserts.rowSetInsert(null);
     }
 
-    public static <C> Insert._StandardSubQueryInsertClause<C> subQueryInsert(C criteria) {
+    public static <C> Insert._StandardSubQueryInsertClause<C> rowSetInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return StandardInserts.rowSetInsert(criteria);
     }
 
     public static Update.StandardUpdateSpec<Void> domainUpdate() {

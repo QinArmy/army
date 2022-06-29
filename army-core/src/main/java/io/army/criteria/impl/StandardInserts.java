@@ -37,6 +37,10 @@ abstract class StandardInserts extends InsertSupport {
         return new StandardValueInsertOptionClause<>(criteria);
     }
 
+    static <C> Insert._StandardSubQueryInsertClause<C> rowSetInsert(@Nullable C criteria) {
+        return new StandardSubQueryInsertIntoClause<C>(criteria);
+    }
+
 
     /*-------------------below standard domain insert syntax class-------------------*/
     private static final class StandardDomainOptionClause<C> implements Insert._StandardDomainOptionSpec<C>, InsertOptions {
@@ -463,6 +467,9 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardValueInsert
 
 
+    /**
+     * @see #rowSetInsert(Object)
+     */
     private static final class StandardSubQueryInsertIntoClause<C> implements Insert._StandardSubQueryInsertClause<C> {
 
         private final CriteriaContext criteriaContext;
@@ -474,37 +481,39 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> Insert._StandardSingleColumnsClause<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return new StandardSingleColumnsClause<>(this.criteriaContext, true, table);
+            return new StandardSingleColumnsClause<>(this.criteriaContext, table);
         }
         @Override
         public <P extends IDomain, T extends IDomain> Insert._StandardParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> insertInto(ComplexTableMeta<P, T> table) {
-            return null;
+            CriteriaContextStack.assertNonNull(table);
+            return new StandardParentColumnClause<>(this.criteriaContext, table);
         }
 
 
     }//StandardSubQueryInsertIntoClause
 
-
+    /**
+     * @see StandardSubQueryInsertIntoClause#insertInto(SingleTableMeta)
+     */
     private static final class StandardSingleColumnsClause<C, F extends TableField>
             extends ColumnsClause<C, F, Insert._StandardSpaceSubQueryClause<C>>
             implements Insert._StandardSingleColumnsClause<C, F>, Insert._StandardSpaceSubQueryClause<C> {
 
-        private StandardSingleColumnsClause(CriteriaContext criteriaContext, boolean migration
-                , SingleTableMeta<?> table) {
-            super(criteriaContext, migration, table);
+        private StandardSingleColumnsClause(CriteriaContext criteriaContext, SingleTableMeta<?> table) {
+            super(criteriaContext, true, table);
         }
 
 
         @Override
         public Insert._InsertSpec space(Supplier<? extends SubQuery> supplier) {
-            return new StandardRowSetInsertStatement(this.criteriaContext, this, supplier.get());
+            return new StandardRowSetInsertStatement(this, supplier.get());
         }
 
         @Override
         public Insert._InsertSpec space(Function<C, ? extends SubQuery> function) {
             final SubQuery subQuery;
             subQuery = function.apply(this.criteriaContext.criteria());
-            return new StandardRowSetInsertStatement(this.criteriaContext, this, subQuery);
+            return new StandardRowSetInsertStatement(this, subQuery);
         }
 
         @Override
@@ -529,14 +538,101 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardSingleColumnsClause
 
 
+    private static final class StandardParentColumnClause<C, PF extends TableField, TF extends TableField>
+            extends ColumnsClause<C, PF, Insert._StandardParentSubQueryClause<C, TF>>
+            implements Insert._StandardParentColumnsClause<C, PF, TF>
+            , Insert._StandardParentSubQueryClause<C, TF> {
+
+        private final ChildTableMeta<?> childTable;
+        private StandardParentColumnClause(CriteriaContext criteriaContext, ChildTableMeta<?> table) {
+            super(criteriaContext, true, table.parentMeta());
+            this.childTable = table;
+        }
+
+        @Override
+        public _StandardSingleColumnsClause<C, TF> space(Supplier<? extends SubQuery> supplier) {
+            return new StandardChildColumnClause<>(this, supplier.get());
+        }
+        @Override
+        public _StandardSingleColumnsClause<C, TF> space(Function<C, ? extends SubQuery> function) {
+            return new StandardChildColumnClause<>(this, function.apply(this.criteria));
+        }
+        @Override
+        public void prepared() {
+            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public boolean isPrepared() {
+            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        _StandardParentSubQueryClause<C, TF> columnListEnd(int fieldSize, int childFieldSize) {
+            if (fieldSize == 0 || childFieldSize > 0) {
+                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+            }
+            return this;
+        }
+    }//StandardParentColumnClause
+
+
+    private static final class StandardChildColumnClause<C, F extends TableField>
+            extends ColumnsClause<C, F, Insert._StandardSpaceSubQueryClause<C>>
+            implements Insert._StandardSpaceSubQueryClause<C>, Insert._StandardSingleColumnsClause<C, F> {
+        private final _Insert parentClause;
+
+        private final RowSet parentRowSet;
+
+        private StandardChildColumnClause(StandardParentColumnClause<?, ?, ?> clause, RowSet parentRowSet) {
+            super(clause.criteriaContext, true, clause.childTable);
+            this.parentClause = clause;
+            this.parentRowSet = parentRowSet;
+        }
+
+        @Override
+        public _InsertSpec space(Supplier<? extends SubQuery> supplier) {
+            return new StandardRowSetInsertStatement(this, supplier.get());
+        }
+        @Override
+        public _InsertSpec space(Function<C, ? extends SubQuery> function) {
+            return new StandardRowSetInsertStatement(this, function.apply(this.criteria));
+        }
+        @Override
+        public void prepared() {
+            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public boolean isPrepared() {
+            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        _StandardSpaceSubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
+            if (fieldSize > 0 || childFieldSize == 0) {
+                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+            }
+            return this;
+        }
+
+    }//StandardChildColumnClause
+
+
     static final class StandardRowSetInsertStatement extends RowSetInsertStatement implements StandardStatement {
 
         private final CriteriaContext criteriaContext;
         private Boolean prepared;
 
-        private StandardRowSetInsertStatement(CriteriaContext criteriaContext, _Insert clause, RowSet rowSet) {
+
+        private StandardRowSetInsertStatement(StandardSingleColumnsClause<?, ?> clause, RowSet rowSet) {
             super(clause, rowSet);
-            this.criteriaContext = criteriaContext;
+            this.criteriaContext = clause.criteriaContext;
+        }
+
+        private StandardRowSetInsertStatement(StandardChildColumnClause<?, ?> clause, RowSet childRowSet) {
+            super(clause.parentClause, clause.parentRowSet, clause, childRowSet);
+            this.criteriaContext = clause.criteriaContext;
         }
 
 

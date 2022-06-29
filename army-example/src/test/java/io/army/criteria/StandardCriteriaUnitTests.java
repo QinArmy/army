@@ -390,7 +390,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void singleTableSubQueryInsert() {
         final Insert stmt;
-        stmt = SQLs.subQueryInsert()
+        stmt = SQLs.rowSetInsert()
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaRegion_.id)
                 .comma(ChinaRegion_.createTime)
@@ -417,7 +417,7 @@ public class StandardCriteriaUnitTests {
     @Test
     public void childTableSubQueryInsert() {
         final Insert stmt;
-        stmt = SQLs.subQueryInsert()
+        stmt = SQLs.rowSetInsert()
                 .insertInto(ChinaCity_.T)
 
                 .leftParen(ChinaRegion_.id)

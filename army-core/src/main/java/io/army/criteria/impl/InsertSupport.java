@@ -946,6 +946,26 @@ abstract class InsertSupport {
             this.childRowSet = null;
         }
 
+        RowSetInsertStatement(_Insert parentClause, RowSet parentSet, _Insert childClause, RowSet childRowSet) {
+            this.table = childClause.table();
+            assert this.table instanceof ChildTableMeta;
+            this.fieldList = parentClause.fieldList();
+            this.rowSet = parentSet;
+
+            this.childFieldList = childClause.childFieldList();
+            this.childRowSet = childRowSet;
+
+            final Map<FieldMeta<?>, Boolean> parentFieldMap, childFieldMap, fieldMap;
+
+            parentFieldMap = parentClause.fieldMap();
+            childFieldMap = childClause.fieldMap();
+            fieldMap = new HashMap<>((int) ((parentFieldMap.size() + childFieldMap.size()) / 0.75F));
+
+            fieldMap.putAll(parentFieldMap);
+            fieldMap.putAll(childFieldMap);
+            this.fieldMap = Collections.unmodifiableMap(fieldMap);
+        }
+
 
         @Override
         public final TableMeta<?> table() {
