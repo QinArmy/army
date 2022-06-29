@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._Query;
 import io.army.lang.Nullable;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -425,9 +424,9 @@ abstract class CriteriaUtils {
     }
 
 
-    static int selectionCount(final SubQuery query) {
+    static int selectionCount(final RowSet rowSet) {
         int count = 0;
-        for (SelectItem selectItem : ((_Query) query).selectItemList()) {
+        for (SelectItem selectItem : ((_PartRowSet) rowSet).selectItemList()) {
             if (selectItem instanceof Selection) {
                 count++;
             } else if (selectItem instanceof SelectionGroup) {

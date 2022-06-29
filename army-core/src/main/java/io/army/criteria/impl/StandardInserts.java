@@ -544,6 +544,7 @@ abstract class StandardInserts extends InsertSupport {
         public Insert asInsert() {
             _Assert.nonPrepared(this.prepared);
             CriteriaContextStack.clearContextStack(this.criteriaContext);
+            this.validateStatement();
             this.prepared = Boolean.TRUE;
             return this;
         }

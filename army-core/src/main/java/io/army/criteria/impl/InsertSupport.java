@@ -987,6 +987,34 @@ abstract class InsertSupport {
             return _MockDialects.from(dialect).insert(this, visible);
         }
 
+        /**
+         * <p>
+         * This method is invoked after {@link  CriteriaContextStack#clearContextStack(CriteriaContext)}
+         * and {@link  CriteriaContextStack#pop(CriteriaContext)}.
+         * </p>
+         */
+        final void validateStatement() {
+            final int size;
+            size = this.fieldList.size();
+            if (size == 0) {
+
+            }
+            final RowSet rowSet = this.rowSet;
+            if (rowSet == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            final int selectionSize;
+            selectionSize = CriteriaUtils.selectionCount(rowSet);
+            if (selectionSize != size) {
+
+            }
+
+            final TableMeta<?> table = this.table;
+            if (table instanceof SingleTableMeta) {
+
+            }
+        }
+
 
     }//RowSetInsertStatement
 
