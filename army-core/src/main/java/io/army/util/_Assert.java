@@ -21,14 +21,14 @@ public abstract class _Assert {
         return text;
     }
 
-    public static void prepared(boolean prepared) {
-        if (!prepared) {
+    public static void prepared(@Nullable Boolean prepared) {
+        if (prepared != null && prepared) {
             throw new CriteriaException(String.format("%s is non-prepared state.", Statement.class.getName()));
         }
     }
 
-    public static void nonPrepared(boolean prepared) {
-        if (prepared) {
+    public static void nonPrepared(@Nullable Boolean prepared) {
+        if (prepared != null) {
             throw new CriteriaException(String.format("%s is prepared state.", Statement.class.getName()));
         }
     }

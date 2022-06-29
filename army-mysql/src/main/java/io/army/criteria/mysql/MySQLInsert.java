@@ -186,7 +186,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _SingleRowSetClause<C, T extends IDomain>
-            extends Insert._SubQueryClause<C, _OnDuplicateKeyFieldUpdateSpec<C, T>> {
+            extends _SpaceSubQueryClause<C, _OnDuplicateKeyFieldUpdateSpec<C, T>> {
 
         void values(Supplier<List<Expression>> supplier);
 
@@ -201,7 +201,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _ParentRowSetClause<C, T extends IDomain>
-            extends Insert._SubQueryClause<C, _RowSetPartitionSpec<C, T>> {
+            extends _SpaceSubQueryClause<C, _RowSetPartitionSpec<C, T>> {
 
     }
 

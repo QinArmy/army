@@ -106,22 +106,6 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
-    interface _SingleColumnClause<T extends IDomain, IR> extends _RightParenClause<IR> {
-
-        _SingleColumnClause<T, IR> comma(FieldMeta<T> field);
-
-    }
-
-    interface _SingleColumnListClause<C, T extends IDomain, IR> {
-
-        _RightParenClause<IR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer);
-
-        _RightParenClause<IR> leftParen(BiConsumer<C, Consumer<FieldMeta<T>>> consumer);
-
-        _SingleColumnClause<T, IR> leftParen(FieldMeta<T> field);
-
-    }
-
 
     /**
      * @since 1.0
@@ -298,6 +282,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
+    interface _SpaceSubQueryClause<C, SR> {
+
+        SR space(Supplier<? extends SubQuery> supplier);
+
+        SR space(Function<C, ? extends SubQuery> function);
+    }
+
+
+
     /*-------------------below standard domain insert syntax interface-------------------*/
 
     interface _StandardDomainColumnsSpec<C, T extends IDomain, F extends TableField>
@@ -429,48 +422,40 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
 
     interface _StandardValueOptionSpec<C> extends _MigrationOptionClause<_StandardValueInsertIntoClause<C>>
-            , _StandardValueInsertIntoClause<C> {
+            , _NullOptionClause<_StandardValueInsertIntoClause<C>>, _StandardValueInsertIntoClause<C> {
 
     }
 
 
 
-    /*-------------------below sub query insert syntax interface -------------------*/
+    /*-------------------below standard sub query insert syntax interface -------------------*/
 
-
-    interface _SubQueryClause<C, SR> {
-
-        SR space(Supplier<? extends SubQuery> supplier);
-
-        SR space(Function<C, ? extends SubQuery> function);
-    }
 
     interface _StandardSubQueryInsertClause<C> {
 
-        <T extends IDomain> _StandardSingleColumnsSpec<C, T> insertInto(SingleTableMeta<T> table);
+        <T extends IDomain> _StandardSingleColumnsClause<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
 
-        <P extends IDomain, T extends IDomain> _StandardParentColumnsSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table);
-
-    }
-
-    interface _StandardSingleColumnsSpec<C, T extends IDomain>
-            extends _SingleColumnListClause<C, T, _StandardSubQuerySpec<C>> {
+        <P extends IDomain, T extends IDomain> _StandardParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> insertInto(ComplexTableMeta<P, T> table);
 
     }
 
-
-    interface _StandardSubQuerySpec<C> extends _SubQueryClause<C, Insert._InsertSpec> {
-
-
-    }
-
-    interface _StandardParentColumnsSpec<C, P extends IDomain, T extends IDomain>
-            extends _SingleColumnListClause<C, P, _StandardParentSubQueryClause<C, T>> {
+    interface _StandardSingleColumnsClause<C, F extends TableField>
+            extends _ColumnListClause<C, F, _StandardSpaceSubQueryClause<C>> {
 
     }
 
-    interface _StandardParentSubQueryClause<C, T extends IDomain>
-            extends _SubQueryClause<C, _StandardSingleColumnsSpec<C, T>> {
+
+    interface _StandardSpaceSubQueryClause<C> extends _SpaceSubQueryClause<C, _InsertSpec> {
+
+    }
+
+    interface _StandardParentColumnsClause<C, PF extends TableField, TF extends TableField>
+            extends _ColumnListClause<C, PF, _StandardParentSubQueryClause<C, TF>> {
+
+    }
+
+    interface _StandardParentSubQueryClause<C, F extends TableField>
+            extends _SpaceSubQueryClause<C, _StandardSingleColumnsClause<C, F>> {
 
     }
 

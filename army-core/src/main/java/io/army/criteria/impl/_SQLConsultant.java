@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._DomainInsert;
+import io.army.criteria.impl.inner._ValueInsert;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.util._ClassUtils;
@@ -36,10 +38,19 @@ public abstract class _SQLConsultant {
         }
     }
 
-    public static void assertStandardInsert(Insert insert) {
-        if (!(insert instanceof StandardInserts)) {
-            throw instanceNotMatch(insert, StandardInserts.class);
+    public static void assertStandardInsert(final Insert insert) {
+        if (insert instanceof _DomainInsert) {
+            if (!(insert instanceof StandardInserts.StandardDomainInsertStatement)) {
+                throw instanceNotMatch(insert, StandardInserts.StandardDomainInsertStatement.class);
+            }
+        } else if (insert instanceof _ValueInsert) {
+            if (!(insert instanceof StandardInserts.StandardValueInsertStatement)) {
+                throw instanceNotMatch(insert, StandardInserts.StandardValueInsertStatement.class);
+            }
+        } else if (!(insert instanceof StandardInserts.StandardRowSetInsertStatement)) {
+            throw instanceNotMatch(insert, StandardInserts.StandardRowSetInsertStatement.class);
         }
+
     }
 
     public static void assertStandardNestedItems(@Nullable NestedItems nestedItems) {
