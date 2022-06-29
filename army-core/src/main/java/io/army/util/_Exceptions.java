@@ -158,6 +158,18 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 
+    public static CriteriaException noFieldsForRowSetInsert(TableMeta<?> table) {
+
+        return new CriteriaException(String.format("No fields for row set insert for %s", table));
+    }
+
+    public static CriteriaException rowSetSelectionAndFieldSizeNotMatch(int rowSetSelectionSize, int fieldSize
+            , TableMeta<?> table) {
+        String m = String.format("RowSet selection size[%s] and field size[%s] not match for %s"
+                , rowSetSelectionSize, fieldSize, table);
+        return new CriteriaException(m);
+    }
+
     public static MetaException dontSupportOnlyDefault(Dialect dialect) {
         return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
     }

@@ -994,24 +994,30 @@ abstract class InsertSupport {
          * </p>
          */
         final void validateStatement() {
-            final int size;
-            size = this.fieldList.size();
-            if (size == 0) {
-
+            final TableMeta<?> table = this.table;
+            if (table instanceof ChildTableMeta) {
+                doValidateStatement(((ChildTableMeta<?>) table).parentMeta(), this.fieldList, this.rowSet);
+                doValidateStatement(table, this.childFieldList, this.childRowSet);
+            } else {
+                doValidateStatement(table, this.fieldList, this.rowSet);
             }
-            final RowSet rowSet = this.rowSet;
+
+        }
+
+        private static void doValidateStatement(final TableMeta<?> table, final List<FieldMeta<?>> fieldList
+                , final @Nullable RowSet rowSet) {
+            final int size;
+            size = fieldList.size();
+            if (size == 0) {
+                throw _Exceptions.noFieldsForRowSetInsert(table);
+            }
             if (rowSet == null) {
-                throw _Exceptions.castCriteriaApi();
+                throw new CriteriaException(String.format("RowSet is null for %s", table));
             }
             final int selectionSize;
             selectionSize = CriteriaUtils.selectionCount(rowSet);
             if (selectionSize != size) {
-
-            }
-
-            final TableMeta<?> table = this.table;
-            if (table instanceof SingleTableMeta) {
-
+                throw _Exceptions.rowSetSelectionAndFieldSizeNotMatch(selectionSize, size, table);
             }
         }
 
