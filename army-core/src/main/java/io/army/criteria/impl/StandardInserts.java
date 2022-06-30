@@ -484,7 +484,7 @@ abstract class StandardInserts extends InsertSupport {
             return new StandardSingleColumnsClause<>(this.criteriaContext, table);
         }
         @Override
-        public <P extends IDomain, T extends IDomain> Insert._StandardParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> insertInto(ComplexTableMeta<P, T> table) {
+        public <P extends IDomain, T extends IDomain> Insert._StandardParentColumnsClause<C, P, T> insertInto(ComplexTableMeta<P, T> table) {
             CriteriaContextStack.assertNonNull(table);
             return new StandardParentColumnClause<>(this.criteriaContext, table);
         }
@@ -538,10 +538,10 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardSingleColumnsClause
 
 
-    private static final class StandardParentColumnClause<C, PF extends TableField, TF extends TableField>
-            extends ColumnsClause<C, PF, Insert._StandardParentSubQueryClause<C, TF>>
-            implements Insert._StandardParentColumnsClause<C, PF, TF>
-            , Insert._StandardParentSubQueryClause<C, TF> {
+    private static final class StandardParentColumnClause<C, P extends IDomain, T extends IDomain>
+            extends ColumnsClause<C, FieldMeta<P>, Insert._StandardParentSubQueryClause<C, FieldMeta<T>>>
+            implements Insert._StandardParentColumnsClause<C, P, T>
+            , Insert._StandardParentSubQueryClause<C, FieldMeta<T>> {
 
         private final ChildTableMeta<?> childTable;
         private StandardParentColumnClause(CriteriaContext criteriaContext, ChildTableMeta<?> table) {
@@ -550,11 +550,11 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public _StandardSingleColumnsClause<C, TF> space(Supplier<? extends SubQuery> supplier) {
+        public _StandardSingleColumnsClause<C, FieldMeta<T>> space(Supplier<? extends SubQuery> supplier) {
             return new StandardChildColumnClause<>(this, supplier.get());
         }
         @Override
-        public _StandardSingleColumnsClause<C, TF> space(Function<C, ? extends SubQuery> function) {
+        public _StandardSingleColumnsClause<C, FieldMeta<T>> space(Function<C, ? extends SubQuery> function) {
             return new StandardChildColumnClause<>(this, function.apply(this.criteria));
         }
         @Override
@@ -568,7 +568,7 @@ abstract class StandardInserts extends InsertSupport {
             throw new UnsupportedOperationException();
         }
         @Override
-        _StandardParentSubQueryClause<C, TF> columnListEnd(int fieldSize, int childFieldSize) {
+        _StandardParentSubQueryClause<C, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
             if (fieldSize == 0 || childFieldSize > 0) {
                 throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
             }

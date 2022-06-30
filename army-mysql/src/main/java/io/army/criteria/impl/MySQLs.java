@@ -70,6 +70,24 @@ public abstract class MySQLs extends MySQLSyntax {
         throw new UnsupportedOperationException();
     }
 
+    public static MySQLReplace._AssignmentOptionSpec<Void> assignmentReplace() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLReplace._AssignmentOptionSpec<C> assignmentReplace(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    public static MySQLReplace._RowSetReplaceIntoSpec<Void> rowSetReplace() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLReplace._RowSetReplaceIntoSpec<C> rowSetReplace(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
 
     public static MySQL80Query._WithSpec<Void, Select> query() {
         return MySQL80SimpleQuery.simpleSelect(null);

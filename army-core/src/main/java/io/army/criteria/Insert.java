@@ -405,18 +405,8 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      */
     interface _StandardValueInsertIntoClause<C> {
 
-        /**
-         * <p>
-         * This method name always same with {@link  _StandardDomainInsertIntoClause#insertInto(SingleTableMeta)}
-         * </p>
-         */
         <T extends IDomain> _StandardColumnsSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
 
-        /**
-         * <p>
-         * This method name always same with {@link  _StandardDomainInsertIntoClause#insertInto(ChildTableMeta)}
-         * </p>
-         */
         <T extends IDomain> _StandardColumnsSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table);
 
     }
@@ -431,13 +421,13 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     /*-------------------below standard sub query insert syntax interface -------------------*/
 
-    interface _StandardSingleColumnsClause<C, F extends TableField>
-            extends _ColumnListClause<C, F, _StandardSpaceSubQueryClause<C>> {
+
+    interface _StandardSpaceSubQueryClause<C> extends _SpaceSubQueryClause<C, _InsertSpec> {
 
     }
 
-
-    interface _StandardSpaceSubQueryClause<C> extends _SpaceSubQueryClause<C, _InsertSpec> {
+    interface _StandardSingleColumnsClause<C, F extends TableField>
+            extends _ColumnListClause<C, F, _StandardSpaceSubQueryClause<C>> {
 
     }
 
@@ -446,8 +436,8 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
-    interface _StandardParentColumnsClause<C, PF extends TableField, TF extends TableField>
-            extends _ColumnListClause<C, PF, _StandardParentSubQueryClause<C, TF>> {
+    interface _StandardParentColumnsClause<C, P extends IDomain, T extends IDomain>
+            extends _ColumnListClause<C, FieldMeta<P>, _StandardParentSubQueryClause<C, FieldMeta<T>>> {
 
     }
 
@@ -455,7 +445,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         <T extends IDomain> _StandardSingleColumnsClause<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
 
-        <P extends IDomain, T extends IDomain> _StandardParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> insertInto(ComplexTableMeta<P, T> table);
+        <P extends IDomain, T extends IDomain> _StandardParentColumnsClause<C, P, T> insertInto(ComplexTableMeta<P, T> table);
 
     }
 
