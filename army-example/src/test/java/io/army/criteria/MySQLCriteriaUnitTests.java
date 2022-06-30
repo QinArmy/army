@@ -578,14 +578,15 @@ public class MySQLCriteriaUnitTests {
         final Insert stmt;
         stmt = MySQLs.domainInsert()
                 .preferLiteral(true)
+                //.insertInto(ChinaCity_.T)
                 .insert(Collections::emptyList, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
                 .into(ChinaCity_.T)
                 .parentPartition("P1", "P2")
                 .childPartition("C1", "C2")
                 .values(this::createCityList)
                 .onDuplicateKey()
-                .update(ChinaCity_.updateTime, LocalDateTime.now())
-                .comma(ChinaCity_.version, ChinaCity_.version.plus(1))
+                .updateLiteral(ChinaCity_.updateTime, LocalDateTime.now())
+                .comma(ChinaCity_.version, ChinaCity_.version.plus(SQLs.literal(1)))
                 .asInsert();
         printStmt(stmt);
     }

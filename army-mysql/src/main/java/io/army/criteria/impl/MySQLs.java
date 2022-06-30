@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.mysql.MySQL80Query;
-import io.army.criteria.mysql.MySQLDelete;
-import io.army.criteria.mysql.MySQLInsert;
-import io.army.criteria.mysql.MySQLUpdate;
+import io.army.criteria.mysql.*;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -51,6 +48,24 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static <C> MySQLInsert._RowSetInsertIntoSpec<C> rowSetInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    public static MySQLReplace._DomainOptionSpec<Void> domainReplace() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLReplace._DomainOptionSpec<C> domainReplace(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    public static MySQLReplace._ValueReplaceOptionSpec<Void> valueReplace() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLReplace._ValueReplaceOptionSpec<C> valueReplace(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }
