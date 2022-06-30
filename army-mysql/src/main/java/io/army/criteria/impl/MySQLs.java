@@ -27,14 +27,34 @@ public abstract class MySQLs extends MySQLSyntax {
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLInsert._AssignmentInsertOptionSpec<Void> assignmentInsert() {
+    public static MySQLInsert._ValueOptionSpec<Void> valueInsert() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> MySQLInsert._AssignmentInsertOptionSpec<C> assignmentInsert(C criteria) {
+    public static <C> MySQLInsert._ValueOptionSpec<C> valueInsert(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }
+
+
+    public static MySQLInsert._AssignmentOptionSpec<Void> assignmentInsert() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLInsert._AssignmentOptionSpec<C> assignmentInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    public static MySQLInsert._RowSetInsertIntoSpec<Void> rowSetInsert() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLInsert._RowSetInsertIntoSpec<C> rowSetInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
 
     public static MySQL80Query._WithSpec<Void, Select> query() {
         return MySQL80SimpleQuery.simpleSelect(null);

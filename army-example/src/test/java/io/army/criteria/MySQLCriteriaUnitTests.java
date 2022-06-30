@@ -580,11 +580,12 @@ public class MySQLCriteriaUnitTests {
                 .preferLiteral(true)
                 .insert(Collections::emptyList, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
                 .into(ChinaCity_.T)
-                .partition("P1", "P2")
+                .parentPartition("P1", "P2")
+                .childPartition("C1", "C2")
                 .values(this::createCityList)
-                .onDuplicateKeyUpdate()
-                .comma(ChinaCity_.updateTime, LocalDateTime.now())
-                .comma(ChinaCity_.version, SQLs::plusEqual, 1)
+                .onDuplicateKey()
+                .update(ChinaCity_.updateTime, LocalDateTime.now())
+                .comma(ChinaCity_.version, ChinaCity_.version.plus(1))
                 .asInsert();
         printStmt(stmt);
     }

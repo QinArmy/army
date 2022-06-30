@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.criteria.impl.SQLs;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -9,7 +8,10 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -213,70 +215,73 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
+    /**
+     * <p>
+     * This interface representing SET assignment_list clause in INSERT statement.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
+     */
+    interface _AssignmentSetClause<C, F extends TableField, SR> {
 
+        SR setPair(Consumer<Consumer<ItemPair>> consumer);
 
+        SR setPair(BiConsumer<C, Consumer<ItemPair>> consumer);
 
-    interface _OnDuplicateKeySetClause<C, F extends TableField, UR> {
+        SR set(F field, @Nullable Object value);
 
+        SR setLiteral(F field, @Nullable Object value);
 
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
-        UR commaPairs(Consumer<Consumer<ItemPair>> consumer);
+        SR setExp(F field, Supplier<? extends Expression> supplier);
 
-        /**
-         * @see SQLs#itemPair(DataField, Object)
-         */
-        UR commaPairs(BiConsumer<C, Consumer<ItemPair>> consumer);
+        SR setExp(F field, Function<C, ? extends Expression> function);
 
-        UR commaExp(F field, Supplier<? extends Expression> supplier);
+        SR ifSet(F field, Supplier<?> supplier);
 
-        UR commaExp(F field, Function<C, ? extends Expression> function);
+        SR ifSet(F field, Function<C, ?> function);
 
-        UR commaDefault(F field);
+        SR ifSet(F field, Function<String, ?> function, String keyName);
 
-        UR commaNull(F field);
+        SR ifSetLiteral(F field, Supplier<?> supplier);
 
-        UR comma(F field, @Nullable Object value);
+        SR ifSetLiteral(F field, Function<C, ?> function);
 
-        UR commaLiteral(F field, @Nullable Object value);
+        SR ifSetLiteral(F field, Function<String, ?> function, String keyName);
 
-
-        UR comma(F field, BiFunction<DataField, Object, ItemPair> operator, Object value);
-
-        UR commaExp(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier);
-
-        UR commaExp(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function);
-
-        UR commaLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Object value);
 
     }
 
 
-    interface _OnDuplicateKeyAliasSetClause<C, UR> {
+    interface _CommaFieldValuePairClause<C, F extends TableField, SR> {
 
-        UR commaExp(String columnAlias, Supplier<? extends Expression> supplier);
+        SR comma(F field, @Nullable Object value);
 
-        UR commaExp(String columnAlias, Function<C, ? extends Expression> function);
+        SR commaLiteral(F field, @Nullable Object value);
 
-        UR commaDefault(String columnAlias);
+        SR commaExp(F field, Supplier<? extends Expression> supplier);
 
-        UR commaNull(String columnAlias);
-
-        UR comma(String columnAlias, @Nullable Object value);
-
-        UR commaLiteral(String columnAlias, @Nullable Object value);
-
-
-        UR comma(String columnAlias, BiFunction<DataField, Object, ItemPair> operator, Object value);
-
-        UR commaExp(String columnAlias, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier);
-
-        UR commaExp(String columnAlias, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function);
-
-        UR commaLiteral(String columnAlias, BiFunction<DataField, Object, ItemPair> operator, Object value);
+        SR commaExp(F field, Function<C, ? extends Expression> supplier);
 
     }
+
+
+    interface _CommaAliasValuePairClause<C, SR> {
+
+        SR comma(String columnAlias, @Nullable Object value);
+
+        SR commaLiteral(String columnAlias, @Nullable Object value);
+
+        SR commaExp(String columnAlias, Supplier<? extends Expression> supplier);
+
+        SR commaExp(String columnAlias, Function<C, ? extends Expression> supplier);
+
+    }
+
 
     interface _SpaceSubQueryClause<C, SR> {
 
