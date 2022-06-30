@@ -574,19 +574,19 @@ public class MySQLCriteriaUnitTests {
 
 
     @Test
-    public void valueInsert() {
-//        final Insert stmt;
-//        stmt = MySQLs.valueInset()
-//                .preferLiteral(true)
-//                .insert(Collections::emptyList, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
-//                .into(ChinaCity_.T)
-//                .partition("P1", "P2")
-//                .values(this::createCityList)
-//                .onDuplicateKeyUpdate()
-//                .comma(ChinaCity_.updateTime, LocalDateTime.now())
-//                .comma(ChinaCity_.version, SQLs::plusEqual, 1)
-//                .asInsert();
-//        printStmt(stmt);
+    public void parentDomainInsert() {
+        final Insert stmt;
+        stmt = MySQLs.domainInsert()
+                .preferLiteral(true)
+                .insert(Collections::emptyList, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
+                .into(ChinaCity_.T)
+                .partition("P1", "P2")
+                .values(this::createCityList)
+                .onDuplicateKeyUpdate()
+                .comma(ChinaCity_.updateTime, LocalDateTime.now())
+                .comma(ChinaCity_.version, SQLs::plusEqual, 1)
+                .asInsert();
+        printStmt(stmt);
     }
 
     @Test

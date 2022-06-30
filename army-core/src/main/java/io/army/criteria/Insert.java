@@ -213,11 +213,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
-    interface _OnDuplicateKeyUpdateClause<UR> {
 
-        UR onDuplicateKeyUpdate();
-
-    }
 
 
     interface _OnDuplicateKeySetClause<C, F extends TableField, UR> {
@@ -430,15 +426,6 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     /*-------------------below standard sub query insert syntax interface -------------------*/
 
-
-    interface _StandardSubQueryInsertClause<C> {
-
-        <T extends IDomain> _StandardSingleColumnsClause<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
-
-        <P extends IDomain, T extends IDomain> _StandardParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> insertInto(ComplexTableMeta<P, T> table);
-
-    }
-
     interface _StandardSingleColumnsClause<C, F extends TableField>
             extends _ColumnListClause<C, F, _StandardSpaceSubQueryClause<C>> {
 
@@ -449,13 +436,21 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
+    interface _StandardParentSubQueryClause<C, F extends TableField>
+            extends _SpaceSubQueryClause<C, _StandardSingleColumnsClause<C, F>> {
+
+    }
+
     interface _StandardParentColumnsClause<C, PF extends TableField, TF extends TableField>
             extends _ColumnListClause<C, PF, _StandardParentSubQueryClause<C, TF>> {
 
     }
 
-    interface _StandardParentSubQueryClause<C, F extends TableField>
-            extends _SpaceSubQueryClause<C, _StandardSingleColumnsClause<C, F>> {
+    interface _StandardSubQueryInsertClause<C> {
+
+        <T extends IDomain> _StandardSingleColumnsClause<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
+
+        <P extends IDomain, T extends IDomain> _StandardParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> insertInto(ComplexTableMeta<P, T> table);
 
     }
 

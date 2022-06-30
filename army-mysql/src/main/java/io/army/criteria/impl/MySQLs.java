@@ -18,11 +18,11 @@ public abstract class MySQLs extends MySQLSyntax {
     protected MySQLs() {
     }
 
-    public static MySQLInsert._LiteralOptionSpec<Void> valueInset() {
+    public static MySQLInsert._DomainOptionSpec<Void> domainInsert() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> MySQLInsert._LiteralOptionSpec<C> valueInset(C criteria) {
+    public static <C> MySQLInsert._DomainOptionSpec<C> domainInsert(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }
