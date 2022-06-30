@@ -250,13 +250,18 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _PreferLiteralSpec<C>
+    interface _DomainPreferLiteralSpec<C>
             extends Insert._PreferLiteralClause<_DomainInsertIntoSpec<C>>, _DomainInsertIntoSpec<C> {
 
     }
 
-    interface _DomainOptionSpec<C> extends Insert._NullOptionClause<_PreferLiteralSpec<C>>
-            , Insert._MigrationOptionClause<_PreferLiteralSpec<C>>, _PreferLiteralSpec<C> {
+    interface _DomainNullOptionSpec<C> extends Insert._NullOptionClause<_DomainPreferLiteralSpec<C>>
+            , _DomainPreferLiteralSpec<C> {
+
+    }
+
+    interface _DomainOptionSpec<C> extends Insert._MigrationOptionClause<_DomainNullOptionSpec<C>>
+            , _DomainNullOptionSpec<C> {
 
     }
 
@@ -324,8 +329,14 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _ValueOptionSpec<C> extends Insert._NullOptionClause<_ValueInsertIntoSpec<C>>
-            , Insert._MigrationOptionClause<_ValueInsertIntoSpec<C>>, _ValueInsertIntoSpec<C> {
+
+    interface _ValueNullOptionSpec<C> extends Insert._NullOptionClause<_ValueInsertIntoSpec<C>>
+            , _ValueInsertIntoSpec<C> {
+
+    }
+
+    interface _ValueOptionSpec<C> extends Insert._MigrationOptionClause<_ValueNullOptionSpec<C>>
+            , _ValueNullOptionSpec<C> {
 
     }
 
@@ -373,9 +384,13 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _AssignmentOptionSpec<C> extends Insert._MigrationOptionClause<_AssignmentInsertIntoSpec<C>>
-            , Insert._NullOptionClause<_AssignmentInsertIntoSpec<C>>
+    interface _AssignmentNullOptionSpec<C> extends Insert._NullOptionClause<_AssignmentInsertIntoSpec<C>>
             , _AssignmentInsertIntoSpec<C> {
+
+    }
+
+    interface _AssignmentOptionSpec<C> extends Insert._MigrationOptionClause<_AssignmentNullOptionSpec<C>>
+            , _AssignmentNullOptionSpec<C> {
 
     }
 

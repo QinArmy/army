@@ -63,21 +63,12 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
         PO preferLiteral(boolean prefer);
     }
 
-    /**
-     * <p>
-     * This clause mutual exclusion with {@link  _NullOptionClause}
-     * </p>
-     */
     interface _MigrationOptionClause<OR> {
 
         OR migration(boolean migration);
     }
 
     /**
-     * <p>
-     * This clause mutual exclusion with {@link  _MigrationOptionClause}
-     * </p>
-     *
      * @since 1.0
      */
     interface _NullOptionClause<OR> {
@@ -313,13 +304,18 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _StandardPreferLiteralSpec<C> extends _PreferLiteralClause<_StandardDomainInsertIntoClause<C>>
+    interface _StandardDomainPreferLiteralSpec<C> extends _PreferLiteralClause<_StandardDomainInsertIntoClause<C>>
             , _StandardDomainInsertIntoClause<C> {
 
     }
 
-    interface _StandardDomainOptionSpec<C> extends _NullOptionClause<_StandardPreferLiteralSpec<C>>
-            , _MigrationOptionClause<_StandardPreferLiteralSpec<C>>, _StandardPreferLiteralSpec<C> {
+    interface _StandardDomainNullOptionSpec<C> extends _NullOptionClause<_StandardDomainPreferLiteralSpec<C>>
+            , _StandardDomainPreferLiteralSpec<C> {
+
+    }
+
+    interface _StandardDomainOptionSpec<C> extends _MigrationOptionClause<_StandardDomainNullOptionSpec<C>>
+            , _StandardDomainNullOptionSpec<C> {
 
     }
 
@@ -412,8 +408,13 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _StandardValueOptionSpec<C> extends _MigrationOptionClause<_StandardValueInsertIntoClause<C>>
-            , _NullOptionClause<_StandardValueInsertIntoClause<C>>, _StandardValueInsertIntoClause<C> {
+    interface _StandardValueNullOptionSpec<C> extends _NullOptionClause<_StandardValueInsertIntoClause<C>>
+            , _StandardValueInsertIntoClause<C> {
+
+    }
+
+    interface _StandardValueOptionSpec<C> extends _MigrationOptionClause<_StandardValueNullOptionSpec<C>>
+            , _StandardValueNullOptionSpec<C> {
 
     }
 

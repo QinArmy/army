@@ -82,13 +82,18 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
 
     }
 
-    interface _PreferLiteralSpec<C>
+    interface _DomainPreferLiteralSpec<C>
             extends Insert._PreferLiteralClause<_DomainReplaceIntoSpec<C>>, _DomainReplaceIntoSpec<C> {
 
     }
 
-    interface _DomainOptionSpec<C> extends Insert._NullOptionClause<MySQLReplace._PreferLiteralSpec<C>>
-            , Insert._MigrationOptionClause<MySQLReplace._PreferLiteralSpec<C>>, MySQLReplace._PreferLiteralSpec<C> {
+    interface _DomainNullOptionSpec<C> extends Insert._NullOptionClause<_DomainPreferLiteralSpec<C>>
+            , _DomainPreferLiteralSpec<C> {
+
+    }
+
+    interface _DomainOptionSpec<C> extends Insert._MigrationOptionClause<_DomainNullOptionSpec<C>>
+            , _DomainNullOptionSpec<C> {
 
     }
 
@@ -157,9 +162,14 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
 
     }
 
-    interface _ValueReplaceOptionSpec<C> extends Insert._NullOptionClause<MySQLReplace._ValueReplaceIntoSpec<C>>
-            , Insert._MigrationOptionClause<MySQLReplace._ValueReplaceIntoSpec<C>>
+
+    interface _ValueNullOptionSpec<C> extends Insert._NullOptionClause<MySQLReplace._ValueReplaceIntoSpec<C>>
             , MySQLReplace._ValueReplaceIntoSpec<C> {
+
+    }
+
+    interface _ValueReplaceOptionSpec<C> extends Insert._MigrationOptionClause<_ValueNullOptionSpec<C>>
+            , _ValueNullOptionSpec<C> {
 
     }
 
@@ -210,9 +220,13 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
 
     }
 
-    interface _AssignmentOptionSpec<C> extends Insert._MigrationOptionClause<_AssignmentReplaceIntoClause<C>>
-            , Insert._NullOptionClause<_AssignmentReplaceIntoClause<C>>
+    interface _AssignmentNullOptionSpec<C> extends Insert._NullOptionClause<_AssignmentReplaceIntoClause<C>>
             , _AssignmentReplaceIntoClause<C> {
+
+    }
+
+    interface _AssignmentOptionSpec<C> extends Insert._MigrationOptionClause<_AssignmentNullOptionSpec<C>>
+            , _AssignmentNullOptionSpec<C> {
 
     }
 

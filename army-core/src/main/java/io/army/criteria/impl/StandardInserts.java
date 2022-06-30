@@ -43,7 +43,8 @@ abstract class StandardInserts extends InsertSupport {
 
 
     /*-------------------below standard domain insert syntax class-------------------*/
-    private static final class StandardDomainOptionClause<C> implements Insert._StandardDomainOptionSpec<C>, InsertOptions {
+    private static final class StandardDomainOptionClause<C>
+            implements Insert._StandardDomainOptionSpec<C>, InsertOptions {
 
         final CriteriaContext criteriaContext;
 
@@ -65,7 +66,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._StandardPreferLiteralSpec<C> migration(final boolean migration) {
+        public Insert._StandardDomainNullOptionSpec<C> migration(final boolean migration) {
             this.migration = migration;
             if (migration) {
                 this.nullHandleMode = NullHandleMode.INSERT_NULL;
@@ -74,7 +75,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._StandardPreferLiteralSpec<C> nullHandle(NullHandleMode mode) {
+        public Insert._StandardDomainPreferLiteralSpec<C> nullHandle(NullHandleMode mode) {
             CriteriaContextStack.assertNonNull(mode);
             this.nullHandleMode = mode;
             return this;
@@ -172,7 +173,8 @@ abstract class StandardInserts extends InsertSupport {
 
     /*-------------------below standard value insert syntax class-------------------*/
 
-    private static final class StandardValueInsertOptionClause<C> implements Insert._StandardValueOptionSpec<C>, InsertOptions {
+    private static final class StandardValueInsertOptionClause<C>
+            implements Insert._StandardValueOptionSpec<C>, InsertOptions {
 
         private final CriteriaContext criteriaContext;
 
@@ -186,7 +188,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._StandardValueInsertIntoClause<C> migration(boolean migration) {
+        public Insert._StandardValueNullOptionSpec<C> migration(boolean migration) {
             this.migration = migration;
             this.nullHandleMode = NullHandleMode.INSERT_NULL;
             return this;

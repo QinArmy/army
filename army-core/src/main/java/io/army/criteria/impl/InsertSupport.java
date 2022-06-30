@@ -49,7 +49,6 @@ abstract class InsertSupport {
     static abstract class ColumnsClause<C, F extends TableField, RR>
             implements Insert._ColumnListClause<C, F, RR>, Insert._StaticColumnClause<F, RR>, _Insert, Insert {
 
-
         final CriteriaContext criteriaContext;
 
         final C criteria;
