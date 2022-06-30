@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.mysql.*;
+import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -96,6 +97,16 @@ public abstract class MySQLs extends MySQLSyntax {
     public static <C> MySQL80Query._WithSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.simpleSelect(criteria);
+    }
+
+
+    public static MySQLValues._ValuesStmtValues<Void> rowSetValues() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLValues._ValuesStmtValues<Void> rowSetValues(@Nullable C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
     }
 
     public static MySQL80Query._WithSpec<Void, SubQuery> subQuery() {
