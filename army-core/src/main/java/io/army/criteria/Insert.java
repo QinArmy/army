@@ -269,7 +269,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         SR commaExp(String columnAlias, Supplier<? extends Expression> supplier);
 
-        SR commaExp(String columnAlias, Function<C, ? extends Expression> supplier);
+        SR commaExp(String columnAlias, Function<C, ? extends Expression> function);
 
     }
 

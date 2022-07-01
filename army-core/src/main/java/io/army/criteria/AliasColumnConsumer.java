@@ -10,13 +10,13 @@ public interface AliasColumnConsumer<F extends TableField> extends ColumnConsume
 
     AliasColumnConsumer<F> acceptLiteral(F field, @Nullable Object value);
 
-    AliasColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier);
+    AliasColumnConsumer<F> acceptExp(F columnAlias, Supplier<? extends Expression> supplier);
 
-    AliasColumnConsumer<F> accept(String field, @Nullable Object value);
+    AliasColumnConsumer<F> accept(String columnAlias, @Nullable Object value);
 
-    AliasColumnConsumer<F> acceptLiteral(String field, @Nullable Object value);
+    AliasColumnConsumer<F> acceptLiteral(String columnAlias, @Nullable Object value);
 
-    AliasColumnConsumer<F> acceptExp(String field, Supplier<? extends Expression> supplier);
+    AliasColumnConsumer<F> acceptExp(String columnAlias, Supplier<? extends Expression> supplier);
 
 
 }
