@@ -240,7 +240,6 @@ abstract class StandardInserts extends InsertSupport {
             C,
             F,
             Insert._StandardCommonExpSpec<C, T, F>,
-            Insert._StandardCommonExpSpec<C, T, F>,
             Insert._InsertSpec>
             implements Insert._StandardColumnsSpec<C, T, F> {
 
@@ -423,31 +422,6 @@ abstract class StandardInserts extends InsertSupport {
             this.valuePairList = valuePairList;
         }
 
-        @Override
-        public Insert asInsert() {
-            _Assert.nonPrepared(this.prepared);
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-            this.prepared = Boolean.TRUE;
-            return this;
-        }
-
-        @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
-
-        }
-
-        @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-        @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-        }
 
         @Override
         public List<Map<FieldMeta<?>, _Expression>> rowValuesList() {

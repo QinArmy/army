@@ -32,8 +32,7 @@ import java.util.function.Supplier;
 public abstract class SQLs extends Functions {
 
 
-    protected SQLs() {
-        throw new UnsupportedOperationException();
+    private SQLs() {
     }
 
 

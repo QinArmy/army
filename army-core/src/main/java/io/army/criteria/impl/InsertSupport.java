@@ -16,6 +16,7 @@ import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
+import io.army.util._Assert;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
@@ -32,11 +33,12 @@ abstract class InsertSupport {
     }
 
 
-    interface InsertOptions {
+    interface InsertOptions extends CriteriaContextSpec {
 
 
         boolean isMigration();
 
+        @Nullable
         NullHandleMode nullHandle();
 
         boolean isPreferLiteral();
@@ -292,8 +294,8 @@ abstract class InsertSupport {
      * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
      */
     @SuppressWarnings("unchecked")
-    static abstract class CommonExpClause<C, F extends TableField, RR, CR> extends ColumnsClause<C, F, RR>
-            implements Insert._CommonExpClause<C, F, CR>, _Insert._CommonExpInsert {
+    static abstract class CommonExpClause<C, F extends TableField, RR> extends ColumnsClause<C, F, RR>
+            implements Insert._CommonExpClause<C, F, RR>, _Insert._CommonExpInsert {
 
 
         final boolean preferLiteral;
@@ -302,14 +304,14 @@ abstract class InsertSupport {
 
         private Map<FieldMeta<?>, _Expression> commonExpMap;
 
-        CommonExpClause(CriteriaContext criteriaContext, InsertOptions options, TableMeta<?> table) {
-            super(criteriaContext, options.isMigration(), table);
+        CommonExpClause(InsertOptions options, TableMeta<?> table) {
+            super(options.getCriteriaContext(), options.isMigration(), table);
             this.preferLiteral = options.isPreferLiteral();
             this.nullHandleMode = options.nullHandle();
         }
 
         @Override
-        public final CR common(final F field, final @Nullable Object value) {
+        public final RR common(final F field, final @Nullable Object value) {
             if (!field.insertable()) {
                 throw CriteriaContextStack.criteriaError(_Exceptions::nonInsertableField, field);
             }
@@ -346,16 +348,16 @@ abstract class InsertSupport {
                 String m = String.format("duplication common expression for %s.", field);
                 throw CriteriaContextStack.criteriaError(m);
             }
-            return (CR) this;
+            return (RR) this;
         }
 
         @Override
-        public final CR commonLiteral(F field, @Nullable Object value) {
+        public final RR commonLiteral(F field, @Nullable Object value) {
             return this.common(field, SQLs._nullableLiteral(field, value));
         }
 
         @Override
-        public final CR commonExp(F field, Function<C, ? extends Expression> function) {
+        public final RR commonExp(F field, Function<C, ? extends Expression> function) {
             final Expression expression;
             expression = function.apply(this.criteria);
             if (expression == null) {
@@ -365,7 +367,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final CR commonExp(F field, Supplier<? extends Expression> supplier) {
+        public final RR commonExp(F field, Supplier<? extends Expression> supplier) {
             final Expression expression;
             expression = supplier.get();
             if (expression == null) {
@@ -375,74 +377,74 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final CR commonDefault(F field) {
+        public final RR commonDefault(F field) {
             return this.common(field, SQLs.defaultWord());
         }
 
         @Override
-        public final CR commonNull(F field) {
+        public final RR commonNull(F field) {
             return this.common(field, SQLs.nullWord());
         }
 
 
         @Override
-        public final CR ifCommon(F field, Function<C, ?> function) {
+        public final RR ifCommon(F field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
                 this.common(field, value);
             }
-            return (CR) this;
+            return (RR) this;
         }
 
         @Override
-        public final CR ifCommon(F field, Supplier<?> supplier) {
+        public final RR ifCommon(F field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
                 this.common(field, value);
             }
-            return (CR) this;
+            return (RR) this;
         }
 
         @Override
-        public final CR ifCommon(F field, Function<String, ?> function, String keyName) {
+        public final RR ifCommon(F field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
                 this.common(field, value);
             }
-            return (CR) this;
+            return (RR) this;
         }
 
         @Override
-        public final CR ifCommonLiteral(F field, Supplier<?> supplier) {
+        public final RR ifCommonLiteral(F field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
                 this.common(field, SQLs._nonNullLiteral(field, value));
             }
-            return (CR) this;
+            return (RR) this;
         }
 
         @Override
-        public final CR ifCommonLiteral(F field, Function<C, ?> function) {
+        public final RR ifCommonLiteral(F field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
                 this.common(field, SQLs._nonNullLiteral(field, value));
             }
-            return (CR) this;
+            return (RR) this;
         }
 
         @Override
-        public final CR ifCommonLiteral(F field, Function<String, ?> function, String keyName) {
+        public final RR ifCommonLiteral(F field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
                 this.common(field, SQLs._nonNullLiteral(field, value));
             }
-            return (CR) this;
+            return (RR) this;
         }
 
         @Override
@@ -490,20 +492,21 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class DomainValueClause<C, T extends IDomain, F extends TableField, CR, VR>
-            extends CommonExpClause<C, F, CR, CR> implements Insert._DomainValueClause<C, T, VR>, _DomainInsert {
+            extends CommonExpClause<C, F, CR> implements Insert._DomainValueClause<C, T, VR>, _DomainInsert {
 
 
         private List<IDomain> domainList;
 
-        DomainValueClause(CriteriaContext criteriaContext, InsertOptions options, TableMeta<T> table) {
-            super(criteriaContext, options, table);
+        DomainValueClause(InsertOptions options, TableMeta<T> table) {
+            super(options, table);
         }
 
         @Override
         public final VR value(T domain) {
-            CriteriaContextStack.assertNonNull(domain, "domain must non-null");
+            CriteriaContextStack.assertNonNull(this.criteriaContext, domain, "domain must non-null");
             this.domainList = Collections.singletonList(domain);
-            return (VR) this;
+            this.unmodifiedCommonExpMap();
+            return this.valuesEnd();
         }
 
         @Override
@@ -533,7 +536,8 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.criteriaError("domainList must non-empty");
             }
             this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
-            return (VR) this;
+            this.unmodifiedCommonExpMap();
+            return this.valuesEnd();
         }
 
         @Override
@@ -573,7 +577,8 @@ abstract class InsertSupport {
                 list.add((IDomain) domain);
             }
             this.domainList = Collections.unmodifiableList(list);
-            return (VR) this;
+            this.unmodifiedCommonExpMap();
+            return this.valuesEnd();
         }
         @Override
         public final boolean isPreferLiteral() {
@@ -592,11 +597,15 @@ abstract class InsertSupport {
             super.clear();
             this.domainList = null;
         }
+
+        abstract VR valuesEnd();
+
     }//DomainValueClause
 
 
     static abstract class StaticColumnValuePairClause<C, F extends TableField, VR>
-            implements Insert._StaticValueLeftParenClause<C, F, VR>, Insert._StaticColumnValueClause<C, F, VR> {
+            implements Insert._StaticValueLeftParenClause<C, F, VR>, Insert._StaticColumnValueClause<C, F, VR>
+            , CriteriaContextSpec {
 
         final CriteriaContext criteriaContext;
 
@@ -607,6 +616,10 @@ abstract class InsertSupport {
             this.criteria = criteriaContext.criteria();
         }
 
+        @Override
+        public final CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
         @Override
         public final Insert._StaticColumnValueClause<C, F, VR> leftParen(F field, @Nullable Object value) {
             this.addValuePair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
@@ -673,8 +686,8 @@ abstract class InsertSupport {
     }//StaticValueColumnClause
 
 
-    static abstract class ValueInsertValueClause<C, F extends TableField, RR, CR, VR>
-            extends CommonExpClause<C, F, RR, CR> implements Insert._DynamicValueClause<C, F, VR>
+    static abstract class ValueInsertValueClause<C, F extends TableField, RR, VR>
+            extends CommonExpClause<C, F, RR> implements Insert._DynamicValueClause<C, F, VR>
             , Insert._DynamicValuesClause<C, F, VR>, RowConstructor<F> {
 
         private List<Map<FieldMeta<?>, _Expression>> valuePairList;
@@ -843,6 +856,8 @@ abstract class InsertSupport {
 
     static abstract class ValueSyntaxStatement implements Insert, _Insert._CommonExpInsert, Insert._InsertSpec {
 
+        private CriteriaContext criteriaContext;
+
         private final boolean migration;
         private final NullHandleMode nullHandleMode;
 
@@ -856,8 +871,11 @@ abstract class InsertSupport {
 
         private final Map<FieldMeta<?>, _Expression> commonExpMap;
 
+        private Boolean prepared;
 
         ValueSyntaxStatement(_Insert._CommonExpInsert clause) {
+            this.criteriaContext = ((CriteriaContextSpec) clause).getCriteriaContext();
+
             this.migration = clause.isMigration();
             this.nullHandleMode = clause.nullHandle();
             this.table = clause.table();
@@ -915,6 +933,32 @@ abstract class InsertSupport {
         @Override
         public final Map<FieldMeta<?>, _Expression> commonExpMap() {
             return this.commonExpMap;
+        }
+
+        @Override
+        public final Insert asInsert() {
+            _Assert.nonPrepared(this.prepared);
+            if (this instanceof SubStatement) {
+                CriteriaContextStack.pop(this.criteriaContext);
+            } else {
+                CriteriaContextStack.clearContextStack(this.criteriaContext);
+            }
+            this.prepared = Boolean.TRUE;
+            return this;
+        }
+        @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+        @Override
+        public final boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+        @Override
+        public final void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
         }
 
 
@@ -1044,12 +1088,14 @@ abstract class InsertSupport {
     }//RowSetInsertStatement
 
 
-    static CriteriaException notContainField(FieldMeta<?> field) {
-        return CriteriaContextStack.criteriaError(String.format("insert field list don't contain %s", field));
+    static CriteriaException notContainField(CriteriaContext criteriaContext, FieldMeta<?> field) {
+        String m = String.format("insert field list don't contain %s", field);
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
-    static CriteriaException duplicationValuePair(FieldMeta<?> field) {
-        return CriteriaContextStack.criteriaError(String.format("duplication value of %s at same row.", field));
+    static CriteriaException duplicationValuePair(CriteriaContext criteriaContext, FieldMeta<?> field) {
+        String m = String.format("duplication value of %s at same row.", field);
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
     private static CriteriaException nonDomainInstance(@Nullable Object domain, TableMeta<?> table) {

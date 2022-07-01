@@ -321,7 +321,8 @@ abstract class CriteriaUtils {
         return windowList;
     }
 
-    static <T extends Enum<T> & SQLWords.Modifier> List<T> asModifierList(final List<T> list, Predicate<T> predicate) {
+    static <T extends Enum<T> & SQLWords.Modifier> List<T> asModifierList(final List<T> list
+            , final Function<T, Integer> function) {
         final List<T> modifierList;
         final int size = list.size();
         switch (size) {
@@ -329,16 +330,13 @@ abstract class CriteriaUtils {
                 modifierList = Collections.emptyList();
                 break;
             case 1: {
-                List<T> tempSet = null;
-                for (T modifier : list) {
-                    assert modifier != null;
-                    if (predicate.test(modifier)) {
-                        throw modifierSyntaxError(modifier);
-                    }
-                    tempSet = Collections.singletonList(modifier);
-                    break;
+                final T modifier;
+                modifier = list.get(0);
+                if (modifier == null) {
+                    throw CriteriaContextStack.criteriaError("Modifier list element must non-null");
                 }
-                modifierList = tempSet;
+                function.apply(modifier);
+                modifierList = Collections.singletonList(modifier);
             }
             break;
             default: {
@@ -346,14 +344,13 @@ abstract class CriteriaUtils {
                 T modifier;
                 for (int i = 0, preLevel = -1, level; i < size; i++) {
                     modifier = list.get(i);
-                    assert modifier != null;
-                    if (predicate.test(modifier)) {
-                        throw modifierSyntaxError(modifier);
+                    if (modifier == null) {
+                        throw CriteriaContextStack.criteriaError("Modifier list element must non-null");
                     }
-                    level = modifier.level();
+                    level = function.apply(modifier);
                     if (level <= preLevel) {
                         String m = String.format("%s syntax error", modifier);
-                        throw new CriteriaException(m);
+                        throw CriteriaContextStack.criteriaError(m);
                     }
                     preLevel = level;
                     if (tempList == null) {

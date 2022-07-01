@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.Expression;
 import io.army.lang.Nullable;
 
 import java.util.LinkedList;
@@ -100,6 +101,11 @@ abstract class CriteriaContextStack {
     }
 
 
+    static CriteriaException criteriaError(CriteriaContext criteriaContext, Supplier<CriteriaException> supplier) {
+        clearStackOnError(criteriaContext);
+        return supplier.get();
+    }
+
     static CriteriaException criteriaError(Supplier<CriteriaException> supplier) {
         return supplier.get();
     }
@@ -117,9 +123,23 @@ abstract class CriteriaContextStack {
         }
     }
 
-    static void assertNonNull(@Nullable Object obj, String message) {
+    static void assertTrue(CriteriaContext criteriaContext, boolean b, String message) {
+        if (!b) {
+            throw new CriteriaException(message);
+        }
+    }
+
+    static void assertFunctionExp(CriteriaContext criteriaContext, @Nullable Expression expression) {
+        if (!(expression instanceof ArmyExpression)) {
+            clearStackOnError(criteriaContext);
+            throw new CriteriaException("function must return non-null army expression");
+        }
+    }
+
+    static void assertNonNull(CriteriaContext criteriaContext, @Nullable Object obj, String message) {
         if (obj == null) {
-            throw new NullPointerException(message);
+            clearStackOnError(criteriaContext);
+            throw new CriteriaException(message);
         }
     }
 
@@ -127,8 +147,24 @@ abstract class CriteriaContextStack {
         return function.apply(input);
     }
 
+
+    static CriteriaException criteriaError(CriteriaContext criteriaContext, String message) {
+        clearStackOnError(criteriaContext);
+        return new CriteriaException(message);
+    }
+
     static CriteriaException criteriaError(String message) {
         return new CriteriaException(message);
+    }
+
+    private static void clearStackOnError(CriteriaContext criteriaContext) {
+        final Stack stack;
+        stack = HOLDER.get();
+        if (stack != null && stack.peek() == criteriaContext) {
+            HOLDER.remove();
+            stack.clearOnError();
+        }
+
     }
 
 
@@ -143,6 +179,8 @@ abstract class CriteriaContextStack {
         CriteriaContext rootContext();
 
         void clear(CriteriaContext rootContext);
+
+        void clearOnError();
     }
 
     private static final class ContextStack implements Stack {
@@ -212,8 +250,13 @@ abstract class CriteriaContextStack {
 
         }
 
+        @Override
+        public void clearOnError() {
+            this.list.clear();
+        }
 
-    }
+
+    }//ContextStack
 
 
 }

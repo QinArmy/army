@@ -1,6 +1,7 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.NullHandleMode;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -25,6 +26,7 @@ public interface _Insert extends _Statement {
 
         boolean isMigration();
 
+        @Nullable
         NullHandleMode nullHandle();
 
         Map<FieldMeta<?>, _Expression> commonExpMap();

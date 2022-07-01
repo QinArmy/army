@@ -256,7 +256,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         SR commaExp(F field, Supplier<? extends Expression> supplier);
 
-        SR commaExp(F field, Function<C, ? extends Expression> supplier);
+        SR commaExp(F field, Function<C, ? extends Expression> function);
 
     }
 

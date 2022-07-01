@@ -77,7 +77,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.table = table;
         return this.createPartitionClause();
     }
@@ -88,7 +88,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.table = table;
         return this.createPartitionClause();
     }
@@ -100,7 +100,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;
@@ -113,7 +113,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             throw _Exceptions.castCriteriaApi();
         }
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;

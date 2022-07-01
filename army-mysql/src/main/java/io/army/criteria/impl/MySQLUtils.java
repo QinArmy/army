@@ -33,42 +33,18 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    static boolean isNotUpdateModifier(final MySQLWords modifier) {
-        final boolean match;
-        switch (modifier) {
-            case LOW_PRIORITY:
-            case IGNORE:
-                match = false;
-                break;
-            default:
-                match = true;
-        }
-        return match;
-    }
 
-    static boolean isNotDeleteModifier(final MySQLWords modifier) {
-        final boolean match;
-        switch (modifier) {
-            case LOW_PRIORITY:
-            case QUICK:
-            case IGNORE:
-                match = false;
-                break;
-            default:
-                match = true;
-        }
-        return match;
-    }
+
 
     static List<String> asStringList(final @Nullable List<String> partitionList, Supplier<CriteriaException> supplier) {
         if (partitionList == null) {
-            throw supplier.get();
+            throw CriteriaContextStack.criteriaError(supplier);
         }
         final int size = partitionList.size();
         List<String> list;
         switch (size) {
             case 0:
-                throw supplier.get();
+                throw CriteriaContextStack.criteriaError(supplier);
             case 1:
                 list = Collections.singletonList(partitionList.get(0));
                 break;
@@ -80,6 +56,56 @@ abstract class MySQLUtils extends CriteriaUtils {
 
         }
         return list;
+    }
+
+    static int insertModifier(final MySQLWords modifier) {
+        final int level;
+        switch (modifier) {
+            case LOW_PRIORITY:
+            case DELAYED:
+            case HIGH_PRIORITY:
+                level = 1;
+                break;
+            case IGNORE:
+                level = 2;
+                break;
+            default:
+                throw CriteriaContextStack.criteriaError(String.format("%s isn't insert modifier.", modifier));
+        }
+        return level;
+    }
+
+    static int updateModifier(final MySQLWords modifier) {
+        final int level;
+        switch (modifier) {
+            case LOW_PRIORITY:
+                level = 1;
+                break;
+            case IGNORE:
+                level = 2;
+                break;
+            default:
+                throw CriteriaContextStack.criteriaError(String.format("%s isn't update modifier.", modifier));
+        }
+        return level;
+    }
+
+    static int deleteModifier(final MySQLWords modifier) {
+        final int level;
+        switch (modifier) {
+            case LOW_PRIORITY:
+                level = 1;
+                break;
+            case QUICK:
+                level = 2;
+                break;
+            case IGNORE:
+                level = 3;
+                break;
+            default:
+                throw CriteriaContextStack.criteriaError(String.format("%s isn't delete modifier.", modifier));
+        }
+        return level;
     }
 
 

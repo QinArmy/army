@@ -74,7 +74,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     public final UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , TableMeta<?> table) {
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         return (UP) this.createClause(_JoinType.NONE, table);
     }
 
@@ -82,7 +82,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     public final UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , TableMeta<?> table, String tableAlias) {
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.createAndAddBlock(_JoinType.NONE, table, tableAlias);
         return (UT) this;
     }
@@ -90,14 +90,14 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     @Override
     public final UP update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table) {
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         return (UP) this.createClause(_JoinType.NONE, table);
     }
 
     @Override
     public final UT update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table, String tableAlias) {
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.createAndAddBlock(_JoinType.NONE, table, tableAlias);
         return (UT) this;
     }
@@ -117,7 +117,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.createAndAddBlock(_JoinType.NONE, supplier.get(), alias);
         return (US) this;
     }
@@ -126,7 +126,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.createAndAddBlock(_JoinType.NONE, function.apply(this.criteria), alias);
         return (US) this;
     }
@@ -135,7 +135,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     public final <T extends TableItem> US update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.createAndAddBlock(_JoinType.NONE, supplier.get(), alias);
         return (US) this;
     }
@@ -144,7 +144,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     public final <T extends TableItem> US update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::isNotUpdateModifier);
+        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::updateModifier);
         this.createAndAddBlock(_JoinType.NONE, function.apply(this.criteria), alias);
         return (US) this;
     }

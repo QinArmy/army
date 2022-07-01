@@ -22,9 +22,9 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _InsertClause<C, IR> {
 
-        IR insert(Supplier<List<Hint>> hints, List<MySQLWords> modifiers);
+        IR insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers);
 
-        IR insert(Function<C, List<Hint>> hints, List<MySQLWords> modifiers);
+        IR insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers);
 
     }
 
@@ -77,7 +77,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _ColumnAliasListClause<C, F extends TableField, CR> {
+    interface _RowColumnAliasListClause<C, F extends TableField, CR> {
 
         _RightParenClause<CR> leftParen(Consumer<BiConsumer<F, String>> consumer);
 
@@ -95,7 +95,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
         UR updateExp(F field, Supplier<? extends Expression> supplier);
 
-        UR updateExp(F field, Function<C, ? extends Expression> supplier);
+        UR updateExp(F field, Function<C, ? extends Expression> function);
 
     }
 
@@ -183,14 +183,14 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _ColumnAliasListAliasClause<C, F extends TableField>
-            extends _ColumnAliasListClause<C, F, _OnDuplicateKeyUpdateAliasSpec<C, F>> {
+    interface _OnDuplicateKeyRowAliasListClause<C, F extends TableField>
+            extends _RowColumnAliasListClause<C, F, _OnDuplicateKeyUpdateAliasSpec<C, F>> {
 
     }
 
 
     interface _AsRowAliasSpec<C, F extends TableField>
-            extends Statement._AsClause<_ColumnAliasListAliasClause<C, F>>, _OnDuplicateKeyUpdateFieldSpec<C, F> {
+            extends Statement._AsClause<_OnDuplicateKeyRowAliasListClause<C, F>>, _OnDuplicateKeyUpdateFieldSpec<C, F> {
 
     }
 
