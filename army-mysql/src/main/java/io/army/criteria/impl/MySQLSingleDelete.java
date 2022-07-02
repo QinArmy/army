@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, SubQuery, WE, WR, WA>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
-        , MySQLQuery._PartitionClause<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DS>
+        , MySQLQuery._PartitionClause2<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DS>
         , MySQLDelete._SingleDeleteFromClause<DS>, _MySQLWithClause {
 
 

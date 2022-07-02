@@ -633,7 +633,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
 
     private static final class SimplePartitionClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_SingleIndexHintSpec<C>>>
+            extends MySQLPartitionClause2<C, _AsClause<_SingleIndexHintSpec<C>>>
             implements _AsClause<_SingleIndexHintSpec<C>>, MySQLUpdate._SinglePartitionClause<C> {
 
         private final SimpleUpdate<C> stmt;
@@ -651,7 +651,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }//SimplePartitionClause
 
     private static final class BatchPartitionClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_BatchSingleIndexHintSpec<C>>>
+            extends MySQLPartitionClause2<C, _AsClause<_BatchSingleIndexHintSpec<C>>>
             implements _AsClause<_BatchSingleIndexHintSpec<C>>, MySQLUpdate._BatchSinglePartitionClause<C> {
 
         private final BatchUpdate<C> stmt;

@@ -793,7 +793,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     private static final class PartitionJoinClause<C, Q extends Query>
-            extends MySQLPartitionClause<C, _AsJoinClause<C, Q>>
+            extends MySQLPartitionClause2<C, _AsJoinClause<C, Q>>
             implements _PartitionJoinClause<C, Q>, _AsJoinClause<C, Q> {
 
         private final _JoinType joinType;
@@ -850,7 +850,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     private static final class PartitionOnClause<C, Q extends Query>
-            extends MySQLPartitionClause<C, _AsOnClause<C, Q>>
+            extends MySQLPartitionClause2<C, _AsOnClause<C, Q>>
             implements _AsOnClause<C, Q>, _PartitionOnClause<C, Q> {
 
         private final _JoinType joinType;

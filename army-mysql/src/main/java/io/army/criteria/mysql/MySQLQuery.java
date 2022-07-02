@@ -2,6 +2,7 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Query;
+import io.army.criteria.Statement;
 
 import java.util.List;
 import java.util.function.*;
@@ -90,6 +91,38 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
+    interface _PartitionLeftParenClause<C, PR> {
+
+        _PartitionCommaClause<PR> leftParen(String partitionName);
+
+        Statement._RightParenClause<PR> leftParen(String partitionName1, String partitionName2);
+
+        Statement._RightParenClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3);
+
+        Statement._RightParenClause<PR> leftParen(Consumer<Consumer<String>> consumer);
+
+        Statement._RightParenClause<PR> leftParen(BiConsumer<C, Consumer<String>> consumer);
+
+        Statement._RightParenClause<PR> leftParenIf(Consumer<Consumer<String>> consumer);
+
+        Statement._RightParenClause<PR> leftParenIf(BiConsumer<C, Consumer<String>> consumer);
+
+    }
+
+    interface _PartitionCommaClause<PR> extends Statement._RightParenClause<PR> {
+
+        _PartitionCommaClause<PR> comma(String partitionName);
+
+    }
+
+
+    interface _PartitionClause<C, PR> {
+
+        _PartitionLeftParenClause<C, PR> partition();
+
+    }
+
+
     /**
      * <p>
      * This interface representing PARTITION clause in MySQL.
@@ -103,7 +136,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _PartitionClause<C, PR> {
+    interface _PartitionClause2<C, PR> {
 
         PR partition(String partitionName);
 

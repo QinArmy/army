@@ -249,7 +249,7 @@ abstract class StandardInserts extends InsertSupport {
      * @param <F>
      */
     private static final class StandardValueClause<C, T extends IDomain, F extends TableField>
-            extends ValueInsertValueClause<
+            extends DynamicValueInsertValueClause<
             C,
             F,
             Insert._StandardCommonExpSpec<C, T, F>,
@@ -350,11 +350,11 @@ abstract class StandardInserts extends InsertSupport {
         public Insert asInsert() {
             List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
             if (this.valuePairMap != null || !(valuePairList instanceof ArrayList)) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             switch (valuePairList.size()) {
                 case 0:
-                    throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
                 case 1:
                     valuePairList = Collections.singletonList(valuePairList.get(0));
                     break;
@@ -362,14 +362,15 @@ abstract class StandardInserts extends InsertSupport {
                     valuePairList = Collections.unmodifiableList(valuePairList);
             }
             this.valuePairList = valuePairList;
-            return new StandardValueInsertStatement(this.clause, valuePairList).asInsert();
+            return new StandardValueInsertStatement(this.clause, valuePairList)
+                    .asInsert();
         }
 
         @Override
         public Insert._StandardStaticValuesLeftParenSpec<C, F> rightParen() {
             final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
             if (!(currentPairMap instanceof HashMap)) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
             if (valuePairList == null) {
@@ -388,7 +389,7 @@ abstract class StandardInserts extends InsertSupport {
                 currentPairMap = new HashMap<>();
                 this.valuePairMap = currentPairMap;
             } else if (!(currentPairMap instanceof HashMap)) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             if (!this.clause.containField(field)) {
                 throw notContainField(this.criteriaContext, field);
@@ -513,7 +514,7 @@ abstract class StandardInserts extends InsertSupport {
         @Override
         _StandardSpaceSubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
             if (fieldSize == 0 || childFieldSize > 0) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             return this;
         }
@@ -554,7 +555,7 @@ abstract class StandardInserts extends InsertSupport {
         @Override
         _StandardParentSubQueryClause<C, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
             if (fieldSize == 0 || childFieldSize > 0) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             return this;
         }
@@ -595,7 +596,7 @@ abstract class StandardInserts extends InsertSupport {
         @Override
         _StandardSpaceSubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
             if (fieldSize > 0 || childFieldSize == 0) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             return this;
         }

@@ -109,7 +109,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _SinglePartitionClause<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<_SingleIndexHintSpec<C>>> {
+            extends MySQLQuery._PartitionClause2<C, _AsClause<_SingleIndexHintSpec<C>>> {
 
     }
 
@@ -316,7 +316,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _BatchSinglePartitionClause<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<_BatchSingleIndexHintSpec<C>>> {
+            extends MySQLQuery._PartitionClause2<C, _AsClause<_BatchSingleIndexHintSpec<C>>> {
 
     }
 
@@ -584,7 +584,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _MultiPartitionJoinClause<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<_IndexHintJoinSpec<C>>> {
+            extends MySQLQuery._PartitionClause2<C, _AsClause<_IndexHintJoinSpec<C>>> {
 
     }
 
@@ -643,7 +643,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _MultiPartitionOnClause<C> extends MySQLQuery._PartitionClause<C, _AsClause<_MultiIndexHintOnSpec<C>>> {
+    interface _MultiPartitionOnClause<C> extends MySQLQuery._PartitionClause2<C, _AsClause<_MultiIndexHintOnSpec<C>>> {
 
     }
 
@@ -840,7 +840,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _BatchMultiPartitionJoinClause<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<_BatchMultiIndexHintJoinSpec<C>>> {
+            extends MySQLQuery._PartitionClause2<C, _AsClause<_BatchMultiIndexHintJoinSpec<C>>> {
 
     }
 
@@ -897,7 +897,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchMultiPartitionOnClause<C> extends MySQLQuery._PartitionClause<C, _AsClause<_BatchMultiIndexHintOnSpec<C>>> {
+    interface _BatchMultiPartitionOnClause<C> extends MySQLQuery._PartitionClause2<C, _AsClause<_BatchMultiIndexHintOnSpec<C>>> {
 
     }
 

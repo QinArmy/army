@@ -237,25 +237,27 @@ abstract class InsertSupport {
         private void addField(final F field) {
             final TableMeta<?> table = this.table, fieldTable;
             if (table == null) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             fieldTable = field.tableMeta();
             if (!this.migration) {
                 if (!field.insertable()) {
-                    throw CriteriaContextStack.criteriaError(_Exceptions::nonInsertableField, field);
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext
+                            , _Exceptions::nonInsertableField, field);
                 }
                 if (fieldTable instanceof SingleTableMeta) {
                     switch (field.fieldName()) {
                         case _MetaBridge.CREATE_TIME:
                         case _MetaBridge.UPDATE_TIME:
                         case _MetaBridge.VERSION:
-                            throw CriteriaContextStack.criteriaError(_Exceptions::armyManageField, field);
+                            throw CriteriaContextStack.criteriaError(this.criteriaContext
+                                    , _Exceptions::armyManageField, field);
                         default://no-op
                     }
                 }
 
                 if (field == this.table.discriminator() || field.generatorType() != null) {
-                    throw CriteriaContextStack.criteriaError(_Exceptions::armyManageField, field);
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::armyManageField, field);
                 }
 
             }
@@ -263,7 +265,7 @@ abstract class InsertSupport {
 
             if (fieldTable instanceof ChildTableMeta) {
                 if (fieldTable != table) {
-                    throw CriteriaContextStack.criteriaError(_Exceptions::unknownColumn, field);
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
                 }
                 List<FieldMeta<?>> childFieldList = this.childFieldList;
                 if (childFieldList == null) {
@@ -273,10 +275,10 @@ abstract class InsertSupport {
             } else {
                 if (table instanceof ChildTableMeta) {
                     if (fieldTable != ((ChildTableMeta<?>) table).parentMeta()) {
-                        throw CriteriaContextStack.criteriaError(_Exceptions::unknownColumn, field);
+                        throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
                     }
                 } else if (fieldTable != table) {
-                    throw CriteriaContextStack.criteriaError(_Exceptions::unknownColumn, field);
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
                 }
 
                 List<FieldMeta<?>> fieldList = this.fieldList;
@@ -293,7 +295,7 @@ abstract class InsertSupport {
             }
             if (fieldMap.putIfAbsent((FieldMeta<?>) field, Boolean.TRUE) != null) {
                 String m = String.format("%s duplication", field);
-                throw CriteriaContextStack.criteriaError(m);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
 
         }
@@ -535,16 +537,16 @@ abstract class InsertSupport {
             final Object domain;
             domain = function.apply(keyName);
             if (!this.table.javaType().isInstance(domain)) {
-                throw nonDomainInstance(domain, this.table);
+                throw nonDomainInstance(this.criteriaContext, domain, this.table);
             }
             return this.value((T) domain);
         }
 
         @Override
         public final VR values(final List<T> domainList) {
-            CriteriaContextStack.assertNonNull(domainList);
+            CriteriaContextStack.assertNonNull(this.criteriaContext, domainList, "domainList must non-empty");
             if (domainList.size() == 0) {
-                throw CriteriaContextStack.criteriaError("domainList must non-empty");
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
             }
             this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
             this.unmodifiedCommonExpMap();
@@ -577,13 +579,13 @@ abstract class InsertSupport {
             }
             final TableMeta<?> table = this.table;
             if (table == null) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             final Class<?> javaType = table.javaType();
             final List<IDomain> list = new ArrayList<>(size);
             for (Object domain : domainList) {
                 if (domain == null || !javaType.isAssignableFrom(domain.getClass())) {
-                    throw nonDomainInstance(domain, this.table);
+                    throw nonDomainInstance(this.criteriaContext, domain, this.table);
                 }
                 list.add((IDomain) domain);
             }
@@ -697,7 +699,7 @@ abstract class InsertSupport {
     }//StaticValueColumnClause
 
 
-    static abstract class ValueInsertValueClause<C, F extends TableField, RR, VR>
+    static abstract class DynamicValueInsertValueClause<C, F extends TableField, RR, VR>
             extends CommonExpClause<C, F, RR> implements Insert._DynamicValueClause<C, F, VR>
             , Insert._DynamicValuesClause<C, F, VR>, RowConstructor<F> {
 
@@ -706,7 +708,7 @@ abstract class InsertSupport {
         private Map<FieldMeta<?>, _Expression> valuePairMap;
 
 
-        ValueInsertValueClause(InsertOptions options, TableMeta<?> table) {
+        DynamicValueInsertValueClause(InsertOptions options, TableMeta<?> table) {
             super(options, table);
         }
 
@@ -738,12 +740,12 @@ abstract class InsertSupport {
                 if (valuePairList == null) {
                     valuePairList = new ArrayList<>();
                     this.valuePairList = valuePairList;
-                } else if (valuePairList == Collections.EMPTY_LIST) {
-                    throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                } else if (!(valuePairList instanceof ArrayList)) {
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
                 }
                 valuePairList.add(Collections.unmodifiableMap(currentPairMap));
             } else if (currentPairMap != null) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             this.valuePairMap = new HashMap<>();
             return this;
@@ -779,16 +781,16 @@ abstract class InsertSupport {
             if (currentPairMap == null) {
                 String m = String.format("Not found any row,please use %s.row() method create row."
                         , RowConstructor.class.getName());
-                throw CriteriaContextStack.criteriaError(m);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             } else if (!(currentPairMap instanceof HashMap)) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
 
             if (!containField(field)) {
                 throw notContainField(this.criteriaContext, field);
             }
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.criteriaError("value not army expression.");
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "value not army expression.");
             }
             if (currentPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
                 throw duplicationValuePair(this.criteriaContext, field);
@@ -800,7 +802,7 @@ abstract class InsertSupport {
         private VR singleRowValues(final Object callback) {
             //1. validate
             if (this.valuePairMap != null || this.valuePairList != null) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             //2. initializing
             Map<FieldMeta<?>, _Expression> valuePairMap = new HashMap<>();
@@ -820,10 +822,14 @@ abstract class InsertSupport {
             }
             //4. validate
             if (this.valuePairList != emptyList || this.valuePairMap != valuePairMap) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             //5. finally
-            valuePairMap = Collections.unmodifiableMap(valuePairMap);
+            if (valuePairMap.size() == 0) {
+                valuePairMap = Collections.emptyMap();
+            } else {
+                valuePairMap = Collections.unmodifiableMap(valuePairMap);
+            }
             this.valuePairMap = valuePairMap;
             return this.valueClauseEnd(Collections.singletonList(valuePairMap));
         }
@@ -832,7 +838,7 @@ abstract class InsertSupport {
         private VR multiRowValues(final Object callback) {
             //1. validate
             if (this.valuePairMap != null || this.valuePairList != null) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             //2. callback
             if (callback instanceof Consumer) {
@@ -846,16 +852,23 @@ abstract class InsertSupport {
 
             Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
             if (valuePairMap == null) {
-                throw CriteriaContextStack.criteriaError("Values insert must have one row at least");
+                String m = "Values insert must have one row at least";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
-            valuePairMap = Collections.unmodifiableMap(valuePairMap);
+            if (valuePairMap.size() == 0) {
+                valuePairMap = Collections.emptyMap();
+            } else {
+                valuePairMap = Collections.unmodifiableMap(valuePairMap);
+            }
             this.valuePairMap = valuePairMap;
             List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
             if (valuePairList == null) {
                 valuePairList = Collections.singletonList(valuePairMap);
-            } else {
+            } else if (valuePairList instanceof ArrayList) {
                 valuePairList.add(valuePairMap);
                 valuePairList = Collections.unmodifiableList(valuePairList);
+            } else {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             this.valuePairList = valuePairList;
             return this.valueClauseEnd(valuePairList);
@@ -1121,10 +1134,11 @@ abstract class InsertSupport {
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
-    private static CriteriaException nonDomainInstance(@Nullable Object domain, TableMeta<?> table) {
+    private static CriteriaException nonDomainInstance(CriteriaContext criteriaContext, @Nullable Object domain
+            , TableMeta<?> table) {
         String m;
         m = String.format("%s isn't %s instance.", _ClassUtils.safeClassName(domain), table.javaType().getName());
-        return CriteriaContextStack.criteriaError(m);
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
 

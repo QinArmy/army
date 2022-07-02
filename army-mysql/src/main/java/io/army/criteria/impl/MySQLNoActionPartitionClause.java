@@ -6,7 +6,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unchecked")
-abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery._PartitionClause<C, PR> {
+abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery._PartitionClause2<C, PR> {
 
 
     @Override

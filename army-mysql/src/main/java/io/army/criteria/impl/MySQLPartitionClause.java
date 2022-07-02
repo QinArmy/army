@@ -1,86 +1,108 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Statement;
 import io.army.criteria.mysql.MySQLQuery;
-import io.army.lang.Nullable;
-import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-@SuppressWarnings("unchecked")
-abstract class MySQLPartitionClause<C, PR> implements MySQLQuery._PartitionClause<C, PR> {
+final class MySQLPartitionClause<C, PR> implements MySQLQuery._PartitionLeftParenClause<C, PR>
+        , MySQLQuery._PartitionCommaClause<PR> {
 
-    final C criteria;
 
-    /**
-     * an unmodified list
-     */
-    List<String> partitionList;
+    private final CriteriaContext criteriaContext;
 
-    MySQLPartitionClause(@Nullable C criteria) {
-        this.criteria = criteria;
+    private final Function<List<String>, PR> function;
+
+    private List<String> partitionList;
+
+    private boolean optionalPartition;
+
+    MySQLPartitionClause(CriteriaContext criteriaContext, Function<List<String>, PR> function) {
+        this.criteriaContext = criteriaContext;
+        this.function = function;
+    }
+
+
+    @Override
+    public MySQLQuery._PartitionCommaClause<PR> leftParen(String partitionName) {
+        this.optionalPartition = false;
+        return this.comma(partitionName);
+    }
+    @Override
+    public Statement._RightParenClause<PR> leftParen(String partitionName1, String partitionName2) {
+        this.optionalPartition = false;
+        return this.comma(partitionName1)
+                .comma(partitionName2);
+    }
+    @Override
+    public Statement._RightParenClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3) {
+        this.optionalPartition = false;
+        return this.comma(partitionName1)
+                .comma(partitionName2)
+                .comma(partitionName3);
+    }
+    @Override
+    public Statement._RightParenClause<PR> leftParen(Consumer<Consumer<String>> consumer) {
+        this.optionalPartition = false;
+        consumer.accept(this::comma);
+        return this;
+    }
+    @Override
+    public Statement._RightParenClause<PR> leftParen(BiConsumer<C, Consumer<String>> consumer) {
+        this.optionalPartition = false;
+        consumer.accept(this.criteriaContext.criteria(), this::comma);
+        return this;
+    }
+    @Override
+    public Statement._RightParenClause<PR> leftParenIf(Consumer<Consumer<String>> consumer) {
+        this.optionalPartition = true;
+        consumer.accept(this::comma);
+        return this;
+    }
+    @Override
+    public Statement._RightParenClause<PR> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
+        this.optionalPartition = true;
+        consumer.accept(this.criteriaContext.criteria(), this::comma);
+        return this;
     }
 
     @Override
-    public final PR partition(String partitionName) {
-        this.partitionList = Collections.singletonList(partitionName);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(String partitionName1, String partitionNam2) {
-        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(String partitionName1, String partitionNam2, String partitionNam3) {
-        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(Consumer<Consumer<String>> consumer) {
-        final List<String> partitionList = new ArrayList<>();
-        consumer.accept(partitionList::add);
-        if (partitionList.size() == 0) {
-            throw MySQLUtils.partitionListIsEmpty();
+    public MySQLQuery._PartitionCommaClause<PR> comma(String partitionName) {
+        List<String> partitionList = this.partitionList;
+        if (partitionList == null) {
+            partitionList = new ArrayList<>();
+            this.partitionList = partitionList;
+        } else if (!(partitionList instanceof ArrayList)) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
         }
-        this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-        return (PR) this;
+        partitionList.add(partitionName);
+        return this;
     }
 
+
     @Override
-    public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
-        final List<String> partitionList = new ArrayList<>();
-        consumer.accept(this.criteria, partitionList::add);
-        if (partitionList.size() == 0) {
-            throw MySQLUtils.partitionListIsEmpty();
+    public PR rightParen() {
+        List<String> partitionList = this.partitionList;
+        if (partitionList instanceof ArrayList) {
+            partitionList = _CollectionUtils.unmodifiableList(partitionList);
+            this.partitionList = partitionList;
+        } else if (partitionList != null) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+        } else if (this.optionalPartition) {
+            partitionList = Collections.emptyList();
+            this.partitionList = partitionList;
+        } else {
+            String m = "You use non-leftParenIf clause but don't add partition.";
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
         }
-        this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-        return (PR) this;
-    }
-    @Override
-    public final PR ifPartition(Consumer<Consumer<String>> consumer) {
-        final List<String> partitionList = new ArrayList<>();
-        consumer.accept(partitionList::add);
-        if (partitionList.size() > 0) {
-            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-        }
-        return (PR) this;
-    }
-    @Override
-    public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
-        final List<String> partitionList = new ArrayList<>();
-        consumer.accept(this.criteria, partitionList::add);
-        if (partitionList.size() > 0) {
-            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-        }
-        return (PR) this;
+        return this.function.apply(partitionList);
     }
 
 

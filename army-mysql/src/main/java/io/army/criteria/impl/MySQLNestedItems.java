@@ -507,7 +507,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
 
 
     private static final class PartitionJoinClause<C>
-            extends MySQLPartitionClause<C, Statement._AsClause<MySQL80Query._NestedIndexHintJoinSpec<C>>>
+            extends MySQLPartitionClause2<C, Statement._AsClause<MySQL80Query._NestedIndexHintJoinSpec<C>>>
             implements Statement._AsClause<MySQL80Query._NestedIndexHintJoinSpec<C>>
             , MySQL80Query._NestedPartitionJoinClause<C> {
 
@@ -551,7 +551,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftBracketNestedItem<
 
 
     private static final class PartitionOnClause<C>
-            extends MySQLPartitionClause<C, Statement._AsClause<MySQL80Query._NestedIndexHintOnSpec<C>>>
+            extends MySQLPartitionClause2<C, Statement._AsClause<MySQL80Query._NestedIndexHintOnSpec<C>>>
             implements Statement._AsClause<MySQL80Query._NestedIndexHintOnSpec<C>>
             , MySQL80Query._NestedPartitionOnClause<C> {
 

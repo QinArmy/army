@@ -669,7 +669,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
 
     private static final class SimplePartitionJoinClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_IndexHintJoinSpec<C>>>
+            extends MySQLPartitionClause2<C, _AsClause<_IndexHintJoinSpec<C>>>
             implements _MultiPartitionJoinClause<C>, _AsClause<_IndexHintJoinSpec<C>> {
 
         private final _JoinType joinType;
@@ -706,7 +706,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
 
     private static final class SimplePartitionOnClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_MultiIndexHintOnSpec<C>>>
+            extends MySQLPartitionClause2<C, _AsClause<_MultiIndexHintOnSpec<C>>>
             implements _AsClause<_MultiIndexHintOnSpec<C>>, _MultiPartitionOnClause<C> {
 
         private final _JoinType joinType;
@@ -832,7 +832,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
 
     private static final class BatchPartitionJoinClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_BatchMultiIndexHintJoinSpec<C>>>
+            extends MySQLPartitionClause2<C, _AsClause<_BatchMultiIndexHintJoinSpec<C>>>
             implements _BatchMultiPartitionJoinClause<C>, _AsClause<_BatchMultiIndexHintJoinSpec<C>> {
 
         private final _JoinType joinType;
@@ -868,7 +868,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
 
 
     private static final class BatchPartitionOnClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_BatchMultiIndexHintOnSpec<C>>>
+            extends MySQLPartitionClause2<C, _AsClause<_BatchMultiIndexHintOnSpec<C>>>
             implements _AsClause<_BatchMultiIndexHintOnSpec<C>>
             , _BatchMultiPartitionOnClause<C> {
 

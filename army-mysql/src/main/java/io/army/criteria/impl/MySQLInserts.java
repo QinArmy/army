@@ -13,7 +13,6 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
-import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -702,7 +701,6 @@ abstract class MySQLInserts extends InsertSupport {
     }//DomainOptionClause
 
 
-    @SuppressWarnings("unchecked")
     static abstract class DomainPartitionClause<C, T extends IDomain, PR, CR, VR>
             extends InsertSupport.DomainValueClause<C, T, FieldMeta<T>, CR, VR>
             implements MySQLQuery._PartitionClause<C, PR> {
@@ -713,62 +711,9 @@ abstract class MySQLInserts extends InsertSupport {
             super(clause, table);
         }
 
-
         @Override
-        public final PR partition(String partitionName) {
-            this.partitionList = Collections.singletonList(partitionName);
-            return (PR) this;
-        }
-        @Override
-        public final PR partition(String partitionName1, String partitionNam2) {
-            this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
-            return (PR) this;
-        }
-        @Override
-        public final PR partition(String partitionName1, String partitionNam2, String partitionNam3) {
-            this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
-            return (PR) this;
-        }
-        @Override
-        public final PR partition(Consumer<Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList::add);
-            if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-            }
-            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-            return (PR) this;
-        }
-
-        @Override
-        public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(this.criteria, partitionList::add);
-            if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-            }
-            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-            return (PR) this;
-        }
-
-        @Override
-        public final PR ifPartition(Consumer<Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList::add);
-            if (partitionList.size() > 0) {
-                this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-            }
-            return (PR) this;
-        }
-
-        @Override
-        public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(this.criteria, partitionList::add);
-            if (partitionList.size() > 0) {
-                this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-            }
-            return (PR) this;
+        public final MySQLQuery._PartitionLeftParenClause<C, PR> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
         final List<String> partitionList() {
@@ -779,10 +724,16 @@ abstract class MySQLInserts extends InsertSupport {
             return list;
         }
 
+        @SuppressWarnings("unchecked")
+        private PR partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return (PR) this;
+        }
+
 
     }//DomainPartitionClause
 
-    @SuppressWarnings("unchecked")
+
     static abstract class ChildDomainPartitionClause<C, T extends IDomain, PR, CC, CR, VR>
             extends InsertSupport.DomainValueClause<
             C,
@@ -800,119 +751,14 @@ abstract class MySQLInserts extends InsertSupport {
             super(clause, table);
         }
 
-        @Override
-        public final PR parentPartition(String partitionName) {
-            this.parentPartitionList = Collections.singletonList(partitionName);
-            return (PR) this;
-        }
-        @Override
-        public final PR parentPartition(String partitionName1, String partitionNam2) {
-            this.parentPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
-            return (PR) this;
-        }
-        @Override
-        public final PR parentPartition(String partitionName1, String partitionNam2, String partitionNam3) {
-            this.parentPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
-            return (PR) this;
-        }
 
         @Override
-        public final PR parentPartition(Consumer<Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList::add);
-            if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-            }
-            this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
-            return (PR) this;
-        }
-
-        @Override
-        public final PR parentPartition(BiConsumer<C, Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(this.criteria, partitionList::add);
-            if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-            }
-            this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
-            return (PR) this;
-        }
-
-        @Override
-        public final PR ifParentPartition(Consumer<Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList::add);
-            if (partitionList.size() > 0) {
-                this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
-            }
-            return (PR) this;
-        }
-
-        @Override
-        public final PR ifParentPartition(BiConsumer<C, Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(this.criteria, partitionList::add);
-            if (partitionList.size() > 0) {
-                this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
-            }
-            return (PR) this;
-        }
-
-        @Override
-        public final CC childPartition(String partitionName) {
-            this.childPartitionList = Collections.singletonList(partitionName);
-            return (CC) this;
+        public final MySQLQuery._PartitionLeftParenClause<C, PR> parentPartition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
         }
         @Override
-        public final CC childPartition(String partitionName1, String partitionNam2) {
-            this.childPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
-            return (CC) this;
-        }
-        @Override
-        public final CC childPartition(String partitionName1, String partitionNam2, String partitionNam3) {
-            this.childPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
-            return (CC) this;
-        }
-
-        @Override
-        public final CC childPartition(Consumer<Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList::add);
-            if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-            }
-            this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
-            return (CC) this;
-        }
-
-        @Override
-        public final CC childPartition(BiConsumer<C, Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(this.criteria, partitionList::add);
-            if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-            }
-            this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
-            return (CC) this;
-        }
-
-        @Override
-        public final CC ifChildPartition(Consumer<Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList::add);
-            if (partitionList.size() > 0) {
-                this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
-            }
-            return (CC) this;
-        }
-        @Override
-        public final CC ifChildPartition(BiConsumer<C, Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(this.criteria, partitionList::add);
-            if (partitionList.size() > 0) {
-                this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
-            }
-            return (CC) this;
+        public final MySQLQuery._PartitionLeftParenClause<C, CC> childPartition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
         }
 
         final List<String> parentPartitionList() {
@@ -929,6 +775,18 @@ abstract class MySQLInserts extends InsertSupport {
                 list = Collections.emptyList();
             }
             return list;
+        }
+
+        @SuppressWarnings("unchecked")
+        private PR parentPartitionEnd(List<String> partitionList) {
+            this.parentPartitionList = partitionList;
+            return (PR) this;
+        }
+
+        @SuppressWarnings("unchecked")
+        private CC childPartitionEnd(List<String> partitionList) {
+            this.childPartitionList = partitionList;
+            return (CC) this;
         }
 
 
@@ -1220,7 +1078,9 @@ abstract class MySQLInserts extends InsertSupport {
 
     /*-------------------below value insert syntax classes  -------------------*/
 
-    private interface ClauseForValueInsert<C, F extends TableField> extends ColumnListClause {
+    private interface ClauseForValueInsert<C, F extends TableField> extends ClauseBeforeRowAlias<C, F> {
+
+        Insert valueClauseEndBeforeAs(List<Map<FieldMeta<?>, _Expression>> valuePairList);
 
         MySQLInsert._AsRowAliasSpec<C, F> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> valuePairList);
 
@@ -1289,7 +1149,7 @@ abstract class MySQLInserts extends InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class ValuePartitionClause<C, F extends TableField, PR, RR, VR>
-            extends InsertSupport.ValueInsertValueClause<C, F, RR, VR>
+            extends DynamicValueInsertValueClause<C, F, RR, VR>
             implements MySQLQuery._PartitionClause<C, PR> {
 
         private List<String> partitionList;
@@ -1301,61 +1161,10 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         @Override
-        public final PR partition(String partitionName) {
-            this.partitionList = Collections.singletonList(partitionName);
-            return (PR) this;
-        }
-        @Override
-        public final PR partition(String partitionName1, String partitionNam2) {
-            this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
-            return (PR) this;
-        }
-        @Override
-        public final PR partition(String partitionName1, String partitionNam2, String partitionNam3) {
-            this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
-            return (PR) this;
-        }
-        @Override
-        public final PR partition(Consumer<Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList::add);
-            if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-            }
-            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-            return (PR) this;
+        public final MySQLQuery._PartitionLeftParenClause<C, PR> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
-        @Override
-        public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(this.criteria, partitionList::add);
-            if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-            }
-            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-            return (PR) this;
-        }
-
-        @Override
-        public final PR ifPartition(Consumer<Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList::add);
-            if (partitionList.size() > 0) {
-                this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-            }
-            return (PR) this;
-        }
-
-        @Override
-        public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
-            final List<String> partitionList = new ArrayList<>();
-            consumer.accept(this.criteria, partitionList::add);
-            if (partitionList.size() > 0) {
-                this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
-            }
-            return (PR) this;
-        }
 
         final List<String> partitionList() {
             List<String> list = this.partitionList;
@@ -1363,6 +1172,12 @@ abstract class MySQLInserts extends InsertSupport {
                 list = Collections.emptyList();
             }
             return list;
+        }
+
+        @SuppressWarnings("unchecked")
+        private PR partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return (PR) this;
         }
 
     }//ValuePartitionClause
@@ -1410,7 +1225,8 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class StaticValuesLeftParenClause<C, F extends TableField>
-            extends InsertSupport.StaticColumnValuePairClause<C, F, MySQLInsert._ValueStaticValuesLeftParenSpec<C, F>> {
+            extends InsertSupport.StaticColumnValuePairClause<C, F, MySQLInsert._ValueStaticValuesLeftParenSpec<C, F>>
+            implements MySQLInsert._ValueStaticValuesLeftParenSpec<C, F> {
 
         private final ClauseForValueInsert<C, F> clause;
 
@@ -1422,14 +1238,101 @@ abstract class MySQLInserts extends InsertSupport {
             super(clause.getCriteriaContext());
             this.clause = clause;
         }
+
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyRowAliasClause<C, F> as(String alias) {
+            return this.clause.valueClauseEnd(this.endValuesClause())
+                    .as(alias);
+        }
+
+        @Override
+        public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>> onDuplicateKey() {
+            return this.clause.valueClauseEnd(this.endValuesClause())
+                    .onDuplicateKey();
+        }
+
+        @Override
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+            return this.clause.valueClauseEnd(this.endValuesClause())
+                    .onDuplicateKeyUpdate(consumer);
+        }
+        @Override
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            return this.clause.valueClauseEnd(this.endValuesClause())
+                    .onDuplicateKeyUpdate(consumer);
+        }
+        @Override
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+            return this.clause.valueClauseEnd(this.endValuesClause())
+                    .ifOnDuplicateKeyUpdate(consumer);
+        }
+        @Override
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            return this.clause.valueClauseEnd(this.endValuesClause())
+                    .ifOnDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public Insert asInsert() {
+            return this.clause.valueClauseEndBeforeAs(this.endValuesClause());
+        }
+
+
         @Override
         public MySQLInsert._ValueStaticValuesLeftParenSpec<C, F> rightParen() {
-            return null;
+            Map<FieldMeta<?>, _Expression> currentValuePairMap = this.currentValuePairMap;
+            if (!(currentValuePairMap instanceof HashMap)) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+
+            }
+            currentValuePairMap = Collections.unmodifiableMap(currentValuePairMap);
+            this.currentValuePairMap = null;
+
+            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
+            if (valuePairList == null) {
+                valuePairList = new ArrayList<>();
+                this.valuePairList = valuePairList;
+            } else if (!(valuePairList instanceof ArrayList)) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            valuePairList.add(currentValuePairMap);
+            return this;
         }
         @Override
-        void addValuePair(FieldMeta<?> field, _Expression value) {
+        void addValuePair(final FieldMeta<?> field, final _Expression value) {
+            if (!this.clause.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            Map<FieldMeta<?>, _Expression> currentValuePairMap = this.currentValuePairMap;
+            if (currentValuePairMap == null) {
+                currentValuePairMap = new HashMap<>();
+                this.currentValuePairMap = currentValuePairMap;
+            }
+
+            if (currentValuePairMap.putIfAbsent(field, value) != null) {
+                throw duplicationValuePair(this.criteriaContext, field);
+            }
 
         }
+
+        /**
+         * @return a unmodified list
+         */
+        private List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
+            if (this.currentValuePairMap != null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
+            if (!(valuePairList instanceof ArrayList)) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            valuePairList = _CollectionUtils.unmodifiableList(valuePairList);
+            this.valuePairList = valuePairList;
+            return valuePairList;
+        }
+
+
     }//StaticValuesLeftParenClause
 
 
@@ -1448,17 +1351,25 @@ abstract class MySQLInserts extends InsertSupport {
 
         private Map<String, FieldMeta<?>> aliasToField;
 
+        private List<Map<FieldMeta<?>, _Expression>> valuePairList;
+
         private ValueInsertPartitionClause(ValueOptionClause<C> clause, TableMeta<?> table) {
             super(clause, table);
         }
 
         @Override
         public _StaticValueLeftParenClause<C, F, MySQLInsert._AsRowAliasSpec<C, F>> value() {
+            if (this.valuePairList != null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
             return new StaticValueLeftParenClause<>(this);
         }
         @Override
         public MySQLInsert._ValueStaticValuesLeftParenClause<C, F> values() {
-            return null;
+            if (this.valuePairList != null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            return new StaticValuesLeftParenClause<>(this);
         }
 
 
@@ -1474,6 +1385,9 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(final String rowAlias
                 , final Map<String, FieldMeta<?>> aliasToField) {
+            if (this.valuePairList == null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
             this.rowAlias = rowAlias;
             this.aliasToField = aliasToField;
             return new OnDuplicateKeyUpdateAliasSpec<>(aliasToField, this);
@@ -1488,11 +1402,33 @@ abstract class MySQLInserts extends InsertSupport {
         }
         @Override
         public MySQLInsert._AsRowAliasSpec<C, F> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> valuePairList) {
+            if (this.valuePairList != null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            this.valuePairList = valuePairList;
             return new AsRowAliasSpec<>(this);
+        }
+
+        @Override
+        public Insert valueClauseEndBeforeAs(List<Map<FieldMeta<?>, _Expression>> valuePairList) {
+            if (this.valuePairList != null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            this.valuePairList = valuePairList;
+            return this.endInsert(Collections.emptyMap());
         }
 
 
     }//ValueInsertPartitionClause
+
+    static class ValueInsertStatement extends InsertSupport.ValueSyntaxStatement {
+
+        private ValueInsertStatement(ValueInsertPartitionClause<?, ?> clause) {
+            super(clause);
+        }
+
+
+    }//ValueInsertStatement
 
 
 }

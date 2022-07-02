@@ -555,7 +555,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
 
 
     private static final class SimplePartitionJoinClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_MultiJoinSpec<C>>>
+            extends MySQLPartitionClause2<C, _AsClause<_MultiJoinSpec<C>>>
             implements _MultiPartitionJoinClause<C>, _AsClause<_MultiJoinSpec<C>> {
 
         private final _JoinType joinType;
@@ -589,7 +589,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
 
 
     private static final class SimplePartitionOnClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_OnClause<C, _MultiJoinSpec<C>>>>
+            extends MySQLPartitionClause2<C, _AsClause<_OnClause<C, _MultiJoinSpec<C>>>>
             implements _MultiPartitionOnClause<C>, _AsClause<_OnClause<C, _MultiJoinSpec<C>>> {
 
         private final _JoinType joinType;
@@ -624,7 +624,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
 
 
     private static final class BatchPartitionJoinClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_BatchMultiJoinSpec<C>>>
+            extends MySQLPartitionClause2<C, _AsClause<_BatchMultiJoinSpec<C>>>
             implements _AsClause<_BatchMultiJoinSpec<C>>, _BatchMultiPartitionJoinClause<C> {
 
         private final _JoinType joinType;
@@ -657,7 +657,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
 
 
     private static final class BatchPartitionOnClause<C>
-            extends MySQLPartitionClause<C, _AsClause<_OnClause<C, _BatchMultiJoinSpec<C>>>>
+            extends MySQLPartitionClause2<C, _AsClause<_OnClause<C, _BatchMultiJoinSpec<C>>>>
             implements _AsClause<_OnClause<C, _BatchMultiJoinSpec<C>>>, _BatchMultiPartitionOnClause<C> {
 
         private final _JoinType joinType;

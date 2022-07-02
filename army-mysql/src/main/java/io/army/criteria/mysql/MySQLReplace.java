@@ -48,7 +48,7 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
     }
 
     interface _DomainPartitionSpec<C, T extends IDomain>
-            extends MySQLQuery._PartitionClause<C, _DomainColumnListSpec<C, T, FieldMeta<T>>>
+            extends MySQLQuery._PartitionClause2<C, _DomainColumnListSpec<C, T, FieldMeta<T>>>
             , _DomainColumnListSpec<C, T, FieldMeta<T>> {
 
     }
@@ -129,7 +129,7 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
     }
 
     interface _ValuePartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause<C, _ValueColumnListSpec<C, F>>, _ValueColumnListSpec<C, F> {
+            extends MySQLQuery._PartitionClause2<C, _ValueColumnListSpec<C, F>>, _ValueColumnListSpec<C, F> {
 
     }
 
@@ -187,7 +187,7 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
     }
 
     interface _AssignmentPartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause<C, _AssignmentReplaceSetClause<C, F>>
+            extends MySQLQuery._PartitionClause2<C, _AssignmentReplaceSetClause<C, F>>
             , _AssignmentReplaceSetClause<C, F> {
 
     }
@@ -266,7 +266,7 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
     }
 
     interface _RowSetPartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause<C, _RowSetColumnListClause<C, F>>
+            extends MySQLQuery._PartitionClause2<C, _RowSetColumnListClause<C, F>>
             , _RowSetColumnListClause<C, F> {
 
     }

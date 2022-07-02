@@ -84,7 +84,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._PartitionClause}</li>
+     *          <li>{@link MySQLQuery._PartitionClause2}</li>
      *          <li>{@link _SingleWhereClause}</li>
      *     </ul>
      * </p>
@@ -97,7 +97,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _SinglePartitionSpec<C> extends MySQLQuery._PartitionClause<C, _SingleWhereClause<C>>
+    interface _SinglePartitionSpec<C> extends MySQLQuery._PartitionClause2<C, _SingleWhereClause<C>>
             , _SingleWhereClause<C> {
 
     }
@@ -231,7 +231,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link MySQLQuery._PartitionClause}</li>
+     *          <li>{@link MySQLQuery._PartitionClause2}</li>
      *          <li>{@link MySQLDelete._BatchSingleWhereClause}</li>
      *     </ul>
      * </p>
@@ -244,7 +244,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchSinglePartitionSpec<C> extends MySQLQuery._PartitionClause<C, _BatchSingleWhereClause<C>>
+    interface _BatchSinglePartitionSpec<C> extends MySQLQuery._PartitionClause2<C, _BatchSingleWhereClause<C>>
             , _BatchSingleWhereClause<C> {
 
     }
@@ -472,7 +472,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _MultiPartitionJoinClause<C> extends MySQLQuery._PartitionClause<C, _AsClause<_MultiJoinSpec<C>>> {
+    interface _MultiPartitionJoinClause<C> extends MySQLQuery._PartitionClause2<C, _AsClause<_MultiJoinSpec<C>>> {
 
     }
 
@@ -521,7 +521,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _MultiPartitionOnClause<C> extends MySQLQuery._PartitionClause<C, _AsClause<_OnClause<C, _MultiJoinSpec<C>>>> {
+    interface _MultiPartitionOnClause<C> extends MySQLQuery._PartitionClause2<C, _AsClause<_OnClause<C, _MultiJoinSpec<C>>>> {
 
     }
 
@@ -621,7 +621,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @since 1.0
      */
     interface _BatchMultiPartitionJoinClause<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<_BatchMultiJoinSpec<C>>> {
+            extends MySQLQuery._PartitionClause2<C, _AsClause<_BatchMultiJoinSpec<C>>> {
 
     }
 
@@ -670,7 +670,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @since 1.0
      */
     interface _BatchMultiPartitionOnClause<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<_OnClause<C, _BatchMultiJoinSpec<C>>>> {
+            extends MySQLQuery._PartitionClause2<C, _AsClause<_OnClause<C, _BatchMultiJoinSpec<C>>>> {
 
     }
 

@@ -94,40 +94,24 @@ abstract class CriteriaContextStack {
     }
 
 
-    static CriteriaException criteriaInstanceNotMatch() {
-        String m;
-        m = "Criteria instance and current context criteria instance not match,couldn't create sub query or with clause.";
-        return new CriteriaException(m);
-    }
-
-
     static CriteriaException criteriaError(CriteriaContext criteriaContext, Supplier<CriteriaException> supplier) {
         clearStackOnError(criteriaContext);
         return supplier.get();
     }
 
+    @Deprecated
     static CriteriaException criteriaError(Supplier<CriteriaException> supplier) {
         return supplier.get();
     }
 
 
+    @Deprecated
     static void assertNonNull(@Nullable Object obj) {
         if (obj == null) {
             throw new NullPointerException();
         }
     }
 
-    static void assertTrue(boolean b) {
-        if (!b) {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    static void assertTrue(CriteriaContext criteriaContext, boolean b, String message) {
-        if (!b) {
-            throw new CriteriaException(message);
-        }
-    }
 
     static void assertFunctionExp(CriteriaContext criteriaContext, @Nullable Expression expression) {
         if (!(expression instanceof ArmyExpression)) {
@@ -143,7 +127,14 @@ abstract class CriteriaContextStack {
         }
     }
 
+    @Deprecated
     static <T> CriteriaException criteriaError(Function<T, CriteriaException> function, T input) {
+        return function.apply(input);
+    }
+
+    static <T> CriteriaException criteriaError(CriteriaContext criteriaContext, Function<T, CriteriaException> function
+            , T input) {
+        clearStackOnError(criteriaContext);
         return function.apply(input);
     }
 
@@ -153,6 +144,7 @@ abstract class CriteriaContextStack {
         return new CriteriaException(message);
     }
 
+    @Deprecated
     static CriteriaException criteriaError(String message) {
         return new CriteriaException(message);
     }

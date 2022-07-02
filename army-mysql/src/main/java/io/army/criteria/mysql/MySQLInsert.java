@@ -31,38 +31,14 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _ParentPartitionClause<C, PR> {
 
-        PR parentPartition(String partitionName);
-
-        PR parentPartition(String partitionName1, String partitionNam2);
-
-        PR parentPartition(String partitionName1, String partitionNam2, String partitionNam3);
-
-        PR parentPartition(Consumer<Consumer<String>> consumer);
-
-        PR parentPartition(BiConsumer<C, Consumer<String>> consumer);
-
-        PR ifParentPartition(Consumer<Consumer<String>> consumer);
-
-        PR ifParentPartition(BiConsumer<C, Consumer<String>> consumer);
+        MySQLQuery._PartitionLeftParenClause<C, PR> parentPartition();
 
     }
 
 
     interface _ChildPartitionClause<C, PR> {
 
-        PR childPartition(String partitionName);
-
-        PR childPartition(String partitionName1, String partitionNam2);
-
-        PR childPartition(String partitionName1, String partitionNam2, String partitionNam3);
-
-        PR childPartition(Consumer<Consumer<String>> consumer);
-
-        PR childPartition(BiConsumer<C, Consumer<String>> consumer);
-
-        PR ifChildPartition(Consumer<Consumer<String>> consumer);
-
-        PR ifChildPartition(BiConsumer<C, Consumer<String>> consumer);
+        MySQLQuery._PartitionLeftParenClause<C, PR> childPartition();
 
     }
 
@@ -350,7 +326,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _AssignmentSinglePartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause<C, _MySQLAssignmentSetClause<C, F>>, _MySQLAssignmentSetClause<C, F> {
+            extends MySQLQuery._PartitionClause2<C, _MySQLAssignmentSetClause<C, F>>, _MySQLAssignmentSetClause<C, F> {
 
     }
 
@@ -425,7 +401,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _RowSetPartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause<C, _RowSetColumnListClause<C, F>>, _RowSetColumnListClause<C, F> {
+            extends MySQLQuery._PartitionClause2<C, _RowSetColumnListClause<C, F>>, _RowSetColumnListClause<C, F> {
 
     }
 
