@@ -2,9 +2,11 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLWords;
+import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -16,7 +18,10 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 abstract class MySQLInserts extends InsertSupport {
 
@@ -31,6 +36,20 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     /*-------------------below domain insert syntax classes  -------------------*/
+
+    interface ClauseBeforeRowAlias<C, F extends TableField> extends ColumnListClause {
+
+        /**
+         * @param aliasToField a unmodified map,non-empty
+         */
+        MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(String rowAlias, Map<String, FieldMeta<?>> aliasToField);
+
+        /**
+         * @param valuePairMap a unmodified map,empty is allowed.
+         */
+        Insert endInsert(Map<?, _Expression> valuePairMap);
+
+    }
 
 
     @SuppressWarnings("unchecked")
@@ -128,7 +147,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> MySQLInsert._DomainPartitionSpec<C, T> into(SingleTableMeta<T> table) {
-            return new DomainPartitionClause<>();
+            return new DomainInsertPartitionClause<>(this, table);
         }
         @Override
         public <T extends IDomain> MySQLInsert._DomainParentPartitionSpec<C, T> into(ChildTableMeta<T> table) {
@@ -136,7 +155,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
         @Override
         public <T extends IDomain> MySQLInsert._DomainPartitionSpec<C, T> insertInto(SingleTableMeta<T> table) {
-            return null;
+            return new DomainInsertPartitionClause<>(this, table);
         }
         @Override
         public <T extends IDomain> MySQLInsert._DomainParentPartitionSpec<C, T> insertInto(ChildTableMeta<T> table) {
@@ -168,8 +187,8 @@ abstract class MySQLInserts extends InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class DomainPartitionClause<C, T extends IDomain, PR, CR, VR>
-            extends InsertSupport.DomainValueClause<C, T, FieldMeta<T>, CR, VR> implements MySQLQuery._PartitionClause<C, PR>
-            , InsertClauseBeforeAsRowAlias<C, FieldMeta<T>> {
+            extends InsertSupport.DomainValueClause<C, T, FieldMeta<T>, CR, VR>
+            implements MySQLQuery._PartitionClause<C, PR> {
 
         private List<String> partitionList;
 
@@ -218,7 +237,7 @@ abstract class MySQLInserts extends InsertSupport {
             final List<String> list;
             list = supplier.get();
             if (list != null && list.size() > 0) {
-                this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
+                this.partitionList = _CollectionUtils.asUnmodifiableList(list);
             }
             return (PR) this;
         }
@@ -227,13 +246,167 @@ abstract class MySQLInserts extends InsertSupport {
             final List<String> list;
             list = function.apply(this.criteria);
             if (list != null && list.size() > 0) {
-                this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
+                this.partitionList = _CollectionUtils.asUnmodifiableList(list);
             }
             return (PR) this;
         }
 
 
+        final List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+
     }//DomainPartitionClause
+
+    @SuppressWarnings("unchecked")
+    static abstract class ChildDomainPartitionClause<C, T extends IDomain, PR, CC, CR, VR>
+            extends InsertSupport.DomainValueClause<
+            C,
+            T,
+            FieldMeta<? super T>,
+            CR,
+            VR>
+            implements MySQLInsert._ParentPartitionClause<C, PR>
+            , MySQLInsert, MySQLInsert._ChildPartitionClause<C, CC> {
+
+        private List<String> parentPartitionList;
+
+        private List<String> childPartitionList;
+        private ChildDomainPartitionClause(InsertOptions clause, TableMeta<T> table) {
+            super(clause, table);
+        }
+
+        @Override
+        public final PR parentPartition(String partitionName) {
+            this.parentPartitionList = Collections.singletonList(partitionName);
+            return (PR) this;
+        }
+        @Override
+        public final PR parentPartition(String partitionName1, String partitionNam2) {
+            this.parentPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
+            return (PR) this;
+        }
+        @Override
+        public final PR parentPartition(String partitionName1, String partitionNam2, String partitionNam3) {
+            this.parentPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
+            return (PR) this;
+        }
+        @Override
+        public final PR parentPartition(Supplier<List<String>> supplier) {
+            this.parentPartitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
+            return (PR) this;
+        }
+        @Override
+        public final PR parentPartition(Function<C, List<String>> function) {
+            this.parentPartitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
+            return (PR) this;
+        }
+        @Override
+        public final PR parentPartition(Consumer<List<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(partitionList);
+            if (partitionList.size() == 0) {
+                throw CriteriaContextStack.criteriaError(MySQLUtils::partitionListIsEmpty);
+            }
+            this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
+            return (PR) this;
+        }
+        @Override
+        public final PR ifParentPartition(Supplier<List<String>> supplier) {
+            final List<String> list;
+            list = supplier.get();
+            if (list != null && list.size() > 0) {
+                this.parentPartitionList = _CollectionUtils.asUnmodifiableList(list);
+            }
+            return (PR) this;
+        }
+        @Override
+        public final PR ifParentPartition(Function<C, List<String>> function) {
+            final List<String> list;
+            list = function.apply(this.criteria);
+            if (list != null && list.size() > 0) {
+                this.parentPartitionList = _CollectionUtils.asUnmodifiableList(list);
+            }
+            return (PR) this;
+        }
+
+        @Override
+        public final CC childPartition(String partitionName) {
+            this.childPartitionList = Collections.singletonList(partitionName);
+            return (CC) this;
+        }
+        @Override
+        public final CC childPartition(String partitionName1, String partitionNam2) {
+            this.childPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
+            return (CC) this;
+        }
+        @Override
+        public final CC childPartition(String partitionName1, String partitionNam2, String partitionNam3) {
+            this.childPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
+            return (CC) this;
+        }
+        @Override
+        public final CC childPartition(Supplier<List<String>> supplier) {
+            this.childPartitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
+            return (CC) this;
+        }
+        @Override
+        public final CC childPartition(Function<C, List<String>> function) {
+            this.childPartitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
+            return (CC) this;
+        }
+        @Override
+        public final CC childPartition(Consumer<List<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(partitionList);
+            if (partitionList.size() == 0) {
+                throw CriteriaContextStack.criteriaError(MySQLUtils::partitionListIsEmpty);
+            }
+            this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
+            return (CC) this;
+        }
+        @Override
+        public final CC ifChildPartition(Supplier<List<String>> supplier) {
+            final List<String> list;
+            list = supplier.get();
+            if (list != null && list.size() > 0) {
+                this.childPartitionList = _CollectionUtils.asUnmodifiableList(list);
+            }
+            return (CC) this;
+        }
+        @Override
+        public final CC ifChildPartition(Function<C, List<String>> function) {
+            final List<String> list;
+            list = function.apply(this.criteria);
+            if (list != null && list.size() > 0) {
+                this.childPartitionList = _CollectionUtils.asUnmodifiableList(list);
+            }
+            return (CC) this;
+        }
+
+        final List<String> parentPartitionList() {
+            List<String> list = this.parentPartitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        final List<String> childPartitionList() {
+            List<String> list = this.childPartitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+
+    }//ChildDomainPartitionClause
 
 
     private static final class DomainInsertPartitionClause<C, T extends IDomain> extends DomainPartitionClause<
@@ -241,39 +414,62 @@ abstract class MySQLInserts extends InsertSupport {
             T,
             MySQLInsert._DomainColumnListSpec<C, T, FieldMeta<T>>,
             MySQLInsert._DomainCommonExpSpec<C, T, FieldMeta<T>>,
-            MySQLInsert._AsRowAliasSpec<C, FieldMeta<T>>> {
+            MySQLInsert._AsRowAliasSpec<C, FieldMeta<T>>>
+            implements MySQLInsert._DomainPartitionSpec<C, T>
+            , ClauseBeforeRowAlias<C, FieldMeta<T>> {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private String rowAlias;
+
+        private Map<String, FieldMeta<?>> aliasToField;
 
         private DomainInsertPartitionClause(DomainInsertOptionClause<C> clause, TableMeta<T> table) {
             super(clause, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, FieldMeta<T>> rowAliasEnd(final String rowAlias
+                , final Map<String, FieldMeta<?>> aliasToField) {
+            this.rowAlias = rowAlias;
+            this.aliasToField = aliasToField;
+            return new OnDuplicateKeyUpdateAliasSpec<>(aliasToField, this);
+        }
+        @Override
+        public Insert endInsert(Map<?, _Expression> valuePairMap) {
+            final Insert insert;
+            if (valuePairMap.size() == 0) {
+                insert = new MySQLDomainInsertStatement(this)
+                        .asInsert();
+            } else if (this.rowAlias == null) {
+                insert = new MySQLDomainInsertWithDuplicateKey(valuePairMap, this)
+                        .asInsert();
+            } else {
+                insert = new MySQLDomainInsertWIthRowAlias(valuePairMap, this)
+                        .asInsert();
+            }
+            return insert;
         }
 
         @Override
         public void prepared() {
-
+            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
+            throw new UnsupportedOperationException();
         }
         @Override
         public boolean isPrepared() {
-            return false;
+            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
+            throw new UnsupportedOperationException();
         }
-        @Override
-        public CriteriaContext getCriteriaContext() {
-            return null;
-        }
+
         @Override
         MySQLInsert._DomainCommonExpSpec<C, T, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
-            return null;
-        }
-        @Override
-        public Predicate<FieldMeta<?>> containField() {
-            return this::containField;
-        }
-        @Override
-        public Function<Map<?, _Expression>, Insert> endFunction() {
-            return null;
-        }
-        @Override
-        public Function<Map<String, FieldMeta<?>>, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, FieldMeta<T>>> function() {
-            return null;
+            return this;
         }
 
 
@@ -286,14 +482,74 @@ abstract class MySQLInserts extends InsertSupport {
     }//DomainInsertPartitionClause
 
 
-    private interface InsertClauseBeforeAsRowAlias<C, F extends TableField> extends CriteriaContextSpec {
+    private static final class ChildDomainInsertPartitionClause<C, T extends IDomain>
+            extends ChildDomainPartitionClause<
+            C,
+            T,
+            MySQLInsert._DomainChildPartitionSpec<C, T>,
+            MySQLInsert._DomainColumnListSpec<C, T, FieldMeta<? super T>>,
+            MySQLInsert._DomainCommonExpSpec<C, T, FieldMeta<? super T>>,
+            MySQLInsert._AsRowAliasSpec<C, FieldMeta<? super T>>>
+            implements MySQLInsert._DomainParentPartitionSpec<C, T>
+            , ClauseBeforeRowAlias<C, FieldMeta<? super T>> {
 
-        Predicate<FieldMeta<?>> containField();
+        private final List<Hint> hintList;
 
-        Function<Map<?, _Expression>, Insert> endFunction();
+        private final List<MySQLWords> modifierList;
 
-        Function<Map<String, FieldMeta<?>>, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> function();
-    }
+        private String rowAlias;
+
+        private Map<String, FieldMeta<?>> aliasToField;
+
+        private ChildDomainInsertPartitionClause(DomainInsertOptionClause<C> clause, ChildTableMeta<T> table) {
+            super(clause, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+        }
+
+        @Override
+        public void prepared() {
+            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public boolean isPrepared() {
+            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public _OnDuplicateKeyUpdateAliasSpec<C, FieldMeta<? super T>> rowAliasEnd(String rowAlias, Map<String, FieldMeta<?>> aliasToField) {
+            this.rowAlias = rowAlias;
+            this.aliasToField = aliasToField;
+            return new OnDuplicateKeyUpdateAliasSpec<>(aliasToField, this);
+        }
+        @Override
+        public Insert endInsert(Map<?, _Expression> valuePairMap) {
+            final Insert insert;
+            if (valuePairMap.size() == 0) {
+                insert = new MySQLDomainInsertStatement(this)
+                        .asInsert();
+            } else if (this.rowAlias == null) {
+                insert = new MySQLDomainInsertWithDuplicateKey(valuePairMap, this)
+                        .asInsert();
+            } else {
+                insert = new MySQLDomainInsertWIthRowAlias(valuePairMap, this)
+                        .asInsert();
+            }
+            return insert;
+        }
+        @Override
+        _DomainCommonExpSpec<C, T, FieldMeta<? super T>> columnListEnd(int fieldSize, int childFieldSize) {
+            return this;
+        }
+        @Override
+        _AsRowAliasSpec<C, FieldMeta<? super T>> valuesEnd() {
+            return new AsRowAliasSpec<>(this);
+        }
+
+
+    }//ChildDomainInsertPartitionClause
 
 
     private static final class AsRowAliasSpec<C, F extends TableField>
@@ -306,47 +562,43 @@ abstract class MySQLInserts extends InsertSupport {
 
         final C criteria;
 
-        private final Predicate<FieldMeta<?>> containField;
+        private final ClauseBeforeRowAlias<C, F> clause;
 
-        private final Function<Map<?, _Expression>, Insert> endFunction;
-
-        private final Function<Map<String, FieldMeta<?>>, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> function;
-
-        private boolean optionalOnDuplicateKey;
+        private boolean optionalOnDuplicateKey = true;
 
         private Map<FieldMeta<?>, _Expression> valuePairMap;
 
 
-        private AsRowAliasSpec(InsertClauseBeforeAsRowAlias<C, F> clause) {
+        private AsRowAliasSpec(ClauseBeforeRowAlias<C, F> clause) {
             this.criteriaContext = clause.getCriteriaContext();
-            this.containField = clause.containField();
-            this.endFunction = clause.endFunction();
-            this.function = clause.function();
-
             this.criteria = this.criteriaContext.criteria();
+            this.clause = clause;
         }
 
 
         @Override
-        public final MySQLInsert._OnDuplicateKeyRowAliasListClause<C, F> as(String alias) {
+        public MySQLInsert._OnDuplicateKeyRowAliasClause<C, F> as(String alias) {
             if (this.valuePairMap != null) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
             CriteriaContextStack.assertNonNull(this.criteriaContext, alias, "row alias must be non-null");
             this.valuePairMap = Collections.emptyMap();
-            return new OnDuplicateKeyRowAliasListClause<>(this);
+            return new RowAliasClause<>(alias, this.clause);
         }
         @Override
         public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>> onDuplicateKey() {
+            this.optionalOnDuplicateKey = false;
             return this;
         }
         @Override
         public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKey = false;
             consumer.accept(this);
             return this;
         }
         @Override
         public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKey = false;
             consumer.accept(this.criteria, this);
             return this;
         }
@@ -437,12 +689,12 @@ abstract class MySQLInserts extends InsertSupport {
                 valuePairMap = Collections.emptyMap();
                 this.valuePairMap = valuePairMap;
             }
-            return this.endFunction.apply(valuePairMap);
+            return this.clause.endInsert(valuePairMap);
         }
 
 
         private void addValuePair(final F field, final @Nullable Expression value) {
-            if (!this.containField.test((FieldMeta<?>) field)) {
+            if (!this.clause.containField((FieldMeta<?>) field)) {
                 throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
             }
             CriteriaContextStack.assertFunctionExp(this.criteriaContext, value);
@@ -462,26 +714,29 @@ abstract class MySQLInserts extends InsertSupport {
     }//DuplicateKeyUpdateClause
 
 
-    private static final class OnDuplicateKeyRowAliasListClause<C, F extends TableField>
-            implements MySQLInsert._OnDuplicateKeyRowAliasListClause<C, F>
+    /**
+     * @see AsRowAliasSpec#as(String)
+     */
+    private static final class RowAliasClause<C, F extends TableField>
+            implements MySQLInsert._OnDuplicateKeyRowAliasClause<C, F>
             , Statement._RightParenClause<MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>>
             , MySQLInsert._ColumnAliasClause<F, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> {
 
 
         private final CriteriaContext criteriaContext;
 
-        private final Predicate<FieldMeta<?>> containField;
+        private final String rowAlias;
 
-        private final Function<Map<String, FieldMeta<?>>, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> function;
+        private final ClauseBeforeRowAlias<C, F> clause;
 
         private Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
 
         private Map<String, FieldMeta<?>> aliasToField = new HashMap<>();
 
-        private OnDuplicateKeyRowAliasListClause(AsRowAliasSpec<C, F> clause) {
-            this.criteriaContext = clause.criteriaContext;
-            this.containField = clause.containField;
-            this.function = clause.function;
+        private RowAliasClause(String rowAlias, ClauseBeforeRowAlias<C, F> clause) {
+            this.criteriaContext = clause.getCriteriaContext();
+            this.rowAlias = rowAlias;
+            this.clause = clause;
         }
         @Override
         public Statement._RightParenClause<MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> leftParen(Consumer<BiConsumer<F, String>> consumer) {
@@ -518,11 +773,11 @@ abstract class MySQLInserts extends InsertSupport {
             } else {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
             }
-            return this.function.apply(aliasToField);
+            return this.clause.rowAliasEnd(this.rowAlias, aliasToField);
         }
 
         private void addFieldAlias(final F field, final @Nullable String columnAlias) {
-            if (!this.containField.test((FieldMeta<?>) field)) {
+            if (!this.clause.containField((FieldMeta<?>) field)) {
                 throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
             }
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
@@ -550,16 +805,6 @@ abstract class MySQLInserts extends InsertSupport {
     }//OnDuplicateKeyRowAliasListClause
 
 
-    private interface InsertClauseBeforeDuplicateKeyAliasUpdate extends CriteriaContextSpec {
-
-        Predicate<FieldMeta<?>> containField();
-
-        Function<Map<?, _Expression>, Insert> endFunction();
-
-        Map<String, FieldMeta<?>> aliasToField();
-
-    }
-
     private static final class OnDuplicateKeyUpdateAliasSpec<C, F extends TableField>
             implements MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>
             , MySQLInsert._StaticOnDuplicateKeyAliasUpdateClause<C, F, MySQLInsert._StaticCommaAliasValuePairSpec<C, F>>
@@ -570,9 +815,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final C criteria;
 
-        private final Predicate<FieldMeta<?>> containField;
-
-        private final Function<Map<?, _Expression>, Insert> endFunction;
+        private final ClauseBeforeRowAlias<C, F> clause;
 
         private final Map<String, FieldMeta<?>> aliasToField;
 
@@ -582,13 +825,12 @@ abstract class MySQLInserts extends InsertSupport {
 
         private boolean optionalOnDuplicateKeyClause;
 
-        private OnDuplicateKeyUpdateAliasSpec(InsertClauseBeforeDuplicateKeyAliasUpdate clause) {
+        private OnDuplicateKeyUpdateAliasSpec(Map<String, FieldMeta<?>> aliasToField
+                , ClauseBeforeRowAlias<C, F> clause) {
             this.criteriaContext = clause.getCriteriaContext();
-            this.containField = clause.containField();
-            this.endFunction = clause.endFunction();
-            this.aliasToField = clause.aliasToField();
-
             this.criteria = this.criteriaContext.criteria();
+            this.aliasToField = aliasToField;
+            this.clause = clause;
 
         }
         @Override
@@ -760,7 +1002,7 @@ abstract class MySQLInserts extends InsertSupport {
                 String m = "Your use non-if onDuplicateKey clause but don't add any value pair.";
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
-            return this.endFunction.apply(valuePairMap);
+            return this.clause.endInsert(valuePairMap);
         }
 
         private void addValuePair(final Object fieldOrAlias, final @Nullable Expression value) {
@@ -772,7 +1014,7 @@ abstract class MySQLInserts extends InsertSupport {
             final FieldMeta<?> field;
             if (fieldOrAlias instanceof FieldMeta) {
                 field = (FieldMeta<?>) fieldOrAlias;
-                if (!this.containField.test(field)) {
+                if (!this.clause.containField(field)) {
                     throw notContainField(this.criteriaContext, field);
                 }
                 if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
@@ -811,44 +1053,144 @@ abstract class MySQLInserts extends InsertSupport {
     }//OnDuplicateKeyUpdateAliasSpec
 
 
-    static final class DomainAsRowAliasSpec<C, F extends TableField> extends AsRowAliasSpec<C, F> {
+    static class MySQLDomainInsertStatement extends ValueSyntaxStatement
+            implements MySQLInsert, _MySQLInsert._MySQLDomainInsert {
 
-        private DomainAsRowAliasSpec(DomainValueClause<?, ?> clause) {
-            super(clause.criteriaContext, clause::containField);
-        }
+        private final List<Hint> hintList;
 
-        @Override
-        Insert internalAsInsert(Map<FieldMeta<?>, _Expression> valuePairMap) {
-            return null;
-        }
-        @Override
-        Function<Map<FieldMeta<?>, String>, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> function() {
-            return null;
-        }
+        private final List<MySQLWords> modifierList;
+        private final boolean preferLiteral;
 
+        private final List<String> partitionList;
 
-    }//DomainAsRowAliasSpec
+        private final List<String> childPartitionList;
 
+        private final List<IDomain> domainList;
 
-    static class DomainInsertStatement extends ValueSyntaxStatement
-            implements MySQLInsert {
-
-        private DomainInsertStatement(DomainValueClause<?, ?> clause) {
+        private MySQLDomainInsertStatement(DomainInsertPartitionClause<?, ?> clause) {
             super(clause);
+
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.preferLiteral = clause.preferLiteral;
+            this.partitionList = clause.partitionList();
+
+            this.childPartitionList = Collections.emptyList();
+            this.domainList = clause.domainList();
+        }
+
+        private MySQLDomainInsertStatement(ChildDomainInsertPartitionClause<?, ?> clause) {
+            super(clause);
+
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.preferLiteral = clause.preferLiteral;
+            this.partitionList = clause.parentPartitionList();
+
+            this.childPartitionList = clause.childPartitionList();
+            this.domainList = clause.domainList();
+        }
+
+        @Override
+        public final boolean isPreferLiteral() {
+            return this.preferLiteral;
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
+        @Override
+        public final List<String> childPartitionList() {
+            return this.childPartitionList;
+        }
+        @Override
+        public final List<IDomain> domainList() {
+            return this.domainList;
+        }
+        @Override
+        public final List<Hint> hintList() {
+            return this.hintList;
+        }
+        @Override
+        public final List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public final String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
         }
 
 
-    }//DomainInsertStatement
+    }//MySQLValueSyntaxStatement
 
 
-    private static final class DomainInsertStatementWithDuplicateKey extends DomainInsertStatement {
+    private static class MySQLDomainInsertWithDuplicateKey extends MySQLDomainInsertStatement
+            implements _MySQLInsert._InsertWithDuplicateKey {
 
-        private DomainInsertStatementWithDuplicateKey(DomainAsRowAliasSpec<?, ?> clause) {
-            super(clause.clause);
+
+        private final Map<?, _Expression> valuePairMap;
+
+        private MySQLDomainInsertWithDuplicateKey(Map<?, _Expression> valuePairMap
+                , DomainInsertPartitionClause<?, ?> clause) {
+            super(clause);
+            this.valuePairMap = valuePairMap;
+        }
+
+        private MySQLDomainInsertWithDuplicateKey(Map<?, _Expression> valuePairMap
+                , ChildDomainInsertPartitionClause<?, ?> clause) {
+            super(clause);
+            this.valuePairMap = valuePairMap;
+        }
+
+        @Override
+        public final Map<?, _Expression> valuePairsForDuplicate() {
+            return this.valuePairMap;
         }
 
 
-    }//DomainInsertStatementWithDuplicateKey
+    }//MySQLDomainInsertWithDuplicateKey
+
+
+    private static class MySQLDomainInsertWIthRowAlias extends MySQLDomainInsertWithDuplicateKey
+            implements _MySQLInsert._InsertWithRowAlias {
+
+        private final String rowAlias;
+
+        private final Map<String, FieldMeta<?>> aliasToField;
+
+        private MySQLDomainInsertWIthRowAlias(Map<?, _Expression> valuePairMap
+                , DomainInsertPartitionClause<?, ?> clause) {
+            super(valuePairMap, clause);
+            this.rowAlias = clause.rowAlias;
+            this.aliasToField = clause.aliasToField;
+        }
+
+        private MySQLDomainInsertWIthRowAlias(Map<?, _Expression> valuePairMap
+                , ChildDomainInsertPartitionClause<?, ?> clause) {
+            super(valuePairMap, clause);
+            this.rowAlias = clause.rowAlias;
+            this.aliasToField = clause.aliasToField;
+        }
+
+        @Override
+        public String rowAlias() {
+            return this.rowAlias;
+        }
+        @Override
+        public Map<String, FieldMeta<?>> aliasToField() {
+            return this.aliasToField;
+        }
+
+
+    }//MySQLDomainInsertWIthRowAlias
 
 
 }

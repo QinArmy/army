@@ -45,11 +45,17 @@ abstract class InsertSupport {
 
     }
 
+    interface ColumnListClause extends CriteriaContextSpec {
+
+        boolean containField(FieldMeta<?> field);
+    }
+
     /**
      * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
      */
     static abstract class ColumnsClause<C, F extends TableField, RR>
-            implements Insert._ColumnListClause<C, F, RR>, Insert._StaticColumnClause<F, RR>, _Insert, Insert {
+            implements Insert._ColumnListClause<C, F, RR>, Insert._StaticColumnClause<F, RR>
+            , _Insert, Insert, ColumnListClause {
 
         final CriteriaContext criteriaContext;
 
@@ -73,6 +79,10 @@ abstract class InsertSupport {
             this.table = table;
         }
 
+        @Override
+        public final CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
         @Override
         public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<F>> consumer) {
             consumer.accept(this::addField);
@@ -205,7 +215,8 @@ abstract class InsertSupport {
         abstract RR columnListEnd(int fieldSize, int childFieldSize);
 
 
-        final boolean containField(final FieldMeta<?> field) {
+        @Override
+        public final boolean containField(final FieldMeta<?> field) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             final TableMeta<?> table, fieldTable;
             table = this.table;
@@ -696,7 +707,7 @@ abstract class InsertSupport {
 
 
         ValueInsertValueClause(CriteriaContext criteriaContext, InsertOptions options, TableMeta<?> table) {
-            super(criteriaContext, options, table);
+            super(options, table);
         }
 
         @Override
@@ -774,13 +785,13 @@ abstract class InsertSupport {
             }
 
             if (!containField(field)) {
-                throw notContainField(field);
+                throw notContainField(this.criteriaContext, field);
             }
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.criteriaError("value not army expression.");
             }
             if (currentPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(field);
+                throw duplicationValuePair(this.criteriaContext, field);
             }
             return this;
         }
@@ -854,12 +865,10 @@ abstract class InsertSupport {
     }//ValueInsertValueClause
 
 
-    static abstract class ValueSyntaxStatement implements Insert, _Insert._CommonExpInsert, Insert._InsertSpec {
+    static abstract class InsertStatement implements Insert, Insert._InsertSpec, _Insert {
 
-        private CriteriaContext criteriaContext;
 
-        private final boolean migration;
-        private final NullHandleMode nullHandleMode;
+        private final CriteriaContext criteriaContext;
 
         private final TableMeta<?> table;
 
@@ -869,21 +878,16 @@ abstract class InsertSupport {
 
         private final Map<FieldMeta<?>, Boolean> fieldMap;
 
-        private final Map<FieldMeta<?>, _Expression> commonExpMap;
 
         private Boolean prepared;
 
-        ValueSyntaxStatement(_Insert._CommonExpInsert clause) {
+        InsertStatement(_Insert clause) {
             this.criteriaContext = ((CriteriaContextSpec) clause).getCriteriaContext();
-
-            this.migration = clause.isMigration();
-            this.nullHandleMode = clause.nullHandle();
             this.table = clause.table();
             this.fieldList = clause.fieldList();
 
             this.childFieldList = clause.childFieldList();
             this.fieldMap = clause.fieldMap();
-            this.commonExpMap = clause.commonExpMap();
         }
 
 
@@ -922,20 +926,6 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final boolean isMigration() {
-            return this.migration;
-        }
-
-        @Override
-        public final NullHandleMode nullHandle() {
-            return this.nullHandleMode;
-        }
-        @Override
-        public final Map<FieldMeta<?>, _Expression> commonExpMap() {
-            return this.commonExpMap;
-        }
-
-        @Override
         public final Insert asInsert() {
             _Assert.nonPrepared(this.prepared);
             if (this instanceof SubStatement) {
@@ -959,6 +949,39 @@ abstract class InsertSupport {
         public final void clear() {
             _Assert.prepared(this.prepared);
             this.prepared = Boolean.FALSE;
+        }
+
+
+    }//InsertStatement
+
+
+    static abstract class ValueSyntaxStatement extends InsertStatement implements _Insert._CommonExpInsert {
+
+        private final boolean migration;
+        private final NullHandleMode nullHandleMode;
+
+        private final Map<FieldMeta<?>, _Expression> commonExpMap;
+
+        ValueSyntaxStatement(_Insert._CommonExpInsert clause) {
+            super(clause);
+            this.migration = clause.isMigration();
+            this.nullHandleMode = clause.nullHandle();
+            this.commonExpMap = clause.commonExpMap();
+        }
+
+
+        @Override
+        public final boolean isMigration() {
+            return this.migration;
+        }
+
+        @Override
+        public final NullHandleMode nullHandle() {
+            return this.nullHandleMode;
+        }
+        @Override
+        public final Map<FieldMeta<?>, _Expression> commonExpMap() {
+            return this.commonExpMap;
         }
 
 

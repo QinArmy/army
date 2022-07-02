@@ -183,14 +183,14 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _OnDuplicateKeyRowAliasListClause<C, F extends TableField>
+    interface _OnDuplicateKeyRowAliasClause<C, F extends TableField>
             extends _RowColumnAliasListClause<C, F, _OnDuplicateKeyUpdateAliasSpec<C, F>> {
 
     }
 
 
     interface _AsRowAliasSpec<C, F extends TableField>
-            extends Statement._AsClause<_OnDuplicateKeyRowAliasListClause<C, F>>, _OnDuplicateKeyUpdateFieldSpec<C, F> {
+            extends Statement._AsClause<_OnDuplicateKeyRowAliasClause<C, F>>, _OnDuplicateKeyUpdateFieldSpec<C, F> {
 
     }
 
