@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.mysql.*;
-import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -10,30 +9,27 @@ import java.util.Objects;
 
 public abstract class MySQLs extends MySQLSyntax {
 
-    /**
-     * protected constructor, application developer can extend this util class.
-     */
-    protected MySQLs() {
+
+    private MySQLs() {
     }
 
     public static MySQLInsert._DomainOptionSpec<Void> domainInsert() {
-        throw new UnsupportedOperationException();
+        return MySQLInserts.domainInsert(null);
     }
 
     public static <C> MySQLInsert._DomainOptionSpec<C> domainInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLInserts.domainInsert(criteria);
     }
 
     public static MySQLInsert._ValueOptionSpec<Void> valueInsert() {
-        throw new UnsupportedOperationException();
+        return MySQLInserts.valueInsert(null);
     }
 
     public static <C> MySQLInsert._ValueOptionSpec<C> valueInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLInserts.valueInsert(criteria);
     }
-
 
     public static MySQLInsert._AssignmentOptionSpec<Void> assignmentInsert() {
         throw new UnsupportedOperationException();
@@ -100,11 +96,11 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLValues._ValuesStmtValues<Void> rowSetValues() {
+    public static MySQLValues._ValuesStmtValues<Void> primaryValues() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> MySQLValues._ValuesStmtValues<Void> rowSetValues(@Nullable C criteria) {
+    public static <C> MySQLValues._ValuesStmtValues<Void> primaryValues(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }

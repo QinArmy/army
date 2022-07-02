@@ -647,7 +647,7 @@ abstract class InsertSupport {
         public final Insert._StaticColumnValueClause<C, F, VR> leftParenExp(F field, Supplier<? extends Expression> supplier) {
             final Expression exp;
             exp = supplier.get();
-            CriteriaContextStack.assertTrue(exp instanceof ArmyExpression);
+            CriteriaContextStack.assertFunctionExp(this.criteriaContext, exp);
             this.addValuePair((FieldMeta<?>) field, (ArmyExpression) exp);
             return this;
         }
@@ -656,7 +656,7 @@ abstract class InsertSupport {
         public final Insert._StaticColumnValueClause<C, F, VR> leftParenExp(F field, Function<C, ? extends Expression> function) {
             final Expression exp;
             exp = function.apply(this.criteria);
-            CriteriaContextStack.assertTrue(exp instanceof ArmyExpression);
+            CriteriaContextStack.assertFunctionExp(this.criteriaContext, exp);
             this.addValuePair((FieldMeta<?>) field, (ArmyExpression) exp);
             return this;
         }
@@ -677,7 +677,7 @@ abstract class InsertSupport {
         public final Insert._StaticColumnValueClause<C, F, VR> commaExp(F field, Supplier<? extends Expression> supplier) {
             final Expression exp;
             exp = supplier.get();
-            CriteriaContextStack.assertTrue(exp instanceof ArmyExpression);
+            CriteriaContextStack.assertFunctionExp(this.criteriaContext, exp);
             this.addValuePair((FieldMeta<?>) field, (ArmyExpression) exp);
             return this;
         }
@@ -686,7 +686,7 @@ abstract class InsertSupport {
         public final Insert._StaticColumnValueClause<C, F, VR> commaExp(F field, Function<C, ? extends Expression> function) {
             final Expression exp;
             exp = function.apply(this.criteria);
-            CriteriaContextStack.assertTrue(exp instanceof ArmyExpression);
+            CriteriaContextStack.assertFunctionExp(this.criteriaContext, exp);
             this.addValuePair((FieldMeta<?>) field, (ArmyExpression) exp);
             return this;
         }
@@ -706,7 +706,7 @@ abstract class InsertSupport {
         private Map<FieldMeta<?>, _Expression> valuePairMap;
 
 
-        ValueInsertValueClause(CriteriaContext criteriaContext, InsertOptions options, TableMeta<?> table) {
+        ValueInsertValueClause(InsertOptions options, TableMeta<?> table) {
             super(options, table);
         }
 

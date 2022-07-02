@@ -34,8 +34,10 @@ abstract class MySQLInserts extends InsertSupport {
         return new DomainInsertOptionClause<>(criteria);
     }
 
+    static <C> MySQLInsert._ValueOptionSpec<C> valueInsert(@Nullable C criteria) {
+        return new ValueOptionClause<>(criteria);
+    }
 
-    /*-------------------below domain insert syntax classes  -------------------*/
 
     interface ClauseBeforeRowAlias<C, F extends TableField> extends ColumnListClause {
 
@@ -112,6 +114,521 @@ abstract class MySQLInserts extends InsertSupport {
 
     }//InsertClause
 
+
+    private static final class AsRowAliasSpec<C, F extends TableField>
+            implements MySQLInsert._AsRowAliasSpec<C, F>
+            , MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>>
+            , MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>, ColumnConsumer<F> {
+
+
+        final CriteriaContext criteriaContext;
+
+        final C criteria;
+
+        private final ClauseBeforeRowAlias<C, F> clause;
+
+        private boolean optionalOnDuplicateKey = true;
+
+        private Map<FieldMeta<?>, _Expression> valuePairMap;
+
+
+        private AsRowAliasSpec(ClauseBeforeRowAlias<C, F> clause) {
+            this.criteriaContext = clause.getCriteriaContext();
+            this.criteria = this.criteriaContext.criteria();
+            this.clause = clause;
+        }
+
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyRowAliasClause<C, F> as(String alias) {
+            if (this.valuePairMap != null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            CriteriaContextStack.assertNonNull(this.criteriaContext, alias, "row alias must be non-null");
+            this.valuePairMap = Collections.emptyMap();
+            return new RowAliasClause<>(alias, this.clause);
+        }
+        @Override
+        public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>> onDuplicateKey() {
+            this.optionalOnDuplicateKey = false;
+            return this;
+        }
+        @Override
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKey = false;
+            consumer.accept(this);
+            return this;
+        }
+        @Override
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKey = false;
+            consumer.accept(this.criteria, this);
+            return this;
+        }
+        @Override
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKey = true;
+            consumer.accept(this);
+            return this;
+        }
+        @Override
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKey = true;
+            consumer.accept(this.criteria, this);
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> update(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableParam(field, value));
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> updateLiteral(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> updateExp(F field, Supplier<? extends Expression> supplier) {
+            this.addValuePair(field, supplier.get());
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> updateExp(F field, Function<C, ? extends Expression> function) {
+            this.addValuePair(field, function.apply(this.criteria));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> comma(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableParam(field, value));
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> commaLiteral(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> commaExp(F field, Supplier<? extends Expression> supplier) {
+            this.addValuePair(field, supplier.get());
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> commaExp(F field, Function<C, ? extends Expression> function) {
+            this.addValuePair(field, function.apply(this.criteria));
+            return this;
+        }
+
+        @Override
+        public ColumnConsumer<F> accept(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableParam(field, value));
+            return this;
+        }
+        @Override
+        public ColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+        @Override
+        public ColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
+            this.addValuePair(field, supplier.get());
+            return this;
+        }
+
+
+        @Override
+        public Insert asInsert() {
+            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
+            if (valuePairMap instanceof HashMap) {
+                valuePairMap = Collections.unmodifiableMap(valuePairMap);
+                this.valuePairMap = valuePairMap;
+            } else if (valuePairMap != null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            } else if (this.optionalOnDuplicateKey) {
+                valuePairMap = Collections.emptyMap();
+                this.valuePairMap = valuePairMap;
+            } else {
+                String m = "You use non-if onDuplicateKey clause,but don't add any field and value pair.";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+            return this.clause.endInsert(valuePairMap);
+        }
+
+
+        private void addValuePair(final F field, final @Nullable Expression value) {
+            if (!this.clause.containField((FieldMeta<?>) field)) {
+                throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
+            }
+            CriteriaContextStack.assertFunctionExp(this.criteriaContext, value);
+
+            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
+            if (valuePairMap == null) {
+                valuePairMap = new HashMap<>();
+                this.valuePairMap = valuePairMap;
+            }
+            if (valuePairMap.putIfAbsent((FieldMeta<?>) field, (ArmyExpression) value) != null) {
+                throw duplicationValuePair(this.criteriaContext, (FieldMeta<?>) field);
+            }
+
+        }
+
+
+    }//DuplicateKeyUpdateClause
+
+
+    /**
+     * @see AsRowAliasSpec#as(String)
+     */
+    private static final class RowAliasClause<C, F extends TableField>
+            implements MySQLInsert._OnDuplicateKeyRowAliasClause<C, F>
+            , Statement._RightParenClause<MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>>
+            , MySQLInsert._ColumnAliasClause<F, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> {
+
+
+        private final CriteriaContext criteriaContext;
+
+        private final String rowAlias;
+
+        private final ClauseBeforeRowAlias<C, F> clause;
+
+        private Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
+
+        private Map<String, FieldMeta<?>> aliasToField = new HashMap<>();
+
+        private RowAliasClause(String rowAlias, ClauseBeforeRowAlias<C, F> clause) {
+            this.criteriaContext = clause.getCriteriaContext();
+            this.rowAlias = rowAlias;
+            this.clause = clause;
+        }
+        @Override
+        public Statement._RightParenClause<MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> leftParen(Consumer<BiConsumer<F, String>> consumer) {
+            consumer.accept(this::addFieldAlias);
+            return this;
+        }
+        @Override
+        public Statement._RightParenClause<MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> leftParen(BiConsumer<C, BiConsumer<F, String>> consumer) {
+            consumer.accept(this.criteriaContext.criteria(), this::addFieldAlias);
+            return this;
+        }
+        @Override
+        public MySQLInsert._ColumnAliasClause<F, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> leftParen(F field, String columnAlias) {
+            this.addFieldAlias(field, columnAlias);
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._ColumnAliasClause<F, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> comma(F field, String columnAlias) {
+            this.addFieldAlias(field, columnAlias);
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rightParen() {
+            Map<String, FieldMeta<?>> aliasToField = this.aliasToField;
+            if (aliasToField.size() == 0) {
+                String m = "You use row alias clause but don't add any column alias.";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            } else if (aliasToField instanceof HashMap) {
+                aliasToField = Collections.unmodifiableMap(aliasToField);
+                this.aliasToField = aliasToField;
+                this.fieldMap = null;
+            } else {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            return this.clause.rowAliasEnd(this.rowAlias, aliasToField);
+        }
+
+        private void addFieldAlias(final F field, final @Nullable String columnAlias) {
+            if (!this.clause.containField((FieldMeta<?>) field)) {
+                throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
+            }
+            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            if (fieldMap == null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            if (fieldMap.putIfAbsent((FieldMeta<?>) field, Boolean.TRUE) != null) {
+                String m = String.format("duplication column alias[%s] for %s", columnAlias, field);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+            if (columnAlias == null) {
+                String m = String.format("%s columnAlis is null", field);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+
+            if (this.aliasToField.putIfAbsent(columnAlias, (FieldMeta<?>) field) != null) {
+                String m = String.format("column alis[%s] duplication", columnAlias);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+
+
+        }
+
+
+    }//OnDuplicateKeyRowAliasListClause
+
+
+    private static final class OnDuplicateKeyUpdateAliasSpec<C, F extends TableField>
+            implements MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>
+            , MySQLInsert._StaticOnDuplicateKeyAliasUpdateClause<C, F, MySQLInsert._StaticCommaAliasValuePairSpec<C, F>>
+            , MySQLInsert._StaticCommaAliasValuePairSpec<C, F>
+            , AliasColumnConsumer<F> {
+
+        private final CriteriaContext criteriaContext;
+
+        private final C criteria;
+
+        private final ClauseBeforeRowAlias<C, F> clause;
+
+        private final Map<String, FieldMeta<?>> aliasToField;
+
+        private Map<Object, _Expression> valuePairMap;
+
+        private Map<FieldMeta<?>, Boolean> fieldMap;
+
+        private boolean optionalOnDuplicateKeyClause = true;
+
+        private OnDuplicateKeyUpdateAliasSpec(Map<String, FieldMeta<?>> aliasToField
+                , ClauseBeforeRowAlias<C, F> clause) {
+            this.criteriaContext = clause.getCriteriaContext();
+            this.criteria = this.criteriaContext.criteria();
+            this.aliasToField = aliasToField;
+            this.clause = clause;
+
+        }
+        @Override
+        public MySQLInsert._StaticOnDuplicateKeyAliasUpdateClause<C, F, MySQLInsert._StaticCommaAliasValuePairSpec<C, F>> onDuplicateKey() {
+            this.optionalOnDuplicateKeyClause = false;
+            return this;
+        }
+        @Override
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<AliasColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKeyClause = false;
+            consumer.accept(this);
+            return this;
+        }
+        @Override
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, AliasColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKeyClause = false;
+            consumer.accept(this.criteria, this);
+            return this;
+        }
+        @Override
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<AliasColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKeyClause = true;
+            consumer.accept(this);
+            return this;
+        }
+        @Override
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, AliasColumnConsumer<F>> consumer) {
+            this.optionalOnDuplicateKeyClause = true;
+            consumer.accept(this.criteria, this);
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> update(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableParam(field, value));
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateLiteral(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateExp(F field, Supplier<? extends Expression> supplier) {
+            this.addValuePair(field, supplier.get());
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateExp(F field, Function<C, ? extends Expression> function) {
+            this.addValuePair(field, function.apply(this.criteria));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> update(String columnAlias, @Nullable Object value) {
+            this.accept(columnAlias, value);
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateLiteral(String columnAlias, @Nullable Object value) {
+            this.acceptLiteral(columnAlias, value);
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateExp(String columnAlias, Supplier<? extends Expression> supplier) {
+            this.addValuePair(columnAlias, supplier.get());
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateExp(String columnAlias, Function<C, ? extends Expression> function) {
+            this.addValuePair(columnAlias, function.apply(this.criteria));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> comma(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableParam(field, value));
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaLiteral(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaExp(F field, Supplier<? extends Expression> supplier) {
+            this.addValuePair(field, supplier.get());
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaExp(F field, Function<C, ? extends Expression> function) {
+            this.addValuePair(field, function.apply(this.criteria));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> comma(String columnAlias, @Nullable Object value) {
+            this.accept(columnAlias, value);
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaLiteral(String columnAlias, @Nullable Object value) {
+            this.acceptLiteral(columnAlias, value);
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaExp(String columnAlias, Supplier<? extends Expression> supplier) {
+            this.addValuePair(columnAlias, supplier.get());
+            return this;
+        }
+        @Override
+        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaExp(String columnAlias, Function<C, ? extends Expression> function) {
+            this.addValuePair(columnAlias, function.apply(this.criteria));
+            return this;
+        }
+
+        @Override
+        public AliasColumnConsumer<F> accept(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableParam(field, value));
+            return this;
+        }
+        @Override
+        public AliasColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
+            this.addValuePair(field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+        @Override
+        public AliasColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
+            this.addValuePair(field, supplier.get());
+            return this;
+        }
+        @Override
+        public AliasColumnConsumer<F> accept(String columnAlias, @Nullable Object value) {
+            final FieldMeta<?> field;
+            field = this.aliasToField.get(columnAlias);
+            if (field == null) {
+                throw this.unknownColumnAlias(columnAlias);
+            }
+            this.addValuePair(columnAlias, SQLs._nullableParam(field, value));
+            return this;
+        }
+        @Override
+        public AliasColumnConsumer<F> acceptLiteral(String columnAlias, @Nullable Object value) {
+            final FieldMeta<?> field;
+            field = this.aliasToField.get(columnAlias);
+            if (field == null) {
+                throw this.unknownColumnAlias(columnAlias);
+            }
+            this.addValuePair(columnAlias, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+        @Override
+        public AliasColumnConsumer<F> acceptExp(String columnAlias, Supplier<? extends Expression> supplier) {
+            this.addValuePair(columnAlias, supplier.get());
+            return this;
+        }
+
+        @Override
+        public Insert asInsert() {
+            Map<Object, _Expression> valuePairMap = this.valuePairMap;
+            if (valuePairMap instanceof HashMap) {
+                valuePairMap = Collections.unmodifiableMap(valuePairMap);
+                this.valuePairMap = valuePairMap;
+                this.fieldMap = null;
+            } else if (valuePairMap != null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            } else if (this.optionalOnDuplicateKeyClause) {
+                valuePairMap = Collections.emptyMap();
+                this.valuePairMap = valuePairMap;
+                this.fieldMap = null;
+            } else {
+                String m = "Your use non-if onDuplicateKey clause but don't add any value pair.";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+            return this.clause.endInsert(valuePairMap);
+        }
+
+        private void addValuePair(final Object fieldOrAlias, final @Nullable Expression value) {
+            //1. get fieldMap
+            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            if (fieldMap == null) {
+                fieldMap = new HashMap<>();
+                this.fieldMap = fieldMap;
+            }
+            //2. validate field
+            final FieldMeta<?> field;
+            if (fieldOrAlias instanceof FieldMeta) {
+                field = (FieldMeta<?>) fieldOrAlias;
+                if (!this.clause.containField(field)) {
+                    throw notContainField(this.criteriaContext, field);
+                }
+                if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                    throw duplicationValuePair(this.criteriaContext, field);
+                }
+            } else if (fieldOrAlias instanceof String) {
+                field = this.aliasToField.get((String) fieldOrAlias);
+                if (field == null) {
+                    throw this.unknownColumnAlias((String) fieldOrAlias);
+                }
+                if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                    String m = String.format("duplication value pair for column alias[%s]", fieldOrAlias);
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                }
+            } else {
+                //no bug,never here
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "unknown key type");
+            }
+            //3. validate value
+            CriteriaContextStack.assertFunctionExp(this.criteriaContext, value);
+
+            //4.get valuePairMap
+            Map<Object, _Expression> valuePairMap = this.valuePairMap;
+            if (valuePairMap == null) {
+                valuePairMap = new HashMap<>();
+                this.valuePairMap = valuePairMap;
+            }
+            //5. put pair
+            if (valuePairMap.putIfAbsent(fieldOrAlias, (ArmyExpression) value) != null) {
+                String m = String.format("duplication value pair for fieldOrAlias[%s]", fieldOrAlias);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+
+        }
+
+        private CriteriaException unknownColumnAlias(@Nullable String columnAlias) {
+            String m = String.format("unknown column alias[%s]", columnAlias);
+            return CriteriaContextStack.criteriaError(this.criteriaContext, m);
+        }
+
+
+    }//OnDuplicateKeyUpdateAliasSpec
+
+
+    /*-------------------below domain insert syntax classes  -------------------*/
+
     private static final class DomainInsertOptionClause<C> extends InsertClause<C, MySQLInsert._DomainIntoClause<C>>
             implements MySQLInsert._DomainOptionSpec<C>, MySQLInsert._DomainIntoClause<C>, InsertOptions {
 
@@ -151,7 +668,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
         @Override
         public <T extends IDomain> MySQLInsert._DomainParentPartitionSpec<C, T> into(ChildTableMeta<T> table) {
-            return null;
+            return new ChildDomainInsertPartitionClause<>(this, table);
         }
         @Override
         public <T extends IDomain> MySQLInsert._DomainPartitionSpec<C, T> insertInto(SingleTableMeta<T> table) {
@@ -159,7 +676,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
         @Override
         public <T extends IDomain> MySQLInsert._DomainParentPartitionSpec<C, T> insertInto(ChildTableMeta<T> table) {
-            return null;
+            return new ChildDomainInsertPartitionClause<>(this, table);
         }
 
 
@@ -213,44 +730,46 @@ abstract class MySQLInserts extends InsertSupport {
             return (PR) this;
         }
         @Override
-        public final PR partition(Supplier<List<String>> supplier) {
-            this.partitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
-            return (PR) this;
-        }
-        @Override
-        public final PR partition(Function<C, List<String>> function) {
-            this.partitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
-            return (PR) this;
-        }
-        @Override
-        public final PR partition(Consumer<List<String>> consumer) {
+        public final PR partition(Consumer<Consumer<String>> consumer) {
             final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList);
+            consumer.accept(partitionList::add);
             if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(MySQLUtils::partitionListIsEmpty);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
             }
             this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
             return (PR) this;
         }
+
         @Override
-        public final PR ifPartition(Supplier<List<String>> supplier) {
-            final List<String> list;
-            list = supplier.get();
-            if (list != null && list.size() > 0) {
-                this.partitionList = _CollectionUtils.asUnmodifiableList(list);
+        public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(this.criteria, partitionList::add);
+            if (partitionList.size() == 0) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
             }
+            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
             return (PR) this;
         }
+
         @Override
-        public final PR ifPartition(Function<C, List<String>> function) {
-            final List<String> list;
-            list = function.apply(this.criteria);
-            if (list != null && list.size() > 0) {
-                this.partitionList = _CollectionUtils.asUnmodifiableList(list);
+        public final PR ifPartition(Consumer<Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(partitionList::add);
+            if (partitionList.size() > 0) {
+                this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
             }
             return (PR) this;
         }
 
+        @Override
+        public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(this.criteria, partitionList::add);
+            if (partitionList.size() > 0) {
+                this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
+            }
+            return (PR) this;
+        }
 
         final List<String> partitionList() {
             List<String> list = this.partitionList;
@@ -296,41 +815,45 @@ abstract class MySQLInserts extends InsertSupport {
             this.parentPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
             return (PR) this;
         }
+
         @Override
-        public final PR parentPartition(Supplier<List<String>> supplier) {
-            this.parentPartitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
-            return (PR) this;
-        }
-        @Override
-        public final PR parentPartition(Function<C, List<String>> function) {
-            this.parentPartitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
-            return (PR) this;
-        }
-        @Override
-        public final PR parentPartition(Consumer<List<String>> consumer) {
+        public final PR parentPartition(Consumer<Consumer<String>> consumer) {
             final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList);
+            consumer.accept(partitionList::add);
             if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(MySQLUtils::partitionListIsEmpty);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
             }
             this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
             return (PR) this;
         }
+
         @Override
-        public final PR ifParentPartition(Supplier<List<String>> supplier) {
-            final List<String> list;
-            list = supplier.get();
-            if (list != null && list.size() > 0) {
-                this.parentPartitionList = _CollectionUtils.asUnmodifiableList(list);
+        public final PR parentPartition(BiConsumer<C, Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(this.criteria, partitionList::add);
+            if (partitionList.size() == 0) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
+            }
+            this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
+            return (PR) this;
+        }
+
+        @Override
+        public final PR ifParentPartition(Consumer<Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(partitionList::add);
+            if (partitionList.size() > 0) {
+                this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
             }
             return (PR) this;
         }
+
         @Override
-        public final PR ifParentPartition(Function<C, List<String>> function) {
-            final List<String> list;
-            list = function.apply(this.criteria);
-            if (list != null && list.size() > 0) {
-                this.parentPartitionList = _CollectionUtils.asUnmodifiableList(list);
+        public final PR ifParentPartition(BiConsumer<C, Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(this.criteria, partitionList::add);
+            if (partitionList.size() > 0) {
+                this.parentPartitionList = _CollectionUtils.unmodifiableList(partitionList);
             }
             return (PR) this;
         }
@@ -350,41 +873,44 @@ abstract class MySQLInserts extends InsertSupport {
             this.childPartitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
             return (CC) this;
         }
+
         @Override
-        public final CC childPartition(Supplier<List<String>> supplier) {
-            this.childPartitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
-            return (CC) this;
-        }
-        @Override
-        public final CC childPartition(Function<C, List<String>> function) {
-            this.childPartitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
-            return (CC) this;
-        }
-        @Override
-        public final CC childPartition(Consumer<List<String>> consumer) {
+        public final CC childPartition(Consumer<Consumer<String>> consumer) {
             final List<String> partitionList = new ArrayList<>();
-            consumer.accept(partitionList);
+            consumer.accept(partitionList::add);
             if (partitionList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(MySQLUtils::partitionListIsEmpty);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
             }
             this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
             return (CC) this;
         }
+
         @Override
-        public final CC ifChildPartition(Supplier<List<String>> supplier) {
-            final List<String> list;
-            list = supplier.get();
-            if (list != null && list.size() > 0) {
-                this.childPartitionList = _CollectionUtils.asUnmodifiableList(list);
+        public final CC childPartition(BiConsumer<C, Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(this.criteria, partitionList::add);
+            if (partitionList.size() == 0) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
+            }
+            this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
+            return (CC) this;
+        }
+
+        @Override
+        public final CC ifChildPartition(Consumer<Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(partitionList::add);
+            if (partitionList.size() > 0) {
+                this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
             }
             return (CC) this;
         }
         @Override
-        public final CC ifChildPartition(Function<C, List<String>> function) {
-            final List<String> list;
-            list = function.apply(this.criteria);
-            if (list != null && list.size() > 0) {
-                this.childPartitionList = _CollectionUtils.asUnmodifiableList(list);
+        public final CC ifChildPartition(BiConsumer<C, Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(this.criteria, partitionList::add);
+            if (partitionList.size() > 0) {
+                this.childPartitionList = _CollectionUtils.unmodifiableList(partitionList);
             }
             return (CC) this;
         }
@@ -552,507 +1078,6 @@ abstract class MySQLInserts extends InsertSupport {
     }//ChildDomainInsertPartitionClause
 
 
-    private static final class AsRowAliasSpec<C, F extends TableField>
-            implements MySQLInsert._AsRowAliasSpec<C, F>
-            , MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>>
-            , MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>, ColumnConsumer<F> {
-
-
-        final CriteriaContext criteriaContext;
-
-        final C criteria;
-
-        private final ClauseBeforeRowAlias<C, F> clause;
-
-        private boolean optionalOnDuplicateKey = true;
-
-        private Map<FieldMeta<?>, _Expression> valuePairMap;
-
-
-        private AsRowAliasSpec(ClauseBeforeRowAlias<C, F> clause) {
-            this.criteriaContext = clause.getCriteriaContext();
-            this.criteria = this.criteriaContext.criteria();
-            this.clause = clause;
-        }
-
-
-        @Override
-        public MySQLInsert._OnDuplicateKeyRowAliasClause<C, F> as(String alias) {
-            if (this.valuePairMap != null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
-            }
-            CriteriaContextStack.assertNonNull(this.criteriaContext, alias, "row alias must be non-null");
-            this.valuePairMap = Collections.emptyMap();
-            return new RowAliasClause<>(alias, this.clause);
-        }
-        @Override
-        public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>> onDuplicateKey() {
-            this.optionalOnDuplicateKey = false;
-            return this;
-        }
-        @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
-            this.optionalOnDuplicateKey = false;
-            consumer.accept(this);
-            return this;
-        }
-        @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
-            this.optionalOnDuplicateKey = false;
-            consumer.accept(this.criteria, this);
-            return this;
-        }
-        @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
-            this.optionalOnDuplicateKey = true;
-            consumer.accept(this);
-            return this;
-        }
-        @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
-            this.optionalOnDuplicateKey = true;
-            consumer.accept(this.criteria, this);
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> update(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> updateLiteral(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> updateExp(F field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> updateExp(F field, Function<C, ? extends Expression> function) {
-            this.addValuePair(field, function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> comma(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> commaLiteral(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> commaExp(F field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticAssignmentCommaFieldSpec<C, F> commaExp(F field, Function<C, ? extends Expression> function) {
-            this.addValuePair(field, function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public ColumnConsumer<F> accept(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return this;
-        }
-        @Override
-        public ColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-        @Override
-        public ColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return this;
-        }
-
-
-        @Override
-        public Insert asInsert() {
-            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap instanceof HashMap) {
-                valuePairMap = Collections.unmodifiableMap(valuePairMap);
-                this.valuePairMap = valuePairMap;
-            } else if (valuePairMap != null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
-            } else if (!this.optionalOnDuplicateKey) {
-                String m = "You use non-if onDuplicateKey clause,but don't add any field and value pair.";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            } else {
-                valuePairMap = Collections.emptyMap();
-                this.valuePairMap = valuePairMap;
-            }
-            return this.clause.endInsert(valuePairMap);
-        }
-
-
-        private void addValuePair(final F field, final @Nullable Expression value) {
-            if (!this.clause.containField((FieldMeta<?>) field)) {
-                throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
-            }
-            CriteriaContextStack.assertFunctionExp(this.criteriaContext, value);
-
-            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap == null) {
-                valuePairMap = new HashMap<>();
-                this.valuePairMap = valuePairMap;
-            }
-            if (valuePairMap.putIfAbsent((FieldMeta<?>) field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(this.criteriaContext, (FieldMeta<?>) field);
-            }
-
-        }
-
-
-    }//DuplicateKeyUpdateClause
-
-
-    /**
-     * @see AsRowAliasSpec#as(String)
-     */
-    private static final class RowAliasClause<C, F extends TableField>
-            implements MySQLInsert._OnDuplicateKeyRowAliasClause<C, F>
-            , Statement._RightParenClause<MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>>
-            , MySQLInsert._ColumnAliasClause<F, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> {
-
-
-        private final CriteriaContext criteriaContext;
-
-        private final String rowAlias;
-
-        private final ClauseBeforeRowAlias<C, F> clause;
-
-        private Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
-
-        private Map<String, FieldMeta<?>> aliasToField = new HashMap<>();
-
-        private RowAliasClause(String rowAlias, ClauseBeforeRowAlias<C, F> clause) {
-            this.criteriaContext = clause.getCriteriaContext();
-            this.rowAlias = rowAlias;
-            this.clause = clause;
-        }
-        @Override
-        public Statement._RightParenClause<MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> leftParen(Consumer<BiConsumer<F, String>> consumer) {
-            consumer.accept(this::addFieldAlias);
-            return this;
-        }
-        @Override
-        public Statement._RightParenClause<MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> leftParen(BiConsumer<C, BiConsumer<F, String>> consumer) {
-            consumer.accept(this.criteriaContext.criteria(), this::addFieldAlias);
-            return this;
-        }
-        @Override
-        public MySQLInsert._ColumnAliasClause<F, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> leftParen(F field, String columnAlias) {
-            this.addFieldAlias(field, columnAlias);
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._ColumnAliasClause<F, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>> comma(F field, String columnAlias) {
-            this.addFieldAlias(field, columnAlias);
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rightParen() {
-            Map<String, FieldMeta<?>> aliasToField = this.aliasToField;
-            if (aliasToField.size() == 0) {
-                String m = "You use row alias clause but don't add any column alias.";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            } else if (aliasToField instanceof HashMap) {
-                aliasToField = Collections.unmodifiableMap(aliasToField);
-                this.aliasToField = aliasToField;
-                this.fieldMap = null;
-            } else {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
-            }
-            return this.clause.rowAliasEnd(this.rowAlias, aliasToField);
-        }
-
-        private void addFieldAlias(final F field, final @Nullable String columnAlias) {
-            if (!this.clause.containField((FieldMeta<?>) field)) {
-                throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
-            }
-            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            if (fieldMap == null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
-            }
-            if (fieldMap.putIfAbsent((FieldMeta<?>) field, Boolean.TRUE) != null) {
-                String m = String.format("duplication column alias[%s] for %s", columnAlias, field);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-            if (columnAlias == null) {
-                String m = String.format("%s columnAlis is null", field);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-
-            if (this.aliasToField.putIfAbsent(columnAlias, (FieldMeta<?>) field) != null) {
-                String m = String.format("column alis[%s] duplication", columnAlias);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-
-
-        }
-
-
-    }//OnDuplicateKeyRowAliasListClause
-
-
-    private static final class OnDuplicateKeyUpdateAliasSpec<C, F extends TableField>
-            implements MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F>
-            , MySQLInsert._StaticOnDuplicateKeyAliasUpdateClause<C, F, MySQLInsert._StaticCommaAliasValuePairSpec<C, F>>
-            , MySQLInsert._StaticCommaAliasValuePairSpec<C, F>
-            , AliasColumnConsumer<F> {
-
-        private final CriteriaContext criteriaContext;
-
-        private final C criteria;
-
-        private final ClauseBeforeRowAlias<C, F> clause;
-
-        private final Map<String, FieldMeta<?>> aliasToField;
-
-        private Map<Object, _Expression> valuePairMap;
-
-        private Map<FieldMeta<?>, Boolean> fieldMap;
-
-        private boolean optionalOnDuplicateKeyClause;
-
-        private OnDuplicateKeyUpdateAliasSpec(Map<String, FieldMeta<?>> aliasToField
-                , ClauseBeforeRowAlias<C, F> clause) {
-            this.criteriaContext = clause.getCriteriaContext();
-            this.criteria = this.criteriaContext.criteria();
-            this.aliasToField = aliasToField;
-            this.clause = clause;
-
-        }
-        @Override
-        public MySQLInsert._StaticOnDuplicateKeyAliasUpdateClause<C, F, MySQLInsert._StaticCommaAliasValuePairSpec<C, F>> onDuplicateKey() {
-            return this;
-        }
-        @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<AliasColumnConsumer<F>> consumer) {
-            consumer.accept(this);
-            return this;
-        }
-        @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, AliasColumnConsumer<F>> consumer) {
-            consumer.accept(this.criteria, this);
-            return this;
-        }
-        @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<AliasColumnConsumer<F>> consumer) {
-            this.optionalOnDuplicateKeyClause = true;
-            consumer.accept(this);
-            return this;
-        }
-        @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, AliasColumnConsumer<F>> consumer) {
-            this.optionalOnDuplicateKeyClause = true;
-            consumer.accept(this.criteria, this);
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> update(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateLiteral(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateExp(F field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateExp(F field, Function<C, ? extends Expression> function) {
-            this.addValuePair(field, function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> update(String columnAlias, @Nullable Object value) {
-            this.accept(columnAlias, value);
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateLiteral(String columnAlias, @Nullable Object value) {
-            this.acceptLiteral(columnAlias, value);
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateExp(String columnAlias, Supplier<? extends Expression> supplier) {
-            this.addValuePair(columnAlias, supplier.get());
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> updateExp(String columnAlias, Function<C, ? extends Expression> function) {
-            this.addValuePair(columnAlias, function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> comma(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaLiteral(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaExp(F field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaExp(F field, Function<C, ? extends Expression> function) {
-            this.addValuePair(field, function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> comma(String columnAlias, @Nullable Object value) {
-            this.accept(columnAlias, value);
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaLiteral(String columnAlias, @Nullable Object value) {
-            this.acceptLiteral(columnAlias, value);
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaExp(String columnAlias, Supplier<? extends Expression> supplier) {
-            this.addValuePair(columnAlias, supplier.get());
-            return this;
-        }
-        @Override
-        public MySQLInsert._StaticCommaAliasValuePairSpec<C, F> commaExp(String columnAlias, Function<C, ? extends Expression> function) {
-            this.addValuePair(columnAlias, function.apply(this.criteria));
-            return this;
-        }
-
-        @Override
-        public AliasColumnConsumer<F> accept(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableParam(field, value));
-            return this;
-        }
-        @Override
-        public AliasColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
-            this.addValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-        @Override
-        public AliasColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
-            this.addValuePair(field, supplier.get());
-            return this;
-        }
-        @Override
-        public AliasColumnConsumer<F> accept(String columnAlias, @Nullable Object value) {
-            final FieldMeta<?> field;
-            field = this.aliasToField.get(columnAlias);
-            if (field == null) {
-                throw this.unknownColumnAlias(columnAlias);
-            }
-            this.addValuePair(columnAlias, SQLs._nullableParam(field, value));
-            return this;
-        }
-        @Override
-        public AliasColumnConsumer<F> acceptLiteral(String columnAlias, @Nullable Object value) {
-            final FieldMeta<?> field;
-            field = this.aliasToField.get(columnAlias);
-            if (field == null) {
-                throw this.unknownColumnAlias(columnAlias);
-            }
-            this.addValuePair(columnAlias, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-        @Override
-        public AliasColumnConsumer<F> acceptExp(String columnAlias, Supplier<? extends Expression> supplier) {
-            this.addValuePair(columnAlias, supplier.get());
-            return this;
-        }
-
-        @Override
-        public Insert asInsert() {
-            Map<Object, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap instanceof HashMap) {
-                valuePairMap = Collections.unmodifiableMap(valuePairMap);
-                this.valuePairMap = valuePairMap;
-                this.fieldMap = null;
-            } else if (valuePairMap != null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
-            } else if (this.optionalOnDuplicateKeyClause) {
-                valuePairMap = Collections.emptyMap();
-                this.valuePairMap = valuePairMap;
-                this.fieldMap = null;
-            } else {
-                String m = "Your use non-if onDuplicateKey clause but don't add any value pair.";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-            return this.clause.endInsert(valuePairMap);
-        }
-
-        private void addValuePair(final Object fieldOrAlias, final @Nullable Expression value) {
-            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            if (fieldMap == null) {
-                fieldMap = new HashMap<>();
-                this.fieldMap = fieldMap;
-            }
-            final FieldMeta<?> field;
-            if (fieldOrAlias instanceof FieldMeta) {
-                field = (FieldMeta<?>) fieldOrAlias;
-                if (!this.clause.containField(field)) {
-                    throw notContainField(this.criteriaContext, field);
-                }
-                if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                    throw duplicationValuePair(this.criteriaContext, field);
-                }
-            } else if (fieldOrAlias instanceof String) {
-                field = this.aliasToField.get((String) fieldOrAlias);
-                if (field == null) {
-                    throw this.unknownColumnAlias((String) fieldOrAlias);
-                }
-                if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                    String m = String.format("duplication value pair for column alias[%s]", fieldOrAlias);
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-                }
-            } else {
-                //no bug,never here
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "unknown key type");
-            }
-
-            CriteriaContextStack.assertFunctionExp(this.criteriaContext, value);
-
-            Map<Object, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap == null) {
-                valuePairMap = new HashMap<>();
-                this.valuePairMap = valuePairMap;
-            }
-            valuePairMap.put(fieldOrAlias, (ArmyExpression) value);
-        }
-
-        private CriteriaException unknownColumnAlias(@Nullable String columnAlias) {
-            String m = String.format("unknown column alias[%s]", columnAlias);
-            return CriteriaContextStack.criteriaError(this.criteriaContext, m);
-        }
-
-
-    }//OnDuplicateKeyUpdateAliasSpec
-
-
     static class MySQLDomainInsertStatement extends ValueSyntaxStatement
             implements MySQLInsert, _MySQLInsert._MySQLDomainInsert {
 
@@ -1191,6 +1216,283 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     }//MySQLDomainInsertWIthRowAlias
+
+
+    /*-------------------below value insert syntax classes  -------------------*/
+
+    private interface ClauseForValueInsert<C, F extends TableField> extends ColumnListClause {
+
+        MySQLInsert._AsRowAliasSpec<C, F> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> valuePairList);
+
+    }
+
+
+    private static final class ValueOptionClause<C> extends InsertClause<C, MySQLInsert._ValueIntoClause<C>>
+            implements MySQLInsert._ValueOptionSpec<C>, InsertOptions {
+
+
+        private final CriteriaContext criteriaContext;
+
+        private boolean migration;
+
+        private NullHandleMode nullHandleMode;
+
+        private ValueOptionClause(@Nullable C criteria) {
+            super(criteria);
+            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
+
+
+        @Override
+        public MySQLInsert._ValueNullOptionSpec<C> migration(boolean migration) {
+            this.migration = migration;
+            return this;
+        }
+        @Override
+        public MySQLInsert._ValueInsertIntoSpec<C> nullHandle(NullHandleMode mode) {
+            this.nullHandleMode = mode;
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLInsert._ValuePartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
+            return null;
+        }
+        @Override
+        public <T extends IDomain> MySQLInsert._ValueParentPartitionSpec<C, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
+            return null;
+        }
+
+        @Override
+        public boolean isMigration() {
+            return this.migration;
+        }
+        @Override
+        public NullHandleMode nullHandle() {
+            return this.nullHandleMode;
+        }
+        @Override
+        public boolean isPreferLiteral() {
+            // always false
+            return false;
+        }
+
+        @Override
+        public CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
+
+
+    }//ValueOptionClause
+
+
+    @SuppressWarnings("unchecked")
+    static abstract class ValuePartitionClause<C, F extends TableField, PR, RR, VR>
+            extends InsertSupport.ValueInsertValueClause<C, F, RR, VR>
+            implements MySQLQuery._PartitionClause<C, PR> {
+
+        private List<String> partitionList;
+
+
+        private ValuePartitionClause(InsertOptions options, TableMeta<?> table) {
+            super(options, table);
+        }
+
+
+        @Override
+        public final PR partition(String partitionName) {
+            this.partitionList = Collections.singletonList(partitionName);
+            return (PR) this;
+        }
+        @Override
+        public final PR partition(String partitionName1, String partitionNam2) {
+            this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
+            return (PR) this;
+        }
+        @Override
+        public final PR partition(String partitionName1, String partitionNam2, String partitionNam3) {
+            this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
+            return (PR) this;
+        }
+        @Override
+        public final PR partition(Consumer<Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(partitionList::add);
+            if (partitionList.size() == 0) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
+            }
+            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
+            return (PR) this;
+        }
+
+        @Override
+        public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(this.criteria, partitionList::add);
+            if (partitionList.size() == 0) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
+            }
+            this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
+            return (PR) this;
+        }
+
+        @Override
+        public final PR ifPartition(Consumer<Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(partitionList::add);
+            if (partitionList.size() > 0) {
+                this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
+            }
+            return (PR) this;
+        }
+
+        @Override
+        public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
+            final List<String> partitionList = new ArrayList<>();
+            consumer.accept(this.criteria, partitionList::add);
+            if (partitionList.size() > 0) {
+                this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
+            }
+            return (PR) this;
+        }
+
+        final List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+    }//ValuePartitionClause
+
+
+    private static final class StaticValueLeftParenClause<C, F extends TableField>
+            extends InsertSupport.StaticColumnValuePairClause<C, F, MySQLInsert._AsRowAliasSpec<C, F>> {
+
+        private final ClauseForValueInsert<C, F> clause;
+
+        private Map<FieldMeta<?>, _Expression> valuePairMap = new HashMap<>();
+
+        private StaticValueLeftParenClause(ClauseForValueInsert<C, F> clause) {
+            super(clause.getCriteriaContext());
+            this.clause = clause;
+        }
+
+        @Override
+        public MySQLInsert._AsRowAliasSpec<C, F> rightParen() {
+            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
+            if (valuePairMap instanceof HashMap && valuePairMap.size() > 0) {
+                valuePairMap = Collections.unmodifiableMap(valuePairMap);
+                this.valuePairMap = valuePairMap;
+            } else {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            return this.clause.valueClauseEnd(Collections.singletonList(valuePairMap));
+        }
+        @Override
+        void addValuePair(final FieldMeta<?> field, final _Expression value) {
+            if (!this.clause.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            final Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
+            if (!(valuePairMap instanceof HashMap)) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            }
+            if (valuePairMap.putIfAbsent(field, value) != null) {
+                throw duplicationValuePair(this.criteriaContext, field);
+            }
+        }
+
+
+    }//StaticValueLeftParenClause
+
+
+    private static final class StaticValuesLeftParenClause<C, F extends TableField>
+            extends InsertSupport.StaticColumnValuePairClause<C, F, MySQLInsert._ValueStaticValuesLeftParenSpec<C, F>> {
+
+        private final ClauseForValueInsert<C, F> clause;
+
+        private List<Map<FieldMeta<?>, _Expression>> valuePairList;
+
+        private Map<FieldMeta<?>, _Expression> currentValuePairMap;
+
+        private StaticValuesLeftParenClause(ClauseForValueInsert<C, F> clause) {
+            super(clause.getCriteriaContext());
+            this.clause = clause;
+        }
+        @Override
+        public MySQLInsert._ValueStaticValuesLeftParenSpec<C, F> rightParen() {
+            return null;
+        }
+        @Override
+        void addValuePair(FieldMeta<?> field, _Expression value) {
+
+        }
+    }//StaticValuesLeftParenClause
+
+
+    private static final class ValueInsertPartitionClause<C, F extends TableField>
+            extends ValuePartitionClause<
+            C,
+            F,
+            MySQLInsert._ValueColumnListSpec<C, F>,
+            MySQLInsert._ValueCommonExpSpec<C, F>,
+            MySQLInsert._AsRowAliasSpec<C, F>>
+            implements MySQLInsert._ValuePartitionSpec<C, F>
+            , ClauseBeforeRowAlias<C, F>
+            , ClauseForValueInsert<C, F> {
+
+        private String rowAlias;
+
+        private Map<String, FieldMeta<?>> aliasToField;
+
+        private ValueInsertPartitionClause(ValueOptionClause<C> clause, TableMeta<?> table) {
+            super(clause, table);
+        }
+
+        @Override
+        public _StaticValueLeftParenClause<C, F, MySQLInsert._AsRowAliasSpec<C, F>> value() {
+            return new StaticValueLeftParenClause<>(this);
+        }
+        @Override
+        public MySQLInsert._ValueStaticValuesLeftParenClause<C, F> values() {
+            return null;
+        }
+
+
+        @Override
+        public void prepared() {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+        }
+        @Override
+        public boolean isPrepared() {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(final String rowAlias
+                , final Map<String, FieldMeta<?>> aliasToField) {
+            this.rowAlias = rowAlias;
+            this.aliasToField = aliasToField;
+            return new OnDuplicateKeyUpdateAliasSpec<>(aliasToField, this);
+        }
+        @Override
+        public Insert endInsert(Map<?, _Expression> valuePairMap) {
+            return null;
+        }
+        @Override
+        MySQLInsert._ValueCommonExpSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
+            return this;
+        }
+        @Override
+        public MySQLInsert._AsRowAliasSpec<C, F> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> valuePairList) {
+            return new AsRowAliasSpec<>(this);
+        }
+
+
+    }//ValueInsertPartitionClause
 
 
 }

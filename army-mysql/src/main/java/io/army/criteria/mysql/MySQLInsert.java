@@ -37,15 +37,13 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
         PR parentPartition(String partitionName1, String partitionNam2, String partitionNam3);
 
-        PR parentPartition(Supplier<List<String>> supplier);
+        PR parentPartition(Consumer<Consumer<String>> consumer);
 
-        PR parentPartition(Function<C, List<String>> function);
+        PR parentPartition(BiConsumer<C, Consumer<String>> consumer);
 
-        PR parentPartition(Consumer<List<String>> consumer);
+        PR ifParentPartition(Consumer<Consumer<String>> consumer);
 
-        PR ifParentPartition(Supplier<List<String>> supplier);
-
-        PR ifParentPartition(Function<C, List<String>> function);
+        PR ifParentPartition(BiConsumer<C, Consumer<String>> consumer);
 
     }
 
@@ -58,15 +56,13 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
         PR childPartition(String partitionName1, String partitionNam2, String partitionNam3);
 
-        PR childPartition(Supplier<List<String>> supplier);
+        PR childPartition(Consumer<Consumer<String>> consumer);
 
-        PR childPartition(Function<C, List<String>> function);
+        PR childPartition(BiConsumer<C, Consumer<String>> consumer);
 
-        PR childPartition(Consumer<List<String>> consumer);
+        PR ifChildPartition(Consumer<Consumer<String>> consumer);
 
-        PR ifChildPartition(Supplier<List<String>> supplier);
-
-        PR ifChildPartition(Function<C, List<String>> function);
+        PR ifChildPartition(BiConsumer<C, Consumer<String>> consumer);
 
     }
 

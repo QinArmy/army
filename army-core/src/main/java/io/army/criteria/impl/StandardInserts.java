@@ -83,12 +83,12 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> Insert._StandardDomainColumnsSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return new StandardDomainInsertStatement<>(this.criteriaContext, this, table);
+            return new StandardDomainInsertStatement<>(this, table);
         }
 
         @Override
         public <T extends IDomain> Insert._StandardDomainColumnsSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
-            return new StandardDomainInsertStatement<>(this.criteriaContext, this, table);
+            return new StandardDomainInsertStatement<>(this, table);
         }
 
         @Override
@@ -108,6 +108,11 @@ abstract class StandardInserts extends InsertSupport {
             return this.preferLiteral;
         }
 
+        @Override
+        public CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
+
 
     }//StandardDomainOptionClause
 
@@ -119,9 +124,8 @@ abstract class StandardInserts extends InsertSupport {
 
         private Boolean prepared;
 
-        private StandardDomainInsertStatement(CriteriaContext criteriaContext, InsertOptions options
-                , TableMeta<T> table) {
-            super(criteriaContext, options, table);
+        private StandardDomainInsertStatement(InsertOptions options, TableMeta<T> table) {
+            super(options, table);
         }
 
         @Override
@@ -167,6 +171,11 @@ abstract class StandardInserts extends InsertSupport {
             return s;
         }
 
+        @Override
+        _InsertSpec valuesEnd() {
+            return this;
+        }
+
 
     }//StandardDomainInsertStatement
 
@@ -203,12 +212,12 @@ abstract class StandardInserts extends InsertSupport {
         }
         @Override
         public <T extends IDomain> Insert._StandardColumnsSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return new StandardValueClause<>(this.criteriaContext, this, table);
+            return new StandardValueClause<>(this, table);
         }
 
         @Override
         public <T extends IDomain> Insert._StandardColumnsSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
-            return new StandardValueClause<>(this.criteriaContext, this, table);
+            return new StandardValueClause<>(this, table);
         }
 
         @Override
@@ -227,6 +236,10 @@ abstract class StandardInserts extends InsertSupport {
             return false;
         }
 
+        @Override
+        public CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
 
     }//StandardValueInsertOptionClause
 
@@ -244,8 +257,8 @@ abstract class StandardInserts extends InsertSupport {
             implements Insert._StandardColumnsSpec<C, T, F> {
 
 
-        private StandardValueClause(CriteriaContext criteriaContext, InsertOptions options, TableMeta<?> table) {
-            super(criteriaContext, options, table);
+        private StandardValueClause(InsertOptions options, TableMeta<?> table) {
+            super(options, table);
         }
 
         @Override
@@ -307,10 +320,10 @@ abstract class StandardInserts extends InsertSupport {
         @Override
         void addValuePair(final FieldMeta<?> field, final _Expression value) {
             if (!this.clause.containField(field)) {
-                throw notContainField(field);
+                throw notContainField(this.criteriaContext, field);
             }
             if (this.valuePairMap.putIfAbsent(field, value) != null) {
-                throw duplicationValuePair(field);
+                throw duplicationValuePair(this.criteriaContext, field);
             }
         }
 
@@ -378,10 +391,10 @@ abstract class StandardInserts extends InsertSupport {
                 throw CriteriaContextStack.criteriaError(_Exceptions::castCriteriaApi);
             }
             if (!this.clause.containField(field)) {
-                throw notContainField(field);
+                throw notContainField(this.criteriaContext, field);
             }
             if (currentPairMap.putIfAbsent(field, value) != null) {
-                throw duplicationValuePair(field);
+                throw duplicationValuePair(this.criteriaContext, field);
             }
 
         }
@@ -393,10 +406,7 @@ abstract class StandardInserts extends InsertSupport {
     static final class StandardValueInsertStatement extends ValueSyntaxStatement
             implements Insert._InsertSpec, StandardStatement, _ValueInsert {
 
-
-        private final CriteriaContext criteriaContext;
         private final List<Map<FieldMeta<?>, _Expression>> valuePairList;
-        private Boolean prepared;
 
 
         /**
@@ -406,7 +416,6 @@ abstract class StandardInserts extends InsertSupport {
         private StandardValueInsertStatement(StandardValueClause<?, ?, ?> clause, Map<FieldMeta<?>
                 , _Expression> valuePairMap) {
             super(clause);
-            this.criteriaContext = clause.criteriaContext;
             this.valuePairList = Collections.singletonList(Collections.unmodifiableMap(valuePairMap));
         }
 
@@ -418,7 +427,6 @@ abstract class StandardInserts extends InsertSupport {
         private StandardValueInsertStatement(StandardValueClause<?, ?, ?> clause
                 , List<Map<FieldMeta<?>, _Expression>> valuePairList) {
             super(clause);
-            this.criteriaContext = clause.criteriaContext;
             this.valuePairList = valuePairList;
         }
 

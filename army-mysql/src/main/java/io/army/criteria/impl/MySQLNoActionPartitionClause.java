@@ -2,10 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.mysql.MySQLQuery;
 
-import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery._PartitionClause<C, PR> {
@@ -27,28 +25,20 @@ abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery._Partit
     }
 
     @Override
-    public final PR partition(Supplier<List<String>> supplier) {
+    public final PR partition(Consumer<Consumer<String>> consumer) {
         return (PR) this;
     }
 
     @Override
-    public final PR partition(Function<C, List<String>> function) {
+    public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
         return (PR) this;
     }
-
     @Override
-    public final PR partition(Consumer<List<String>> consumer) {
+    public final PR ifPartition(Consumer<Consumer<String>> consumer) {
         return (PR) this;
     }
-
-
     @Override
-    public final PR ifPartition(Supplier<List<String>> supplier) {
-        return (PR) this;
-    }
-
-    @Override
-    public final PR ifPartition(Function<C, List<String>> function) {
+    public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
         return (PR) this;
     }
 

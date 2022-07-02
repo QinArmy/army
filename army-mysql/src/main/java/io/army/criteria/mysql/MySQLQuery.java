@@ -4,10 +4,7 @@ import io.army.criteria.DialectStatement;
 import io.army.criteria.Query;
 
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -114,15 +111,13 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         PR partition(String partitionName1, String partitionNam2, String partitionNam3);
 
-        PR partition(Supplier<List<String>> supplier);
+        PR partition(Consumer<Consumer<String>> consumer);
 
-        PR partition(Function<C, List<String>> function);
+        PR partition(BiConsumer<C, Consumer<String>> consumer);
 
-        PR partition(Consumer<List<String>> consumer);
+        PR ifPartition(Consumer<Consumer<String>> consumer);
 
-        PR ifPartition(Supplier<List<String>> supplier);
-
-        PR ifPartition(Function<C, List<String>> function);
+        PR ifPartition(BiConsumer<C, Consumer<String>> consumer);
 
     }
 

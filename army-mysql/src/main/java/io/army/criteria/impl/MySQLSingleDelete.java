@@ -12,11 +12,13 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
 import io.army.util.ArrayUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -122,46 +124,46 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
-    public final PR partition(Supplier<List<String>> supplier) {
-        this.partitionList = MySQLUtils.asStringList(supplier.get(), MySQLUtils::partitionListIsEmpty);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(Function<C, List<String>> function) {
-        this.partitionList = MySQLUtils.asStringList(function.apply(this.criteria), MySQLUtils::partitionListIsEmpty);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(Consumer<List<String>> consumer) {
+    public final PR partition(Consumer<Consumer<String>> consumer) {
         final List<String> list = new ArrayList<>();
-        consumer.accept(list);
+        consumer.accept(list::add);
+        if (list.size() == 0) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
+        }
         this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
         return (PR) this;
     }
 
     @Override
-    public final PR ifPartition(Supplier<List<String>> supplier) {
-        final List<String> list;
-        list = supplier.get();
-        if (list != null && list.size() > 0) {
-            this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
+    public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
+        final List<String> list = new ArrayList<>();
+        consumer.accept(this.criteria, list::add);
+        if (list.size() == 0) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
         }
+        this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
         return (PR) this;
     }
+
 
     @Override
-    public final PR ifPartition(Function<C, List<String>> function) {
-        final List<String> list;
-        list = function.apply(this.criteria);
-        if (list != null && list.size() > 0) {
-            this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
+    public final PR ifPartition(Consumer<Consumer<String>> consumer) {
+        final List<String> list = new ArrayList<>();
+        consumer.accept(list::add);
+        if (list.size() > 0) {
+            this.partitionList = _CollectionUtils.unmodifiableList(list);
         }
         return (PR) this;
     }
-
-
+    @Override
+    public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
+        final List<String> list = new ArrayList<>();
+        consumer.accept(this.criteria, list::add);
+        if (list.size() > 0) {
+            this.partitionList = _CollectionUtils.unmodifiableList(list);
+        }
+        return (PR) this;
+    }
     @Override
     public final OR orderBy(SortItem sortItem) {
         this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
