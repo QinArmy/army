@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.Statement;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,13 +35,13 @@ final class MySQLPartitionClause<C, PR> implements MySQLQuery._PartitionLeftPare
         return this.comma(partitionName);
     }
     @Override
-    public Statement._RightParenClause<PR> leftParen(String partitionName1, String partitionName2) {
+    public MySQLQuery._PartitionCommaClause<PR> leftParen(String partitionName1, String partitionName2) {
         this.optionalPartition = false;
         return this.comma(partitionName1)
                 .comma(partitionName2);
     }
     @Override
-    public Statement._RightParenClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3) {
+    public MySQLQuery._PartitionCommaClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3) {
         this.optionalPartition = false;
         return this.comma(partitionName1)
                 .comma(partitionName2)
@@ -80,7 +79,7 @@ final class MySQLPartitionClause<C, PR> implements MySQLQuery._PartitionLeftPare
             partitionList = new ArrayList<>();
             this.partitionList = partitionList;
         } else if (!(partitionList instanceof ArrayList)) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         partitionList.add(partitionName);
         return this;
@@ -94,7 +93,7 @@ final class MySQLPartitionClause<C, PR> implements MySQLQuery._PartitionLeftPare
             partitionList = _CollectionUtils.unmodifiableList(partitionList);
             this.partitionList = partitionList;
         } else if (partitionList != null) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         } else if (this.optionalPartition) {
             partitionList = Collections.emptyList();
             this.partitionList = partitionList;

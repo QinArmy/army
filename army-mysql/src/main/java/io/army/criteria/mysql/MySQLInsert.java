@@ -326,7 +326,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _AssignmentSinglePartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause2<C, _MySQLAssignmentSetClause<C, F>>, _MySQLAssignmentSetClause<C, F> {
+            extends MySQLQuery._PartitionClause<C, _MySQLAssignmentSetClause<C, F>>, _MySQLAssignmentSetClause<C, F> {
 
     }
 
@@ -401,7 +401,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _RowSetPartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause2<C, _RowSetColumnListClause<C, F>>, _RowSetColumnListClause<C, F> {
+            extends MySQLQuery._PartitionClause<C, _RowSetColumnListClause<C, F>>, _RowSetColumnListClause<C, F> {
 
     }
 

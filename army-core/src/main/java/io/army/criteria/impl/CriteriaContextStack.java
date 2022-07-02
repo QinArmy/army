@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.lang.Nullable;
+import io.army.util._Exceptions;
 
 import java.util.LinkedList;
 import java.util.Objects;
@@ -118,6 +119,16 @@ abstract class CriteriaContextStack {
             clearStackOnError(criteriaContext);
             throw new CriteriaException("function must return non-null army expression");
         }
+    }
+
+    static CriteriaException castCriteriaApi(CriteriaContext criteriaContext) {
+        clearStackOnError(criteriaContext);
+        return _Exceptions.castCriteriaApi();
+    }
+
+    static CriteriaException nonArmyExp(CriteriaContext criteriaContext) {
+        clearStackOnError(criteriaContext);
+        return new CriteriaException(String.format("%s must be army expression", Expression.class.getName()));
     }
 
     static void assertNonNull(CriteriaContext criteriaContext, @Nullable Object obj, String message) {

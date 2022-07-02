@@ -2,7 +2,10 @@ package io.army.sync;
 
 import io.army.ArmyException;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.criteria.impl.inner._Statement;
 import io.army.domain.IDomain;
 import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
@@ -436,7 +439,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             assertSessionForChildInsert((_Insert) insert);
 
             //2. parse statement to stmt
-            if (insert instanceof _RowSetInsert && this.dontSupportSubQueryInsert) {
+            if (insert instanceof _Insert._RowSetInsert && this.dontSupportSubQueryInsert) {
                 throw _Exceptions.dontSupportSubQueryInsert(this);
             }
             final Stmt stmt;
@@ -450,10 +453,10 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             affectedRows = this.stmtExecutor.insert(stmt, tx == null ? 0 : tx.nextTimeout());
 
             //4. validate value insert affected rows
-            if (insert instanceof _DomainInsert
-                    && affectedRows != ((_DomainInsert) insert).domainList().size()) {
+            if (insert instanceof _Insert._DomainInsert
+                    && affectedRows != ((_Insert._DomainInsert) insert).domainList().size()) {
                 String m = String.format("value list size is %s,but affected %s rows."
-                        , ((_DomainInsert) insert).domainList().size(), affectedRows);
+                        , ((_Insert._DomainInsert) insert).domainList().size(), affectedRows);
                 throw new ExecutorExecutionException(m);
             }
             return affectedRows;

@@ -95,9 +95,9 @@ public interface MySQLQuery extends Query, DialectStatement {
 
         _PartitionCommaClause<PR> leftParen(String partitionName);
 
-        Statement._RightParenClause<PR> leftParen(String partitionName1, String partitionName2);
+        _PartitionCommaClause<PR> leftParen(String partitionName1, String partitionName2);
 
-        Statement._RightParenClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3);
+        _PartitionCommaClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3);
 
         Statement._RightParenClause<PR> leftParen(Consumer<Consumer<String>> consumer);
 

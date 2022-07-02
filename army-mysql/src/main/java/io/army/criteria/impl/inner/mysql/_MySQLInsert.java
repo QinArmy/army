@@ -1,7 +1,6 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.Hint;
-import io.army.criteria.impl.inner._DomainInsert;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.mysql.MySQLWords;
@@ -38,6 +37,10 @@ public interface _MySQLInsert extends _Insert {
 
     interface _MySQLDomainInsert extends _DomainInsert, _MySQLInsert {
 
+
+    }
+
+    interface _MySQLValueInsert extends _ValueInsert, _MySQLInsert {
 
     }
 

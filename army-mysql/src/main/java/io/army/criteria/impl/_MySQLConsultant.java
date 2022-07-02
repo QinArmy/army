@@ -1,12 +1,30 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.dialect.Database;
 
 public abstract class _MySQLConsultant extends _SQLConsultant {
+
+
+    public static void assertInsert(final Insert insert) {
+        if (insert instanceof _Insert._DomainInsert) {
+            if (!(insert instanceof MySQLInserts.MySQLDomainInsertStatement)) {
+                throw instanceNotMatch(insert, MySQLInserts.MySQLDomainInsertStatement.class);
+            }
+        } else if (insert instanceof _Insert._ValueInsert) {
+            if (!(insert instanceof MySQLInserts.MySQLValueInsertStatement)) {
+                throw instanceNotMatch(insert, MySQLInserts.MySQLValueInsertStatement.class);
+            }
+        } else if (insert instanceof _Insert._AssignmentInsert) {
+
+        } else if (!(insert instanceof _Insert._RowSetInsert)) {
+
+        }
+    }
 
 
     public static void assertUpdate(final Update update) {

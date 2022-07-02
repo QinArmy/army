@@ -1,8 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._DomainInsert;
-import io.army.criteria.impl.inner._ValueInsert;
+import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Database;
 import io.army.lang.Nullable;
 import io.army.util._ClassUtils;
@@ -39,11 +38,11 @@ public abstract class _SQLConsultant {
     }
 
     public static void assertStandardInsert(final Insert insert) {
-        if (insert instanceof _DomainInsert) {
+        if (insert instanceof _Insert._DomainInsert) {
             if (!(insert instanceof StandardInserts.StandardDomainInsertStatement)) {
                 throw instanceNotMatch(insert, StandardInserts.StandardDomainInsertStatement.class);
             }
-        } else if (insert instanceof _ValueInsert) {
+        } else if (insert instanceof _Insert._ValueInsert) {
             if (!(insert instanceof StandardInserts.StandardValueInsertStatement)) {
                 throw instanceNotMatch(insert, StandardInserts.StandardValueInsertStatement.class);
             }

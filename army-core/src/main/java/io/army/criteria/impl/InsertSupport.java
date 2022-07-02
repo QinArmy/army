@@ -1,10 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._DomainInsert;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._RowSetInsert;
 import io.army.dialect.Dialect;
 import io.army.dialect._Dialect;
 import io.army.dialect._MockDialects;
@@ -183,8 +181,7 @@ abstract class InsertSupport {
                 map = Collections.emptyMap();
                 this.fieldMap = map;
             } else if (map instanceof HashMap) {
-                //here, don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-                throw _Exceptions.castCriteriaApi();
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return map;
         }
@@ -237,7 +234,7 @@ abstract class InsertSupport {
         private void addField(final F field) {
             final TableMeta<?> table = this.table, fieldTable;
             if (table == null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             fieldTable = field.tableMeta();
             if (!this.migration) {
@@ -326,17 +323,17 @@ abstract class InsertSupport {
         @Override
         public final RR common(final F field, final @Nullable Object value) {
             if (!field.insertable()) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::nonInsertableField, field);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonInsertableField, field);
             }
             final String fieldName = field.fieldName();
             if (_MetaBridge.UPDATE_TIME.equals(fieldName)
                     || _MetaBridge.VERSION.equals(fieldName)
                     || _MetaBridge.CREATE_TIME.equals(fieldName)) {
                 String m = String.format("Common expression don't support %s", field);
-                throw CriteriaContextStack.criteriaError(m);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
             if (!this.migration && field.generatorType() != null) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::armyManageField, field);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::armyManageField, field);
             }
             Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
             if (commonExpMap == null) {
@@ -351,7 +348,8 @@ abstract class InsertSupport {
                     exp = SQLs.param(field, null);
                 }
             } else if (value instanceof SubQuery && !(value instanceof ScalarExpression)) {
-                throw CriteriaContextStack.criteriaError(_Exceptions::nonScalarSubQuery, (SubQuery) value);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonScalarSubQuery
+                        , (SubQuery) value);
             } else if (value instanceof Expression) {
                 exp = (Expression) value;
             } else {
@@ -359,7 +357,7 @@ abstract class InsertSupport {
             }
             if (commonExpMap.putIfAbsent((FieldMeta<?>) field, (ArmyExpression) exp) != null) {
                 String m = String.format("duplication common expression for %s.", field);
-                throw CriteriaContextStack.criteriaError(m);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
             return (RR) this;
         }
@@ -374,7 +372,7 @@ abstract class InsertSupport {
             final Expression expression;
             expression = function.apply(this.criteria);
             if (expression == null) {
-                throw CriteriaContextStack.criteriaError("return null,not expression.");
+                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
             return this.common(field, expression);
         }
@@ -384,7 +382,7 @@ abstract class InsertSupport {
             final Expression expression;
             expression = supplier.get();
             if (expression == null) {
-                throw CriteriaContextStack.criteriaError("return null,not expression.");
+                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
             return this.common(field, expression);
         }
@@ -505,7 +503,7 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class DomainValueClause<C, T extends IDomain, F extends TableField, CR, VR>
-            extends CommonExpClause<C, F, CR> implements Insert._DomainValueClause<C, T, VR>, _DomainInsert {
+            extends CommonExpClause<C, F, CR> implements Insert._DomainValueClause<C, T, VR>, _Insert._DomainInsert {
 
 
         private List<IDomain> domainList;
@@ -569,17 +567,17 @@ abstract class InsertSupport {
             value = function.apply(keyName);
             if (!(value instanceof List)) {
                 String m = String.format("%s return isn't %s.", Function.class.getName(), List.class.getName());
-                throw CriteriaContextStack.criteriaError(m);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
 
             final List<?> domainList = (List<?>) value;
             final int size = domainList.size();
             if (size == 0) {
-                throw CriteriaContextStack.criteriaError("domainList must non-empty");
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
             }
             final TableMeta<?> table = this.table;
             if (table == null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             final Class<?> javaType = table.javaType();
             final List<IDomain> list = new ArrayList<>(size);
@@ -741,11 +739,11 @@ abstract class InsertSupport {
                     valuePairList = new ArrayList<>();
                     this.valuePairList = valuePairList;
                 } else if (!(valuePairList instanceof ArrayList)) {
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
                 }
                 valuePairList.add(Collections.unmodifiableMap(currentPairMap));
             } else if (currentPairMap != null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.valuePairMap = new HashMap<>();
             return this;
@@ -783,7 +781,7 @@ abstract class InsertSupport {
                         , RowConstructor.class.getName());
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             } else if (!(currentPairMap instanceof HashMap)) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
 
             if (!containField(field)) {
@@ -802,7 +800,7 @@ abstract class InsertSupport {
         private VR singleRowValues(final Object callback) {
             //1. validate
             if (this.valuePairMap != null || this.valuePairList != null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             //2. initializing
             Map<FieldMeta<?>, _Expression> valuePairMap = new HashMap<>();
@@ -822,7 +820,7 @@ abstract class InsertSupport {
             }
             //4. validate
             if (this.valuePairList != emptyList || this.valuePairMap != valuePairMap) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             //5. finally
             if (valuePairMap.size() == 0) {
@@ -838,7 +836,7 @@ abstract class InsertSupport {
         private VR multiRowValues(final Object callback) {
             //1. validate
             if (this.valuePairMap != null || this.valuePairList != null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             //2. callback
             if (callback instanceof Consumer) {
@@ -868,7 +866,7 @@ abstract class InsertSupport {
                 valuePairList.add(valuePairMap);
                 valuePairList = Collections.unmodifiableList(valuePairList);
             } else {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::castCriteriaApi);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.valuePairList = valuePairList;
             return this.valueClauseEnd(valuePairList);
@@ -1001,7 +999,7 @@ abstract class InsertSupport {
     }//ValueInsertStatement
 
 
-    static abstract class RowSetInsertStatement implements Insert, _RowSetInsert, Insert._InsertSpec {
+    static abstract class RowSetInsertStatement implements Insert, _Insert._RowSetInsert, Insert._InsertSpec {
 
         final TableMeta<?> table;
 
