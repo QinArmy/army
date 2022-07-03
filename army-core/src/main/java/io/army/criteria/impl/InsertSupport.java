@@ -40,6 +40,11 @@ abstract class InsertSupport {
         @Nullable
         NullHandleMode nullHandle();
 
+
+    }
+
+    interface DomainInsertOptions extends InsertOptions {
+
         boolean isPreferLiteral();
 
     }
@@ -73,11 +78,12 @@ abstract class InsertSupport {
         private Map<FieldMeta<?>, Boolean> fieldMap;
 
         ColumnsClause(CriteriaContext criteriaContext, boolean migration, TableMeta<?> table) {
-            CriteriaContextStack.assertNonNull(table);
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
             this.migration = migration;
             this.table = table;
+
+            CriteriaContextStack.assertNonNull(this.criteriaContext, this.table, "table must non-null");
         }
 
         @Override
@@ -319,7 +325,11 @@ abstract class InsertSupport {
 
         CommonExpClause(InsertOptions options, TableMeta<?> table) {
             super(options.getCriteriaContext(), options.isMigration(), table);
-            this.preferLiteral = options.isPreferLiteral();
+            if (options instanceof DomainInsertOptions) {
+                this.preferLiteral = ((DomainInsertOptions) options).isPreferLiteral();
+            } else {
+                this.preferLiteral = false;
+            }
             this.nullHandleMode = options.nullHandle();
         }
 
@@ -487,6 +497,7 @@ abstract class InsertSupport {
         }
 
 
+
         @Override
         public final NullHandleMode nullHandle() {
             return this.nullHandleMode;
@@ -506,7 +517,8 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class DomainValueClause<C, T extends IDomain, F extends TableField, CR, VR>
-            extends CommonExpClause<C, F, CR> implements Insert._DomainValueClause<C, T, VR>, _Insert._DomainInsert {
+            extends CommonExpClause<C, F, CR> implements Insert._DomainValueClause<C, T, VR>
+            , _Insert._DomainInsert {
 
 
         private List<IDomain> domainList;

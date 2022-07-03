@@ -42,7 +42,7 @@ abstract class StandardInserts extends InsertSupport {
 
     /*-------------------below standard domain insert syntax class-------------------*/
     private static final class StandardDomainOptionClause<C>
-            implements Insert._StandardDomainOptionSpec<C>, InsertOptions {
+            implements Insert._StandardDomainOptionSpec<C>, DomainInsertOptions {
 
         final CriteriaContext criteriaContext;
 
@@ -226,12 +226,6 @@ abstract class StandardInserts extends InsertSupport {
         @Override
         public NullHandleMode nullHandle() {
             return this.nullHandleMode;
-        }
-
-        @Override
-        public boolean isPreferLiteral() {
-            //non-domain insert,always false
-            return false;
         }
 
         @Override
