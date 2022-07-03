@@ -186,39 +186,39 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _DomainPartitionSpec<C, T extends IDomain>
-            extends MySQLQuery._PartitionClause<C, _DomainColumnListSpec<C, T, FieldMeta<T>>>
-            , _DomainColumnListSpec<C, T, FieldMeta<T>> {
+    interface _DomainPartitionSpec<C, T extends IDomain, F extends TableField>
+            extends MySQLQuery._PartitionClause<C, _DomainColumnListSpec<C, T, F>>
+            , _DomainColumnListSpec<C, T, F> {
 
     }
 
 
-    interface _DomainChildPartitionSpec<C, T extends IDomain>
-            extends _ChildPartitionClause<C, _DomainColumnListSpec<C, T, FieldMeta<? super T>>>
-            , _DomainColumnListSpec<C, T, FieldMeta<? super T>> {
+    interface _DomainChildPartitionSpec<C, T extends IDomain, F extends TableField>
+            extends _ChildPartitionClause<C, _DomainColumnListSpec<C, T, F>>
+            , _DomainColumnListSpec<C, T, F> {
 
     }
 
-    interface _DomainParentPartitionSpec<C, T extends IDomain>
-            extends _ParentPartitionClause<C, _DomainChildPartitionSpec<C, T>>, _DomainChildPartitionSpec<C, T> {
+    interface _DomainParentPartitionSpec<C, T extends IDomain, F extends TableField>
+            extends _ParentPartitionClause<C, _DomainChildPartitionSpec<C, T, F>>, _DomainChildPartitionSpec<C, T, F> {
 
     }
 
 
     interface _DomainIntoClause<C> {
 
-        <T extends IDomain> _DomainPartitionSpec<C, T> into(SingleTableMeta<T> table);
+        <T extends IDomain> _DomainPartitionSpec<C, T, FieldMeta<T>> into(SingleTableMeta<T> table);
 
-        <T extends IDomain> _DomainParentPartitionSpec<C, T> into(ChildTableMeta<T> table);
+        <T extends IDomain> _DomainParentPartitionSpec<C, T, FieldMeta<? super T>> into(ChildTableMeta<T> table);
 
     }
 
 
     interface _DomainInsertIntoSpec<C> extends _InsertClause<C, _DomainIntoClause<C>> {
 
-        <T extends IDomain> _DomainPartitionSpec<C, T> insertInto(SingleTableMeta<T> table);
+        <T extends IDomain> _DomainPartitionSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
 
-        <T extends IDomain> _DomainParentPartitionSpec<C, T> insertInto(ChildTableMeta<T> table);
+        <T extends IDomain> _DomainParentPartitionSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table);
 
     }
 
@@ -325,7 +325,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _AssignmentSinglePartitionSpec<C, F extends TableField>
+    interface _AssignmentPartitionSpec<C, F extends TableField>
             extends MySQLQuery._PartitionClause<C, _MySQLAssignmentSetClause<C, F>>, _MySQLAssignmentSetClause<C, F> {
 
     }
@@ -342,7 +342,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _AssignmentIntoClause<C> {
 
-        <T extends IDomain> _AssignmentSinglePartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table);
+        <T extends IDomain> _AssignmentPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table);
 
         <T extends IDomain> _AssignmentParentPartitionSpec<C, FieldMeta<? super T>> into(ChildTableMeta<T> table);
 
@@ -350,7 +350,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _AssignmentInsertIntoSpec<C> extends _InsertClause<C, _AssignmentIntoClause<C>> {
 
-        <T extends IDomain> _AssignmentSinglePartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
+        <T extends IDomain> _AssignmentPartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
 
         <T extends IDomain> _AssignmentParentPartitionSpec<C, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table);
 

@@ -13,37 +13,61 @@ public abstract class MySQLs extends MySQLSyntax {
     private MySQLs() {
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
+     */
     public static MySQLInsert._DomainOptionSpec<Void> domainInsert() {
         return MySQLInserts.domainInsert(null);
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
+     */
     public static <C> MySQLInsert._DomainOptionSpec<C> domainInsert(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLInserts.domainInsert(criteria);
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
+     */
     public static MySQLInsert._ValueOptionSpec<Void> valueInsert() {
         return MySQLInserts.valueInsert(null);
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
+     */
     public static <C> MySQLInsert._ValueOptionSpec<C> valueInsert(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLInserts.valueInsert(criteria);
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
+     */
     public static MySQLInsert._AssignmentOptionSpec<Void> assignmentInsert() {
-        throw new UnsupportedOperationException();
+        return MySQLInserts.assignmentInsert(null);
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
+     */
     public static <C> MySQLInsert._AssignmentOptionSpec<C> assignmentInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLInserts.assignmentInsert(criteria);
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
+     */
     public static MySQLInsert._RowSetInsertIntoSpec<Void> rowSetInsert() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
+     */
     public static <C> MySQLInsert._RowSetInsertIntoSpec<C> rowSetInsert(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();

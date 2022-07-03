@@ -581,13 +581,20 @@ public class MySQLCriteriaUnitTests {
                 //.insertInto(ChinaCity_.T)
                 .insert(Collections::emptyList, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
-                .partition("P1", "P2")
+                .partition()
+                .leftParen("P1", "P2")
+                .rightParen()
                 .value(new ChinaRegion<>())
                 .onDuplicateKey()
                 .updateLiteral(ChinaCity_.updateTime, LocalDateTime.now())
                 .comma(ChinaCity_.version, ChinaCity_.version.plus(SQLs.literal(1)))
                 .asInsert();
         printStmt(stmt);
+
+        MySQLs.domainInsert()
+                .insertInto(ChinaRegion_.T)
+                .value(new ChinaRegion<>())
+                .asInsert();
     }
 
     @Test

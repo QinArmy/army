@@ -876,6 +876,179 @@ abstract class InsertSupport {
     }//ValueInsertValueClause
 
 
+    @SuppressWarnings("unchecked")
+    static abstract class AssignmentInsertClause<C, F extends TableField, SR>
+            implements Insert._AssignmentSetClause<C, F, SR>
+            , CriteriaContextSpec {
+
+        final CriteriaContext criteriaContext;
+
+        final C criteria;
+
+        final boolean migration;
+
+        final NullHandleMode nullHandleMode;
+
+        final TableMeta<?> table;
+        AssignmentInsertClause(InsertOptions options, TableMeta<?> table) {
+            this.criteriaContext = options.getCriteriaContext();
+            this.criteria = this.criteriaContext.criteria();
+            this.migration = options.isMigration();
+            this.nullHandleMode = options.nullHandle();
+
+            this.table = table;
+        }
+
+        @Override
+        public final CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
+        @Override
+        public final SR setPair(Consumer<Consumer<ItemPair>> consumer) {
+            consumer.accept(this::innerAddItemPair);
+            return (SR) this;
+        }
+        @Override
+        public final SR setPair(BiConsumer<C, Consumer<ItemPair>> consumer) {
+            consumer.accept(this.criteria, this::innerAddItemPair);
+            return (SR) this;
+        }
+        @Override
+        public final SR set(F field, @Nullable Object value) {
+            return this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+        }
+        @Override
+        public final SR setLiteral(F field, @Nullable Object value) {
+            return this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+        }
+        @Override
+        public final SR setExp(F field, Supplier<? extends Expression> supplier) {
+            return this.addFieldPair((FieldMeta<?>) field, supplier.get());
+        }
+
+        @Override
+        public final SR setExp(F field, Function<C, ? extends Expression> function) {
+            return this.addFieldPair((FieldMeta<?>) field, function.apply(this.criteria));
+        }
+        @Override
+        public final SR ifSet(F field, Supplier<?> supplier) {
+            final Object value;
+            value = supplier.get();
+            if (value != null) {
+                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSet(F field, Function<C, ?> function) {
+            final Object value;
+            value = function.apply(this.criteria);
+            if (value != null) {
+                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSet(F field, Function<String, ?> function, String keyName) {
+            final Object value;
+            value = function.apply(keyName);
+            if (value != null) {
+                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSetLiteral(F field, Supplier<?> supplier) {
+            final Object value;
+            value = supplier.get();
+            if (value != null) {
+                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSetLiteral(F field, Function<C, ?> function) {
+            final Object value;
+            value = function.apply(this.criteria);
+            if (value != null) {
+                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSetLiteral(F field, Function<String, ?> function, String keyName) {
+            final Object value;
+            value = function.apply(keyName);
+            if (value != null) {
+                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+            }
+            return (SR) this;
+        }
+
+
+        abstract void addItemPair(ItemPair itemPair);
+
+
+        public final boolean containField(final FieldMeta<?> field) {
+            final TableMeta<?> table, fieldTable;
+            table = this.table;
+            fieldTable = field.tableMeta();
+            final boolean match;
+            if (fieldTable instanceof ChildTableMeta) {
+                match = fieldTable == table;
+            } else if (table instanceof ChildTableMeta) {
+                match = fieldTable == ((ChildTableMeta<?>) table).parentMeta();
+            } else {
+                match = fieldTable == table;
+            }
+            return match;
+        }
+
+
+        private void innerAddItemPair(final ItemPair itemPair) {
+            if (itemPair instanceof SQLs.FieldItemPair) {
+                this.validateItemField(((SQLs.FieldItemPair) itemPair).field);
+            } else if (itemPair instanceof SQLs.RowItemPair) {
+                for (DataField field : ((SQLs.RowItemPair) itemPair).fieldList) {
+                    this.validateItemField(field);
+                }
+            } else {
+                String m = String.format("Non-Army %s", ItemPair.class.getName());
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+            this.addItemPair(itemPair);
+        }
+
+        private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
+            if (!this.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+            }
+            this.addItemPair(SQLs.itemPair(field, value));
+            return (SR) this;
+        }
+
+        private void validateItemField(final DataField field) {
+            if (!(field instanceof FieldMeta)) {
+                String m = String.format("assignment insert syntax support only %s", FieldMeta.class.getName());
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+            if (!this.containField((FieldMeta<?>) field)) {
+                throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
+            }
+        }
+
+
+    }//AssignmentInsertClause
+
+
     static abstract class InsertStatement implements Insert, Insert._InsertSpec, _Insert {
 
 
