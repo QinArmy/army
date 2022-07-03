@@ -1,8 +1,5 @@
 package io.army.criteria;
 
-import io.army.dialect.Dialect;
-import io.army.stmt.SimpleStmt;
-
 /**
  * <p>
  * This interface representing DQL statement,this interface is base interface of below:
@@ -13,9 +10,7 @@ import io.army.stmt.SimpleStmt;
  *
  * @since 1.0
  */
-public interface DqlStatement extends Statement {
+public interface DqlStatement extends PrimaryStatement {
 
-    @Override
-    SimpleStmt mockAsStmt(Dialect dialect, Visible visible);
 
 }

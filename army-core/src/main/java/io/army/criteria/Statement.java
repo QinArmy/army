@@ -32,9 +32,14 @@ public interface Statement {
 
     boolean isPrepared();
 
-    String mockAsString(Dialect dialect, Visible visible, boolean none);
 
-    Stmt mockAsStmt(Dialect dialect, Visible visible);
+    interface StatementMockSpec {
+
+        String mockAsString(Dialect dialect, Visible visible, boolean none);
+
+        Stmt mockAsStmt(Dialect dialect, Visible visible);
+
+    }
 
 
     /**

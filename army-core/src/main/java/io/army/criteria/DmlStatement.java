@@ -12,7 +12,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface DmlStatement extends Statement {
+public interface DmlStatement extends PrimaryStatement {
 
 
     /**
@@ -24,7 +24,14 @@ public interface DmlStatement extends Statement {
      *
      * @since 1.0
      */
-    interface DmlInsert {
+    interface DmlInsert extends Statement {
+
+
+    }
+
+    interface _DmlInsertSpec<I extends DmlInsert> {
+
+        I asInsert();
 
     }
 

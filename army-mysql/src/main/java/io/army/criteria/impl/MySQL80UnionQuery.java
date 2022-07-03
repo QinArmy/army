@@ -7,7 +7,6 @@ import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLValues;
-import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.util._Exceptions;
 
@@ -134,18 +133,17 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
         super(left, context);
     }
 
-
     @Override
-    final Dialect defaultDialect() {
-        return Dialect.MySQL80;
-    }
-
-    @Override
-    final void validateDialect(Dialect mode) {
-        if (mode.database() != Database.MySQL || mode.version() < 80) {
-            throw _Exceptions.stmtDontSupportDialect(mode);
+    public final String toString() {
+        final String s;
+        if (this instanceof Select && this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
         }
+        return s;
     }
+
 
     @Override
     final _UnionOrderBySpec<C, Q> createBracketQuery(RowSet rowSet) {

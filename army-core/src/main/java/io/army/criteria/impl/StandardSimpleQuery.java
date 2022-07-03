@@ -132,6 +132,17 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return this;
     }
 
+    @Override
+    public final String toString() {
+        final String s;
+        if (this instanceof Select && this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
 
     @Override
     final _StandardSelectClause<C, Q> asUnionAndRowSet(final UnionType unionType) {
@@ -142,16 +153,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     final void crossJoinEvent(boolean success) {
         //no-op
-    }
-
-    @Override
-    final Dialect defaultDialect() {
-        return Dialect.MySQL57;
-    }
-
-    @Override
-    final void validateDialect(Dialect mode) {
-        // no-op
     }
 
 

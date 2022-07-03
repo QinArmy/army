@@ -38,9 +38,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      *
      * @since 1.0
      */
-    interface _InsertSpec {
-
-        Insert asInsert();
+    interface _InsertSpec extends DmlStatement._DmlInsertSpec<Insert> {
 
     }
 

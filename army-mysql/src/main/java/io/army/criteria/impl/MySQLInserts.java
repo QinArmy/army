@@ -868,7 +868,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//DomainInsertPartitionClause
 
 
-    static class MySQLDomainInsertStatement extends ValueSyntaxStatement
+    static class MySQLDomainInsertStatement extends ValueSyntaxStatement<Insert>
             implements MySQLInsert, _MySQLInsert._MySQLDomainInsert {
 
         private final List<Hint> hintList;
@@ -1304,7 +1304,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(final String rowAlias
                 , final Map<String, FieldMeta<?>> aliasToField) {
-            if (this.rowValuesList == null) {
+            if (this.rowValuesList == null || this.rowAlias != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.rowAlias = rowAlias;
@@ -1404,6 +1404,17 @@ abstract class MySQLInserts extends InsertSupport {
             return map;
         }
 
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
         private MySQLInsert._ValueColumnListSpec<C, F> partitionEnd(List<String> partitionList) {
             this.partitionList = partitionList;
             return this;
@@ -1426,9 +1437,7 @@ abstract class MySQLInserts extends InsertSupport {
 
     private static final class AssignmentInsertOptionClause<C>
             extends MySQLInsertClause<C, MySQLInsert._AssignmentIntoClause<C>>
-            implements MySQLInsert._AssignmentOptionSpec<C>
-            , MySQLInsert._AssignmentIntoClause<C>
-            , InsertOptions {
+            implements MySQLInsert._AssignmentOptionSpec<C>, MySQLInsert._AssignmentIntoClause<C>, InsertOptions {
 
         private final CriteriaContext criteriaContext;
 

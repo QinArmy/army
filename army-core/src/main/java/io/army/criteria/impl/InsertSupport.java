@@ -55,13 +55,84 @@ abstract class InsertSupport {
         boolean containField(FieldMeta<?> field);
     }
 
+    static abstract class InsertOptionsImpl<MR, NR> implements InsertOptions, Insert._MigrationOptionClause<MR>
+            , Insert._NullOptionClause<NR> {
+
+        final CriteriaContext criteriaContext;
+
+        private boolean migration;
+
+        private NullHandleMode nullHandleMode;
+
+        InsertOptionsImpl(CriteriaContext criteriaContext) {
+            this.criteriaContext = criteriaContext;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final MR migration(boolean migration) {
+            this.migration = migration;
+            return (MR) this;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final NR nullHandle(NullHandleMode mode) {
+            this.nullHandleMode = mode;
+            return (NR) this;
+        }
+
+        @Override
+        public final CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
+
+        @Override
+        public final boolean isMigration() {
+            return this.migration;
+        }
+
+        @Override
+        public final NullHandleMode nullHandle() {
+            return this.nullHandleMode;
+        }
+
+
+    }//InsertOptionsImpl
+
+
+    static abstract class DomainInsertOptionsImpl<MR, NR, PR> extends InsertOptionsImpl<MR, NR>
+            implements DomainInsertOptions, Insert._PreferLiteralClause<PR> {
+
+
+        private boolean preferLiteral;
+
+        DomainInsertOptionsImpl(CriteriaContext criteriaContext) {
+            super(criteriaContext);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final PR preferLiteral(boolean prefer) {
+            this.preferLiteral = prefer;
+            return (PR) this;
+        }
+
+        @Override
+        public final boolean isPreferLiteral() {
+            return this.preferLiteral;
+        }
+
+
+    }//DomainInsertOptionsImpl
+
 
     /**
      * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
      */
     static abstract class ColumnsClause<C, F extends TableField, RR>
             implements Insert._ColumnListClause<C, F, RR>, Insert._StaticColumnClause<F, RR>
-            , _Insert, Insert, ColumnListClause {
+            , _Insert, ColumnListClause, Statement.StatementMockSpec {
 
         final CriteriaContext criteriaContext;
 
@@ -90,6 +161,7 @@ abstract class InsertSupport {
         public final CriteriaContext getCriteriaContext() {
             return this.criteriaContext;
         }
+
         @Override
         public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<F>> consumer) {
             consumer.accept(this::addField);
@@ -140,7 +212,7 @@ abstract class InsertSupport {
             }
 
             if (size == 0 && childSize == 0) {
-                throw CriteriaContextStack.criteriaError("column list must non-empty");
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "column list must non-empty");
             }
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap == null || fieldMap.size() != size + childSize) {
@@ -198,16 +270,24 @@ abstract class InsertSupport {
 
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            if (!(this instanceof Insert)) {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
             final _Dialect d;
             d = _MockDialects.from(dialect);
             final Stmt stmt;
-            stmt = d.insert(this, visible);
+            stmt = d.insert((Insert) this, visible);
             return d.printStmt(stmt, none);
         }
 
         @Override
         public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            return _MockDialects.from(dialect).insert(this, visible);
+            if (!(this instanceof Insert)) {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return _MockDialects.from(dialect).insert((Insert) this, visible);
         }
 
 
@@ -497,11 +577,11 @@ abstract class InsertSupport {
         }
 
 
-
         @Override
         public final NullHandleMode nullHandle() {
             return this.nullHandleMode;
         }
+
         final void unmodifiedCommonExpMap() {
             final Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
             if (map == null) {
@@ -606,6 +686,7 @@ abstract class InsertSupport {
             this.unmodifiedCommonExpMap();
             return this.valuesEnd();
         }
+
         @Override
         public final boolean isPreferLiteral() {
             return this.preferLiteral;
@@ -646,6 +727,7 @@ abstract class InsertSupport {
         public final CriteriaContext getCriteriaContext() {
             return this.criteriaContext;
         }
+
         @Override
         public final Insert._StaticColumnValueClause<C, F, VR> leftParen(F field, @Nullable Object value) {
             this.addValuePair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
@@ -763,14 +845,17 @@ abstract class InsertSupport {
             this.valuePairMap = new HashMap<>();
             return this;
         }
+
         @Override
         public final ColumnConsumer<F> accept(F field, @Nullable Object value) {
             return this.addValuePair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
         }
+
         @Override
         public final ColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
             return this.addValuePair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
         }
+
         @Override
         public final ColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
             return this.addValuePair((FieldMeta<?>) field, supplier.get());
@@ -893,7 +978,8 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class AssignmentInsertClause<C, F extends TableField, SR>
-            implements Insert._AssignmentSetClause<C, F, SR>, _Insert._AssignmentInsert, Insert, ColumnListClause {
+            implements Insert._AssignmentSetClause<C, F, SR>, _Insert._AssignmentInsert, ColumnListClause
+            , Statement.StatementMockSpec {
 
         final CriteriaContext criteriaContext;
 
@@ -925,19 +1011,23 @@ abstract class InsertSupport {
             consumer.accept(this::innerAddItemPair);
             return (SR) this;
         }
+
         @Override
         public final SR setPair(BiConsumer<C, Consumer<ItemPair>> consumer) {
             consumer.accept(this.criteria, this::innerAddItemPair);
             return (SR) this;
         }
+
         @Override
         public final SR set(F field, @Nullable Object value) {
             return this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
         }
+
         @Override
         public final SR setLiteral(F field, @Nullable Object value) {
             return this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
         }
+
         @Override
         public final SR setExp(F field, Supplier<? extends Expression> supplier) {
             return this.addFieldPair((FieldMeta<?>) field, supplier.get());
@@ -947,6 +1037,7 @@ abstract class InsertSupport {
         public final SR setExp(F field, Function<C, ? extends Expression> function) {
             return this.addFieldPair((FieldMeta<?>) field, function.apply(this.criteria));
         }
+
         @Override
         public final SR ifSet(F field, Supplier<?> supplier) {
             final Object value;
@@ -1011,14 +1102,17 @@ abstract class InsertSupport {
         public final TableMeta<?> table() {
             return this.table;
         }
+
         @Override
         public final List<FieldMeta<?>> fieldList() {
             return Collections.emptyList();
         }
+
         @Override
         public final List<FieldMeta<?>> childFieldList() {
             return Collections.emptyList();
         }
+
         @Override
         public final Map<FieldMeta<?>, Boolean> fieldMap() {
             return Collections.emptyMap();
@@ -1028,6 +1122,7 @@ abstract class InsertSupport {
         public final boolean isMigration() {
             return this.migration;
         }
+
         @Override
         public final NullHandleMode nullHandle() {
             return this.nullHandleMode;
@@ -1046,6 +1141,7 @@ abstract class InsertSupport {
         public void clear() {
             this.itemPairList = null;
         }
+
         @Override
         public final CriteriaContext getCriteriaContext() {
             return this.criteriaContext;
@@ -1069,16 +1165,24 @@ abstract class InsertSupport {
 
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            if (!(this instanceof Insert)) {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
             final _Dialect d;
             d = _MockDialects.from(dialect);
             final Stmt stmt;
-            stmt = d.insert(this, visible);
+            stmt = d.insert((Insert) this, visible);
             return d.printStmt(stmt, none);
         }
 
         @Override
         public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            return _MockDialects.from(dialect).insert(this, visible);
+            if (!(this instanceof Insert)) {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return _MockDialects.from(dialect).insert((Insert) this, visible);
         }
 
 
@@ -1145,7 +1249,9 @@ abstract class InsertSupport {
     }//AssignmentInsertClause
 
 
-    static abstract class InsertStatement implements Insert, Insert._InsertSpec, _Insert {
+    static abstract class InsertStatement<I extends DmlStatement.DmlInsert>
+            implements _Insert, Statement.StatementMockSpec, DmlStatement._DmlInsertSpec<I>
+            , DmlStatement.DmlInsert {
 
 
         private final CriteriaContext criteriaContext;
@@ -1173,16 +1279,24 @@ abstract class InsertSupport {
 
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            if (!(this instanceof Insert)) {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
             final _Dialect d;
             d = _MockDialects.from(dialect);
             final Stmt stmt;
-            stmt = d.insert(this, visible);
+            stmt = d.insert((Insert) this, visible);
             return d.printStmt(stmt, none);
         }
 
         @Override
         public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            return _MockDialects.from(dialect).insert(this, visible);
+            if (!(this instanceof Insert)) {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return _MockDialects.from(dialect).insert((Insert) this, visible);
         }
 
         @Override
@@ -1205,8 +1319,9 @@ abstract class InsertSupport {
             return this.fieldMap;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public final Insert asInsert() {
+        public final I asInsert() {
             _Assert.nonPrepared(this.prepared);
             if (this instanceof SubStatement) {
                 CriteriaContextStack.pop(this.criteriaContext);
@@ -1214,17 +1329,20 @@ abstract class InsertSupport {
                 CriteriaContextStack.clearContextStack(this.criteriaContext);
             }
             this.prepared = Boolean.TRUE;
-            return this;
+            return (I) this;
         }
+
         @Override
         public final void prepared() {
             _Assert.prepared(this.prepared);
         }
+
         @Override
         public final boolean isPrepared() {
             final Boolean prepared = this.prepared;
             return prepared != null && prepared;
         }
+
         @Override
         public final void clear() {
             _Assert.prepared(this.prepared);
@@ -1235,7 +1353,8 @@ abstract class InsertSupport {
     }//InsertStatement
 
 
-    static abstract class ValueSyntaxStatement extends InsertStatement implements _Insert._CommonExpInsert {
+    static abstract class ValueSyntaxStatement<I extends DmlStatement.DmlInsert>
+            extends InsertStatement<I> implements _Insert._CommonExpInsert {
 
         private final boolean migration;
         private final NullHandleMode nullHandleMode;
@@ -1259,6 +1378,7 @@ abstract class InsertSupport {
         public final NullHandleMode nullHandle() {
             return this.nullHandleMode;
         }
+
         @Override
         public final Map<FieldMeta<?>, _Expression> commonExpMap() {
             return this.commonExpMap;
@@ -1268,8 +1388,11 @@ abstract class InsertSupport {
     }//ValueInsertStatement
 
 
-    static abstract class RowSetInsertStatement implements Insert, _Insert._RowSetInsert, Insert._InsertSpec {
+    static abstract class RowSetInsertStatement<I extends DmlStatement.DmlInsert>
+            implements _Insert._RowSetInsert, DmlStatement._DmlInsertSpec<I>
+            , DmlStatement.DmlInsert, Statement.StatementMockSpec {
 
+        final CriteriaContext criteriaContext;
         final TableMeta<?> table;
 
         final List<FieldMeta<?>> fieldList;
@@ -1282,7 +1405,11 @@ abstract class InsertSupport {
 
         final RowSet childRowSet;
 
+        private Boolean prepared;
+
         RowSetInsertStatement(_Insert clause, RowSet rowSet) {
+            this.criteriaContext = ((CriteriaContextSpec) clause).getCriteriaContext();
+
             this.table = clause.table();
             this.fieldList = clause.fieldList();
             this.fieldMap = clause.fieldMap();
@@ -1293,6 +1420,8 @@ abstract class InsertSupport {
         }
 
         RowSetInsertStatement(_Insert parentClause, RowSet parentSet, _Insert childClause, RowSet childRowSet) {
+            this.criteriaContext = ((CriteriaContextSpec) parentClause).getCriteriaContext();
+
             this.table = childClause.table();
             assert this.table instanceof ChildTableMeta;
             this.fieldList = parentClause.fieldList();
@@ -1317,14 +1446,17 @@ abstract class InsertSupport {
         public final TableMeta<?> table() {
             return this.table;
         }
+
         @Override
         public final List<FieldMeta<?>> fieldList() {
             return this.fieldList;
         }
+
         @Override
         public final List<FieldMeta<?>> childFieldList() {
             return this.childFieldList;
         }
+
         @Override
         public final Map<FieldMeta<?>, Boolean> fieldMap() {
             return this.fieldMap;
@@ -1334,23 +1466,65 @@ abstract class InsertSupport {
         public final RowSet rowSet() {
             return this.rowSet;
         }
+
         @Override
         public final RowSet childRowSet() {
             return this.childRowSet;
         }
 
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final I asInsert() {
+            _Assert.nonPrepared(this.prepared);
+            if (this instanceof SubStatement) {
+                CriteriaContextStack.pop(this.criteriaContext);
+            } else {
+                CriteriaContextStack.clearContextStack(this.criteriaContext);
+            }
+            this.validateStatement();
+            this.criteriaContext.clear();
+            this.prepared = Boolean.TRUE;
+            return (I) this;
+        }
+
+        @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public final void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
+        }
+
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            if (!(this instanceof Insert)) {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
             final _Dialect d;
             d = _MockDialects.from(dialect);
             final Stmt stmt;
-            stmt = d.insert(this, visible);
+            stmt = d.insert((Insert) this, visible);
             return d.printStmt(stmt, none);
         }
 
         @Override
         public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            return _MockDialects.from(dialect).insert(this, visible);
+            if (!(this instanceof Insert)) {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return _MockDialects.from(dialect).insert((Insert) this, visible);
         }
 
         /**

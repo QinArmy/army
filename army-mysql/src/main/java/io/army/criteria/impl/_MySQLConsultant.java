@@ -10,6 +10,11 @@ import io.army.dialect.Database;
 public abstract class _MySQLConsultant extends _SQLConsultant {
 
 
+    /**
+     * <p>
+     * Assert insert is MySQL dialect {@link  Insert} statement.
+     * </p>
+     */
     public static void assertInsert(final Insert insert) {
         if (insert instanceof _Insert._DomainInsert) {
             if (!(insert instanceof MySQLInserts.MySQLDomainInsertStatement)) {
@@ -23,8 +28,10 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
             if (!(insert instanceof MySQLInserts.MySQLAssignmentInsertStatement)) {
                 throw instanceNotMatch(insert, MySQLInserts.MySQLAssignmentInsertStatement.class);
             }
-        } else if (!(insert instanceof _Insert._RowSetInsert)) {
+        } else if (insert instanceof _Insert._RowSetInsert) {
 
+        } else {
+            throw new CriteriaException("Not MySQL dialect insert statement.");
         }
     }
 

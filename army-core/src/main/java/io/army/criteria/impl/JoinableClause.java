@@ -4,8 +4,12 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.dialect.Dialect;
+import io.army.dialect._Dialect;
+import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -36,7 +40,8 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         , DialectStatement._StraightJoinClause<C, JT, JS>, DialectStatement._DialectJoinClause<C, JP>
         , DialectStatement._DialectStraightJoinClause<C, JP>, DialectStatement._DialectCrossJoinClause<C, FP>
         , DialectStatement._JoinCteClause<JS>, DialectStatement._StraightJoinCteClause<JS>
-        , DialectStatement._CrossJoinCteClause<FS>, CriteriaSpec<C> {
+        , DialectStatement._CrossJoinCteClause<FS>, CriteriaSpec<C>
+        , Statement.StatementMockSpec {
 
     final ClauseSupplier clauseSupplier;
 
@@ -432,6 +437,42 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         return this.criteria;
     }
 
+
+    @Override
+    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+        final _Dialect d;
+        d = _MockDialects.from(dialect);
+        final Stmt stmt;
+        if (this instanceof Select) {
+            stmt = d.select((Select) this, visible);
+        } else if (this instanceof Update) {
+            stmt = d.update((Update) this, visible);
+        } else if (this instanceof Delete) {
+            stmt = d.delete((Delete) this, visible);
+        } else if (this instanceof Values) {
+            stmt = d.values((Values) this, visible);
+        } else {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return d.printStmt(stmt, none);
+    }
+
+    @Override
+    public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+        final Stmt stmt;
+        if (this instanceof Select) {
+            stmt = _MockDialects.from(dialect).select((Select) this, visible);
+        } else if (this instanceof Update) {
+            stmt = _MockDialects.from(dialect).update((Update) this, visible);
+        } else if (this instanceof Delete) {
+            stmt = _MockDialects.from(dialect).delete((Delete) this, visible);
+        } else if (this instanceof Values) {
+            stmt = _MockDialects.from(dialect).values((Values) this, visible);
+        } else {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return stmt;
+    }
 
     abstract void crossJoinEvent(boolean success);
 

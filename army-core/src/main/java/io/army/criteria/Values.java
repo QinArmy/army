@@ -7,7 +7,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface Values extends RowSet, DerivedTable {
+public interface Values extends RowSet, DerivedTable, DqlStatement {
 
     interface _ValuesSpec {
         Values asValues();

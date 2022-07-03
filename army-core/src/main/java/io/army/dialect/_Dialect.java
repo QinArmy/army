@@ -31,6 +31,10 @@ public interface _Dialect {
 
     SimpleStmt select(Select select, Visible visible);
 
+    default SimpleStmt values(Values values, Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
     void rowSet(RowSet rowSet, _SqlContext original);
 
     List<String> startTransaction(Isolation isolation, boolean readonly);

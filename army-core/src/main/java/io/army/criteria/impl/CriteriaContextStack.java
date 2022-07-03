@@ -45,13 +45,7 @@ abstract class CriteriaContextStack {
         if (stack == null) {
             throw noContextStack();
         }
-        final CriteriaContext context = stack.peek();
-        if (subContext != context) {
-            String m;
-            m = "Current context and the context of sub query ( or with clause ) not match,reject pop.";
-            throw new CriteriaException(m);
-        }
-        stack.pop();
+        stack.pop(subContext);
     }
 
     static void push(final CriteriaContext subContext) {
@@ -173,7 +167,7 @@ abstract class CriteriaContextStack {
 
     private interface Stack {
 
-        CriteriaContext pop();
+        void pop(CriteriaContext subContext);
 
         void push(CriteriaContext subContext);
 
@@ -198,12 +192,16 @@ abstract class CriteriaContextStack {
         }
 
         @Override
-        public CriteriaContext pop() {
+        public void pop(final CriteriaContext subContext) {
             final LinkedList<CriteriaContext> list = this.list;
             if (list.size() < 2) {
-                throw new CriteriaException("Sub query create error");
+                throw new CriteriaException(String.format("No sub %s,reject pop.", CriteriaContext.class.getName()));
             }
-            return list.pollLast();
+            if (subContext != list.peekLast()) {
+                String m = String.format("sub %s not match,reject pop.", CriteriaContext.class.getName());
+                throw new CriteriaException(m);
+            }
+            list.pollLast();
         }
 
         @Override
@@ -228,6 +226,7 @@ abstract class CriteriaContextStack {
         public CriteriaContext rootContext() {
             final LinkedList<CriteriaContext> list = this.list;
             if (list.size() == 0) {
+                //no bug,never here
                 throw new IllegalStateException("stack error");
             }
             return list.peekFirst();
@@ -238,6 +237,7 @@ abstract class CriteriaContextStack {
             final LinkedList<CriteriaContext> list = this.list;
             switch (list.size()) {
                 case 0:
+                    //no bug,never here
                     throw new IllegalStateException("stack error");
                 case 1: {
                     if (rootContext != list.peekFirst()) {

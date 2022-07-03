@@ -4,12 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Dml;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect.Dialect;
-import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
-import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -365,60 +360,15 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     @Override
     public final String toString() {
         final String s;
-        if (!(this instanceof WithElement) && this.isPrepared()) {
-            s = this.mockAsString(defaultDialect(), Visible.ONLY_VISIBLE, true);
+        if (this instanceof PrimaryStatement && this.isPrepared()) {
+            s = ((PrimaryStatement) this)
+                    .mockAsString(defaultDialect(), Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }
         return s;
     }
 
-
-    @Override
-    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-        final Stmt stmt;
-        stmt = this.mockAsStmt(dialect, visible);
-        final StringBuilder builder = new StringBuilder();
-        if (stmt instanceof SimpleStmt) {
-            if (this instanceof Update) {
-                builder.append("update sql:\n");
-            } else {
-                builder.append("delete sql:\n");
-            }
-            builder.append(((SimpleStmt) stmt).sql());
-
-        } else if (stmt instanceof BatchStmt) {
-            if (this instanceof Update) {
-                builder.append("batch update sql:\n");
-            } else {
-                builder.append("batch delete sql:\n");
-            }
-            builder.append(((BatchStmt) stmt).sql());
-        } else {
-            throw new IllegalStateException("stmt error.");
-        }
-        return builder.toString();
-    }
-
-    @Override
-    public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-        if (this instanceof WithElement) {
-            throw new IllegalStateException("mockAsStmt(Dialect,Visible) support only not with element statement.");
-        }
-        final Stmt stmt;
-        if (this instanceof Update) {
-            stmt = _MockDialects.from(dialect).update((Update) this, visible);
-        } else if (this instanceof Delete) {
-            stmt = _MockDialects.from(dialect).delete((Delete) this, visible);
-        } else {
-            throw new IllegalStateException("non-known statement");
-        }
-
-        if (stmt instanceof SimpleStmt) {
-            _Assert.noNamedParam(((SimpleStmt) stmt).paramGroup());
-        }
-        return stmt;
-    }
 
 
     private WR addPredicateList(final @Nullable List<IPredicate> predicates) {

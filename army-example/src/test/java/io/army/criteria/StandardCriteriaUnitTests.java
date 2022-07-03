@@ -498,7 +498,7 @@ public class StandardCriteriaUnitTests {
     }
 
 
-    private static void printStmt(final Statement statement) {
+    private static void printStmt(final PrimaryStatement statement) {
         for (Dialect dialect : Dialect.values()) {
             LOG.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
         }

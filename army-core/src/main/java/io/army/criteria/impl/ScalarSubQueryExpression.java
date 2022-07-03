@@ -1,10 +1,11 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
-import io.army.dialect.Dialect;
+import io.army.criteria.ScalarExpression;
+import io.army.criteria.ScalarSubQuery;
+import io.army.criteria.SelectItem;
+import io.army.criteria.Selection;
 import io.army.dialect._SqlContext;
 import io.army.meta.ParamMeta;
-import io.army.stmt.Stmt;
 
 import java.util.List;
 
@@ -55,17 +56,6 @@ final class ScalarSubQueryExpression extends OperationExpression implements Scal
     @Override
     public void appendSql(final _SqlContext context) {
         context.dialect().rowSet(this.subQuery, context);
-    }
-
-
-    @Override
-    public String mockAsString(Dialect dialect, Visible visible, boolean none) {
-        throw new UnsupportedOperationException("dont support SubQuery.");
-    }
-
-    @Override
-    public Stmt mockAsStmt(Dialect dialect, Visible visible) {
-        throw new UnsupportedOperationException("dont support SubQuery.");
     }
 
 

@@ -3,10 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect.Dialect;
-import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
-import io.army.stmt.SimpleStmt;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
@@ -449,38 +446,6 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     }
 
 
-    @Override
-    public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-        final SimpleStmt stmt;
-        stmt = this.mockAsStmt(dialect, visible);
-        return "SELECT sql:\n" + stmt.sql();
-    }
-
-
-    @Override
-    public final SimpleStmt mockAsStmt(Dialect dialect, Visible visible) {
-        if (this instanceof SubQuery) {
-            throw new IllegalStateException("mockAsStmt(DialectMode) support only Select statement.");
-        }
-        this.validateDialect(dialect);
-        final SimpleStmt stmt;
-        stmt = _MockDialects.from(dialect).select((Select) this, visible);
-        _Assert.noNamedParam(stmt.paramGroup());
-        return stmt;
-    }
-
-    @Override
-    public final String toString() {
-        final String s;
-        if (this.prepared && this instanceof Select) {
-            s = this.mockAsString(this.defaultDialect(), Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
-
     final boolean hasOrderBy() {
         return !_CollectionUtils.isEmpty(this.orderByList);
     }
@@ -490,9 +455,6 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
 
     }
 
-    abstract Dialect defaultDialect();
-
-    abstract void validateDialect(Dialect mode);
 
     abstract Q internalAsRowSet(boolean fromAsQueryMethod);
 

@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
 import io.army.criteria.mysql.MySQL80Query;
-import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -394,17 +393,15 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         this.lockOption = null;
     }
 
-
     @Override
-    final Dialect defaultDialect() {
-        return Dialect.MySQL80;
-    }
-
-    @Override
-    final void validateDialect(Dialect mode) {
-        if (mode.database() != Database.MySQL) {
-            throw _Exceptions.stmtDontSupportDialect(mode);
+    public final String toString() {
+        final String s;
+        if (this instanceof Select && this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
         }
+        return s;
     }
 
     @Override

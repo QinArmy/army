@@ -42,41 +42,15 @@ abstract class StandardInserts extends InsertSupport {
 
     /*-------------------below standard domain insert syntax class-------------------*/
     private static final class StandardDomainOptionClause<C>
-            implements Insert._StandardDomainOptionSpec<C>, DomainInsertOptions {
-
-        final CriteriaContext criteriaContext;
-
-        private boolean preferLiteral;
-
-        private boolean migration;
-
-        private NullHandleMode nullHandleMode = NullHandleMode.INSERT_DEFAULT;
+            extends InsertSupport.DomainInsertOptionsImpl<
+            Insert._StandardDomainNullOptionSpec<C>,
+            Insert._StandardDomainPreferLiteralSpec<C>,
+            Insert._StandardDomainInsertIntoClause<C>>
+            implements Insert._StandardDomainOptionSpec<C> {
 
         private StandardDomainOptionClause(@Nullable C criteria) {
-            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            super(CriteriaContexts.primaryInsertContext(criteria));
             CriteriaContextStack.setContextStack(this.criteriaContext);
-        }
-
-        @Override
-        public Insert._StandardDomainInsertIntoClause<C> preferLiteral(boolean prefer) {
-            this.preferLiteral = prefer;
-            return this;
-        }
-
-        @Override
-        public Insert._StandardDomainNullOptionSpec<C> migration(final boolean migration) {
-            this.migration = migration;
-            if (migration) {
-                this.nullHandleMode = NullHandleMode.INSERT_NULL;
-            }
-            return this;
-        }
-
-        @Override
-        public Insert._StandardDomainPreferLiteralSpec<C> nullHandle(NullHandleMode mode) {
-            CriteriaContextStack.assertNonNull(mode);
-            this.nullHandleMode = mode;
-            return this;
         }
 
         @Override
@@ -89,35 +63,13 @@ abstract class StandardInserts extends InsertSupport {
             return new StandardDomainInsertStatement<>(this, table);
         }
 
-        @Override
-        public boolean isMigration() {
-            return this.migration;
-        }
-
-        @Override
-        public NullHandleMode nullHandle() {
-            final NullHandleMode mode = this.nullHandleMode;
-            assert mode != null;
-            return mode;
-        }
-
-        @Override
-        public boolean isPreferLiteral() {
-            return this.preferLiteral;
-        }
-
-        @Override
-        public CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
-        }
-
 
     }//StandardDomainOptionClause
 
 
     static final class StandardDomainInsertStatement<C, T extends IDomain, F extends TableField>
             extends DomainValueClause<C, T, F, Insert._StandardDomainCommonExpSpec<C, T, F>, Insert._InsertSpec>
-            implements Insert._StandardDomainColumnsSpec<C, T, F>, StandardStatement, Insert._InsertSpec {
+            implements Insert._StandardDomainColumnsSpec<C, T, F>, StandardStatement, Insert, Insert._InsertSpec {
 
 
         private Boolean prepared;
@@ -142,7 +94,8 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public boolean isPrepared() {
-            return this.prepared;
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
         }
 
 
@@ -181,33 +134,16 @@ abstract class StandardInserts extends InsertSupport {
     /*-------------------below standard value insert syntax class-------------------*/
 
     private static final class StandardValueInsertOptionClause<C>
-            implements Insert._StandardValueOptionSpec<C>, InsertOptions {
-
-        private final CriteriaContext criteriaContext;
-
-        private boolean migration;
-
-        private NullHandleMode nullHandleMode = NullHandleMode.INSERT_DEFAULT;
+            extends InsertSupport.InsertOptionsImpl<
+            Insert._StandardValueNullOptionSpec<C>,
+            Insert._StandardValueInsertIntoClause<C>>
+            implements Insert._StandardValueOptionSpec<C> {
 
         public StandardValueInsertOptionClause(@Nullable C criteria) {
-            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            super(CriteriaContexts.primaryInsertContext(criteria));
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
 
-        @Override
-        public Insert._StandardValueNullOptionSpec<C> migration(boolean migration) {
-            this.migration = migration;
-            this.nullHandleMode = NullHandleMode.INSERT_NULL;
-            return this;
-        }
-
-
-        @Override
-        public Insert._StandardValueInsertIntoClause<C> nullHandle(NullHandleMode mode) {
-            CriteriaContextStack.assertNonNull(mode);
-            this.nullHandleMode = mode;
-            return this;
-        }
         @Override
         public <T extends IDomain> Insert._StandardColumnsSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
             return new StandardValueClause<>(this, table);
@@ -216,21 +152,6 @@ abstract class StandardInserts extends InsertSupport {
         @Override
         public <T extends IDomain> Insert._StandardColumnsSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
             return new StandardValueClause<>(this, table);
-        }
-
-        @Override
-        public boolean isMigration() {
-            return this.migration;
-        }
-
-        @Override
-        public NullHandleMode nullHandle() {
-            return this.nullHandleMode;
-        }
-
-        @Override
-        public CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
         }
 
     }//StandardValueInsertOptionClause
@@ -254,36 +175,22 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public _StandardStaticValueLeftParenClause<C, F> value() {
+        public Insert._StandardStaticValueLeftParenClause<C, F> value() {
             return new StandardStaticValueClause<>(this);
         }
 
         @Override
-        public _StandardStaticValuesLeftParenClause<C, F> values() {
+        public Insert._StandardStaticValuesLeftParenClause<C, F> values() {
             return new StandardStaticValuesPairClause<>(this);
         }
 
-
         @Override
-        public void prepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-
-
-        @Override
-        public boolean isPrepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        _StandardCommonExpSpec<C, T, F> columnListEnd(int fieldSize, int childFieldSize) {
+        Insert._StandardCommonExpSpec<C, T, F> columnListEnd(int fieldSize, int childFieldSize) {
             return this;
         }
 
         @Override
-        _InsertSpec valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> valuePairList) {
+        Insert._InsertSpec valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> valuePairList) {
             return new StandardValueInsertStatement(this, valuePairList);
         }
 
@@ -342,7 +249,7 @@ abstract class StandardInserts extends InsertSupport {
         public Insert asInsert() {
             List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
             if (this.valuePairMap != null || !(valuePairList instanceof ArrayList)) {
-                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             switch (valuePairList.size()) {
                 case 0:
@@ -396,8 +303,8 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardStaticValuesClause
 
 
-    static final class StandardValueInsertStatement extends ValueSyntaxStatement
-            implements Insert._InsertSpec, StandardStatement, _Insert._ValueInsert {
+    static final class StandardValueInsertStatement extends ValueSyntaxStatement<Insert>
+            implements Insert, Insert._InsertSpec, StandardStatement, _Insert._ValueInsert {
 
         private final List<Map<FieldMeta<?>, _Expression>> valuePairList;
 
@@ -460,9 +367,9 @@ abstract class StandardInserts extends InsertSupport {
         public <T extends IDomain> Insert._StandardSingleColumnsClause<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
             return new StandardSingleColumnsClause<>(this.criteriaContext, table);
         }
+
         @Override
         public <P extends IDomain, T extends IDomain> Insert._StandardParentColumnsClause<C, P, T> insertInto(ComplexTableMeta<P, T> table) {
-            CriteriaContextStack.assertNonNull(table);
             return new StandardParentColumnClause<>(this.criteriaContext, table);
         }
 
@@ -494,17 +401,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public void prepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public boolean isPrepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        _StandardSpaceSubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
+        Insert._StandardSpaceSubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
             if (fieldSize == 0 || childFieldSize > 0) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -521,31 +418,25 @@ abstract class StandardInserts extends InsertSupport {
             , Insert._StandardParentSubQueryClause<C, FieldMeta<T>> {
 
         private final ChildTableMeta<?> childTable;
+
         private StandardParentColumnClause(CriteriaContext criteriaContext, ChildTableMeta<?> table) {
             super(criteriaContext, true, table.parentMeta());
             this.childTable = table;
         }
 
         @Override
-        public _StandardSingleColumnsClause<C, FieldMeta<T>> space(Supplier<? extends SubQuery> supplier) {
+        public Insert._StandardSingleColumnsClause<C, FieldMeta<T>> space(Supplier<? extends SubQuery> supplier) {
             return new StandardChildColumnClause<>(this, supplier.get());
         }
+
         @Override
-        public _StandardSingleColumnsClause<C, FieldMeta<T>> space(Function<C, ? extends SubQuery> function) {
+        public Insert._StandardSingleColumnsClause<C, FieldMeta<T>> space(Function<C, ? extends SubQuery> function) {
             return new StandardChildColumnClause<>(this, function.apply(this.criteria));
         }
+
+
         @Override
-        public void prepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public boolean isPrepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        _StandardParentSubQueryClause<C, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
+        Insert._StandardParentSubQueryClause<C, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
             if (fieldSize == 0 || childFieldSize > 0) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -568,25 +459,17 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public _InsertSpec space(Supplier<? extends SubQuery> supplier) {
+        public Insert._InsertSpec space(Supplier<? extends SubQuery> supplier) {
             return new StandardRowSetInsertStatement(this, supplier.get());
         }
+
         @Override
-        public _InsertSpec space(Function<C, ? extends SubQuery> function) {
+        public Insert._InsertSpec space(Function<C, ? extends SubQuery> function) {
             return new StandardRowSetInsertStatement(this, function.apply(this.criteria));
         }
+
         @Override
-        public void prepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public boolean isPrepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        _StandardSpaceSubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
+        Insert._StandardSpaceSubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
             if (fieldSize > 0 || childFieldSize == 0) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -596,47 +479,18 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardChildColumnClause
 
 
-    static final class StandardRowSetInsertStatement extends RowSetInsertStatement implements StandardStatement {
-
-        private final CriteriaContext criteriaContext;
-        private Boolean prepared;
+    static final class StandardRowSetInsertStatement extends RowSetInsertStatement<Insert>
+            implements StandardStatement, Insert, Insert._InsertSpec {
 
 
         private StandardRowSetInsertStatement(StandardSingleColumnsClause<?, ?> clause, RowSet rowSet) {
             super(clause, rowSet);
-            this.criteriaContext = clause.criteriaContext;
         }
 
         private StandardRowSetInsertStatement(StandardChildColumnClause<?, ?> clause, RowSet childRowSet) {
             super(clause.parentClause, clause.parentRowSet, clause, childRowSet);
-            this.criteriaContext = clause.criteriaContext;
         }
 
-
-        @Override
-        public Insert asInsert() {
-            _Assert.nonPrepared(this.prepared);
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.validateStatement();
-            this.prepared = Boolean.TRUE;
-            return this;
-        }
-
-        @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
-        }
-        @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-        @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-        }
 
         @Override
         public String toString() {

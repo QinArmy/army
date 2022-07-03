@@ -622,7 +622,7 @@ public class MySQLCriteriaUnitTests {
     }
 
 
-    private void printStmt(final Statement statement) {
+    private void printStmt(final PrimaryStatement statement) {
         for (Dialect dialect : Dialect.values()) {
             if (dialect.database != Database.MySQL) {
                 continue;
