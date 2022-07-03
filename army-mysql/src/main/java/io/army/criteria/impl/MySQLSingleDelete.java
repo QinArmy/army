@@ -33,10 +33,11 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteSingleDelete<C, SubQuery, WE, WR, WA>
+abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
+        extends WithCteSingleDelete<C, SubQuery, WE, WR, WA, Delete>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
         , MySQLQuery._PartitionClause2<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DS>
-        , MySQLDelete._SingleDeleteFromClause<DS>, _MySQLWithClause {
+        , MySQLDelete._SingleDeleteFromClause<DS>, _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
 
 
     static <C> _WithAndSingleDeleteSpec<C> simple(@Nullable C criteria) {
@@ -322,6 +323,18 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteS
     }
 
     @Override
+    public final String toString() {
+        final String s;
+        if (this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
+
+    @Override
     final void doWithCte(boolean recursive, List<Cte> cteList) {
         this.recursive = recursive;
         this.cteList = cteList;
@@ -371,15 +384,6 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR> extends WithCteS
         }
     }
 
-    @Override
-    final Dialect defaultDialect() {
-        return MySQLUtils.defaultDialect(this);
-    }
-
-    @Override
-    final void validateDialect(Dialect dialect) {
-        MySQLUtils.validateDialect(this, dialect);
-    }
 
     /*################################## blow inner class ##################################*/
 

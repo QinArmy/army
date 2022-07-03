@@ -36,7 +36,7 @@ abstract class StandardInserts extends InsertSupport {
     }
 
     static <C> Insert._StandardSubQueryInsertClause<C> rowSetInsert(@Nullable C criteria) {
-        return new StandardSubQueryInsertIntoClause<C>(criteria);
+        return new StandardSubQueryInsertIntoClause<>(criteria);
     }
 
 
@@ -82,7 +82,6 @@ abstract class StandardInserts extends InsertSupport {
         public Insert asInsert() {
             _Assert.nonPrepared(this.prepared);
             CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.unmodifiedCommonExpMap();
             this.prepared = Boolean.TRUE;
             return this;
         }
@@ -133,6 +132,124 @@ abstract class StandardInserts extends InsertSupport {
 
     /*-------------------below standard value insert syntax class-------------------*/
 
+
+    private static final class StandardStaticValueClause<C, F extends TableField>
+            extends StaticColumnValuePairClause<C, F, Insert._InsertSpec>
+            implements Insert._StandardStaticValueLeftParenClause<C, F> {
+
+        final StandardValueInsertStatement<?, ?> clause;
+
+        private Map<FieldMeta<?>, _Expression> rowValueMap;
+
+        private StandardStaticValueClause(StandardValueInsertStatement<C, F> clause) {
+            super(clause.criteriaContext);
+            this.clause = clause;
+        }
+
+
+        @Override
+        public Insert._InsertSpec rightParen() {
+            Map<FieldMeta<?>, _Expression> rowValueMap = this.rowValueMap;
+            if (rowValueMap == null) {
+                rowValueMap = Collections.emptyMap();
+            } else if (rowValueMap instanceof HashMap) {
+                rowValueMap = Collections.unmodifiableMap(rowValueMap);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.rowValueMap = rowValueMap;
+            return this.clause.valueClauseEnd(Collections.singletonList(rowValueMap));
+        }
+
+        @Override
+        void addValuePair(final FieldMeta<?> field, final _Expression value) {
+            if (!this.clause.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            Map<FieldMeta<?>, _Expression> rowValueMap = this.rowValueMap;
+            if (rowValueMap == null) {
+                rowValueMap = new HashMap<>();
+                this.rowValueMap = rowValueMap;
+            }
+            if (rowValueMap.putIfAbsent(field, value) != null) {
+                throw duplicationValuePair(this.criteriaContext, field);
+            }
+        }
+
+
+    }//StandardStaticValueClause
+
+
+    private static final class StandardStaticValuesPairClause<C, F extends TableField>
+            extends StaticColumnValuePairClause<C, F, Insert._StandardStaticValuesLeftParenSpec<C, F>>
+            implements Insert._StandardStaticValuesLeftParenSpec<C, F> {
+
+        final StandardValueInsertStatement<?, ?> clause;
+
+        private List<Map<FieldMeta<?>, _Expression>> rowValueMapList;
+
+        private Map<FieldMeta<?>, _Expression> rowValueMap;
+
+        private StandardStaticValuesPairClause(StandardValueInsertStatement<C, F> clause) {
+            super(clause.criteriaContext);
+            this.clause = clause;
+        }
+
+        @Override
+        public Insert asInsert() {
+            List<Map<FieldMeta<?>, _Expression>> rowValueMapList = this.rowValueMapList;
+            if (this.rowValueMap != null || !(rowValueMapList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            switch (rowValueMapList.size()) {
+                case 0:
+                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                case 1:
+                    rowValueMapList = Collections.singletonList(rowValueMapList.get(0));
+                    break;
+                default:
+                    rowValueMapList = Collections.unmodifiableList(rowValueMapList);
+            }
+            this.rowValueMapList = rowValueMapList;
+            return this.clause.valueClauseEnd(rowValueMapList)
+                    .asInsert();
+        }
+
+        @Override
+        public Insert._StandardStaticValuesLeftParenSpec<C, F> rightParen() {
+            final Map<FieldMeta<?>, _Expression> rowValueMap = this.rowValueMap;
+            if (!(rowValueMap instanceof HashMap)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.rowValueMapList;
+            if (valuePairList == null) {
+                valuePairList = new ArrayList<>();
+                this.rowValueMapList = valuePairList;
+            }
+            valuePairList.add(Collections.unmodifiableMap(rowValueMap));
+            this.rowValueMap = null;
+            return this;
+        }
+
+        @Override
+        void addValuePair(final FieldMeta<?> field, final _Expression value) {
+            if (!this.clause.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            Map<FieldMeta<?>, _Expression> rowValueMap = this.rowValueMap;
+            if (rowValueMap == null) {
+                rowValueMap = new HashMap<>();
+                this.rowValueMap = rowValueMap;
+            }
+            if (rowValueMap.putIfAbsent(field, value) != null) {
+                throw duplicationValuePair(this.criteriaContext, field);
+            }
+
+        }
+
+
+    }//StandardStaticValuesClause
+
     private static final class StandardValueInsertOptionClause<C>
             extends InsertSupport.InsertOptionsImpl<
             Insert._StandardValueNullOptionSpec<C>,
@@ -145,32 +262,31 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardColumnsSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return new StandardValueClause<>(this, table);
+        public <T extends IDomain> Insert._StandardValueColumnsSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
+            return new StandardValueInsertStatement<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardColumnsSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
-            return new StandardValueClause<>(this, table);
+        public <T extends IDomain> Insert._StandardValueColumnsSpec<C, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
+            return new StandardValueInsertStatement<>(this, table);
         }
 
     }//StandardValueInsertOptionClause
 
-    /**
-     * @param <C>
-     * @param <T>
-     * @param <F>
-     */
-    private static final class StandardValueClause<C, T extends IDomain, F extends TableField>
+    static final class StandardValueInsertStatement<C, F extends TableField>
             extends DynamicValueInsertValueClause<
             C,
             F,
-            Insert._StandardCommonExpSpec<C, T, F>,
+            Insert._StandardValueCommonExpSpec<C, F>,
             Insert._InsertSpec>
-            implements Insert._StandardColumnsSpec<C, T, F> {
+            implements Insert._StandardValueColumnsSpec<C, F>, StandardStatement
+            , Insert, Insert._InsertSpec, _Insert._ValueInsert {
 
+        private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
-        private StandardValueClause(InsertOptions options, TableMeta<?> table) {
+        private Boolean prepared;
+
+        private StandardValueInsertStatement(InsertOptions options, TableMeta<?> table) {
             super(options, table);
         }
 
@@ -185,155 +301,33 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        Insert._StandardCommonExpSpec<C, T, F> columnListEnd(int fieldSize, int childFieldSize) {
-            return this;
-        }
-
-        @Override
-        Insert._InsertSpec valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> valuePairList) {
-            return new StandardValueInsertStatement(this, valuePairList);
-        }
-
-
-    }//StandardValueInsert
-
-    private static final class StandardStaticValueClause<C, F extends TableField>
-            extends StaticColumnValuePairClause<C, F, Insert._InsertSpec>
-            implements Insert._StandardStaticValueLeftParenClause<C, F> {
-
-        final StandardValueClause<?, ?, ?> clause;
-
-        final Map<FieldMeta<?>, _Expression> valuePairMap = new HashMap<>();
-
-        private StandardStaticValueClause(StandardValueClause<C, ?, F> clause) {
-            super(clause.criteriaContext);
-            this.clause = clause;
-        }
-
-
-        @Override
-        public Insert._InsertSpec rightParen() {
-            return new StandardValueInsertStatement(this.clause, this.valuePairMap);
-        }
-
-        @Override
-        void addValuePair(final FieldMeta<?> field, final _Expression value) {
-            if (!this.clause.containField(field)) {
-                throw notContainField(this.criteriaContext, field);
-            }
-            if (this.valuePairMap.putIfAbsent(field, value) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
-            }
-        }
-
-
-    }//StandardStaticValueClause
-
-
-    private static final class StandardStaticValuesPairClause<C, F extends TableField>
-            extends StaticColumnValuePairClause<C, F, Insert._StandardStaticValuesLeftParenSpec<C, F>>
-            implements Insert._StandardStaticValuesLeftParenSpec<C, F> {
-
-        final StandardValueClause<?, ?, ?> clause;
-
-        private List<Map<FieldMeta<?>, _Expression>> valuePairList;
-
-        private Map<FieldMeta<?>, _Expression> valuePairMap;
-
-        private StandardStaticValuesPairClause(StandardValueClause<C, ?, F> clause) {
-            super(clause.criteriaContext);
-            this.clause = clause;
-        }
-
-        @Override
         public Insert asInsert() {
-            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
-            if (this.valuePairMap != null || !(valuePairList instanceof ArrayList)) {
+            _Assert.nonPrepared(this.prepared);
+            if (this.rowValuesList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            switch (valuePairList.size()) {
-                case 0:
-                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-                case 1:
-                    valuePairList = Collections.singletonList(valuePairList.get(0));
-                    break;
-                default:
-                    valuePairList = Collections.unmodifiableList(valuePairList);
-            }
-            this.valuePairList = valuePairList;
-            return new StandardValueInsertStatement(this.clause, valuePairList)
-                    .asInsert();
-        }
-
-        @Override
-        public Insert._StandardStaticValuesLeftParenSpec<C, F> rightParen() {
-            final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
-            if (!(currentPairMap instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
-            if (valuePairList == null) {
-                valuePairList = new ArrayList<>();
-                this.valuePairList = valuePairList;
-            }
-            valuePairList.add(Collections.unmodifiableMap(currentPairMap));
-            this.valuePairMap = null;
+            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            this.prepared = Boolean.TRUE;
             return this;
         }
 
         @Override
-        void addValuePair(final FieldMeta<?> field, final _Expression value) {
-            Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
-            if (currentPairMap == null) {
-                currentPairMap = new HashMap<>();
-                this.valuePairMap = currentPairMap;
-            } else if (!(currentPairMap instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            if (!this.clause.containField(field)) {
-                throw notContainField(this.criteriaContext, field);
-            }
-            if (currentPairMap.putIfAbsent(field, value) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
-            }
-
+        public void prepared() {
+            _Assert.prepared(this.prepared);
         }
-
-
-    }//StandardStaticValuesClause
-
-
-    static final class StandardValueInsertStatement extends ValueSyntaxStatement<Insert>
-            implements Insert, Insert._InsertSpec, StandardStatement, _Insert._ValueInsert {
-
-        private final List<Map<FieldMeta<?>, _Expression>> valuePairList;
-
-
-        /**
-         * @param valuePairMap a modified map
-         * @see StandardStaticValueClause#rightParen()
-         */
-        private StandardValueInsertStatement(StandardValueClause<?, ?, ?> clause, Map<FieldMeta<?>
-                , _Expression> valuePairMap) {
-            super(clause);
-            this.valuePairList = Collections.singletonList(Collections.unmodifiableMap(valuePairMap));
-        }
-
-        /**
-         * @param valuePairList a unmodified list
-         * @see StandardValueClause#valueClauseEnd(List)
-         * @see StandardStaticValuesPairClause#asInsert()
-         */
-        private StandardValueInsertStatement(StandardValueClause<?, ?, ?> clause
-                , List<Map<FieldMeta<?>, _Expression>> valuePairList) {
-            super(clause);
-            this.valuePairList = valuePairList;
-        }
-
 
         @Override
-        public List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
-            return this.valuePairList;
+        public boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
+            super.clear();
+            this.rowValuesList = null;
         }
 
         @Override
@@ -345,6 +339,26 @@ abstract class StandardInserts extends InsertSupport {
                 s = super.toString();
             }
             return s;
+        }
+
+        @Override
+        public List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
+            _Assert.prepared(this.prepared);
+            return this.rowValuesList;
+        }
+
+        @Override
+        _StandardValueCommonExpSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
+            return this;
+        }
+
+        @Override
+        Insert._InsertSpec valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValueList) {
+            if (this.rowValuesList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.rowValuesList = rowValueList;
+            return this;
         }
 
 
@@ -481,7 +495,6 @@ abstract class StandardInserts extends InsertSupport {
 
     static final class StandardRowSetInsertStatement extends RowSetInsertStatement<Insert>
             implements StandardStatement, Insert, Insert._InsertSpec {
-
 
         private StandardRowSetInsertStatement(StandardSingleColumnsClause<?, ?> clause, RowSet rowSet) {
             super(clause, rowSet);

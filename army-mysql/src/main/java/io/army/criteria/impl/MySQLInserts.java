@@ -825,17 +825,6 @@ abstract class MySQLInserts extends InsertSupport {
             return insert;
         }
 
-        @Override
-        public void prepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isPrepared() {
-            //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-            throw new UnsupportedOperationException();
-        }
 
         @Override
         MySQLInsert._DomainCommonExpSpec<C, T, F> columnListEnd(int fieldSize, int childFieldSize) {
@@ -869,7 +858,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     static class MySQLDomainInsertStatement extends ValueSyntaxStatement<Insert>
-            implements MySQLInsert, _MySQLInsert._MySQLDomainInsert {
+            implements MySQLInsert, _MySQLInsert._MySQLDomainInsert, Insert._InsertSpec {
 
         private final List<Hint> hintList;
 
@@ -1330,11 +1319,11 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._AsRowAliasSpec<C, F> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+        public MySQLInsert._AsRowAliasSpec<C, F> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValueList) {
             if (this.rowValuesList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.rowValuesList = rowValuesList;
+            this.rowValuesList = rowValueList;
             return new AsRowAliasSpec<>(this);
         }
 

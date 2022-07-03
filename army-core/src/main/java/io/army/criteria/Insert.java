@@ -341,20 +341,20 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * <p>
      * This interface is base interface of below:
      * <ul>
-     *     <li>{@link _StandardColumnsSpec}</li>
-     *     <li>{@link _StandardCommonExpSpec}</li>
+     *     <li>{@link _StandardValueColumnsSpec}</li>
+     *     <li>{@link _StandardValueCommonExpSpec}</li>
      * </ul>
      * This interface is returned by below clause:
      * <ul>
      *     <li>{@link _StandardValueInsertIntoClause}</li>
-     *     <li>{@link _StandardColumnsSpec}</li>
-     *     <li>{@link _StandardCommonExpSpec}</li>
+     *     <li>{@link _StandardValueColumnsSpec}</li>
+     *     <li>{@link _StandardValueCommonExpSpec}</li>
      * </ul>
      * </p>
      *
      * @since 1.0
      */
-    interface _StandardValuesSpec<C, T extends IDomain, F extends TableField>
+    interface _StandardValuesSpec<C, F extends TableField>
             extends _StaticValueClause<_StandardStaticValueLeftParenClause<C, F>>
             , _DynamicValueClause<C, F, _InsertSpec>, _StaticValuesClause<_StandardStaticValuesLeftParenClause<C, F>>
             , _DynamicValuesClause<C, F, _InsertSpec> {
@@ -365,17 +365,17 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * <p>
      * This interface is base interface of below:
      * <ul>
-     *     <li>{@link _StandardColumnsSpec}</li>
+     *     <li>{@link _StandardValueColumnsSpec}</li>
      * </ul>
      * This interface is returned by below clause:
      * <ul>
      *     <li>{@link _StandardValueInsertIntoClause}</li>
-     *     <li>{@link _StandardColumnsSpec}</li>
+     *     <li>{@link _StandardValueColumnsSpec}</li>
      * </ul>
      * </p>
      */
-    interface _StandardCommonExpSpec<C, T extends IDomain, F extends TableField>
-            extends _CommonExpClause<C, F, _StandardCommonExpSpec<C, T, F>>, _StandardValuesSpec<C, T, F> {
+    interface _StandardValueCommonExpSpec<C, F extends TableField>
+            extends _CommonExpClause<C, F, _StandardValueCommonExpSpec<C, F>>, _StandardValuesSpec<C, F> {
 
     }
 
@@ -389,8 +389,8 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * </ul>
      * </p>
      */
-    interface _StandardColumnsSpec<C, T extends IDomain, F extends TableField>
-            extends _ColumnListClause<C, F, _StandardCommonExpSpec<C, T, F>>, _StandardCommonExpSpec<C, T, F> {
+    interface _StandardValueColumnsSpec<C, F extends TableField>
+            extends _ColumnListClause<C, F, _StandardValueCommonExpSpec<C, F>>, _StandardValueCommonExpSpec<C, F> {
 
     }
 
@@ -399,9 +399,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      */
     interface _StandardValueInsertIntoClause<C> {
 
-        <T extends IDomain> _StandardColumnsSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
+        <T extends IDomain> _StandardValueColumnsSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
 
-        <T extends IDomain> _StandardColumnsSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table);
+        <T extends IDomain> _StandardValueColumnsSpec<C, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table);
 
     }
 

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Cte;
 import io.army.criteria.DialectStatement;
+import io.army.criteria.DmlStatement;
 import io.army.criteria.SubStatement;
 import io.army.util._Exceptions;
 
@@ -12,14 +13,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class WithCteMultiDelete<C, SS extends SubStatement, WE, FT, FS, FP, JT, JS, JP, WR, WA>
-        extends MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA>
+abstract class WithCteMultiDelete<C, SS extends SubStatement, WE, FT, FS, FP, JT, JS, JP, WR, WA, D extends DmlStatement.DmlDelete>
+        extends MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA, D>
         implements DialectStatement._WithCteClause<C, SS, WE> {
 
     WithCteMultiDelete(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
-
 
 
     @Override

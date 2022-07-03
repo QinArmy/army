@@ -30,10 +30,10 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
-        extends WithCteSingleUpdate<C, SubQuery, WE, TableField, SR, WR, WA>
+        extends WithCteSingleUpdate<C, SubQuery, WE, TableField, SR, WR, WA, Update>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
         , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<C, UR, UP>, MySQLQuery._IndexHintClause<C, IR, UR>
-        , MySQLQuery._IndexForOrderByClause<C, UR>, _MySQLWithClause {
+        , MySQLQuery._IndexForOrderByClause<C, UR>, _MySQLWithClause, MySQLUpdate, Update._UpdateSpec {
 
     static <C> _SingleWithAndUpdateSpec<C> simple(@Nullable C criteria) {
         return new SimpleUpdate<>(criteria);
@@ -376,6 +376,18 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         return (LR) this;
     }
 
+
+    @Override
+    public final String toString() {
+        final String s;
+        if (this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
     abstract UP createPartitionClause();
 
     final UR afterAs(@Nullable String tableAlias, @Nullable List<String> partitionList) {
@@ -512,16 +524,6 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         return this.rowCount;
     }
 
-
-    @Override
-    final Dialect defaultDialect() {
-        return MySQLUtils.defaultDialect(this);
-    }
-
-    @Override
-    final void validateDialect(Dialect dialect) {
-        MySQLUtils.validateDialect(this, dialect);
-    }
 
     @Override
     final Dialect dialect() {

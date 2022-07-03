@@ -1,9 +1,11 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.DataField;
+import io.army.criteria.Expression;
+import io.army.criteria.IPredicate;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Dml;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -338,12 +340,6 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         return this.predicateList;
     }
 
-
-    abstract Dialect defaultDialect();
-
-    abstract void validateDialect(Dialect dialect);
-
-
     final void asDmlStatement() {
         final List<_Predicate> predicates = this.predicateList;
         if (predicates == null || predicates.size() == 0) {
@@ -355,20 +351,6 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     final void clearWherePredicate() {
         this.predicateList = null;
     }
-
-
-    @Override
-    public final String toString() {
-        final String s;
-        if (this instanceof PrimaryStatement && this.isPrepared()) {
-            s = ((PrimaryStatement) this)
-                    .mockAsString(defaultDialect(), Visible.ONLY_VISIBLE, true);
-        } else {
-            s = super.toString();
-        }
-        return s;
-    }
-
 
 
     private WR addPredicateList(final @Nullable List<IPredicate> predicates) {

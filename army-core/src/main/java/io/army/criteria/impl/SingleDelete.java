@@ -1,10 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Delete;
+import io.army.criteria.DmlStatement;
 import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.util._Assert;
-import io.army.util._Exceptions;
 
 /**
  * <p>
@@ -13,12 +12,13 @@ import io.army.util._Exceptions;
  *
  * @since 1.0
  */
-abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, WR, WA>
-        implements Delete, Delete._DeleteSpec, _SingleDelete {
+abstract class SingleDelete<C, WR, WA, D extends DmlStatement.DmlDelete>
+        extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, WR, WA>
+        implements DmlStatement._DmlDeleteSpec<D>, _SingleDelete, DmlStatement.DmlDelete {
 
     final CriteriaContext criteriaContext;
 
-    private boolean prepared;
+    private Boolean prepared;
 
     SingleDelete(CriteriaContext criteriaContext) {
         super(JoinableClause.voidClauseSuppler(), criteriaContext.criteria());
@@ -40,8 +40,9 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
         return this.prepared;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final Delete asDelete() {
+    public final D asDelete() {
         _Assert.nonPrepared(this.prepared);
         this.criteriaContext.clear();
         if (this instanceof SubStatement) {
@@ -51,15 +52,15 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
         }
         super.asDmlStatement();
         this.onAsDelete();
-        this.prepared = true;
-        return this;
+        this.prepared = Boolean.TRUE;
+        return (D) this;
     }
 
 
     @Override
     public final void clear() {
         _Assert.prepared(this.prepared);
-        this.prepared = false;
+        this.prepared = Boolean.FALSE;
         super.clearWherePredicate();
         this.onClear();
     }
@@ -74,7 +75,7 @@ abstract class SingleDelete<C, WR, WA> extends DmlWhereClause<C, Void, Void, Voi
 
     @Override
     final void crossJoinEvent(boolean success) {
-        throw _Exceptions.castCriteriaApi();
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
 

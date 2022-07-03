@@ -33,11 +33,12 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
-        extends WithCteMultiUpdate<C, SubQuery, WE, TableField, SR, UT, US, UP, JT, JS, JP, WR, WA>
+        extends WithCteMultiUpdate<C, SubQuery, WE, TableField, SR, UT, US, UP, JT, JS, JP, WR, WA, Update>
         implements MySQLUpdate.MultiUpdateClause<C, UT, US, UP>, MySQLQuery._IndexHintClause<C, IR, UT>
         , MySQLQuery._IndexForJoinClause<C, UT>, MySQLQuery._MySQLJoinClause<C, JT, JS>
         , Statement._CrossJoinClause<C, UT, US>, MySQLQuery._MySQLDialectJoinClause<C, JP>
-        , DialectStatement._DialectCrossJoinClause<C, UP>, _MySQLMultiUpdate, _MySQLWithClause {
+        , DialectStatement._DialectCrossJoinClause<C, UP>, _MySQLMultiUpdate, _MySQLWithClause
+        , MySQLUpdate, Update._UpdateSpec {
 
 
     static <C> _WithAndMultiUpdateSpec<C> simple(@Nullable C criteria) {
@@ -321,6 +322,17 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     }
 
 
+    @Override
+    public final String toString() {
+        final String s;
+        if (this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
     /*################################## blow package template method ##################################*/
 
 
@@ -373,16 +385,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
     @Override
     final Dialect dialect() {
         return Dialect.MySQL80;
-    }
-
-    @Override
-    final Dialect defaultDialect() {
-        return MySQLUtils.defaultDialect(this);
-    }
-
-    @Override
-    final void validateDialect(Dialect dialect) {
-        MySQLUtils.validateDialect(this, dialect);
     }
 
     @Override

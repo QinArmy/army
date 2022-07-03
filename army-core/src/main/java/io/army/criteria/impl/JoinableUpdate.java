@@ -26,9 +26,10 @@ import java.util.function.*;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP, WR, WA>
+abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
         extends DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
-        implements Update, Update._UpdateSpec, Update._SimpleSetClause<C, F, SR>, Update._BatchSetClause<C, F, SR>
+        implements DmlStatement.DmlUpdate, DmlStatement._DmlUpdateSpec<U>
+        , Update._SimpleSetClause<C, F, SR>, Update._BatchSetClause<C, F, SR>
         , _Update {
 
 
@@ -42,7 +43,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
 
     private List<_ItemPair> childItemPairList;
 
-    private boolean prepared;
+    private Boolean prepared;
 
     JoinableUpdate(ClauseSupplier clauseSupplier, CriteriaContext criteriaContext) {
         super(clauseSupplier, criteriaContext.criteria());
@@ -367,16 +368,16 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
     }
 
     @Override
-    public final Update asUpdate() {
+    public final U asUpdate() {
         _Assert.nonPrepared(this.prepared);
-        if (this instanceof SingleUpdate) {
-            /// only single update clear context.
-            this.criteriaContext.clear();
-        }
         if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
+        }
+        if (this instanceof SingleUpdate) {
+            /// only single update clear context.
+            this.criteriaContext.clear();
         }
         super.asDmlStatement();
 
@@ -399,14 +400,14 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
         }
 
         this.onAsUpdate();
-        this.prepared = true;
-        return this;
+        this.prepared = Boolean.TRUE;
+        return (U) this;
     }
 
     @Override
     public final void clear() {
         _Assert.prepared(this.prepared);
-        this.prepared = false;
+        this.prepared = Boolean.FALSE;
         super.clearWherePredicate();
         this.onClear();
     }

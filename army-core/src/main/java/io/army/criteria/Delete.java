@@ -6,9 +6,8 @@ import io.army.meta.TableMeta;
 public interface Delete extends NarrowDmlStatement, DmlStatement.DmlDelete {
 
 
-    interface _DeleteSpec {
+    interface _DeleteSpec extends DmlStatement._DmlDeleteSpec<Delete> {
 
-        Delete asDelete();
     }
 
     interface _SingleDeleteClause<DT> {

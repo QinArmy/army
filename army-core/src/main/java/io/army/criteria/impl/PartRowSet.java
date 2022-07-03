@@ -29,7 +29,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
 
     private long rowCount = -1L;
 
-    private boolean prepared;
+    private Boolean prepared;
 
 
     PartRowSet(CriteriaContext criteriaContext, ClauseSupplier suppler) {
@@ -407,7 +407,8 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
 
     @Override
     public final boolean isPrepared() {
-        return this.prepared;
+        final Boolean prepared = this.prepared;
+        return prepared != null && prepared;
     }
 
     @Override
@@ -438,7 +439,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
 
     @Override
     public final void clear() {
-        this.prepared = false;
+        this.prepared = Boolean.FALSE;
         this.orderByList = null;
         this.offset = -1;
         this.rowCount = -1;
@@ -478,7 +479,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
         }
         final Q query;
         query = internalAsRowSet(fromAsQueryMethod);
-        this.prepared = true;
+        this.prepared = Boolean.TRUE;
         return query;
     }
 

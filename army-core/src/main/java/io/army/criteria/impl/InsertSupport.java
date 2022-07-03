@@ -869,9 +869,9 @@ abstract class InsertSupport {
         }
 
         /**
-         * @param valuePairList a unmodified list
+         * @param rowValueList a unmodified list
          */
-        abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> valuePairList);
+        abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValueList);
 
 
         private ColumnConsumer<F> addValuePair(FieldMeta<?> field, @Nullable Expression value) {

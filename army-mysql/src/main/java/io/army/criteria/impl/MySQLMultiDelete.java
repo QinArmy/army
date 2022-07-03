@@ -31,10 +31,10 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
-        extends WithCteMultiDelete<C, SubQuery, WE, DS, DS, DP, JS, JS, JP, WR, WA>
+        extends WithCteMultiDelete<C, SubQuery, WE, DS, DS, DP, JS, JS, JP, WR, WA, Delete>
         implements _MySQLMultiDelete, MySQLDelete._MultiDeleteClause<C, DS, DP>
         , MySQLDelete._MultiDeleteFromClause<C, DS, DP>, MySQLDelete._MultiDeleteUsingClause<C, DS, DP>
-        , _MySQLWithClause {
+        , _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
 
 
     static <C> _WithAndMultiDeleteSpec<C> simple(@Nullable C criteria) {
@@ -251,6 +251,17 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
     }
 
     @Override
+    public final String toString() {
+        final String s;
+        if (this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
+    @Override
     public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {
         final _TableBlock block;
         switch (joinType) {
@@ -462,16 +473,6 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
     final void doWithCte(boolean recursive, List<Cte> cteList) {
         this.recursive = recursive;
         this.cteList = cteList;
-    }
-
-    @Override
-    final Dialect defaultDialect() {
-        return MySQLUtils.defaultDialect(this);
-    }
-
-    @Override
-    final void validateDialect(Dialect dialect) {
-        MySQLUtils.validateDialect(this, dialect);
     }
 
 

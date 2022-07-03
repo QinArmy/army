@@ -3,12 +3,12 @@ package io.army.criteria.impl;
 import io.army.criteria.StandardStatement;
 import io.army.criteria.TableField;
 import io.army.criteria.Update;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util._Exceptions;
 
 import java.util.List;
 import java.util.function.Function;
@@ -23,8 +23,9 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableField, SR, WR, WA>
-        implements Update.StandardUpdateClause<UR>, _SingleUpdate, Update._UpdateSpec, StandardStatement {
+abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableField, SR, WR, WA, Update>
+        implements Update.StandardUpdateClause<UR>, _SingleUpdate, Update._UpdateSpec, StandardStatement
+        , Update {
 
     static <C> StandardUpdateSpec<C> simple(@Nullable C criteria) {
         return new SimpleUpdate<>(criteria);
@@ -46,20 +47,32 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
     @Override
     public final UR update(TableMeta<?> table, String tableAlias) {
         if (this.table != null) {
-            throw _Exceptions.castCriteriaApi();
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         this.table = table;
         this.tableAlias = tableAlias;
         return (UR) this;
     }
 
+
+    @Override
+    public final String toString() {
+        final String s;
+        if (this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
     @Override
     final void onAsUpdate() {
         if (this.table == null || this.tableAlias == null) {
-            throw _Exceptions.castCriteriaApi();
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         if (this instanceof BatchUpdate && ((BatchUpdate<C>) this).paramList == null) {
-            throw _Exceptions.castCriteriaApi();
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
     }
 
@@ -72,16 +85,6 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
 
     }
 
-
-    @Override
-    final Dialect defaultDialect() {
-        return Dialect.MySQL57;
-    }
-
-    @Override
-    final void validateDialect(Dialect dialect) {
-        //no-op
-    }
 
     @Override
     final boolean isSupportRowLeftItem() {

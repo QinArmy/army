@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Delete;
+import io.army.criteria.DmlStatement;
 import io.army.criteria.SubStatement;
 import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._TableBlock;
@@ -14,12 +14,14 @@ import java.util.List;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA> extends DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
-        implements Delete, Delete._DeleteSpec, _MultiDelete, JoinableClause.ClauseSupplier {
+abstract class MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA, D extends DmlStatement.DmlDelete>
+        extends DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
+        implements DmlStatement.DmlDelete, DmlStatement._DmlDeleteSpec<D>
+        , _MultiDelete, JoinableClause.ClauseSupplier {
 
     final CriteriaContext criteriaContext;
 
-    private boolean prepared;
+    private Boolean prepared;
 
     private List<_TableBlock> tableBlockList;
 
@@ -41,30 +43,32 @@ abstract class MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA> extends DmlWhereCl
 
     @Override
     public final boolean isPrepared() {
-        return this.prepared;
+        final Boolean prepared = this.prepared;
+        return prepared != null && prepared;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final Delete asDelete() {
+    public final D asDelete() {
         _Assert.nonPrepared(this.prepared);
         this.validateBeforeClearContext();
-        this.tableBlockList = this.criteriaContext.clear();
         if (this instanceof SubStatement) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
+        this.tableBlockList = this.criteriaContext.clear();
         this.asDmlStatement();
         this.onAsDelete();
-        this.prepared = true;
-        return this;
+        this.prepared = Boolean.TRUE;
+        return (D) this;
     }
 
 
     @Override
     public final void clear() {
         _Assert.prepared(this.prepared);
-        this.prepared = false;
+        this.prepared = Boolean.FALSE;
         this.clearWherePredicate();
         this.tableBlockList = null;
         this.onClear();

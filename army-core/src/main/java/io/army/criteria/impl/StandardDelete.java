@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Delete;
 import io.army.criteria.StandardStatement;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
@@ -21,8 +22,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
-        implements Delete.StandardDeleteClause<DR>, StandardStatement {
+abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA, Delete>
+        implements Delete.StandardDeleteClause<DR>, StandardStatement, Delete, Delete._DeleteSpec {
 
     static <C> StandardDeleteSpec<C> simple(@Nullable C criteria) {
         return new SimpleDelete<>(criteria);
@@ -80,14 +81,16 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA>
     }
 
     @Override
-    Dialect defaultDialect() {
-        return Dialect.MySQL57;
+    public final String toString() {
+        final String s;
+        if (this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
     }
 
-    @Override
-    void validateDialect(Dialect dialect) {
-        //no-op
-    }
 
     /*################################## blow static inner class ##################################*/
 

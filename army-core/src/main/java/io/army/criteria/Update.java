@@ -14,9 +14,8 @@ import java.util.function.*;
 public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
 
-    interface _UpdateSpec {
+    interface _UpdateSpec extends DmlStatement._DmlUpdateSpec<Update> {
 
-        Update asUpdate();
     }
 
     interface StandardUpdateClause<UR> {

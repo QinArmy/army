@@ -49,6 +49,11 @@ public interface DmlStatement extends PrimaryStatement {
 
     }
 
+    interface _DmlUpdateSpec<U extends DmlUpdate> {
+
+        U asUpdate();
+    }
+
     /**
      * This is base interface of below:
      * <ul>
@@ -61,6 +66,12 @@ public interface DmlStatement extends PrimaryStatement {
     interface DmlDelete {
 
 
+    }
+
+
+    interface _DmlDeleteSpec<D extends DmlDelete> {
+
+        D asDelete();
     }
 
 
