@@ -13,6 +13,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
+import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 
 import java.util.*;
@@ -631,7 +632,8 @@ abstract class MySQLInserts extends InsertSupport {
 
     /*-------------------below domain insert syntax classes-------------------*/
 
-    private static final class DomainInsertOptionClause<C> extends MySQLInsertClause<C, MySQLInsert._DomainIntoClause<C>>
+    private static final class DomainInsertOptionClause<C>
+            extends MySQLInsertClause<C, MySQLInsert._DomainIntoClause<C>>
             implements MySQLInsert._DomainOptionSpec<C>, MySQLInsert._DomainIntoClause<C>, InsertOptions {
 
         private final CriteriaContext criteriaContext;
@@ -1493,12 +1495,11 @@ abstract class MySQLInserts extends InsertSupport {
     }//AssignmentInsertOptionClause
 
 
-    private static final class AssignmentInsertPartitionClause<C, F extends TableField>
+    static final class MySQLAssignmentInsertStatement<C, F extends TableField>
             extends InsertSupport.AssignmentInsertClause<C, F, MySQLInsert._MySQLAssignmentSetSpec<C, F>>
-            implements MySQLInsert._AssignmentParentPartitionSpec<C, F>
-            , MySQLInsert._AssignmentPartitionSpec<C, F>
-            , MySQLInsert._MySQLAssignmentSetSpec<C, F>
-            , ClauseBeforeRowAlias<C, F> {
+            implements MySQLInsert._AssignmentParentPartitionSpec<C, F>, MySQLInsert._AssignmentPartitionSpec<C, F>
+            , MySQLInsert._MySQLAssignmentSetSpec<C, F>, ClauseBeforeRowAlias<C, F>, MySQLInsert
+            , _MySQLInsert._MySQLAssignmentInsert, _MySQLInsert._InsertWithRowAlias {
 
         private final List<Hint> hintList;
 
@@ -1512,21 +1513,14 @@ abstract class MySQLInserts extends InsertSupport {
 
         private Map<String, FieldMeta<?>> aliasToField;
 
-        private List<ItemPair> itemPairList;
-        private AssignmentInsertPartitionClause(AssignmentInsertOptionClause<C> clause, TableMeta<?> table) {
-            super(clause, table);
+        private Map<?, _Expression> valuePairsForDuplicate;
+
+        private Boolean prepared;
+
+        private MySQLAssignmentInsertStatement(AssignmentInsertOptionClause<C> clause, TableMeta<?> table) {
+            super(clause, false, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
-        }
-
-        @Override
-        void addItemPair(final ItemPair itemPair) {
-            List<ItemPair> itemPairList = this.itemPairList;
-            if (itemPairList == null) {
-                itemPairList = new ArrayList<>();
-                this.itemPairList = itemPairList;
-            }
-            itemPairList.add(itemPair);
         }
 
         @Override
@@ -1588,6 +1582,82 @@ abstract class MySQLInserts extends InsertSupport {
         public Insert asInsert() {
             return this.endInsert(Collections.emptyMap());
         }
+
+        @Override
+        public void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
+            super.clear();
+            this.partitionList = null;
+
+            this.childPartitionList = null;
+            this.rowAlias = null;
+            this.aliasToField = null;
+            this.valuePairsForDuplicate = null;
+        }
+
+        @Override
+        public List<Hint> hintList() {
+            return this.hintList;
+        }
+
+        @Override
+        public List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        @Override
+        public List<String> childPartitionList() {
+            List<String> list = this.childPartitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        @Override
+        public Map<?, _Expression> valuePairsForDuplicate() {
+            Map<?, _Expression> map = this.valuePairsForDuplicate;
+            if (map == null) {
+                map = Collections.emptyMap();
+            }
+            return map;
+        }
+
+        @Override
+        public String rowAlias() {
+            return this.rowAlias;
+        }
+
+        @Override
+        public Map<String, FieldMeta<?>> aliasToField() {
+            Map<String, FieldMeta<?>> map = this.aliasToField;
+            if (map == null) {
+                map = Collections.emptyMap();
+            }
+            return map;
+        }
+
         @Override
         public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(final String rowAlias
                 , final Map<String, FieldMeta<?>> aliasToField) {
@@ -1595,10 +1665,27 @@ abstract class MySQLInserts extends InsertSupport {
             this.aliasToField = aliasToField;
             return new OnDuplicateKeyUpdateAliasSpec<>(aliasToField, this);
         }
+
         @Override
         public Insert endInsert(final Map<?, _Expression> valuePairMap) {
+            _Assert.nonPrepared(this.prepared);
             this.assignmentSetClauseEnd();
-            return null;
+            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            this.valuePairsForDuplicate = valuePairMap;
+
+            this.prepared = Boolean.TRUE;
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
         }
 
         private MySQLInsert._MySQLAssignmentSetClause<C, F> partitionEnd(List<String> partitionList) {
@@ -1614,19 +1701,6 @@ abstract class MySQLInserts extends InsertSupport {
         private MySQLInsert._AssignmentParentPartitionSpec<C, F> childPartitionEnd(List<String> partitionList) {
             this.childPartitionList = partitionList;
             return this;
-        }
-
-        private void assignmentSetClauseEnd() {
-            List<ItemPair> itemPairList = this.itemPairList;
-            if (itemPairList == null) {
-                itemPairList = Collections.emptyList();
-                this.itemPairList = itemPairList;
-            } else if (itemPairList instanceof ArrayList) {
-                itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
-                this.itemPairList = itemPairList;
-            } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
         }
 
 

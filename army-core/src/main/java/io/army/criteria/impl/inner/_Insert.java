@@ -1,5 +1,6 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.ItemPair;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.RowSet;
 import io.army.domain.IDomain;
@@ -24,12 +25,17 @@ public interface _Insert extends _Statement {
     Map<FieldMeta<?>, Boolean> fieldMap();
 
 
-    interface _CommonExpInsert extends _Insert {
+    interface _InsertOption {
 
         boolean isMigration();
 
         @Nullable
         NullHandleMode nullHandle();
+    }
+
+
+    interface _CommonExpInsert extends _Insert, _InsertOption {
+
 
         Map<FieldMeta<?>, _Expression> commonExpMap();
 
@@ -48,8 +54,6 @@ public interface _Insert extends _Statement {
     interface _DomainInsert extends _CommonExpInsert {
 
 
-        NullHandleMode nullHandle();
-
         boolean isPreferLiteral();
 
 
@@ -58,7 +62,10 @@ public interface _Insert extends _Statement {
     }
 
 
-    interface _AssignmentInsert extends _Insert {
+    interface _AssignmentInsert extends _Insert, _InsertOption {
+
+
+        List<ItemPair> rowPairList();
 
 
     }

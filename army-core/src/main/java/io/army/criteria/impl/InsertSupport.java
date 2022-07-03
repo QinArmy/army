@@ -16,6 +16,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
 import io.army.util._Assert;
 import io.army.util._ClassUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -43,10 +44,12 @@ abstract class InsertSupport {
 
     }
 
+
     interface ColumnListClause extends CriteriaContextSpec {
 
         boolean containField(FieldMeta<?> field);
     }
+
 
     /**
      * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
@@ -878,8 +881,7 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class AssignmentInsertClause<C, F extends TableField, SR>
-            implements Insert._AssignmentSetClause<C, F, SR>
-            , CriteriaContextSpec {
+            implements Insert._AssignmentSetClause<C, F, SR>, _Insert._AssignmentInsert, Insert, ColumnListClause {
 
         final CriteriaContext criteriaContext;
 
@@ -889,20 +891,23 @@ abstract class InsertSupport {
 
         final NullHandleMode nullHandleMode;
 
+        final boolean supportRowItem;
+
         final TableMeta<?> table;
-        AssignmentInsertClause(InsertOptions options, TableMeta<?> table) {
+
+        private List<ItemPair> itemPairList;
+
+
+        AssignmentInsertClause(InsertOptions options, boolean supportRowItem, TableMeta<?> table) {
             this.criteriaContext = options.getCriteriaContext();
             this.criteria = this.criteriaContext.criteria();
             this.migration = options.isMigration();
             this.nullHandleMode = options.nullHandle();
 
+            this.supportRowItem = supportRowItem;
             this.table = table;
         }
 
-        @Override
-        public final CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
-        }
         @Override
         public final SR setPair(Consumer<Consumer<ItemPair>> consumer) {
             consumer.accept(this::innerAddItemPair);
@@ -990,10 +995,51 @@ abstract class InsertSupport {
             return (SR) this;
         }
 
+        @Override
+        public final TableMeta<?> table() {
+            return this.table;
+        }
+        @Override
+        public final List<FieldMeta<?>> fieldList() {
+            return Collections.emptyList();
+        }
+        @Override
+        public final List<FieldMeta<?>> childFieldList() {
+            return Collections.emptyList();
+        }
+        @Override
+        public final Map<FieldMeta<?>, Boolean> fieldMap() {
+            return Collections.emptyMap();
+        }
 
-        abstract void addItemPair(ItemPair itemPair);
+        @Override
+        public final boolean isMigration() {
+            return this.migration;
+        }
+        @Override
+        public final NullHandleMode nullHandle() {
+            return this.nullHandleMode;
+        }
 
+        @Override
+        public final List<ItemPair> rowPairList() {
+            final List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null || itemPairList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return itemPairList;
+        }
 
+        @Override
+        public void clear() {
+            this.itemPairList = null;
+        }
+        @Override
+        public final CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
+
+        @Override
         public final boolean containField(final FieldMeta<?> field) {
             final TableMeta<?> table, fieldTable;
             table = this.table;
@@ -1009,19 +1055,52 @@ abstract class InsertSupport {
             return match;
         }
 
+        @Override
+        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            final _Dialect d;
+            d = _MockDialects.from(dialect);
+            final Stmt stmt;
+            stmt = d.insert(this, visible);
+            return d.printStmt(stmt, none);
+        }
+
+        @Override
+        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+            return _MockDialects.from(dialect).insert(this, visible);
+        }
+
+
+        final void assignmentSetClauseEnd() {
+            final List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                this.itemPairList = Collections.emptyList();
+            } else if (itemPairList instanceof ArrayList) {
+                this.itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+        }
+
 
         private void innerAddItemPair(final ItemPair itemPair) {
             if (itemPair instanceof SQLs.FieldItemPair) {
                 this.validateItemField(((SQLs.FieldItemPair) itemPair).field);
-            } else if (itemPair instanceof SQLs.RowItemPair) {
+            } else if (!(itemPair instanceof SQLs.RowItemPair)) {
+                String m = String.format("Non-Army %s", ItemPair.class.getName());
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            } else if (this.supportRowItem) {
                 for (DataField field : ((SQLs.RowItemPair) itemPair).fieldList) {
                     this.validateItemField(field);
                 }
             } else {
-                String m = String.format("Non-Army %s", ItemPair.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "Don't support row item");
             }
-            this.addItemPair(itemPair);
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                itemPairList = new ArrayList<>();
+                this.itemPairList = itemPairList;
+            }
+            itemPairList.add(itemPair);
         }
 
         private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
@@ -1031,7 +1110,12 @@ abstract class InsertSupport {
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
-            this.addItemPair(SQLs.itemPair(field, value));
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                itemPairList = new ArrayList<>();
+                this.itemPairList = itemPairList;
+            }
+            itemPairList.add(SQLs.itemPair(field, value));
             return (SR) this;
         }
 

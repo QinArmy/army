@@ -20,7 +20,9 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
                 throw instanceNotMatch(insert, MySQLInserts.MySQLValueInsertStatement.class);
             }
         } else if (insert instanceof _Insert._AssignmentInsert) {
-
+            if (!(insert instanceof MySQLInserts.MySQLAssignmentInsertStatement)) {
+                throw instanceNotMatch(insert, MySQLInserts.MySQLAssignmentInsertStatement.class);
+            }
         } else if (!(insert instanceof _Insert._RowSetInsert)) {
 
         }
