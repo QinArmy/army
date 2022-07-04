@@ -117,7 +117,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
         _StaticValueRowCommaSpec<C, F, RR> rowExp(F field, Supplier<? extends Expression> supplier);
 
-        _StaticValueRowCommaSpec<C, F, RR> rowExp(F field, Function<C, ? extends Expression> supplier);
+        _StaticValueRowCommaSpec<C, F, RR> rowExp(F field, Function<C, ? extends Expression> function);
 
     }
 

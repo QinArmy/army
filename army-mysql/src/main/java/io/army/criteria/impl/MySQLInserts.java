@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
@@ -707,7 +708,6 @@ abstract class MySQLInserts extends InsertSupport {
         public boolean isPreferLiteral() {
             return this.preferLiteral;
         }
-
 
 
     }//DomainOptionClause
@@ -1643,7 +1643,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> MySQLInsert._RowSetPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
-            return null;
+            return new RowSetValuesClause<>(this, table);
         }
 
         @Override
@@ -1653,14 +1653,13 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> MySQLInsert._RowSetPartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return null;
+            return new RowSetValuesClause<>(this, table);
         }
 
         @Override
         public <P extends IDomain, T extends IDomain> MySQLInsert._RowSetParentPartitionSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table) {
             return null;
         }
-
 
         private List<Hint> hintList() {
             List<Hint> list = this.hintList;
@@ -1680,6 +1679,730 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     }//RowSetInsertIntoClause
+
+
+    /**
+     * <p>
+     * This class is a the implementation of MySQL RowSet insert syntax after INTO clause,for {@link  SingleTableMeta}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">INSERT Statement</a>
+     */
+    private static final class RowSetValuesClause<C, F extends TableField>
+            extends InsertSupport.ColumnsClause<C, F, MySQLInsert._RowSetSpec<C, F>>
+            implements MySQLInsert._RowSetPartitionSpec<C, F>, MySQLInsert._RowSetSpec<C, F>
+            , ClauseBeforeRowAlias<C, F>, _Insert._CommonExpInsert {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private List<String> partitionList;
+
+        private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+
+        private SubQuery subQuery;
+
+        private RowSetValuesClause(RowSetInsertIntoClause<C> clause, SingleTableMeta<?> table) {
+            super(clause.criteriaContext, true, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._RowSetColumnListClause<C, F>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        }
+
+
+        @Override
+        public MySQLInsert._StaticRowSetMultiRowClause<C, F> values() {
+            return new StaticRowSetMultiRowClause<>(this);
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> values(Consumer<RowConstructor<F>> consumer) {
+            final RowConstructorImpl<F> constructor;
+            constructor = new RowConstructorImpl<>(this.criteriaContext, this::containField);
+            consumer.accept(constructor);
+            this.rowValuesList = constructor.rowConstructorEnd();
+            return new AsRowAliasSpec<>(this);
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> values(BiConsumer<C, RowConstructor<F>> consumer) {
+            final RowConstructorImpl<F> constructor;
+            constructor = new RowConstructorImpl<>(this.criteriaContext, this::containField);
+            consumer.accept(this.criteria, constructor);
+            this.rowValuesList = constructor.rowConstructorEnd();
+            return new AsRowAliasSpec<>(this);
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> space(Supplier<? extends SubQuery> supplier) {
+            final SubQuery subQuery;
+            subQuery = supplier.get();
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return new AsRowAliasSpec<>(this);
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> space(Function<C, ? extends SubQuery> function) {
+            final SubQuery subQuery;
+            subQuery = function.apply(this.criteria);
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return new AsRowAliasSpec<>(this);
+        }
+
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(String rowAlias
+                , Map<String, FieldMeta<?>> aliasToField) {
+            // row set insert no AS row_alias clause
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+
+        @Override
+        public Insert endInsert(final Map<?, _Expression> valuePairMap) {
+            final Insert._InsertSpec insertSpec;
+            if (this.subQuery == null) {
+                if (this.rowValuesList == null) {
+                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                }
+                if (valuePairMap.size() == 0) {
+                    insertSpec = new MySQLRowSetRowSyntaxStatement(this);
+                } else {
+                    insertSpec = new RowSetRowSyntaxStatementWithDuplicate(this, valuePairMap);
+                }
+            } else if (this.rowValuesList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            } else if (valuePairMap.size() == 0) {
+                insertSpec = new MySQLSubQueryInsertStatement(this);
+            } else {
+                insertSpec = new SubQueryInsertStatementWithDuplicate(this, valuePairMap);
+            }
+            return insertSpec.asInsert();
+        }
+
+        @Override
+        public boolean isMigration() {
+            return this.migration;
+        }
+
+        @Override
+        public NullHandleMode nullHandle() {
+            //use default
+            return null;
+        }
+
+        @Override
+        public Map<FieldMeta<?>, _Expression> commonExpMap() {
+            //row set insert no common exp
+            return Collections.emptyMap();
+        }
+
+        @Override
+        MySQLInsert._RowSetSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
+            if (fieldSize == 0) {
+                throw noColumnList(this.criteriaContext, this.table);
+            }
+            if (childFieldSize > 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return this;
+        }
+
+        List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        private MySQLInsert._RowSetColumnListClause<C, F> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private void addFieldValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
+            final Map<FieldMeta<?>, _Expression> rowValuesMap = this.rowValuesMap;
+            if (rowValuesMap == null) {
+                throw rowConstructorNotFoundAnyRow(this.criteriaContext);
+            }
+            if (!this.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+            }
+            if (rowValuesMap.putIfAbsent(field, (ArmyExpression) value) != null) {
+                throw duplicationValuePair(this.criteriaContext, field);
+            }
+        }
+
+        private void rowConstructorEnd() {
+            final Map<FieldMeta<?>, _Expression> rowValuesMap = this.rowValuesMap;
+            if (rowValuesMap == null) {
+                throw rowConstructorNotFoundAnyRow(this.criteriaContext);
+            }
+            List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
+            if (rowValuesList == null) {
+                rowValuesList = Collections.singletonList(Collections.unmodifiableMap(rowValuesMap));
+            } else if (rowValuesList instanceof ArrayList) {
+                rowValuesList.add(Collections.unmodifiableMap(rowValuesMap));
+                rowValuesList = Collections.unmodifiableList(rowValuesList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.rowValuesList = rowValuesList;
+        }
+
+        private MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> valuesClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+            if (this.rowValuesList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.rowValuesList = rowValuesList;
+            return new AsRowAliasSpec<>(this);
+        }
+
+        private Insert valuesClauseEndBeforeDuplicate(List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+            if (this.rowValuesList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.rowValuesList = rowValuesList;
+            return this.endInsert(Collections.emptyMap());
+        }
+
+
+    }//RowSetPartitionClause
+
+
+    /**
+     * @see RowSetValuesClause#values()
+     */
+    private static final class StaticRowSetMultiRowClause<C, F extends TableField>
+            implements MySQLInsert._StaticRowSetMultiRowClause<C, F>, MySQLInsert._StaticRowSetMultiRowSpec<C, F>
+            , MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> {
+
+        private final RowSetValuesClause<C, F> clause;
+
+        private final CriteriaContext criteriaContext;
+
+        private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+
+        private Map<FieldMeta<?>, _Expression> rowValuesMap;
+
+        private StaticRowSetMultiRowClause(RowSetValuesClause<C, F> clause) {
+            this.clause = clause;
+            this.criteriaContext = clause.criteriaContext;
+        }
+
+        @Override
+        public MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> row(F field, @Nullable Object value) {
+            this.createRow((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> rowLiteral(F field, @Nullable Object value) {
+            this.createRow((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> rowExp(F field, Supplier<? extends Expression> supplier) {
+            this.createRow((FieldMeta<?>) field, supplier.get());
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> rowExp(F field, Function<C, ? extends Expression> function) {
+            this.createRow((FieldMeta<?>) field, function.apply(this.clause.criteria));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> comma(F field, @Nullable Object value) {
+            this.addFieldValuePair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> commaLiteral(F field, @Nullable Object value) {
+            this.addFieldValuePair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> commaExp(F field, Supplier<? extends Expression> supplier) {
+            this.addFieldValuePair((FieldMeta<?>) field, supplier.get());
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticValueRowCommaSpec<C, F, MySQLInsert._StaticRowSetMultiRowSpec<C, F>> commaExp(F field, Function<C, ? extends Expression> function) {
+            this.addFieldValuePair((FieldMeta<?>) field, function.apply(this.clause.criteria));
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticRowSetMultiRowSpec<C, F> rightParen() {
+            final Map<FieldMeta<?>, _Expression> rowValuesMap = this.rowValuesMap;
+            if (rowValuesMap == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
+            if (rowValuesList == null) {
+                rowValuesList = new ArrayList<>();
+                this.rowValuesList = rowValuesList;
+            } else if (!(rowValuesList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            rowValuesList.add(Collections.unmodifiableMap(rowValuesMap));
+            this.rowValuesMap = null;
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>> onDuplicateKey() {
+            return this.clause.valuesClauseEnd(this.endValuesClause())
+                    .onDuplicateKey();
+        }
+
+        @Override
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+            return this.clause.valuesClauseEnd(this.endValuesClause())
+                    .onDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            return this.clause.valuesClauseEnd(this.endValuesClause())
+                    .onDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+            return this.clause.valuesClauseEnd(this.endValuesClause())
+                    .ifOnDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+            return this.clause.valuesClauseEnd(this.endValuesClause())
+                    .ifOnDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public Insert asInsert() {
+            return this.clause.valuesClauseEndBeforeDuplicate(this.endValuesClause());
+        }
+
+        private void createRow(final FieldMeta<?> field, final @Nullable Expression value) {
+            if (this.rowValuesMap != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            if (!this.clause.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+            }
+            final Map<FieldMeta<?>, _Expression> rowValuesMap = new HashMap<>();
+            rowValuesMap.put(field, (ArmyExpression) value);
+            this.rowValuesMap = rowValuesMap;
+        }
+
+        private void addFieldValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
+            final Map<FieldMeta<?>, _Expression> rowValuesMap = this.rowValuesMap;
+            if (rowValuesMap == null) {
+                throw rowConstructorNotFoundAnyRow(this.criteriaContext);
+            }
+            if (!this.clause.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+            }
+            if (rowValuesMap.putIfAbsent(field, (ArmyExpression) value) != null) {
+                throw duplicationValuePair(this.criteriaContext, field);
+            }
+        }
+
+        /**
+         * @return a unmodified list
+         */
+        private List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
+            if (this.rowValuesMap != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
+            if (!(rowValuesList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            rowValuesList = _CollectionUtils.unmodifiableList(rowValuesList);
+            this.rowValuesList = rowValuesList;
+            return rowValuesList;
+        }
+
+
+    }//StaticRowSetMultiRowClause
+
+
+    private static final class RowSetParentValuesClause<C, P extends IDomain, T extends IDomain>
+            extends InsertSupport.ColumnsClause<C, FieldMeta<P>, MySQLInsert._RowSetParentRowSetSpec<C, FieldMeta<P>, FieldMeta<T>>>
+            implements MySQLInsert._RowSetParentPartitionSpec<C, P, T>
+            , MySQLInsert._RowSetParentRowSetSpec<C, FieldMeta<P>, FieldMeta<T>> {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final ChildTableMeta<T> childTable;
+
+        private List<String> partitionList;
+
+        private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+
+        private SubQuery subQuery;
+
+        private RowSetParentValuesClause(RowSetInsertIntoClause<C> clause, ComplexTableMeta<P, T> table) {
+            super(clause.criteriaContext, true, table.parentMeta());
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+            this.childTable = table;
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._RowSetParentColumnListClause<C, FieldMeta<P>, FieldMeta<T>>> parentPartition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
+        }
+
+        @Override
+        public MySQLInsert._RowSetStaticParentMultiRowClause<C, FieldMeta<P>, FieldMeta<T>> values() {
+            return null;
+        }
+
+        @Override
+        public MySQLInsert._RowSetChildValuesPartitionSpec<C, FieldMeta<T>> values(Consumer<RowConstructor<FieldMeta<P>>> consumer) {
+            final RowConstructorImpl<FieldMeta<P>> constructor;
+            constructor = new RowConstructorImpl<>(this.criteriaContext, this::containField);
+            consumer.accept(constructor);
+            this.rowValuesList = constructor.rowConstructorEnd();
+            return null;
+        }
+
+        @Override
+        public MySQLInsert._RowSetChildValuesPartitionSpec<C, FieldMeta<T>> values(BiConsumer<C, RowConstructor<FieldMeta<P>>> consumer) {
+            final RowConstructorImpl<FieldMeta<P>> constructor;
+            constructor = new RowConstructorImpl<>(this.criteriaContext, this::containField);
+            consumer.accept(this.criteria, constructor);
+            this.rowValuesList = constructor.rowConstructorEnd();
+            return null;
+        }
+
+        @Override
+        public MySQLInsert._RowSetChildSubQueryPartitionSpec<C, FieldMeta<T>> space(Supplier<? extends SubQuery> supplier) {
+            final SubQuery subQuery;
+            subQuery = supplier.get();
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return null;
+        }
+
+        @Override
+        public MySQLInsert._RowSetChildSubQueryPartitionSpec<C, FieldMeta<T>> space(Function<C, ? extends SubQuery> function) {
+            final SubQuery subQuery;
+            subQuery = function.apply(this.criteria);
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return null;
+        }
+
+        @Override
+        MySQLInsert._RowSetParentRowSetSpec<C, FieldMeta<P>, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
+            if (fieldSize == 0) {
+                throw noColumnList(this.criteriaContext, this.table);
+            }
+            if (childFieldSize > 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return this;
+        }
+
+        List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        private MySQLInsert._RowSetParentColumnListClause<C, FieldMeta<P>, FieldMeta<T>> parentPartitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+    }//RowSetParentValuesClause
+
+
+    private static final class RowSetChildValuesClause<C, F extends TableField>
+            extends InsertSupport.ColumnsClause<C, F, MySQLInsert._RowSetChildValuesPartitionSpec<C, F>>
+            implements MySQLInsert._RowSetChildValuesPartitionSpec<C, F>
+            , MySQLInsert._RowSetValuesSpec<C, F>
+            , ClauseBeforeRowAlias<C, F> {
+
+        private final RowSetParentValuesClause<?, ?, ?> clause;
+
+        private List<String> childPartitionList;
+
+        private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+
+        private SubQuery subQuery;
+
+        private RowSetChildValuesClause(RowSetParentValuesClause<?, ?, ?> clause) {
+            super(clause.criteriaContext, clause.migration, clause.childTable);
+            this.clause = clause;
+        }
+
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._RowSetChildValuesRowColumnsClause<C, F>> childPartition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
+        }
+
+
+        @Override
+        public MySQLInsert._StaticRowSetMultiRowClause<C, F> values() {
+            return null;
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> values(Consumer<RowConstructor<F>> consumer) {
+            final RowConstructorImpl<F> constructor;
+            constructor = new RowConstructorImpl<>(this.criteriaContext, this::containField);
+            consumer.accept(constructor);
+            this.rowValuesList = constructor.rowConstructorEnd();
+            return null;
+        }
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> values(BiConsumer<C, RowConstructor<F>> consumer) {
+            final RowConstructorImpl<F> constructor;
+            constructor = new RowConstructorImpl<>(this.criteriaContext, this::containField);
+            consumer.accept(this.criteria, constructor);
+            this.rowValuesList = constructor.rowConstructorEnd();
+            return null;
+        }
+
+
+        @Override
+        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(String rowAlias, Map<String, FieldMeta<?>> aliasToField) {
+            // row set insert no as row_alias clause
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+
+        @Override
+        public Insert endInsert(Map<?, _Expression> valuePairMap) {
+            return null;
+        }
+
+        @Override
+        MySQLInsert._RowSetChildValuesPartitionSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
+            if (fieldSize > 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            if (childFieldSize == 0) {
+                throw noColumnList(this.criteriaContext, this.table);
+            }
+            return this;
+        }
+
+        private MySQLInsert._RowSetChildValuesRowColumnsClause<C, F> childPartitionEnd(List<String> partitionList) {
+            this.childPartitionList = partitionList;
+            return this;
+        }
+
+
+    }// RowSetChildValuesClause
+
+
+    static class MySQLSubQueryInsertStatement extends InsertSupport.RowSetInsertStatement<Insert>
+            implements MySQLInsert, Insert._InsertSpec, _MySQLInsert._MySQLRowSetInsert {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final List<String> partitionList;
+
+        private final List<String> childPartitionList;
+
+        private MySQLSubQueryInsertStatement(RowSetValuesClause<?, ?> clause) {
+            super(clause, clause.subQuery);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+
+            final List<String> partitionList = clause.partitionList;
+            if (partitionList == null) {
+                this.partitionList = Collections.emptyList();
+            } else {
+                this.partitionList = partitionList;
+            }
+            this.childPartitionList = Collections.emptyList();
+
+        }
+
+        @Override
+        public final List<Hint> hintList() {
+            return this.hintList;
+        }
+
+        @Override
+        public final List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public final List<String> childPartitionList() {
+            return this.childPartitionList;
+        }
+
+        @Override
+        public final String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+
+    }//RowSetInsertStatement
+
+    private static final class SubQueryInsertStatementWithDuplicate extends MySQLSubQueryInsertStatement
+            implements _MySQLInsert._InsertWithDuplicateKey {
+
+        private final Map<?, _Expression> valuePairMap;
+
+        private SubQueryInsertStatementWithDuplicate(RowSetValuesClause<?, ?> clause
+                , Map<?, _Expression> valuePairMap) {
+            super(clause);
+            this.valuePairMap = valuePairMap;
+        }
+
+        @Override
+        public Map<?, _Expression> valuePairsForDuplicate() {
+            return this.valuePairMap;
+        }
+
+
+    }//SubQueryInsertStatementWithDuplicate
+
+
+    static class MySQLRowSetRowSyntaxStatement extends InsertSupport.ValueSyntaxStatement<Insert>
+            implements MySQLInsert, Insert._InsertSpec, _MySQLInsert._MySQLValueInsert
+            , _MySQLInsert._MySQLRowSetRowSyntax {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final List<String> partitionList;
+
+        private final List<String> childPartitionList;
+
+        private final List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+
+        private MySQLRowSetRowSyntaxStatement(RowSetValuesClause<?, ?> clause) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = clause.partitionList();
+
+            this.childPartitionList = Collections.emptyList();
+            this.rowValuesList = clause.rowValuesList;
+
+            assert this.rowValuesList != null;
+        }
+
+        @Override
+        public final List<Hint> hintList() {
+            return this.hintList;
+        }
+
+        @Override
+        public final List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public final List<String> childPartitionList() {
+            return this.childPartitionList;
+        }
+
+        @Override
+        public final List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
+            return this.rowValuesList;
+        }
+
+        @Override
+        public final String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+
+    }//MySQLRowSetRowSyntaxStatement
+
+    private static final class RowSetRowSyntaxStatementWithDuplicate extends MySQLRowSetRowSyntaxStatement
+            implements _MySQLInsert._InsertWithDuplicateKey {
+
+        private final Map<?, _Expression> valuePairMap;
+
+
+        private RowSetRowSyntaxStatementWithDuplicate(RowSetValuesClause<?, ?> clause
+                , Map<?, _Expression> valuePairMap) {
+            super(clause);
+            this.valuePairMap = valuePairMap;
+        }
+
+        @Override
+        public Map<?, _Expression> valuePairsForDuplicate() {
+            return this.valuePairMap;
+        }
+
+
+    }//RowSetRowSyntaxStatementWithDuplicate
 
 
 }

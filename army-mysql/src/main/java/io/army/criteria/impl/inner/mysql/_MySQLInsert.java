@@ -37,6 +37,16 @@ public interface _MySQLInsert extends _Insert {
     }
 
 
+    /**
+     * <p>
+     * If {@link  _MySQLValueInsert} implementation implements this interface,use ROW syntax
+     * </p>
+     */
+    interface _MySQLRowSetRowSyntax {
+
+    }
+
+
     interface _MySQLDomainInsert extends _Insert._DomainInsert, _MySQLInsert {
 
 
@@ -47,6 +57,10 @@ public interface _MySQLInsert extends _Insert {
     }
 
     interface _MySQLAssignmentInsert extends _Insert._AssignmentInsert, _MySQLInsert {
+
+    }
+
+    interface _MySQLRowSetInsert extends _Insert._RowSetInsert, _MySQLInsert {
 
     }
 
