@@ -131,7 +131,7 @@ abstract class InsertSupport {
      * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
      */
     static abstract class ColumnsClause<C, F extends TableField, RR>
-            implements Insert._ColumnListClause<C, F, RR>, Insert._StaticColumnClause<F, RR>
+            implements Insert._ColumnListClause<C, F, RR>, Insert._StaticColumnDualClause<F, RR>
             , _Insert, ColumnListClause, Statement.StatementMockSpec {
 
         final CriteriaContext criteriaContext;
@@ -175,14 +175,28 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnClause<F, RR> leftParen(F field) {
+        public final Statement._RightParenClause<RR> leftParen(F field) {
             this.addField(field);
             return this;
         }
 
         @Override
-        public final Insert._StaticColumnClause<F, RR> comma(F field) {
+        public final Insert._StaticColumnDualClause<F, RR> leftParen(F field1, F field2) {
+            this.addField(field1);
+            this.addField(field2);
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> comma(F field) {
             this.addField(field);
+            return this;
+        }
+
+        @Override
+        public final Insert._StaticColumnDualClause<F, RR> comma(F field1, F field2) {
+            this.addField(field1);
+            this.addField(field2);
             return this;
         }
 

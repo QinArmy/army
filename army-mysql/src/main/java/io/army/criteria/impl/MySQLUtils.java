@@ -70,7 +70,7 @@ abstract class MySQLUtils extends CriteriaUtils {
                 level = 2;
                 break;
             default:
-                throw CriteriaContextStack.criteriaError(String.format("%s isn't insert modifier.", modifier));
+               level = -1;
         }
         return level;
     }
@@ -85,7 +85,7 @@ abstract class MySQLUtils extends CriteriaUtils {
                 level = 2;
                 break;
             default:
-                throw CriteriaContextStack.criteriaError(String.format("%s isn't update modifier.", modifier));
+                level = -1;
         }
         return level;
     }
@@ -103,7 +103,7 @@ abstract class MySQLUtils extends CriteriaUtils {
                 level = 3;
                 break;
             default:
-                throw CriteriaContextStack.criteriaError(String.format("%s isn't delete modifier.", modifier));
+                level = -1;
         }
         return level;
     }

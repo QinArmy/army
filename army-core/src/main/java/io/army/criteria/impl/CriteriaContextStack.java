@@ -138,7 +138,7 @@ abstract class CriteriaContextStack {
     }
 
     static <T> CriteriaException criteriaError(CriteriaContext criteriaContext, Function<T, CriteriaException> function
-            , T input) {
+            , @Nullable T input) {
         clearStackOnError(criteriaContext);
         return function.apply(input);
     }

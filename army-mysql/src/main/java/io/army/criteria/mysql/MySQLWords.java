@@ -2,49 +2,41 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.SQLWords;
 
-public enum MySQLWords implements SQLWords.Modifier {
+public enum MySQLWords implements SQLWords {
 
     /*################################## blow SELECT modifiers ##################################*/
-    ALL(" ALL", 0),
-    DISTINCT(" DISTINCT", 0),
-    DISTINCTROW(" DISTINCTROW", 0),
+    ALL(" ALL"),
+    DISTINCT(" DISTINCT"),
+    DISTINCTROW(" DISTINCTROW"),
 
-    HIGH_PRIORITY(" HIGH_PRIORITY", 2),
+    HIGH_PRIORITY(" HIGH_PRIORITY"),
 
-    STRAIGHT_JOIN(" STRAIGHT_JOIN", 3),
+    STRAIGHT_JOIN(" STRAIGHT_JOIN"),
 
-    SQL_SMALL_RESULT(" SQL_SMALL_RESULT", 4),
-    SQL_BIG_RESULT(" SQL_BIG_RESULT", 5),
-    SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT", 6),
+    SQL_SMALL_RESULT(" SQL_SMALL_RESULT"),
+    SQL_BIG_RESULT(" SQL_BIG_RESULT"),
+    SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT"),
 
-    SQL_NO_CACHE(" SQL_NO_CACHE", 7),
-    SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS", 8),
+    SQL_NO_CACHE(" SQL_NO_CACHE"),
+    SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS"),
 
     /*################################## blow INSERT/UPDATE/DELETE modifiers ##################################*/
-    LOW_PRIORITY(" LOW_PRIORITY", 0),
-    DELAYED(" DELAYED", 1),
+    LOW_PRIORITY(" LOW_PRIORITY"),
+    DELAYED(" DELAYED"),
 
-    QUICK(" QUICK", 1),
-    IGNORE(" IGNORE", 3);
+    QUICK(" QUICK"),
+    IGNORE(" IGNORE");
 
 
     public final String words;
 
-    public final byte number;
-
-    MySQLWords(String words, int number) {
+    MySQLWords(String words) {
         this.words = words;
-        this.number = (byte) number;
     }
 
     @Override
     public final String render() {
         return this.words;
-    }
-
-    @Override
-    public final int level() {
-        return this.number;
     }
 
     @Override

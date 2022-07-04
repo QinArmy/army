@@ -21,7 +21,6 @@
         <module>army-jdbd</module>
         <module>army-annotation</module>
         <module>army-example</module>
-        <module>army-jdbs</module>
     </modules>
 
     <properties>

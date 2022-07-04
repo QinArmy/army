@@ -80,20 +80,22 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      */
     interface _ColumnListClause<C, F extends TableField, RR> {
 
-        _RightParenClause<RR> leftParen(Consumer<Consumer<F>> consumer);
+        Statement._RightParenClause<RR> leftParen(Consumer<Consumer<F>> consumer);
 
-        _RightParenClause<RR> leftParen(BiConsumer<C, Consumer<F>> consumer);
+        Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<F>> consumer);
 
-        _StaticColumnClause<F, RR> leftParen(F field);
+        Statement._RightParenClause<RR> leftParen(F field);
+
+        _StaticColumnDualClause<F, RR> leftParen(F field1, F field2);
 
     }
 
-    /**
-     * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
-     */
-    interface _StaticColumnClause<F extends TableField, IR> extends _RightParenClause<IR> {
 
-        _StaticColumnClause<F, IR> comma(F field);
+    interface _StaticColumnDualClause<F extends TableField, IR> extends Statement._RightParenClause<IR> {
+
+        Statement._RightParenClause<IR> comma(F field);
+
+        _StaticColumnDualClause<F, IR> comma(F field1, F field2);
 
     }
 

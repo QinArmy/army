@@ -93,11 +93,11 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     interface _PartitionLeftParenClause<C, PR> {
 
-        _PartitionCommaClause<PR> leftParen(String partitionName);
+        Statement._RightParenClause<PR> leftParen(String partitionName);
 
-        _PartitionCommaClause<PR> leftParen(String partitionName1, String partitionName2);
+        _PartitionCommaDualClause<PR> leftParen(String partitionName1, String partitionName2);
 
-        _PartitionCommaClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3);
+        _PartitionCommaQuadraClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3, String partitionName4);
 
         Statement._RightParenClause<PR> leftParen(Consumer<Consumer<String>> consumer);
 
@@ -109,9 +109,23 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _PartitionCommaClause<PR> extends Statement._RightParenClause<PR> {
 
-        _PartitionCommaClause<PR> comma(String partitionName);
+    interface _PartitionCommaDualClause<PR> extends Statement._RightParenClause<PR> {
+
+        Statement._RightParenClause<PR> comma(String partitionName);
+
+        _PartitionCommaDualClause<PR> comma(String partitionName1, String partitionName2);
+    }
+
+    interface _PartitionCommaQuadraClause<PR> extends Statement._RightParenClause<PR> {
+
+        Statement._RightParenClause<PR> comma(String partitionName);
+
+        Statement._RightParenClause<PR> comma(String partitionName1, String partitionName2);
+
+        Statement._RightParenClause<PR> comma(String partitionName1, String partitionName2, String partitionName3);
+
+        _PartitionCommaQuadraClause<PR> comma(String partitionName1, String partitionName2, String partitionName3, String partitionName4);
 
     }
 

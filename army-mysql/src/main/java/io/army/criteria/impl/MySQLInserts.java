@@ -9,10 +9,7 @@ import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.util._Assert;
 import io.army.util._CollectionUtils;
 
@@ -58,43 +55,30 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    private static abstract class MySQLInsertClause<C, IR> implements MySQLInsert._InsertClause<C, IR> {
-
-
-        final C criteria;
+    private static abstract class MySQLInsertClause<C, MR, NR, IR> extends InsertOptionsImpl<MR, NR>
+            implements MySQLInsert._InsertClause<C, IR> {
 
         private List<Hint> hintList;
 
         private List<MySQLWords> modifierList;
 
-        private MySQLInsertClause(@Nullable C criteria) {
-            this.criteria = criteria;
+        private MySQLInsertClause(CriteriaContext criteriaContext) {
+            super(criteriaContext);
         }
 
 
         @Override
         public final IR insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
-            final List<Hint> hintList;
-            hintList = supplier.get();
-            if (hintList == null) {
-                this.hintList = Collections.emptyList();
-            } else {
-                this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
-            }
-            this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::insertModifier);
+            this.hintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
+            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
             return (IR) this;
         }
 
         @Override
         public final IR insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
-            final List<Hint> hintList;
-            hintList = function.apply(this.criteria);
-            if (hintList == null) {
-                this.hintList = Collections.emptyList();
-            } else {
-                this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
-            }
-            this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::insertModifier);
+            this.hintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteriaContext.criteria())
+                    , MySQLHints::castHint);
+            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
             return (IR) this;
         }
 
@@ -677,20 +661,18 @@ abstract class MySQLInserts extends InsertSupport {
     /*-------------------below domain insert syntax classes-------------------*/
 
     private static final class DomainInsertOptionClause<C>
-            extends MySQLInsertClause<C, MySQLInsert._DomainIntoClause<C>>
+            extends MySQLInsertClause<
+            C,
+            MySQLInsert._DomainNullOptionSpec<C>,
+            MySQLInsert._DomainPreferLiteralSpec<C>,
+            MySQLInsert._DomainIntoClause<C>>
             implements MySQLInsert._DomainOptionSpec<C>, MySQLInsert._DomainIntoClause<C>, DomainInsertOptions {
-
-        private final CriteriaContext criteriaContext;
 
         private boolean preferLiteral;
 
-        private boolean migration;
-
-        private NullHandleMode nullHandleMode;
 
         private DomainInsertOptionClause(@Nullable C criteria) {
-            super(criteria);
-            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            super(CriteriaContexts.primaryInsertContext(criteria));
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
 
@@ -700,17 +682,6 @@ abstract class MySQLInserts extends InsertSupport {
             return this;
         }
 
-        @Override
-        public MySQLInsert._DomainNullOptionSpec<C> migration(boolean migration) {
-            this.migration = migration;
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._DomainPreferLiteralSpec<C> nullHandle(NullHandleMode mode) {
-            this.nullHandleMode = mode;
-            return this;
-        }
 
         @Override
         public <T extends IDomain> MySQLInsert._DomainPartitionSpec<C, T, FieldMeta<T>> into(SingleTableMeta<T> table) {
@@ -733,24 +704,10 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public boolean isMigration() {
-            return this.migration;
-        }
-
-        @Override
-        public NullHandleMode nullHandle() {
-            return this.nullHandleMode;
-        }
-
-        @Override
         public boolean isPreferLiteral() {
             return this.preferLiteral;
         }
 
-        @Override
-        public CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
-        }
 
 
     }//DomainOptionClause
@@ -997,33 +954,23 @@ abstract class MySQLInserts extends InsertSupport {
     }
 
 
-    private static final class ValueInsertOptionClause<C> extends MySQLInsertClause<C, MySQLInsert._ValueIntoClause<C>>
+    private static final class ValueInsertOptionClause<C>
+            extends MySQLInsertClause<
+            C,
+            MySQLInsert._ValueNullOptionSpec<C>,
+            MySQLInsert._ValueInsertIntoSpec<C>,
+            MySQLInsert._ValueIntoClause<C>>
             implements MySQLInsert._ValueOptionSpec<C>, InsertOptions {
-
-        private final CriteriaContext criteriaContext;
 
         private boolean migration;
 
         private NullHandleMode nullHandleMode;
 
         private ValueInsertOptionClause(@Nullable C criteria) {
-            super(criteria);
-            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            super(CriteriaContexts.primaryInsertContext(criteria));
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
 
-
-        @Override
-        public MySQLInsert._ValueNullOptionSpec<C> migration(boolean migration) {
-            this.migration = migration;
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._ValueInsertIntoSpec<C> nullHandle(NullHandleMode mode) {
-            this.nullHandleMode = mode;
-            return this;
-        }
 
         @Override
         public <T extends IDomain> MySQLInsert._ValuePartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
@@ -1033,21 +980,6 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public <T extends IDomain> MySQLInsert._ValueParentPartitionSpec<C, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
             return new MySQLValueInsertStatement<>(this, table);
-        }
-
-        @Override
-        public boolean isMigration() {
-            return this.migration;
-        }
-
-        @Override
-        public NullHandleMode nullHandle() {
-            return this.nullHandleMode;
-        }
-
-        @Override
-        public CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
         }
 
 
@@ -1425,31 +1357,21 @@ abstract class MySQLInserts extends InsertSupport {
     /*-------------------below assignment insert syntax classes-------------------*/
 
     private static final class AssignmentInsertOptionClause<C>
-            extends MySQLInsertClause<C, MySQLInsert._AssignmentIntoClause<C>>
+            extends MySQLInsertClause<
+            C,
+            MySQLInsert._AssignmentNullOptionSpec<C>,
+            MySQLInsert._AssignmentInsertIntoSpec<C>,
+            MySQLInsert._AssignmentIntoClause<C>>
             implements MySQLInsert._AssignmentOptionSpec<C>, MySQLInsert._AssignmentIntoClause<C>, InsertOptions {
 
-        private final CriteriaContext criteriaContext;
 
         private boolean migration;
 
         private NullHandleMode nullHandleMode;
 
         private AssignmentInsertOptionClause(@Nullable C criteria) {
-            super(criteria);
-            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            super(CriteriaContexts.primaryInsertContext(criteria));
             CriteriaContextStack.setContextStack(this.criteriaContext);
-        }
-
-        @Override
-        public MySQLInsert._AssignmentNullOptionSpec<C> migration(boolean migration) {
-            this.migration = migration;
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._AssignmentInsertIntoSpec<C> nullHandle(NullHandleMode mode) {
-            this.nullHandleMode = mode;
-            return this;
         }
 
         @Override
@@ -1472,20 +1394,6 @@ abstract class MySQLInserts extends InsertSupport {
             return new MySQLAssignmentInsertStatement<>(this, table);
         }
 
-        @Override
-        public CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
-        }
-
-        @Override
-        public boolean isMigration() {
-            return this.migration;
-        }
-
-        @Override
-        public NullHandleMode nullHandle() {
-            return this.nullHandleMode;
-        }
 
     }//AssignmentInsertOptionClause
 
@@ -1701,6 +1609,77 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     }//AssignmentInsertPartitionClause
+
+
+    private static final class RowSetInsertIntoClause<C> implements MySQLInsert._RowSetInsertIntoSpec<C>
+            , MySQLInsert._RowSetIntoClause<C> {
+
+        private final CriteriaContext criteriaContext;
+
+        private List<Hint> hintList;
+
+        private List<MySQLWords> modifierList;
+
+        private RowSetInsertIntoClause(@Nullable C criteria) {
+            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
+
+        @Override
+        public MySQLInsert._RowSetIntoClause<C> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+            this.hintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
+            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._RowSetIntoClause<C> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+            this.hintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteriaContext.criteria())
+                    , MySQLHints::castHint);
+            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
+            return this;
+        }
+
+
+        @Override
+        public <T extends IDomain> MySQLInsert._RowSetPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
+            return null;
+        }
+
+        @Override
+        public <P extends IDomain, T extends IDomain> MySQLInsert._RowSetParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table) {
+            return null;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLInsert._RowSetPartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
+            return null;
+        }
+
+        @Override
+        public <P extends IDomain, T extends IDomain> MySQLInsert._RowSetParentPartitionSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table) {
+            return null;
+        }
+
+
+        private List<Hint> hintList() {
+            List<Hint> list = this.hintList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        private List<MySQLWords> modifierList() {
+            List<MySQLWords> list = this.modifierList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+
+    }//RowSetInsertIntoClause
 
 
 }

@@ -74,15 +74,15 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
 
     @Override
     public final _SingleDeleteFromClause<DS> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
-        this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
         return this;
     }
 
     @Override
     public final _SingleDeleteFromClause<DS> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
-        this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
         return this;
     }
 

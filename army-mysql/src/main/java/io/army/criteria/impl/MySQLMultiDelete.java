@@ -76,8 +76,8 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         if (this.tableAliasList != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
         this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
         this.usingSyntax = false;
         return this;
@@ -89,8 +89,8 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         if (this.tableAliasList != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
         this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
         this.usingSyntax = false;
         return this;
@@ -119,8 +119,8 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         if (this.tableAliasList != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.hintList = MySQLUtils.asHintList(hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
         this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
         this.usingSyntax = true;
         return this;
@@ -132,8 +132,8 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         if (this.tableAliasList != null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.hintList = MySQLUtils.asHintList(hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
         this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
         this.usingSyntax = true;
         return this;

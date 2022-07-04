@@ -392,10 +392,8 @@ public class StandardCriteriaUnitTests {
         final Insert stmt;
         stmt = SQLs.rowSetInsert()
                 .insertInto(ChinaRegion_.T)
-                .leftParen(ChinaRegion_.id)
-                .comma(ChinaRegion_.createTime)
-                .comma(ChinaRegion_.updateTime)
-                .comma(ChinaRegion_.regionType)
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
+                .comma(ChinaRegion_.updateTime, ChinaRegion_.regionType)
                 .comma(ChinaRegion_.regionGdp)
                 .rightParen()
                 // below sub query is test case,not real.
@@ -420,10 +418,8 @@ public class StandardCriteriaUnitTests {
         stmt = SQLs.rowSetInsert()
                 .insertInto(ChinaCity_.T)
 
-                .leftParen(ChinaRegion_.id)
-                .comma(ChinaRegion_.createTime)
-                .comma(ChinaRegion_.updateTime)
-                .comma(ChinaRegion_.regionType)
+                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
+                .comma(ChinaRegion_.updateTime, ChinaRegion_.regionType)
                 .comma(ChinaRegion_.regionGdp)
                 .rightParen()
                 // below sub query is test case,not real.
@@ -438,8 +434,7 @@ public class StandardCriteriaUnitTests {
                         .from(ChinaRegion_.T, "r")
                         .asQuery())
 
-                .leftParen(ChinaCity_.id)
-                .comma(ChinaCity_.mayorName)
+                .leftParen(ChinaCity_.id, ChinaCity_.mayorName)
                 .rightParen()
                 // below sub query is test case,not real.
                 .space(() -> SQLs.subQuery()

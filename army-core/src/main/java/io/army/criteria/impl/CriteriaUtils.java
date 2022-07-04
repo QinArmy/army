@@ -321,8 +321,11 @@ abstract class CriteriaUtils {
         return windowList;
     }
 
-    static <T extends Enum<T> & SQLWords.Modifier> List<T> asModifierList(final List<T> list
-            , final Function<T, Integer> function) {
+    static <T extends Enum<T> & SQLWords> List<T> asModifierList(final CriteriaContext criteriaContext
+            , final @Nullable List<T> list, final Function<T, Integer> function) {
+        if (list == null) {
+            throw CriteriaContextStack.criteriaError(criteriaContext, "modifier list must non-null");
+        }
         final List<T> modifierList;
         final int size = list.size();
         switch (size) {
@@ -333,9 +336,12 @@ abstract class CriteriaUtils {
                 final T modifier;
                 modifier = list.get(0);
                 if (modifier == null) {
-                    throw CriteriaContextStack.criteriaError("Modifier list element must non-null");
+                    throw CriteriaContextStack.criteriaError(criteriaContext, "Modifier list element must non-null");
                 }
-                function.apply(modifier);
+                if (function.apply(modifier) < 0) {
+                    String m = String.format("%s syntax error", modifier);
+                    throw CriteriaContextStack.criteriaError(criteriaContext, m);
+                }
                 modifierList = Collections.singletonList(modifier);
             }
             break;
@@ -345,12 +351,13 @@ abstract class CriteriaUtils {
                 for (int i = 0, preLevel = -1, level; i < size; i++) {
                     modifier = list.get(i);
                     if (modifier == null) {
-                        throw CriteriaContextStack.criteriaError("Modifier list element must non-null");
+                        String m = "Modifier list element must non-null";
+                        throw CriteriaContextStack.criteriaError(criteriaContext, m);
                     }
                     level = function.apply(modifier);
                     if (level <= preLevel) {
                         String m = String.format("%s syntax error", modifier);
-                        throw CriteriaContextStack.criteriaError(m);
+                        throw CriteriaContextStack.criteriaError(criteriaContext, m);
                     }
                     preLevel = level;
                     if (tempList == null) {
@@ -364,7 +371,11 @@ abstract class CriteriaUtils {
         return modifierList;
     }
 
-    static <H extends Hint> List<H> asHintList(List<Hint> hintList, final Function<Hint, H> function) {
+    static <H extends Hint> List<H> asHintList(final CriteriaContext criteriaContext, final @Nullable List<Hint> hintList
+            , final Function<Hint, H> function) {
+        if (hintList == null) {
+            return Collections.emptyList();
+        }
         final List<H> mySqlHintList;
         switch (hintList.size()) {
             case 0:
@@ -375,7 +386,7 @@ abstract class CriteriaUtils {
                 final H dialectHint;
                 dialectHint = function.apply(hint);
                 if (dialectHint == null) {
-                    throw illegalHint(hint);
+                    throw CriteriaContextStack.criteriaError(criteriaContext, CriteriaUtils::illegalHint, hint);
                 }
                 mySqlHintList = Collections.singletonList(dialectHint);
             }
@@ -386,7 +397,7 @@ abstract class CriteriaUtils {
                 for (Hint hint : hintList) {
                     dialectHint = function.apply(hint);
                     if (dialectHint == null) {
-                        throw illegalHint(hint);
+                        throw CriteriaContextStack.criteriaError(criteriaContext, CriteriaUtils::illegalHint, hint);
                     }
                     tempList.add(dialectHint);
                 }
@@ -406,7 +417,7 @@ abstract class CriteriaUtils {
     static CriteriaException illegalHint(@Nullable Hint hint) {
         String m = String.format("Hint %s is illegal."
                 , _ClassUtils.safeClassName(hint));
-        throw new CriteriaException(m);
+        return new CriteriaException(m);
     }
 
 
