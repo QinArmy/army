@@ -439,7 +439,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
             assertSessionForChildInsert((_Insert) insert);
 
             //2. parse statement to stmt
-            if (insert instanceof _Insert._RowSetInsert && this.dontSupportSubQueryInsert) {
+            if (insert instanceof _Insert._QueryInsert && this.dontSupportSubQueryInsert) {
                 throw _Exceptions.dontSupportSubQueryInsert(this);
             }
             final Stmt stmt;

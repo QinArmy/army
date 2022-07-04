@@ -61,14 +61,14 @@ public abstract class MySQLs extends MySQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
      */
-    public static MySQLInsert._RowSetInsertIntoSpec<Void> rowSetInsert() {
+    public static MySQLInsert._QueryInsertIntoSpec<Void> queryInsert() {
         throw new UnsupportedOperationException();
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
      */
-    public static <C> MySQLInsert._RowSetInsertIntoSpec<C> rowSetInsert(C criteria) {
+    public static <C> MySQLInsert._QueryInsertIntoSpec<C> queryInsert(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }

@@ -366,111 +366,60 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    /*-------------------below row set insert syntax interfaces-------------------*/
+    /*-------------------below query insert syntax interfaces-------------------*/
 
 
-    interface _StaticRowSetMultiRowClause<C, F extends TableField>
-            extends _StaticValueRowClause<C, F, _StaticRowSetMultiRowSpec<C, F>> {
-
-    }
-
-    interface _StaticRowSetMultiRowSpec<C, F extends TableField> extends _StaticRowSetMultiRowClause<C, F>
-            , _OnDuplicateKeyUpdateFieldSpec<C, F> {
-
-    }
-
-    interface _RowSetValuesSpec<C, F extends TableField>
-            extends Insert._StaticValuesClause<_StaticRowSetMultiRowClause<C, F>>
-            , Insert._DynamicValuesClause<C, F, _OnDuplicateKeyUpdateFieldSpec<C, F>> {
-
-    }
-
-    interface _RowSetSpaceSubQueryClause<C, F extends TableField>
+    interface _QuerySpaceSubQueryClause<C, F extends TableField>
             extends Insert._SpaceSubQueryClause<C, _OnDuplicateKeyUpdateFieldSpec<C, F>> {
 
     }
 
-    interface _RowSetSpec<C, F extends TableField> extends _RowSetSpaceSubQueryClause<C, F>, _RowSetValuesSpec<C, F> {
+
+    interface _QueryColumnListClause<C, F extends TableField>
+            extends Insert._ColumnListClause<C, F, _QuerySpaceSubQueryClause<C, F>> {
+
+    }
+
+    interface _QueryPartitionSpec<C, F extends TableField>
+            extends MySQLQuery._PartitionClause<C, _QueryColumnListClause<C, F>>, _QueryColumnListClause<C, F> {
+
+    }
+
+    interface _QueryChildSubQueryPartitionSpec<C, F extends TableField>
+            extends _ChildPartitionClause<C, _QueryColumnListClause<C, F>>, _QueryColumnListClause<C, F> {
+
+    }
+
+    interface _QueryParentQuerySpec<C, F extends TableField>
+            extends Insert._SpaceSubQueryClause<C, _QueryChildSubQueryPartitionSpec<C, F>> {
+
+    }
+
+    interface _QueryParentColumnListClause<C, PF extends TableField, TF extends TableField>
+            extends Insert._ColumnListClause<C, PF, _QueryParentQuerySpec<C, TF>> {
+
+    }
+
+    interface _QueryParentPartitionSpec<C, P extends IDomain, T extends IDomain>
+            extends _ParentPartitionClause<C, _QueryParentColumnListClause<C, FieldMeta<P>, FieldMeta<T>>>
+            , _QueryParentColumnListClause<C, FieldMeta<P>, FieldMeta<T>> {
 
     }
 
 
-    interface _RowSetColumnListClause<C, F extends TableField>
-            extends Insert._ColumnListClause<C, F, _RowSetSpec<C, F>> {
+    interface _QueryIntoClause<C> {
+
+        <T extends IDomain> _QueryPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table);
+
+        <P extends IDomain, T extends IDomain> _QueryParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table);
 
     }
 
-    interface _RowSetPartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause<C, _RowSetColumnListClause<C, F>>, _RowSetColumnListClause<C, F> {
+    interface _QueryInsertIntoSpec<C> extends _InsertClause<C, _QueryIntoClause<C>> {
 
-    }
+        <T extends IDomain> _QueryPartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
 
-
-    interface _RowSetChildSubQueryColumnListClause<C, F extends TableField>
-            extends Insert._ColumnListClause<C, F, _RowSetSpaceSubQueryClause<C, F>> {
-
-    }
-
-    interface _RowSetChildSubQueryPartitionSpec<C, F extends TableField>
-            extends _ChildPartitionClause<C, _RowSetChildSubQueryColumnListClause<C, F>>
-            , _RowSetChildSubQueryColumnListClause<C, F> {
-
-    }
-
-
-    interface _RowSetChildValuesRowColumnsClause<C, F extends TableField>
-            extends Insert._ColumnListClause<C, F, _RowSetValuesSpec<C, F>> {
-
-    }
-
-    interface _RowSetChildValuesPartitionSpec<C, F extends TableField>
-            extends _ChildPartitionClause<C, _RowSetChildValuesRowColumnsClause<C, F>>
-            , _RowSetChildValuesRowColumnsClause<C, F> {
-
-    }
-
-    interface _RowSetStaticParentMultiRowClause<C, PF extends TableField, TF extends TableField>
-            extends _StaticValueRowClause<C, PF, _RowSetStaticParentMultiRowSpec<C, PF, TF>> {
-
-    }
-
-    interface _RowSetStaticParentMultiRowSpec<C, PF extends TableField, TF extends TableField>
-            extends _RowSetStaticParentMultiRowClause<C, PF, TF>, _RowSetChildValuesPartitionSpec<C, TF> {
-
-    }
-
-    interface _RowSetParentRowSetSpec<C, PF extends TableField, TF extends TableField>
-            extends Insert._SpaceSubQueryClause<C, _RowSetChildSubQueryPartitionSpec<C, TF>>
-            , Insert._StaticValuesClause<_RowSetStaticParentMultiRowClause<C, PF, TF>>
-            , Insert._DynamicValuesClause<C, PF, _RowSetChildValuesPartitionSpec<C, TF>> {
-
-    }
-
-    interface _RowSetParentColumnListClause<C, PF extends TableField, TF extends TableField>
-            extends Insert._ColumnListClause<C, PF, _RowSetParentRowSetSpec<C, PF, TF>> {
-
-    }
-
-    interface _RowSetParentPartitionSpec<C, P extends IDomain, T extends IDomain>
-            extends _ParentPartitionClause<C, _RowSetParentColumnListClause<C, FieldMeta<P>, FieldMeta<T>>>
-            , _RowSetParentColumnListClause<C, FieldMeta<P>, FieldMeta<T>> {
-
-    }
-
-
-    interface _RowSetIntoClause<C> {
-
-        <T extends IDomain> _RowSetPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table);
-
-        <P extends IDomain, T extends IDomain> _RowSetParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table);
-
-    }
-
-    interface _RowSetInsertIntoSpec<C> extends _InsertClause<C, _RowSetIntoClause<C>> {
-
-        <T extends IDomain> _RowSetPartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table);
-
-        <P extends IDomain, T extends IDomain> _RowSetParentPartitionSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table);
+        <P extends IDomain, T extends IDomain> _QueryParentPartitionSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table);
 
     }
 

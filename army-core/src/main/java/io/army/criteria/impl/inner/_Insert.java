@@ -71,7 +71,7 @@ public interface _Insert extends _Statement {
     }
 
 
-    interface _RowSetInsert extends _Insert {
+    interface _QueryInsert extends _Insert {
 
         RowSet rowSet();
 

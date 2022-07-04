@@ -1527,8 +1527,8 @@ abstract class InsertSupport {
     }//RowConstructorImpl
 
 
-    static abstract class RowSetInsertStatement<I extends DmlStatement.DmlInsert>
-            implements _Insert._RowSetInsert, DmlStatement._DmlInsertSpec<I>
+    static abstract class QueryInsertStatement<I extends DmlStatement.DmlInsert>
+            implements _Insert._QueryInsert, DmlStatement._DmlInsertSpec<I>
             , DmlStatement.DmlInsert, Statement.StatementMockSpec {
 
         final CriteriaContext criteriaContext;
@@ -1540,13 +1540,13 @@ abstract class InsertSupport {
 
         final Map<FieldMeta<?>, Boolean> fieldMap;
 
-        final RowSet rowSet;
+        final SubQuery rowSet;
 
-        final RowSet childRowSet;
+        final SubQuery childRowSet;
 
         private Boolean prepared;
 
-        RowSetInsertStatement(_Insert clause, RowSet rowSet) {
+        QueryInsertStatement(_Insert clause, SubQuery rowSet) {
             this.criteriaContext = ((CriteriaContextSpec) clause).getCriteriaContext();
 
             this.table = clause.table();
@@ -1558,7 +1558,7 @@ abstract class InsertSupport {
             this.childRowSet = null;
         }
 
-        RowSetInsertStatement(_Insert parentClause, RowSet parentSet, _Insert childClause, RowSet childRowSet) {
+        QueryInsertStatement(_Insert parentClause, SubQuery parentSet, _Insert childClause, SubQuery childRowSet) {
             this.criteriaContext = ((CriteriaContextSpec) parentClause).getCriteriaContext();
 
             this.table = childClause.table();

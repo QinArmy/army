@@ -5,7 +5,6 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._UnionRowSet;
-import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.dialect.Database;
 
 public abstract class _MySQLConsultant extends _SQLConsultant {
@@ -21,21 +20,17 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
             if (!(insert instanceof MySQLInserts.MySQLDomainInsertStatement)) {
                 throw instanceNotMatch(insert, MySQLInserts.MySQLDomainInsertStatement.class);
             }
+        } else if (insert instanceof _Insert._ValueInsert) {
+            if (!(insert instanceof MySQLInserts.MySQLValueInsertStatement)) {
+                throw instanceNotMatch(insert, MySQLInserts.MySQLValueInsertStatement.class);
+            }
         } else if (insert instanceof _Insert._AssignmentInsert) {
             if (!(insert instanceof MySQLInserts.MySQLAssignmentInsertStatement)) {
                 throw instanceNotMatch(insert, MySQLInserts.MySQLAssignmentInsertStatement.class);
             }
-        } else if (insert instanceof _Insert._RowSetInsert) {
-            if (!(insert instanceof MySQLInserts.MySQLSubQueryInsertStatement)) {
-                throw instanceNotMatch(insert, MySQLInserts.MySQLSubQueryInsertStatement.class);
-            }
-        } else if (insert instanceof _MySQLInsert._MySQLRowSetRowSyntax) {
-            if (!(insert instanceof MySQLInserts.MySQLRowSetRowSyntaxStatement)) {
-                throw instanceNotMatch(insert, MySQLInserts.MySQLRowSetRowSyntaxStatement.class);
-            }
-        } else if (insert instanceof _Insert._ValueInsert) {
-            if (!(insert instanceof MySQLInserts.MySQLValueInsertStatement)) {
-                throw instanceNotMatch(insert, MySQLInserts.MySQLValueInsertStatement.class);
+        } else if (insert instanceof _Insert._QueryInsert) {
+            if (!(insert instanceof MySQLInserts.MySQLQueryInsertStatement)) {
+                throw instanceNotMatch(insert, MySQLInserts.MySQLQueryInsertStatement.class);
             }
         } else {
             throw new CriteriaException("Not MySQL dialect insert statement.");

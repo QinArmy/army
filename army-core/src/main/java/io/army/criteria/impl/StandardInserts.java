@@ -464,9 +464,9 @@ abstract class StandardInserts extends InsertSupport {
             implements Insert._StandardSpaceSubQueryClause<C>, Insert._StandardSingleColumnsClause<C, F> {
         private final _Insert parentClause;
 
-        private final RowSet parentRowSet;
+        private final SubQuery parentRowSet;
 
-        private StandardChildColumnClause(StandardParentColumnClause<?, ?, ?> clause, RowSet parentRowSet) {
+        private StandardChildColumnClause(StandardParentColumnClause<?, ?, ?> clause, SubQuery parentRowSet) {
             super(clause.criteriaContext, true, clause.childTable);
             this.parentClause = clause;
             this.parentRowSet = parentRowSet;
@@ -493,14 +493,14 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardChildColumnClause
 
 
-    static final class StandardRowSetInsertStatement extends RowSetInsertStatement<Insert>
+    static final class StandardRowSetInsertStatement extends QueryInsertStatement<Insert>
             implements StandardStatement, Insert, Insert._InsertSpec {
 
-        private StandardRowSetInsertStatement(StandardSingleColumnsClause<?, ?> clause, RowSet rowSet) {
+        private StandardRowSetInsertStatement(StandardSingleColumnsClause<?, ?> clause, SubQuery rowSet) {
             super(clause, rowSet);
         }
 
-        private StandardRowSetInsertStatement(StandardChildColumnClause<?, ?> clause, RowSet childRowSet) {
+        private StandardRowSetInsertStatement(StandardChildColumnClause<?, ?> clause, SubQuery childRowSet) {
             super(clause.parentClause, clause.parentRowSet, clause, childRowSet);
         }
 
