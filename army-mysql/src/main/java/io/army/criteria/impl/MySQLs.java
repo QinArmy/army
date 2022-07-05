@@ -100,11 +100,11 @@ public abstract class MySQLs extends MySQLSyntax {
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLReplace._RowSetReplaceIntoSpec<Void> rowSetReplace() {
+    public static MySQLReplace._QueryReplaceIntoSpec<Void> rowSetReplace() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> MySQLReplace._RowSetReplaceIntoSpec<C> rowSetReplace(C criteria) {
+    public static <C> MySQLReplace._QueryReplaceIntoSpec<C> rowSetReplace(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }

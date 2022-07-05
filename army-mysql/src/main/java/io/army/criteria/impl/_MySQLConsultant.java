@@ -59,11 +59,11 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
                 throw instanceNotMatch(replace, MySQLReplaces.MySQLAssignmentReplaceStatement.class);
             }
         } else if (replace instanceof _Insert._QueryInsert) {
-            if (!(replace instanceof MySQLReplaces.MySQLQueryInsertStatement)) {
-                throw instanceNotMatch(replace, MySQLReplaces.MySQLQueryInsertStatement.class);
+            if (!(replace instanceof MySQLReplaces.MySQLQueryReplaceStatement)) {
+                throw instanceNotMatch(replace, MySQLReplaces.MySQLQueryReplaceStatement.class);
             }
         } else {
-            throw new CriteriaException("Not MySQL dialect insert statement.");
+            throw new CriteriaException("Not MySQL dialect replace statement.");
         }
 
     }

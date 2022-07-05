@@ -224,112 +224,61 @@ public interface MySQLReplace extends ReplaceInsert, DialectStatement, DmlStatem
     }
 
 
-    /*-------------------below row set replace syntax api interfaces -------------------*/
+    /*-------------------below query replace syntax api interfaces -------------------*/
 
-    interface _RowSetStaticRowClause<C, F extends TableField>
-            extends MySQLInsert._StaticValueRowClause<C, F, _RowSetStaticRowSpec<C, F>> {
 
-    }
-
-    interface _RowSetStaticRowSpec<C, F extends TableField> extends _RowSetStaticRowClause<C, F>
-            , _ReplaceSpec {
-
-    }
-
-    interface _RowSetValuesClause<C, F extends TableField>
-            extends Insert._StaticValuesClause<_RowSetStaticRowClause<C, F>>
-            , Insert._DynamicValuesClause<C, F, _ReplaceSpec> {
+    interface _QuerySubQueryClause<C> extends Insert._SpaceSubQueryClause<C, _ReplaceSpec> {
 
     }
 
 
-    interface _RowSetSubQueryClause<C> extends Insert._SpaceSubQueryClause<C, _ReplaceSpec> {
+    interface _QueryColumnListClause<C, F extends TableField>
+            extends Insert._ColumnListClause<C, F, _QuerySubQueryClause<C>> {
 
     }
 
-    interface _RowSetSpec<C, F extends TableField> extends _RowSetSubQueryClause<C>
-            , _RowSetValuesClause<C, F> {
+    interface _QueryPartitionSpec<C, F extends TableField>
+            extends MySQLQuery._PartitionClause<C, _QueryColumnListClause<C, F>>
+            , _QueryColumnListClause<C, F> {
 
     }
 
-
-    interface _RowSetColumnListClause<C, F extends TableField>
-            extends Insert._ColumnListClause<C, F, MySQLReplace._RowSetSpec<C, F>> {
-
-    }
-
-    interface _RowSetPartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause2<C, _RowSetColumnListClause<C, F>>
-            , _RowSetColumnListClause<C, F> {
+    interface _QueryChildPartitionSpec<C, F extends TableField>
+            extends MySQLInsert._ChildPartitionClause<C, _QueryColumnListClause<C, F>>
+            , _QueryColumnListClause<C, F> {
 
     }
 
-
-    interface _RowSetChildValuesColumnsClause<C, F extends TableField>
-            extends Insert._ColumnListClause<C, F, _RowSetValuesClause<C, F>> {
-
-    }
-
-    interface _RowSetChildValuesPartitionSpec<C, F extends TableField>
-            extends MySQLInsert._ChildPartitionClause<C, _RowSetChildValuesColumnsClause<C, F>>
-            , _RowSetChildValuesColumnsClause<C, F> {
+    interface _QueryParentSubQueryClause<C, F extends TableField>
+            extends Insert._SpaceSubQueryClause<C, _QueryChildPartitionSpec<C, F>> {
 
     }
 
-    interface _RowSetParentStaticRowClause<C, PF extends TableField, TF extends TableField>
-            extends MySQLInsert._StaticValueRowClause<C, PF, _RowSetParentStaticRowSpec<C, PF, TF>> {
-
-    }
-
-    interface _RowSetParentStaticRowSpec<C, PF extends TableField, TF extends TableField>
-            extends _RowSetParentStaticRowClause<C, PF, TF>, _RowSetChildValuesPartitionSpec<C, TF> {
+    interface _QueryParentColumnsClause<C, PF extends TableField, TF extends TableField>
+            extends Insert._ColumnListClause<C, PF, _QueryParentSubQueryClause<C, TF>> {
 
     }
 
 
-    interface _RowChildSubQueryColumnsClause<C, F extends TableField>
-            extends Insert._ColumnListClause<C, F, _RowSetSubQueryClause<C>> {
+    interface _QueryParentPartitionSpec<C, P extends IDomain, T extends IDomain>
+            extends MySQLInsert._ParentPartitionClause<C, _QueryParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>>>
+            , _QueryParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> {
 
     }
 
-    interface _RowSetChildSubQueryPartitionSpec<C, F extends TableField>
-            extends MySQLInsert._ChildPartitionClause<C, _RowChildSubQueryColumnsClause<C, F>>
-            , _RowChildSubQueryColumnsClause<C, F> {
+    interface _QueryIntoClause<C> {
+
+        <T extends IDomain> _QueryPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table);
+
+        <P extends IDomain, T extends IDomain> _QueryParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table);
 
     }
 
-    interface _RowSetParentSpec<C, PF extends TableField, TF extends TableField>
-            extends Insert._SpaceSubQueryClause<C, _RowSetChildSubQueryPartitionSpec<C, TF>>
-            , Insert._StaticValuesClause<_RowSetParentStaticRowClause<C, PF, TF>>
-            , Insert._DynamicValuesClause<C, PF, _RowSetChildValuesPartitionSpec<C, TF>> {
+    interface _QueryReplaceIntoSpec<C> extends _ReplaceClause<C, _QueryIntoClause<C>> {
 
-    }
+        <T extends IDomain> _QueryPartitionSpec<C, FieldMeta<T>> replaceInto(SingleTableMeta<T> table);
 
-    interface _RowSetParentValueColumnsClause<C, PF extends TableField, TF extends TableField>
-            extends Insert._ColumnListClause<C, PF, MySQLReplace._RowSetParentSpec<C, PF, TF>> {
-
-    }
-
-
-    interface _RowSetParentPartitionSpec<C, P extends IDomain, T extends IDomain>
-            extends MySQLInsert._ParentPartitionClause<C, _RowSetParentValueColumnsClause<C, FieldMeta<P>, FieldMeta<T>>>
-            , _RowSetParentValueColumnsClause<C, FieldMeta<P>, FieldMeta<T>> {
-
-    }
-
-    interface _RowSetIntoClause<C> {
-
-        <T extends IDomain> _RowSetPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table);
-
-        <P extends IDomain, T extends IDomain> _RowSetParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table);
-
-    }
-
-    interface _RowSetReplaceIntoSpec<C> extends _ReplaceClause<C, _RowSetIntoClause<C>> {
-
-        <T extends IDomain> _RowSetPartitionSpec<C, FieldMeta<T>> replaceInto(SingleTableMeta<T> table);
-
-        <P extends IDomain, T extends IDomain> _RowSetParentPartitionSpec<C, P, T> replaceInto(ComplexTableMeta<P, T> table);
+        <P extends IDomain, T extends IDomain> _QueryParentPartitionSpec<C, P, T> replaceInto(ComplexTableMeta<P, T> table);
 
     }
 

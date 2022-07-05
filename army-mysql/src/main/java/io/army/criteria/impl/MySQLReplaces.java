@@ -9,10 +9,7 @@ import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.util._Assert;
 
 import java.util.Collections;
@@ -698,6 +695,372 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     }//MySQLAssignmentReplaceStatement
+
+
+    private static final class QueryReplaceOptionClause<C>
+            implements MySQLReplace._QueryReplaceIntoSpec<C>
+            , MySQLReplace._QueryIntoClause<C> {
+
+        private final CriteriaContext criteriaContext;
+
+        private List<Hint> hintList;
+
+        private List<MySQLWords> modifierList;
+
+        private QueryReplaceOptionClause(@Nullable C criteria) {
+            this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
+
+        @Override
+        public MySQLReplace._QueryIntoClause<C> replace(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
+            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::replaceModifier);
+            return this;
+        }
+
+        @Override
+        public MySQLReplace._QueryIntoClause<C> replace(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteriaContext.criteria())
+                    , MySQLHints::castHint);
+            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::replaceModifier);
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
+            return new QueryReplaceSubQueryClause<>(this, table);
+        }
+
+        @Override
+        public <P extends IDomain, T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table) {
+            return null;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, FieldMeta<T>> replaceInto(SingleTableMeta<T> table) {
+            return new QueryReplaceSubQueryClause<>(this, table);
+        }
+
+        @Override
+        public <P extends IDomain, T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, P, T> replaceInto(ComplexTableMeta<P, T> table) {
+            return null;
+        }
+
+        private List<Hint> hintList() {
+            List<Hint> list = this.hintList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        private List<MySQLWords> modifierList() {
+            List<MySQLWords> list = this.modifierList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+    }//QueryReplaceOptionClause
+
+
+    private static final class QueryReplaceSubQueryClause<C, F extends TableField>
+            extends InsertSupport.ColumnsClause<C, F, MySQLReplace._QuerySubQueryClause<C>>
+            implements MySQLReplace._QueryPartitionSpec<C, F>
+            , MySQLReplace._QuerySubQueryClause<C> {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private List<String> partitionList;
+
+        private SubQuery subQuery;
+
+        private QueryReplaceSubQueryClause(QueryReplaceOptionClause<C> clause, SingleTableMeta<?> table) {
+            super(clause.criteriaContext, true, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryColumnListClause<C, F>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        }
+
+        @Override
+        public ReplaceInsert._ReplaceSpec space(Supplier<? extends SubQuery> supplier) {
+            final SubQuery subQuery;
+            subQuery = supplier.get();
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return new MySQLQueryReplaceStatement(this);
+        }
+
+        @Override
+        public ReplaceInsert._ReplaceSpec space(Function<C, ? extends SubQuery> function) {
+            final SubQuery subQuery;
+            subQuery = function.apply(this.criteria);
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return new MySQLQueryReplaceStatement(this);
+        }
+
+        @Override
+        MySQLReplace._QuerySubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
+            if (fieldSize == 0) {
+                throw noColumnList(this.criteriaContext, this.table);
+            }
+            if (childFieldSize > 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return this;
+        }
+
+        private MySQLReplace._QueryColumnListClause<C, F> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+
+    }//QueryReplaceSubQueryClause
+
+    private static final class QueryParentReplaceSubQueryClause<C, P extends IDomain, T extends IDomain>
+            extends InsertSupport.ColumnsClause<
+            C,
+            FieldMeta<P>,
+            MySQLReplace._QueryParentSubQueryClause<C, FieldMeta<T>>>
+            implements MySQLReplace._QueryParentPartitionSpec<C, P, T>
+            , MySQLReplace._QueryParentSubQueryClause<C, FieldMeta<T>> {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final ChildTableMeta<T> childTable;
+
+        private List<String> partitionList;
+
+        private SubQuery subQuery;
+
+        private QueryParentReplaceSubQueryClause(QueryReplaceOptionClause<C> clause, ComplexTableMeta<P, T> table) {
+            super(clause.criteriaContext, true, table.parentMeta());
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+            this.childTable = table;
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>>> parentPartition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
+        }
+
+        @Override
+        public MySQLReplace._QueryChildPartitionSpec<C, FieldMeta<T>> space(Supplier<? extends SubQuery> supplier) {
+            final SubQuery subQuery;
+            subQuery = supplier.get();
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return null;
+        }
+
+        @Override
+        public MySQLReplace._QueryChildPartitionSpec<C, FieldMeta<T>> space(Function<C, ? extends SubQuery> function) {
+            final SubQuery subQuery;
+            subQuery = function.apply(this.criteria);
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return null;
+        }
+
+
+        @Override
+        MySQLReplace._QueryParentSubQueryClause<C, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
+            if (fieldSize == 0) {
+                throw noColumnList(this.criteriaContext, this.table);
+            }
+            if (childFieldSize > 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return this;
+        }
+
+        private MySQLReplace._QueryParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> parentPartitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+
+    }//QueryParentReplaceSubQueryClause
+
+    private static final class QueryChildReplaceSubQueryClause<C, F extends TableField>
+            extends InsertSupport.ColumnsClause<
+            C,
+            F,
+            MySQLReplace._QuerySubQueryClause<C>>
+            implements MySQLReplace._QueryChildPartitionSpec<C, F>
+            , MySQLReplace._QuerySubQueryClause<C> {
+
+        private final QueryParentReplaceSubQueryClause<C, ?, ?> parentClause;
+
+
+        private List<String> partitionList;
+
+        private SubQuery subQuery;
+
+
+        private QueryChildReplaceSubQueryClause(QueryParentReplaceSubQueryClause<C, ?, ?> parentClause) {
+            super(parentClause.criteriaContext, parentClause.migration, parentClause.childTable);
+            this.parentClause = parentClause;
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryColumnListClause<C, F>> childPartition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
+        }
+
+        @Override
+        public ReplaceInsert._ReplaceSpec space(Supplier<? extends SubQuery> supplier) {
+            final SubQuery subQuery;
+            subQuery = supplier.get();
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return new MySQLQueryReplaceStatement(this);
+        }
+
+        @Override
+        public ReplaceInsert._ReplaceSpec space(Function<C, ? extends SubQuery> function) {
+            final SubQuery subQuery;
+            subQuery = function.apply(this.criteria);
+            if (subQuery == null) {
+                throw subQueryIsNull(this.criteriaContext);
+            }
+            this.subQuery = subQuery;
+            return new MySQLQueryReplaceStatement(this);
+        }
+
+        @Override
+        MySQLReplace._QuerySubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
+            if (childFieldSize == 0) {
+                throw noColumnList(this.criteriaContext, this.table);
+            }
+            if (fieldSize > 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return this;
+        }
+
+        private MySQLReplace._QueryColumnListClause<C, F> childPartitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+    }//QueryChildReplaceSubQueryClause
+
+
+    static final class MySQLQueryReplaceStatement extends InsertSupport.QueryInsertStatement<ReplaceInsert>
+            implements MySQLReplace, ReplaceInsert._ReplaceSpec
+            , _MySQLInsert._MySQQueryInsert, _MySQLInsert._MySQLReplace {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final List<String> partitionList;
+
+        private final List<String> childPartitionList;
+
+
+        private MySQLQueryReplaceStatement(QueryReplaceSubQueryClause<?, ?> clause) {
+            super(clause, clause.subQuery);
+
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = clause.partitionList();
+            this.childPartitionList = Collections.emptyList();
+
+        }
+
+        private MySQLQueryReplaceStatement(QueryChildReplaceSubQueryClause<?, ?> clause) {
+            super(clause.parentClause, clause.parentClause.subQuery, clause, clause.subQuery);
+
+            this.hintList = clause.parentClause.hintList;
+            this.modifierList = clause.parentClause.modifierList;
+            this.partitionList = clause.parentClause.partitionList();
+            this.childPartitionList = clause.partitionList();
+
+        }
+
+        @Override
+        public List<Hint> hintList() {
+            return this.hintList;
+        }
+
+        @Override
+        public List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public List<String> childPartitionList() {
+            return this.childPartitionList;
+        }
+
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+
+    }//MySQLQueryReplaceStatement
 
 
 }

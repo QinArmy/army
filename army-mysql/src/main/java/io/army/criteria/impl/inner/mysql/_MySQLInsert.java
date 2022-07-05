@@ -50,7 +50,7 @@ public interface _MySQLInsert extends _Insert {
 
     }
 
-    interface _MySQLRowSetInsert extends _QueryInsert, _MySQLInsert {
+    interface _MySQQueryInsert extends _QueryInsert, _MySQLInsert {
 
     }
 

@@ -1874,7 +1874,8 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     static class MySQLQueryInsertStatement extends QueryInsertStatement<Insert>
-            implements MySQLInsert, Insert._InsertSpec, _MySQLInsert._MySQLRowSetInsert {
+            implements MySQLInsert, Insert._InsertSpec, _MySQLInsert._MySQQueryInsert {
+
 
         private final List<Hint> hintList;
 
