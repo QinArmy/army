@@ -1361,41 +1361,41 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public MySQLInsert._OnDuplicateKeyRowAliasClause<C, F> as(String alias) {
-            this.assignmentSetClauseEnd();
+            this.endAssignmentSetClause();
             return new RowAliasClause<>(alias, this);
         }
 
         @Override
         public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>> onDuplicateKey() {
-            this.assignmentSetClauseEnd();
+            this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .onDuplicateKey();
         }
 
         @Override
         public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
-            this.assignmentSetClauseEnd();
+            this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
         public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
-            this.assignmentSetClauseEnd();
+            this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
         public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
-            this.assignmentSetClauseEnd();
+            this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
         public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
-            this.assignmentSetClauseEnd();
+            this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
         }
@@ -1491,7 +1491,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Insert endInsert(final Map<?, _Expression> valuePairMap) {
             _Assert.nonPrepared(this.prepared);
-            this.assignmentSetClauseEnd();
+            this.endAssignmentSetClause();
             CriteriaContextStack.clearContextStack(this.criteriaContext);
             this.valuePairsForDuplicate = valuePairMap;
 

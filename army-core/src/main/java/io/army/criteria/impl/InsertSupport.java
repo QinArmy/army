@@ -1253,14 +1253,16 @@ abstract class InsertSupport {
         }
 
 
-        final void assignmentSetClauseEnd() {
+        final void endAssignmentSetClause() {
             final List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 this.itemPairList = Collections.emptyList();
-            } else if (itemPairList instanceof ArrayList) {
-                this.itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
-            } else {
+            } else if (!(itemPairList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            } else if (itemPairList.size() == 1) {
+                this.itemPairList = Collections.singletonList(itemPairList.get(0));
+            } else {
+                this.itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
             }
         }
 

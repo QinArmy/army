@@ -31,6 +31,14 @@ abstract class MySQLReplaces extends InsertSupport {
         return new DomainReplaceOptionClause<>(criteria);
     }
 
+    static <C> MySQLReplace._ValueReplaceOptionSpec<C> valueReplace(@Nullable C criteria) {
+        return new ValueReplaceOptionClause<>(criteria);
+    }
+
+    static <C> MySQLReplace._AssignmentOptionSpec<C> assignmentReplace(@Nullable C criteria) {
+        return new AssignmentReplaceOptionClause<>(criteria);
+    }
+
 
     private static abstract class MySQLReplaceClause<C, MR, NR, RR> extends InsertSupport.InsertOptionsImpl<MR, NR>
             implements MySQLReplace._ReplaceClause<C, RR> {
@@ -290,22 +298,22 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
-            return null;
+            return new MySQLValueReplaceStatement<>(this, table);
         }
 
         @Override
         public <T extends IDomain> MySQLReplace._ValueParentPartitionSpec<C, FieldMeta<? super T>> into(ChildTableMeta<T> table) {
-            return null;
+            return new MySQLValueReplaceStatement<>(this, table);
         }
 
         @Override
         public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, FieldMeta<T>> replaceInto(SingleTableMeta<T> table) {
-            return null;
+            return new MySQLValueReplaceStatement<>(this, table);
         }
 
         @Override
         public <T extends IDomain> MySQLReplace._ValueParentPartitionSpec<C, FieldMeta<? super T>> replaceInto(ChildTableMeta<T> table) {
-            return null;
+            return new MySQLValueReplaceStatement<>(this, table);
         }
 
 
@@ -521,6 +529,175 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     }//MySQLStaticValuesClause
+
+
+    private static final class AssignmentReplaceOptionClause<C> extends MySQLReplaceClause<
+            C,
+            MySQLReplace._AssignmentNullOptionSpec<C>,
+            MySQLReplace._AssignmentReplaceIntoClause<C>,
+            MySQLReplace._AssignmentIntoClause<C>>
+            implements MySQLReplace._AssignmentOptionSpec<C>
+            , MySQLReplace._AssignmentIntoClause<C> {
+
+        private AssignmentReplaceOptionClause(@Nullable C criteria) {
+            super(criteria);
+            CriteriaContextStack.setContextStack(this.criteriaContext);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
+            return new MySQLAssignmentReplaceStatement<>(this, table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._AssignmentParentPartitionSpec<C, FieldMeta<? super T>> into(ChildTableMeta<T> table) {
+            return new MySQLAssignmentReplaceStatement<>(this, table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, FieldMeta<T>> replaceInto(SingleTableMeta<T> table) {
+            return new MySQLAssignmentReplaceStatement<>(this, table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._AssignmentParentPartitionSpec<C, FieldMeta<? super T>> replaceInto(ChildTableMeta<T> table) {
+            return new MySQLAssignmentReplaceStatement<>(this, table);
+        }
+
+
+    }//AssignmentReplaceOptionClause
+
+
+    static final class MySQLAssignmentReplaceStatement<C, F extends TableField>
+            extends InsertSupport.AssignmentInsertClause<
+            C,
+            F,
+            MySQLReplace._AssignmentReplaceSetSpec<C, F>>
+            implements MySQLReplace._AssignmentReplaceSetSpec<C, F>
+            , MySQLReplace._AssignmentChildPartitionSpec<C, F>
+            , MySQLReplace._AssignmentParentPartitionSpec<C, F>
+            , MySQLReplace._AssignmentPartitionSpec<C, F>
+            , MySQLReplace, ReplaceInsert._ReplaceSpec
+            , _MySQLInsert._MySQLAssignmentInsert, _MySQLInsert._MySQLReplace {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private List<String> partitionList;
+
+        private List<String> childPartitionList;
+
+        private Boolean prepared;
+
+        private MySQLAssignmentReplaceStatement(AssignmentReplaceOptionClause<C> clause, TableMeta<?> table) {
+            super(clause, false, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentReplaceSetClause<C, F>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentChildPartitionSpec<C, F>> parentPartition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentReplaceSetClause<C, F>> childPartition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
+        }
+
+
+        @Override
+        public ReplaceInsert asInsert() {
+            _Assert.prepared(this.prepared);
+            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            this.endAssignmentSetClause();
+            this.prepared = Boolean.TRUE;
+            return this;
+        }
+
+        @Override
+        public void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
+            super.clear();
+            this.partitionList = null;
+            this.childPartitionList = null;
+        }
+
+        @Override
+        public List<Hint> hintList() {
+            return this.hintList;
+        }
+
+        @Override
+        public List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public List<String> partitionList() {
+            List<String> list = this.partitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        @Override
+        public List<String> childPartitionList() {
+            List<String> list = this.childPartitionList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
+        }
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+
+        private MySQLReplace._AssignmentReplaceSetClause<C, F> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private MySQLReplace._AssignmentChildPartitionSpec<C, F> parentPartitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private MySQLReplace._AssignmentReplaceSetClause<C, F> childPartitionEnd(List<String> partitionList) {
+            this.childPartitionList = partitionList;
+            return this;
+        }
+
+
+    }//MySQLAssignmentReplaceStatement
 
 
 }

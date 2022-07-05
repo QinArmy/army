@@ -180,7 +180,7 @@ public interface MySQLReplace extends ReplaceInsert, DialectStatement, DmlStatem
     }
 
     interface _AssignmentPartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause2<C, _AssignmentReplaceSetClause<C, F>>
+            extends MySQLQuery._PartitionClause<C, _AssignmentReplaceSetClause<C, F>>
             , _AssignmentReplaceSetClause<C, F> {
 
     }
