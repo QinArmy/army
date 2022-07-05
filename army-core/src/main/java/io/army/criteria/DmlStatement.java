@@ -20,6 +20,7 @@ public interface DmlStatement extends PrimaryStatement {
      * <ul>
      *     <li>{@link Insert}</li>
      *     <li>{@link SubInsert}</li>
+     *     <li>{@link ReplaceInsert}</li>
      * </ul>
      *
      * @since 1.0

@@ -70,7 +70,20 @@ abstract class MySQLUtils extends CriteriaUtils {
                 level = 2;
                 break;
             default:
-               level = -1;
+                level = -1;
+        }
+        return level;
+    }
+
+    static int replaceModifier(final MySQLWords modifier) {
+        final int level;
+        switch (modifier) {
+            case LOW_PRIORITY:
+            case DELAYED:
+                level = 1;
+                break;
+            default:
+                level = -1;
         }
         return level;
     }

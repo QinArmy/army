@@ -11,9 +11,11 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -986,37 +988,14 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final ClauseForValueInsert<C, F> clause;
 
-        private Map<FieldMeta<?>, _Expression> valuePairMap = new HashMap<>();
-
         private StaticValueLeftParenClause(ClauseForValueInsert<C, F> clause) {
-            super(clause.getCriteriaContext());
+            super(clause.getCriteriaContext(), clause::containField);
             this.clause = clause;
         }
 
         @Override
         public MySQLInsert._AsRowAliasSpec<C, F> rightParen() {
-            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap instanceof HashMap && valuePairMap.size() > 0) {
-                valuePairMap = Collections.unmodifiableMap(valuePairMap);
-                this.valuePairMap = valuePairMap;
-            } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return this.clause.valueClauseEnd(Collections.singletonList(valuePairMap));
-        }
-
-        @Override
-        void addValuePair(final FieldMeta<?> field, final _Expression value) {
-            if (!this.clause.containField(field)) {
-                throw notContainField(this.criteriaContext, field);
-            }
-            final Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
-            if (!(valuePairMap instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            if (valuePairMap.putIfAbsent(field, value) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
-            }
+            return this.clause.valueClauseEnd(this.endValuesClause());
         }
 
 
@@ -1029,12 +1008,8 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final ClauseForValueInsert<C, F> clause;
 
-        private List<Map<FieldMeta<?>, _Expression>> valuePairList;
-
-        private Map<FieldMeta<?>, _Expression> currentPairMap;
-
         private StaticValuesLeftParenClause(ClauseForValueInsert<C, F> clause) {
-            super(clause.getCriteriaContext());
+            super(clause.getCriteriaContext(), clause::containField);
             this.clause = clause;
         }
 
@@ -1083,56 +1058,8 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public MySQLInsert._ValueStaticValuesLeftParenSpec<C, F> rightParen() {
-            Map<FieldMeta<?>, _Expression> currentValuePairMap = this.currentPairMap;
-            if (!(currentValuePairMap instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-
-            }
-            currentValuePairMap = Collections.unmodifiableMap(currentValuePairMap);
-            this.currentPairMap = null;
-
-            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
-            if (valuePairList == null) {
-                valuePairList = new ArrayList<>();
-                this.valuePairList = valuePairList;
-            } else if (!(valuePairList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            valuePairList.add(currentValuePairMap);
+            this.endCurrentRow();
             return this;
-        }
-
-        @Override
-        void addValuePair(final FieldMeta<?> field, final _Expression value) {
-            if (!this.clause.containField(field)) {
-                throw notContainField(this.criteriaContext, field);
-            }
-            Map<FieldMeta<?>, _Expression> currentPairMap = this.currentPairMap;
-            if (currentPairMap == null) {
-                currentPairMap = new HashMap<>();
-                this.currentPairMap = currentPairMap;
-            }
-
-            if (currentPairMap.putIfAbsent(field, value) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
-            }
-
-        }
-
-        /**
-         * @return a unmodified list
-         */
-        private List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
-            if (this.currentPairMap != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
-            if (!(valuePairList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            valuePairList = _CollectionUtils.unmodifiableList(valuePairList);
-            this.valuePairList = valuePairList;
-            return valuePairList;
         }
 
 
@@ -1246,11 +1173,11 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._AsRowAliasSpec<C, F> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValueList) {
+        public MySQLInsert._AsRowAliasSpec<C, F> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
             if (this.rowValuesList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.rowValuesList = rowValueList;
+            this.rowValuesList = rowValuesList;
             return new AsRowAliasSpec<>(this);
         }
 

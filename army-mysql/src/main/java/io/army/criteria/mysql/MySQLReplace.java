@@ -11,14 +11,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface MySQLReplace extends DmlStatement, DialectStatement {
-
-
-    interface _ReplaceSpec {
-
-        MySQLReplace asReplace();
-
-    }
+public interface MySQLReplace extends ReplaceInsert, DialectStatement, DmlStatement.DmlInsert {
 
 
     interface _ReplaceClause<C, RR> {
@@ -47,38 +40,38 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
 
     }
 
-    interface _DomainPartitionSpec<C, T extends IDomain>
-            extends MySQLQuery._PartitionClause2<C, _DomainColumnListSpec<C, T, FieldMeta<T>>>
-            , _DomainColumnListSpec<C, T, FieldMeta<T>> {
+    interface _DomainPartitionSpec<C, T extends IDomain, F extends TableField>
+            extends MySQLQuery._PartitionClause<C, _DomainColumnListSpec<C, T, F>>
+            , _DomainColumnListSpec<C, T, F> {
 
     }
 
 
-    interface _DomainChildPartitionSpec<C, T extends IDomain>
-            extends MySQLInsert._ChildPartitionClause<C, _DomainColumnListSpec<C, T, FieldMeta<? super T>>>
-            , _DomainColumnListSpec<C, T, FieldMeta<? super T>> {
+    interface _DomainChildPartitionSpec<C, T extends IDomain, F extends TableField>
+            extends MySQLInsert._ChildPartitionClause<C, _DomainColumnListSpec<C, T, F>>
+            , _DomainColumnListSpec<C, T, F> {
 
     }
 
-    interface _DomainParentPartitionSpec<C, T extends IDomain>
-            extends MySQLInsert._ParentPartitionClause<C, _DomainChildPartitionSpec<C, T>>
-            , _DomainChildPartitionSpec<C, T> {
+    interface _DomainParentPartitionSpec<C, T extends IDomain, F extends TableField>
+            extends MySQLInsert._ParentPartitionClause<C, _DomainChildPartitionSpec<C, T, F>>
+            , _DomainChildPartitionSpec<C, T, F> {
 
     }
 
     interface _DomainIntoClause<C> {
 
-        <T extends IDomain> _DomainPartitionSpec<C, T> into(SingleTableMeta<T> table);
+        <T extends IDomain> _DomainPartitionSpec<C, T, FieldMeta<T>> into(SingleTableMeta<T> table);
 
-        <T extends IDomain> _DomainParentPartitionSpec<C, T> into(ChildTableMeta<T> table);
+        <T extends IDomain> _DomainParentPartitionSpec<C, T, FieldMeta<? super T>> into(ChildTableMeta<T> table);
 
     }
 
     interface _DomainReplaceIntoSpec<C> extends _ReplaceClause<C, _DomainIntoClause<C>> {
 
-        <T extends IDomain> _DomainPartitionSpec<C, T> replaceInto(SingleTableMeta<T> table);
+        <T extends IDomain> _DomainPartitionSpec<C, T, FieldMeta<T>> replaceInto(SingleTableMeta<T> table);
 
-        <T extends IDomain> _DomainParentPartitionSpec<C, T> replaceInto(ChildTableMeta<T> table);
+        <T extends IDomain> _DomainParentPartitionSpec<C, T, FieldMeta<? super T>> replaceInto(ChildTableMeta<T> table);
 
     }
 
@@ -129,7 +122,7 @@ public interface MySQLReplace extends DmlStatement, DialectStatement {
     }
 
     interface _ValuePartitionSpec<C, F extends TableField>
-            extends MySQLQuery._PartitionClause2<C, _ValueColumnListSpec<C, F>>, _ValueColumnListSpec<C, F> {
+            extends MySQLQuery._PartitionClause<C, _ValueColumnListSpec<C, F>>, _ValueColumnListSpec<C, F> {
 
     }
 

@@ -74,12 +74,12 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static MySQLReplace._DomainOptionSpec<Void> domainReplace() {
-        throw new UnsupportedOperationException();
+        return MySQLReplaces.domainReplace(null);
     }
 
     public static <C> MySQLReplace._DomainOptionSpec<C> domainReplace(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLReplaces.domainReplace(criteria);
     }
 
     public static MySQLReplace._ValueReplaceOptionSpec<Void> valueReplace() {

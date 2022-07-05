@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._UnionRowSet;
+import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Database;
 
 public abstract class _MySQLConsultant extends _SQLConsultant {
@@ -31,6 +32,35 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         } else if (insert instanceof _Insert._QueryInsert) {
             if (!(insert instanceof MySQLInserts.MySQLQueryInsertStatement)) {
                 throw instanceNotMatch(insert, MySQLInserts.MySQLQueryInsertStatement.class);
+            }
+        } else {
+            throw new CriteriaException("Not MySQL dialect insert statement.");
+        }
+
+    }
+
+
+    /**
+     * <p>
+     * Assert insert is MySQL dialect {@link  Insert} statement.
+     * </p>
+     */
+    public static void assertReplace(final MySQLReplace replace) {
+        if (replace instanceof _Insert._DomainInsert) {
+            if (!(replace instanceof MySQLReplaces.DomainReplaceStatement)) {
+                throw instanceNotMatch(replace, MySQLReplaces.DomainReplaceStatement.class);
+            }
+        } else if (replace instanceof _Insert._ValueInsert) {
+            if (!(replace instanceof MySQLReplaces.MySQLValueReplaceStatement)) {
+                throw instanceNotMatch(replace, MySQLReplaces.MySQLValueReplaceStatement.class);
+            }
+        } else if (replace instanceof _Insert._AssignmentInsert) {
+            if (!(replace instanceof MySQLReplaces.MySQLAssignmentInsertStatement)) {
+                throw instanceNotMatch(replace, MySQLReplaces.MySQLAssignmentInsertStatement.class);
+            }
+        } else if (replace instanceof _Insert._QueryInsert) {
+            if (!(replace instanceof MySQLReplaces.MySQLQueryInsertStatement)) {
+                throw instanceNotMatch(replace, MySQLReplaces.MySQLQueryInsertStatement.class);
             }
         } else {
             throw new CriteriaException("Not MySQL dialect insert statement.");

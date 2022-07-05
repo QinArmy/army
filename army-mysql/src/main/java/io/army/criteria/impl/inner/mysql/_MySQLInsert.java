@@ -54,5 +54,9 @@ public interface _MySQLInsert extends _Insert {
 
     }
 
+    interface _MySQLReplace {
+
+    }
+
 
 }
