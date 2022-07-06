@@ -19,4 +19,17 @@ public interface RowSet extends Statement {
 
     }
 
+    /**
+     * <p>
+     * This interface is base interface of below:
+     *     <ul>
+     *         <li>{@link  Values}</li>
+     *         <li>{@link  SubValues}</li>
+     *     </ul>
+     * </p>
+     */
+    interface DqlValues extends RowSet {
+
+    }
+
 }

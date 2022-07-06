@@ -54,6 +54,10 @@ final class ExpressionSelection implements _Selection {
                 .identifier(this.alias, builder);
     }
 
+    @Override
+    public void appendSql(final _SqlContext context) {
+        this.expression.appendSql(context);
+    }
 
     @Override
     public String toString() {

@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public interface SubValues extends RowSet, DerivedTable, SubStatement {
+public interface SubValues extends RowSet, DerivedTable, SubStatement, RowSet.DqlValues {
 
 
 }

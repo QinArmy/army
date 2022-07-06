@@ -1,11 +1,9 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.DialectStatement;
-import io.army.criteria.Expression;
-import io.army.criteria.Statement;
-import io.army.criteria.Values;
-import io.army.lang.Nullable;
+import io.army.criteria.*;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -23,47 +21,71 @@ import java.util.function.Supplier;
 public interface MySQLValues extends Values, DialectStatement {
 
 
-    interface _LimitSpec<C> extends Statement._RowCountLimitClause<C, Values._ValuesSpec>, Values._ValuesSpec {
+    interface _UnionSpec<C, U extends DqlValues>
+            extends Query._UnionClause<C, _UnionOrderBySpec<C, U>>, Values._ValuesSpec<U> {
+
+    }
+
+    interface _UnionLimitSpec<C, U extends DqlValues> extends Statement._RowCountLimitClause<C, _UnionSpec<C, U>>
+            , _UnionSpec<C, U> {
+
+    }
+
+    interface _UnionOrderBySpec<C, U extends DqlValues> extends Statement._OrderByClause<C, _UnionLimitSpec<C, U>>
+            , _UnionLimitSpec<C, U> {
 
     }
 
 
-    interface _OrderBySpec<C> extends Statement._OrderByClause<C, _LimitSpec<C>>, _LimitSpec<C> {
-
-    }
-
-    interface _ValueRowCommaSpec<C, CR> extends Statement._RightParenClause<CR> {
-
-        _ValueRowCommaSpec<C, CR> comma(@Nullable Object value);
-
-        _ValueRowCommaSpec<C, CR> commaLiteral(@Nullable Object value);
-
-        _ValueRowCommaSpec<C, CR> commaExp(Supplier<? extends Expression> supplier);
-
-        _ValueRowCommaSpec<C, CR> commaExp(Function<C, ? extends Expression> function);
-
-    }
-
-    interface _ValueRowClause<C, CR> {
-
-        _ValueRowCommaSpec<C, CR> row(@Nullable Object value);
-
-        _ValueRowCommaSpec<C, CR> rowLiteral(@Nullable Object value);
-
-        _ValueRowCommaSpec<C, CR> rowExp(Supplier<? extends Expression> supplier);
-
-        _ValueRowCommaSpec<C, CR> rowExp(Function<C, ? extends Expression> function);
-
+    interface _LimitSpec<C, U extends DqlValues>
+            extends Statement._RowCountLimitClause<C, _UnionSpec<C, U>>, _UnionSpec<C, U> {
     }
 
 
-    interface _ValueRowSpec<C> extends _ValueRowClause<C, _ValueRowSpec<C>>, _OrderBySpec<C> {
+    interface _OrderBySpec<C, U extends DqlValues>
+            extends Statement._OrderByClause<C, _LimitSpec<C, U>>, _LimitSpec<C, U> {
 
     }
 
-    interface _ValuesStmtValues<C> {
+    interface _ValueRowCommaSpec<C, U extends DqlValues>
+            extends Statement._RightParenClause<_StaticValueRowSpec<C, U>> {
 
-        _ValueRowClause<C, _ValueRowSpec<C>> values();
+        _ValueRowCommaSpec<C, U> comma(Object value);
+
+        _ValueRowCommaSpec<C, U> commaLiteral(Object value);
+
+        _ValueRowCommaSpec<C, U> commaExp(Supplier<? extends Expression> supplier);
+
+        _ValueRowCommaSpec<C, U> commaExp(Function<C, ? extends Expression> function);
+
+    }
+
+    interface _StaticValueRowClause<C, U extends DqlValues> {
+
+        _ValueRowCommaSpec<C, U> row(Object value);
+
+        _ValueRowCommaSpec<C, U> rowLiteral(Object value);
+
+        _ValueRowCommaSpec<C, U> rowExp(Supplier<? extends Expression> supplier);
+
+        _ValueRowCommaSpec<C, U> rowExp(Function<C, ? extends Expression> function);
+
+    }
+
+
+    interface _StaticValueRowSpec<C, U extends DqlValues>
+            extends _StaticValueRowClause<C, U>, _OrderBySpec<C, U> {
+
+    }
+
+
+    interface _ValuesStmtValuesClause<C, U extends DqlValues> {
+
+        _StaticValueRowClause<C, U> values();
+
+        _OrderBySpec<C, U> values(Consumer<RowConstructor> consumer);
+
+        _OrderBySpec<C, U> values(BiConsumer<C, RowConstructor> consumer);
 
     }
 

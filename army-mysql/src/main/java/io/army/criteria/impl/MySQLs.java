@@ -62,7 +62,7 @@ public abstract class MySQLs extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">MySQL 8.0 INSERT statement</a>
      */
     public static MySQLInsert._QueryInsertIntoSpec<Void> queryInsert() {
-        throw new UnsupportedOperationException();
+        return MySQLInserts.queryInsert(null);
     }
 
     /**
@@ -70,7 +70,7 @@ public abstract class MySQLs extends MySQLSyntax {
      */
     public static <C> MySQLInsert._QueryInsertIntoSpec<C> queryInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLInserts.queryInsert(criteria);
     }
 
     public static MySQLReplace._DomainOptionSpec<Void> domainReplace() {
@@ -83,30 +83,30 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static MySQLReplace._ValueReplaceOptionSpec<Void> valueReplace() {
-        throw new UnsupportedOperationException();
+        return MySQLReplaces.valueReplace(null);
     }
 
     public static <C> MySQLReplace._ValueReplaceOptionSpec<C> valueReplace(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLReplaces.valueReplace(criteria);
     }
 
     public static MySQLReplace._AssignmentOptionSpec<Void> assignmentReplace() {
-        throw new UnsupportedOperationException();
+        return MySQLReplaces.assignmentReplace(null);
     }
 
     public static <C> MySQLReplace._AssignmentOptionSpec<C> assignmentReplace(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLReplaces.assignmentReplace(criteria);
     }
 
-    public static MySQLReplace._QueryReplaceIntoSpec<Void> rowSetReplace() {
-        throw new UnsupportedOperationException();
+    public static MySQLReplace._QueryReplaceIntoSpec<Void> queryReplace() {
+        return MySQLReplaces.queryReplace(null);
     }
 
-    public static <C> MySQLReplace._QueryReplaceIntoSpec<C> rowSetReplace(C criteria) {
+    public static <C> MySQLReplace._QueryReplaceIntoSpec<C> queryReplace(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLReplaces.queryReplace(criteria);
     }
 
 
@@ -117,16 +117,6 @@ public abstract class MySQLs extends MySQLSyntax {
     public static <C> MySQL80Query._WithSpec<C, Select> query(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.simpleSelect(criteria);
-    }
-
-
-    public static MySQLValues._ValuesStmtValues<Void> primaryValues() {
-        throw new UnsupportedOperationException();
-    }
-
-    public static <C> MySQLValues._ValuesStmtValues<Void> primaryValues(C criteria) {
-        Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
     }
 
     public static MySQL80Query._WithSpec<Void, SubQuery> subQuery() {
@@ -165,6 +155,25 @@ public abstract class MySQLs extends MySQLSyntax {
     public static <C> MySQL80Query._WithSpec<C, ScalarExpression> lateralScalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQL80SimpleQuery.scalarSubQuery(true, criteria);
+    }
+
+
+    public static MySQLValues._ValuesStmtValuesClause<Void, Values> primaryValues() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLValues._ValuesStmtValuesClause<C, Values> primaryValues(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    public static MySQLValues._ValuesStmtValuesClause<Void, SubValues> subValues() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLValues._ValuesStmtValuesClause<C, SubValues> subValues(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
     }
 
 

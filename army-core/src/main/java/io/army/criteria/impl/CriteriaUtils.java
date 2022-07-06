@@ -121,7 +121,7 @@ abstract class CriteriaUtils {
     }
 
     static void assertSelectItemSizeMatch(RowSet left, RowSet right) {
-        final List<? extends SelectItem> leftList, rightList;
+        final List<SelectItem> leftList, rightList;
 
         leftList = ((_PartRowSet) left).selectItemList();
         rightList = ((_PartRowSet) right).selectItemList();
@@ -156,7 +156,26 @@ abstract class CriteriaUtils {
 
     }
 
-    static long asRowCount(final Object value) {
+    static void limitPair(final CriteriaContext criteriaContext, final @Nullable Object offsetValue
+            , final @Nullable Object rowCountValue, final BiConsumer<Long, Long> consumer) {
+        final long offset, rowCount;
+        offset = asLimitParam(criteriaContext, offsetValue);
+        rowCount = asLimitParam(criteriaContext, rowCountValue);
+        consumer.accept(offset, rowCount);
+    }
+
+    static void ifLimitPair(final CriteriaContext criteriaContext, final @Nullable Object offsetValue
+            , final @Nullable Object rowCountValue, final BiConsumer<Long, Long> consumer) {
+        final long offset, rowCount;
+        offset = asIfLimitParam(criteriaContext, offsetValue);
+        rowCount = asIfLimitParam(criteriaContext, rowCountValue);
+        if (offset >= 0L && rowCount >= 0L) {
+            consumer.accept(offset, rowCount);
+        }
+    }
+
+
+    static long asLimitParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
         final long rowCount;
         if (value instanceof Long) {
             rowCount = (Long) value;
@@ -165,12 +184,15 @@ abstract class CriteriaUtils {
                 || value instanceof Byte) {
             rowCount = ((Number) value).longValue();
         } else {
-            throw limitParamError(value);
+            throw limitParamError(criteriaContext, value);
+        }
+        if (rowCount < 0) {
+            throw limitParamError(criteriaContext, value);
         }
         return rowCount;
     }
 
-    static long asIfRowCount(final @Nullable Object value) {
+    static long asIfLimitParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
         final long rowCount;
         if (value == null) {
             rowCount = -1L;
@@ -180,16 +202,29 @@ abstract class CriteriaUtils {
                 || value instanceof Short
                 || value instanceof Byte) {
             rowCount = ((Number) value).longValue();
+            if (rowCount < 0L) {
+                throw limitParamError(criteriaContext, value);
+            }
         } else {
-            throw limitParamError(value);
+            throw limitParamError(criteriaContext, value);
         }
         return rowCount;
     }
 
-    static CriteriaException limitParamError(@Nullable Object value) {
-        String m = String.format("limit clause only support [%s,%s,%s,%s],but input %s"
+    static CriteriaException limitParamError(CriteriaContext criteriaContext, @Nullable Object value) {
+        String m = String.format("limit clause only support [%s,%s,%s,%s] and non-negative,but input %s"
                 , Long.class.getName(), Integer.class.getName(), Short.class.getName(), Byte.class.getName(), value);
-        return new CriteriaException(m);
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
+    }
+
+    static CriteriaException limitBiConsumerError(CriteriaContext criteriaContext) {
+        String m = "You must specified limit clause";
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
+    }
+
+    static CriteriaException ifLimitBiConsumerError(CriteriaContext criteriaContext) {
+        String m = "limit clause must specified non-negative parameters";
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
 

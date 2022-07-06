@@ -238,37 +238,37 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
 
     @Override
     public final LR limit(Supplier<? extends Number> supplier) {
-        this.rowCount = MySQLUtils.asRowCount(supplier.get());
+        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, supplier.get());
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<C, ? extends Number> function) {
-        this.rowCount = MySQLUtils.asRowCount(function.apply(this.criteria));
+        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<String, ?> function, String keyName) {
-        this.rowCount = MySQLUtils.asRowCount(function.apply(keyName));
+        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, function.apply(keyName));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Supplier<? extends Number> supplier) {
-        this.rowCount = MySQLUtils.asIfRowCount(supplier.get());
+        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, supplier.get());
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<C, ? extends Number> function) {
-        this.rowCount = MySQLUtils.asIfRowCount(function.apply(this.criteria));
+        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<String, ?> function, String keyName) {
-        this.rowCount = MySQLUtils.asIfRowCount(function.apply(keyName));
+        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, function.apply(keyName));
         return (LR) this;
     }
 

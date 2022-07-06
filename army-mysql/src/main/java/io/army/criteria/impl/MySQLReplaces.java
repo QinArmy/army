@@ -36,6 +36,10 @@ abstract class MySQLReplaces extends InsertSupport {
         return new AssignmentReplaceOptionClause<>(criteria);
     }
 
+    static <C> MySQLReplace._QueryReplaceIntoSpec<C> queryReplace(@Nullable C criteria) {
+        return new QueryReplaceIntoClause<>(criteria);
+    }
+
 
     private static abstract class MySQLReplaceClause<C, MR, NR, RR> extends InsertSupport.InsertOptionsImpl<MR, NR>
             implements MySQLReplace._ReplaceClause<C, RR> {
@@ -697,7 +701,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//MySQLAssignmentReplaceStatement
 
 
-    private static final class QueryReplaceOptionClause<C>
+    private static final class QueryReplaceIntoClause<C>
             implements MySQLReplace._QueryReplaceIntoSpec<C>
             , MySQLReplace._QueryIntoClause<C> {
 
@@ -707,7 +711,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private List<MySQLWords> modifierList;
 
-        private QueryReplaceOptionClause(@Nullable C criteria) {
+        private QueryReplaceIntoClause(@Nullable C criteria) {
             this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
@@ -734,7 +738,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public <P extends IDomain, T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table) {
-            return null;
+            return new QueryParentReplaceSubQueryClause<>(this, table);
         }
 
         @Override
@@ -744,7 +748,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public <P extends IDomain, T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, P, T> replaceInto(ComplexTableMeta<P, T> table) {
-            return null;
+            return new QueryParentReplaceSubQueryClause<>(this, table);
         }
 
         private List<Hint> hintList() {
@@ -779,7 +783,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private SubQuery subQuery;
 
-        private QueryReplaceSubQueryClause(QueryReplaceOptionClause<C> clause, SingleTableMeta<?> table) {
+        private QueryReplaceSubQueryClause(QueryReplaceIntoClause<C> clause, SingleTableMeta<?> table) {
             super(clause.criteriaContext, true, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
@@ -857,7 +861,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private SubQuery subQuery;
 
-        private QueryParentReplaceSubQueryClause(QueryReplaceOptionClause<C> clause, ComplexTableMeta<P, T> table) {
+        private QueryParentReplaceSubQueryClause(QueryReplaceIntoClause<C> clause, ComplexTableMeta<P, T> table) {
             super(clause.criteriaContext, true, table.parentMeta());
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
@@ -877,7 +881,7 @@ abstract class MySQLReplaces extends InsertSupport {
                 throw subQueryIsNull(this.criteriaContext);
             }
             this.subQuery = subQuery;
-            return null;
+            return new QueryChildReplaceSubQueryClause<>(this);
         }
 
         @Override
@@ -888,7 +892,7 @@ abstract class MySQLReplaces extends InsertSupport {
                 throw subQueryIsNull(this.criteriaContext);
             }
             this.subQuery = subQuery;
-            return null;
+            return new QueryChildReplaceSubQueryClause<>(this);
         }
 
 

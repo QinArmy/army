@@ -162,9 +162,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     interface _DynamicValueClause<C, F extends TableField, VR> {
 
-        VR value(Consumer<ColumnConsumer<F>> consumer);
+        VR value(Consumer<PairConsumer<F>> consumer);
 
-        VR value(BiConsumer<C, ColumnConsumer<F>> consumer);
+        VR value(BiConsumer<C, PairConsumer<F>> consumer);
 
     }
 
@@ -176,9 +176,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     interface _DynamicValuesClause<C, F extends TableField, VR> {
 
-        VR values(Consumer<RowConstructor<F>> consumer);
+        VR values(Consumer<PairsConstructor<F>> consumer);
 
-        VR values(BiConsumer<C, RowConstructor<F>> consumer);
+        VR values(BiConsumer<C, PairsConstructor<F>> consumer);
     }
 
 

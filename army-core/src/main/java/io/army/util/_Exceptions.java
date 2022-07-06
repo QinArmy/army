@@ -289,6 +289,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException valuesColumnSizeNotMatch(int firstRowColumnSize, int rowNum, int columnSize) {
+        String m = String.format("Values number %s row column size[%s] and first row column size[%s] not match"
+                , rowNum, columnSize, firstRowColumnSize);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException updateFieldListEmpty() {
         return new CriteriaException("Update statement field must not empty.");
     }

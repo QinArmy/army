@@ -125,6 +125,11 @@ abstract class CriteriaContextStack {
         return new CriteriaException(String.format("%s must be army expression", Expression.class.getName()));
     }
 
+    static NullPointerException nullPointer(CriteriaContext criteriaContext) {
+        clearStackOnError(criteriaContext);
+        return new NullPointerException();
+    }
+
     static void assertNonNull(CriteriaContext criteriaContext, @Nullable Object obj, String message) {
         if (obj == null) {
             clearStackOnError(criteriaContext);

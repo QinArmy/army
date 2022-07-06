@@ -588,6 +588,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return clause;
     }
 
+
+
     /*################################## blow private method ##################################*/
 
     private boolean isIllegalWindow(Window window) {

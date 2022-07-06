@@ -863,7 +863,7 @@ abstract class InsertSupport {
 
     static abstract class DynamicValueInsertValueClause<C, F extends TableField, RR, VR>
             extends CommonExpClause<C, F, RR> implements Insert._DynamicValueClause<C, F, VR>
-            , Insert._DynamicValuesClause<C, F, VR>, RowConstructor<F> {
+            , Insert._DynamicValuesClause<C, F, VR>, PairsConstructor<F> {
 
         private List<Map<FieldMeta<?>, _Expression>> valuePairList;
 
@@ -875,27 +875,27 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR value(Consumer<ColumnConsumer<F>> consumer) {
+        public final VR value(Consumer<PairConsumer<F>> consumer) {
             return this.singleRowValues(consumer);
         }
 
         @Override
-        public final VR value(BiConsumer<C, ColumnConsumer<F>> consumer) {
+        public final VR value(BiConsumer<C, PairConsumer<F>> consumer) {
             return this.singleRowValues(consumer);
         }
 
         @Override
-        public final VR values(Consumer<RowConstructor<F>> consumer) {
+        public final VR values(Consumer<PairsConstructor<F>> consumer) {
             return this.multiRowValues(consumer);
         }
 
         @Override
-        public final VR values(BiConsumer<C, RowConstructor<F>> consumer) {
+        public final VR values(BiConsumer<C, PairsConstructor<F>> consumer) {
             return this.multiRowValues(consumer);
         }
 
         @Override
-        public final ColumnConsumer<F> row() {
+        public final PairConsumer<F> row() {
             final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
             if (currentPairMap instanceof HashMap) {
                 List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
@@ -914,17 +914,17 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final ColumnConsumer<F> accept(F field, @Nullable Object value) {
+        public final PairConsumer<F> accept(F field, @Nullable Object value) {
             return this.addValuePair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
         }
 
         @Override
-        public final ColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
+        public final PairConsumer<F> acceptLiteral(F field, @Nullable Object value) {
             return this.addValuePair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
         }
 
         @Override
-        public final ColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
+        public final PairConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
             return this.addValuePair((FieldMeta<?>) field, supplier.get());
         }
 
@@ -941,11 +941,11 @@ abstract class InsertSupport {
         abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList);
 
 
-        private ColumnConsumer<F> addValuePair(FieldMeta<?> field, @Nullable Expression value) {
+        private PairConsumer<F> addValuePair(FieldMeta<?> field, @Nullable Expression value) {
             final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
             if (currentPairMap == null) {
                 String m = String.format("Not found any row,please use %s.row() method create row."
-                        , RowConstructor.class.getName());
+                        , PairsConstructor.class.getName());
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             } else if (!(currentPairMap instanceof HashMap)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
@@ -978,9 +978,9 @@ abstract class InsertSupport {
 
             //3. callback
             if (callback instanceof Consumer) {
-                ((Consumer<ColumnConsumer<F>>) callback).accept(this);
+                ((Consumer<PairConsumer<F>>) callback).accept(this);
             } else if (callback instanceof BiConsumer) {
-                ((BiConsumer<C, ColumnConsumer<F>>) callback).accept(this.criteria, this);
+                ((BiConsumer<C, PairConsumer<F>>) callback).accept(this.criteria, this);
             } else {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -1007,9 +1007,9 @@ abstract class InsertSupport {
             }
             //2. callback
             if (callback instanceof Consumer) {
-                ((Consumer<RowConstructor<F>>) callback).accept(this);
+                ((Consumer<PairsConstructor<F>>) callback).accept(this);
             } else if (callback instanceof BiConsumer) {
-                ((BiConsumer<C, RowConstructor<F>>) callback).accept(this.criteria, this);
+                ((BiConsumer<C, PairsConstructor<F>>) callback).accept(this.criteria, this);
             } else {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -1457,134 +1457,6 @@ abstract class InsertSupport {
     }//ValueInsertStatement
 
 
-    static class ColumnConsumerImpl<F extends TableField> implements ColumnConsumer<F> {
-
-        final BiConsumer<FieldMeta<?>, Expression> pairConsumer;
-
-        ColumnConsumerImpl(BiConsumer<FieldMeta<?>, Expression> pairConsumer) {
-            this.pairConsumer = pairConsumer;
-        }
-
-        @Override
-        public final ColumnConsumer<F> accept(F field, @Nullable Object value) {
-            this.pairConsumer.accept((FieldMeta<?>) field, SQLs._nullableParam(field, value));
-            return this;
-        }
-
-        @Override
-        public final ColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
-            this.pairConsumer.accept((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
-            return this;
-        }
-
-        @Override
-        public final ColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
-            this.pairConsumer.accept((FieldMeta<?>) field, supplier.get());
-            return this;
-        }
-
-    }//ColumnConsumerImpl
-
-
-    static final class RowConstructorImpl<F extends TableField> implements RowConstructor<F> {
-
-        final CriteriaContext criteriaContext;
-
-        final Predicate<FieldMeta<?>> containField;
-
-        final boolean optional;
-
-        private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
-
-        private Map<FieldMeta<?>, _Expression> rowValuesMap;
-
-        RowConstructorImpl(CriteriaContext criteriaContext, Predicate<FieldMeta<?>> containField) {
-            this.criteriaContext = criteriaContext;
-            this.containField = containField;
-            this.optional = false;
-        }
-
-        @Override
-        public ColumnConsumer<F> row() {
-            final Map<FieldMeta<?>, _Expression> currentMap = this.rowValuesMap;
-            if (currentMap != null) {
-                List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
-                if (rowValuesList == null) {
-                    rowValuesList = new ArrayList<>();
-                    this.rowValuesList = rowValuesList;
-                } else if (!(rowValuesList instanceof ArrayList)) {
-                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-                }
-                rowValuesList.add(Collections.unmodifiableMap(currentMap));
-            }
-            this.rowValuesMap = new HashMap<>();
-            return this;
-        }
-
-        @Override
-        public ColumnConsumer<F> accept(F field, @Nullable Object value) {
-            return this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
-        }
-
-        @Override
-        public ColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
-            return this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
-        }
-
-        @Override
-        public ColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
-            return this.addFieldPair((FieldMeta<?>) field, supplier.get());
-        }
-
-
-        /**
-         * @return a unmodified list
-         */
-        List<Map<FieldMeta<?>, _Expression>> rowConstructorEnd() {
-            final Map<FieldMeta<?>, _Expression> currentRowMap = this.rowValuesMap;
-            if (currentRowMap == null) {
-                if (!this.optional) {
-                    final String m;
-                    m = String.format("You use non-optional %s,but don't add any row.", RowConstructor.class.getName());
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-                }
-                return Collections.emptyList();
-            }
-            List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
-            if (rowValuesList == null) {
-                rowValuesList = Collections.singletonList(Collections.unmodifiableMap(currentRowMap));
-                this.rowValuesList = rowValuesList;
-            } else if (rowValuesList instanceof ArrayList) {
-                rowValuesList.add(Collections.unmodifiableMap(currentRowMap));
-                rowValuesList = Collections.unmodifiableList(rowValuesList);
-                this.rowValuesList = rowValuesList;
-            } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return rowValuesList;
-        }
-
-        private ColumnConsumer<F> addFieldPair(final FieldMeta<?> field, final @Nullable Expression value) {
-            final Map<FieldMeta<?>, _Expression> currentRowMap = this.rowValuesMap;
-            if (currentRowMap == null) {
-                throw rowConstructorNotFoundAnyRow(this.criteriaContext);
-            }
-            if (!this.containField.test(field)) {
-                throw notContainField(this.criteriaContext, field);
-            }
-            if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
-            }
-            if (currentRowMap.putIfAbsent(field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
-            }
-            return this;
-        }
-
-
-    }//RowConstructorImpl
-
-
     static abstract class QueryInsertStatement<I extends DmlStatement.DmlInsert>
             implements _Insert._QueryInsert, DmlStatement._DmlInsertSpec<I>
             , DmlStatement.DmlInsert, Statement.StatementMockSpec {
@@ -1769,11 +1641,6 @@ abstract class InsertSupport {
 
     static CriteriaException duplicationValuePair(CriteriaContext criteriaContext, FieldMeta<?> field) {
         String m = String.format("duplication value of %s at same row.", field);
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
-    }
-
-    static CriteriaException rowConstructorNotFoundAnyRow(CriteriaContext criteriaContext) {
-        String m = "Not found any row,please use row() method create row.";
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 

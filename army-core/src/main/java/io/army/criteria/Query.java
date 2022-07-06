@@ -98,9 +98,13 @@ public interface Query extends RowSet {
 
     }
 
+    interface _BracketClause<UR> {
 
-    interface _UnionClause<C, UR, SP> {
         UR bracket();
+    }
+
+
+    interface _UnionClause<C, UR> extends _BracketClause<UR> {
 
         UR union(Function<C, ? extends RowSet> function);
 
@@ -129,7 +133,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface _QueryUnionClause<C, UR, SP> extends _UnionClause<C, UR, SP> {
+    interface _QueryUnionClause<C, UR, SP> extends _UnionClause<C, UR> {
 
         SP union();
 
@@ -138,31 +142,26 @@ public interface Query extends RowSet {
         SP unionDistinct();
     }
 
-    interface _LimitClause<C, LR> {
-
-        LR limit(long rowCount);
+    interface _LimitClause<C, LR> extends _RowCountLimitClause<C, LR> {
 
         LR limit(long offset, long rowCount);
-
-        LR limit(Supplier<? extends Number> rowCountSupplier);
-
-        LR limit(Function<String, ?> function, String rowCountKey);
 
         LR limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier);
 
         LR limit(Function<String, ?> function, String offsetKey, String rowCountKey);
 
-        LR limit(Function<C, LimitOption> function);
+        LR limit(Consumer<BiConsumer<Long, Long>> consumer);
 
-        LR ifLimit(Function<C, LimitOption> function);
-
-        LR ifLimit(Supplier<? extends Number> rowCountSupplier);
+        LR limit(BiConsumer<C, BiConsumer<Long, Long>> consumer);
 
         LR ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier);
 
-        LR ifLimit(Function<String, ?> function, String rowCountKey);
-
         LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey);
+
+        LR ifLimit(Consumer<BiConsumer<Long, Long>> consumer);
+
+        LR ifLimit(BiConsumer<C, BiConsumer<Long, Long>> consumer);
+
 
     }
 

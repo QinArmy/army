@@ -66,7 +66,7 @@ abstract class CriteriaContexts {
     static CriteriaContext bracketContext(final Query left) {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
-        final List<? extends SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
+        final List<SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -83,7 +83,7 @@ abstract class CriteriaContexts {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) rowSet).getCriteriaContext();
 
-        final List<? extends SelectItem> selectItemList = ((_PartRowSet) rowSet).selectItemList();
+        final List<SelectItem> selectItemList = ((_PartRowSet) rowSet).selectItemList();
         final CriteriaContext outerContext;
         if (rowSet instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -99,7 +99,7 @@ abstract class CriteriaContexts {
     static CriteriaContext unionContext(final Query left, final RowSet right) {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
-        final List<? extends SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
+        final List<SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -1313,6 +1313,11 @@ abstract class CriteriaContexts {
 
             context.dialect()
                     .identifier(this.alias, builder);
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            ((_SelfDescribed) this.field).appendSql(context);
         }
 
         @Override

@@ -1,11 +1,7 @@
 package io.army.criteria;
 
+public interface RowConstructor extends ColumnConsumer {
 
-public interface RowConstructor<F extends TableField> extends ColumnConsumer<F> {
-
-    /**
-     * @return this
-     */
-    ColumnConsumer<F> row();
+    ColumnConsumer row();
 
 }

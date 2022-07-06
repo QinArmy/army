@@ -97,7 +97,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _DynamicOnDuplicateKeyUpdateClause<C, F extends TableField, CC extends ColumnConsumer<F>> {
+    interface _DynamicOnDuplicateKeyUpdateClause<C, F extends TableField, CC extends PairConsumer<F>> {
 
         Insert._InsertSpec onDuplicateKeyUpdate(Consumer<CC> consumer);
 
@@ -136,7 +136,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _OnDuplicateKeyUpdateFieldSpec<C, F extends TableField>
             extends _StaticOnDuplicateKeyFieldClause<C, F, _StaticAssignmentCommaFieldSpec<C, F>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, F, ColumnConsumer<F>>, Insert._InsertSpec {
+            , _DynamicOnDuplicateKeyUpdateClause<C, F, PairConsumer<F>>, Insert._InsertSpec {
 
     }
 

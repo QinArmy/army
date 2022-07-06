@@ -40,6 +40,10 @@ abstract class MySQLInserts extends InsertSupport {
         return new AssignmentInsertOptionClause<>(criteria);
     }
 
+    static <C> MySQLInsert._QueryInsertIntoSpec<C> queryInsert(@Nullable C criteria) {
+        return new QueryInsertIntoClause<>(criteria);
+    }
+
 
     interface ClauseBeforeRowAlias<C, F extends TableField> extends ColumnListClause {
 
@@ -113,7 +117,7 @@ abstract class MySQLInserts extends InsertSupport {
     private static final class AsRowAliasSpec<C, F extends TableField>
             implements MySQLInsert._AsRowAliasSpec<C, F>
             , MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>>
-            , MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>, ColumnConsumer<F> {
+            , MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>, PairConsumer<F> {
 
 
         final CriteriaContext criteriaContext;
@@ -151,28 +155,28 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<F>> consumer) {
             this.optionalOnDuplicateKey = false;
             consumer.accept(this);
             return this;
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<F>> consumer) {
             this.optionalOnDuplicateKey = false;
             consumer.accept(this.criteria, this);
             return this;
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<F>> consumer) {
             this.optionalOnDuplicateKey = true;
             consumer.accept(this);
             return this;
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<F>> consumer) {
             this.optionalOnDuplicateKey = true;
             consumer.accept(this.criteria, this);
             return this;
@@ -227,19 +231,19 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public ColumnConsumer<F> accept(F field, @Nullable Object value) {
+        public PairConsumer<F> accept(F field, @Nullable Object value) {
             this.addValuePair(field, SQLs._nullableParam(field, value));
             return this;
         }
 
         @Override
-        public ColumnConsumer<F> acceptLiteral(F field, @Nullable Object value) {
+        public PairConsumer<F> acceptLiteral(F field, @Nullable Object value) {
             this.addValuePair(field, SQLs._nullableLiteral(field, value));
             return this;
         }
 
         @Override
-        public ColumnConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
+        public PairConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
             this.addValuePair(field, supplier.get());
             return this;
         }
@@ -1027,25 +1031,25 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<F>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<F>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<F>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<F>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .ifOnDuplicateKeyUpdate(consumer);
         }
@@ -1373,28 +1377,28 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<F>> consumer) {
             this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<F>> consumer) {
             this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<F>> consumer) {
             this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, ColumnConsumer<F>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<F>> consumer) {
             this.endAssignmentSetClause();
             return new AsRowAliasSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
@@ -1529,7 +1533,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//AssignmentInsertPartitionClause
 
 
-    private static final class RowSetInsertIntoClause<C> implements MySQLInsert._QueryInsertIntoSpec<C>
+    private static final class QueryInsertIntoClause<C> implements MySQLInsert._QueryInsertIntoSpec<C>
             , MySQLInsert._QueryIntoClause<C> {
 
         private final CriteriaContext criteriaContext;
@@ -1538,7 +1542,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<MySQLWords> modifierList;
 
-        private RowSetInsertIntoClause(@Nullable C criteria) {
+        private QueryInsertIntoClause(@Nullable C criteria) {
             this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
@@ -1619,7 +1623,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private SubQuery subQuery;
 
-        private QueryInsertSpaceClause(RowSetInsertIntoClause<C> clause, SingleTableMeta<?> table) {
+        private QueryInsertSpaceClause(QueryInsertIntoClause<C> clause, SingleTableMeta<?> table) {
             super(clause.criteriaContext, true, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
@@ -1717,7 +1721,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private SubQuery subQuery;
 
-        private QueryInsertParentSpaceClause(RowSetInsertIntoClause<C> clause, ComplexTableMeta<P, T> table) {
+        private QueryInsertParentSpaceClause(QueryInsertIntoClause<C> clause, ComplexTableMeta<P, T> table) {
             super(clause.criteriaContext, true, table.parentMeta());
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();

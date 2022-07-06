@@ -72,6 +72,16 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
     }
 
     @Override
+    public void appendSql(final _SqlContext context) {
+        final TableField field = this.field;
+        if (field instanceof FieldMeta) {
+            context.appendField((FieldMeta<?>) field);
+        } else {
+            ((_Expression) field).appendSql(context);
+        }
+    }
+
+    @Override
     public String alias() {
         return this.alias;
     }

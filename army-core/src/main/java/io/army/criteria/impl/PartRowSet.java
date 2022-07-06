@@ -11,6 +11,7 @@ import io.army.util._CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -225,182 +226,126 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
     }
 
     @Override
-    public final LR limit(long rowCount) {
+    public final LR limit(final long rowCount) {
+        if (rowCount < 0L) {
+            throw CriteriaUtils.limitParamError(this.criteriaContext, rowCount);
+        }
         this.rowCount = rowCount;
         return (LR) this;
     }
 
     @Override
-    public final LR limit(long offset, long rowCount) {
+    public final LR limit(Supplier<? extends Number> rowCountSupplier) {
+        this.rowCount = CriteriaUtils.asLimitParam(this.criteriaContext, rowCountSupplier.get());
+        return (LR) this;
+    }
+
+
+    @Override
+    public final LR limit(Function<C, ? extends Number> function) {
+        this.rowCount = CriteriaUtils.asLimitParam(this.criteriaContext, function.apply(this.criteria));
+        return (LR) this;
+    }
+
+    @Override
+    public final LR limit(Function<String, ?> function, String rowCountKey) {
+        this.rowCount = CriteriaUtils.asLimitParam(this.criteriaContext, function.apply(rowCountKey));
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Supplier<? extends Number> rowCountSupplier) {
+        this.rowCount = CriteriaUtils.asIfLimitParam(this.criteriaContext, rowCountSupplier.get());
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Function<C, ? extends Number> function) {
+        this.rowCount = CriteriaUtils.asIfLimitParam(this.criteriaContext, function.apply(this.criteria));
+        return (LR) this;
+    }
+
+    @Override
+    public final LR ifLimit(Function<String, ?> function, String rowCountKey) {
+        this.rowCount = CriteriaUtils.asIfLimitParam(this.criteriaContext, function.apply(rowCountKey));
+        return (LR) this;
+    }
+
+    /*-------------------below _LimitClause method-------------------*/
+
+    @Override
+    public final LR limit(final long offset, final long rowCount) {
+        if (offset < 0L) {
+            throw CriteriaUtils.limitParamError(this.criteriaContext, offset);
+        }
+        if (rowCount < 0L) {
+            throw CriteriaUtils.limitParamError(this.criteriaContext, rowCount);
+        }
         this.offset = offset;
         this.rowCount = rowCount;
         return (LR) this;
     }
 
     @Override
-    public final LR limit(Function<C, LimitOption> function) {
-        final LimitOption option;
-        option = function.apply(this.criteria);
-        assert option != null;
-        this.offset = option.offset();
-        this.rowCount = option.rowCount();
-        return (LR) this;
-    }
-
-    @Override
-    public final LR limit(Supplier<? extends Number> rowCountSupplier) {
-        final Number rowCountValue;
-        rowCountValue = rowCountSupplier.get();
-        if (rowCountValue instanceof Long) {
-            this.rowCount = (Long) rowCountValue;
-        } else if (rowCountValue instanceof Integer) {
-            this.rowCount = (Integer) rowCountValue;
-        } else {
-            throw supplierReturnError(rowCountValue);
-        }
-        return (LR) this;
-    }
-
-
-    @Override
-    public final LR limit(Function<String, ?> function, String rowCountKey) {
-        final Object rowCountValue;
-        rowCountValue = function.apply(rowCountKey);
-        if (rowCountValue instanceof Long) {
-            this.rowCount = (Long) rowCountValue;
-        } else if (rowCountValue instanceof Integer) {
-            this.rowCount = (Integer) rowCountValue;
-        } else {
-            throw supplierReturnError(rowCountValue);
-        }
-        return (LR) this;
-    }
-
-
-    @Override
     public final LR limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
-        final Number offsetValue, rowCountValue;
-        offsetValue = offsetSupplier.get();
-
-        if (offsetValue instanceof Long) {
-            this.offset = (Long) offsetValue;
-        } else if (offsetValue instanceof Integer) {
-            this.offset = (Integer) offsetValue;
-        } else {
-            throw supplierReturnError(offsetValue);
-        }
-        rowCountValue = rowCountSupplier.get();
-        if (rowCountValue instanceof Long) {
-            this.rowCount = (Long) rowCountValue;
-        } else if (rowCountValue instanceof Integer) {
-            this.rowCount = (Integer) rowCountValue;
-        } else {
-            throw supplierReturnError(rowCountValue);
-        }
+        CriteriaUtils.limitPair(this.criteriaContext, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<String, ?> function, String offsetKey, String rowCountKey) {
-        final Object offsetValue, rowCountValue;
-        offsetValue = function.apply(offsetKey);
+        CriteriaUtils.limitPair(this.criteriaContext, function.apply(offsetKey)
+                , function.apply(rowCountKey), this::limit);
+        return (LR) this;
+    }
 
-        if (offsetValue instanceof Long) {
-            this.offset = (Long) offsetValue;
-        } else if (offsetValue instanceof Integer) {
-            this.offset = (Integer) offsetValue;
-        } else {
-            throw functionReturnError(offsetValue);
-        }
-        rowCountValue = function.apply(rowCountKey);
-        if (rowCountValue instanceof Long) {
-            this.rowCount = (Long) rowCountValue;
-        } else if (rowCountValue instanceof Integer) {
-            this.rowCount = (Integer) rowCountValue;
-        } else {
-            throw functionReturnError(rowCountValue);
+    @Override
+    public final LR limit(Consumer<BiConsumer<Long, Long>> consumer) {
+        consumer.accept(this::limit);
+        if (this.offset < 0L || this.rowCount < 0L) {
+            throw CriteriaUtils.limitBiConsumerError(this.criteriaContext);
         }
         return (LR) this;
     }
 
     @Override
-    public final LR ifLimit(Function<C, LimitOption> function) {
-        final LimitOption option;
-        option = function.apply(this.criteria);
-        if (option != null) {
-            this.offset = option.offset();
-            this.rowCount = option.rowCount();
+    public final LR limit(BiConsumer<C, BiConsumer<Long, Long>> consumer) {
+        consumer.accept(this.criteria, this::limit);
+        if (this.offset < 0L || this.rowCount < 0L) {
+            throw CriteriaUtils.limitBiConsumerError(this.criteriaContext);
         }
         return (LR) this;
     }
 
-    @Override
-    public final LR ifLimit(Supplier<? extends Number> rowCountSupplier) {
-        final Object rowCountValue;
-        rowCountValue = rowCountSupplier.get();
-        if (rowCountValue instanceof Long) {
-            this.rowCount = (Long) rowCountValue;
-        } else if (rowCountValue instanceof Integer) {
-            this.rowCount = (Integer) rowCountValue;
-        }
-        return (LR) this;
-    }
 
     @Override
     public final LR ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
-        final Object offsetValue, rowCountValue;
-        offsetValue = offsetSupplier.get();
-        if (offsetValue instanceof Long) {
-            this.offset = (Long) offsetValue;
-        } else if (offsetValue instanceof Integer) {
-            this.offset = (Integer) offsetValue;
-        } else {
-            return (LR) this;
-        }
-        rowCountValue = rowCountSupplier.get();
-        if (rowCountValue instanceof Long) {
-            this.rowCount = (Long) rowCountValue;
-        } else if (rowCountValue instanceof Integer) {
-            this.rowCount = (Integer) rowCountValue;
-        } else {
-            this.offset = -1L;
-        }
-        return (LR) this;
-    }
-
-    @Override
-    public final LR ifLimit(Function<String, ?> function, String rowCountKey) {
-        final Object rowCountValue;
-        rowCountValue = function.apply(rowCountKey);
-
-        if (rowCountValue instanceof Long) {
-            this.rowCount = (Long) rowCountValue;
-        } else if (rowCountValue instanceof Integer) {
-            this.rowCount = (Integer) rowCountValue;
-        }
+        CriteriaUtils.ifLimitPair(this.criteriaContext, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey) {
-        final Object offsetValue, rowCountValue;
-        offsetValue = function.apply(offsetKey);
-        rowCountValue = function.apply(rowCountKey);
+        CriteriaUtils.ifLimitPair(this.criteriaContext, function.apply(offsetKey)
+                , function.apply(rowCountKey), this::limit);
+        return (LR) this;
+    }
 
-        if (offsetValue instanceof Long) {
-            this.offset = (Long) offsetValue;
-        } else if (offsetValue instanceof Integer) {
-            this.offset = (Integer) offsetValue;
-        } else {
-            return (LR) this;
+    @Override
+    public final LR ifLimit(Consumer<BiConsumer<Long, Long>> consumer) {
+        consumer.accept(this::limit);
+        if ((this.offset < 0L) ^ (this.rowCount < 0L)) {
+            throw CriteriaUtils.ifLimitBiConsumerError(this.criteriaContext);
         }
+        return (LR) this;
+    }
 
-        if (rowCountValue instanceof Long) {
-            this.rowCount = (Long) rowCountValue;
-        } else if (rowCountValue instanceof Integer) {
-            this.rowCount = (Integer) rowCountValue;
-        } else {
-            this.offset = -1L;
+
+    @Override
+    public final LR ifLimit(BiConsumer<C, BiConsumer<Long, Long>> consumer) {
+        consumer.accept(this.criteria, this::limit);
+        if ((this.offset < 0L) ^ (this.rowCount < 0L)) {
+            throw CriteriaUtils.ifLimitBiConsumerError(this.criteriaContext);
         }
         return (LR) this;
     }
