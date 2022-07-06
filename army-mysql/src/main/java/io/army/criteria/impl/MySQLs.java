@@ -158,20 +158,20 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLValues._ValuesStmtValuesClause<Void, Values> primaryValues() {
+    public static MySQLDqlValues._ValuesStmtValuesClause<Void, Values> primaryValues() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> MySQLValues._ValuesStmtValuesClause<C, Values> primaryValues(C criteria) {
+    public static <C> MySQLDqlValues._ValuesStmtValuesClause<C, Values> primaryValues(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLValues._ValuesStmtValuesClause<Void, SubValues> subValues() {
+    public static MySQLDqlValues._ValuesStmtValuesClause<Void, SubValues> subValues() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> MySQLValues._ValuesStmtValuesClause<C, SubValues> subValues(C criteria) {
+    public static <C> MySQLDqlValues._ValuesStmtValuesClause<C, SubValues> subValues(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }

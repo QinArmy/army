@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface MySQLValues extends Values, DialectStatement {
+public interface MySQLDqlValues extends DialectStatement, RowSet.DqlValues {
 
 
     interface _UnionSpec<C, U extends DqlValues>

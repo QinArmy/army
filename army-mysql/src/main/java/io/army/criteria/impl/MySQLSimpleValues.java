@@ -2,7 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.mysql.MySQLValues;
+import io.army.criteria.mysql.MySQLDqlValues;
+import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
@@ -16,6 +17,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * @see MySQLUnionValues
+ */
+@SuppressWarnings("unchecked")
 abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
         extends PartRowSet<
         C,
@@ -26,15 +31,17 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
         Void,
         Void,
         Void,
-        MySQLValues._UnionOrderBySpec<C, U>,
-        MySQLValues._LimitSpec<C, U>,
-        MySQLValues._UnionSpec<C, U>,
+        MySQLDqlValues._UnionOrderBySpec<C, U>,
+        MySQLDqlValues._LimitSpec<C, U>,
+        MySQLDqlValues._UnionSpec<C, U>,
         Void>
-        implements RowSet.DqlValues, MySQLValues._ValuesStmtValuesClause<C, U>
-        , MySQLValues._StaticValueRowSpec<C, U>
-        , MySQLValues._ValueRowCommaSpec<C, U> {
+        implements RowSet.DqlValues, MySQLDqlValues._ValuesStmtValuesClause<C, U>
+        , MySQLDqlValues._StaticValueRowSpec<C, U>
+        , MySQLDqlValues._ValueRowCommaSpec<C, U>
+        , MySQLDqlValues {
 
-    private List<List<SelectItem>> rowList;
+
+    private List<List<_Expression>> rowList;
 
     private List<SelectItem> selectItemList;
 
@@ -48,73 +55,89 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
     }
 
     @Override
-    public final MySQLValues._StaticValueRowClause<C, U> values() {
+    public final MySQLDqlValues._StaticValueRowClause<C, U> values() {
         return this;
     }
 
     @Override
-    public final MySQLValues._OrderBySpec<C, U> values(Consumer<RowConstructor> consumer) {
+    public final MySQLDqlValues._OrderBySpec<C, U> values(Consumer<RowConstructor> consumer) {
+        if (this.rowList != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        final CriteriaSupports.RowConstructorImpl constructor;
+        constructor = new CriteriaSupports.RowConstructorImpl(this.criteriaContext);
+        consumer.accept(constructor);
+        this.rowList = constructor.endConstructor();
         return this;
     }
 
     @Override
-    public final MySQLValues._OrderBySpec<C, U> values(BiConsumer<C, RowConstructor> consumer) {
+    public final MySQLDqlValues._OrderBySpec<C, U> values(BiConsumer<C, RowConstructor> consumer) {
+        if (this.rowList != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        final CriteriaSupports.RowConstructorImpl constructor;
+        constructor = new CriteriaSupports.RowConstructorImpl(this.criteriaContext);
+        consumer.accept(this.criteria, constructor);
+        this.rowList = constructor.endConstructor();
         return this;
     }
 
     @Override
-    public final MySQLValues._ValueRowCommaSpec<C, U> row(Object value) {
+    public final MySQLDqlValues._ValueRowCommaSpec<C, U> row(Object value) {
         return this.createNewRow(SQLs.param(value));
     }
 
     @Override
-    public final MySQLValues._ValueRowCommaSpec<C, U> rowLiteral(Object value) {
+    public final MySQLDqlValues._ValueRowCommaSpec<C, U> rowLiteral(Object value) {
         return this.createNewRow(SQLs.literal(value));
     }
 
     @Override
-    public final MySQLValues._ValueRowCommaSpec<C, U> rowExp(Supplier<? extends Expression> supplier) {
+    public final MySQLDqlValues._ValueRowCommaSpec<C, U> rowExp(Supplier<? extends Expression> supplier) {
         return this.createNewRow(supplier.get());
     }
 
     @Override
-    public final MySQLValues._ValueRowCommaSpec<C, U> rowExp(Function<C, ? extends Expression> function) {
+    public final MySQLDqlValues._ValueRowCommaSpec<C, U> rowExp(Function<C, ? extends Expression> function) {
         return this.createNewRow(function.apply(this.criteria));
     }
 
 
     @Override
-    public final MySQLValues._ValueRowCommaSpec<C, U> comma(@Nullable Object value) {
-        if (value == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
-        }
-        return this.addExpression(SQLs.param(value));
+    public final MySQLDqlValues._ValueRowCommaSpec<C, U> comma(Object value) {
+        return this.addExpression(CriteriaUtils.safeParam(this.criteriaContext, value));
     }
 
     @Override
-    public final MySQLValues._ValueRowCommaSpec<C, U> commaLiteral(@Nullable Object value) {
-        if (value == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
-        }
-        return this.addExpression(SQLs.literal(value));
+    public final MySQLDqlValues._ValueRowCommaSpec<C, U> commaLiteral(Object value) {
+        return this.addExpression(CriteriaUtils.safeLiteral(this.criteriaContext, value));
     }
 
     @Override
-    public final MySQLValues._ValueRowCommaSpec<C, U> commaExp(Supplier<? extends Expression> supplier) {
+    public final MySQLDqlValues._ValueRowCommaSpec<C, U> commaExp(Supplier<? extends Expression> supplier) {
         return this.addExpression(supplier.get());
     }
 
     @Override
-    public final MySQLValues._ValueRowCommaSpec<C, U> commaExp(Function<C, ? extends Expression> function) {
+    public final MySQLDqlValues._ValueRowCommaSpec<C, U> commaExp(Function<C, ? extends Expression> function) {
         return this.addExpression(function.apply(this.criteria));
     }
 
 
     @Override
-    public final MySQLValues._StaticValueRowSpec<C, U> rightParen() {
-        final List<SelectItem> columnList = this.selectItemList;
+    public final MySQLDqlValues._StaticValueRowSpec<C, U> rightParen() {
+        final List<_Expression> columnList = this.columnList;
         final int currentColumnSize;
         if (columnList == null || (currentColumnSize = columnList.size()) == 0) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+
+        List<List<_Expression>> rowList = this.rowList;
+        if (rowList == null) {
+            rowList = new ArrayList<>();
+            this.rowList = rowList;
+        } else if (!(rowList instanceof ArrayList)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
 
@@ -125,15 +148,8 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
             throw _Exceptions.valuesColumnSizeNotMatch(firstRowColumnSize, rowList.size(), currentColumnSize);
         }
 
-        List<List<SelectItem>> rowList = this.rowList;
-        if (rowList == null) {
-            rowList = new ArrayList<>();
-            this.rowList = rowList;
-        } else if (!(rowList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
         rowList.add(_CollectionUtils.unmodifiableList(columnList));
-        this.selectItemList = null;
+        this.columnList = null;
         return this;
     }
 
@@ -142,6 +158,21 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
         return this.asQuery();
     }
 
+    @Override
+    public final String toString() {
+        final String s;
+        if (this instanceof Values && this.isPrepared()) {
+            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+        } else {
+            s = super.toString();
+        }
+        return s;
+    }
+
+    @Override
+    final void onOrderBy() {
+        //no-op
+    }
 
     @Override
     final void crossJoinEvent(boolean success) {
@@ -150,33 +181,46 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
 
     @Override
     final U internalAsRowSet(final boolean fromAsQueryMethod) {
-        final List<List<SelectItem>> rowList = this.rowList;
-        if (!fromAsQueryMethod || this.selectItemList != null || !(rowList instanceof ArrayList)) {
+        final List<List<_Expression>> rowList = this.rowList;
+        if (!fromAsQueryMethod || this.columnList != null || !(rowList instanceof ArrayList)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        final List<_Expression> firstRow = rowList.get(0);
+        final int columnSize = firstRow.size();
+        if (columnSize == 1) {
+            this.selectItemList = Collections.singletonList(firstRow.get(0).as("column_0"));
+        } else {
+            final List<SelectItem> selectItemList = new ArrayList<>(columnSize);
+            for (int i = 0; i < columnSize; i++) {
+                selectItemList.add(firstRow.get(i).as("column_" + i));
+            }
+            this.selectItemList = Collections.unmodifiableList(selectItemList);
         }
         this.rowList = Collections.unmodifiableList(rowList);
         return (U) this;
     }
 
     @Override
-    final MySQLValues._UnionOrderBySpec<C, U> createBracketQuery(RowSet rowSet) {
-        return null;
+    final MySQLDqlValues._UnionOrderBySpec<C, U> createBracketQuery(RowSet rowSet) {
+        return MySQLUnionValues.bracket((DqlValues) rowSet);
     }
 
     @Override
-    final MySQLValues._UnionOrderBySpec<C, U> getNoActionUnionRowSet(RowSet rowSet) {
-        return null;
+    final MySQLDqlValues._UnionOrderBySpec<C, U> getNoActionUnionRowSet(RowSet rowSet) {
+        return MySQLUnionValues.noActionValues((DqlValues) rowSet);
+    }
+
+    @Override
+    final MySQLDqlValues._UnionOrderBySpec<C, U> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+        return MySQLUnionValues.union((U) left, unionType, (DqlValues) right);
     }
 
     @Override
     final void internalClear() {
         this.rowList = null;
+        this.selectItemList = null;
     }
 
-    @Override
-    final MySQLValues._UnionOrderBySpec<C, U> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
-        return null;
-    }
 
     @Override
     final Void asUnionAndRowSet(UnionType unionType) {
@@ -186,7 +230,7 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
     @Override
     public final List<SelectItem> selectItemList() {
         prepared();
-        return this.rowList.get(0);
+        return this.selectItemList;
     }
 
     @Override
@@ -198,12 +242,12 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
     }
 
 
-    private MySQLValues._ValueRowCommaSpec<C, U> createNewRow(final @Nullable Expression value) {
-        if (!(value instanceof ArmyExpression)) {
-            throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
-        }
+    private MySQLDqlValues._ValueRowCommaSpec<C, U> createNewRow(final @Nullable Expression value) {
         if (this.columnList != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        if (!(value instanceof ArmyExpression)) {
+            throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
         }
         final List<_Expression> columnList = new ArrayList<>();
         columnList.add((ArmyExpression) value);
@@ -211,17 +255,27 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
         return this;
     }
 
-    private MySQLValues._ValueRowCommaSpec<C, U> addExpression(final @Nullable Expression value) {
-        final List<SelectItem> columnList = this.selectItemList;
+    private MySQLDqlValues._ValueRowCommaSpec<C, U> addExpression(final @Nullable Expression value) {
+        final List<_Expression> columnList = this.columnList;
         if (columnList == null) {
-            throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         if (!(value instanceof ArmyExpression)) {
             throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
         }
-        columnList.add(value.as("column_" + columnList.size()));
+        columnList.add((ArmyExpression) value);
         return this;
     }
+
+
+    private static final class SimpleValues<C> extends MySQLSimpleValues<C, Values>
+            implements Values {
+
+        private SimpleValues(CriteriaContext criteriaContext) {
+            super(criteriaContext);
+        }
+
+    }//SimpleValues
 
 
 }

@@ -5,8 +5,8 @@ import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._SubQuery;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL80Query;
+import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLQuery;
-import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Dialect;
 import io.army.util._Exceptions;
 
@@ -66,13 +66,13 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
 
         if (left instanceof Select) {
             if (!((right instanceof Select && (right instanceof MySQLQuery || right instanceof StandardQuery))
-                    || (right instanceof Values && right instanceof MySQLValues))) {
+                    || (right instanceof Values && right instanceof MySQLDqlValues))) {
                 throw errorRight(Select.class);
             }
             spec = new UnionSelect<>((Select) left, unionType, right, context);
         } else if (left instanceof ScalarSubQuery) {
             if (!((right instanceof ScalarSubQuery && (right instanceof MySQLQuery || right instanceof StandardQuery))
-                    || (right instanceof SubValues && right instanceof MySQLValues))) {
+                    || (right instanceof SubValues && right instanceof MySQLDqlValues))) {
                 throw errorRight(ScalarSubQuery.class);
             }
             if (left instanceof _LateralSubQuery) {
@@ -82,7 +82,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
             }
         } else if (left instanceof SubQuery) {
             if (!((right instanceof SubQuery && (right instanceof MySQLQuery || right instanceof StandardQuery))
-                    || (right instanceof SubValues && right instanceof MySQLValues))) {
+                    || (right instanceof SubValues && right instanceof MySQLDqlValues))) {
                 throw errorRight(SubQuery.class);
             }
             if (left instanceof _LateralSubQuery) {

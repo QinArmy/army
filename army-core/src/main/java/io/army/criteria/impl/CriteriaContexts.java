@@ -127,6 +127,10 @@ abstract class CriteriaContexts {
         return new SingleDmlContext(null, criteria);
     }
 
+    static CriteriaContext primaryValuesContext(@Nullable Object criteria) {
+        throw new UnsupportedOperationException();
+    }
+
 
     /**
      * @see OperationExpression#as(String)

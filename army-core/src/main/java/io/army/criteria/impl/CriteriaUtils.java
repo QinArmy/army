@@ -5,6 +5,8 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.mapping._MappingFactory;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
@@ -17,9 +19,28 @@ abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
+    static Expression safeParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
+        if (value == null) {
+            throw CriteriaContextStack.nullPointer(criteriaContext);
+        }
+        final MappingType type;
+        type = _MappingFactory.getDefaultIfMatch(value.getClass());
+        if (type == null) {
+            throw noDefaultMappingType(criteriaContext, value);
+        }
+        return SQLs.param(type, value);
+    }
 
-    static String noActionSqlBeautifier(String sql) {
-        return sql;
+    static Expression safeLiteral(final CriteriaContext criteriaContext, final @Nullable Object value) {
+        if (value == null) {
+            throw CriteriaContextStack.nullPointer(criteriaContext);
+        }
+        final MappingType type;
+        type = _MappingFactory.getDefaultIfMatch(value.getClass());
+        if (type == null) {
+            throw noDefaultMappingType(criteriaContext, value);
+        }
+        return SQLs.literal(type, value);
     }
 
 
@@ -479,6 +500,13 @@ abstract class CriteriaUtils {
             }
         }
         return count;
+    }
+
+
+    private static CriteriaException noDefaultMappingType(CriteriaContext criteriaContext, final Object value) {
+        String m = String.format("Not found default %s for %s."
+                , MappingType.class.getName(), value.getClass().getName());
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
 

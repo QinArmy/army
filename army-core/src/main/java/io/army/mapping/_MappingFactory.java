@@ -1,6 +1,7 @@
 package io.army.mapping;
 
 import io.army.annotation.Mapping;
+import io.army.lang.Nullable;
 import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.mapping.optional.OffsetTimeType;
 import io.army.meta.MetaException;
@@ -33,14 +34,25 @@ public abstract class _MappingFactory {
 
     public static MappingType getDefault(Class<?> javaType) throws MetaException {
         final MappingType type;
+        type = getDefaultIfMatch(javaType);
+        if (type == null) {
+            String m = String.format("Not found default mapping for %s .", javaType.getName());
+            throw new MetaException(m);
+        }
+        return type;
+    }
+
+    @Nullable
+    public static MappingType getDefaultIfMatch(Class<?> javaType) {
+        final MappingType type;
         if (!javaType.isEnum()) {
             final Function<Class<?>, MappingType> function;
             function = DEFAULT_MAPPING_MAP.get(javaType);
             if (function == null) {
-                String m = String.format("Not found default mapping for %s .", javaType.getName());
-                throw new MetaException(m);
+                type = null;
+            } else {
+                type = function.apply(javaType);
             }
-            type = function.apply(javaType);
         } else if (CodeEnum.class.isAssignableFrom(javaType)) {
             type = CodeEnumType.from(javaType);
         } else if (TextEnumType.class.isAssignableFrom(javaType)) {
