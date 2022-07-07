@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Values;
 import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
@@ -12,6 +13,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -38,7 +40,15 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
         implements RowSet.DqlValues, MySQLDqlValues._ValuesStmtValuesClause<C, U>
         , MySQLDqlValues._StaticValueRowSpec<C, U>
         , MySQLDqlValues._ValueRowCommaSpec<C, U>
-        , MySQLDqlValues {
+        , MySQLDqlValues, _Values {
+
+    static <C> MySQLDqlValues._ValuesStmtValuesClause<C, Values> primaryValues(@Nullable C criteria) {
+        return new SimpleValues<>(CriteriaContexts.primaryValuesContext(criteria));
+    }
+
+    static <C> MySQLDqlValues._ValuesStmtValuesClause<C, SubValues> subValues(@Nullable C criteria) {
+        return new SimpleSubValues<>(CriteriaContexts.subValuesContext(criteria));
+    }
 
 
     private List<List<_Expression>> rowList;
@@ -48,6 +58,8 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
     private List<_Expression> columnList;
 
     private int columnSize = -1;
+
+    private Map<String, Selection> selectionMap;
 
 
     private MySQLSimpleValues(CriteriaContext criteriaContext) {
@@ -170,6 +182,12 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
     }
 
     @Override
+    public final List<List<_Expression>> rowList() {
+        prepared();
+        return this.rowList;
+    }
+
+    @Override
     final void onOrderBy() {
         //no-op
     }
@@ -202,23 +220,24 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
 
     @Override
     final MySQLDqlValues._UnionOrderBySpec<C, U> createBracketQuery(RowSet rowSet) {
-        return MySQLUnionValues.bracket((DqlValues) rowSet);
+        return MySQLUnionValues.bracket(rowSet);
     }
 
     @Override
     final MySQLDqlValues._UnionOrderBySpec<C, U> getNoActionUnionRowSet(RowSet rowSet) {
-        return MySQLUnionValues.noActionValues((DqlValues) rowSet);
+        return MySQLUnionValues.noActionValues(rowSet);
     }
 
     @Override
     final MySQLDqlValues._UnionOrderBySpec<C, U> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
-        return MySQLUnionValues.union((U) left, unionType, (DqlValues) right);
+        return MySQLUnionValues.union((U) left, unionType, right);
     }
 
     @Override
     final void internalClear() {
         this.rowList = null;
         this.selectItemList = null;
+        this.selectionMap = null;
     }
 
 
@@ -241,6 +260,11 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
         context.dialect().rowSet(this, context);
     }
 
+    @Override
+    public final int selectionSize() {
+        prepared();
+        return this.selectItemList.size();
+    }
 
     private MySQLDqlValues._ValueRowCommaSpec<C, U> createNewRow(final @Nullable Expression value) {
         if (this.columnList != null) {
@@ -276,6 +300,28 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
         }
 
     }//SimpleValues
+
+    private static final class SimpleSubValues<C> extends MySQLSimpleValues<C, SubValues>
+            implements SubValues {
+
+        private Map<String, Selection> selectionMap;
+
+        private SimpleSubValues(CriteriaContext criteriaContext) {
+            super(criteriaContext);
+        }
+
+        @Override
+        public Selection selection(final String derivedFieldName) {
+            prepared();
+            Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
+                this.selectionMap = selectionMap;
+            }
+            return selectionMap.get(derivedFieldName);
+        }
+
+    }//SimpleSubValues
 
 
 }

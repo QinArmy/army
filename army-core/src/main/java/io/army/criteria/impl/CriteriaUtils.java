@@ -43,7 +43,6 @@ abstract class CriteriaUtils {
         return SQLs.literal(type, value);
     }
 
-
     static void withClause(final boolean recursive, final Cte cte, final CriteriaContext context
             , BiConsumer<Boolean, List<Cte>> subClassConsumer) {
 
@@ -117,6 +116,63 @@ abstract class CriteriaUtils {
         if (cteList.size() > 0) {
             subClassConsumer.accept(recursive, cteList);
         }
+    }
+
+
+    static void assertSelectionSize(final RowSet left, final RowSet right) {
+        final int leftSize, rightSize;
+        leftSize = ((_PartRowSet) left).selectionSize();
+        rightSize = ((_PartRowSet) right).selectionSize();
+
+        if (leftSize != rightSize) {
+            String m = String.format("left row set column count[%s] and right row set column count[%s] not match"
+                    , leftSize, rightSize);
+            throw unionTypeError(left, m);
+        }
+    }
+
+    static void assertTypeMatch(final RowSet left, final RowSet right, final Function<RowSet, String> function) {
+        if (left instanceof Select || left instanceof Values) {
+            if (!(right instanceof Select || right instanceof Values)) {
+                String m = String.format("union right item isn't %s or %s"
+                        , Select.class.getName(), Values.class.getName());
+                throw unionTypeError(left, m);
+            }
+        } else if (left instanceof SubQuery || left instanceof SubValues) {
+            if (!(right instanceof SubQuery || right instanceof SubValues)) {
+                String m = String.format("union right item isn't %s or %s"
+                        , SubQuery.class.getName(), SubValues.class.getName());
+                throw unionTypeError(left, m);
+            }
+        } else {
+            //no bug,never here
+            throw new IllegalStateException();
+        }
+
+        final String message;
+        message = function.apply(right);
+        if (message != null) {
+            throw unionTypeError(left, message);
+        }
+
+    }
+
+
+    static CriteriaException unsupportedUnionType(final RowSet left, final UnionType unionType) {
+        return unionTypeError(left, String.format("unsupported %s", unionType));
+    }
+
+    static CriteriaException unionTypeError(final RowSet left, final String message) {
+        final CriteriaContext leftContext, outerContext;
+        leftContext = ((CriteriaContextSpec) left).getCriteriaContext();
+        outerContext = ((CriteriaContext.OuterContextSpec) leftContext).getOuterContext();
+        final CriteriaException e;
+        if (outerContext == null) {
+            e = new CriteriaException(message);
+        } else {
+            e = CriteriaContextStack.criteriaError(outerContext, message);
+        }
+        return e;
     }
 
 

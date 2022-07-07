@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Window;
 import io.army.dialect._Constant;
-import io.army.dialect._Dialect;
+import io.army.dialect._DialectParser;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
@@ -488,7 +488,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     public final void appendSql(final _SqlContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
-        final _Dialect dialect = context.dialect();
+        final _DialectParser dialect = context.dialect();
 
         //1.window name
         final String windowName = this.windowName;

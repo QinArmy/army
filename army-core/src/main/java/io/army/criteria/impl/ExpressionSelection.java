@@ -55,11 +55,6 @@ final class ExpressionSelection implements _Selection {
     }
 
     @Override
-    public void appendSql(final _SqlContext context) {
-        this.expression.appendSql(context);
-    }
-
-    @Override
     public String toString() {
         return String.format(" %s AS %s", this.expression, this.alias);
     }

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._Constant;
-import io.army.dialect._Dialect;
+import io.army.dialect._DialectParser;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -63,7 +63,7 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext bracketContext(final Query left) {
+    static CriteriaContext bracketContext(final RowSet left) {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
         final List<SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
@@ -96,7 +96,7 @@ abstract class CriteriaContexts {
         return context;
     }
 
-    static CriteriaContext unionContext(final Query left, final RowSet right) {
+    static CriteriaContext unionContext(final RowSet left, final RowSet right) {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
         final List<SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
@@ -128,6 +128,10 @@ abstract class CriteriaContexts {
     }
 
     static CriteriaContext primaryValuesContext(@Nullable Object criteria) {
+        throw new UnsupportedOperationException();
+    }
+
+    static CriteriaContext subValuesContext(@Nullable Object criteria) {
         throw new UnsupportedOperationException();
     }
 
@@ -250,7 +254,7 @@ abstract class CriteriaContexts {
     }
 
 
-    private static abstract class AbstractContext implements CriteriaContext {
+    private static abstract class AbstractContext implements CriteriaContext, CriteriaContext.OuterContextSpec {
 
         final Object criteria;
 
@@ -271,6 +275,11 @@ abstract class CriteriaContexts {
         private AbstractContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
             this.outerContext = outerContext;
             this.criteria = criteria;
+        }
+
+        @Override
+        public final CriteriaContext getOuterContext() {
+            return this.outerContext;
         }
 
         @Override
@@ -1097,7 +1106,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSelection(final _SqlContext context) {
-            final _Dialect dialect = context.dialect();
+            final _DialectParser dialect = context.dialect();
 
             final String safeFieldName = dialect.identifier(this.selection.alias());
 
@@ -1114,7 +1123,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final _Dialect dialect = context.dialect();
+            final _DialectParser dialect = context.dialect();
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
@@ -1199,7 +1208,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSelection(final _SqlContext context) {
-            final _Dialect dialect = context.dialect();
+            final _DialectParser dialect = context.dialect();
 
             final String safeFieldName = dialect.identifier(this.fieldName);
             final StringBuilder builder;
@@ -1215,7 +1224,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final _Dialect dialect = context.dialect();
+            final _DialectParser dialect = context.dialect();
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
@@ -1317,11 +1326,6 @@ abstract class CriteriaContexts {
 
             context.dialect()
                     .identifier(this.alias, builder);
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            ((_SelfDescribed) this.field).appendSql(context);
         }
 
         @Override

@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * A common interface to all dialect of dialect.
  */
-public interface _Dialect {
+public interface _DialectParser {
 
 
     /**

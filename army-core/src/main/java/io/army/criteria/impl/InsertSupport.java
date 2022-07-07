@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Dialect;
-import io.army.dialect._Dialect;
+import io.army.dialect._DialectParser;
 import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -285,7 +285,7 @@ abstract class InsertSupport {
                 //non-primary insert
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            final _Dialect d;
+            final _DialectParser d;
             d = _MockDialects.from(dialect);
             final Stmt stmt;
             stmt = d.insert((Insert) this, visible);
@@ -1236,7 +1236,7 @@ abstract class InsertSupport {
                 //non-primary insert
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            final _Dialect d;
+            final _DialectParser d;
             d = _MockDialects.from(dialect);
             final Stmt stmt;
             stmt = d.insert((Insert) this, visible);
@@ -1352,7 +1352,7 @@ abstract class InsertSupport {
                 //non-primary insert
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            final _Dialect d;
+            final _DialectParser d;
             d = _MockDialects.from(dialect);
             final Stmt stmt;
             stmt = d.insert((Insert) this, visible);
@@ -1580,7 +1580,7 @@ abstract class InsertSupport {
                 //non-primary insert
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            final _Dialect d;
+            final _DialectParser d;
             d = _MockDialects.from(dialect);
             final Stmt stmt;
             stmt = d.insert((Insert) this, visible);

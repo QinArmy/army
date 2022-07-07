@@ -40,6 +40,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     private List<SelectItem> selectItemList;
 
+    private int selectionSize;
+
     private List<_TableBlock> tableBlockList;
 
     private List<_Predicate> predicateList;
@@ -648,6 +650,12 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         return this.modifierList;
     }
 
+
+    @Override
+    public final int selectionSize() {
+        return this.selectionSize;
+    }
+
     @Override
     public final List<SelectItem> selectItemList() {
         final List<SelectItem> selectItemList = this.selectItemList;
@@ -791,8 +799,16 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         if (selectItemList == null) {
             selectItemList = new ArrayList<>();
             this.selectItemList = selectItemList;
+            this.selectionSize = 0;
         }
         selectItemList.add(selectItem);
+        if (selectItem instanceof Selection) {
+            this.selectionSize++;
+        } else if (selectItem instanceof SelectionGroup) {
+            this.selectionSize += ((SelectionGroup) selectItem).selectionList().size();
+        } else {
+            throw _Exceptions.unknownSelectItem(selectItem);
+        }
     }
 
     private SR singleSelectItem(final SelectItem selectItem) {
@@ -803,6 +819,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         selectItemList = Collections.singletonList(selectItem);
         this.selectItemList = selectItemList;
         this.criteriaContext.selectList(selectItemList);
+        this.selectionSize = 1;
         return (SR) this;
     }
 

@@ -22,7 +22,7 @@ import java.util.*;
 
 /**
  * <p>
- * This class is the implementation of {@link _Dialect} for  MySQL dialect criteria api.
+ * This class is the implementation of {@link _DialectParser} for  MySQL dialect criteria api.
  * </p>
  * <p>
  * Below is chinese signature:<br/>

@@ -19,4 +19,10 @@ enum UnionType implements SQLWords {
     }
 
 
- }
+    @Override
+    public final String toString() {
+        return String.format("%s.%s", UnionType.class.getName(), this.name());
+    }
+
+
+}

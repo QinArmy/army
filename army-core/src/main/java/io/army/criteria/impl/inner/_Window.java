@@ -1,10 +1,11 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.Window;
+import io.army.dialect._DialectParser;
 
 /**
  * <p>
- * This interface representing the window that can be access by army {@link io.army.dialect._Dialect}.
+ * This interface representing the window that can be access by army {@link _DialectParser}.
  * </p>
  *
  * @since 1.0

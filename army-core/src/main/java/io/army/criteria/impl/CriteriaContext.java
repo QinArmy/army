@@ -63,4 +63,10 @@ interface CriteriaContext {
 
     }
 
+    interface OuterContextSpec {
+
+        @Nullable
+        CriteriaContext getOuterContext();
+    }
+
 }

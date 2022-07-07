@@ -5,7 +5,7 @@ import io.army.meta.DatabaseObject;
 /**
  * package interface
  */
-interface ArmyDialect extends _Dialect {
+interface ArmyDialect extends _DialectParser {
 
 
     boolean singleDeleteHasTableAlias();

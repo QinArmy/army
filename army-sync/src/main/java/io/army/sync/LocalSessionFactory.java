@@ -1,7 +1,7 @@
 package io.army.sync;
 
-import io.army.dialect._Dialect;
 import io.army.dialect._DialectFactory;
+import io.army.dialect._DialectParser;
 import io.army.env.SyncKey;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
@@ -22,7 +22,7 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
 
     final ExecutorFactory executorFactory;
 
-    final _Dialect dialect;
+    final _DialectParser dialect;
 
     final _SessionCacheFactory sessionCacheFactory;
 

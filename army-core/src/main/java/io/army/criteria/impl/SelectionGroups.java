@@ -6,7 +6,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
-import io.army.dialect._Dialect;
+import io.army.dialect._DialectParser;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
@@ -284,7 +284,7 @@ abstract class SelectionGroups {
             }
             final StringBuilder builder = context.sqlBuilder();
 
-            final _Dialect dialect = context.dialect();
+            final _DialectParser dialect = context.dialect();
             final String safeAlias = dialect.identifier(this.derivedAlias);
             final int size = selectionList.size();
             Selection selection;

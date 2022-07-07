@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 /**
  * <p>
- * This class is base class of all implementation of {@link _Dialect}.
+ * This class is base class of all implementation of {@link _DialectParser}.
  * </p>
  * <p>
  * Below is chinese signature:<br/>

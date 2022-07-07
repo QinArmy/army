@@ -21,14 +21,14 @@ import java.util.concurrent.ConcurrentMap;
 
 public abstract class _MockDialects {
 
-    private static final ConcurrentMap<Dialect, _Dialect> DIALECT_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Dialect, _DialectParser> DIALECT_MAP = new ConcurrentHashMap<>();
 
-    public static _Dialect from(final Dialect dialect) {
+    public static _DialectParser from(final Dialect dialect) {
         return DIALECT_MAP.computeIfAbsent(dialect, _MockDialects::createDialect);
     }
 
 
-    private static _Dialect createDialect(final Dialect mode) {
+    private static _DialectParser createDialect(final Dialect mode) {
         final ServerMeta meta;
         switch (mode) {
             case MySQL55:
