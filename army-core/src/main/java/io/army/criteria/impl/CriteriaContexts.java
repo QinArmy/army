@@ -135,6 +135,10 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
+    static CriteriaContext otherPrimaryContext(@Nullable Object criteria) {
+        throw new UnsupportedOperationException();
+    }
+
 
     /**
      * @see OperationExpression#as(String)

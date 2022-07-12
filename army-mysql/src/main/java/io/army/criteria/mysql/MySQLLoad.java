@@ -53,11 +53,15 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     }
 
+    interface _LinesClause<LR> {
+
+        LR lines();
+
+    }
+
     interface _LineAfterIgnoreClause<LR> {
 
         LR rows();
-
-        LR lines();
 
     }
 
@@ -75,7 +79,8 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
         _LineAfterIgnoreClause<GR> ifIgnore(Function<C, Long> function);
     }
 
-    interface _IgnoreLineSpec<C, T extends IDomain> extends _IgnoreLineClause<C, _ColumnOrVarListSpec<C, T>> {
+    interface _IgnoreLineSpec<C, T extends IDomain> extends _IgnoreLineClause<C, _ColumnOrVarListSpec<C, T>>
+            , _ColumnOrVarListSpec<C, T> {
 
     }
 
@@ -112,21 +117,13 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _LineStartingBySpec<C, T extends IDomain>
-            extends _StartingByClause<C, _LinesTerminatedBySpec<C, T>>
+    interface _LineStartingBySpec<C, T extends IDomain> extends _StartingByClause<C, _LinesTerminatedBySpec<C, T>>
             , _TerminatedByClause<C, _IgnoreLineSpec<C, T>> {
 
     }
 
 
-    interface _LinesClause<LR> {
-
-        LR lines();
-
-    }
-
-
-    interface _LinesBeforeIgnoreClause<C, T extends IDomain> extends _LinesClause<_LineStartingBySpec<C, T>>
+    interface _LinesBeforeIgnoreSpec<C, T extends IDomain> extends _LinesClause<_LineStartingBySpec<C, T>>
             , _IgnoreLineSpec<C, T> {
 
     }
@@ -170,12 +167,12 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
 
     interface _ColumnEscapedByClause<C, T extends IDomain>
-            extends _EscapedByClause<C, _LinesBeforeIgnoreClause<C, T>> {
+            extends _EscapedByClause<C, _LinesBeforeIgnoreSpec<C, T>> {
 
     }
 
     interface _ColumnEscapedBySpec<C, T extends IDomain> extends _ColumnEscapedByClause<C, T>
-            , _LinesBeforeIgnoreClause<C, T> {
+            , _LinesBeforeIgnoreSpec<C, T> {
 
     }
 
@@ -194,10 +191,25 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
 
     interface _ColumnTerminatedBySpec<C, T extends IDomain>
-            extends _TerminatedByClause<C, _ColumnEnclosedBySpec<C, T>>
+            extends _TerminatedByClause<C, _IgnoreLineSpec<C, T>>
             , _OptionallyClause<C, _ColumnEnclosedByClause<C, T>>
             , _ColumnEnclosedByClause<C, T>
             , _ColumnEscapedByClause<C, T> {
+
+        @Override
+        _ColumnEnclosedBySpec<C, T> terminatedBy(String string);
+
+        @Override
+        _ColumnEnclosedBySpec<C, T> terminatedBy(Supplier<String> supplier);
+
+        @Override
+        _ColumnEnclosedBySpec<C, T> terminatedBy(Function<C, String> function);
+
+        @Override
+        _ColumnEnclosedBySpec<C, T> ifTerminatedBy(Supplier<String> supplier);
+
+        @Override
+        _ColumnEnclosedBySpec<C, T> ifTerminatedBy(Function<C, String> function);
 
     }
 
@@ -210,7 +222,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
 
     interface _FieldsColumnsSpec<C, T extends IDomain> extends _FieldsColumnsClause<_ColumnTerminatedBySpec<C, T>>
-            , _LinesBeforeIgnoreClause<C, T> {
+            , _LinesBeforeIgnoreSpec<C, T> {
 
     }
 
@@ -257,11 +269,11 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     interface _LoadInfileClause<C, FR> {
 
-        FR infile(Path fileName);
+        FR infile(Path filePath);
 
         FR infile(Supplier<Path> supplier);
 
-        FR infile(Function<C, Path> supplier);
+        FR infile(Function<C, Path> function);
     }
 
     interface _ChildIntoTableClause<C, P extends IDomain> {

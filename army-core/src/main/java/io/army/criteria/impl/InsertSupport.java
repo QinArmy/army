@@ -1042,36 +1042,25 @@ abstract class InsertSupport {
 
     }//ValueInsertValueClause
 
-
     @SuppressWarnings("unchecked")
-    static abstract class AssignmentInsertClause<C, F extends TableField, SR>
-            implements Insert._AssignmentSetClause<C, F, SR>, _Insert._AssignmentInsert, ColumnListClause
-            , Statement.StatementMockSpec {
+    static abstract class AssignmentSetClause<C, F extends TableField, SR>
+            implements Insert._AssignmentSetClause<C, F, SR> {
+
 
         final CriteriaContext criteriaContext;
 
         final C criteria;
 
-        final boolean migration;
-
-        final NullHandleMode nullHandleMode;
-
         final boolean supportRowItem;
-
-        final TableMeta<?> table;
 
         private List<ItemPair> itemPairList;
 
-
-        AssignmentInsertClause(InsertOptions options, boolean supportRowItem, TableMeta<?> table) {
-            this.criteriaContext = options.getCriteriaContext();
-            this.criteria = this.criteriaContext.criteria();
-            this.migration = options.isMigration();
-            this.nullHandleMode = options.nullHandle();
-
+        AssignmentSetClause(CriteriaContext criteriaContext, boolean supportRowItem) {
+            this.criteriaContext = criteriaContext;
+            this.criteria = criteriaContext.criteria();
             this.supportRowItem = supportRowItem;
-            this.table = table;
         }
+
 
         @Override
         public final SR setPair(Consumer<Consumer<ItemPair>> consumer) {
@@ -1165,6 +1154,102 @@ abstract class InsertSupport {
             return (SR) this;
         }
 
+
+        abstract boolean containField(FieldMeta<?> field);
+
+
+        final List<ItemPair> endAssignmentSetClause() {
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                itemPairList = Collections.emptyList();
+            } else if (!(itemPairList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            } else if (itemPairList.size() == 1) {
+                itemPairList = Collections.singletonList(itemPairList.get(0));
+            } else {
+                itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+            }
+            this.itemPairList = itemPairList;
+            return itemPairList;
+        }
+
+
+        private void innerAddItemPair(final ItemPair itemPair) {
+            if (itemPair instanceof SQLs.FieldItemPair) {
+                this.validateItemField(((SQLs.FieldItemPair) itemPair).field);
+            } else if (!(itemPair instanceof SQLs.RowItemPair)) {
+                String m = String.format("Non-Army %s", ItemPair.class.getName());
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            } else if (this.supportRowItem) {
+                for (DataField field : ((SQLs.RowItemPair) itemPair).fieldList) {
+                    this.validateItemField(field);
+                }
+            } else {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "Don't support row item");
+            }
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                itemPairList = new ArrayList<>();
+                this.itemPairList = itemPairList;
+            }
+            itemPairList.add(itemPair);
+        }
+
+        private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
+            if (!this.containField(field)) {
+                throw notContainField(this.criteriaContext, field);
+            }
+            if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+            }
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                itemPairList = new ArrayList<>();
+                this.itemPairList = itemPairList;
+            }
+            itemPairList.add(SQLs.itemPair(field, value));
+            return (SR) this;
+        }
+
+        private void validateItemField(final DataField field) {
+            if (!(field instanceof FieldMeta)) {
+                String m = String.format("assignment insert syntax support only %s", FieldMeta.class.getName());
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+            if (!this.containField((FieldMeta<?>) field)) {
+                throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
+            }
+        }
+
+
+    }//AssignmentSetClause
+
+
+    static abstract class AssignmentInsertClause<C, F extends TableField, SR>
+            extends AssignmentSetClause<C, F, SR>
+            implements Insert._AssignmentSetClause<C, F, SR>, _Insert._AssignmentInsert, ColumnListClause
+            , Statement.StatementMockSpec {
+
+        final boolean migration;
+
+        final NullHandleMode nullHandleMode;
+
+        final boolean supportRowItem;
+
+        final TableMeta<?> table;
+
+        private List<ItemPair> itemPairList;
+
+
+        AssignmentInsertClause(InsertOptions options, boolean supportRowItem, TableMeta<?> table) {
+            super(options.getCriteriaContext(), supportRowItem);
+            this.migration = options.isMigration();
+            this.nullHandleMode = options.nullHandle();
+
+            this.supportRowItem = supportRowItem;
+            this.table = table;
+        }
+
         @Override
         public final TableMeta<?> table() {
             return this.table;
@@ -1252,67 +1337,6 @@ abstract class InsertSupport {
             return _MockDialects.from(dialect).insert((Insert) this, visible);
         }
 
-
-        final void endAssignmentSetClause() {
-            final List<ItemPair> itemPairList = this.itemPairList;
-            if (itemPairList == null) {
-                this.itemPairList = Collections.emptyList();
-            } else if (!(itemPairList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            } else if (itemPairList.size() == 1) {
-                this.itemPairList = Collections.singletonList(itemPairList.get(0));
-            } else {
-                this.itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
-            }
-        }
-
-
-        private void innerAddItemPair(final ItemPair itemPair) {
-            if (itemPair instanceof SQLs.FieldItemPair) {
-                this.validateItemField(((SQLs.FieldItemPair) itemPair).field);
-            } else if (!(itemPair instanceof SQLs.RowItemPair)) {
-                String m = String.format("Non-Army %s", ItemPair.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            } else if (this.supportRowItem) {
-                for (DataField field : ((SQLs.RowItemPair) itemPair).fieldList) {
-                    this.validateItemField(field);
-                }
-            } else {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "Don't support row item");
-            }
-            List<ItemPair> itemPairList = this.itemPairList;
-            if (itemPairList == null) {
-                itemPairList = new ArrayList<>();
-                this.itemPairList = itemPairList;
-            }
-            itemPairList.add(itemPair);
-        }
-
-        private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
-            if (!this.containField(field)) {
-                throw notContainField(this.criteriaContext, field);
-            }
-            if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
-            }
-            List<ItemPair> itemPairList = this.itemPairList;
-            if (itemPairList == null) {
-                itemPairList = new ArrayList<>();
-                this.itemPairList = itemPairList;
-            }
-            itemPairList.add(SQLs.itemPair(field, value));
-            return (SR) this;
-        }
-
-        private void validateItemField(final DataField field) {
-            if (!(field instanceof FieldMeta)) {
-                String m = String.format("assignment insert syntax support only %s", FieldMeta.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-            if (!this.containField((FieldMeta<?>) field)) {
-                throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
-            }
-        }
 
 
     }//AssignmentInsertClause

@@ -254,12 +254,12 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLLoad._LoadDataClause<Void> loadDataStmt() {
-        throw new UnsupportedOperationException();
+        return MySQLLoads.loadDataStmt(null);
     }
 
     public static <C> MySQLLoad._LoadDataClause<C> loadDataStmt(C criteria) {
         Objects.requireNonNull(criteria);
-        throw new UnsupportedOperationException();
+        return MySQLLoads.loadDataStmt(criteria);
     }
 
     /**

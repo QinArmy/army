@@ -25,7 +25,10 @@ public enum MySQLWords implements SQLWords {
     DELAYED(" DELAYED"),
 
     QUICK(" QUICK"),
-    IGNORE(" IGNORE");
+    IGNORE(" IGNORE"),
+
+    CONCURRENT(" CONCURRENT"),
+    LOCAL(" LOCAL");
 
 
     public final String words;

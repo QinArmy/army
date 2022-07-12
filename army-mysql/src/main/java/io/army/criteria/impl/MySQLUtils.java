@@ -121,6 +121,22 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
+    static int loadDataModifier(final MySQLWords modifier) {
+        final int level;
+        switch (modifier) {
+            case LOW_PRIORITY:
+            case CONCURRENT:
+                level = 1;
+                break;
+            case LOCAL:
+                level = 2;
+                break;
+            default:
+                level = -1;
+        }
+        return level;
+    }
+
 
     static CriteriaException indexListIsEmpty() {
         return new CriteriaException("index list must not empty.");
