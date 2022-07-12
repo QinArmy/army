@@ -12,7 +12,6 @@ import io.army.lang.Nullable;
  *     </ul>
  * </p>
  *
- * @param <E> java type of expression
  */
 interface ValueExpression extends Expression {
 

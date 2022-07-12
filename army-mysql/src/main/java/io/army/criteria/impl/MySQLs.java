@@ -252,6 +252,16 @@ public abstract class MySQLs extends MySQLSyntax {
         return MySQLMultiDelete.batch(criteria);
     }
 
+
+    public static MySQLLoad._LoadDataClause<Void> loadDataStmt() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> MySQLLoad._LoadDataClause<C> loadDataStmt(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * <p>
      * create named {@link Window}.
