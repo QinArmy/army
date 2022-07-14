@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._UnionRowSet;
+import io.army.criteria.mysql.MySQLLoad;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Database;
 
@@ -99,6 +100,12 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
             throw instanceNotMatch(rowSet, MySQL80SimpleQuery.class);
         }
 
+    }
+
+    public static void assertMySQLLoad(final MySQLLoad load){
+        if(!(load instanceof MySQLLoads.MySQLLoadDataStatement)){
+            throw instanceNotMatch(load, MySQLLoads.MySQLLoadDataStatement.class);
+        }
     }
 
     public static void assertHint(Hint hint) {

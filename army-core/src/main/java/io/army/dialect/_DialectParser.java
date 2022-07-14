@@ -37,6 +37,10 @@ public interface _DialectParser {
 
     void rowSet(RowSet rowSet, _SqlContext original);
 
+   default Stmt dialectStmt(DialectStatement statement,Visible visible){
+       throw new UnsupportedOperationException();
+   }
+
     List<String> startTransaction(Isolation isolation, boolean readonly);
 
 

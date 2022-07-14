@@ -364,11 +364,25 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
 
     interface _ParentColumnTerminatedBySpec<C, T extends IDomain>
-            extends _TerminatedByClause<C, _ParentColumnEnclosedBySpec<C, T>>
+            extends _TerminatedByClause<C, _ParentIgnoreLineSpec<C, T>>
             , _OptionallyClause<C, _ParentColumnEnclosedByClause<C, T>>
             , _ParentColumnEnclosedByClause<C, T>
             , _ParentColumnEscapedByClause<C, T> {
 
+        @Override
+        _ParentColumnEnclosedBySpec<C, T> terminatedBy(String string);
+
+        @Override
+        _ParentColumnEnclosedBySpec<C, T> terminatedBy(Supplier<String> supplier);
+
+        @Override
+        _ParentColumnEnclosedBySpec<C, T> terminatedBy(Function<C, String> function);
+
+        @Override
+        _ParentColumnEnclosedBySpec<C, T> ifTerminatedBy(Supplier<String> supplier);
+
+        @Override
+        _ParentColumnEnclosedBySpec<C, T> ifTerminatedBy(Function<C, String> function);
     }
 
 
@@ -390,7 +404,6 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     }
 
-
     interface _IntoTableClause<C> {
 
         <T extends IDomain> _PartitionSpec<C, T> intoTable(SimpleTableMeta<T> table);
@@ -399,10 +412,14 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     }
 
+    interface _StrategyOptionSpec<C> extends _StrategyOptionClause<C, _IntoTableClause<C>>, _IntoTableClause<C> {
+
+    }
+
 
     interface _LoadDataClause<C> {
 
-        _LoadInfileClause<C, _IntoTableClause<C>> loadData(List<MySQLWords> modifierList);
+        _LoadInfileClause<C, _StrategyOptionSpec<C>> loadData(List<MySQLWords> modifierList);
 
     }
 

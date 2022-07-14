@@ -1,19 +1,19 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.Statement;
-import io.army.criteria.VarExpression;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner.mysql._MySQLLoadData;
 import io.army.criteria.mysql.MySQLLoad;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLWords;
+import io.army.dialect.Dialect;
+import io.army.dialect._DialectParser;
+import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.SimpleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
+import io.army.stmt.Stmt;
+import io.army.util._Assert;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -32,9 +32,34 @@ abstract class MySQLLoads {
     }
 
 
+    private enum StrategyOption implements SQLWords {
+
+        REPLACE(" REPLACE"),
+        IGNORE(" IGNORE");
+
+        private final String words;
+
+        StrategyOption(String words) {
+            this.words = words;
+        }
+
+        @Override
+        public final String render() {
+            return this.words;
+        }
+
+
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", StrategyOption.class.getSimpleName(), this.name());
+        }
+
+    }//StrategyOption
+
+
     private static final class LoadDataInfileClause<C> implements MySQLLoad._LoadDataClause<C>
-            , MySQLLoad._LoadInfileClause<C, MySQLLoad._IntoTableClause<C>>
-            , MySQLLoad._IntoTableClause<C> {
+            , MySQLLoad._LoadInfileClause<C, MySQLLoad._StrategyOptionSpec<C>>
+            , MySQLLoad._StrategyOptionSpec<C> {
 
         private final CriteriaContext criteriaContext;
 
@@ -42,56 +67,111 @@ abstract class MySQLLoads {
 
         private Path path;
 
+        private StrategyOption strategyOption;
+
         private LoadDataInfileClause(@Nullable C criteria) {
             this.criteriaContext = CriteriaContexts.otherPrimaryContext(criteria);
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
 
         @Override
-        public final MySQLLoad._LoadInfileClause<C, MySQLLoad._IntoTableClause<C>> loadData(List<MySQLWords> modifierList) {
+        public MySQLLoad._LoadInfileClause<C, MySQLLoad._StrategyOptionSpec<C>> loadData(List<MySQLWords> modifierList) {
             this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifierList
                     , MySQLUtils::loadDataModifier);
             return this;
         }
 
+
         @Override
-        public final MySQLLoad._IntoTableClause<C> infile(Path filePath) {
+        public MySQLLoad._StrategyOptionSpec<C> infile(Path filePath) {
             this.path = filePath;
             return this;
         }
 
         @Override
-        public final MySQLLoad._IntoTableClause<C> infile(Supplier<Path> supplier) {
+        public MySQLLoad._StrategyOptionSpec<C> infile(Supplier<Path> supplier) {
             this.path = supplier.get();
             return this;
         }
 
         @Override
-        public final MySQLLoad._IntoTableClause<C> infile(Function<C, Path> function) {
+        public MySQLLoad._StrategyOptionSpec<C> infile(Function<C, Path> function) {
             this.path = function.apply(this.criteriaContext.criteria());
             return this;
         }
 
         @Override
-        public final <T extends IDomain> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable SimpleTableMeta<T> table) {
-            if (table == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
-            }
-            if (this.path == null) {
-                throw filePathIsNull(this.criteriaContext, table);
-            }
-            return null;
+        public MySQLLoad._IntoTableClause<C> replace() {
+            this.strategyOption = StrategyOption.REPLACE;
+            return this;
         }
 
         @Override
-        public final <T extends IDomain> MySQLLoad._ParentPartitionSpec<C, T> intoTable(@Nullable ParentTableMeta<T> table) {
+        public MySQLLoad._IntoTableClause<C> ifReplace(Supplier<Boolean> supplier) {
+            if (Boolean.TRUE.equals(supplier.get())) {
+                this.strategyOption = StrategyOption.REPLACE;
+            } else {
+                this.strategyOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._IntoTableClause<C> ifReplace(Predicate<C> predicate) {
+            if (predicate.test(this.criteriaContext.criteria())) {
+                this.strategyOption = StrategyOption.REPLACE;
+            } else {
+                this.strategyOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._IntoTableClause<C> ignore() {
+            this.strategyOption = StrategyOption.IGNORE;
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._IntoTableClause<C> ifIgnore(Supplier<Boolean> supplier) {
+            if (Boolean.TRUE.equals(supplier.get())) {
+                this.strategyOption = StrategyOption.IGNORE;
+            } else {
+                this.strategyOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._IntoTableClause<C> ifIgnore(Predicate<C> predicate) {
+            if (predicate.test(this.criteriaContext.criteria())) {
+                this.strategyOption = StrategyOption.IGNORE;
+            } else {
+                this.strategyOption = null;
+            }
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable SimpleTableMeta<T> table) {
             if (table == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
             if (this.path == null) {
                 throw filePathIsNull(this.criteriaContext, table);
             }
-            return null;
+            return new SimplePartitionClause<>(this, table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLLoad._ParentPartitionSpec<C, T> intoTable(@Nullable ParentTableMeta<T> table) {
+            if (table == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            if (this.path == null) {
+                throw filePathIsNull(this.criteriaContext, table);
+            }
+            return new ParentPartitionClause<>(this, table);
         }
 
 
@@ -106,8 +186,9 @@ abstract class MySQLLoads {
 
     }//LoadDataInfileClause
 
+
     @SuppressWarnings("unchecked")
-    private static abstract class PartitionClause<C, T extends IDomain, PR, CR, FR, TR, OR, ER, DR, LR, RR, GR, VR, SR>
+    private static abstract class PartitionClause<C, T extends IDomain, PR, CR, FR, OR, ER, DR, LR, RR, GR, VR, SR>
             extends InsertSupport.AssignmentSetClause<C, FieldMeta<T>, SR>
             implements MySQLQuery._PartitionClause<C, PR>
             , MySQLLoad._CharsetClause<C, CR>
@@ -118,7 +199,6 @@ abstract class MySQLLoads {
             , MySQLLoad._ColumnOrVarListClause<C, VR>
             , Statement._RightParenClause<VR>
             , MySQLLoad._StaticColumnDualClause<VR>
-            , MySQLLoad._TerminatedByClause<C, TR>
             , MySQLLoad._EnclosedByClause<C, ER>
             , MySQLLoad._EscapedByClause<C, DR>
             , MySQLLoad._OptionallyClause<C, OR>
@@ -126,7 +206,9 @@ abstract class MySQLLoads {
 
         final List<MySQLWords> modifierList;
 
-        final Path path;
+        final Path filePath;
+
+        final StrategyOption strategyOption;
 
         final TableMeta<T> table;
 
@@ -134,34 +216,45 @@ abstract class MySQLLoads {
 
         private String charsetName;
 
-        private boolean fieldOrColumnClause;
+        Boolean fieldsKeyWord;
 
-        private String columnTerminatedBy;
+        String columnTerminatedBy;
 
-        private boolean optionallyEnclosed;
+        private boolean columnOptionallyEnclosed;
 
         private Character columnEnclosedBy;
 
         private Character columnEscapedBy;
 
-        private boolean linesClause;
+        boolean linesClause;
 
-        private String lineTerminatedBy;
+        String lineTerminatedBy;
 
         private String lineStartingBy;
 
-        private long ignoreRows = -1L;
+        private Long ignoreRows;
 
-        private List<_Expression> fieldVarList;
+        private List<_Expression> fieldOrUserVarList;
 
         private PartitionClause(LoadDataInfileClause<C> clause, TableMeta<T> table) {
             super(clause.criteriaContext, false);
             this.modifierList = clause.modifierList();
-            this.path = clause.path;
+            this.filePath = clause.path;
+            assert this.filePath != null;
 
-            assert this.path != null;
+            this.strategyOption = clause.strategyOption;
             this.table = table;
 
+        }
+
+        private PartitionClause(ChildLoadDataInfileClause<C,?> clause, ChildTableMeta<T> table) {
+            super(clause.criteriaContext, false);
+            this.modifierList = clause.modifierList;
+            this.filePath = clause.filePath;
+            assert this.filePath != null;
+
+            this.strategyOption = clause.strategyOption;
+            this.table = table;
         }
 
         @Override
@@ -212,13 +305,13 @@ abstract class MySQLLoads {
 
         @Override
         public final FR fields() {
-            this.fieldOrColumnClause = true;
+            this.fieldsKeyWord = Boolean.TRUE;
             return (FR) this;
         }
 
         @Override
         public final FR columns() {
-            this.fieldOrColumnClause = true;
+            this.fieldsKeyWord = Boolean.FALSE;
             return (FR) this;
         }
 
@@ -327,66 +420,20 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public final TR terminatedBy(@Nullable String string) {
-            if (string == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
-            }
-            if (this.linesClause) {
-                this.lineTerminatedBy = string;
-            } else if (this.fieldOrColumnClause) {
-                this.columnTerminatedBy = string;
-            } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return (TR) this;
-        }
-
-        @Override
-        public final TR terminatedBy(Supplier<String> supplier) {
-            return this.terminatedBy(supplier.get());
-        }
-
-        @Override
-        public final TR terminatedBy(Function<C, String> function) {
-            return this.terminatedBy(function.apply(this.criteria));
-        }
-
-        @Override
-        public final TR ifTerminatedBy(Supplier<String> supplier) {
-            final String string;
-            string = supplier.get();
-            if (string != null) {
-                this.terminatedBy(string);
-            }
-            return (TR) this;
-        }
-
-        @Override
-        public final TR ifTerminatedBy(Function<C, String> function) {
-            final String string;
-            string = function.apply(this.criteria);
-            if (string != null) {
-                this.terminatedBy(string);
-            }
-            return (TR) this;
-        }
-
-
-        @Override
         public final OR optionally() {
-            this.optionallyEnclosed = true;
+            this.columnOptionallyEnclosed = true;
             return (OR) this;
         }
 
         @Override
         public final OR ifOptionally(Supplier<Boolean> supplier) {
-            this.optionallyEnclosed = Boolean.TRUE.equals(supplier.get());
+            this.columnOptionallyEnclosed = Boolean.TRUE.equals(supplier.get());
             return (OR) this;
         }
 
         @Override
         public final OR ifOptionally(Predicate<C> predicate) {
-            this.optionallyEnclosed = predicate.test(this.criteria);
+            this.columnOptionallyEnclosed = predicate.test(this.criteria);
             return (OR) this;
         }
 
@@ -538,12 +585,20 @@ abstract class MySQLLoads {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
 
-            List<_Expression> fieldVarList = this.fieldVarList;
+            List<_Expression> fieldVarList = this.fieldOrUserVarList;
             if (fieldVarList == null) {
                 fieldVarList = new ArrayList<>();
-                this.fieldVarList = fieldVarList;
+                this.fieldOrUserVarList = fieldVarList;
             }
             fieldVarList.add((ArmyExpression) columnOrVar);
+        }
+
+        private List<_Expression> columnOrUserVarList() {
+            List<_Expression> list = this.fieldOrUserVarList;
+            if (list == null) {
+                list = Collections.emptyList();
+            }
+            return list;
         }
 
 
@@ -557,7 +612,6 @@ abstract class MySQLLoads {
             MySQLLoad._CharsetSpec<C, T>,
             MySQLLoad._FieldsColumnsSpec<C, T>,
             MySQLLoad._ColumnTerminatedBySpec<C, T>,
-            MySQLLoad._IgnoreLineSpec<C, T>,
             MySQLLoad._ColumnEnclosedByClause<C, T>,
             MySQLLoad._ColumnEscapedBySpec<C, T>,
             MySQLLoad._LinesBeforeIgnoreSpec<C, T>,
@@ -567,19 +621,608 @@ abstract class MySQLLoads {
             MySQLLoad._LoadSetSpec<C, FieldMeta<T>>,
             MySQLLoad._LoadSetSpec<C, FieldMeta<T>>>
             implements MySQLLoad._PartitionSpec<C, T>
-            , MySQLLoad._ColumnTerminatedBySpec<C, T> {
+            , MySQLLoad._ColumnTerminatedBySpec<C, T>
+            , MySQLLoad._ColumnEnclosedBySpec<C, T>
+            , MySQLLoad._LineStartingBySpec<C, T>
+            , MySQLLoad._LinesTerminatedBySpec<C, T> {
 
-        private SimplePartitionClause(LoadDataInfileClause<C> clause, TableMeta<T> table) {
+        private final ParentLoadDataStatement parentStatement;
+
+        private SimplePartitionClause(LoadDataInfileClause<C> clause, SimpleTableMeta<T> table) {
             super(clause, table);
+            this.parentStatement = null;
+        }
+
+        private SimplePartitionClause(ChildLoadDataInfileClause<C,?> clause, ChildTableMeta<T> table) {
+            super(clause, table);
+            this.parentStatement = clause.parentStatement;
+        }
+
+
+        @Override
+        public MySQLLoad._ColumnEnclosedBySpec<C, T> terminatedBy(final @Nullable String string) {
+            if (string == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            if (this.linesClause) {
+                this.lineTerminatedBy = string;
+            } else if (this.fieldsKeyWord != null) {
+                this.columnTerminatedBy = string;
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ColumnEnclosedBySpec<C, T> terminatedBy(Supplier<String> supplier) {
+            return this.terminatedBy(supplier.get());
+        }
+
+        @Override
+        public MySQLLoad._ColumnEnclosedBySpec<C, T> terminatedBy(Function<C, String> function) {
+            return this.terminatedBy(function.apply(this.criteria));
+        }
+
+        @Override
+        public MySQLLoad._ColumnEnclosedBySpec<C, T> ifTerminatedBy(Supplier<String> supplier) {
+            final String string;
+            string = supplier.get();
+            if (string != null) {
+                this.terminatedBy(string);
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ColumnEnclosedBySpec<C, T> ifTerminatedBy(Function<C, String> function) {
+            final String string;
+            string = function.apply(this.criteria);
+            if (string != null) {
+                this.terminatedBy(string);
+            }
+            return this;
         }
 
         @Override
         public MySQLLoad asLoadData() {
-            return null;
+          final    MySQLLoad._LoadDataSpec spec;
+             if(this.parentStatement == null){
+                 spec = new SingleLoadDataStatement(this);
+             }else {
+                 spec = new ChildLoadDataStatement(this);
+             }
+            return spec.asLoadData();
         }
 
 
     }//SimplePartitionClause
+
+
+    private static final class ParentPartitionClause<C, T extends IDomain> extends PartitionClause<
+            C,
+            T,
+            MySQLLoad._ParentCharsetSpec<C, T>,
+            MySQLLoad._ParentFieldsColumnsSpec<C, T>,
+            MySQLLoad._ParentColumnTerminatedBySpec<C, T>,
+            MySQLLoad._ParentColumnEnclosedByClause<C, T>,
+            MySQLLoad._ParentColumnEscapedBySpec<C, T>,
+            MySQLLoad._ParentLinesSpec<C, T>,
+            MySQLLoad._ParentLineStartingBySpec<C, T>,
+            MySQLLoad._ParentLineTerminatedBySpec<C, T>,
+            MySQLLoad._ParentColumnVarListSpec<C, T>,
+            MySQLLoad._ParentAssignmentSetSpec<C, T>,
+            MySQLLoad._ParentAssignmentSetSpec<C, T>>
+            implements MySQLLoad._ParentPartitionSpec<C, T>
+            , MySQLLoad._ParentColumnTerminatedBySpec<C, T>
+            , MySQLLoad._ParentColumnEnclosedBySpec<C, T>
+            , MySQLLoad._ParentLineStartingBySpec<C, T>
+            , MySQLLoad._ParentLineTerminatedBySpec<C, T> {
+
+        private ParentPartitionClause(LoadDataInfileClause<C> clause, ParentTableMeta<T> table) {
+            super(clause, table);
+        }
+
+        @Override
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> terminatedBy(final @Nullable String string) {
+            if (string == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            if (this.linesClause) {
+                this.lineTerminatedBy = string;
+            } else if (this.fieldsKeyWord != null) {
+                this.columnTerminatedBy = string;
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> terminatedBy(Supplier<String> supplier) {
+            return this.terminatedBy(supplier.get());
+        }
+
+        @Override
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> terminatedBy(Function<C, String> function) {
+            return this.terminatedBy(function.apply(this.criteria));
+        }
+
+        @Override
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> ifTerminatedBy(Supplier<String> supplier) {
+            final String string;
+            string = supplier.get();
+            if (string != null) {
+                this.terminatedBy(string);
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> ifTerminatedBy(Function<C, String> function) {
+            final String string;
+            string = function.apply(this.criteria);
+            if (string != null) {
+                this.terminatedBy(string);
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildLoadInfileClause<C, T> child(List<MySQLWords> modifierList) {
+            final List<MySQLWords> list ;
+            list = MySQLUtils.asModifierList(this.criteriaContext,modifierList,MySQLUtils::loadDataModifier);
+            return new ChildLoadDataInfileClause<>(this.criteriaContext,new ParentLoadDataStatement(this),list);
+        }
+
+
+    }//ParentPartitionClause
+
+
+    private static final class ChildLoadDataInfileClause<C, P extends IDomain>
+            implements MySQLLoad._ChildLoadInfileClause<C, P>
+            , MySQLLoad._ChildLoadStrategySpec<C, P>
+            , MySQLLoad._ChildIntoTableClause<C, P> {
+
+        private final CriteriaContext criteriaContext;
+
+        private final ParentLoadDataStatement parentStatement;
+
+        private final List<MySQLWords> modifierList;
+
+        private  Path filePath;
+
+        private StrategyOption strategyOption;
+
+        private ChildLoadDataInfileClause(CriteriaContext criteriaContext, ParentLoadDataStatement parentStatement
+                , List<MySQLWords> modifierList) {
+            this.criteriaContext = criteriaContext;
+            this.parentStatement = parentStatement;
+            this.modifierList = modifierList;
+        }
+
+        @Override
+        public MySQLLoad._ChildLoadStrategySpec<C, P> infile(Path filePath) {
+            this.filePath = filePath;
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildLoadStrategySpec<C, P> infile(Supplier<Path> supplier) {
+            this.filePath = supplier.get();
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildLoadStrategySpec<C, P> infile(Function<C, Path> function) {
+            this.filePath = function.apply(this.criteriaContext.criteria());
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildIntoTableClause<C, P> replace() {
+            this.strategyOption  = StrategyOption.REPLACE;
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildIntoTableClause<C, P> ifReplace(Supplier<Boolean> supplier) {
+            if(Boolean.TRUE.equals(supplier.get())){
+                this.strategyOption  = StrategyOption.REPLACE;
+            }else {
+                this.strategyOption  = null;
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildIntoTableClause<C, P> ifReplace(Predicate<C> predicate) {
+            if(predicate.test(this.criteriaContext.criteria())){
+                this.strategyOption  = StrategyOption.REPLACE;
+            }else {
+                this.strategyOption  = null;
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildIntoTableClause<C, P> ignore() {
+            this.strategyOption  = StrategyOption.IGNORE;
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildIntoTableClause<C, P> ifIgnore(Supplier<Boolean> supplier) {
+            if(Boolean.TRUE.equals(supplier.get())){
+                this.strategyOption  = StrategyOption.IGNORE;
+            }else {
+                this.strategyOption  = null;
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLLoad._ChildIntoTableClause<C, P> ifIgnore(Predicate<C> predicate) {
+            if(predicate.test(this.criteriaContext.criteria())){
+                this.strategyOption  = StrategyOption.IGNORE;
+            }else {
+                this.strategyOption  = null;
+            }
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable ComplexTableMeta<P, T> table) {
+            if (table == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            if(table.parentMeta() != this.parentStatement.parentTable){
+                String m = String.format("%s isn't child of %s",table,this.parentStatement.parentTable);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext,m);
+            }
+            if (this.filePath == null) {
+                throw filePathIsNull(this.criteriaContext, table);
+            }
+            return new SimplePartitionClause<>(this, table);
+        }
+
+
+    }//ChildLoadDataInfileClause
+
+
+    static abstract class MySQLLoadDataStatement implements _MySQLLoadData, Statement.StatementMockSpec
+            , DialectStatement {
+
+        private final List<MySQLWords> modifierList;
+
+        private final Path fileName;
+
+        private final StrategyOption strategyOption;
+
+        private final List<String> partitionList;
+
+        private final String charsetName;
+
+        private final Boolean fieldsKeyWords;
+
+        private final String columnTerminatedBy;
+
+        private final boolean columnOptionallyEnclosed;
+
+        private final Character columnEnclosedBy;
+
+        private final Character columnEscapedBy;
+
+        private final boolean linesClause;
+
+        private final String linesStartingBy;
+
+        private final String linesTerminatedBy;
+
+
+        private final Long ignoreRows;
+
+        private final List<_Expression> columnOrUserVarList;
+
+        private final List<ItemPair> columItemPairList;
+
+        private MySQLLoadDataStatement(PartitionClause<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause) {
+            this.modifierList = clause.modifierList;
+            this.fileName = clause.filePath;
+            this.strategyOption = clause.strategyOption;
+            this.partitionList = clause.partitionList();
+
+            this.charsetName = clause.charsetName;
+            this.fieldsKeyWords = clause.fieldsKeyWord;
+
+            if (this.fieldsKeyWords == null) {
+                this.columnTerminatedBy = null;
+                this.columnOptionallyEnclosed = false;
+                this.columnEnclosedBy = null;
+                this.columnEscapedBy = null;
+            } else {
+                this.columnTerminatedBy = clause.columnTerminatedBy;
+                this.columnOptionallyEnclosed = clause.columnOptionallyEnclosed;
+                this.columnEnclosedBy = clause.columnEnclosedBy;
+                this.columnEscapedBy = clause.columnEscapedBy;
+            }
+
+            this.linesClause = clause.linesClause;
+            if (this.linesClause) {
+                this.linesStartingBy = clause.lineStartingBy;
+                this.linesTerminatedBy = clause.lineTerminatedBy;
+            } else {
+                this.linesStartingBy = null;
+                this.linesTerminatedBy = null;
+            }
+
+            this.ignoreRows = clause.ignoreRows;
+            this.columnOrUserVarList = clause.columnOrUserVarList();
+            this.columItemPairList = clause.endAssignmentSetClause();
+
+        }
+
+
+        @Override
+        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            final _DialectParser parser;
+            parser = _MockDialects.from(dialect);
+            final Stmt stmt;
+            stmt = parser.dialectStmt(this, visible);
+            return parser.printStmt(stmt, none);
+        }
+
+        @Override
+        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+            return _MockDialects.from(dialect).dialectStmt(this, visible);
+        }
+
+        @Override
+        public final List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public final Path fileName() {
+            return this.fileName;
+        }
+
+        @Override
+        public final SQLWords strategyOption() {
+            return this.strategyOption;
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public final String charsetName() {
+            return this.charsetName;
+        }
+
+        @Override
+        public final Boolean fieldsKeyWord() {
+            return this.fieldsKeyWords;
+        }
+
+        @Override
+        public final String columnTerminatedBy() {
+            return this.columnTerminatedBy;
+        }
+
+        @Override
+        public final boolean columnOptionallyEnclosed() {
+            return this.columnOptionallyEnclosed;
+        }
+
+        @Override
+        public final Character columnEnclosedBy() {
+            return this.columnEnclosedBy;
+        }
+
+        @Override
+        public final Character columnEscapedBy() {
+            return this.columnEscapedBy;
+        }
+
+        @Override
+        public final boolean linesClause() {
+            return this.linesClause;
+        }
+
+        @Override
+        public final String linesStartingBy() {
+            return this.linesStartingBy;
+        }
+
+        @Override
+        public final String linesTerminatedBy() {
+            return this.linesTerminatedBy;
+        }
+
+        @Override
+        public final Long ignoreRows() {
+            return this.ignoreRows;
+        }
+
+        @Override
+        public final List<_Expression> columnOrUserVarList() {
+            return this.columnOrUserVarList;
+        }
+
+        @Override
+        public final List<ItemPair> columItemPairList() {
+            return this.columItemPairList;
+        }
+
+
+    }//MySQLLoadDataStatement
+
+
+    private static final class SingleLoadDataStatement extends MySQLLoadDataStatement
+            implements MySQLLoad, _MySQLLoadData._SingleLoadData, MySQLLoad._LoadDataSpec {
+
+        private final CriteriaContext criteriaContext;
+
+        private final SingleTableMeta<?> table;
+
+
+        private Boolean prepared;
+
+        private SingleLoadDataStatement(SimplePartitionClause<?, ?> clause) {
+            super(clause);
+            this.criteriaContext = clause.criteriaContext;
+            this.table = (SingleTableMeta<?>) clause.table;
+        }
+
+        @Override
+        public MySQLLoad asLoadData() {
+            _Assert.nonPrepared(this.prepared);
+            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            this.prepared = Boolean.TRUE;
+            return this;
+        }
+
+        @Override
+        public void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
+        }
+
+        @Override
+        public SingleTableMeta<?> table() {
+            return this.table;
+        }
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+    }//SingleLoadDataStatement
+
+
+    private static final class ParentLoadDataStatement extends MySQLLoadDataStatement
+            implements _MySQLLoadData._SingleLoadData{
+
+        private final ParentTableMeta<?> parentTable;
+
+        private ParentLoadDataStatement(final ParentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.parentTable = (ParentTableMeta<?>) clause.table;
+        }
+
+        @Override
+        public void prepared() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isPrepared() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public SingleTableMeta<?> table() {
+            return this.parentTable;
+        }
+
+    }//ParentLoadDataStatement
+
+
+    private static final class ChildLoadDataStatement extends MySQLLoadDataStatement
+            implements MySQLLoad,_MySQLLoadData._ChildLoadData,MySQLLoad._LoadDataSpec{
+
+
+        private final CriteriaContext criteriaContext;
+        private final ParentLoadDataStatement parentStatement;
+
+        private final ChildTableMeta<?> childTable;
+
+        private Boolean prepared;
+
+        private ChildLoadDataStatement(SimplePartitionClause<?,?> clause){
+            super(clause);
+            this.criteriaContext = clause.criteriaContext;
+            this.parentStatement = clause.parentStatement;
+            assert  this.parentStatement != null;
+            this.childTable = (ChildTableMeta<?>) clause.table;
+        }
+
+
+        @Override
+        public MySQLLoad asLoadData() {
+            _Assert.nonPrepared(this.prepared);
+            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            this.prepared = Boolean.TRUE;
+            return this;
+        }
+
+        @Override
+        public void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
+        }
+
+
+        @Override
+        public ChildTableMeta<?> table() {
+            return this.childTable;
+        }
+
+        @Override
+        public _SingleLoadData parentLoadData() {
+            return this.parentStatement;
+        }
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+
+    }//ChildLoadDataStatement
 
 
     private static CriteriaException filePathIsNull(CriteriaContext criteriaContext, TableMeta<?> table) {
