@@ -136,9 +136,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final List<Hint> hintList;
         hintList = hints.get();
         if (hintList != null) {
-            this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
+            this.hintList = this.asHintList(hintList);
         }
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierList = this.asModifierList(modifiers);
         consumer.accept(this::addSelectItem);
         return this.addSelectItemEnd();
     }
@@ -148,23 +148,23 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         final List<Hint> hintList;
         hintList = hints.get();
         if (hintList != null) {
-            this.hintList = _CollectionUtils.asUnmodifiableList(hintList);
+            this.hintList = this.asHintList(hintList);
         }
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierList = this.asModifierList(modifiers);
         consumer.accept(this.criteria, this::addSelectItem);
         return this.addSelectItemEnd();
     }
 
     @Override
     public final SR select(List<W> modifiers, Consumer<Consumer<SelectItem>> consumer) {
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierList = this.asModifierList(modifiers);
         consumer.accept(this::addSelectItem);
         return this.addSelectItemEnd();
     }
 
     @Override
     public final SR select(List<W> modifiers, BiConsumer<C, Consumer<SelectItem>> consumer) {
-        this.modifierList = _CollectionUtils.asUnmodifiableList(modifiers);
+        this.modifierList = this.asModifierList(modifiers);
         consumer.accept(this.criteria, this::addSelectItem);
         return this.addSelectItemEnd();
     }
@@ -789,6 +789,10 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     abstract Q onAsQuery(boolean fromAsQueryMethod);
 
     abstract void onClear();
+
+    abstract List<W> asModifierList(List<W> modifiers);
+
+    abstract List<Hint> asHintList(List<Hint> hints);
 
 
     private void addSelectItem(final SelectItem selectItem) {

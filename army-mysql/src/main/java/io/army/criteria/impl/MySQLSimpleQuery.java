@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Hint;
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SubQuery;
@@ -310,6 +311,15 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
         this.fromOrCrossValid = success;
     }
 
+    @Override
+    final List<MySQLWords> asModifierList(List<MySQLWords> modifiers) {
+        return MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::selectModifier);
+    }
+
+    @Override
+    final List<Hint> asHintList(List<Hint> hints) {
+        return MySQLUtils.asHintList(this.criteriaContext, hints, MySQLHints::castHint);
+    }
 
     /*################################## blow private method ##################################*/
 

@@ -193,7 +193,7 @@ abstract class MySQL extends _AbstractDialect {
         } else {
             mappingType = paramMeta.mappingType();
         }
-        sqlType = mappingType.map(this.environment.serverMeta());
+        sqlType = mappingType.map(this.dialectEnv.serverMeta());
         final String literal;
         switch ((MySqlType) sqlType) {
             case INT:
@@ -229,7 +229,7 @@ abstract class MySQL extends _AbstractDialect {
                 literal = MySQLLiterals.text(sqlType, nonNull);
                 break;
             case JSON:
-                literal = MySQLLiterals.text(sqlType, this.environment.jsonCodec().encode(nonNull));
+                literal = MySQLLiterals.text(sqlType, this.dialectEnv.jsonCodec().encode(nonNull));
                 break;
             case BINARY:
             case VARBINARY:

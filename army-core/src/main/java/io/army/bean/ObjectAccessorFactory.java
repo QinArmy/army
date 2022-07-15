@@ -33,7 +33,7 @@ public abstract class ObjectAccessorFactory {
         return new BeanWriterAccessor(getBeanAccessors(beanClass));
     }
 
-    public static ReadAccessor readOnlyForInstance(final Object instance) {
+    public static ReadAccessor readOnlyFromInstance(final Object instance) {
         final ReadAccessor accessor;
         if (instance instanceof Map) {
             accessor = MapReadAccessor.INSTANCE;

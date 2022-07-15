@@ -54,7 +54,7 @@ public abstract class Stmts {
         final int paramSize = paramGroup.size();
         final List<List<ParamValue>> groupList = new ArrayList<>(paramWrapperList.size());
         final ReadAccessor accessor;
-        accessor = ObjectAccessorFactory.readOnlyForInstance(paramWrapperList.get(0));
+        accessor = ObjectAccessorFactory.readOnlyFromInstance(paramWrapperList.get(0));
 
         NamedParam namedParam = null;
         List<ParamValue> group;

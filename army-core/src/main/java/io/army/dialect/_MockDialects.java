@@ -1,9 +1,7 @@
 package io.army.dialect;
 
 
-import io.army.bean.ObjectAccessor;
-import io.army.bean.ReadWrapper;
-import io.army.domain.IDomain;
+import io.army.bean.ObjectWrapper;
 import io.army.env.ArmyEnvironment;
 import io.army.env.StandardEnvironment;
 import io.army.mapping.MappingEnvironment;
@@ -164,18 +162,18 @@ public abstract class _MockDialects {
         private static final MockDomainValuesGenerator INSTANCE = new MockDomainValuesGenerator();
 
         @Override
-        protected ZoneOffset zoneOffset() {
+        protected ZoneOffset factoryZoneOffset() {
             return _TimeUtils.systemZoneOffset();
         }
 
         @Override
-        protected void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor, ReadWrapper readWrapper) {
+        protected void generatorChan(TableMeta<?> table, ObjectWrapper wrapper) {
             for (FieldMeta<?> field : table.fieldChain()) {
-                accessor.set(domain, field.fieldName(), null);
+                wrapper.set(field.fieldName(), null);
             }
             if (table instanceof ChildTableMeta) {
                 for (FieldMeta<?> field : ((ChildTableMeta<?>) table).parentMeta().fieldChain()) {
-                    accessor.set(domain, field.fieldName(), null);
+                    wrapper.set(field.fieldName(), null);
                 }
             }
 

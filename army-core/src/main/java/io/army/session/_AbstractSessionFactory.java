@@ -1,7 +1,7 @@
 package io.army.session;
 
 import io.army.ArmyException;
-import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
 import io.army.codec.JsonCodec;
 import io.army.dialect._AbstractFieldValuesGenerator;
@@ -240,27 +240,28 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         }
 
         @Override
-        protected ZoneOffset zoneOffset() {
+        protected ZoneOffset factoryZoneOffset() {
             final ZoneOffset zoneOffset = this.zoneOffset;
             return zoneOffset == null ? _TimeUtils.systemZoneOffset() : zoneOffset;
         }
 
         @Override
-        protected void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor, ReadWrapper wrapper) {
+        protected void generatorChan(final TableMeta<?> table, final ObjectWrapper wrapper) {
             final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap = this.fieldGeneratorMap;
+            final ReadWrapper readWrapper = wrapper.readonlyWrapper();
             FieldGenerator generator;
             if (table instanceof ChildTableMeta) {
                 final ParentTableMeta<?> parent = ((ChildTableMeta<?>) table).parentMeta();
                 for (FieldMeta<?> field : parent.fieldChain()) {
                     generator = fieldGeneratorMap.get(field);
                     assert generator != null;
-                    accessor.set(domain, field.fieldName(), generator.next(field, wrapper));
+                    wrapper.set(field.fieldName(), generator.next(field, readWrapper));
                 }
             }
             for (FieldMeta<?> field : table.fieldChain()) {
                 generator = fieldGeneratorMap.get(field);
                 assert generator != null;
-                accessor.set(domain, field.fieldName(), generator.next(field, wrapper));
+                wrapper.set(field.fieldName(), generator.next(field, readWrapper));
             }
         }
 

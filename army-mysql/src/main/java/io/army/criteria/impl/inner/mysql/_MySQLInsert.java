@@ -21,7 +21,7 @@ public interface _MySQLInsert extends _Insert {
     List<String> childPartitionList();
 
 
-    interface _InsertWithDuplicateKey {
+    interface _InsertWithDuplicateKey extends _Insert._DuplicateKeyClause {
 
         Map<?, _Expression> valuePairsForDuplicate();
 

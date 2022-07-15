@@ -37,7 +37,7 @@ import java.util.function.Consumer;
 public abstract class _AbstractDialect implements ArmyDialect {
 
 
-    public final _DialectEnv environment;
+    public final _DialectEnv dialectEnv;
 
     /**
      * a unmodified set
@@ -50,12 +50,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected final Dialect dialect;
 
-    protected _AbstractDialect(_DialectEnv environment, Dialect dialect) {
-        this.environment = environment;
+    protected _AbstractDialect(_DialectEnv dialectEnv, Dialect dialect) {
+        this.dialectEnv = dialectEnv;
         this.dialect = dialect;
         this.identifierQuote = identifierQuote();
         this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
-        this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(environment.serverMeta()));
+        this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(dialectEnv.serverMeta()));
     }
 
     /*################################## blow DML batchInsert method ##################################*/
@@ -68,12 +68,24 @@ public abstract class _AbstractDialect implements ArmyDialect {
     public final Stmt insert(final Insert insert, final Visible visible) {
         insert.prepared();
         final Stmt stmt;
+
+        if (!(insert instanceof StandardStatement)) {
+            assertDialectInsert(insert);
+        }
+
         if (insert instanceof StandardStatement) {
             _SQLConsultant.assertStandardInsert(insert);
             stmt = handleStandardValueInsert((_Insert._DomainInsert) insert, visible);
+        } else if (insert instanceof _Insert._DomainInsert) {
+
+        } else if (insert instanceof _Insert._ValueInsert) {
+
+        } else if (insert instanceof _Insert._AssignmentInsert) {
+
+        } else if (insert instanceof _Insert._QueryInsert) {
+
         } else {
-            assertDialectInsert(insert);
-            throw new UnsupportedOperationException();
+            throw _Exceptions.unknownStatement(insert, this.dialect);
         }
         return stmt;
     }
@@ -307,12 +319,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     @Override
     public final boolean isMockEnv() {
-        return this.environment instanceof _MockDialects;
+        return this.dialectEnv instanceof _MockDialects;
     }
 
     @Override
     public final _FieldValueGenerator getFieldValueGenerator() {
-        return this.environment.fieldValuesGenerator();
+        return this.dialectEnv.fieldValuesGenerator();
     }
 
     @Override
@@ -1139,9 +1151,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (javaType == LocalDateTime.class) {
             updateTimeValue = LocalDateTime.now();
         } else if (javaType == OffsetDateTime.class) {
-            updateTimeValue = OffsetDateTime.now(this.environment.zoneOffset());
+            updateTimeValue = OffsetDateTime.now(this.dialectEnv.zoneOffset());
         } else if (javaType == ZonedDateTime.class) {
-            updateTimeValue = ZonedDateTime.now(this.environment.zoneOffset());
+            updateTimeValue = ZonedDateTime.now(this.dialectEnv.zoneOffset());
         } else {
             String m = String.format("%s don't support java type[%s]", updateTime, javaType);
             throw new MetaException(m);
@@ -1211,7 +1223,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
      */
     private Stmt handleStandardValueInsert(final _Insert._DomainInsert insert, final Visible visible) {
         final _ValueInsertContext nonChildContext;
-        nonChildContext = ValueInsertContext.nonChild(insert, this, visible);
+        nonChildContext = DomainInsertContext.forSingle(insert, this, visible);
 
         _DialectUtils.standardInertIntoTable(nonChildContext);
 
@@ -1222,7 +1234,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         final Stmt stmt;
         if (insert.table() instanceof ChildTableMeta) {
             final _ValueInsertContext childContext;
-            childContext = ValueInsertContext.child(insert, this, visible);
+            childContext = DomainInsertContext.forChild(insert, this, visible);
 
             _DialectUtils.standardInertIntoTable(childContext);
             childContext.appendFieldList();

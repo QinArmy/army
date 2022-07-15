@@ -58,7 +58,7 @@ final class MySQLDialect extends MySQL {
 
     @Override
     protected void assertDialectInsert(Insert insert) {
-        super.assertDialectInsert(insert);
+         _MySQLConsultant.assertInsert(insert);
     }
 
     @Override
@@ -75,6 +75,7 @@ final class MySQLDialect extends MySQL {
     protected void assertDialectRowSet(RowSet rowSet) {
         _MySQLConsultant.assertRowSet(rowSet);
     }
+
 
     @Override
     protected void dialectSimpleQuery(final _Query query, final _SimpleQueryContext context) {

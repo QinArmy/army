@@ -58,6 +58,41 @@ abstract class MySQLUtils extends CriteriaUtils {
         return list;
     }
 
+    static int selectModifier(final MySQLWords modifier) {
+        final int level;
+        switch (modifier) {
+            case ALL:
+            case DISTINCT:
+            case DISTINCTROW:
+                level = 1;
+                break;
+            case HIGH_PRIORITY:
+                level = 2;
+                break;
+            case STRAIGHT_JOIN:
+                level = 3;
+                break;
+            case SQL_SMALL_RESULT:
+                level = 4;
+                break;
+            case SQL_BIG_RESULT:
+                level = 5;
+                break;
+            case SQL_BUFFER_RESULT:
+                level = 6;
+                break;
+            case SQL_NO_CACHE:
+                level = 7;
+                break;
+            case SQL_CALC_FOUND_ROWS:
+                level = 8;
+                break;
+            default:
+                level = -1;
+        }
+        return level;
+    }
+
     static int insertModifier(final MySQLWords modifier) {
         final int level;
         switch (modifier) {
@@ -74,6 +109,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         }
         return level;
     }
+
 
     static int replaceModifier(final MySQLWords modifier) {
         final int level;

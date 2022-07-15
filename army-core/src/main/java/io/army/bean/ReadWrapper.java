@@ -29,11 +29,5 @@ public interface ReadWrapper {
     Object get(String propertyName) throws ObjectAccessException;
 
 
-    /**
-     * Return the type of the wrapped bean instance.
-     */
-    Class<?> getWrappedClass();
-
-    ObjectAccessor getObjectAccessor();
 
 }

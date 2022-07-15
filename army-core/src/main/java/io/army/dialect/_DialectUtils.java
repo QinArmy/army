@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -15,6 +16,7 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public abstract class _DialectUtils {
 
@@ -146,6 +148,13 @@ public abstract class _DialectUtils {
 
             }
 
+        }
+    }
+
+    static void checkCommonExpMap(_Insert._CommonExpInsert insert) {
+        final TableMeta<?> table = insert.table();
+        for (Map.Entry<FieldMeta<?>, _Expression> e : insert.commonExpMap().entrySet()) {
+            checkInsertExpField(table, e.getKey(), e.getValue());
         }
     }
 

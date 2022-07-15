@@ -25,6 +25,11 @@ public interface _Insert extends _Statement {
     Map<FieldMeta<?>, Boolean> fieldMap();
 
 
+    interface _DuplicateKeyClause {
+
+    }
+
+
     interface _InsertOption {
 
         boolean isMigration();

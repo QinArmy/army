@@ -1,101 +1,93 @@
 package io.army.dialect;
 
-import io.army.bean.ObjectAccessor;
-import io.army.bean.ReadWrapper;
+import io.army.bean.ObjectWrapper;
 import io.army.criteria.CriteriaException;
-import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util._TimeUtils;
 
 import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.temporal.Temporal;
 
 public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenerator {
 
     @Override
-    public final void generate(final TableMeta<?> table, final IDomain domain
-            , final ObjectAccessor accessor, final ReadWrapper readWrapper) {
+    public final void generate(final TableMeta<?> table, final ObjectWrapper wrapper) {
         if (!(table instanceof SimpleTableMeta)) {
-            discriminatorValue(table, domain, accessor);
+            discriminatorValue(table, wrapper);
         }
-        reservedFields(table, domain, accessor);
-        generatorChan(table, domain, accessor, readWrapper);
+        reservedFields(table, wrapper);
+        generatorChan(table, wrapper);
     }
 
     @Override
-    public void validate(final TableMeta<?> table, final IDomain domain, final ObjectAccessor accessor) {
+    public void validate(final TableMeta<?> table, final ObjectWrapper wrapper) {
         if (!(table instanceof SimpleTableMeta)) {
-            discriminatorValue(table, domain, accessor);
+            discriminatorValue(table, wrapper);
         }
-        checkArmyManagerFields(table, domain, accessor);
+        checkArmyManagerFields(table, wrapper);
     }
 
 
-    protected abstract ZoneOffset zoneOffset();
+    protected abstract ZoneOffset factoryZoneOffset();
 
-    protected abstract void generatorChan(TableMeta<?> table, IDomain domain, ObjectAccessor accessor, ReadWrapper readWrapper);
+    protected abstract void generatorChan(TableMeta<?> table, ObjectWrapper wrapper);
 
 
-    private void reservedFields(final TableMeta<?> table, final IDomain domain, final ObjectAccessor accessor) {
-        final TableMeta<?> parent;
+    private void reservedFields(final TableMeta<?> table, final ObjectWrapper wrapper) {
+        //1. get non-child
+        final TableMeta<?> nonChild;
         if (table instanceof ChildTableMeta) {
-            parent = ((ChildTableMeta<?>) table).parentMeta();
+            nonChild = ((ChildTableMeta<?>) table).parentMeta();
         } else {
-            parent = table;
+            nonChild = table;
+        }
+        //2. get now
+        final Instant now = Instant.now();
+        final ZoneId systemZoneId, factoryZoneId;
+        systemZoneId = ZoneId.systemDefault();
+        factoryZoneId = factoryZoneOffset();
+
+        FieldMeta<?> field;
+        Object fieldValue;
+
+        //3. create time
+        field = nonChild.getField(_MetaBridge.CREATE_TIME);
+        fieldValue = createDateTimeValue(field, now, systemZoneId, factoryZoneId);
+        wrapper.set(field.fieldName(), fieldValue);
+
+        //4. update time
+        if (!nonChild.immutable()) {
+            field = nonChild.getField(_MetaBridge.UPDATE_TIME);
+            fieldValue = createDateTimeValue(field, now, systemZoneId, factoryZoneId);
+            wrapper.set(field.fieldName(), fieldValue);
         }
 
-        final OffsetDateTime now = OffsetDateTime.now(this.zoneOffset());
-        createDateTimeValue(parent.getField(_MetaBridge.CREATE_TIME), now, domain, accessor);
-        if (!parent.immutable()) {
-            createDateTimeValue(parent.getField(_MetaBridge.UPDATE_TIME), now, domain, accessor);
-        }
-
-        if (parent.containField(_MetaBridge.VERSION)) {
-            final FieldMeta<?> field;
-            field = parent.getField(_MetaBridge.VERSION);
+        //5. version
+        if (nonChild.containField(_MetaBridge.VERSION)) {
+            field = nonChild.getField(_MetaBridge.VERSION);
             final Class<?> javaType = field.javaType();
             if (javaType == Integer.class) {
-                accessor.set(domain, _MetaBridge.VERSION, 0);
+                wrapper.set(_MetaBridge.VERSION, 0);
             } else if (javaType == Long.class) {
-                accessor.set(domain, _MetaBridge.VERSION, 0L);
+                wrapper.set(_MetaBridge.VERSION, 0L);
             } else if (javaType == BigInteger.class) {
-                accessor.set(domain, _MetaBridge.VERSION, BigInteger.ZERO);
+                wrapper.set(_MetaBridge.VERSION, BigInteger.ZERO);
             } else {
                 String m = String.format("%s not support java type[%s]", field, javaType.getName());
                 throw new MetaException(m);
             }
         }
-
-        if (parent.containField(_MetaBridge.VISIBLE) && accessor.get(domain, _MetaBridge.VISIBLE) == null) {
-            accessor.set(domain, _MetaBridge.VISIBLE, Boolean.TRUE);
+        //6. visible
+        if (nonChild.containField(_MetaBridge.VISIBLE) && wrapper.get(_MetaBridge.VISIBLE) == null) {
+            wrapper.set(_MetaBridge.VISIBLE, Boolean.TRUE);
         }
 
     }
 
 
-    private void createDateTimeValue(final FieldMeta<?> field, final OffsetDateTime now, final IDomain domain
-            , final ObjectAccessor accessor) {
-        final Class<?> javaType = field.javaType();
-        if (javaType == LocalDateTime.class) {
-            LocalDateTime value = now.withOffsetSameInstant(_TimeUtils.systemZoneOffset()).toLocalDateTime();
-            accessor.set(domain, field.fieldName(), value);
-        } else if (javaType == OffsetDateTime.class) {
-            accessor.set(domain, field.fieldName(), now);
-        } else if (javaType == ZonedDateTime.class) {
-            accessor.set(domain, field.fieldName(), now.toZonedDateTime());
-        } else {
-            String m = String.format("%s not support java type[%s]", field, javaType.getName());
-            throw new MetaException(m);
-        }
-    }
-
-
-    private void discriminatorValue(final TableMeta<?> table, final IDomain domain, final ObjectAccessor accessor) {
+    private void discriminatorValue(final TableMeta<?> table, final ObjectWrapper wrapper) {
         final TableMeta<?> parent;
         if (table instanceof ChildTableMeta) {
             parent = ((ChildTableMeta<?>) table).parentMeta();
@@ -113,11 +105,11 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
                     , table.discriminatorValue());
             throw new MetaException(m);
         }
-        accessor.set(domain, discriminator.fieldName(), codeEnum);
+        wrapper.set(discriminator.fieldName(), codeEnum);
     }
 
-    private void checkArmyManagerFields(final TableMeta<?> table, final IDomain domain, final ObjectAccessor accessor) {
-        if (accessor.get(domain, _MetaBridge.ID) == null) {
+    private void checkArmyManagerFields(final TableMeta<?> table, final ObjectWrapper wrapper) {
+        if (wrapper.get(_MetaBridge.ID) == null) {
             throw nullValueErrorForMigration(table.id());
         }
 
@@ -127,29 +119,29 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
         } else {
             parent = table;
         }
-        if (accessor.get(domain, _MetaBridge.CREATE_TIME) == null) {
+        if (wrapper.get(_MetaBridge.CREATE_TIME) == null) {
             throw nullValueErrorForMigration(parent.getField(_MetaBridge.CREATE_TIME));
         }
 
-        if (!parent.immutable() && accessor.get(domain, _MetaBridge.UPDATE_TIME) == null) {
+        if (!parent.immutable() && wrapper.get(_MetaBridge.UPDATE_TIME) == null) {
             throw nullValueErrorForMigration(parent.getField(_MetaBridge.UPDATE_TIME));
         }
-        if (parent.containField(_MetaBridge.VERSION) && accessor.get(domain, _MetaBridge.VERSION) == null) {
+        if (parent.containField(_MetaBridge.VERSION) && wrapper.get(_MetaBridge.VERSION) == null) {
             throw nullValueErrorForMigration(parent.getField(_MetaBridge.VERSION));
         }
-        if (parent.containField(_MetaBridge.VISIBLE) && accessor.get(domain, _MetaBridge.VISIBLE) == null) {
+        if (parent.containField(_MetaBridge.VISIBLE) && wrapper.get(_MetaBridge.VISIBLE) == null) {
             throw nullValueErrorForMigration(parent.getField(_MetaBridge.VISIBLE));
         }
 
         //TODO 验证这个设计 的合理性
         for (FieldMeta<?> field : table.fieldChain()) {
-            if (accessor.get(domain, field.fieldName()) == null) {
+            if (wrapper.get(field.fieldName()) == null && !field.nullable()) {
                 throw nullValueErrorForMigration(field);
             }
         }
         if (table != parent) {
             for (FieldMeta<?> field : parent.fieldChain()) {
-                if (accessor.get(domain, field.fieldName()) == null) {
+                if (wrapper.get(field.fieldName()) == null && !field.nullable()) {
                     throw nullValueErrorForMigration(field);
                 }
             }
@@ -157,6 +149,24 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
 
 
     }// checkArmyManagerFields
+
+
+    private static Temporal createDateTimeValue(final FieldMeta<?> field, final Instant now, final ZoneId systemZoneId
+            , final ZoneId factoryZoneId) {
+        final Class<?> javaType = field.javaType();
+        final Temporal temporal;
+        if (javaType == LocalDateTime.class) {
+            temporal = LocalDateTime.ofInstant(now, systemZoneId);
+        } else if (javaType == OffsetDateTime.class) {
+            temporal = OffsetDateTime.ofInstant(now, factoryZoneId);
+        } else if (javaType == ZonedDateTime.class) {
+            temporal = ZonedDateTime.ofInstant(now, factoryZoneId);
+        } else {
+            String m = String.format("%s not support java type[%s]", field, javaType.getName());
+            throw new MetaException(m);
+        }
+        return temporal;
+    }
 
 
     private static CriteriaException nullValueErrorForMigration(FieldMeta<?> field) {
