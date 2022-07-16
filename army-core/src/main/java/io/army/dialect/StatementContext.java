@@ -120,6 +120,9 @@ abstract class StatementContext implements StmtContext, StmtParams {
     }
 
 
+    /**
+     * @return null or {@link  ValueExpression} or param value.
+     */
     @Nullable
     Object readNamedParam(String name) {
         throw new UnsupportedOperationException();

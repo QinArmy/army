@@ -41,6 +41,8 @@ public interface _Insert extends _Statement {
 
     interface _CommonExpInsert extends _Insert, _InsertOption {
 
+        boolean isPreferLiteral();
+
 
         Map<FieldMeta<?>, _Expression> commonExpMap();
 
@@ -58,8 +60,6 @@ public interface _Insert extends _Statement {
 
     interface _DomainInsert extends _CommonExpInsert {
 
-
-        boolean isPreferLiteral();
 
 
         List<IDomain> domainList();
@@ -82,6 +82,11 @@ public interface _Insert extends _Statement {
 
         @Nullable
         RowSet childRowSet();
+
+
+    }
+
+    interface _ReturningInsert extends _Insert {
 
 
     }

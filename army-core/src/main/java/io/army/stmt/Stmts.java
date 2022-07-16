@@ -5,6 +5,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
+import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._CollectionUtils;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class Stmts {
@@ -27,8 +29,12 @@ public abstract class Stmts {
      * Post insert for generated key
      * </p>
      */
-    public static GeneratedKeyStmt post(final InsertStmtParams params) {
-        return new PostStmt(params);
+    public static GeneratedKeyStmt domainPost(final InsertStmtParams.DomainParams params) {
+        return new DomainPostStmt(params);
+    }
+
+    public static GeneratedKeyStmt valuePost(final InsertStmtParams.ValueParams params) {
+        return new ValuePostStmt(params);
     }
 
     public static io.army.stmt.SimpleStmt minSimple(final StmtParams params) {
@@ -328,85 +334,143 @@ public abstract class Stmts {
 
     }//SelectStmt
 
-    private static final class PostStmt implements GeneratedKeyStmt {
+    private static abstract class PostStmt implements GeneratedKeyStmt {
 
         private final String sql;
 
-        private final List<ParamValue> paramGroup;
+        private final List<ParamValue> paramList;
 
         private final List<Selection> selectionList;
 
-        private final List<IDomain> domainList;
+        final PrimaryFieldMeta<?> field;
 
-        private final ObjectAccessor domainAccessor;
-
-        private final PrimaryFieldMeta<?> field;
-
-        private final String idAlias;
+        private final String idReturnAlias;
 
         private PostStmt(InsertStmtParams params) {
             this.sql = params.sql();
-            this.paramGroup = params.paramList();
+            this.paramList = params.paramList();
             this.selectionList = params.selectionList();
-            this.domainList = params.domainList();
+            this.field = params.idField();
 
-            this.domainAccessor = params.domainAccessor();
-            this.field = params.returnId();
-            this.idAlias = params.idReturnAlias();
+            this.idReturnAlias = params.idReturnAlias();
         }
 
         @Override
-        public String idReturnAlias() {
-            return this.idAlias;
-        }
-
-        @Override
-        public ObjectAccessor domainAccessor() {
-            return this.domainAccessor;
-        }
-
-        @Override
-        public List<IDomain> domainList() {
-            return this.domainList;
-        }
-
-        @Override
-        public PrimaryFieldMeta<?> idField() {
+        public final PrimaryFieldMeta<?> idField() {
             return this.field;
         }
 
         @Override
-        public String sql() {
+        public final String idReturnAlias() {
+            return this.idReturnAlias;
+        }
+
+        @Override
+        public final String sql() {
             return this.sql;
         }
 
         @Override
-        public boolean hasOptimistic() {
+        public final boolean hasOptimistic() {
             return false;
         }
 
         @Override
-        public List<ParamValue> paramGroup() {
-            return this.paramGroup;
+        public final List<ParamValue> paramGroup() {
+            return this.paramList;
         }
 
         @Override
-        public List<Selection> selectionList() {
+        public final List<Selection> selectionList() {
             return this.selectionList;
         }
 
-
         @Override
-        public String printSql(Function<String, String> function) {
+        public final String printSql(Function<String, String> function) {
             return function.apply(this.sql);
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             return this.sql;
         }
 
+
     }//PostStmt
+
+    private static final class DomainPostStmt extends PostStmt {
+
+        private final List<IDomain> domainList;
+
+        private final int rowSize;
+
+        private final ObjectAccessor domainAccessor;
+
+        private DomainPostStmt(InsertStmtParams.DomainParams params) {
+            super(params);
+            this.domainList = params.domainList();
+            this.rowSize = this.domainList.size();
+            this.domainAccessor = params.domainAccessor();
+        }
+
+        @Override
+        public int rowSize() {
+            return this.rowSize;
+        }
+
+        @Override
+        public void setGeneratedIdValue(final int indexBasedZero, final @Nullable Object idValue) {
+            if (indexBasedZero < 0 || indexBasedZero >= this.rowSize) {
+                String m = String.format("indexBasedZero[%s] not in[0,%s]", indexBasedZero, this.rowSize);
+                throw new IllegalArgumentException(m);
+            }
+            if (idValue == null) {
+                throw new NullPointerException("idValue");
+            }
+            final IDomain domain;
+            domain = this.domainList.get(indexBasedZero);
+            final String fieldName = this.field.fieldName();
+
+            if (this.domainAccessor.get(domain, fieldName) != null) {
+                String m = String.format("%s value duplication.", this.field);
+                throw new IllegalStateException(m);
+            }
+            this.domainAccessor.set(domain, fieldName, idValue);
+        }
+
+
+    }//DomainPostStmt
+
+
+    private static final class ValuePostStmt extends PostStmt {
+
+        private final List<Consumer<Object>> consumerList;
+
+        private final int rowSize;
+
+        private ValuePostStmt(InsertStmtParams.ValueParams params) {
+            super(params);
+            this.consumerList = params.consumerList();
+            this.rowSize = this.consumerList.size();
+        }
+
+        @Override
+        public int rowSize() {
+            return this.rowSize;
+        }
+
+        @Override
+        public void setGeneratedIdValue(final int indexBasedZero, final @Nullable Object idValue) {
+            if (indexBasedZero < 0 || indexBasedZero >= this.rowSize) {
+                String m = String.format("indexBasedZero[%s] not in[0,%s]", indexBasedZero, this.rowSize);
+                throw new IllegalArgumentException(m);
+            }
+            if (idValue == null) {
+                throw new NullPointerException("idValue");
+            }
+            this.consumerList.get(indexBasedZero).accept(idValue);
+        }
+    }//ValuePostStmt
 
 
 }

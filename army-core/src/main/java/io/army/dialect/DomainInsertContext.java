@@ -199,7 +199,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         if (this.table.id().generatorType() != GeneratorType.POST || this.duplicateKeyClause) {
             stmt = Stmts.minSimple(this);
         } else {
-            stmt = Stmts.post(this);
+            stmt = Stmts.domainPost(this);
         }
         return stmt;
     }
@@ -218,17 +218,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
     @Override
     public List<Selection> selectionList() {
         return Collections.emptyList();
-    }
-
-    @Override
-    public PrimaryFieldMeta<?> returnId() {
-        return this.returnId;
-    }
-
-
-    @Override
-    public String idReturnAlias() {
-        return this.idSelectionAlias;
     }
 
 

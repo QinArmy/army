@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.IPredicate;
-import io.army.criteria.NamedParam;
-import io.army.criteria.QualifiedField;
-import io.army.criteria.TableField;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;

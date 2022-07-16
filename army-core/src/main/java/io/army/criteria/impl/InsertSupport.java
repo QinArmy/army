@@ -593,6 +593,11 @@ abstract class InsertSupport {
             return this.nullHandleMode;
         }
 
+        @Override
+        public final boolean isPreferLiteral() {
+            return this.preferLiteral;
+        }
+
         final void unmodifiedCommonExpMap() {
             final Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
             if (map == null) {

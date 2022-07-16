@@ -7,7 +7,6 @@ import io.army.bean.PairBean;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.Selection;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping.MappingType;
@@ -418,13 +417,13 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
             if (returningId) {
                 rows = doExtractId(statement.executeQuery(), (GeneratedKeyStmt) stmt);
             } else {
-                if (factory.useLargeUpdate) {
+                if (this.factory.useLargeUpdate) {
                     rows = statement.executeLargeUpdate();
                 } else {
                     rows = statement.executeUpdate();
                 }
                 if (resultSetType == Statement.RETURN_GENERATED_KEYS) {
-                    getGenerateKeys(statement, rows, (GeneratedKeyStmt) stmt);
+                    extractGenerateKeys(statement, rows, (GeneratedKeyStmt) stmt);
                 }
             }
             if (rows < 1) {
@@ -510,11 +509,10 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     /**
      * @see #executeInsert(SimpleStmt, int)
      */
-    private void getGenerateKeys(PreparedStatement statement, final long insertedRows, final GeneratedKeyStmt stmt)
+    private void extractGenerateKeys(PreparedStatement statement, final long insertedRows, final GeneratedKeyStmt stmt)
             throws SQLException {
-        final List<IDomain> domainList = stmt.domainList();
-        if (insertedRows != domainList.size()) {
-            throw valueInsertDomainWrapperSizeError(insertedRows, domainList.size());
+        if (insertedRows != stmt.rowSize()) {
+            throw valueInsertDomainWrapperSizeError(insertedRows, stmt.rowSize());
         }
 
         final String primaryKeyName = stmt.idReturnAlias();
@@ -538,35 +536,31 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
 
     /**
      * @see #executeInsert(SimpleStmt, int)
-     * @see #getGenerateKeys(PreparedStatement, long, GeneratedKeyStmt)
+     * @see #extractGenerateKeys(PreparedStatement, long, GeneratedKeyStmt)
      */
     private static int doExtractId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
-        final List<IDomain> domainList = stmt.domainList();
-        int index = 0;
+        final int rowSize = stmt.rowSize();
+        int rowIndex = 0;
         try (ResultSet resultSet = idResultSet) {
-            final String primaryKeyName = stmt.idReturnAlias();
             final PrimaryFieldMeta<?> idField = stmt.idField();
             final Class<?> idJavaType = idField.javaType();
-            final ObjectAccessor accessor = stmt.domainAccessor();
-            IDomain domain;
-            for (; resultSet.next(); index++) {
-                domain = domainList.get(index);
+            for (; resultSet.next(); rowIndex++) {
                 if (idJavaType == Integer.class) {
-                    accessor.set(domain, primaryKeyName, resultSet.getInt(1));
+                    stmt.setGeneratedIdValue(rowIndex, resultSet.getInt(1));
                 } else if (idJavaType == Long.class) {
-                    accessor.set(domain, primaryKeyName, resultSet.getLong(1));
+                    stmt.setGeneratedIdValue(rowIndex, resultSet.getLong(1));
                 } else if (idJavaType == BigInteger.class) {
-                    accessor.set(domain, primaryKeyName, resultSet.getObject(1, BigInteger.class));
+                    stmt.setGeneratedIdValue(rowIndex, resultSet.getObject(1, BigInteger.class));
                 } else {
                     throw _Exceptions.autoIdErrorJavaType(idField);
                 }
             }
-            if (index != domainList.size()) {
-                throw insertedRowsAndGenerateIdNotMatch(domainList.size(), index);
+            if (rowIndex != rowSize) {
+                throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
             }
-            return index;
+            return rowIndex;
         } catch (IndexOutOfBoundsException e) {
-            throw insertedRowsAndGenerateIdNotMatch(domainList.size(), index);
+            throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
         }
     }
 

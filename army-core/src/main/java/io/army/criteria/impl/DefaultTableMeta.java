@@ -280,7 +280,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private final List<IndexMeta<T>> indexMetaList;
 
-    private final PrimaryFieldMeta<T> primaryField;
+     final PrimaryFieldMeta<T> primaryField;
 
 
     private final List<FieldMeta<?>> generatorChain;
@@ -413,7 +413,6 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return this.fieldNameToFields.containsKey(fieldName);
     }
 
-
     @Override
     public final FieldMeta<T> getField(final String fieldName) throws IllegalArgumentException {
         final FieldMeta<T> fieldMeta;
@@ -500,6 +499,32 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
             super(domainClass);
         }
 
+
+        @Override
+        public boolean containComplexField(final String fieldName) {
+            return this.fieldNameToFields.containsKey(fieldName);
+        }
+
+        @Override
+        public FieldMeta<? super T> getComplexFiled(final String filedName) {
+            final FieldMeta<? super T> field;
+            field = this.fieldNameToFields.get(filedName);
+            if (field == null) {
+                throw notFoundComplexField(this, filedName);
+            }
+            return field;
+        }
+
+        @Override
+        public FieldMeta<? super T> tryGetComplexFiled(String filedName) {
+            return this.fieldNameToFields.get(filedName);
+        }
+
+        @Override
+        public PrimaryFieldMeta<? super T> getNonChildId() {
+            return this.primaryField;
+        }
+
         @Override
         public FieldMeta<? super T> discriminator() {
             // always null
@@ -526,6 +551,32 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
+        public boolean containComplexField(final String fieldName) {
+            return this.fieldNameToFields.containsKey(fieldName);
+        }
+
+        @Override
+        public FieldMeta<? super T> getComplexFiled(final String filedName) {
+            final FieldMeta<? super T> field;
+            field = this.fieldNameToFields.get(filedName);
+            if (field == null) {
+                throw notFoundComplexField(this, filedName);
+            }
+            return field;
+        }
+
+        @Override
+        public FieldMeta<? super T> tryGetComplexFiled(String filedName) {
+            return this.fieldNameToFields.get(filedName);
+        }
+
+        @Override
+        public PrimaryFieldMeta<? super T> getNonChildId() {
+            return this.primaryField;
+        }
+
+        @NonNull
+        @Override
         public FieldMeta<T> discriminator() {
             return this.discriminator;
         }
@@ -542,26 +593,59 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     private static final class DefaultChildTable<P extends IDomain, T extends P> extends DefaultTableMeta<T>
             implements ComplexTableMeta<P, T> {
 
-        private final ParentTableMeta<P> parentTableMeta;
+        private final DefaultParentTable<P> parent;
 
         private final int discriminatorValue;
 
-        private DefaultChildTable(final ParentTableMeta<P> parentTableMeta, final Class<T> domainClass) {
+        private DefaultChildTable(final ParentTableMeta<P> parent, final Class<T> domainClass) {
             super(domainClass);
-            TableMetaUtils.assertParentTableMeta(parentTableMeta, domainClass);
-            this.parentTableMeta = parentTableMeta;
-            this.discriminatorValue = TableMetaUtils.discriminatorValue(parentTableMeta, domainClass);
+            TableMetaUtils.assertParentTableMeta(parent, domainClass);
+            this.parent = (DefaultParentTable<P>) parent;
+            this.discriminatorValue = TableMetaUtils.discriminatorValue(parent, domainClass);
+        }
+
+        @Override
+        public boolean containComplexField(final String fieldName) {
+            return this.fieldNameToFields.containsKey(fieldName) || this.parent.containField(fieldName);
+        }
+
+        @Override
+        public FieldMeta<? super T> getComplexFiled(final String filedName) {
+            FieldMeta<? super T> field;
+            field = this.fieldNameToFields.get(filedName);
+            if (field == null) {
+                field = this.parent.fieldNameToFields.get(filedName);
+                if (field == null) {
+                    throw notFoundComplexField(this, filedName);
+                }
+            }
+            return field;
+        }
+
+        @Override
+        public FieldMeta<? super T> tryGetComplexFiled(String filedName) {
+            FieldMeta<? super T> field;
+            field = this.fieldNameToFields.get(filedName);
+            if (field == null) {
+                field = this.parent.fieldNameToFields.get(filedName);
+            }
+            return field;
+        }
+
+        @Override
+        public PrimaryFieldMeta<? super T> getNonChildId() {
+            return this.parent.primaryField;
         }
 
         @NonNull
         @Override
         public FieldMeta<? super T> discriminator() {
-            return this.parentTableMeta.discriminator();
+            return this.parent.discriminator;
         }
 
         @Override
         public ParentTableMeta<P> parentMeta() {
-            return this.parentTableMeta;
+            return this.parent;
         }
 
         @Override
@@ -570,6 +654,12 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
 
+    }//DefaultChildTable
+
+
+    private static IllegalArgumentException notFoundComplexField(TableMeta<?> table, String fieldName) {
+        String m = String.format("Not found complex field[%s] in %s .", fieldName, table);
+        return new IllegalArgumentException(m);
     }
 
 

@@ -1,27 +1,30 @@
 package io.army.dialect;
 
+import io.army.annotation.GeneratorType;
 import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NullHandleMode;
-import io.army.criteria.StandardStatement;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.stmt.InsertStmtParams;
 import io.army.util._Exceptions;
 
 import java.util.*;
 
-abstract class ValuesSyntaxInsertContext extends StatementContext implements _ValueInsertContext {
+abstract class ValuesSyntaxInsertContext extends StatementContext implements _ValueInsertContext, InsertStmtParams {
 
 
     final boolean migration;
 
     final NullHandleMode nullHandleMode;
+
+    final boolean preferLiteral;
 
     final TableMeta<?> table;
 
@@ -32,15 +35,18 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     final boolean duplicateKeyClause;
 
     /**
-     * return id for standard criteria api
+     * {@link #table} instanceof {@link  SingleTableMeta} and  dialect support returning clause nad generated key.
      */
     final PrimaryFieldMeta<?> returnId;
+
+    /**
+     * @see #returnId
+     */
+    final String idSelectionAlias;
 
     final FieldMeta<?> discriminator;
 
     final int discriminatorValue;
-
-    final String idSelectionAlias;
 
 
     /**
@@ -49,11 +55,18 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * </p>
      */
     ValuesSyntaxInsertContext(ArmyDialect dialect, _Insert._CommonExpInsert stmt, Visible visible) {
-        super(dialect, isPreferLiteral(stmt), visible);
+        super(dialect, stmt.isPreferLiteral(), visible);
 
         this.migration = stmt.isMigration();
-        this.nullHandleMode = stmt.nullHandle();
+        final NullHandleMode handleMode = stmt.nullHandle();
+        if (handleMode == null) {
+            this.nullHandleMode = NullHandleMode.INSERT_DEFAULT;
+        } else {
+            this.nullHandleMode = handleMode;
+        }
+        this.preferLiteral = stmt.isPreferLiteral();
         this.commonExpMap = stmt.commonExpMap();
+
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 
         final TableMeta<?> domainTable = stmt.table();
@@ -76,14 +89,18 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         } else {
             this.fieldList = mergeFieldList(this.table, fieldList);
         }
-        if (stmt instanceof StandardStatement || !dialect.supportInsertReturning()) {
+
+        final PrimaryFieldMeta<?> idField = this.table.id();
+        if (idField.generatorType() != GeneratorType.POST || !dialect.supportInsertReturning()) {
             this.returnId = null;
             this.idSelectionAlias = null;
+        } else if (stmt instanceof _Insert._ReturningInsert) {
+            //TODO
+            throw new UnsupportedOperationException();
         } else {
-            this.returnId = this.table.id();
-            this.idSelectionAlias = this.returnId.fieldName();
+            this.returnId = idField;
+            this.idSelectionAlias = idField.fieldName();
         }
-
 
     }
 
@@ -94,11 +111,18 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * </p>
      */
     ValuesSyntaxInsertContext(_Insert._CommonExpInsert stmt, ArmyDialect dialect, Visible visible) {
-        super(dialect, isPreferLiteral(stmt), visible);
+        super(dialect, stmt.isPreferLiteral(), visible);
 
         this.migration = stmt.isMigration();
-        this.nullHandleMode = stmt.nullHandle();
+        final NullHandleMode handleMode = stmt.nullHandle();
+        if (handleMode == null) {
+            this.nullHandleMode = NullHandleMode.INSERT_DEFAULT;
+        } else {
+            this.nullHandleMode = handleMode;
+        }
+        this.preferLiteral = stmt.isPreferLiteral();
         this.commonExpMap = stmt.commonExpMap();
+
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 
         final ChildTableMeta<?> table = (ChildTableMeta<?>) stmt.table();
@@ -154,7 +178,8 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         if (returnId == null) {
             return;
         }
-        final StringBuilder sqlBuilder = this.sqlBuilder
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_RETURNING)
                 .append(_Constant.SPACE);
 
@@ -163,12 +188,35 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);
 
-        dialect.identifier(returnId.fieldName(), sqlBuilder);
+        dialect.identifier(this.idSelectionAlias, sqlBuilder);
     }
 
+    @Override
+    public final PrimaryFieldMeta<?> idField() {
+        PrimaryFieldMeta<?> field = this.returnId;
+        if (field == null) {
+            final TableMeta<?> table = this.table;
+            if (table instanceof ChildTableMeta) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            field = table.id();
+        }
+        return field;
+    }
 
-    private static boolean isPreferLiteral(_Insert._CommonExpInsert stmt) {
-        return stmt instanceof _Insert._DomainInsert && ((_Insert._DomainInsert) stmt).isPreferLiteral();
+    @Override
+    public final String idReturnAlias() {
+        String alias = this.idSelectionAlias;
+        if (alias == null) {
+            final TableMeta<?> table = this.table;
+            if (table instanceof ChildTableMeta) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            alias = table.id().fieldName();
+        }
+        return alias;
     }
 
 
@@ -272,15 +320,6 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             return this.accessor.get(this.domain, propertyName);
         }
 
-        @Override
-        public Class<?> getWrappedClass() {
-            return this.accessor.getAccessedType();
-        }
-
-        @Override
-        public ObjectAccessor getObjectAccessor() {
-            return this.accessor;
-        }
 
     }//BeanReadWrapper
 

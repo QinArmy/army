@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.DataField;
 import io.army.criteria.NamedParam;
 import io.army.criteria.SubQuery;
+import io.army.criteria.ValueExpression;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;

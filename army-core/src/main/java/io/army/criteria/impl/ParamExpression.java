@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.ValueExpression;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;

@@ -30,6 +30,9 @@ public interface TableMeta<T extends IDomain> extends TableItem, DatabaseObject 
 
     PrimaryFieldMeta<T> id();
 
+    PrimaryFieldMeta<? super T> getNonChildId();
+
+
     @Nullable
     FieldMeta<? super T> version();
 
@@ -55,10 +58,18 @@ public interface TableMeta<T extends IDomain> extends TableItem, DatabaseObject 
 
     boolean containField(String fieldName);
 
+    boolean containComplexField(String fieldName);
+
     /**
      * @throws IllegalArgumentException when not found matched {@link FieldMeta} for fieldName
      */
     FieldMeta<T> getField(String fieldName);
+
+
+    FieldMeta<? super T> getComplexFiled(String filedName);
+
+    @Nullable
+    FieldMeta<? super T> tryGetComplexFiled(String filedName);
 
     /**
      * @throws IllegalArgumentException when not found matched {@link IndexFieldMeta} for fieldName

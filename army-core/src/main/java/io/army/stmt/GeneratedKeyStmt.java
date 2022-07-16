@@ -1,11 +1,6 @@
 package io.army.stmt;
 
-import io.army.bean.ObjectAccessor;
-import io.army.domain.IDomain;
-import io.army.lang.Nullable;
 import io.army.meta.PrimaryFieldMeta;
-
-import java.util.List;
 
 /**
  * <p>
@@ -14,15 +9,12 @@ import java.util.List;
  */
 public interface GeneratedKeyStmt extends SimpleStmt {
 
+    int rowSize();
 
-    ObjectAccessor domainAccessor();
+    void setGeneratedIdValue(int indexBasedZero, Object idValue);
 
-    List<IDomain> domainList();
-
-    @Nullable
     PrimaryFieldMeta<?> idField();
 
-    @Nullable
     String idReturnAlias();
 
 }
