@@ -506,6 +506,11 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
+        public boolean isComplexField(final FieldMeta<?> field) {
+            return field.tableMeta() == this;
+        }
+
+        @Override
         public FieldMeta<? super T> getComplexFiled(final String filedName) {
             final FieldMeta<? super T> field;
             field = this.fieldNameToFields.get(filedName);
@@ -521,7 +526,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
-        public PrimaryFieldMeta<? super T> getNonChildId() {
+        public PrimaryFieldMeta<? super T> nonChildId() {
             return this.primaryField;
         }
 
@@ -556,6 +561,11 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
+        public boolean isComplexField(final FieldMeta<?> field) {
+            return field.tableMeta() == this;
+        }
+
+        @Override
         public FieldMeta<? super T> getComplexFiled(final String filedName) {
             final FieldMeta<? super T> field;
             field = this.fieldNameToFields.get(filedName);
@@ -571,7 +581,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
-        public PrimaryFieldMeta<? super T> getNonChildId() {
+        public PrimaryFieldMeta<? super T> nonChildId() {
             return this.primaryField;
         }
 
@@ -610,6 +620,13 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
+        public boolean isComplexField(final FieldMeta<?> field) {
+            final TableMeta<?> fieldTable;
+            fieldTable = field.tableMeta();
+            return fieldTable == this || fieldTable == this.parent;
+        }
+
+        @Override
         public FieldMeta<? super T> getComplexFiled(final String filedName) {
             FieldMeta<? super T> field;
             field = this.fieldNameToFields.get(filedName);
@@ -633,7 +650,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         }
 
         @Override
-        public PrimaryFieldMeta<? super T> getNonChildId() {
+        public PrimaryFieldMeta<? super T> nonChildId() {
             return this.parent.primaryField;
         }
 

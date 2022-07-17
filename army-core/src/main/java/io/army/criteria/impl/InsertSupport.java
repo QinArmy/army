@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Dialect;
 import io.army.dialect._DialectParser;
+import io.army.dialect._DialectUtils;
 import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -405,7 +406,7 @@ abstract class InsertSupport {
      */
     @SuppressWarnings("unchecked")
     static abstract class CommonExpClause<C, F extends TableField, RR> extends ColumnsClause<C, F, RR>
-            implements Insert._CommonExpClause<C, F, RR>, _Insert._CommonExpInsert {
+            implements Insert._CommonExpClause<C, F, RR>, _Insert._ValuesSyntaxInsert {
 
 
         final boolean preferLiteral;
@@ -703,10 +704,6 @@ abstract class InsertSupport {
             return this.valuesEnd();
         }
 
-        @Override
-        public final boolean isPreferLiteral() {
-            return this.preferLiteral;
-        }
 
         @Override
         public final List<IDomain> domainList() {
@@ -734,15 +731,18 @@ abstract class InsertSupport {
 
         final C criteria;
 
+        final TableMeta<?> table;
+
         final Predicate<FieldMeta<?>> containField;
 
         private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
-        StaticColumnValuePairClause(CriteriaContext criteriaContext, Predicate<FieldMeta<?>> containField) {
+        StaticColumnValuePairClause(CriteriaContext criteriaContext, TableMeta<?> table, Predicate<FieldMeta<?>> containField) {
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
+            this.table = table;
             this.containField = containField;
         }
 
@@ -845,13 +845,15 @@ abstract class InsertSupport {
         }
 
 
-        private void innerAddValuePair(FieldMeta<?> field, @Nullable Expression value) {
+        private void innerAddValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
             if (!this.containField.test(field)) {
                 throw notContainField(this.criteriaContext, field);
             }
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
+            _DialectUtils.checkInsertField(this.table, field, (ArmyExpression) value, this::forbidField);
+
             Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
             if (currentRow == null) {
                 currentRow = new HashMap<>();
@@ -860,6 +862,10 @@ abstract class InsertSupport {
             if (currentRow.putIfAbsent(field, (ArmyExpression) value) != null) {
                 throw duplicationValuePair(this.criteriaContext, field);
             }
+        }
+
+        private CriteriaException forbidField(FieldMeta<?> field, Function<FieldMeta<?>, CriteriaException> function) {
+            return CriteriaContextStack.criteriaError(this.criteriaContext, function, field);
         }
 
 
@@ -946,7 +952,7 @@ abstract class InsertSupport {
         abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList);
 
 
-        private PairConsumer<F> addValuePair(FieldMeta<?> field, @Nullable Expression value) {
+        private PairConsumer<F> addValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
             final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
             if (currentPairMap == null) {
                 String m = String.format("Not found any row,please use %s.row() method create row."
@@ -962,10 +968,16 @@ abstract class InsertSupport {
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, "value not army expression.");
             }
+            _DialectUtils.checkInsertField(this.table, field, (ArmyExpression) value, this::forbidField);
+
             if (currentPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
                 throw duplicationValuePair(this.criteriaContext, field);
             }
             return this;
+        }
+
+        private CriteriaException forbidField(FieldMeta<?> field, Function<FieldMeta<?>, CriteriaException> function) {
+            return CriteriaContextStack.criteriaError(this.criteriaContext, function, field);
         }
 
         @SuppressWarnings("unchecked")
@@ -1452,14 +1464,14 @@ abstract class InsertSupport {
 
 
     static abstract class ValueSyntaxStatement<I extends DmlStatement.DmlInsert>
-            extends InsertStatement<I> implements _Insert._CommonExpInsert {
+            extends InsertStatement<I> implements _Insert._ValuesSyntaxInsert {
 
         private final boolean migration;
         private final NullHandleMode nullHandleMode;
 
         private final Map<FieldMeta<?>, _Expression> commonExpMap;
 
-        ValueSyntaxStatement(_Insert._CommonExpInsert clause) {
+        ValueSyntaxStatement(_ValuesSyntaxInsert clause) {
             super(clause);
             this.migration = clause.isMigration();
             this.nullHandleMode = clause.nullHandle();

@@ -5,8 +5,8 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util.ArrayUtils;
@@ -17,11 +17,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public abstract class _DialectUtils {
 
     static final Collection<String> FORBID_INSERT_FIELDS = ArrayUtils.asUnmodifiableList(
-            _MetaBridge.ID, _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION
+            _MetaBridge.CREATE_TIME, _MetaBridge.UPDATE_TIME, _MetaBridge.VERSION
     );
 
     protected _DialectUtils() {
@@ -44,32 +46,49 @@ public abstract class _DialectUtils {
     }
 
 
-    public static void checkInsertExpField(final TableMeta<?> table, final FieldMeta<?> field
-            , final _Expression value) {
+    public static void checkInsertField(final TableMeta<?> table, final FieldMeta<?> field
+            , final _Expression value
+            , final @Nullable BiFunction<FieldMeta<?>, Function<FieldMeta<?>, CriteriaException>, CriteriaException> function) {
 
-        if (table instanceof ChildTableMeta) {
-            final TableMeta<?> belongOf = field.tableMeta();
-            if (belongOf != table && belongOf != ((ChildTableMeta<?>) table).parentMeta()) {
+        if (!field.insertable()) {
+            if (function == null) {
+                throw _Exceptions.nonInsertableField(field);
+            }
+            throw function.apply(field, _Exceptions::nonInsertableField);
+        }
+        if (!table.isComplexField(field)) {
+            if (function == null) {
                 throw _Exceptions.unknownColumn(null, field);
             }
-        } else if (field.tableMeta() != table) {
-            throw _Exceptions.unknownColumn(null, field);
-        }
-        if (!field.insertable()) {
-            throw _Exceptions.nonInsertableField(field);
+            throw function.apply(field, _Exceptions::unknownColumn);
         }
         if (field == table.discriminator()) {
-            throw _Exceptions.armyManageField(field);
+            if (function == null) {
+                throw _Exceptions.armyManageField(field);
+            }
+            throw function.apply(field, _Exceptions::armyManageField);
         }
         if (!field.nullable() && value.isNullableValue()) {
-            throw _Exceptions.nonNullField(field);
+            if (function == null) {
+                throw _Exceptions.nonNullField(field);
+            }
+            throw function.apply(field, _Exceptions::nonNullField);
         }
+
         if (FORBID_INSERT_FIELDS.contains(field.fieldName())) {
-            throw _Exceptions.armyManageField(field);
+            if (function == null) {
+                throw _Exceptions.armyManageField(field);
+            }
+            throw function.apply(field, _Exceptions::armyManageField);
         }
-        if (field.generator() != null) {
-            throw _Exceptions.insertExpDontSupportField(field);
+        if (field.generatorType() != null) {
+            if (function == null) {
+                throw _Exceptions.insertExpDontSupportField(field);
+            }
+            throw function.apply(field, _Exceptions::insertExpDontSupportField);
         }
+
+
     }
 
 
@@ -151,10 +170,17 @@ public abstract class _DialectUtils {
         }
     }
 
-    static void checkCommonExpMap(_Insert._CommonExpInsert insert) {
+    static void checkCommonExpMap(final _Insert._ValuesSyntaxInsert insert) {
         final TableMeta<?> table = insert.table();
+        final boolean migration = insert.isMigration();
+        FieldMeta<?> field;
+
         for (Map.Entry<FieldMeta<?>, _Expression> e : insert.commonExpMap().entrySet()) {
-            checkInsertExpField(table, e.getKey(), e.getValue());
+            field = e.getKey();
+            if (!migration && field instanceof PrimaryFieldMeta) {
+                throw _Exceptions.armyManageField(field);
+            }
+            checkInsertField(table, field, e.getValue(), null);
         }
     }
 

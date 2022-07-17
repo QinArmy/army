@@ -78,6 +78,19 @@ final class MySQLDialect extends MySQL {
 
 
     @Override
+    protected void valueSyntaxSingleInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert stmt) {
+        final _MySQLInsert insert = (_MySQLInsert) stmt;
+
+
+    }
+
+    @Override
+    protected void valueSyntaxChildInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert stmt) {
+        super.valueSyntaxChildInsert(context, stmt);
+    }
+
+
+    @Override
     protected void dialectSimpleQuery(final _Query query, final _SimpleQueryContext context) {
         if (context.dialect() != this) {
             throw illegalDialect();

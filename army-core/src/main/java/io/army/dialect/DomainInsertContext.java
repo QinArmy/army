@@ -1,10 +1,8 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.bean.ObjectAccessor;
-import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.*;
 import io.army.criteria.NullHandleMode;
-import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -13,14 +11,12 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,26 +25,21 @@ import java.util.Map;
  * This class representing standard value insert context.
  * </p>
  */
-final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams {
+final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams.DomainParams {
 
     static DomainInsertContext forSingle(_Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
         _DialectUtils.checkCommonExpMap(insert);
         return new DomainInsertContext(dialect, insert, visible);
     }
 
-    static DomainInsertContext forChild(_Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
-        return new DomainInsertContext(insert, dialect, visible);
+    static DomainInsertContext forChild(DomainInsertContext parentContext, _Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
+        return new DomainInsertContext(parentContext, insert, dialect, visible);
     }
 
 
-    private final boolean preferLiteral;
-
-    private final ObjectAccessor domainAccessor;
+    private final DomainWrapper domainWrapper;
 
     private final List<IDomain> domainList;
-
-
-    private IDomain currentDomain;
 
 
     /**
@@ -56,22 +47,22 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
      */
     private DomainInsertContext(ArmyDialect dialect, _Insert._DomainInsert stmt, Visible visible) {
         super(dialect, stmt, visible);
-
-        this.preferLiteral = stmt.isPreferLiteral();
         this.domainList = stmt.domainList();
-        this.domainAccessor = ObjectAccessorFactory.forBean(stmt.table().javaType());
+        //must be stmt.table().javaType()) ,not this.table.javaType()
+        this.domainWrapper = new DomainWrapper(ObjectAccessorFactory.forBean(stmt.table().javaType()));
 
     }
 
     /**
      * create for {@link  ChildTableMeta}
      */
-    private DomainInsertContext(_Insert._DomainInsert stmt, ArmyDialect dialect, Visible visible) {
+    private DomainInsertContext(DomainInsertContext parentContext, _Insert._DomainInsert stmt, ArmyDialect dialect, Visible visible) {
         super(stmt, dialect, visible);
+        assert parentContext.table == ((ChildTableMeta<?>) this.table).parentMeta();
 
-        this.preferLiteral = stmt.isPreferLiteral();
         this.domainList = stmt.domainList();
-        this.domainAccessor = ObjectAccessorFactory.forBean(this.table.javaType());
+        assert this.domainList == parentContext.domainList;
+        this.domainWrapper = parentContext.domainWrapper;
 
     }
 
@@ -95,7 +86,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         final int domainSize = domainList.size();
         final int fieldSize = fieldList.size();
 
-        final ObjectAccessor accessor = this.domainAccessor;
         final ArmyDialect dialect = this.dialect;
         final FieldMeta<?> discriminator = this.discriminator;
         final Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
@@ -109,38 +99,37 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         sqlBuilder.append(_Constant.SPACE_VALUES);
 
         final _FieldValueGenerator generator;
-        final BeanReadWrapper readWrapper;
+        final DomainWrapper domainWrapper = this.domainWrapper;
+        final ObjectAccessor accessor = domainWrapper.accessor;
         final TableMeta<?> table = this.table;
         if (table instanceof ChildTableMeta) {
             generator = null;
-            readWrapper = null;
         } else {
             generator = dialect.getFieldValueGenerator();
-            readWrapper = new BeanReadWrapper(accessor);
         }
         IDomain domain;
         FieldMeta<?> field;
         _Expression expression;
         Object value;
         MappingType mappingType;
-        for (int domainIndex = 0; domainIndex < domainSize; domainIndex++) {
-            domain = domainList.get(domainIndex);
+        DelayIdParamValue delayIdParam;
+        for (int rowIndex = 0; rowIndex < domainSize; rowIndex++) {
+            domain = domainList.get(rowIndex);
+            domainWrapper.domain = domain; //update current domain
             if (generator != null) {
-                //only non-child table
-                readWrapper.domain = domain; // update domain value
                 if (migration) {
-                    generator.validate(table, domain, accessor);
+                    generator.validate(table, domainWrapper);
                 } else {
-                    generator.generate(table, domain, accessor, readWrapper);
+                    generator.generate(table, domainWrapper);
                 }
             }
 
-            if (domainIndex > 0) {
+            if (rowIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
 
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-
+            delayIdParam = null;//clear
             for (int fieldIndex = 0, actualFieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
                 field = fieldList.get(fieldIndex);
                 if (!field.insertable()) {
@@ -153,8 +142,18 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                 actualFieldIndex++;
 
                 if (field == discriminator) {
+                    assert table instanceof SingleTableMeta;
                     sqlBuilder.append(_Constant.SPACE)
                             .append(this.discriminatorValue);
+                } else if (field instanceof PrimaryFieldMeta
+                        && table instanceof ChildTableMeta
+                        && ((ChildTableMeta<?>) table).parentMeta().id().generatorType() == GeneratorType.POST) {
+                    if (delayIdParam != null) {
+                        //no bug,never here
+                        throw new IllegalStateException();
+                    }
+                    delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, domain, accessor);
+                    this.appendParam(delayIdParam);
                 } else if ((value = accessor.get(domain, field.fieldName())) != null) {
                     mappingType = field.mappingType();
                     if (preferLiteral && mappingType instanceof _ArmyNoInjectionMapping) {//TODO field codec
@@ -164,12 +163,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                         this.appendParam(ParamValue.build(field, value));
                     }
                 } else if ((expression = commonExpMap.get(field)) != null) {
-                    this.currentDomain = domain; //update current domain for SubQuery
                     expression.appendSql(this);
-                } else if (field instanceof PrimaryFieldMeta
-                        && table instanceof ChildTableMeta
-                        && ((ChildTableMeta<?>) table).parentMeta().id().generatorType() == GeneratorType.POST) {
-                    this.appendParam(new DelayIdParamValue(field, domain, accessor));
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {
                     if ((migration && !field.nullable()) || (!migration && !mockEnv)) {
                         throw _Exceptions.generatorFieldIsNull(field);
@@ -188,7 +182,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
             }//inner for
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-        }
+        }//outer for
 
     }
 
@@ -196,7 +190,13 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
     @Override
     public SimpleStmt build() {
         final SimpleStmt stmt;
-        if (this.table.id().generatorType() != GeneratorType.POST || this.duplicateKeyClause) {
+        final TableMeta<?> table = this.table;
+        if (this.returnId != null) {
+            //dialect support returning clause
+            stmt = Stmts.domainPost(this);
+        } else if (this.duplicateKeyClause
+                || table instanceof ChildTableMeta
+                || table.id().generatorType() != GeneratorType.POST) {
             stmt = Stmts.minSimple(this);
         } else {
             stmt = Stmts.domainPost(this);
@@ -212,51 +212,112 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     @Override
     public ObjectAccessor domainAccessor() {
-        return this.domainAccessor;
-    }
-
-    @Override
-    public List<Selection> selectionList() {
-        return Collections.emptyList();
+        return this.domainWrapper.accessor;
     }
 
 
     @Nullable
     @Override
     Object readNamedParam(final String name) {
-        final IDomain domain = this.currentDomain;
-        assert domain != null;
-        return this.domainAccessor.get(domain, name);
+        return this.domainWrapper.get(name);
     }
 
 
+    private static final class BeanReadWrapper implements ReadWrapper {
+
+        private final DomainWrapper actual;
+
+        BeanReadWrapper(DomainWrapper actual) {
+            this.actual = actual;
+        }
+
+        @Override
+        public boolean isReadable(String propertyName) {
+            return this.actual.isReadable(propertyName);
+        }
+
+        @Override
+        public Object get(String propertyName) throws ObjectAccessException {
+            return this.actual.get(propertyName);
+        }
+
+
+    }//BeanReadWrapper
+
+
+    private static final class DomainWrapper implements ObjectWrapper {
+
+        private final ObjectAccessor accessor;
+
+        private final BeanReadWrapper readWrapper;
+
+        private IDomain domain;
+
+        private DomainWrapper(ObjectAccessor accessor) {
+            this.accessor = accessor;
+            this.readWrapper = new BeanReadWrapper(this);
+        }
+
+        @Override
+        public boolean isWritable(String propertyName) {
+            return this.accessor.isWritable(propertyName);
+        }
+
+        @Override
+        public void set(String propertyName, @Nullable Object value) throws ObjectAccessException {
+            final IDomain domain;
+            domain = this.domain;
+            assert domain != null;
+            this.accessor.set(domain, propertyName, value);
+        }
+
+        @Override
+        public ReadWrapper readonlyWrapper() {
+            return this.readWrapper;
+        }
+
+        @Override
+        public boolean isReadable(String propertyName) {
+            return this.accessor.isReadable(propertyName);
+        }
+
+        @Override
+        public Object get(final String propertyName) throws ObjectAccessException {
+            final IDomain domain;
+            domain = this.domain;
+            assert domain != null;
+            return this.accessor.get(domain, propertyName);
+        }
+
+
+    }//DomainWrapper
 
 
     private static final class DelayIdParamValue implements ParamValue {
 
-        private final ParamMeta paramMeta;
+        private final PrimaryFieldMeta<?> field;
 
         private final IDomain domain;
 
         private final ObjectAccessor accessor;
 
-        private DelayIdParamValue(ParamMeta paramMeta, IDomain domain, ObjectAccessor accessor) {
-            this.paramMeta = paramMeta;
+        private DelayIdParamValue(PrimaryFieldMeta<?> field, IDomain domain, ObjectAccessor accessor) {
+            this.field = field;
             this.domain = domain;
             this.accessor = accessor;
         }
 
         @Override
         public ParamMeta paramMeta() {
-            return this.paramMeta;
+            return this.field;
         }
 
         @Override
         public Object value() {
             final Object value;
-            value = this.accessor.get(this.domain, _MetaBridge.ID);
+            value = this.accessor.get(this.domain, this.field.fieldName());
             if (value == null) {
-                throw new IllegalStateException("parent insert statement don't execute.");
+                throw parentStmtDontExecute(this.field);
             }
             return value;
         }

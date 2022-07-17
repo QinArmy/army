@@ -4,6 +4,7 @@ import io.army.ArmyException;
 import io.army.annotation.Generator;
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
+import io.army.bean.ObjectAccessException;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
@@ -407,6 +408,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("Couldn't exist named parameter in non-batch statement.");
     }
 
+    public static CriteriaException invalidNamedParam(String name) {
+        return new CriteriaException(String.format("Invalidate named parameter[%s]", name));
+    }
+
     public static CriteriaException namedParamInNonBatch(NamedParam namedParam) {
         String m = String.format("Couldn't exist %s[%s] in non-batch statement."
                 , NamedParam.class.getName(), namedParam.name());
@@ -587,6 +592,16 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("%s[%s] alias must be not empty."
                 , TableItem.class.getName(), _ClassUtils.safeClassName(tableItem));
         return new CriteriaException(m);
+    }
+
+    public static ObjectAccessException nonWritableProperty(Object target, String propertyName) {
+        String m = String.format("%s property[%s] isn't writable.", target, propertyName);
+        return new ObjectAccessException(m);
+    }
+
+    public static ObjectAccessException nonReadableProperty(Object target, String propertyName) {
+        String m = String.format("%s property[%s] isn't readable.", target, propertyName);
+        return new ObjectAccessException(m);
     }
 
 

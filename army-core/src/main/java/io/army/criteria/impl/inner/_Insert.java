@@ -39,7 +39,7 @@ public interface _Insert extends _Statement {
     }
 
 
-    interface _CommonExpInsert extends _Insert, _InsertOption {
+    interface _ValuesSyntaxInsert extends _Insert, _InsertOption {
 
         boolean isPreferLiteral();
 
@@ -49,7 +49,7 @@ public interface _Insert extends _Statement {
     }
 
 
-    interface _ValueInsert extends _CommonExpInsert {
+    interface _ValueInsert extends _ValuesSyntaxInsert {
 
 
         List<Map<FieldMeta<?>, _Expression>> rowValuesList();
@@ -58,8 +58,7 @@ public interface _Insert extends _Statement {
     }
 
 
-    interface _DomainInsert extends _CommonExpInsert {
-
+    interface _DomainInsert extends _ValuesSyntaxInsert {
 
 
         List<IDomain> domainList();

@@ -1,11 +1,9 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.bean.ObjectAccessException;
-import io.army.bean.ObjectAccessor;
-import io.army.bean.ReadWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.NullHandleMode;
+import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -54,7 +52,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      */
-    ValuesSyntaxInsertContext(ArmyDialect dialect, _Insert._CommonExpInsert stmt, Visible visible) {
+    ValuesSyntaxInsertContext(ArmyDialect dialect, _Insert._ValuesSyntaxInsert stmt, Visible visible) {
         super(dialect, stmt.isPreferLiteral(), visible);
 
         this.migration = stmt.isMigration();
@@ -110,7 +108,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      */
-    ValuesSyntaxInsertContext(_Insert._CommonExpInsert stmt, ArmyDialect dialect, Visible visible) {
+    ValuesSyntaxInsertContext(_Insert._ValuesSyntaxInsert stmt, ArmyDialect dialect, Visible visible) {
         super(dialect, stmt.isPreferLiteral(), visible);
 
         this.migration = stmt.isMigration();
@@ -219,6 +217,11 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         return alias;
     }
 
+    @Override
+    public final List<Selection> selectionList() {
+        //TODO
+        return Collections.emptyList();
+    }
 
     @SuppressWarnings("unchecked")
     static <T extends IDomain> List<FieldMeta<?>> castFieldList(final TableMeta<T> table) {
@@ -299,29 +302,10 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         return Collections.unmodifiableList(mergeFieldList);
     }
 
-
-    static final class BeanReadWrapper implements ReadWrapper {
-
-
-        IDomain domain;
-        private final ObjectAccessor accessor;
-
-        BeanReadWrapper(ObjectAccessor accessor) {
-            this.accessor = accessor;
-        }
-
-        @Override
-        public boolean isReadable(String propertyName) {
-            return this.accessor.isReadable(propertyName);
-        }
-
-        @Override
-        public Object get(String propertyName) throws ObjectAccessException {
-            return this.accessor.get(this.domain, propertyName);
-        }
-
-
-    }//BeanReadWrapper
+    static IllegalStateException parentStmtDontExecute(PrimaryFieldMeta<?> filed) {
+        String m = String.format("parent stmt don't execute so %s parameter value is null", filed);
+        return new IllegalStateException(m);
+    }
 
 
 }

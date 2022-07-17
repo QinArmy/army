@@ -5,7 +5,6 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.NullHandleMode;
-import io.army.criteria.ValueExpression;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -300,40 +299,12 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         final FieldMeta<?> field;
         field = domainTable.tryGetComplexFiled(name);
         if (field == null) {
-            return null;
+            throw _Exceptions.invalidNamedParam(name);
         }
-
         final Map<FieldMeta<?>, Object> fieldValueMap = wrapper.fieldValueMap;
         assert fieldValueMap != null;
+        return fieldValueMap.get(field);
 
-        Object value;
-        value = fieldValueMap.get(field);
-        if (value != null) {
-            return value;
-        }
-
-        final Map<FieldMeta<?>, _Expression> fieldExpMap = wrapper.fieldExpMap;
-        assert fieldExpMap != null;
-        _Expression expression;
-        expression = fieldExpMap.get(field);
-        if (expression == null && domainTable instanceof ChildTableMeta && field instanceof PrimaryFieldMeta) {
-            expression = fieldExpMap.get(domainTable.getNonChildId());
-        }
-        if (expression instanceof ValueExpression) {
-            value = ((ValueExpression) expression).value();
-        }
-        if (value != null) {
-            return value;
-        }
-        if ((expression = this.commonExpMap.get(field)) == null
-                && domainTable instanceof ChildTableMeta
-                && field instanceof ParentTableMeta) {
-            expression = this.commonExpMap.get(domainTable.getNonChildId());
-        }
-        if (expression instanceof ValueExpression) {
-            value = ((ValueExpression) expression).value();
-        }
-        return value;
     }
 
 
@@ -390,12 +361,12 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 writable = true;
             } else if (!(this.fieldValueMap instanceof HashMap)) {
                 writable = false;
-            } else if (domainTable instanceof ChildTableMeta || !(field instanceof PrimaryFieldMeta)) {
+            } else if (domainTable instanceof SingleTableMeta || !(field instanceof PrimaryFieldMeta)) {
                 writable = !filedExpMap.containsKey(field);
             } else if (filedExpMap.containsKey(field)) {
                 writable = false;
             } else {
-                writable = !filedExpMap.containsKey(parent.id());
+                writable = !filedExpMap.containsKey(domainTable.nonChildId());
             }
             return writable;
         }
@@ -403,29 +374,17 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         @Override
         public void set(final String propertyName, final @Nullable Object value) throws ObjectAccessException {
             final TableMeta<?> domainTable = this.domainTable;
-            final ParentTableMeta<?> parent;
             final FieldMeta<?> field;
-            if (domainTable instanceof ChildTableMeta) {
-                parent = ((ChildTableMeta<?>) domainTable).parentMeta();
-            } else {
-                parent = null;
-            }
-
-            if (domainTable.containField(propertyName)) {
-                field = domainTable.getField(propertyName);
-            } else if (parent != null && parent.containField(propertyName)) {
-                field = parent.getField(propertyName);
-            } else {
-                field = null;
-            }
+            field = domainTable.tryGetComplexFiled(propertyName);
 
             final Map<FieldMeta<?>, _Expression> filedExpMap = this.fieldExpMap;
             assert filedExpMap != null;
             if (field == null
                     || filedExpMap.containsKey(field)
-                    || (parent != null && field instanceof PrimaryFieldMeta && filedExpMap.containsKey(parent.id()))) {
-                String m = String.format("property[%s] isn't writable.", propertyName);
-                throw new ObjectAccessException(m);
+                    || (domainTable instanceof ChildTableMeta
+                    && field instanceof PrimaryFieldMeta
+                    && filedExpMap.containsKey(domainTable.nonChildId()))) {
+                throw _Exceptions.nonWritableProperty(this.domainTable, propertyName);
             }
 
             final Map<FieldMeta<?>, Object> fieldValueMap = this.fieldValueMap;
@@ -434,18 +393,17 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                     //ignore,here io.army.dialect._FieldValueGenerator.validate
                     return;
                 }
-                String m = String.format("property[%s] isn't writable.", propertyName);
-                throw new ObjectAccessException(m);
+                throw _Exceptions.nonWritableProperty(this.domainTable, propertyName);
             }
             if (value == null) {
                 fieldValueMap.remove(field);
-                if (parent != null && field instanceof PrimaryFieldMeta) {
-                    fieldValueMap.remove(parent.id());
+                if (domainTable instanceof ChildTableMeta && field instanceof PrimaryFieldMeta) {
+                    fieldValueMap.remove(domainTable.nonChildId());
                 }
             } else {
                 fieldValueMap.put(field, value);
-                if (parent != null && field instanceof PrimaryFieldMeta) {
-                    fieldValueMap.put(parent.id(), value);
+                if (domainTable instanceof ChildTableMeta && field instanceof PrimaryFieldMeta) {
+                    fieldValueMap.put(domainTable.nonChildId(), value);
                 }
             }
 
@@ -458,59 +416,20 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         @Override
         public boolean isReadable(final String propertyName) {
-            final TableMeta<?> domainTable = this.domainTable;
-            final boolean readable;
-            if (!(domainTable instanceof ChildTableMeta)) {
-                readable = domainTable.containField(propertyName);
-            } else if (domainTable.containField(propertyName)) {
-                readable = true;
-            } else {
-                readable = ((ChildTableMeta<?>) domainTable).parentMeta().containField(propertyName);
-            }
-            return readable;
+            return this.domainTable.containComplexField(propertyName);
         }
 
         @Override
         public Object get(final String propertyName) throws ObjectAccessException {
             final TableMeta<?> domainTable = this.domainTable;
-            final ParentTableMeta<?> parent;
             final FieldMeta<?> field;
-            if (domainTable instanceof ChildTableMeta) {
-                parent = ((ChildTableMeta<?>) domainTable).parentMeta();
-            } else {
-                parent = null;
-            }
-
-            if (domainTable.containField(propertyName)) {
-                field = domainTable.getField(propertyName);
-            } else if (parent != null && parent.containField(propertyName)) {
-                field = parent.getField(propertyName);
-            } else {
-                field = null;
-            }
-
+            field = domainTable.tryGetComplexFiled(propertyName);
             if (field == null) {
-                String m = String.format("%s isn't readable.", propertyName);
-                throw new ObjectAccessException(m);
+                throw _Exceptions.nonReadableProperty(this.domainTable, propertyName);
             }
-
-            final Map<FieldMeta<?>, _Expression> filedExpMap = this.fieldExpMap;
-            assert filedExpMap != null;
-
-            _Expression expression;
-            expression = filedExpMap.get(field);
-            if (expression == null && parent != null && field instanceof PrimaryFieldMeta) {
-                expression = filedExpMap.get(parent.id());
-            }
-            final Object value;
-            if (expression instanceof ValueExpression) {
-                value = ((ValueExpression) expression).value();
-            } else {
-                final Map<FieldMeta<?>, Object> fieldValueMap = this.fieldValueMap;
-                assert fieldValueMap != null;
-                value = fieldValueMap.get(field);
-            }
-            return value;
+            final Map<FieldMeta<?>, Object> fieldValueMap = this.fieldValueMap;
+            assert fieldValueMap != null;
+            return fieldValueMap.get(field);
         }
 
 
