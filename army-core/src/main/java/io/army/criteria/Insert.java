@@ -145,9 +145,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _StaticValuesClause<C, T extends IDomain, VR> {
+    interface _StaticValuesClause<VR> {
 
-        _StaticValueLeftParenClause<C, T, VR> values();
+        VR values();
 
     }
 
@@ -202,47 +202,46 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
      */
-    interface _AssignmentSetClause<C, F extends TableField, SR> {
+    interface _AssignmentSetClause<C, T extends IDomain, SR> {
 
         SR setPair(Consumer<Consumer<ItemPair>> consumer);
 
         SR setPair(BiConsumer<C, Consumer<ItemPair>> consumer);
 
-        SR set(F field, @Nullable Object value);
+        SR set(FieldMeta<T> field, @Nullable Object value);
 
-        SR setLiteral(F field, @Nullable Object value);
+        SR setLiteral(FieldMeta<T> field, @Nullable Object value);
 
-        SR setExp(F field, Supplier<? extends Expression> supplier);
+        SR setExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
-        SR setExp(F field, Function<C, ? extends Expression> function);
+        SR setExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
 
-        SR ifSet(F field, Supplier<?> supplier);
+        SR ifSet(FieldMeta<T> field, Supplier<?> supplier);
 
-        SR ifSet(F field, Function<C, ?> function);
+        SR ifSet(FieldMeta<T> field, Function<C, ?> function);
 
-        SR ifSet(F field, Function<String, ?> function, String keyName);
+        SR ifSet(FieldMeta<T> field, Function<String, ?> function, String keyName);
 
-        SR ifSetLiteral(F field, Supplier<?> supplier);
+        SR ifSetLiteral(FieldMeta<T> field, Supplier<?> supplier);
 
-        SR ifSetLiteral(F field, Function<C, ?> function);
+        SR ifSetLiteral(FieldMeta<T> field, Function<C, ?> function);
 
-        SR ifSetLiteral(F field, Function<String, ?> function, String keyName);
+        SR ifSetLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName);
 
 
     }
 
 
-    interface _CommaFieldValuePairClause<C, F extends TableField, SR> {
+    interface _CommaFieldValuePairClause<C, T extends IDomain, SR> {
 
-        SR comma(F field, @Nullable Object value);
+        SR comma(FieldMeta<T> field, @Nullable Object value);
 
-        SR commaLiteral(F field, @Nullable Object value);
+        SR commaLiteral(FieldMeta<T> field, @Nullable Object value);
 
-        SR commaExp(F field, Supplier<? extends Expression> supplier);
+        SR commaExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
-        SR commaExp(F field, Function<C, ? extends Expression> function);
+        SR commaExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
 
     }
 
@@ -332,8 +331,14 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /*-------------------below standard value insert syntax interface -------------------*/
 
 
+    interface _StandardValueStaticLeftParenClause<C, T extends IDomain>
+            extends _StaticValueLeftParenClause<C, T, _StandardValueStaticLeftParenSpec<C, T>> {
+
+    }
+
+
     interface _StandardValueStaticLeftParenSpec<C, T extends IDomain>
-            extends _StaticValueLeftParenClause<C, T, _StandardValueStaticLeftParenSpec<C, T>>, _InsertSpec {
+            extends _StandardValueStaticLeftParenClause<C, T>, _InsertSpec {
 
     }
 
@@ -341,7 +346,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * @since 1.0
      */
     interface _StandardValuesSpec<C, T extends IDomain>
-            extends _StaticValuesClause<C, T, _StandardValueStaticLeftParenSpec<C, T>>
+            extends _StaticValuesClause<_StandardValueStaticLeftParenClause<C, T>>
             , _DynamicValuesClause<C, T, _InsertSpec> {
 
     }
@@ -382,15 +387,21 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
+
+    interface _StandardParentStaticValuesClause<C, P extends IDomain>
+            extends _StaticValueLeftParenClause<C, P, _StandardParentStaticValuesSpec<C, P>> {
+
+    }
+
     interface _StandardParentStaticValuesSpec<C, P extends IDomain>
-            extends _StaticValueLeftParenClause<C, P, _StandardParentStaticValuesSpec<C, P>>
+            extends _StandardParentStaticValuesClause<C, P>
             , _StandardValueChildSpec<C, P> {
 
     }
 
 
     interface _StandardParentValuesSpec<C, P extends IDomain>
-            extends _StaticValuesClause<C, P, _StandardParentStaticValuesSpec<C, P>>
+            extends _StaticValuesClause<_StandardParentStaticValuesClause<C, P>>
             , _DynamicValuesClause<C, P, _StandardValueChildSpec<C, P>> {
 
     }

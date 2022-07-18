@@ -257,7 +257,7 @@ abstract class StandardInserts extends InsertSupport {
         final StandardValueValuesClause<?, ?> clause;
 
         private StandardStaticValuesPairClause(StandardValueValuesClause<C, T> clause) {
-            super(clause.criteriaContext, clause.table);
+            super(clause.criteriaContext, clause.table, clause::validateFieldPair);
             this.clause = clause;
         }
 
@@ -283,7 +283,7 @@ abstract class StandardInserts extends InsertSupport {
         private final StandardValueParentValuesClause<C, P> clause;
 
         private StandardParentStaticValuesPairClause(StandardValueParentValuesClause<C, P> clause) {
-            super(clause.criteriaContext, clause.table);
+            super(clause.criteriaContext, clause.table, clause::validateFieldPair);
             this.clause = clause;
         }
 
@@ -328,7 +328,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
         @Override
-        public Insert._StaticValueLeftParenClause<C, T, Insert._StandardValueStaticLeftParenSpec<C, T>> values() {
+        public Insert._StandardValueStaticLeftParenClause<C, T> values() {
             return new StandardStaticValuesPairClause<>(this);
         }
 
@@ -371,7 +371,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._StaticValueLeftParenClause<C, P, Insert._StandardParentStaticValuesSpec<C, P>> values() {
+        public Insert._StandardParentStaticValuesClause<C, P> values() {
             return new StandardParentStaticValuesPairClause<>(this);
         }
 
@@ -495,7 +495,7 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> Insert._StandardParentColumnsClause<C, T> insertInto(ParentTableMeta<T> table) {
-            return null;
+            return new StandardQueryParentSpaceClause<>(this.criteriaContext, table);
         }
 
 
@@ -608,6 +608,10 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> Insert._StandardSingleColumnsClause<C, T> insertInto(ComplexTableMeta<P, T> table) {
+            final SubQuery subQuery = this.subQuery;
+            if (subQuery == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
             return new StandardQuerySpaceClause<>(this, table);
         }
 
