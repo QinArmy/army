@@ -94,7 +94,7 @@ abstract class MySQLReplaces extends InsertSupport {
             MySQLReplace._DomainNullOptionSpec<C>,
             MySQLReplace._DomainPreferLiteralSpec<C>,
             MySQLReplace._DomainIntoClause<C>>
-            implements MySQLReplace._DomainOptionSpec<C>, MySQLReplace._DomainIntoClause<C>, DomainInsertOptions {
+            implements MySQLReplace._DomainOptionSpec<C>, MySQLReplace._DomainIntoClause<C>, NonQueryInsertOptions {
 
         private boolean preferLiteral;
 

@@ -21,7 +21,10 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 abstract class InsertSupport {
 
@@ -41,7 +44,7 @@ abstract class InsertSupport {
 
     }
 
-    interface DomainInsertOptions extends InsertOptions {
+    interface NonQueryInsertOptions extends InsertOptions {
 
         boolean isPreferLiteral();
 
@@ -99,13 +102,13 @@ abstract class InsertSupport {
     }//InsertOptionsImpl
 
 
-    static abstract class DomainInsertOptionsImpl<MR, NR, PR> extends InsertOptionsImpl<MR, NR>
-            implements DomainInsertOptions, Insert._PreferLiteralClause<PR> {
+    static abstract class NonQueryInsertOptionsImpl<MR, NR, PR> extends InsertOptionsImpl<MR, NR>
+            implements NonQueryInsertOptions, Insert._PreferLiteralClause<PR> {
 
 
         private boolean preferLiteral;
 
-        DomainInsertOptionsImpl(CriteriaContext criteriaContext) {
+        NonQueryInsertOptionsImpl(CriteriaContext criteriaContext) {
             super(criteriaContext);
         }
 
@@ -122,14 +125,11 @@ abstract class InsertSupport {
         }
 
 
-    }//DomainInsertOptionsImpl
+    }//NonQueryInsertOptionsImpl
 
 
-    /**
-     * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
-     */
-    static abstract class ColumnsClause<C, F extends TableField, RR>
-            implements Insert._ColumnListClause<C, F, RR>, Insert._StaticColumnDualClause<F, RR>
+    static abstract class ColumnsClause<C, T extends IDomain, RR>
+            implements Insert._ColumnListClause<C, T, RR>, Insert._StaticColumnDualClause<T, RR>
             , _Insert, ColumnListClause, Statement.StatementMockSpec {
 
         final CriteriaContext criteriaContext;
@@ -146,13 +146,15 @@ abstract class InsertSupport {
 
         private Map<FieldMeta<?>, Boolean> fieldMap;
 
-        ColumnsClause(CriteriaContext criteriaContext, boolean migration, TableMeta<?> table) {
+        ColumnsClause(CriteriaContext criteriaContext, boolean migration, @Nullable TableMeta<?> table) {
+            if (table == null) {
+                //validate for insertInto method
+                throw CriteriaContextStack.nullPointer(criteriaContext);
+            }
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
             this.migration = migration;
             this.table = table;
-
-            CriteriaContextStack.assertNonNull(this.criteriaContext, this.table, "table must non-null");
         }
 
         @Override
@@ -161,38 +163,38 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<F>> consumer) {
+        public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer) {
             consumer.accept(this::addField);
             return this;
         }
 
         @Override
-        public final Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<F>> consumer) {
+        public final Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<FieldMeta<T>>> consumer) {
             consumer.accept(this.criteria, this::addField);
             return this;
         }
 
         @Override
-        public final Statement._RightParenClause<RR> leftParen(F field) {
+        public final Statement._RightParenClause<RR> leftParen(FieldMeta<T> field) {
             this.addField(field);
             return this;
         }
 
         @Override
-        public final Insert._StaticColumnDualClause<F, RR> leftParen(F field1, F field2) {
+        public final Insert._StaticColumnDualClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2) {
             this.addField(field1);
             this.addField(field2);
             return this;
         }
 
         @Override
-        public final Statement._RightParenClause<RR> comma(F field) {
+        public final Statement._RightParenClause<RR> comma(FieldMeta<T> field) {
             this.addField(field);
             return this;
         }
 
         @Override
-        public final Insert._StaticColumnDualClause<F, RR> comma(F field1, F field2) {
+        public final Insert._StaticColumnDualClause<T, RR> comma(FieldMeta<T> field1, FieldMeta<T> field2) {
             this.addField(field1);
             this.addField(field2);
             return this;
@@ -200,39 +202,23 @@ abstract class InsertSupport {
 
         @Override
         public final RR rightParen() {
-            final List<FieldMeta<?>> fieldList, childFieldList;
+            final List<FieldMeta<?>> fieldList;
             fieldList = this.fieldList;
-            childFieldList = this.childFieldList;
-
-            final int size, childSize;
             if (fieldList == null) {
                 this.fieldList = Collections.emptyList();
-                size = 0;
-            } else if ((size = fieldList.size()) == 1) {
+            } else if (fieldList.size() == 1) {
                 this.fieldList = Collections.singletonList(fieldList.get(0));
             } else {
                 this.fieldList = Collections.unmodifiableList(fieldList);
             }
 
-            if (childFieldList == null) {
-                this.childFieldList = Collections.emptyList();
-                childSize = 0;
-            } else if ((childSize = childFieldList.size()) == 1) {
-                this.childFieldList = Collections.singletonList(childFieldList.get(0));
-            } else {
-                this.childFieldList = Collections.unmodifiableList(childFieldList);
-            }
-
-            if (size == 0 && childSize == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "column list must non-empty");
-            }
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            if (fieldMap == null || fieldMap.size() != size + childSize) {
-                //no bug,never here
-                throw new IllegalStateException();
+            if (fieldMap == null) {
+                this.fieldMap = Collections.emptyMap();
+            } else {
+                this.fieldMap = Collections.unmodifiableMap(fieldMap);
             }
-            this.fieldMap = Collections.unmodifiableMap(fieldMap);
-            return this.columnListEnd(size, childSize);
+            return this.columnListEnd();
         }
 
 
@@ -248,8 +234,7 @@ abstract class InsertSupport {
                 fieldList = Collections.emptyList();
                 this.fieldList = fieldList;
             } else if (fieldList instanceof ArrayList) {
-                //here,don't use CriteriaContextStack.criteriaError() method,because this is invoked by _Dialect
-                throw _Exceptions.castCriteriaApi();
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return fieldList;
         }
@@ -282,68 +267,72 @@ abstract class InsertSupport {
 
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            if (!(this instanceof Insert)) {
+            final _DialectParser parser;
+            parser = _MockDialects.from(dialect);
+            final Stmt stmt;
+            if (this instanceof Insert) {
+                stmt = parser.insert((Insert) this, visible);
+            } else if (this instanceof ReplaceInsert || this instanceof MergeInsert) {
+                stmt = parser.dialectStmt((DialectStatement) this, visible);
+            } else {
                 //non-primary insert
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            final _DialectParser d;
-            d = _MockDialects.from(dialect);
-            final Stmt stmt;
-            stmt = d.insert((Insert) this, visible);
-            return d.printStmt(stmt, none);
+            return parser.printStmt(stmt, none);
         }
 
         @Override
         public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            if (!(this instanceof Insert)) {
+            final _DialectParser parser;
+            parser = _MockDialects.from(dialect);
+            final Stmt stmt;
+            if (this instanceof Insert) {
+                stmt = parser.insert((Insert) this, visible);
+            } else if (this instanceof ReplaceInsert || this instanceof MergeInsert) {
+                stmt = parser.dialectStmt((DialectStatement) this, visible);
+            } else {
                 //non-primary insert
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            return _MockDialects.from(dialect).insert((Insert) this, visible);
+            return stmt;
         }
 
 
         @Override
         public void clear() {
             this.fieldList = null;
-            this.childFieldList = null;
             this.fieldMap = null;
         }
 
-        abstract RR columnListEnd(int fieldSize, int childFieldSize);
+        abstract RR columnListEnd();
 
 
         @Override
         public final boolean containField(final FieldMeta<?> field) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            final TableMeta<?> table, fieldTable;
-            table = this.table;
             final boolean match;
             if (fieldMap != null) {
                 match = fieldMap.containsKey(field);
-            } else if ((fieldTable = field.tableMeta()) instanceof ChildTableMeta) {
-                match = fieldTable == table;
-            } else if (table instanceof ChildTableMeta) {
-                match = fieldTable == ((ChildTableMeta<?>) table).parentMeta();
             } else {
-                match = fieldTable == table;
+                // don't contain parent filed
+                match = field.tableMeta() == this.table;
             }
             return match;
         }
 
 
-        private void addField(final F field) {
-            final TableMeta<?> table = this.table, fieldTable;
-            if (table == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        private void addField(final FieldMeta<T> field) {
+            final TableMeta<?> table = this.table;
+            if (field.tableMeta() != table) {
+                //don't contain parent field
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
             }
-            fieldTable = field.tableMeta();
             if (!this.migration) {
                 if (!field.insertable()) {
                     throw CriteriaContextStack.criteriaError(this.criteriaContext
                             , _Exceptions::nonInsertableField, field);
                 }
-                if (fieldTable instanceof SingleTableMeta) {
+                if (table instanceof SingleTableMeta) {
                     switch (field.fieldName()) {
                         case _MetaBridge.CREATE_TIME:
                         case _MetaBridge.UPDATE_TIME:
@@ -354,47 +343,29 @@ abstract class InsertSupport {
                     }
                 }
 
-                if (field == this.table.discriminator() || field.generatorType() != null) {
+                if (field == table.discriminator() || field.generatorType() != null) {
                     throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::armyManageField, field);
                 }
 
             }
 
 
-            if (fieldTable instanceof ChildTableMeta) {
-                if (fieldTable != table) {
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
-                }
-                List<FieldMeta<?>> childFieldList = this.childFieldList;
-                if (childFieldList == null) {
-                    childFieldList = new ArrayList<>();
-                    this.childFieldList = childFieldList;
-                }
-            } else {
-                if (table instanceof ChildTableMeta) {
-                    if (fieldTable != ((ChildTableMeta<?>) table).parentMeta()) {
-                        throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
-                    }
-                } else if (fieldTable != table) {
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
-                }
-
-                List<FieldMeta<?>> fieldList = this.fieldList;
-                if (fieldList == null) {
-                    fieldList = new ArrayList<>();
-                    this.fieldList = fieldList;
-                }
-            }
-
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap == null) {
                 fieldMap = new HashMap<>();
                 this.fieldMap = fieldMap;
             }
-            if (fieldMap.putIfAbsent((FieldMeta<?>) field, Boolean.TRUE) != null) {
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
                 String m = String.format("%s duplication", field);
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
+
+            List<FieldMeta<?>> fieldList = this.fieldList;
+            if (fieldList == null) {
+                fieldList = new ArrayList<>();
+                this.fieldList = fieldList;
+            }
+            fieldList.add(field);
 
         }
 
@@ -405,8 +376,8 @@ abstract class InsertSupport {
      * @param <F> must be {@code  FieldMeta<T>} or {@code  FieldMeta<? super T>}
      */
     @SuppressWarnings("unchecked")
-    static abstract class CommonExpClause<C, F extends TableField, RR> extends ColumnsClause<C, F, RR>
-            implements Insert._ColumnDefaultClause<C, F, RR>, _Insert._ValuesSyntaxInsert {
+    static abstract class ColumnDefaultClause<C, T extends IDomain, RR> extends ColumnsClause<C, T, RR>
+            implements Insert._ColumnDefaultClause<C, T, RR>, _Insert._ValuesSyntaxInsert {
 
 
         final boolean preferLiteral;
@@ -415,10 +386,10 @@ abstract class InsertSupport {
 
         private Map<FieldMeta<?>, _Expression> commonExpMap;
 
-        CommonExpClause(InsertOptions options, TableMeta<?> table) {
+        ColumnDefaultClause(InsertOptions options, TableMeta<?> table) {
             super(options.getCriteriaContext(), options.isMigration(), table);
-            if (options instanceof DomainInsertOptions) {
-                this.preferLiteral = ((DomainInsertOptions) options).isPreferLiteral();
+            if (options instanceof NonQueryInsertOptions) {
+                this.preferLiteral = ((NonQueryInsertOptions) options).isPreferLiteral();
             } else {
                 this.preferLiteral = false;
             }
@@ -426,7 +397,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR defaultValue(final F field, final @Nullable Object value) {
+        public final RR defaultValue(final FieldMeta<T> field, final @Nullable Object value) {
             if (!field.insertable()) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonInsertableField, field);
             }
@@ -468,12 +439,12 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR defaultLiteral(F field, @Nullable Object value) {
+        public final RR defaultLiteral(FieldMeta<T> field, @Nullable Object value) {
             return this.defaultValue(field, SQLs._nullableLiteral(field, value));
         }
 
         @Override
-        public final RR defaultExp(F field, Function<C, ? extends Expression> function) {
+        public final RR defaultExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
             final Expression expression;
             expression = function.apply(this.criteria);
             if (expression == null) {
@@ -483,7 +454,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR defaultExp(F field, Supplier<? extends Expression> supplier) {
+        public final RR defaultExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
             final Expression expression;
             expression = supplier.get();
             if (expression == null) {
@@ -493,13 +464,13 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR defaultNull(F field) {
+        public final RR defaultNull(FieldMeta<T> field) {
             return this.defaultValue(field, SQLs.nullWord());
         }
 
 
         @Override
-        public final RR ifDefault(F field, Function<C, ?> function) {
+        public final RR ifDefault(FieldMeta<T> field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
@@ -509,7 +480,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR ifDefault(F field, Supplier<?> supplier) {
+        public final RR ifDefault(FieldMeta<T> field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
@@ -519,7 +490,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR ifDefault(F field, Function<String, ?> function, String keyName) {
+        public final RR ifDefault(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
@@ -529,7 +500,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR ifDefaultLiteral(F field, Supplier<?> supplier) {
+        public final RR ifDefaultLiteral(FieldMeta<T> field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
@@ -539,7 +510,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR ifDefaultLiteral(F field, Function<C, ?> function) {
+        public final RR ifDefaultLiteral(FieldMeta<T> field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
@@ -549,7 +520,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR ifDefaultLiteral(F field, Function<String, ?> function, String keyName) {
+        public final RR ifDefaultLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
@@ -559,7 +530,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, _Expression> commonExpMap() {
+        public final Map<FieldMeta<?>, _Expression> defaultExpMap() {
             Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
             if (map == null) {
                 map = Collections.emptyMap();
@@ -594,7 +565,7 @@ abstract class InsertSupport {
             return this.preferLiteral;
         }
 
-        final void unmodifiedCommonExpMap() {
+        final void endColumnDefaultClause() {
             final Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
             if (map == null) {
                 this.commonExpMap = Collections.emptyMap();
@@ -608,8 +579,8 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class DomainValueClause<C, T extends IDomain, F extends TableField, CR, VR>
-            extends CommonExpClause<C, F, CR> implements Insert._DomainValueClause<C, T, VR>
+    static abstract class DomainValueClause<C, T extends IDomain, CR, VR>
+            extends ColumnDefaultClause<C, T, CR> implements Insert._DomainValueClause<C, T, VR>
             , _Insert._DomainInsert {
 
 
@@ -623,7 +594,7 @@ abstract class InsertSupport {
         public final VR value(T domain) {
             CriteriaContextStack.assertNonNull(this.criteriaContext, domain, "domain must non-null");
             this.domainList = Collections.singletonList(domain);
-            this.unmodifiedCommonExpMap();
+            this.endColumnDefaultClause();
             return this.valuesEnd();
         }
 
@@ -654,7 +625,7 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
             }
             this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
-            this.unmodifiedCommonExpMap();
+            this.endColumnDefaultClause();
             return this.valuesEnd();
         }
 
@@ -695,7 +666,7 @@ abstract class InsertSupport {
                 list.add((IDomain) domain);
             }
             this.domainList = Collections.unmodifiableList(list);
-            this.unmodifiedCommonExpMap();
+            this.endColumnDefaultClause();
             return this.valuesEnd();
         }
 
@@ -728,17 +699,14 @@ abstract class InsertSupport {
 
         final TableMeta<?> table;
 
-        final Predicate<FieldMeta<?>> containField;
-
         private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
-        StaticColumnValuePairClause(CriteriaContext criteriaContext, TableMeta<?> table, Predicate<FieldMeta<?>> containField) {
+        StaticColumnValuePairClause(CriteriaContext criteriaContext, TableMeta<?> table) {
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
             this.table = table;
-            this.containField = containField;
         }
 
         @Override
@@ -841,7 +809,8 @@ abstract class InsertSupport {
 
 
         private void innerAddValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
-            if (!this.containField.test(field)) {
+            if (field.tableMeta() != this.table) {
+                //don't contain parent field
                 throw notContainField(this.criteriaContext, field);
             }
             if (!(value instanceof ArmyExpression)) {
@@ -867,9 +836,9 @@ abstract class InsertSupport {
     }//StaticValueColumnClause
 
 
-    static abstract class DynamicValueInsertValueClause<C, F extends TableField, RR, VR>
-            extends CommonExpClause<C, F, RR> implements Insert._DynamicValueClause<C, F, VR>
-            , Insert._DynamicValuesClause<C, F, VR>, PairsConstructor<F> {
+    static abstract class DynamicValueInsertValueClause<C, T extends IDomain, RR, VR>
+            extends ColumnDefaultClause<C, T, RR> implements Insert._DynamicValueClause<C, FieldMeta<T>, VR>
+            , Insert._DynamicValuesClause<C, FieldMeta<T>, VR>, PairsConstructor<FieldMeta<T>> {
 
         private List<Map<FieldMeta<?>, _Expression>> valuePairList;
 
@@ -881,27 +850,27 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR value(Consumer<PairConsumer<F>> consumer) {
+        public final VR value(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
             return this.singleRowValues(consumer);
         }
 
         @Override
-        public final VR value(BiConsumer<C, PairConsumer<F>> consumer) {
+        public final VR value(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
             return this.singleRowValues(consumer);
         }
 
         @Override
-        public final VR values(Consumer<PairsConstructor<F>> consumer) {
+        public final VR values(Consumer<PairsConstructor<FieldMeta<T>>> consumer) {
             return this.multiRowValues(consumer);
         }
 
         @Override
-        public final VR values(BiConsumer<C, PairsConstructor<F>> consumer) {
+        public final VR values(BiConsumer<C, PairsConstructor<FieldMeta<T>>> consumer) {
             return this.multiRowValues(consumer);
         }
 
         @Override
-        public final PairConsumer<F> row() {
+        public final PairConsumer<FieldMeta<T>> row() {
             final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
             if (currentPairMap instanceof HashMap) {
                 List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
@@ -920,18 +889,18 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final PairConsumer<F> accept(F field, @Nullable Object value) {
-            return this.addValuePair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+        public final PairConsumer<FieldMeta<T>> accept(FieldMeta<T> field, @Nullable Object value) {
+            return this.addValuePair(field, SQLs._nullableParam(field, value));
         }
 
         @Override
-        public final PairConsumer<F> acceptLiteral(F field, @Nullable Object value) {
-            return this.addValuePair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+        public final PairConsumer<FieldMeta<T>> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
+            return this.addValuePair(field, SQLs._nullableLiteral(field, value));
         }
 
         @Override
-        public final PairConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier) {
-            return this.addValuePair((FieldMeta<?>) field, supplier.get());
+        public final PairConsumer<FieldMeta<T>> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            return this.addValuePair(field, supplier.get());
         }
 
         @Override
@@ -947,7 +916,7 @@ abstract class InsertSupport {
         abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList);
 
 
-        private PairConsumer<F> addValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
+        private PairConsumer<FieldMeta<T>> addValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
             final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
             if (currentPairMap == null) {
                 String m = String.format("Not found any row,please use %s.row() method create row."
@@ -990,9 +959,9 @@ abstract class InsertSupport {
 
             //3. callback
             if (callback instanceof Consumer) {
-                ((Consumer<PairConsumer<F>>) callback).accept(this);
+                ((Consumer<PairConsumer<FieldMeta<T>>>) callback).accept(this);
             } else if (callback instanceof BiConsumer) {
-                ((BiConsumer<C, PairConsumer<F>>) callback).accept(this.criteria, this);
+                ((BiConsumer<C, PairConsumer<FieldMeta<T>>>) callback).accept(this.criteria, this);
             } else {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -1019,9 +988,9 @@ abstract class InsertSupport {
             }
             //2. callback
             if (callback instanceof Consumer) {
-                ((Consumer<PairsConstructor<F>>) callback).accept(this);
+                ((Consumer<PairsConstructor<FieldMeta<T>>>) callback).accept(this);
             } else if (callback instanceof BiConsumer) {
-                ((BiConsumer<C, PairsConstructor<F>>) callback).accept(this.criteria, this);
+                ((BiConsumer<C, PairsConstructor<FieldMeta<T>>>) callback).accept(this.criteria, this);
             } else {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -1382,26 +1351,17 @@ abstract class InsertSupport {
         }
 
 
+
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            if (!(this instanceof Insert)) {
-                //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            final _DialectParser d;
-            d = _MockDialects.from(dialect);
-            final Stmt stmt;
-            stmt = d.insert((Insert) this, visible);
-            return d.printStmt(stmt, none);
+            final _DialectParser parser;
+            parser = _MockDialects.from(dialect);
+            return parser.printStmt(this.mockStmt(parser, visible), none);
         }
 
         @Override
         public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            if (!(this instanceof Insert)) {
-                //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return _MockDialects.from(dialect).insert((Insert) this, visible);
+            return this.mockStmt(_MockDialects.from(dialect), visible);
         }
 
         @Override
@@ -1455,6 +1415,20 @@ abstract class InsertSupport {
         }
 
 
+        private Stmt mockStmt(_DialectParser parser, Visible visible) {
+            final Stmt stmt;
+            if (this instanceof Insert) {
+                stmt = parser.insert((Insert) this, visible);
+            } else if (this instanceof ReplaceInsert || this instanceof MergeInsert) {
+                stmt = parser.dialectStmt((DialectStatement) this, visible);
+            } else {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return stmt;
+        }
+
+
     }//InsertStatement
 
 
@@ -1464,13 +1438,16 @@ abstract class InsertSupport {
         private final boolean migration;
         private final NullHandleMode nullHandleMode;
 
-        private final Map<FieldMeta<?>, _Expression> commonExpMap;
+        private final boolean preferLiteral;
+
+        private final Map<FieldMeta<?>, _Expression> defaultExpMap;
 
         ValueSyntaxStatement(_ValuesSyntaxInsert clause) {
             super(clause);
             this.migration = clause.isMigration();
             this.nullHandleMode = clause.nullHandle();
-            this.commonExpMap = clause.commonExpMap();
+            this.preferLiteral = clause.isPreferLiteral();
+            this.defaultExpMap = clause.defaultExpMap();
         }
 
 
@@ -1485,8 +1462,13 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, _Expression> commonExpMap() {
-            return this.commonExpMap;
+        public final boolean isPreferLiteral() {
+            return this.preferLiteral;
+        }
+
+        @Override
+        public final Map<FieldMeta<?>, _Expression> defaultExpMap() {
+            return this.defaultExpMap;
         }
 
 

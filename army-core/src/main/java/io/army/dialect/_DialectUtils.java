@@ -175,7 +175,7 @@ public abstract class _DialectUtils {
         final boolean migration = insert.isMigration();
         FieldMeta<?> field;
 
-        for (Map.Entry<FieldMeta<?>, _Expression> e : insert.commonExpMap().entrySet()) {
+        for (Map.Entry<FieldMeta<?>, _Expression> e : insert.defaultExpMap().entrySet()) {
             field = e.getKey();
             if (!migration && field instanceof PrimaryFieldMeta) {
                 throw _Exceptions.armyManageField(field);

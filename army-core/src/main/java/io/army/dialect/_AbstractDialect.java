@@ -91,8 +91,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
             } else {
                 stmt = singleContext.build();
             }
-        } else if (insert instanceof _Insert._ValueInsert) {
-            final _Insert._ValueInsert insertStmt = ((_Insert._ValueInsert) insert);
+        } else if (insert instanceof _Insert._ValuesInsert) {
+            final _Insert._ValuesInsert insertStmt = ((_Insert._ValuesInsert) insert);
             final ValuesInsertContext singleContext;
             singleContext = ValuesInsertContext.forSingle(insertStmt, this, visible);
             this.valueSyntaxSingleInsert(singleContext, insertStmt);

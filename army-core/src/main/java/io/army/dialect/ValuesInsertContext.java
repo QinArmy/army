@@ -25,7 +25,7 @@ import java.util.function.BiConsumer;
 final class ValuesInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams.ValueParams {
 
 
-    static ValuesInsertContext forSingle(_Insert._ValueInsert stmt, ArmyDialect dialect, Visible visible) {
+    static ValuesInsertContext forSingle(_Insert._ValuesInsert stmt, ArmyDialect dialect, Visible visible) {
         final TableMeta<?> table = stmt.table();
         if (table instanceof ChildTableMeta
                 && stmt instanceof _Insert._DuplicateKeyClause
@@ -36,7 +36,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         return new ValuesInsertContext(dialect, stmt, visible);
     }
 
-    static ValuesInsertContext forChild(ValuesInsertContext parentContext, _Insert._ValueInsert insert
+    static ValuesInsertContext forChild(ValuesInsertContext parentContext, _Insert._ValuesInsert insert
             , ArmyDialect dialect, Visible visible) {
         return new ValuesInsertContext(parentContext, insert, dialect, visible);
     }
@@ -60,9 +60,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_Insert._ValueInsert, ArmyDialect, Visible)
+     * @see #forSingle(_Insert._ValuesInsert, ArmyDialect, Visible)
      */
-    private ValuesInsertContext(ArmyDialect dialect, _Insert._ValueInsert stmt, Visible visible) {
+    private ValuesInsertContext(ArmyDialect dialect, _Insert._ValuesInsert stmt, Visible visible) {
         super(dialect, stmt, visible);
 
         this.rowValuesList = stmt.rowValuesList();
@@ -92,9 +92,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(ValuesInsertContext, _Insert._ValueInsert, ArmyDialect, Visible)
+     * @see #forChild(ValuesInsertContext, _Insert._ValuesInsert, ArmyDialect, Visible)
      */
-    private ValuesInsertContext(ValuesInsertContext parentContext, _Insert._ValueInsert stmt
+    private ValuesInsertContext(ValuesInsertContext parentContext, _Insert._ValuesInsert stmt
             , ArmyDialect dialect, Visible visible) {
         super(stmt, dialect, visible);
         assert ((ChildTableMeta<?>) this.table).parentMeta() == parentContext.table;

@@ -63,7 +63,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             this.nullHandleMode = handleMode;
         }
         this.preferLiteral = stmt.isPreferLiteral();
-        this.commonExpMap = stmt.commonExpMap();
+        this.commonExpMap = stmt.defaultExpMap();
 
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 
@@ -119,7 +119,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             this.nullHandleMode = handleMode;
         }
         this.preferLiteral = stmt.isPreferLiteral();
-        this.commonExpMap = stmt.commonExpMap();
+        this.commonExpMap = stmt.defaultExpMap();
 
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 

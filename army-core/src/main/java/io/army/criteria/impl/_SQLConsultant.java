@@ -38,13 +38,9 @@ public abstract class _SQLConsultant {
     }
 
     public static void assertStandardInsert(final Insert insert) {
-        if (insert instanceof _Insert._DomainInsert) {
-            if (!(insert instanceof StandardInserts.StandardDomainInsertStatement)) {
-                throw instanceNotMatch(insert, StandardInserts.StandardDomainInsertStatement.class);
-            }
-        } else if (insert instanceof _Insert._ValueInsert) {
-            if (!(insert instanceof StandardInserts.StandardValueInsertStatement)) {
-                throw instanceNotMatch(insert, StandardInserts.StandardValueInsertStatement.class);
+        if (insert instanceof _Insert._DomainInsert || insert instanceof _Insert._ValuesInsert) {
+            if (!(insert instanceof StandardInserts.StandardValuesSyntaxStatement)) {
+                throw instanceNotMatch(insert, StandardInserts.StandardValuesSyntaxStatement.class);
             }
         } else if (!(insert instanceof StandardInserts.StandardRowSetInsertStatement)) {
             throw instanceNotMatch(insert, StandardInserts.StandardRowSetInsertStatement.class);

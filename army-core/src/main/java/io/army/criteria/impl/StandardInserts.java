@@ -7,7 +7,6 @@ import io.army.dialect.Dialect;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.util._Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ abstract class StandardInserts extends InsertSupport {
     }
 
     static <C> Insert._StandardValueOptionSpec<C> valueInsert(@Nullable C criteria) {
-        return new StandardValueInsertOptionClause<>(criteria);
+        return new StandardValueOptionClause<>(criteria);
     }
 
     static <C> Insert._StandardSubQueryInsertClause<C> rowSetInsert(@Nullable C criteria) {
@@ -43,7 +42,7 @@ abstract class StandardInserts extends InsertSupport {
 
     /*-------------------below standard domain insert syntax class-------------------*/
     private static final class StandardDomainOptionClause<C>
-            extends InsertSupport.DomainInsertOptionsImpl<
+            extends NonQueryInsertOptionsImpl<
             Insert._StandardDomainNullOptionSpec<C>,
             Insert._StandardDomainPreferLiteralSpec<C>,
             Insert._StandardDomainInsertIntoClause<C>>
@@ -54,65 +53,118 @@ abstract class StandardInserts extends InsertSupport {
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
 
+
         @Override
-        public <T extends IDomain> Insert._StandardDomainColumnsSpec<C, T, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return new StandardDomainInsertStatement<>(this, table);
+        public <T extends IDomain> Insert._StandardDomainColumnsSpec<C, T> insertInto(SimpleTableMeta<T> table) {
+            return new StandardDomainValuesClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardDomainColumnsSpec<C, T, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
-            return new StandardDomainInsertStatement<>(this, table);
+        public <T extends IDomain> Insert._StandardParentDomainColumnsSpec<C, T> insertInto(ParentTableMeta<T> table) {
+            return new StandardDomainParentValuesClause<>(this, table);
         }
-
 
     }//StandardDomainOptionClause
 
 
-    static final class StandardDomainInsertStatement<C, T extends IDomain, F extends TableField>
-            extends DomainValueClause<C, T, F, Insert._StandardDomainDefaultSpec<C, T, F>, Insert._InsertSpec>
-            implements Insert._StandardDomainColumnsSpec<C, T, F>, StandardStatement, Insert, Insert._InsertSpec {
+    private static final class StandardDomainValuesClause<C, T extends IDomain>
+            extends DomainValueClause<C, T, Insert._StandardDomainDefaultSpec<C, T>, Insert._InsertSpec>
+            implements Insert._StandardDomainColumnsSpec<C, T>, Insert._InsertSpec {
+
+        private final _ValuesSyntaxInsert parentStmt;
 
 
-        private Boolean prepared;
-
-        private StandardDomainInsertStatement(InsertOptions options, TableMeta<T> table) {
+        private StandardDomainValuesClause(InsertOptions options, SimpleTableMeta<T> table) {
             super(options, table);
+            this.parentStmt = null;
+        }
+
+        private StandardDomainValuesClause(StandardDomainParentValuesClause<C, ?> parentClause, ChildTableMeta<T> table) {
+            super(parentClause, table);
+            this.parentStmt = parentClause;
         }
 
         @Override
         public Insert asInsert() {
-            _Assert.nonPrepared(this.prepared);
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.prepared = Boolean.TRUE;
+            final Insert._InsertSpec spec;
+            if (this.parentStmt == null) {
+                spec = new StandardDomainInsertStatement(this);
+            } else {
+                spec = new StandardDomainChildInsertStatement(this);
+            }
+            return spec.asInsert();
+        }
+
+        @Override
+        Insert._StandardDomainDefaultSpec<C, T> columnListEnd() {
             return this;
         }
 
         @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
+        Insert._InsertSpec valuesEnd() {
+            this.endColumnDefaultClause();
+            return this;
+        }
+
+    }//StandardDomainInsertStatement
+
+
+    private static final class StandardDomainParentValuesClause<C, P extends IDomain>
+            extends InsertSupport.DomainValueClause<
+            C,
+            P,
+            Insert._StandardParentDomainDefaultSpec<C, P>,
+            Insert._InsertSpec>
+            implements Insert._StandardParentDomainColumnsSpec<C, P>
+            , Insert._StandardChildInsertIntoClause<C, P>
+            , InsertOptions
+            , Insert._InsertSpec {
+
+        private StandardDomainParentValuesClause(InsertOptions options, ParentTableMeta<P> table) {
+            super(options, table);
         }
 
         @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-
-        @Override
-        _StandardDomainDefaultSpec<C, T, F> columnListEnd(int fieldSize, int childFieldSize) {
+        public Insert._StandardChildInsertIntoClause<C, P> child() {
+            this.endColumnDefaultClause();
             return this;
         }
 
         @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-            super.clear();
+        public <T extends IDomain> Insert._StandardDomainColumnsSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
+            return new StandardDomainValuesClause<>(this, table);
         }
 
         @Override
-        public String toString() {
+        public Insert asInsert() {
+            return new StandardDomainInsertStatement(this)
+                    .asInsert();
+        }
+
+        @Override
+        Insert._StandardParentDomainDefaultSpec<C, P> columnListEnd() {
+            return this;
+        }
+
+        @Override
+        Insert._InsertSpec valuesEnd() {
+            this.endColumnDefaultClause();
+            return this;
+        }
+
+
+    }//DomainParentInsertStatement
+
+
+    static abstract class StandardValuesSyntaxStatement extends InsertSupport.ValueSyntaxStatement<Insert>
+            implements StandardStatement, Insert, Insert._InsertSpec {
+
+        private StandardValuesSyntaxStatement(_ValuesSyntaxInsert clause) {
+            super(clause);
+        }
+
+        @Override
+        public final String toString() {
             final String s;
             if (this.isPrepared()) {
                 s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
@@ -122,46 +174,59 @@ abstract class StandardInserts extends InsertSupport {
             return s;
         }
 
-        @Override
-        _InsertSpec valuesEnd() {
-            return this;
+    }//StandardValuesSyntaxStatement
+
+    private static class StandardDomainInsertStatement extends StandardValuesSyntaxStatement
+            implements _Insert._DomainInsert {
+
+        private final List<IDomain> domainList;
+
+        private StandardDomainInsertStatement(StandardDomainValuesClause<?, ?> clause) {
+            super(clause);
+            this.domainList = clause.domainList();
         }
 
+        private StandardDomainInsertStatement(StandardDomainParentValuesClause<?, ?> clause) {
+            super(clause);
+            this.domainList = clause.domainList();
+        }
+
+        @Override
+        public final List<IDomain> domainList() {
+            return this.domainList;
+        }
 
     }//StandardDomainInsertStatement
 
+    private static final class StandardDomainChildInsertStatement extends StandardDomainInsertStatement
+            implements _Insert._ChildDomainInsert {
 
-    /*-------------------below standard value insert syntax class-------------------*/
+        private final _ValuesSyntaxInsert parentStmt;
 
-
-    private static final class StandardStaticValueClause<C, F extends TableField>
-            extends InsertSupport.StaticColumnValuePairClause<C, F, Insert._InsertSpec>
-            implements Insert._StandardStaticValueLeftParenClause<C, F> {
-
-        final StandardValueInsertStatement<?, ?> clause;
-
-        private StandardStaticValueClause(StandardValueInsertStatement<C, F> clause) {
-            super(clause.criteriaContext, clause::containField);
-            this.clause = clause;
+        private StandardDomainChildInsertStatement(StandardDomainValuesClause<?, ?> clause) {
+            super(clause);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
         }
-
 
         @Override
-        public Insert._InsertSpec rightParen() {
-            return this.clause.valueClauseEnd(this.endValuesClause());
+        public _ValuesSyntaxInsert parentStmt() {
+            return this.parentStmt;
         }
 
+    }//StandardDomainChildInsertStatement
 
-    }//StandardStaticValueClause
+
+    /*-------------------below standard value insert syntax class-------------------*/
 
 
     private static final class StandardStaticValuesPairClause<C, F extends TableField>
             extends StaticColumnValuePairClause<C, F, Insert._StandardStaticValuesLeftParenSpec<C, F>>
             implements Insert._StandardStaticValuesLeftParenSpec<C, F> {
 
-        final StandardValueInsertStatement<?, ?> clause;
+        final StandardValueValuesClause<?, ?> clause;
 
-        private StandardStaticValuesPairClause(StandardValueInsertStatement<C, F> clause) {
+        private StandardStaticValuesPairClause(StandardValueValuesClause<C, F> clause) {
             super(clause.criteriaContext, clause::containField);
             this.clause = clause;
         }
@@ -181,105 +246,69 @@ abstract class StandardInserts extends InsertSupport {
 
     }//StandardStaticValuesClause
 
-    private static final class StandardValueInsertOptionClause<C>
-            extends InsertSupport.InsertOptionsImpl<
+    private static final class StandardValueOptionClause<C>
+            extends InsertSupport.NonQueryInsertOptionsImpl<
             Insert._StandardValueNullOptionSpec<C>,
+            Insert._StandardValuePreferLiteralSpec<C>,
             Insert._StandardValueInsertIntoClause<C>>
             implements Insert._StandardValueOptionSpec<C> {
 
-        public StandardValueInsertOptionClause(@Nullable C criteria) {
+        public StandardValueOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
             CriteriaContextStack.setContextStack(this.criteriaContext);
         }
 
+
         @Override
-        public <T extends IDomain> Insert._StandardValueColumnsSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return new StandardValueInsertStatement<>(this, table);
+        public <T extends IDomain> Insert._StandardValueColumnsSpec<C, T> insertInto(SimpleTableMeta<T> table) {
+            return new StandardValueValuesClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardValueColumnsSpec<C, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
-            return new StandardValueInsertStatement<>(this, table);
+        public <T extends IDomain> Insert._StandardParentValueColumnsSpec<C, T> insertInto(ParentTableMeta<T> table) {
+            return null;
         }
+
 
     }//StandardValueInsertOptionClause
 
-    static final class StandardValueInsertStatement<C, F extends TableField>
+    private static final class StandardValueValuesClause<C, T extends IDomain>
             extends DynamicValueInsertValueClause<
             C,
-            F,
-            Insert._StandardValueDefaultSpec<C, F>,
+            T,
+            Insert._StandardValueDefaultSpec<C, T>,
             Insert._InsertSpec>
-            implements Insert._StandardValueColumnsSpec<C, F>, StandardStatement
-            , Insert, Insert._InsertSpec, _Insert._ValueInsert {
+            implements Insert._StandardValueColumnsSpec<C, T>
+            , Insert._InsertSpec {
+
+        private final _ValuesInsert parentStmt;
 
         private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
-        private Boolean prepared;
-
-        private StandardValueInsertStatement(InsertOptions options, TableMeta<?> table) {
+        private StandardValueValuesClause(InsertOptions options, SimpleTableMeta<T> table) {
             super(options, table);
+            this.parentStmt = null;
         }
 
         @Override
-        public Insert._StandardStaticValueLeftParenClause<C, F> value() {
-            return new StandardStaticValueClause<>(this);
-        }
-
-        @Override
-        public Insert._StandardStaticValuesLeftParenClause<C, F> values() {
-            return new StandardStaticValuesPairClause<>(this);
+        public Insert._StaticValueLeftParenClause<C, FieldMeta<T>, Insert._InsertSpec> values() {
+            return null;
         }
 
         @Override
         public Insert asInsert() {
-            _Assert.nonPrepared(this.prepared);
-            if (this.rowValuesList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.prepared = Boolean.TRUE;
-            return this;
-        }
-
-        @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
-        }
-
-        @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-        @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-            super.clear();
-            this.rowValuesList = null;
-        }
-
-        @Override
-        public String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+            final Insert._InsertSpec spec;
+            if (this.parentStmt == null) {
+                spec = new StandardValueInsertStatement(this);
             } else {
-                s = super.toString();
+                spec = new StandardParentValueInsertStatement(this);
             }
-            return s;
+            return spec.asInsert();
         }
 
-        @Override
-        public List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
-            _Assert.prepared(this.prepared);
-            return this.rowValuesList;
-        }
 
         @Override
-        _StandardValueDefaultSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
+        Insert._StandardValueDefaultSpec<C, T> columnListEnd() {
             return this;
         }
 
@@ -288,12 +317,53 @@ abstract class StandardInserts extends InsertSupport {
             if (this.rowValuesList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
+            this.endColumnDefaultClause();
             this.rowValuesList = rowValuesList;
             return this;
         }
 
 
-    }//StandardValueInsert
+    }//StandardValueValuesClause
+
+
+    private static class StandardValueInsertStatement extends StandardValuesSyntaxStatement
+            implements _Insert._ValuesInsert {
+
+        private final List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+
+        private StandardValueInsertStatement(StandardValueValuesClause<?, ?> clause) {
+            super(clause);
+            this.rowValuesList = clause.rowValuesList;
+            assert this.rowValuesList != null;
+        }
+
+        @Override
+        public final List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
+            return this.rowValuesList;
+        }
+
+
+    }//StandardValueInsertStatement
+
+
+    private static final class StandardParentValueInsertStatement extends StandardValueInsertStatement
+            implements _Insert._ChildValuesInsert {
+
+        private final _ValuesInsert parentStmt;
+
+        private StandardParentValueInsertStatement(StandardValueValuesClause<?, ?> clause) {
+            super(clause);
+            this.parentStmt = clause.parentStmt;
+            assert parentStmt != null;
+        }
+
+        @Override
+        public _ValuesInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+
+    }//StandardParentValueInsertStatement
 
 
     /**

@@ -44,17 +44,23 @@ public interface _Insert extends _Statement {
         boolean isPreferLiteral();
 
 
-        Map<FieldMeta<?>, _Expression> commonExpMap();
+        Map<FieldMeta<?>, _Expression> defaultExpMap();
 
     }
 
 
-    interface _ValueInsert extends _ValuesSyntaxInsert {
+    interface _ValuesInsert extends _ValuesSyntaxInsert {
 
 
         List<Map<FieldMeta<?>, _Expression>> rowValuesList();
 
 
+    }
+
+
+    interface _ChildValuesInsert extends _ValuesInsert {
+
+        _ValuesInsert parentStmt();
     }
 
 
@@ -65,6 +71,11 @@ public interface _Insert extends _Statement {
 
     }
 
+    interface _ChildDomainInsert extends _DomainInsert {
+
+        _ValuesSyntaxInsert parentStmt();
+    }
+
 
     interface _AssignmentInsert extends _Insert, _InsertOption {
 
@@ -73,6 +84,7 @@ public interface _Insert extends _Statement {
 
 
     }
+
 
 
     interface _QueryInsert extends _Insert {

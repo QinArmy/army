@@ -42,7 +42,7 @@ public interface _MySQLInsert extends _Insert {
 
     }
 
-    interface _MySQLValueInsert extends _Insert._ValueInsert, _MySQLInsert {
+    interface _MySQLValueInsert extends _ValuesInsert, _MySQLInsert {
 
     }
 

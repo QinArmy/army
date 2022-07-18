@@ -22,7 +22,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
             if (!(insert instanceof MySQLInserts.MySQLDomainInsertStatement)) {
                 throw instanceNotMatch(insert, MySQLInserts.MySQLDomainInsertStatement.class);
             }
-        } else if (insert instanceof _Insert._ValueInsert) {
+        } else if (insert instanceof _Insert._ValuesInsert) {
             if (!(insert instanceof MySQLInserts.MySQLValueInsertStatement)) {
                 throw instanceNotMatch(insert, MySQLInserts.MySQLValueInsertStatement.class);
             }
@@ -51,7 +51,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
             if (!(replace instanceof MySQLReplaces.DomainReplaceStatement)) {
                 throw instanceNotMatch(replace, MySQLReplaces.DomainReplaceStatement.class);
             }
-        } else if (replace instanceof _Insert._ValueInsert) {
+        } else if (replace instanceof _Insert._ValuesInsert) {
             if (!(replace instanceof MySQLReplaces.MySQLValueReplaceStatement)) {
                 throw instanceNotMatch(replace, MySQLReplaces.MySQLValueReplaceStatement.class);
             }

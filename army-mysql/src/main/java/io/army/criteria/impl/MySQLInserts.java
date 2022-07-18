@@ -672,7 +672,7 @@ abstract class MySQLInserts extends InsertSupport {
             MySQLInsert._DomainNullOptionSpec<C>,
             MySQLInsert._DomainPreferLiteralSpec<C>,
             MySQLInsert._DomainIntoClause<C>>
-            implements MySQLInsert._DomainOptionSpec<C>, MySQLInsert._DomainIntoClause<C>, DomainInsertOptions {
+            implements MySQLInsert._DomainOptionSpec<C>, MySQLInsert._DomainIntoClause<C>, NonQueryInsertOptions {
 
         private boolean preferLiteral;
 
