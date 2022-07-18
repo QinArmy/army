@@ -36,14 +36,8 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final boolean isNullableValue() {
-        final boolean nullable;
-        if (this instanceof ValueExpression) {
-            nullable = ((ValueExpression) this).value() == null;
-        } else {
-            nullable = this instanceof NamedParam && !(this instanceof NonNullNamedParam);
-        }
-        return nullable;
+    public final boolean isNullValue() {
+        return this instanceof ValueExpression && ((ValueExpression) this).value() == null;
     }
 
     @Override

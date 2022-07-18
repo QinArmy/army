@@ -269,7 +269,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         private void addValuePair(final F field, final @Nullable Expression value) {
-            if (!this.clause.containField((FieldMeta<?>) field)) {
+            if (!this.clause.contain((FieldMeta<?>) field)) {
                 throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
             }
             CriteriaContextStack.assertFunctionExp(this.criteriaContext, value);
@@ -355,7 +355,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         private void addFieldAlias(final F field, final @Nullable String columnAlias) {
-            if (!this.clause.containField((FieldMeta<?>) field)) {
+            if (!this.clause.contain((FieldMeta<?>) field)) {
                 throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
             }
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
@@ -619,7 +619,7 @@ abstract class MySQLInserts extends InsertSupport {
             final FieldMeta<?> field;
             if (fieldOrAlias instanceof FieldMeta) {
                 field = (FieldMeta<?>) fieldOrAlias;
-                if (!this.clause.containField(field)) {
+                if (!this.clause.contain(field)) {
                     throw notContainField(this.criteriaContext, field);
                 }
                 if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
@@ -993,7 +993,7 @@ abstract class MySQLInserts extends InsertSupport {
         private final ClauseForValueInsert<C, F> clause;
 
         private StaticValueLeftParenClause(ClauseForValueInsert<C, F> clause) {
-            super(clause.getCriteriaContext(), clause::containField);
+            super(clause.getCriteriaContext(), clause::contain);
             this.clause = clause;
         }
 
@@ -1013,7 +1013,7 @@ abstract class MySQLInserts extends InsertSupport {
         private final ClauseForValueInsert<C, F> clause;
 
         private StaticValuesLeftParenClause(ClauseForValueInsert<C, F> clause) {
-            super(clause.getCriteriaContext(), clause::containField);
+            super(clause.getCriteriaContext(), clause::contain);
             this.clause = clause;
         }
 

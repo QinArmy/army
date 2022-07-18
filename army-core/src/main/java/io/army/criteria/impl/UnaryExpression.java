@@ -20,7 +20,7 @@ final class UnaryExpression extends OperationExpression {
         switch (operator) {
             case INVERT:
             case NEGATED: {
-                if (expression.isNullableValue()) {
+                if (expression.isNullValue()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
             }

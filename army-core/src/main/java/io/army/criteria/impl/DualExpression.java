@@ -40,7 +40,7 @@ final class DualExpression extends OperationExpression {
             case XOR:
             case RIGHT_SHIFT:
             case LEFT_SHIFT: {
-                if (rightExp.isNullableValue()) {
+                if (rightExp.isNullValue()) {
                     throw _Exceptions.operatorRightIsNullable(operator);
                 }
             }

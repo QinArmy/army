@@ -28,7 +28,7 @@ import java.util.Map;
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams.DomainParams {
 
     static DomainInsertContext forSingle(_Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
-        _DialectUtils.checkCommonExpMap(insert);
+        _DialectUtils.checkDefaultValueMap(insert);
         return new DomainInsertContext(dialect, insert, visible);
     }
 

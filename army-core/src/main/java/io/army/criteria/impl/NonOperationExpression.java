@@ -34,7 +34,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final boolean isNullableValue() {
+    public final boolean isNullValue() {
         final boolean nullable;
         if (this instanceof ValueExpression) {
             nullable = ((ValueExpression) this).value() == null;

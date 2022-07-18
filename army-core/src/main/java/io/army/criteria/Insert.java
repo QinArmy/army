@@ -108,11 +108,11 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         CR defaultNull(FieldMeta<T> field);
 
-        CR ifDefault(FieldMeta<T> field, Supplier<?> supplier);
+        CR ifDefaultValue(FieldMeta<T> field, Supplier<?> supplier);
 
-        CR ifDefault(FieldMeta<T> field, Function<C, ?> function);
+        CR ifDefaultValue(FieldMeta<T> field, Function<C, ?> function);
 
-        CR ifDefault(FieldMeta<T> field, Function<String, ?> function, String keyName);
+        CR ifDefaultValue(FieldMeta<T> field, Function<String, ?> function, String keyName);
 
         CR ifDefaultLiteral(FieldMeta<T> field, Supplier<?> supplier);
 
@@ -145,31 +145,17 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _StaticValueClause<C, F extends TableField, VR> {
+    interface _StaticValuesClause<C, T extends IDomain, VR> {
 
-        _StaticValueLeftParenClause<C, F, VR> value();
-
-    }
-
-    interface _DynamicValueClause<C, F extends TableField, VR> {
-
-        VR value(Consumer<PairConsumer<F>> consumer);
-
-        VR value(BiConsumer<C, PairConsumer<F>> consumer);
+        _StaticValueLeftParenClause<C, T, VR> values();
 
     }
 
-    interface _StaticValuesClause<C, F extends TableField, VR> {
+    interface _DynamicValuesClause<C, T extends IDomain, VR> {
 
-        _StaticValueLeftParenClause<C, F, VR> values();
+        VR values(Consumer<PairsConstructor<FieldMeta<T>>> consumer);
 
-    }
-
-    interface _DynamicValuesClause<C, F extends TableField, VR> {
-
-        VR values(Consumer<PairsConstructor<F>> consumer);
-
-        VR values(BiConsumer<C, PairsConstructor<F>> consumer);
+        VR values(BiConsumer<C, PairsConstructor<FieldMeta<T>>> consumer);
     }
 
 
@@ -180,27 +166,29 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _StaticValueLeftParenClause<C, F extends TableField, VR> {
+    interface _StaticValueLeftParenClause<C, T extends IDomain, VR> {
 
-        _StaticColumnValueClause<C, F, VR> leftParen(F field, @Nullable Object value);
+        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, @Nullable Object value);
 
-        _StaticColumnValueClause<C, F, VR> leftParenLiteral(F field, @Nullable Object value);
+        _StaticColumnValueClause<C, T, VR> leftParenLiteral(FieldMeta<T> field, @Nullable Object value);
 
-        _StaticColumnValueClause<C, F, VR> leftParenExp(F field, Supplier<? extends Expression> supplier);
+        _StaticColumnValueClause<C, T, VR> leftParenExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
-        _StaticColumnValueClause<C, F, VR> leftParenExp(F field, Function<C, ? extends Expression> function);
+        _StaticColumnValueClause<C, T, VR> leftParenExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
+
 
     }
 
-    interface _StaticColumnValueClause<C, F extends TableField, VR> extends Statement._RightParenClause<VR> {
+    interface _StaticColumnValueClause<C, T extends IDomain, VR> extends Statement._RightParenClause<VR> {
 
-        _StaticColumnValueClause<C, F, VR> comma(F field, @Nullable Object value);
+        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, @Nullable Object value);
 
-        _StaticColumnValueClause<C, F, VR> commaLiteral(F field, @Nullable Object value);
+        _StaticColumnValueClause<C, T, VR> commaLiteral(FieldMeta<T> field, @Nullable Object value);
 
-        _StaticColumnValueClause<C, F, VR> commaExp(F field, Supplier<? extends Expression> supplier);
+        _StaticColumnValueClause<C, T, VR> commaExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
-        _StaticColumnValueClause<C, F, VR> commaExp(F field, Function<C, ? extends Expression> function);
+        _StaticColumnValueClause<C, T, VR> commaExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
+
 
     }
 
@@ -343,11 +331,18 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     /*-------------------below standard value insert syntax interface -------------------*/
 
+
+    interface _StandardValueStaticLeftParenSpec<C, T extends IDomain>
+            extends _StaticValueLeftParenClause<C, T, _StandardValueStaticLeftParenSpec<C, T>>, _InsertSpec {
+
+    }
+
     /**
      * @since 1.0
      */
-    interface _StandardValuesSpec<C, F extends TableField> extends _StaticValuesClause<C, F, _InsertSpec>
-            , _DynamicValuesClause<C, F, _InsertSpec> {
+    interface _StandardValuesSpec<C, T extends IDomain>
+            extends _StaticValuesClause<C, T, _StandardValueStaticLeftParenSpec<C, T>>
+            , _DynamicValuesClause<C, T, _InsertSpec> {
 
     }
 
@@ -365,7 +360,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * </p>
      */
     interface _StandardValueDefaultSpec<C, T extends IDomain>
-            extends _ColumnDefaultClause<C, T, _StandardValueDefaultSpec<C, T>>, _StandardValuesSpec<C, FieldMeta<T>> {
+            extends _ColumnDefaultClause<C, T, _StandardValueDefaultSpec<C, T>>, _StandardValuesSpec<C, T> {
 
     }
 
@@ -388,15 +383,15 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
     interface _StandardParentStaticValuesSpec<C, P extends IDomain>
-            extends _StaticValueLeftParenClause<C, FieldMeta<P>, _StandardParentStaticValuesSpec<C, P>>
+            extends _StaticValueLeftParenClause<C, P, _StandardParentStaticValuesSpec<C, P>>
             , _StandardValueChildSpec<C, P> {
 
     }
 
 
     interface _StandardParentValuesSpec<C, P extends IDomain>
-            extends _StaticValuesClause<C, FieldMeta<P>, _StandardParentStaticValuesSpec<C, P>>
-            , _DynamicValuesClause<C, FieldMeta<P>, _StandardValueChildSpec<C, P>> {
+            extends _StaticValuesClause<C, P, _StandardParentStaticValuesSpec<C, P>>
+            , _DynamicValuesClause<C, P, _StandardValueChildSpec<C, P>> {
 
     }
 
@@ -444,14 +439,14 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /*-------------------below standard sub query insert syntax interface -------------------*/
 
 
-    interface _StandardSingleColumnsClause<C, F extends TableField>
-            extends _ColumnListClause<C, F, _SpaceSubQueryClause<C, _InsertSpec>> {
+    interface _StandardSingleColumnsClause<C, T extends IDomain>
+            extends _ColumnListClause<C, T, _SpaceSubQueryClause<C, _InsertSpec>> {
 
     }
 
     interface _StandardQueryChildInsertIntoClause<C, P extends IDomain> {
 
-        <T extends IDomain> _StandardSingleColumnsClause<C, FieldMeta<T>> insertInto(ComplexTableMeta<P, T> table);
+        <T extends IDomain> _StandardSingleColumnsClause<C, T> insertInto(ComplexTableMeta<P, T> table);
 
     }
 
@@ -468,13 +463,13 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
     interface _StandardParentColumnsClause<C, P extends IDomain>
-            extends _ColumnListClause<C, FieldMeta<P>, _StandardParentSubQueryClause<C, P>> {
+            extends _ColumnListClause<C, P, _StandardParentSubQueryClause<C, P>> {
 
     }
 
-    interface _StandardSubQueryInsertClause<C> {
+    interface _StandardQueryInsertClause<C> {
 
-        <T extends IDomain> _StandardSingleColumnsClause<C, FieldMeta<T>> insertInto(SimpleTableMeta<T> table);
+        <T extends IDomain> _StandardSingleColumnsClause<C, T> insertInto(SimpleTableMeta<T> table);
 
         <T extends IDomain> _StandardParentColumnsClause<C, T> insertInto(ParentTableMeta<T> table);
 

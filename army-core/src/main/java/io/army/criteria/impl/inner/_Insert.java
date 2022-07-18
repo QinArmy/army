@@ -2,7 +2,7 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.ItemPair;
 import io.army.criteria.NullHandleMode;
-import io.army.criteria.RowSet;
+import io.army.criteria.SubQuery;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -19,8 +19,6 @@ public interface _Insert extends _Statement {
      * @return a unmodifiable list , maybe empty.
      */
     List<FieldMeta<?>> fieldList();
-
-    List<FieldMeta<?>> childFieldList();
 
     Map<FieldMeta<?>, Boolean> fieldMap();
 
@@ -86,15 +84,15 @@ public interface _Insert extends _Statement {
     }
 
 
-
     interface _QueryInsert extends _Insert {
 
-        RowSet rowSet();
+        SubQuery subQuery();
 
-        @Nullable
-        RowSet childRowSet();
+    }
 
+    interface _ChildQueryInsert extends _QueryInsert {
 
+        _QueryInsert parentStmt();
     }
 
     interface _ReturningInsert extends _Insert {

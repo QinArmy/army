@@ -56,11 +56,11 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static Insert._StandardSubQueryInsertClause<Void> rowSetInsert() {
+    public static Insert._StandardQueryInsertClause<Void> rowSetInsert() {
         return StandardInserts.rowSetInsert(null);
     }
 
-    public static <C> Insert._StandardSubQueryInsertClause<C> rowSetInsert(C criteria) {
+    public static <C> Insert._StandardQueryInsertClause<C> rowSetInsert(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardInserts.rowSetInsert(criteria);
     }
@@ -495,7 +495,7 @@ public abstract class SQLs extends Functions {
 
             if (!f.nullable()
                     && (value == null
-                    || (value instanceof Expression && ((ArmyExpression) value).isNullableValue()))) {
+                    || (value instanceof Expression && ((ArmyExpression) value).isNullValue()))) {
                 throw _Exceptions.nonNullField(f);
             }
         }

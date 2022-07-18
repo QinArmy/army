@@ -32,7 +32,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 && ((ChildTableMeta<?>) table).parentMeta().id().generatorType() == GeneratorType.POST) {
             throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) table);
         }
-        _DialectUtils.checkCommonExpMap(stmt);
+        _DialectUtils.checkDefaultValueMap(stmt);
         return new ValuesInsertContext(dialect, stmt, visible);
     }
 

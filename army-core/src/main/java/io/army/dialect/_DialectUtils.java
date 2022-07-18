@@ -47,7 +47,6 @@ public abstract class _DialectUtils {
 
 
     public static void checkInsertField(final TableMeta<?> table, final FieldMeta<?> field
-            , final _Expression value
             , final @Nullable BiFunction<FieldMeta<?>, Function<FieldMeta<?>, CriteriaException>, CriteriaException> function) {
 
         if (!field.insertable()) {
@@ -56,7 +55,7 @@ public abstract class _DialectUtils {
             }
             throw function.apply(field, _Exceptions::nonInsertableField);
         }
-        if (!table.isComplexField(field)) {
+        if (field.tableMeta() != table) {
             if (function == null) {
                 throw _Exceptions.unknownColumn(null, field);
             }
@@ -67,12 +66,6 @@ public abstract class _DialectUtils {
                 throw _Exceptions.armyManageField(field);
             }
             throw function.apply(field, _Exceptions::armyManageField);
-        }
-        if (!field.nullable() && value.isNullableValue()) {
-            if (function == null) {
-                throw _Exceptions.nonNullField(field);
-            }
-            throw function.apply(field, _Exceptions::nonNullField);
         }
 
         if (FORBID_INSERT_FIELDS.contains(field.fieldName())) {
@@ -170,7 +163,7 @@ public abstract class _DialectUtils {
         }
     }
 
-    static void checkCommonExpMap(final _Insert._ValuesSyntaxInsert insert) {
+    static void checkDefaultValueMap(final _Insert._ValuesSyntaxInsert insert) {
         final TableMeta<?> table = insert.table();
         final boolean migration = insert.isMigration();
         FieldMeta<?> field;
@@ -180,8 +173,13 @@ public abstract class _DialectUtils {
             if (!migration && field instanceof PrimaryFieldMeta) {
                 throw _Exceptions.armyManageField(field);
             }
-            checkInsertField(table, field, e.getValue(), null);
+            checkInsertField(table, field, null);
+            if (!field.nullable() && e.getValue().isNullValue()) {
+                throw _Exceptions.nonNullField(field);
+            }
+
         }
+
     }
 
 

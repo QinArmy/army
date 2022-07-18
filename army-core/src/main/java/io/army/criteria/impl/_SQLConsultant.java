@@ -42,8 +42,8 @@ public abstract class _SQLConsultant {
             if (!(insert instanceof StandardInserts.StandardValuesSyntaxStatement)) {
                 throw instanceNotMatch(insert, StandardInserts.StandardValuesSyntaxStatement.class);
             }
-        } else if (!(insert instanceof StandardInserts.StandardRowSetInsertStatement)) {
-            throw instanceNotMatch(insert, StandardInserts.StandardRowSetInsertStatement.class);
+        } else if (!(insert instanceof StandardInserts.StandardQueryInsertStatement)) {
+            throw instanceNotMatch(insert, StandardInserts.StandardQueryInsertStatement.class);
         }
 
     }
