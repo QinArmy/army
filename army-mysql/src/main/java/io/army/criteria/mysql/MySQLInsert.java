@@ -177,7 +177,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _DomainCommonExpSpec<C, T extends IDomain, F extends TableField>
-            extends Insert._CommonExpClause<C, F, _DomainCommonExpSpec<C, T, F>>, _DomainInsertValueClause<C, T, F> {
+            extends _ColumnDefaultClause<C, F, _DomainCommonExpSpec<C, T, F>>, _DomainInsertValueClause<C, T, F> {
 
     }
 
@@ -259,7 +259,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _ValueCommonExpSpec<C, F extends TableField>
-            extends Insert._CommonExpClause<C, F, _ValueCommonExpSpec<C, F>>, _ValueValueSpec<C, F> {
+            extends _ColumnDefaultClause<C, F, _ValueCommonExpSpec<C, F>>, _ValueValueSpec<C, F> {
 
     }
 

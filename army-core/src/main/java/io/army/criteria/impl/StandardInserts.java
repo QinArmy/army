@@ -69,7 +69,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     static final class StandardDomainInsertStatement<C, T extends IDomain, F extends TableField>
-            extends DomainValueClause<C, T, F, Insert._StandardDomainCommonExpSpec<C, T, F>, Insert._InsertSpec>
+            extends DomainValueClause<C, T, F, Insert._StandardDomainDefaultSpec<C, T, F>, Insert._InsertSpec>
             implements Insert._StandardDomainColumnsSpec<C, T, F>, StandardStatement, Insert, Insert._InsertSpec {
 
 
@@ -100,7 +100,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
         @Override
-        _StandardDomainCommonExpSpec<C, T, F> columnListEnd(int fieldSize, int childFieldSize) {
+        _StandardDomainDefaultSpec<C, T, F> columnListEnd(int fieldSize, int childFieldSize) {
             return this;
         }
 
@@ -208,7 +208,7 @@ abstract class StandardInserts extends InsertSupport {
             extends DynamicValueInsertValueClause<
             C,
             F,
-            Insert._StandardValueCommonExpSpec<C, F>,
+            Insert._StandardValueDefaultSpec<C, F>,
             Insert._InsertSpec>
             implements Insert._StandardValueColumnsSpec<C, F>, StandardStatement
             , Insert, Insert._InsertSpec, _Insert._ValueInsert {
@@ -279,7 +279,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        _StandardValueCommonExpSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
+        _StandardValueDefaultSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
             return this;
         }
 

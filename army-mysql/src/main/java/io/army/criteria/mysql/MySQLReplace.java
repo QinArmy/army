@@ -30,7 +30,7 @@ public interface MySQLReplace extends ReplaceInsert, DialectStatement, DmlStatem
     }
 
     interface _DomainCommonExpSpec<C, T extends IDomain, F extends TableField>
-            extends Insert._CommonExpClause<C, F, _DomainCommonExpSpec<C, T, F>>, _DomainReplaceValueClause<C, T> {
+            extends Insert._ColumnDefaultClause<C, F, _DomainCommonExpSpec<C, T, F>>, _DomainReplaceValueClause<C, T> {
 
     }
 
@@ -112,7 +112,7 @@ public interface MySQLReplace extends ReplaceInsert, DialectStatement, DmlStatem
     }
 
     interface _ValueCommonExpSpec<C, F extends TableField>
-            extends Insert._CommonExpClause<C, F, _ValueCommonExpSpec<C, F>>, _ValueReplaceValueClauseSpec<C, F> {
+            extends Insert._ColumnDefaultClause<C, F, _ValueCommonExpSpec<C, F>>, _ValueReplaceValueClauseSpec<C, F> {
 
     }
 

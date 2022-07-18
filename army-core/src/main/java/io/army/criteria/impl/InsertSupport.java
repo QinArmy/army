@@ -406,7 +406,7 @@ abstract class InsertSupport {
      */
     @SuppressWarnings("unchecked")
     static abstract class CommonExpClause<C, F extends TableField, RR> extends ColumnsClause<C, F, RR>
-            implements Insert._CommonExpClause<C, F, RR>, _Insert._ValuesSyntaxInsert {
+            implements Insert._ColumnDefaultClause<C, F, RR>, _Insert._ValuesSyntaxInsert {
 
 
         final boolean preferLiteral;
@@ -426,7 +426,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR common(final F field, final @Nullable Object value) {
+        public final RR defaultValue(final F field, final @Nullable Object value) {
             if (!field.insertable()) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonInsertableField, field);
             }
@@ -468,97 +468,92 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR commonLiteral(F field, @Nullable Object value) {
-            return this.common(field, SQLs._nullableLiteral(field, value));
+        public final RR defaultLiteral(F field, @Nullable Object value) {
+            return this.defaultValue(field, SQLs._nullableLiteral(field, value));
         }
 
         @Override
-        public final RR commonExp(F field, Function<C, ? extends Expression> function) {
+        public final RR defaultExp(F field, Function<C, ? extends Expression> function) {
             final Expression expression;
             expression = function.apply(this.criteria);
             if (expression == null) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
-            return this.common(field, expression);
+            return this.defaultValue(field, expression);
         }
 
         @Override
-        public final RR commonExp(F field, Supplier<? extends Expression> supplier) {
+        public final RR defaultExp(F field, Supplier<? extends Expression> supplier) {
             final Expression expression;
             expression = supplier.get();
             if (expression == null) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
-            return this.common(field, expression);
+            return this.defaultValue(field, expression);
         }
 
         @Override
-        public final RR commonDefault(F field) {
-            return this.common(field, SQLs.defaultWord());
-        }
-
-        @Override
-        public final RR commonNull(F field) {
-            return this.common(field, SQLs.nullWord());
+        public final RR defaultNull(F field) {
+            return this.defaultValue(field, SQLs.nullWord());
         }
 
 
         @Override
-        public final RR ifCommon(F field, Function<C, ?> function) {
+        public final RR ifDefault(F field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
-                this.common(field, value);
+                this.defaultValue(field, value);
             }
             return (RR) this;
         }
 
         @Override
-        public final RR ifCommon(F field, Supplier<?> supplier) {
+        public final RR ifDefault(F field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
-                this.common(field, value);
+                this.defaultValue(field, value);
             }
             return (RR) this;
         }
 
         @Override
-        public final RR ifCommon(F field, Function<String, ?> function, String keyName) {
+        public final RR ifDefault(F field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
-                this.common(field, value);
+                this.defaultValue(field, value);
             }
             return (RR) this;
         }
 
         @Override
-        public final RR ifCommonLiteral(F field, Supplier<?> supplier) {
+        public final RR ifDefaultLiteral(F field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
-                this.common(field, SQLs._nonNullLiteral(field, value));
+                this.defaultValue(field, SQLs._nonNullLiteral(field, value));
             }
             return (RR) this;
         }
 
         @Override
-        public final RR ifCommonLiteral(F field, Function<C, ?> function) {
+        public final RR ifDefaultLiteral(F field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
-                this.common(field, SQLs._nonNullLiteral(field, value));
+                this.defaultValue(field, SQLs._nonNullLiteral(field, value));
             }
             return (RR) this;
         }
 
         @Override
-        public final RR ifCommonLiteral(F field, Function<String, ?> function, String keyName) {
+        public final RR ifDefaultLiteral(F field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
-                this.common(field, SQLs._nonNullLiteral(field, value));
+                this.defaultValue(field, SQLs._nonNullLiteral(field, value));
             }
             return (RR) this;
         }
