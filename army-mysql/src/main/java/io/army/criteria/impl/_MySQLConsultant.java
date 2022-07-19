@@ -18,13 +18,9 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
      * </p>
      */
     public static void assertInsert(final Insert insert) {
-        if (insert instanceof _Insert._DomainInsert) {
-            if (!(insert instanceof MySQLInserts.MySQLDomainInsertStatement)) {
-                throw instanceNotMatch(insert, MySQLInserts.MySQLDomainInsertStatement.class);
-            }
-        } else if (insert instanceof _Insert._ValuesInsert) {
-            if (!(insert instanceof MySQLInserts.MySQLValueInsertStatement)) {
-                throw instanceNotMatch(insert, MySQLInserts.MySQLValueInsertStatement.class);
+        if (insert instanceof _Insert._DomainInsert || insert instanceof _Insert._ValuesInsert) {
+            if (!(insert instanceof MySQLInserts.MySQLValueSyntaxStatement)) {
+                throw instanceNotMatch(insert, MySQLInserts.MySQLValueSyntaxStatement.class);
             }
         } else if (insert instanceof _Insert._AssignmentInsert) {
             if (!(insert instanceof MySQLInserts.MySQLAssignmentInsertStatement)) {

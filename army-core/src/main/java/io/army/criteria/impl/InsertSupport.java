@@ -58,7 +58,9 @@ abstract class InsertSupport {
 
     interface ColumnListClause extends CriteriaContextSpec {
 
-        boolean contain(FieldMeta<?> field);
+        void validateField(FieldMeta<?> field);
+
+
     }
 
     static abstract class InsertOptionsImpl<MR, NR> implements InsertOptions, Insert._MigrationOptionClause<MR>
@@ -296,19 +298,7 @@ abstract class InsertSupport {
 
 
         @Override
-        public final boolean contain(final FieldMeta<?> field) {
-            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            final boolean match;
-            if (fieldMap == null) {
-                // don't contain parent filed
-                match = field.tableMeta() == this.table;
-            } else {
-                match = fieldMap.containsKey(field);
-            }
-            return match;
-        }
-
-        final void validateFieldPair(final FieldMeta<?> field, final ArmyExpression value) {
+        public final void validateField(final FieldMeta<?> field) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap != null) {
                 if (!fieldMap.containsKey(field)) {
@@ -319,10 +309,8 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
             } else if (!this.migration) {
                 _DialectUtils.checkInsertField(this.table, field, this::forbidField);
-                if (!field.nullable() && value.isNullValue()) {
-                    throw _Exceptions.nonNullField(field);
-                }
             }
+
         }
 
         final CriteriaException forbidField(FieldMeta<?> field, Function<FieldMeta<?>, CriteriaException> function) {
@@ -385,29 +373,32 @@ abstract class InsertSupport {
 
         @Override
         public final RR defaultValue(final FieldMeta<T> field, final @Nullable Object value) {
-            final ArmyExpression exp;
+            final ArmyExpression valueExp;
             if (value == null) {
                 if (this.preferLiteral) {
-                    exp = (ArmyExpression) SQLs.nullWord();
+                    valueExp = (ArmyExpression) SQLs.nullWord();
                 } else {
-                    exp = (ArmyExpression) SQLs.param(field, null);
+                    valueExp = (ArmyExpression) SQLs.param(field, null);
                 }
             } else if (!(value instanceof Expression)) {
-                exp = (ArmyExpression) SQLs.param(field, value);
+                valueExp = (ArmyExpression) SQLs.param(field, value);
             } else if (value instanceof ArmyExpression) {
-                exp = (ArmyExpression) value;
+                valueExp = (ArmyExpression) value;
             } else {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
 
-            this.validateFieldPair(field, exp);
+            this.validateField(field);
+            if (!field.nullable() && valueExp.isNullValue()) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
+            }
 
             Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
             if (commonExpMap == null) {
                 commonExpMap = new HashMap<>();
                 this.commonExpMap = commonExpMap;
             }
-            if (commonExpMap.putIfAbsent(field, exp) != null) {
+            if (commonExpMap.putIfAbsent(field, valueExp) != null) {
                 String m = String.format("duplication common expression for %s.", field);
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
@@ -676,7 +667,7 @@ abstract class InsertSupport {
 
         final TableMeta<T> table;
 
-        final BiConsumer<FieldMeta<?>, ArmyExpression> validator;
+        final Consumer<FieldMeta<?>> validator;
 
         private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
@@ -793,7 +784,10 @@ abstract class InsertSupport {
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
-            this.validator.accept(field, (ArmyExpression) value);
+            this.validator.accept(field);
+            if (!field.nullable() && ((ArmyExpression) value).isNullValue()) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
+            }
 
             Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
             if (currentRow == null) {
@@ -892,7 +886,7 @@ abstract class InsertSupport {
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
-            this.validateFieldPair(field, (ArmyExpression) value);
+            this.validateField(field, (ArmyExpression) value);
 
             if (currentPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
                 throw duplicationValuePair(this.criteriaContext, field);
@@ -1057,7 +1051,7 @@ abstract class InsertSupport {
         }
 
 
-        abstract boolean containField(FieldMeta<?> field);
+        abstract boolean validateField(FieldMeta<?> field);
 
 
         final List<ItemPair> endAssignmentSetClause() {
@@ -1098,7 +1092,7 @@ abstract class InsertSupport {
         }
 
         private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
-            if (!this.containField(field)) {
+            if (!this.validateField(field)) {
                 throw notContainField(this.criteriaContext, field);
             }
             if (!(value instanceof ArmyExpression)) {
@@ -1118,7 +1112,7 @@ abstract class InsertSupport {
                 String m = String.format("assignment insert syntax support only %s", FieldMeta.class.getName());
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
-            if (!this.containField((FieldMeta<?>) field)) {
+            if (!this.validateField((FieldMeta<?>) field)) {
                 throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
             }
         }

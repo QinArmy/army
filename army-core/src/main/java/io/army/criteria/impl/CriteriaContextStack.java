@@ -107,7 +107,7 @@ abstract class CriteriaContextStack {
         }
     }
 
-
+        @Deprecated
     static void assertFunctionExp(CriteriaContext criteriaContext, @Nullable Expression expression) {
         if (!(expression instanceof ArmyExpression)) {
             clearStackOnError(criteriaContext);

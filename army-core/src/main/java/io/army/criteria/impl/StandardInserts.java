@@ -257,7 +257,7 @@ abstract class StandardInserts extends InsertSupport {
         final StandardValueValuesClause<?, ?> clause;
 
         private StandardStaticValuesPairClause(StandardValueValuesClause<C, T> clause) {
-            super(clause.criteriaContext, clause.table, clause::validateFieldPair);
+            super(clause.criteriaContext, clause.table, clause::validateField);
             this.clause = clause;
         }
 
@@ -283,7 +283,7 @@ abstract class StandardInserts extends InsertSupport {
         private final StandardValueParentValuesClause<C, P> clause;
 
         private StandardParentStaticValuesPairClause(StandardValueParentValuesClause<C, P> clause) {
-            super(clause.criteriaContext, clause.table, clause::validateFieldPair);
+            super(clause.criteriaContext, clause.table, clause::validateField);
             this.clause = clause;
         }
 

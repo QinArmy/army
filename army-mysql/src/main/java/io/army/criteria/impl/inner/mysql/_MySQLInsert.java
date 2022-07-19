@@ -18,7 +18,6 @@ public interface _MySQLInsert extends _Insert {
 
     List<String> partitionList();
 
-    List<String> childPartitionList();
 
 
     interface _InsertWithDuplicateKey extends _Insert._DuplicateKeyClause {
