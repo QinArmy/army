@@ -66,7 +66,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
         UR updateExp(String columnAlias, Supplier<? extends Expression> supplier);
 
-        UR updateExp(String columnAlias, Function<C, ? extends Expression> supplier);
+        UR updateExp(String columnAlias, Function<C, ? extends Expression> function);
 
     }
 
@@ -172,14 +172,9 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _ParentOnDuplicateKeyRowAliasClause<C, T extends IDomain, CT>
-            extends _RowColumnAliasListClause<C, T, _ParentOnDuplicateKeyUpdateAliasSpec<C, T, CT>> {
-
-    }
-
 
     interface _ParentAsRowAliasSpec<C, T extends IDomain, CT>
-            extends Statement._AsClause<_ParentOnDuplicateKeyRowAliasClause<C, T, CT>>
+            extends _AsRowAliasClause<C, T, _ParentOnDuplicateKeyUpdateAliasSpec<C, T, CT>>
             , _ParentOnDuplicateKeyUpdateFieldSpec<C, T, CT> {
 
     }
@@ -256,14 +251,8 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _DomainParentOnDuplicateKeyRowAliasClause<C, P extends IDomain>
-            extends _RowColumnAliasListClause<C, P, _DomainParentOnDuplicateKeyUpdateAliasSpec<C, P>> {
-
-    }
-
-
     interface _DomainParentAsRowAliasSpec<C, P extends IDomain>
-            extends Statement._AsClause<_DomainParentOnDuplicateKeyRowAliasClause<C, P>>
+            extends _AsRowAliasClause<C, P, _DomainParentOnDuplicateKeyUpdateAliasSpec<C, P>>
             , _DomainParentOnDuplicateKeyUpdateFieldSpec<C, P> {
 
     }
