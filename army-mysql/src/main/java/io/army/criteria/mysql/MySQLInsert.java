@@ -153,7 +153,8 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _ParentOnDuplicateKeyUpdateFieldSpec<C, T extends IDomain, CT>
             extends _StaticOnDuplicateKeyFieldClause<C, T, _ParentStaticAssignmentCommaFieldSpec<C, T, CT>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<FieldMeta<T>>, CT>, _MySQLChildSpec<CT> {
+            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<FieldMeta<T>>, _MySQLChildSpec<CT>>
+            , _MySQLChildSpec<CT> {
 
     }
 
