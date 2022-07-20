@@ -1,11 +1,18 @@
 package io.army.util;
 
+import io.army.lang.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class _CollectionUtils extends io.qinarmy.util.CollectionUtils {
+
+
+    public static <T> List<T> safeList(@Nullable List<T> list) {
+        return list == null ? Collections.emptyList() : list;
+    }
 
     public static <T> List<T> asUnmodifiableList(final Collection<T> collection) {
         final List<T> list;

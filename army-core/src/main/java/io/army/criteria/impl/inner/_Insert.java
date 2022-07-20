@@ -71,16 +71,24 @@ public interface _Insert extends _Statement {
 
     interface _ChildDomainInsert extends _DomainInsert {
 
-        _ValuesSyntaxInsert parentStmt();
+        _DomainInsert parentStmt();
+    }
+
+    interface _AssignmentStatementSpec {
+
+        List<ItemPair> rowPairList();
     }
 
 
-    interface _AssignmentInsert extends _Insert, _InsertOption {
+    interface _AssignmentInsert extends _Insert, _InsertOption, _AssignmentStatementSpec {
 
+        boolean isPreferLiteral();
 
-        List<ItemPair> rowPairList();
+    }
 
+    interface _ChildAssignmentInsert extends _AssignmentInsert {
 
+        _AssignmentInsert parentStmt();
     }
 
 

@@ -352,8 +352,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-
-
     interface _ValueParentStaticValueLeftParenClause<C, P extends IDomain>
             extends Insert._StaticValueLeftParenClause<C, P, _ValueParentStaticValueLeftParenSpec<C, P>> {
 

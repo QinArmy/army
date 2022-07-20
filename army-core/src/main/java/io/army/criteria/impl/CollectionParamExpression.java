@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
+import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
-import io.army.dialect._DialectParser;
 import io.army.dialect._SqlContext;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
@@ -54,7 +54,7 @@ final class CollectionParamExpression extends NonOperationExpression {
 
         final ParamMeta paramMeta = this.paramMeta;
         final boolean optimizing = this.optimizing && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping;
-        final _DialectParser dialect = context.dialect();
+        final DialectParser dialect = context.dialect();
         int index = 0;
         for (Object v : this.value) {
             if (index > 0) {

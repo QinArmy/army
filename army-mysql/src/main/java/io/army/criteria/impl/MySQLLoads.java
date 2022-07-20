@@ -7,7 +7,7 @@ import io.army.criteria.mysql.MySQLLoad;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
-import io.army.dialect._DialectParser;
+import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
@@ -965,7 +965,7 @@ abstract class MySQLLoads {
 
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            final _DialectParser parser;
+            final DialectParser parser;
             parser = _MockDialects.from(dialect);
             final Stmt stmt;
             stmt = parser.dialectStmt(this, visible);

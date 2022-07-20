@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
-import io.army.dialect._DialectParser;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -1110,7 +1110,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSelection(final _SqlContext context) {
-            final _DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.dialect();
 
             final String safeFieldName = dialect.identifier(this.selection.alias());
 
@@ -1127,7 +1127,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final _DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.dialect();
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
@@ -1212,7 +1212,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSelection(final _SqlContext context) {
-            final _DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.dialect();
 
             final String safeFieldName = dialect.identifier(this.fieldName);
             final StringBuilder builder;
@@ -1228,7 +1228,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final _DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.dialect();
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);

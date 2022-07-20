@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * <p>
  * Package interface ,This interface representing a statement context,extends {@link _SqlContext}
- * and add method for the implementation of {@link _DialectParser}.
+ * and add method for the implementation of {@link DialectParser}.
  * </p>
  *
  * @since 1.0

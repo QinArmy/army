@@ -7,7 +7,7 @@ import io.army.stmt.ParamValue;
 
 /**
  * <p>
- * This interface representing sql context,that is used by {@link  _DialectParser} and the implementation of criteria api,
+ * This interface representing sql context,that is used by {@link  DialectParser} and the implementation of criteria api,
  * for example {@link  io.army.criteria.impl.inner._Expression}.
  * </p>
  *
@@ -44,7 +44,7 @@ public interface _SqlContext {
      */
     void appendField(FieldMeta<?> field);
 
-    _DialectParser dialect();
+    DialectParser dialect();
 
     StringBuilder sqlBuilder();
 

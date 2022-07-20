@@ -5,7 +5,7 @@ import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect.Dialect;
-import io.army.dialect._DialectParser;
+import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -440,7 +440,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-        final _DialectParser d;
+        final DialectParser d;
         d = _MockDialects.from(dialect);
         final Stmt stmt;
         if (this instanceof Select) {

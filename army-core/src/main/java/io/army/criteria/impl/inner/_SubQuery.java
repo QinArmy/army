@@ -1,11 +1,11 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.SubQuery;
-import io.army.dialect._DialectParser;
+import io.army.dialect.DialectParser;
 
 /**
  * <p>
- * This interface representing {@link SubQuery} that can be accessed by {@link _DialectParser}.
+ * This interface representing {@link SubQuery} that can be accessed by {@link DialectParser}.
  * </p>
  * <p>
  * <strong>Note:</strong><br/>

@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Dialect;
-import io.army.dialect._DialectParser;
+import io.army.dialect.DialectParser;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._MockDialects;
 import io.army.domain.IDomain;
@@ -137,7 +137,7 @@ abstract class InsertSupport {
 
     static abstract class ColumnsClause<C, T extends IDomain, RR>
             implements Insert._ColumnListClause<C, T, RR>, Insert._StaticColumnDualClause<T, RR>
-            , _Insert, ColumnListClause, Statement.StatementMockSpec {
+            , _Insert, ColumnListClause {
 
         final CriteriaContext criteriaContext;
 
@@ -211,6 +211,8 @@ abstract class InsertSupport {
             fieldList = this.fieldList;
             if (fieldList == null) {
                 this.fieldList = Collections.emptyList();
+            } else if (!(fieldList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             } else if (fieldList.size() == 1) {
                 this.fieldList = Collections.singletonList(fieldList.get(0));
             } else {
@@ -220,8 +222,10 @@ abstract class InsertSupport {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap == null) {
                 this.fieldMap = Collections.emptyMap();
-            } else {
+            } else if (fieldMap instanceof HashMap) {
                 this.fieldMap = Collections.unmodifiableMap(fieldMap);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return this.columnListEnd();
         }
@@ -253,40 +257,6 @@ abstract class InsertSupport {
             }
             return map;
         }
-
-
-        @Override
-        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            final _DialectParser parser;
-            parser = _MockDialects.from(dialect);
-            final Stmt stmt;
-            if (this instanceof Insert) {
-                stmt = parser.insert((Insert) this, visible);
-            } else if (this instanceof ReplaceInsert || this instanceof MergeInsert) {
-                stmt = parser.dialectStmt((DialectStatement) this, visible);
-            } else {
-                //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return parser.printStmt(stmt, none);
-        }
-
-        @Override
-        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            final _DialectParser parser;
-            parser = _MockDialects.from(dialect);
-            final Stmt stmt;
-            if (this instanceof Insert) {
-                stmt = parser.insert((Insert) this, visible);
-            } else if (this instanceof ReplaceInsert || this instanceof MergeInsert) {
-                stmt = parser.dialectStmt((DialectStatement) this, visible);
-            } else {
-                //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return stmt;
-        }
-
 
         @Override
         public void clear() {
@@ -392,10 +362,7 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
 
-            this.validateField(field);
-            if (!field.nullable() && valueExp.isNullValue()) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
-            }
+            this.validateField(field, valueExp);
 
             Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
             if (commonExpMap == null) {
@@ -646,7 +613,9 @@ abstract class InsertSupport {
         @Override
         public final List<IDomain> domainList() {
             final List<IDomain> list = this.domainList;
-            assert list != null;
+            if (list == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
             return list;
         }
 
@@ -936,21 +905,24 @@ abstract class InsertSupport {
     }//ValueInsertValueClause
 
     @SuppressWarnings("unchecked")
-    static abstract class AssignmentSetClause<C, F extends TableField, SR>
-            implements Insert._AssignmentSetClause<C, F, SR> {
+    static abstract class AssignmentSetClause<C, T extends IDomain, SR>
+            implements Insert._AssignmentSetClause<C, T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec {
 
 
         final CriteriaContext criteriaContext;
 
         final C criteria;
 
+        final TableMeta<T> table;
+
         final boolean supportRowItem;
 
         private List<ItemPair> itemPairList;
 
-        AssignmentSetClause(CriteriaContext criteriaContext, boolean supportRowItem) {
+        AssignmentSetClause(CriteriaContext criteriaContext, boolean supportRowItem, TableMeta<T> table) {
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
+            this.table = table;
             this.supportRowItem = supportRowItem;
         }
 
@@ -968,90 +940,100 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final SR set(F field, @Nullable Object value) {
-            return this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+        public final SR set(FieldMeta<T> field, @Nullable Object value) {
+            return this.addFieldPair(field, SQLs._nullableParam(field, value));
         }
 
         @Override
-        public final SR setLiteral(F field, @Nullable Object value) {
-            return this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+        public final SR setLiteral(FieldMeta<T> field, @Nullable Object value) {
+            return this.addFieldPair(field, SQLs._nullableLiteral(field, value));
         }
 
         @Override
-        public final SR setExp(F field, Supplier<? extends Expression> supplier) {
-            return this.addFieldPair((FieldMeta<?>) field, supplier.get());
+        public final SR setExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            return this.addFieldPair(field, supplier.get());
         }
 
         @Override
-        public final SR setExp(F field, Function<C, ? extends Expression> function) {
-            return this.addFieldPair((FieldMeta<?>) field, function.apply(this.criteria));
+        public final SR setExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
+            return this.addFieldPair(field, function.apply(this.criteria));
         }
 
         @Override
-        public final SR ifSet(F field, Supplier<?> supplier) {
+        public final SR ifSet(FieldMeta<T> field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
-                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+                this.addFieldPair(field, SQLs._nullableParam(field, value));
             }
             return (SR) this;
         }
 
         @Override
-        public final SR ifSet(F field, Function<C, ?> function) {
+        public final SR ifSet(FieldMeta<T> field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
-                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+                this.addFieldPair(field, SQLs._nullableParam(field, value));
             }
             return (SR) this;
         }
 
         @Override
-        public final SR ifSet(F field, Function<String, ?> function, String keyName) {
+        public final SR ifSet(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
-                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableParam(field, value));
+                this.addFieldPair(field, SQLs._nullableParam(field, value));
             }
             return (SR) this;
         }
 
         @Override
-        public final SR ifSetLiteral(F field, Supplier<?> supplier) {
+        public final SR ifSetLiteral(FieldMeta<T> field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
-                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+                this.addFieldPair(field, SQLs._nullableLiteral(field, value));
             }
             return (SR) this;
         }
 
         @Override
-        public final SR ifSetLiteral(F field, Function<C, ?> function) {
+        public final SR ifSetLiteral(FieldMeta<T> field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
-                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+                this.addFieldPair(field, SQLs._nullableLiteral(field, value));
             }
             return (SR) this;
         }
 
         @Override
-        public final SR ifSetLiteral(F field, Function<String, ?> function, String keyName) {
+        public final SR ifSetLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
-                this.addFieldPair((FieldMeta<?>) field, SQLs._nullableLiteral(field, value));
+                this.addFieldPair(field, SQLs._nullableLiteral(field, value));
             }
             return (SR) this;
         }
 
+        @Override
+        public final CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
 
-        abstract boolean validateField(FieldMeta<?> field);
+        @Override
+        public final List<ItemPair> rowPairList() {
+            final List<ItemPair> pairList = this.itemPairList;
+            if (pairList == null || pairList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return pairList;
+        }
 
-
-        final List<ItemPair> endAssignmentSetClause() {
+        final void endAssignmentSetClause() {
             List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 itemPairList = Collections.emptyList();
@@ -1063,7 +1045,6 @@ abstract class InsertSupport {
                 itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
             }
             this.itemPairList = itemPairList;
-            return itemPairList;
         }
 
 
@@ -1089,12 +1070,11 @@ abstract class InsertSupport {
         }
 
         private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
-            if (!this.validateField(field)) {
-                throw notContainField(this.criteriaContext, field);
-            }
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
+            this.validateField(field, (ArmyExpression) value);
+
             List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 itemPairList = new ArrayList<>();
@@ -1109,38 +1089,32 @@ abstract class InsertSupport {
                 String m = String.format("assignment insert syntax support only %s", FieldMeta.class.getName());
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
-            if (!this.validateField((FieldMeta<?>) field)) {
-                throw notContainField(this.criteriaContext, (FieldMeta<?>) field);
-            }
+            this.validateField((FieldMeta<?>) field, null);
         }
 
 
     }//AssignmentSetClause
 
 
-    static abstract class AssignmentInsertClause<C, F extends TableField, SR>
-            extends AssignmentSetClause<C, F, SR>
-            implements Insert._AssignmentSetClause<C, F, SR>, _Insert._AssignmentInsert, ColumnListClause
-            , Statement.StatementMockSpec {
+    static abstract class AssignmentInsertClause<C, T extends IDomain, SR>
+            extends AssignmentSetClause<C, T, SR>
+            implements Insert._AssignmentSetClause<C, T, SR>, _Insert._AssignmentInsert {
 
         final boolean migration;
 
         final NullHandleMode nullHandleMode;
 
+        final boolean preferLiteral;
+
         final boolean supportRowItem;
 
-        final TableMeta<?> table;
+        AssignmentInsertClause(NonQueryInsertOptions options, boolean supportRowItem, TableMeta<T> table) {
+            super(options.getCriteriaContext(), supportRowItem, table);
 
-        private List<ItemPair> itemPairList;
-
-
-        AssignmentInsertClause(InsertOptions options, boolean supportRowItem, TableMeta<?> table) {
-            super(options.getCriteriaContext(), supportRowItem);
             this.migration = options.isMigration();
             this.nullHandleMode = options.nullHandle();
-
+            this.preferLiteral = options.isPreferLiteral();
             this.supportRowItem = supportRowItem;
-            this.table = table;
         }
 
         @Override
@@ -1164,69 +1138,74 @@ abstract class InsertSupport {
         }
 
         @Override
+        public final boolean isPreferLiteral() {
+            return this.preferLiteral;
+        }
+
+        @Override
         public final NullHandleMode nullHandle() {
             return this.nullHandleMode;
         }
 
         @Override
-        public final List<ItemPair> rowPairList() {
-            final List<ItemPair> itemPairList = this.itemPairList;
-            if (itemPairList == null || itemPairList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return itemPairList;
-        }
-
-        @Override
         public void clear() {
-            this.itemPairList = null;
-        }
-
-        @Override
-        public final CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
-        }
-
-        @Override
-        public final boolean contain(final FieldMeta<?> field) {
-            final TableMeta<?> table, fieldTable;
-            table = this.table;
-            fieldTable = field.tableMeta();
-            final boolean match;
-            if (fieldTable instanceof ChildTableMeta) {
-                match = fieldTable == table;
-            } else if (table instanceof ChildTableMeta) {
-                match = fieldTable == ((ChildTableMeta<?>) table).parentMeta();
-            } else {
-                match = fieldTable == table;
-            }
-            return match;
-        }
-
-        @Override
-        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            if (!(this instanceof Insert)) {
-                //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            final _DialectParser d;
-            d = _MockDialects.from(dialect);
-            final Stmt stmt;
-            stmt = d.insert((Insert) this, visible);
-            return d.printStmt(stmt, none);
-        }
-
-        @Override
-        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            if (!(this instanceof Insert)) {
-                //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return _MockDialects.from(dialect).insert((Insert) this, visible);
+            //no-op
         }
 
 
     }//AssignmentInsertClause
+
+
+    static abstract class QueryInsertSpaceClause<C, T extends IDomain, RR, SR> extends ColumnsClause<C, T, RR>
+            implements Insert._SpaceSubQueryClause<C, SR>, _Insert._QueryInsert {
+
+        private SubQuery subQuery;
+
+        QueryInsertSpaceClause(CriteriaContext criteriaContext, TableMeta<T> table) {
+            super(criteriaContext, true, table);
+        }
+
+        @Override
+        public final SR space(Supplier<? extends SubQuery> supplier) {
+            final SubQuery query;
+            query = supplier.get();
+            if (query == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            if (this.subQuery != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.subQuery = query;
+            return this.spaceEnd();
+        }
+
+        @Override
+        public final SR space(Function<C, ? extends SubQuery> function) {
+            final SubQuery query;
+            query = function.apply(this.criteria);
+            if (query == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            if (this.subQuery != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.subQuery = query;
+            return this.spaceEnd();
+        }
+
+        @Override
+        public final SubQuery subQuery() {
+            final SubQuery query = this.subQuery;
+            if (query == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return query;
+        }
+
+        abstract SR spaceEnd();
+
+
+    }//QueryInsertSpaceClause
 
 
     static abstract class InsertStatement<I extends DmlStatement.DmlInsert>
@@ -1236,11 +1215,11 @@ abstract class InsertSupport {
 
         private final CriteriaContext criteriaContext;
 
-        private final TableMeta<?> table;
+        final TableMeta<?> table;
 
-        private final List<FieldMeta<?>> fieldList;
+        final List<FieldMeta<?>> fieldList;
 
-        private final Map<FieldMeta<?>, Boolean> fieldMap;
+        final Map<FieldMeta<?>, Boolean> fieldMap;
 
 
         private Boolean prepared;
@@ -1255,7 +1234,7 @@ abstract class InsertSupport {
 
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            final _DialectParser parser;
+            final DialectParser parser;
             parser = _MockDialects.from(dialect);
             return parser.printStmt(this.mockStmt(parser, visible), none);
         }
@@ -1289,6 +1268,9 @@ abstract class InsertSupport {
             } else {
                 CriteriaContextStack.clearContextStack(this.criteriaContext);
             }
+            if (this instanceof QueryInsertStatement) {
+                ((QueryInsertStatement<I>) this).validateStatement();
+            }
             this.prepared = Boolean.TRUE;
             return (I) this;
         }
@@ -1311,7 +1293,7 @@ abstract class InsertSupport {
         }
 
 
-        private Stmt mockStmt(_DialectParser parser, Visible visible) {
+        private Stmt mockStmt(DialectParser parser, Visible visible) {
             final Stmt stmt;
             if (this instanceof Insert) {
                 stmt = parser.insert((Insert) this, visible);
@@ -1370,104 +1352,67 @@ abstract class InsertSupport {
 
     }//ValueInsertStatement
 
+    static abstract class AssignmentInsertStatement<I extends DmlStatement.DmlInsert>
+            extends InsertStatement<I>
+            implements _Insert._AssignmentInsert {
+
+        private final boolean migration;
+
+        private final NullHandleMode nullHandleMode;
+
+        private final boolean preferLiteral;
+
+        private final List<ItemPair> rowPairList;
+
+        AssignmentInsertStatement(_AssignmentInsert clause) {
+            super(clause);
+            this.migration = clause.isMigration();
+            this.nullHandleMode = clause.nullHandle();
+            this.preferLiteral = clause.isPreferLiteral();
+            this.rowPairList = clause.rowPairList();
+        }
+
+        @Override
+        public final boolean isMigration() {
+            return this.migration;
+        }
+
+        @Override
+        public final NullHandleMode nullHandle() {
+            return this.nullHandleMode;
+        }
+
+        @Override
+        public final boolean isPreferLiteral() {
+            return this.preferLiteral;
+        }
+
+        @Override
+        public final List<ItemPair> rowPairList() {
+            return this.rowPairList;
+        }
+
+
+    }//AssignmentInsertStatement
+
 
     static abstract class QueryInsertStatement<I extends DmlStatement.DmlInsert>
-            implements _Insert._QueryInsert, DmlStatement._DmlInsertSpec<I>
-            , DmlStatement.DmlInsert, Statement.StatementMockSpec {
-
-        final CriteriaContext criteriaContext;
-        final TableMeta<?> table;
-
-        final List<FieldMeta<?>> fieldList;
+            extends InsertStatement<I>
+            implements _Insert._QueryInsert {
 
         final Map<FieldMeta<?>, Boolean> fieldMap;
 
         final SubQuery subQuery;
 
-        private Boolean prepared;
-
-        QueryInsertStatement(_Insert clause, SubQuery subQuery) {
-            this.criteriaContext = ((CriteriaContextSpec) clause).getCriteriaContext();
-
-            this.table = clause.table();
-            this.fieldList = clause.fieldList();
+        QueryInsertStatement(_QueryInsert clause) {
+            super(clause);
             this.fieldMap = clause.fieldMap();
-            this.subQuery = subQuery;
-        }
-
-
-        @Override
-        public final TableMeta<?> table() {
-            return this.table;
-        }
-
-        @Override
-        public final List<FieldMeta<?>> fieldList() {
-            return this.fieldList;
-        }
-
-        @Override
-        public final Map<FieldMeta<?>, Boolean> fieldMap() {
-            return this.fieldMap;
+            this.subQuery = clause.subQuery();
         }
 
         @Override
         public final SubQuery subQuery() {
             return this.subQuery;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final I asInsert() {
-            _Assert.nonPrepared(this.prepared);
-            if (this instanceof SubStatement) {
-                CriteriaContextStack.pop(this.criteriaContext);
-            } else {
-                CriteriaContextStack.clearContextStack(this.criteriaContext);
-            }
-            this.validateStatement();
-            this.criteriaContext.clear();
-            this.prepared = Boolean.TRUE;
-            return (I) this;
-        }
-
-        @Override
-        public final void prepared() {
-            _Assert.prepared(this.prepared);
-        }
-
-        @Override
-        public final boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-        @Override
-        public final void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-        }
-
-        @Override
-        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            if (!(this instanceof Insert)) {
-                //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            final _DialectParser d;
-            d = _MockDialects.from(dialect);
-            final Stmt stmt;
-            stmt = d.insert((Insert) this, visible);
-            return d.printStmt(stmt, none);
-        }
-
-        @Override
-        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            if (!(this instanceof Insert)) {
-                //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return _MockDialects.from(dialect).insert((Insert) this, visible);
         }
 
         /**
@@ -1476,7 +1421,7 @@ abstract class InsertSupport {
          * and {@link  CriteriaContextStack#pop(CriteriaContext)}.
          * </p>
          */
-        final void validateStatement() {
+        private void validateStatement() {
             final TableMeta<?> table = this.table;
             if (table instanceof ChildTableMeta) {
                 doValidateStatement(((ChildTableMeta<?>) table).parentMeta(), this.fieldList, this.subQuery);

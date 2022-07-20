@@ -15,9 +15,9 @@ public abstract class _DialectFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static _DialectParser createDialect(_DialectEnv environment) {
+    public static DialectParser createDialect(_DialectEnv environment) {
         final Database database = environment.serverMeta().database();
-        final _DialectParser dialect;
+        final DialectParser dialect;
         switch (database) {
             case MySQL:
                 dialect = _MySQLDialectFactory.createDialect(environment);

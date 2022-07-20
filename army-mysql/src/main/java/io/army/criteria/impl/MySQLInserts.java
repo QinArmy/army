@@ -8,11 +8,12 @@ import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
+import io.army.dialect._DialectUtils;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.util._Assert;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -352,7 +353,7 @@ abstract class MySQLInserts extends InsertSupport {
         @SuppressWarnings("unchecked")
         @Override
         public CT child() {
-            return (CT) this.clause;
+            return ((Insert._ChildPartClause<CT>) this.clause).child();
         }
 
         @Override
@@ -922,7 +923,7 @@ abstract class MySQLInserts extends InsertSupport {
             implements MySQLInsert._DomainPartitionSpec<C, T>
             , ClauseBeforeRowAlias<C, T, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, T>> {
 
-        private final _Insert._ValuesSyntaxInsert parentStmt;
+        private final _Insert._DomainInsert parentStmt;
 
         private final List<Hint> hintList;
 
@@ -944,8 +945,8 @@ abstract class MySQLInserts extends InsertSupport {
 
         private DomainPartitionClause(DomainParentPartitionClause<C, ?> parentClause, ChildTableMeta<T> table) {
             super(parentClause, table);
-            this.hintList = parentClause.childHintList();
-            this.modifierList = parentClause.childModifierList();
+            this.hintList = _CollectionUtils.safeList(parentClause.childHintList);
+            this.modifierList = _CollectionUtils.safeList(parentClause.childModifierList);
             this.parentStmt = parentClause.createParentStmt(); //couldn't invoke asInsert method
         }
 
@@ -1006,15 +1007,7 @@ abstract class MySQLInserts extends InsertSupport {
             return this;
         }
 
-        private List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-    }//DomainInsertPartitionClause
+    }//DomainPartitionClause
 
 
     private static final class DomainParentPartitionClause<C, P extends IDomain>
@@ -1098,7 +1091,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public MySQLInsert._DomainChildInsertIntoSpec<C, P> child() {
-            return this;
+            return this.endParentStmt(Collections.emptyList());
         }
 
         @Override
@@ -1176,29 +1169,6 @@ abstract class MySQLInserts extends InsertSupport {
             return this;
         }
 
-        private List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private List<Hint> childHintList() {
-            List<Hint> list = this.childHintList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private List<MySQLWords> childModifierList() {
-            List<MySQLWords> list = this.childModifierList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
 
         private MySQLDomainInsertStatement createParentStmt() {
             final List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
@@ -1259,7 +1229,7 @@ abstract class MySQLInserts extends InsertSupport {
 
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = clause.partitionList();
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.domainList = clause.domainList();
         }
 
@@ -1267,7 +1237,7 @@ abstract class MySQLInserts extends InsertSupport {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = clause.partitionList();
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.domainList = clause.domainList();
         }
 
@@ -1361,7 +1331,7 @@ abstract class MySQLInserts extends InsertSupport {
     private static class MySQLDomainChildInsertStatement extends MySQLDomainInsertStatement
             implements _Insert._ChildDomainInsert {
 
-        private final _Insert._ValuesSyntaxInsert parentStmt;
+        private final _Insert._DomainInsert parentStmt;
 
         private MySQLDomainChildInsertStatement(DomainPartitionClause<?, ?> clause) {
             super(clause);
@@ -1370,7 +1340,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final _ValuesSyntaxInsert parentStmt() {
+        public final _DomainInsert parentStmt() {
             return this.parentStmt;
         }
 
@@ -1628,8 +1598,8 @@ abstract class MySQLInserts extends InsertSupport {
 
         private ValuePartitionClause(ValueParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
             super(clause, table);
-            this.hintList = clause.childHintList();
-            this.modifierList = clause.childModifierList();
+            this.hintList = _CollectionUtils.safeList(clause.childHintList);
+            this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
             this.parentStmt = clause.createParentStmt();//couldn't invoke asInsert method
         }
 
@@ -1708,14 +1678,6 @@ abstract class MySQLInserts extends InsertSupport {
         private MySQLInsert._ValueColumnListSpec<C, T> partitionEnd(List<String> partitionList) {
             this.partitionList = partitionList;
             return this;
-        }
-
-        private List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
         }
 
 
@@ -1859,29 +1821,6 @@ abstract class MySQLInserts extends InsertSupport {
             return this;
         }
 
-        private List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private List<Hint> childHintList() {
-            List<Hint> list = this.childHintList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private List<MySQLWords> childModifierList() {
-            List<MySQLWords> list = this.childModifierList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
 
         private MySQLValueInsertStatement createParentStmt() {
             if (this.rowValuesList == null) {
@@ -1922,7 +1861,7 @@ abstract class MySQLInserts extends InsertSupport {
 
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = clause.partitionList();
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.rowValuesList = clause.rowValuesList;
 
             assert this.rowValuesList != null;
@@ -1932,7 +1871,7 @@ abstract class MySQLInserts extends InsertSupport {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = clause.partitionList();
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.rowValuesList = clause.rowValuesList;
 
             assert this.rowValuesList != null;
@@ -2040,7 +1979,7 @@ abstract class MySQLInserts extends InsertSupport {
 
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = clause.partitionList();
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.rowValuesList = clause.rowValuesList;
 
             assert this.rowValuesList != null;
@@ -2132,9 +2071,10 @@ abstract class MySQLInserts extends InsertSupport {
             extends MySQLInsertClause<
             C,
             MySQLInsert._AssignmentNullOptionSpec<C>,
+            MySQLInsert._AssignmentPreferLiteralSpec<C>,
             MySQLInsert._AssignmentInsertIntoSpec<C>,
             MySQLInsert._AssignmentIntoClause<C>>
-            implements MySQLInsert._AssignmentOptionSpec<C>, MySQLInsert._AssignmentIntoClause<C>, InsertOptions {
+            implements MySQLInsert._AssignmentOptionSpec<C>, MySQLInsert._AssignmentIntoClause<C> {
 
 
         private AssignmentInsertOptionClause(@Nullable C criteria) {
@@ -2143,108 +2083,106 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLInsert._AssignmentPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
-            return new MySQLAssignmentInsertStatement<>(this, table);
+        public <T extends IDomain> MySQLInsert._AssignmentPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+            return new AssignmentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLInsert._AssignmentParentPartitionSpec<C, FieldMeta<? super T>> into(ChildTableMeta<T> table) {
-            return new MySQLAssignmentInsertStatement<>(this, table);
+        public <T extends IDomain> MySQLInsert._AssignmentParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+            return new AssignmentParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLInsert._AssignmentPartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return new MySQLAssignmentInsertStatement<>(this, table);
+        public <T extends IDomain> MySQLInsert._AssignmentPartitionSpec<C, T> insertInto(SimpleTableMeta<T> table) {
+            return new AssignmentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLInsert._AssignmentParentPartitionSpec<C, FieldMeta<? super T>> insertInto(ChildTableMeta<T> table) {
-            return new MySQLAssignmentInsertStatement<>(this, table);
+        public <T extends IDomain> MySQLInsert._AssignmentParentPartitionSpec<C, T> insertInto(ParentTableMeta<T> table) {
+            return new AssignmentParentPartitionClause<>(this, table);
         }
-
 
     }//AssignmentInsertOptionClause
 
 
-    static final class MySQLAssignmentInsertStatement<C, F extends TableField>
-            extends InsertSupport.AssignmentInsertClause<C, F, MySQLInsert._MySQLAssignmentSetSpec<C, F>>
-            implements MySQLInsert._AssignmentParentPartitionSpec<C, F>, MySQLInsert._AssignmentPartitionSpec<C, F>
-            , MySQLInsert._MySQLAssignmentSetSpec<C, F>, ClauseBeforeRowAlias<C, F>, MySQLInsert
-            , _MySQLInsert._MySQLAssignmentInsert, _MySQLInsert._InsertWithRowAlias {
+    private static final class AssignmentPartitionClause<C, T extends IDomain>
+            extends InsertSupport.AssignmentInsertClause<C, T, MySQLInsert._MySQLAssignmentSetSpec<C, T>>
+            implements MySQLInsert._AssignmentPartitionSpec<C, T>
+            , MySQLInsert._MySQLAssignmentSetSpec<C, T>
+            , ClauseBeforeRowAlias<C, T, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, T>> {
 
+
+        private final _Insert._AssignmentInsert parentStmt;
         private final List<Hint> hintList;
 
         private final List<MySQLWords> modifierList;
 
         private List<String> partitionList;
 
-        private List<String> childPartitionList;
-
         private String rowAlias;
 
         private Map<String, FieldMeta<?>> aliasToField;
 
-        private Map<?, _Expression> valuePairsForDuplicate;
-
-        private Boolean prepared;
-
-        private MySQLAssignmentInsertStatement(AssignmentInsertOptionClause<C> clause, TableMeta<?> table) {
+        private AssignmentPartitionClause(AssignmentInsertOptionClause<C> clause, SimpleTableMeta<T> table) {
             super(clause, false, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
+            this.parentStmt = null;
+        }
+
+        private AssignmentPartitionClause(AssignmentParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
+            super(clause, false, table);
+            this.hintList = _CollectionUtils.safeList(clause.childHintList);
+            this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
+            this.parentStmt = clause.createParentStmt(); //couldn't invoke asInsert method
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._MySQLAssignmentSetClause<C, F>> partition() {
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._MySQLAssignmentSetClause<C, T>> partition() {
             return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
-        @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._AssignmentChildPartitionSpec<C, F>> parentPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
-        }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._MySQLAssignmentSetClause<C, F>> childPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
-        }
-
-        @Override
-        public MySQLInsert._OnDuplicateKeyRowAliasClause<C, F> as(String alias) {
+        public MySQLInsert._RowColumnAliasListClause<C, T, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, T>> as(final @Nullable String alias) {
+            if (alias == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
             this.endAssignmentSetClause();
-            return new NonParentRowAliasClause<>(alias, this);
+            return new RowAliasClause<>(alias, this);
         }
 
+
         @Override
-        public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, F, MySQLInsert._StaticAssignmentCommaFieldSpec<C, F>> onDuplicateKey() {
+        public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, T, MySQLInsert._StaticAssignmentCommaFieldSpec<C, T>> onDuplicateKey() {
             this.endAssignmentSetClause();
             return new NonParentAsRowAliasSpec<>(this)
                     .onDuplicateKey();
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<F>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
             this.endAssignmentSetClause();
             return new NonParentAsRowAliasSpec<>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<F>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
             this.endAssignmentSetClause();
             return new NonParentAsRowAliasSpec<>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<F>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
             this.endAssignmentSetClause();
             return new NonParentAsRowAliasSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<F>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
             this.endAssignmentSetClause();
             return new NonParentAsRowAliasSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
@@ -2252,105 +2190,290 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Insert asInsert() {
-            return this.endInsert(Collections.emptyMap());
+            this.endAssignmentSetClause();
+            return this.endInsert(Collections.emptyList());
         }
 
-        @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
-        }
 
         @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-        @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-            super.clear();
-            this.partitionList = null;
-
-            this.childPartitionList = null;
-            this.rowAlias = null;
-            this.aliasToField = null;
-            this.valuePairsForDuplicate = null;
-        }
-
-        @Override
-        public List<Hint> hintList() {
-            return this.hintList;
-        }
-
-        @Override
-        public List<MySQLWords> modifierList() {
-            return this.modifierList;
-        }
-
-        @Override
-        public List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        @Override
-        public List<String> childPartitionList() {
-            List<String> list = this.childPartitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        @Override
-        public Map<?, _Expression> duplicatePairList() {
-            Map<?, _Expression> map = this.valuePairsForDuplicate;
-            if (map == null) {
-                map = Collections.emptyMap();
-            }
-            return map;
-        }
-
-        @Override
-        public String rowAlias() {
-            return this.rowAlias;
-        }
-
-        @Override
-        public Map<String, FieldMeta<?>> aliasToField() {
-            Map<String, FieldMeta<?>> map = this.aliasToField;
-            if (map == null) {
-                map = Collections.emptyMap();
-            }
-            return map;
-        }
-
-        @Override
-        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(final String rowAlias
+        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, T> rowAliasEnd(final String rowAlias
                 , final Map<String, FieldMeta<?>> aliasToField) {
+            if (this.rowAlias != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
             this.rowAlias = rowAlias;
             this.aliasToField = aliasToField;
-            return new NonParentDuplicateKeyUpdateAliasSpec<>(aliasToField, this);
+            return new NonParentDuplicateKeyUpdateAliasSpec<>(this, aliasToField);
         }
 
         @Override
-        public Insert endInsert(final Map<?, _Expression> valuePairMap) {
-            _Assert.nonPrepared(this.prepared);
-            this.endAssignmentSetClause();
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.valuePairsForDuplicate = valuePairMap;
+        public Insert endInsert(final List<_Pair<Object, _Expression>> pairList) {
+            final Insert._InsertSpec spec;
+            if (pairList.size() == 0) {
+                if (this.parentStmt == null) {
+                    spec = new MySQLAssignmentInsertStatement(this);
+                } else {
+                    spec = new AssignmentChildInsertStatement(this);
+                }
+            } else if (this.rowAlias == null) {
+                if (this.parentStmt == null) {
+                    spec = new AssignmentInsertWithDuplicateKey(this, pairList);
+                } else {
+                    spec = new AssignmentChildInsertWithDuplicateKey(this, pairList);
+                }
+            } else if (this.parentStmt == null) {
+                spec = new AssignmentInsertWithRowAlias(this, pairList);
+            } else {
+                spec = new AssignmentChildInsertWithRowAlias(this, pairList);
+            }
+            return spec.asInsert();
+        }
 
-            this.prepared = Boolean.TRUE;
+        private MySQLInsert._MySQLAssignmentSetClause<C, T> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
             return this;
         }
 
         @Override
-        public String toString() {
+        public void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
+            if (!this.migration) {
+                _DialectUtils.checkInsertField(this.table, field, this::forbidField);
+                if (value != null && !field.nullable() && value.isNullValue()) {
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
+                }
+            }
+
+        }
+
+        private CriteriaException forbidField(FieldMeta<?> field, Function<FieldMeta<?>, CriteriaException> function) {
+            return CriteriaContextStack.criteriaError(this.criteriaContext, function, field);
+        }
+
+
+    }//AssignmentPartitionClause
+
+
+    private static final class AssignmentParentPartitionClause<C, P extends IDomain>
+            extends InsertSupport.AssignmentInsertClause<C, P, MySQLInsert._AssignmentParentSetSpec<C, P>>
+            implements MySQLInsert._AssignmentParentPartitionSpec<C, P>
+            , MySQLInsert._AssignmentParentSetSpec<C, P>
+            , ClauseBeforeRowAlias<C, P, MySQLInsert._ParentOnDuplicateKeyUpdateAliasSpec<C, P, MySQLInsert._AssignmentChildInsertIntoSpec<C, P>>>
+            , MySQLInsert._AssignmentChildInsertIntoSpec<C, P>
+            , MySQLInsert._AssignmentChildIntoClause<C, P>
+            , NonQueryInsertOptions {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private List<String> partitionList;
+
+        private String rowAlias;
+
+        private Map<String, FieldMeta<?>> aliasToField;
+
+        private List<_Pair<Object, _Expression>> duplicatePairList;
+
+        private List<Hint> childHintList;
+
+        private List<MySQLWords> childModifierList;
+
+        private AssignmentParentPartitionClause(AssignmentInsertOptionClause<C> clause, ParentTableMeta<P> table) {
+            super(clause, false, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._AssignmentParentSetClause<C, P>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        }
+
+        @Override
+        public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, P, MySQLInsert._ParentStaticAssignmentCommaFieldSpec<C, P, MySQLInsert._AssignmentChildInsertIntoSpec<C, P>>> onDuplicateKey() {
+            this.endAssignmentSetClause();
+            return new ParentAsRowAliasSpec<>(this)
+                    .onDuplicateKey();
+        }
+
+        @Override
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> onDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<P>>> consumer) {
+            this.endAssignmentSetClause();
+            return new ParentAsRowAliasSpec<>(this)
+                    .onDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<P>>> consumer) {
+            this.endAssignmentSetClause();
+            return new ParentAsRowAliasSpec<>(this)
+                    .onDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> ifOnDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<P>>> consumer) {
+            this.endAssignmentSetClause();
+            return new ParentAsRowAliasSpec<>(this)
+                    .ifOnDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<P>>> consumer) {
+            this.endAssignmentSetClause();
+            return new ParentAsRowAliasSpec<>(this)
+                    .ifOnDuplicateKeyUpdate(consumer);
+        }
+
+        @Override
+        public MySQLInsert._RowColumnAliasListClause<C, P, MySQLInsert._ParentOnDuplicateKeyUpdateAliasSpec<C, P, MySQLInsert._AssignmentChildInsertIntoSpec<C, P>>> as(String alias) {
+            this.endAssignmentSetClause();
+            return new ParentAsRowAliasSpec<>(this)
+                    .as(alias);
+        }
+
+        @Override
+        public Insert asInsert() {
+            this.endAssignmentSetClause();
+            return this.endInsert(Collections.emptyList());
+        }
+
+        @Override
+        public MySQLInsert._AssignmentChildInsertIntoSpec<C, P> child() {
+            this.endAssignmentSetClause();
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._AssignmentChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::insertModifier);
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._AssignmentChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
+                    , MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::insertModifier);
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLInsert._AssignmentPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+            return this.insertInto(table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLInsert._AssignmentPartitionSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
+            final AssignmentPartitionClause<C, T> childClause;
+            childClause = new AssignmentPartitionClause<>(this, table);
+            this.childHintList = null;
+            this.childModifierList = null;
+            return childClause;
+        }
+
+        @Override
+        public MySQLInsert._ParentOnDuplicateKeyUpdateAliasSpec<C, P, MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> rowAliasEnd(String rowAlias, Map<String, FieldMeta<?>> aliasToField) {
+            if (this.rowAlias != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.rowAlias = rowAlias;
+            this.aliasToField = aliasToField;
+            return new ParentDuplicateKeyUpdateAliasSpec<>(this, aliasToField);
+        }
+
+        @Override
+        public Insert endInsert(final List<_Pair<Object, _Expression>> pairList) {
+            if (this.duplicatePairList == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.duplicatePairList = pairList;
+            return this.createParentStmt().asInsert();
+        }
+
+
+        @Override
+        public void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
+            if (!this.migration) {
+                _DialectUtils.checkInsertField(this.table, field, this::forbidField);
+                if (value != null && !field.nullable() && value.isNullValue()) {
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
+                }
+            }
+
+        }
+
+        private CriteriaException forbidField(FieldMeta<?> field, Function<FieldMeta<?>, CriteriaException> function) {
+            return CriteriaContextStack.criteriaError(this.criteriaContext, function, field);
+        }
+
+        private MySQLInsert._AssignmentParentSetClause<C, P> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private MySQLAssignmentInsertStatement createParentStmt() {
+            final List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
+            if (pairList == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            final MySQLAssignmentInsertStatement statement;
+            if (pairList.size() == 0) {
+                statement = new MySQLAssignmentInsertStatement(this);
+            } else if (this.rowAlias == null) {
+                statement = new AssignmentInsertWithDuplicateKey(this, pairList);
+            } else {
+                statement = new AssignmentInsertWithRowAlias(this, pairList);
+            }
+            return statement;
+        }
+
+
+    }//AssignmentParentPartitionClause
+
+
+    static class MySQLAssignmentInsertStatement extends InsertSupport.AssignmentInsertStatement<Insert>
+            implements MySQLInsert, _MySQLInsert._MySQLAssignmentInsert, Insert._InsertSpec {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final List<String> partitionList;
+
+        private MySQLAssignmentInsertStatement(AssignmentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+        }
+
+        private MySQLAssignmentInsertStatement(AssignmentParentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+        }
+
+        @Override
+        public final List<Hint> hintList() {
+            return this.hintList;
+        }
+
+        @Override
+        public final List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public final String toString() {
             final String s;
             if (this.isPrepared()) {
                 s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
@@ -2360,23 +2483,134 @@ abstract class MySQLInserts extends InsertSupport {
             return s;
         }
 
-        private MySQLInsert._MySQLAssignmentSetClause<C, F> partitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
+    }//MySQLAssignmentInsertStatement
+
+    private static class AssignmentInsertWithDuplicateKey extends MySQLAssignmentInsertStatement
+            implements _MySQLInsert._InsertWithDuplicateKey {
+
+        private final List<_Pair<Object, _Expression>> pairList;
+
+        private AssignmentInsertWithDuplicateKey(AssignmentPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause);
+            this.pairList = pairList;
         }
 
-        private MySQLInsert._AssignmentChildPartitionSpec<C, F> parentPartitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
-        }
-
-        private MySQLInsert._AssignmentParentPartitionSpec<C, F> childPartitionEnd(List<String> partitionList) {
-            this.childPartitionList = partitionList;
-            return this;
+        private AssignmentInsertWithDuplicateKey(AssignmentParentPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause);
+            this.pairList = pairList;
         }
 
 
-    }//AssignmentInsertPartitionClause
+        @Override
+        public final List<_Pair<Object, _Expression>> duplicatePairList() {
+            return this.pairList;
+        }
+
+
+    }//AssignmentInsertWithDuplicateKey
+
+    private static class AssignmentInsertWithRowAlias extends AssignmentInsertWithDuplicateKey
+            implements _MySQLInsert._InsertWithRowAlias {
+
+        private final String rowAlias;
+
+        private final Map<String, FieldMeta<?>> aliasToField;
+
+        private AssignmentInsertWithRowAlias(AssignmentPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause, pairList);
+            this.rowAlias = clause.rowAlias;
+            this.aliasToField = clause.aliasToField;
+            assert this.rowAlias != null && this.aliasToField != null;
+        }
+
+        private AssignmentInsertWithRowAlias(AssignmentParentPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause, pairList);
+            this.rowAlias = clause.rowAlias;
+            this.aliasToField = clause.aliasToField;
+        }
+
+        @Override
+        public String rowAlias() {
+            return this.rowAlias;
+        }
+
+        @Override
+        public Map<String, FieldMeta<?>> aliasToField() {
+            return this.aliasToField;
+        }
+
+
+    }//AssignmentInsertWIthRowAlias
+
+
+    private static class AssignmentChildInsertStatement extends MySQLAssignmentInsertStatement
+            implements _Insert._ChildAssignmentInsert {
+
+        private final _AssignmentInsert parentStmt;
+
+        private AssignmentChildInsertStatement(AssignmentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
+        }
+
+        @Override
+        public final _AssignmentInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+    }//AssignmentChildInsertStatement
+
+    private static class AssignmentChildInsertWithDuplicateKey extends AssignmentChildInsertStatement
+            implements _MySQLInsert._InsertWithDuplicateKey {
+
+        private final List<_Pair<Object, _Expression>> pairList;
+
+        private AssignmentChildInsertWithDuplicateKey(AssignmentPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause);
+            this.pairList = pairList;
+        }
+
+        @Override
+        public final List<_Pair<Object, _Expression>> duplicatePairList() {
+            return this.pairList;
+        }
+
+
+    }//AssignmentChildInsertWithDuplicateKey
+
+    private static final class AssignmentChildInsertWithRowAlias extends AssignmentChildInsertWithDuplicateKey
+            implements _MySQLInsert._InsertWithRowAlias {
+
+        private final String rowAlias;
+
+        private final Map<String, FieldMeta<?>> aliasToField;
+
+        private AssignmentChildInsertWithRowAlias(AssignmentPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause, pairList);
+            this.rowAlias = clause.rowAlias;
+            this.aliasToField = clause.aliasToField;
+            assert this.rowAlias != null && this.aliasToField != null;
+        }
+
+        @Override
+        public String rowAlias() {
+            return this.rowAlias;
+        }
+
+        @Override
+        public Map<String, FieldMeta<?>> aliasToField() {
+            return this.aliasToField;
+        }
+
+
+    }//AssignmentChildInsertWIthRowAlias
 
 
     private static final class QueryInsertIntoClause<C> implements MySQLInsert._QueryInsertIntoSpec<C>
@@ -2410,43 +2644,27 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         @Override
-        public <T extends IDomain> MySQLInsert._QueryPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
-            return new QueryInsertSpaceClause<>(this, table);
+        public <T extends IDomain> MySQLInsert._QueryPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+            return new QueryPartitionClause<>(this, table);
         }
 
         @Override
-        public <P extends IDomain, T extends IDomain> MySQLInsert._QueryParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table) {
-            return new QueryInsertParentSpaceClause<>(this, table);
+        public <T extends IDomain> MySQLInsert._QueryParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+            return new QueryParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLInsert._QueryPartitionSpec<C, FieldMeta<T>> insertInto(SingleTableMeta<T> table) {
-            return new QueryInsertSpaceClause<>(this, table);
+        public <T extends IDomain> MySQLInsert._QueryPartitionSpec<C, T> insertInto(SimpleTableMeta<T> table) {
+            return new QueryPartitionClause<>(this, table);
         }
 
         @Override
-        public <P extends IDomain, T extends IDomain> MySQLInsert._QueryParentPartitionSpec<C, P, T> insertInto(ComplexTableMeta<P, T> table) {
-            return new QueryInsertParentSpaceClause<>(this, table);
-        }
-
-        private List<Hint> hintList() {
-            List<Hint> list = this.hintList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private List<MySQLWords> modifierList() {
-            List<MySQLWords> list = this.modifierList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
+        public <T extends IDomain> MySQLInsert._QueryParentPartitionSpec<C, T> insertInto(ParentTableMeta<T> table) {
+            return new QueryParentPartitionClause<>(this, table);
         }
 
 
-    }//RowSetInsertIntoClause
+    }//QueryInsertIntoClause
 
 
     /**
@@ -2456,10 +2674,17 @@ abstract class MySQLInserts extends InsertSupport {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/insert.html">INSERT Statement</a>
      */
-    private static class QueryInsertSpaceClause<C, F extends TableField>
-            extends InsertSupport.ColumnsClause<C, F, MySQLInsert._QuerySpaceSubQueryClause<C, F>>
-            implements MySQLInsert._QueryPartitionSpec<C, F>, MySQLInsert._QuerySpaceSubQueryClause<C, F>
-            , ClauseBeforeRowAlias<C, F> {
+    private static class QueryPartitionClause<C, T extends IDomain>
+            extends InsertSupport.QueryInsertSpaceClause<
+            C,
+            T,
+            MySQLInsert._QuerySpaceSubQueryClause<C, T>,
+            MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, T>>
+            implements MySQLInsert._QueryPartitionSpec<C, T>
+            , MySQLInsert._QuerySpaceSubQueryClause<C, T>
+            , ClauseBeforeRowAlias<C, T, MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, T>> {
+
+        private final _Insert._QueryInsert parentStmt;
 
         private final List<Hint> hintList;
 
@@ -2467,265 +2692,194 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<String> partitionList;
 
-        private SubQuery subQuery;
+        private QueryPartitionClause(QueryInsertIntoClause<C> clause, SimpleTableMeta<T> table) {
+            super(clause.criteriaContext, table);
+            this.hintList = _CollectionUtils.safeList(clause.hintList);
+            this.modifierList = _CollectionUtils.safeList(clause.modifierList);
+            this.parentStmt = null;
+        }
 
-        private QueryInsertSpaceClause(QueryInsertIntoClause<C> clause, SingleTableMeta<?> table) {
-            super(clause.criteriaContext, true, table);
-            this.hintList = clause.hintList();
-            this.modifierList = clause.modifierList();
-
+        private QueryPartitionClause(QueryParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
+            super(clause.criteriaContext, table);
+            this.hintList = _CollectionUtils.safeList(clause.childHintList);
+            this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
+            this.parentStmt = clause.createParentStmt(); //couldn't invoke asInsert method
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._QueryColumnListClause<C, F>> partition() {
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._QueryColumnListClause<C, T>> partition() {
             return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
-        @Override
-        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> space(Supplier<? extends SubQuery> supplier) {
-            final SubQuery subQuery;
-            subQuery = supplier.get();
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new NonParentAsRowAliasSpec<>(this);
-        }
 
         @Override
-        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> space(Function<C, ? extends SubQuery> function) {
-            final SubQuery subQuery;
-            subQuery = function.apply(this.criteria);
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new NonParentAsRowAliasSpec<>(this);
-        }
-
-
-        @Override
-        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(String rowAlias
+        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, T> rowAliasEnd(String rowAlias
                 , Map<String, FieldMeta<?>> aliasToField) {
             // query insert no AS row_alias clause
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
 
         @Override
-        public Insert endInsert(final Map<?, _Expression> valuePairMap) {
-            if (this.subQuery == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            final Insert._InsertSpec insertSpec;
-            if (valuePairMap.size() == 0) {
-                insertSpec = new MySQLQueryInsertStatement(this);
+        public Insert endInsert(final List<_Pair<Object, _Expression>> pairList) {
+            final Insert._InsertSpec spec;
+            if (pairList.size() == 0) {
+                if (this.parentStmt == null) {
+                    spec = new MySQLQueryInsertStatement(this);
+                } else {
+                    spec = new QueryChildInsertStatement(this);
+                }
+            } else if (this.parentStmt == null) {
+                spec = new QueryInsertWithDuplicate(this, pairList);
             } else {
-                insertSpec = new QueryInsertStatementWithDuplicate(this, valuePairMap);
+                spec = new QueryChildInsertWithDuplicate(this, pairList);
             }
-            return insertSpec.asInsert();
+            return spec.asInsert();
+        }
+
+
+        @Override
+        MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, T> spaceEnd() {
+            return new NonParentAsRowAliasSpec<>(this);
         }
 
         @Override
-        MySQLInsert._QuerySpaceSubQueryClause<C, F> columnListEnd(int fieldSize, int childFieldSize) {
-            if (fieldSize == 0) {
-                throw noColumnList(this.criteriaContext, this.table);
-            }
-            if (childFieldSize > 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
+        MySQLInsert._QuerySpaceSubQueryClause<C, T> columnListEnd() {
             return this;
         }
 
-        List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private MySQLInsert._QueryColumnListClause<C, F> partitionEnd(List<String> partitionList) {
+        private MySQLInsert._QueryColumnListClause<C, T> partitionEnd(List<String> partitionList) {
             this.partitionList = partitionList;
             return this;
         }
 
-    }//QueryInsertSpaceClause
+    }//QueryPartitionClause
 
 
-    private static final class QueryInsertParentSpaceClause<C, P extends IDomain, T extends IDomain>
-            extends InsertSupport.ColumnsClause<C, FieldMeta<P>, MySQLInsert._QueryParentQuerySpec<C, FieldMeta<T>>>
-            implements MySQLInsert._QueryParentPartitionSpec<C, P, T>
-            , MySQLInsert._QueryParentQuerySpec<C, FieldMeta<T>> {
+    private static final class QueryParentPartitionClause<C, P extends IDomain>
+            extends InsertSupport.QueryInsertSpaceClause<
+            C,
+            P,
+            MySQLInsert._QueryParentQueryClause<C, P>,
+            MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, MySQLInsert._QueryChildInsertIntoSpec<C, P>>>
+            implements MySQLInsert._QueryParentPartitionSpec<C, P>
+            , MySQLInsert._QueryParentQueryClause<C, P>
+            , Insert._ChildPartClause<MySQLInsert._QueryChildInsertIntoSpec<C, P>>
+            , ClauseBeforeRowAlias<C, P, MySQLInsert._ParentOnDuplicateKeyUpdateAliasSpec<C, P, MySQLInsert._QueryChildInsertIntoSpec<C, P>>>
+            , MySQLInsert._QueryChildInsertIntoSpec<C, P>
+            , MySQLInsert._QueryChildIntoClause<C, P> {
 
         private final List<Hint> hintList;
 
         private final List<MySQLWords> modifierList;
 
-        private final ChildTableMeta<T> childTable;
+        private List<String> partitionList;
 
-        private List<String> parentPartitionList;
+        private List<_Pair<Object, _Expression>> duplicatePairList;
 
-        private SubQuery subQuery;
+        private List<Hint> childHintList;
 
-        private QueryInsertParentSpaceClause(QueryInsertIntoClause<C> clause, ComplexTableMeta<P, T> table) {
-            super(clause.criteriaContext, true, table.parentMeta());
-            this.hintList = clause.hintList();
-            this.modifierList = clause.modifierList();
-            this.childTable = table;
+        private List<MySQLWords> childModifierList;
+
+        private QueryParentPartitionClause(QueryInsertIntoClause<C> clause, ParentTableMeta<P> table) {
+            super(clause.criteriaContext, table);
+            this.hintList = _CollectionUtils.safeList(clause.hintList);
+            this.modifierList = _CollectionUtils.safeList(clause.modifierList);
 
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._QueryParentColumnListClause<C, FieldMeta<P>, FieldMeta<T>>> parentPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._QueryParentColumnListClause<C, P>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
-        public MySQLInsert._QueryChildSubQueryPartitionSpec<C, FieldMeta<T>> space(Supplier<? extends SubQuery> supplier) {
-            final SubQuery subQuery;
-            subQuery = supplier.get();
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new QueryInsertChildSpaceClause<>(this);
-        }
-
-        @Override
-        public MySQLInsert._QueryChildSubQueryPartitionSpec<C, FieldMeta<T>> space(Function<C, ? extends SubQuery> function) {
-            final SubQuery subQuery;
-            subQuery = function.apply(this.criteria);
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new QueryInsertChildSpaceClause<>(this);
-        }
-
-
-        @Override
-        MySQLInsert._QueryParentQuerySpec<C, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
-            if (fieldSize == 0) {
-                throw noColumnList(this.criteriaContext, this.table);
-            }
-            if (childFieldSize > 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return this;
-        }
-
-        List<String> partitionList() {
-            List<String> list = this.parentPartitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private MySQLInsert._QueryParentColumnListClause<C, FieldMeta<P>, FieldMeta<T>> parentPartitionEnd(List<String> partitionList) {
-            this.parentPartitionList = partitionList;
-            return this;
-        }
-
-
-    }//QueryInsertParentSpaceClause
-
-
-    private static final class QueryInsertChildSpaceClause<C, F extends TableField>
-            extends InsertSupport.ColumnsClause<C, F, MySQLInsert._QuerySpaceSubQueryClause<C, F>>
-            implements MySQLInsert._QueryChildSubQueryPartitionSpec<C, F>
-            , MySQLInsert._QuerySpaceSubQueryClause<C, F>
-            , ClauseBeforeRowAlias<C, F> {
-
-        private final QueryInsertParentSpaceClause<?, ?, ?> parentClause;
-
-        private List<String> childPartitionList;
-
-        private SubQuery subQuery;
-
-        private QueryInsertChildSpaceClause(QueryInsertParentSpaceClause<C, ?, ?> clause) {
-            super(clause.criteriaContext, clause.migration, clause.childTable);
-            this.parentClause = clause;
-        }
-
-        @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._QueryColumnListClause<C, F>> childPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
-        }
-
-        @Override
-        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> space(Supplier<? extends SubQuery> supplier) {
-            final SubQuery subQuery;
-            subQuery = supplier.get();
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new NonParentAsRowAliasSpec<>(this);
-        }
-
-        @Override
-        public MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, F> space(Function<C, ? extends SubQuery> function) {
-            final SubQuery subQuery;
-            subQuery = function.apply(this.criteria);
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new NonParentAsRowAliasSpec<>(this);
-        }
-
-
-        @Override
-        MySQLInsert._QuerySpaceSubQueryClause<C, F> columnListEnd(int fieldSize, int childFieldSize) {
-            if (fieldSize > 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            if (childFieldSize == 0) {
-                throw noColumnList(this.criteriaContext, this.table);
-            }
-            return this;
-        }
-
-        @Override
-        public MySQLInsert._OnDuplicateKeyUpdateAliasSpec<C, F> rowAliasEnd(String rowAlias, Map<String, FieldMeta<?>> aliasToField) {
+        public MySQLInsert._ParentOnDuplicateKeyUpdateAliasSpec<C, P, MySQLInsert._QueryChildInsertIntoSpec<C, P>> rowAliasEnd(String rowAlias, Map<String, FieldMeta<?>> aliasToField) {
             // query insert no AS row_alias clause
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
 
         @Override
-        public Insert endInsert(final Map<?, _Expression> valuePairMap) {
-            if (this.subQuery == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            final Insert._InsertSpec spec;
-            if (valuePairMap.size() == 0) {
-                spec = new MySQLQueryInsertStatement(this);
-            } else {
-                spec = new QueryInsertStatementWithDuplicate(this, valuePairMap);
-            }
-            return spec.asInsert();
-        }
-
-        List<String> partitionList() {
-            List<String> list = this.childPartitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private MySQLInsert._QueryColumnListClause<C, F> childPartitionEnd(List<String> partitionList) {
-            this.childPartitionList = partitionList;
+        public MySQLInsert._QueryChildInsertIntoSpec<C, P> child() {
             return this;
         }
 
-    }//QueryInsertChildSpaceClause
+        @Override
+        public MySQLInsert._QueryChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::insertModifier);
+            return this;
+        }
+
+        @Override
+        public MySQLInsert._QueryChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
+                    , MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::insertModifier);
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLInsert._QueryPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+            return this.insertInto(table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLInsert._QueryPartitionSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
+            final QueryPartitionClause<C, T> childClause;
+            childClause = new QueryPartitionClause<>(this, table);
+            this.childHintList = null;
+            this.childModifierList = null;
+            return childClause;
+        }
+
+
+        @Override
+        public Insert endInsert(final List<_Pair<Object, _Expression>> pairList) {
+            if (this.duplicatePairList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.duplicatePairList = pairList;
+            return this.createParentStmt().asInsert();
+        }
+
+        @Override
+        MySQLInsert._QueryParentQueryClause<C, P> columnListEnd() {
+            return this;
+        }
+
+        @Override
+        MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, MySQLInsert._QueryChildInsertIntoSpec<C, P>> spaceEnd() {
+            return new ParentAsRowAliasSpec<>(this);
+        }
+
+
+        private MySQLInsert._QueryParentColumnListClause<C, P> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private MySQLQueryInsertStatement createParentStmt() {
+            final List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
+            if (pairList == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            final MySQLQueryInsertStatement statement;
+            if (pairList.size() == 0) {
+                statement = new MySQLQueryInsertStatement(this);
+            } else {
+                statement = new QueryInsertWithDuplicate(this, pairList);
+            }
+            return statement;
+        }
+
+
+    }//QueryParentPartitionClause
 
 
     static class MySQLQueryInsertStatement extends QueryInsertStatement<Insert>
             implements MySQLInsert, Insert._InsertSpec, _MySQLInsert._MySQQueryInsert {
-
 
         private final List<Hint> hintList;
 
@@ -2733,25 +2887,21 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<String> partitionList;
 
-        private final List<String> childPartitionList;
 
-        private MySQLQueryInsertStatement(QueryInsertSpaceClause<?, ?> clause) {
-            super(clause, clause.subQuery);
+        private MySQLQueryInsertStatement(QueryPartitionClause<?, ?> clause) {
+            super(clause);
 
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = clause.partitionList();
-            this.childPartitionList = Collections.emptyList();
-
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
         }
 
-        private MySQLQueryInsertStatement(QueryInsertChildSpaceClause<?, ?> clause) {
-            super(clause.parentClause, clause.parentClause.subQuery, clause, clause.subQuery);
+        private MySQLQueryInsertStatement(QueryParentPartitionClause<?, ?> clause) {
+            super(clause);
 
-            this.hintList = clause.parentClause.hintList;
-            this.modifierList = clause.parentClause.modifierList;
-            this.partitionList = clause.parentClause.partitionList();
-            this.childPartitionList = clause.partitionList();
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
         }
 
         @Override
@@ -2781,32 +2931,71 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-    }//RowSetInsertStatement
+    }//MySQLQueryInsertStatement
 
-    private static final class QueryInsertStatementWithDuplicate extends MySQLQueryInsertStatement
+    private static final class QueryInsertWithDuplicate extends MySQLQueryInsertStatement
             implements _MySQLInsert._InsertWithDuplicateKey {
 
-        private final Map<?, _Expression> valuePairMap;
+        private final List<_Pair<Object, _Expression>> pairList;
 
-        private QueryInsertStatementWithDuplicate(QueryInsertSpaceClause<?, ?> clause
-                , Map<?, _Expression> valuePairMap) {
+        private QueryInsertWithDuplicate(QueryPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
-            this.valuePairMap = valuePairMap;
+            this.pairList = pairList;
         }
 
-        private QueryInsertStatementWithDuplicate(QueryInsertChildSpaceClause<?, ?> clause
-                , Map<?, _Expression> valuePairMap) {
+        private QueryInsertWithDuplicate(QueryParentPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
-            this.valuePairMap = valuePairMap;
+            this.pairList = pairList;
+        }
+
+
+        @Override
+        public List<_Pair<Object, _Expression>> duplicatePairList() {
+            return this.pairList;
+        }
+
+    }//QueryInsertWithDuplicate
+
+
+    private static class QueryChildInsertStatement extends MySQLQueryInsertStatement
+            implements _Insert._ChildQueryInsert {
+
+        private final _QueryInsert parentStmt;
+
+        private QueryChildInsertStatement(QueryPartitionClause<?, ?> clause) {
+            super(clause);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
         }
 
         @Override
-        public Map<?, _Expression> duplicatePairList() {
-            return this.valuePairMap;
+        public _QueryInsert parentStmt() {
+            return this.parentStmt;
         }
 
 
-    }//SubQueryInsertStatementWithDuplicate
+    }//QueryChildInsertStatement
+
+    private static final class QueryChildInsertWithDuplicate extends QueryChildInsertStatement
+            implements _MySQLInsert._InsertWithDuplicateKey {
+
+        private final List<_Pair<Object, _Expression>> pairList;
+
+        private QueryChildInsertWithDuplicate(QueryPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause);
+            this.pairList = pairList;
+        }
+
+        @Override
+        public List<_Pair<Object, _Expression>> duplicatePairList() {
+            return this.pairList;
+        }
+
+
+    }//QueryChildInsertWithDuplicate
 
 
 }
