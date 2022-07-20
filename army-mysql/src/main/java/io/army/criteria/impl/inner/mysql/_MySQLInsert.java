@@ -1,6 +1,7 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.Hint;
+import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.mysql.MySQLWords;
@@ -22,7 +23,7 @@ public interface _MySQLInsert extends _Insert {
 
     interface _InsertWithDuplicateKey extends _Insert._DuplicateKeyClause {
 
-        Map<?, _Expression> valuePairsForDuplicate();
+        List<_Pair<Object, _Expression>> duplicatePairList();
 
     }
 

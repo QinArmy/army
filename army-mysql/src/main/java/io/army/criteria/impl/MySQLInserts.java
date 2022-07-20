@@ -12,12 +12,10 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._Assert;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -55,9 +53,9 @@ abstract class MySQLInserts extends InsertSupport {
         RR rowAliasEnd(String rowAlias, Map<String, FieldMeta<?>> aliasToField);
 
         /**
-         * @param valuePairMap a unmodified map,empty is allowed.
+         * @param pairList an unmodified list,empty is allowed.
          */
-        Insert endInsert(Map<?, _Expression> valuePairMap);
+        Insert endInsert(List<_Pair<Object, _Expression>> pairList);
 
     }
 
@@ -128,7 +126,9 @@ abstract class MySQLInserts extends InsertSupport {
 
         private boolean optionalOnDuplicateKey = true;
 
-        private Map<FieldMeta<?>, _Expression> valuePairMap;
+        private Map<FieldMeta<?>, Boolean> fieldMap;
+
+        private List<_Pair<Object, _Expression>> duplicatePairList;
 
         private AsRowAliasSpec(ClauseBeforeRowAlias<C, T, RR> clause) {
             this.criteriaContext = clause.getCriteriaContext();
@@ -251,41 +251,48 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-        final Map<FieldMeta<?>, _Expression> endDuplicateKeyClause() {
-            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap == null) {
+        final List<_Pair<Object, _Expression>> endDuplicateKeyClause() {
+            List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
+            if (pairList == null) {
                 if (!this.optionalOnDuplicateKey) {
                     String m = "You don't add any field and value pair";
                     throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
                 }
-                valuePairMap = Collections.emptyMap();
-            } else if (valuePairMap instanceof HashMap) {
-                valuePairMap = Collections.unmodifiableMap(valuePairMap);
+                pairList = Collections.emptyList();
+            } else if (pairList instanceof ArrayList) {
+                pairList = Collections.unmodifiableList(pairList);
             } else {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.valuePairMap = valuePairMap;
-            return valuePairMap;
+            this.duplicatePairList = pairList;
+            return pairList;
         }
 
         private void addValuePair(final FieldMeta<T> field, final @Nullable Expression value) {
+
+            this.clause.validateField(field);
+
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
-            this.clause.validateField(field);
             if (!field.nullable() && ((ArmyExpression) value).isNullValue()) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
             }
-
-            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap == null) {
-                valuePairMap = new HashMap<>();
-                this.valuePairMap = valuePairMap;
+            Map<FieldMeta<?>, Boolean> filedMap = this.fieldMap;
+            if (filedMap == null) {
+                filedMap = new HashMap<>();
+                this.fieldMap = filedMap;
             }
-            if (valuePairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
+            if (filedMap.putIfAbsent(field, Boolean.TRUE) != null) {
                 throw duplicationValuePair(this.criteriaContext, field);
             }
 
+            List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
+            if (pairList == null) {
+                pairList = new ArrayList<>();
+                this.duplicatePairList = pairList;
+            }
+            pairList.add(_Pair.create(field, (ArmyExpression) value));
         }
 
 
@@ -391,8 +398,8 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Insert endInsert(Map<?, _Expression> valuePairMap) {
-            return this.domainClause.endInsert(valuePairMap);
+        public Insert endInsert(List<_Pair<Object, _Expression>> pairList) {
+            return this.domainClause.endInsert(pairList);
         }
 
 
@@ -528,7 +535,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final Map<String, FieldMeta<?>> aliasToField;
 
-        private Map<Object, _Expression> valuePairMap;
+        private List<_Pair<Object, _Expression>> duplicatePairList;
 
         private Map<FieldMeta<?>, Boolean> fieldMap;
 
@@ -709,21 +716,21 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-        final Map<Object, _Expression> endDuplicateKeyClause() {
-            Map<Object, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap == null) {
+        final List<_Pair<Object, _Expression>> endDuplicateKeyClause() {
+            List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
+            if (pairList == null) {
                 if (!this.optionalOnDuplicateKeyClause) {
                     String m = "You use non-ifOnDuplicateKeyUpdate  but don't add any filed value pair";
                     throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
                 }
-                valuePairMap = Collections.emptyMap();
-            } else if (valuePairMap instanceof HashMap) {
-                valuePairMap = Collections.unmodifiableMap(valuePairMap);
+                pairList = Collections.emptyList();
+            } else if (pairList instanceof ArrayList) {
+                pairList = _CollectionUtils.unmodifiableList(pairList);
             } else {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.valuePairMap = valuePairMap;
-            return valuePairMap;
+            this.duplicatePairList = pairList;
+            return pairList;
         }
 
 
@@ -775,17 +782,14 @@ abstract class MySQLInserts extends InsertSupport {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
             }
 
-            //4.get valuePairMap
-            Map<Object, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap == null) {
-                valuePairMap = new HashMap<>();
-                this.valuePairMap = valuePairMap;
+            //4.get duplicatePairList
+            List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
+            if (pairList == null) {
+                pairList = new ArrayList<>();
+                this.duplicatePairList = pairList;
             }
-            //5. put pair
-            if (valuePairMap.putIfAbsent(fieldOrAlias, (ArmyExpression) value) != null) {
-                String m = String.format("duplication value pair for fieldOrAlias[%s]", fieldOrAlias);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
+            //5. add pair
+            pairList.add(_Pair.create(fieldOrAlias, (ArmyExpression) value));
 
         }
 
@@ -885,30 +889,30 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> MySQLInsert._DomainPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
-            return new DomainInsertPartitionClause<>(this, table);
+            return new DomainPartitionClause<>(this, table);
         }
 
         @Override
         public <T extends IDomain> MySQLInsert._DomainParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
-            return null;
+            return new DomainParentPartitionClause<>(this, table);
         }
 
 
         @Override
         public <T extends IDomain> MySQLInsert._DomainPartitionSpec<C, T> insertInto(SimpleTableMeta<T> table) {
-            return new DomainInsertPartitionClause<>(this, table);
+            return new DomainPartitionClause<>(this, table);
         }
 
         @Override
         public <T extends IDomain> MySQLInsert._DomainParentPartitionSpec<C, T> insertInto(ParentTableMeta<T> table) {
-            return new DomainInsertPartitionClause<>(this, table);
+            return new DomainParentPartitionClause<>(this, table);
         }
 
 
     }//DomainOptionClause
 
 
-    private static final class DomainInsertPartitionClause<C, T extends IDomain>
+    private static final class DomainPartitionClause<C, T extends IDomain>
             extends InsertSupport.DomainValueClause<
             C,
             T,
@@ -929,7 +933,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private Map<String, FieldMeta<?>> aliasToField;
 
-        private DomainInsertPartitionClause(DomainInsertOptionClause<C> clause, SimpleTableMeta<T> table) {
+        private DomainPartitionClause(DomainInsertOptionClause<C> clause, SimpleTableMeta<T> table) {
             super(clause, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
@@ -937,7 +941,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         }
 
-        private DomainInsertPartitionClause(DomainParentPartitionClause<C, ?> parentClause, ChildTableMeta<T> table) {
+        private DomainPartitionClause(DomainParentPartitionClause<C, ?> parentClause, ChildTableMeta<T> table) {
             super(parentClause, table);
             this.hintList = parentClause.childHintList();
             this.modifierList = parentClause.childModifierList();
@@ -962,9 +966,9 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Insert endInsert(final Map<?, _Expression> valuePairMap) {
+        public Insert endInsert(final List<_Pair<Object, _Expression>> pairList) {
             final Insert._InsertSpec spec;
-            if (valuePairMap.size() == 0) {
+            if (pairList.size() == 0) {
                 if (this.parentStmt == null) {
                     spec = new MySQLDomainInsertStatement(this);
                 } else {
@@ -972,14 +976,14 @@ abstract class MySQLInserts extends InsertSupport {
                 }
             } else if (this.rowAlias == null) {
                 if (this.parentStmt == null) {
-                    spec = new MySQLDomainInsertWithDuplicateKey(this, valuePairMap);
+                    spec = new MySQLDomainInsertWithDuplicateKey(this, pairList);
                 } else {
-                    spec = new MySQLDomainChildInsertWithDuplicateKey(this, valuePairMap);
+                    spec = new MySQLDomainChildInsertWithDuplicateKey(this, pairList);
                 }
             } else if (this.parentStmt == null) {
-                spec = new MySQLDomainInsertWIthRowAlias(this, valuePairMap);
+                spec = new MySQLDomainInsertWIthRowAlias(this, pairList);
             } else {
-                spec = new MySQLDomainChildInsertWIthRowAlias(this, valuePairMap);
+                spec = new MySQLDomainChildInsertWIthRowAlias(this, pairList);
             }
             return spec.asInsert();
         }
@@ -1035,7 +1039,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private Map<String, FieldMeta<?>> aliasToField;
 
-        private Map<?, _Expression> valuePairMap;
+        private List<_Pair<Object, _Expression>> duplicatePairList;
 
         private List<Hint> childHintList;
 
@@ -1120,8 +1124,8 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public <T extends IDomain> MySQLInsert._DomainPartitionSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
-            final DomainInsertPartitionClause<C, T> childClause;
-            childClause = new DomainInsertPartitionClause<>(this, table);
+            final DomainPartitionClause<C, T> childClause;
+            childClause = new DomainPartitionClause<>(this, table);
             this.childHintList = null;
             this.childModifierList = null;
             return childClause;
@@ -1149,19 +1153,20 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         @Override
-        public Insert endInsert(final Map<?, _Expression> valuePairMap) {
-            if (this.valuePairMap != null) {
+        public Insert endInsert(final List<_Pair<Object, _Expression>> pairList) {
+            if (this.duplicatePairList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.valuePairMap = valuePairMap;
+            this.duplicatePairList = pairList;
             return this.createParentStmt().asInsert();
         }
 
-        private MySQLInsert._DomainChildInsertIntoSpec<C, P> endParentStmt(final Map<?, _Expression> valuePairMap) {
-            if (this.valuePairMap != null) {
+
+        private MySQLInsert._DomainChildInsertIntoSpec<C, P> endParentStmt(final List<_Pair<Object, _Expression>> pairList) {
+            if (this.duplicatePairList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.valuePairMap = valuePairMap;
+            this.duplicatePairList = pairList;
             return this;
         }
 
@@ -1195,17 +1200,17 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         private MySQLDomainInsertStatement createParentStmt() {
-            final Map<?, _Expression> valuePairMap = this.valuePairMap;
-            if (valuePairMap == null) {
+            final List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
+            if (pairList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             final MySQLDomainInsertStatement statement;
-            if (valuePairMap.size() == 0) {
+            if (pairList.size() == 0) {
                 statement = new MySQLDomainInsertStatement(this);
             } else if (this.rowAlias == null) {
-                statement = new MySQLDomainInsertWithDuplicateKey(this, valuePairMap);
+                statement = new MySQLDomainInsertWithDuplicateKey(this, pairList);
             } else {
-                statement = new MySQLDomainInsertWIthRowAlias(this, valuePairMap);
+                statement = new MySQLDomainInsertWIthRowAlias(this, pairList);
             }
             return statement;
         }
@@ -1248,7 +1253,7 @@ abstract class MySQLInserts extends InsertSupport {
         private final List<String> partitionList;
         private final List<IDomain> domainList;
 
-        private MySQLDomainInsertStatement(DomainInsertPartitionClause<?, ?> clause) {
+        private MySQLDomainInsertStatement(DomainPartitionClause<?, ?> clause) {
             super(clause);
 
             this.hintList = clause.hintList;
@@ -1293,23 +1298,23 @@ abstract class MySQLInserts extends InsertSupport {
             implements _MySQLInsert._InsertWithDuplicateKey {
 
 
-        private final Map<?, _Expression> valuePairMap;
+        private final List<_Pair<Object, _Expression>> pairList;
 
-        private MySQLDomainInsertWithDuplicateKey(DomainInsertPartitionClause<?, ?> clause
-                , Map<?, _Expression> valuePairMap) {
+        private MySQLDomainInsertWithDuplicateKey(DomainPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
-            this.valuePairMap = valuePairMap;
+            this.pairList = pairList;
         }
 
         private MySQLDomainInsertWithDuplicateKey(DomainParentPartitionClause<?, ?> clause
-                , Map<?, _Expression> valuePairMap) {
+                , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
-            this.valuePairMap = valuePairMap;
+            this.pairList = pairList;
         }
 
         @Override
-        public final Map<?, _Expression> valuePairsForDuplicate() {
-            return this.valuePairMap;
+        public final List<_Pair<Object, _Expression>> duplicatePairList() {
+            return this.pairList;
         }
 
 
@@ -1323,17 +1328,17 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final Map<String, FieldMeta<?>> aliasToField;
 
-        private MySQLDomainInsertWIthRowAlias(DomainInsertPartitionClause<?, ?> clause
-                , Map<?, _Expression> valuePairMap) {
-            super(clause, valuePairMap);
+        private MySQLDomainInsertWIthRowAlias(DomainPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause, pairList);
             this.rowAlias = clause.rowAlias;
             this.aliasToField = clause.aliasToField;
             assert this.rowAlias != null && this.aliasToField != null;
         }
 
         private MySQLDomainInsertWIthRowAlias(DomainParentPartitionClause<?, ?> clause
-                , Map<?, _Expression> valuePairMap) {
-            super(clause, valuePairMap);
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause, pairList);
             this.rowAlias = clause.rowAlias;
             this.aliasToField = clause.aliasToField;
         }
@@ -1357,7 +1362,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final _Insert._ValuesSyntaxInsert parentStmt;
 
-        private MySQLDomainChildInsertStatement(DomainInsertPartitionClause<?, ?> clause) {
+        private MySQLDomainChildInsertStatement(DomainPartitionClause<?, ?> clause) {
             super(clause);
             this.parentStmt = clause.parentStmt;
             assert this.parentStmt != null;
@@ -1374,17 +1379,17 @@ abstract class MySQLInserts extends InsertSupport {
     private static class MySQLDomainChildInsertWithDuplicateKey extends MySQLDomainChildInsertStatement
             implements _MySQLInsert._InsertWithDuplicateKey {
 
-        private final Map<?, _Expression> valuePairMap;
+        private final List<_Pair<Object, _Expression>> pairList;
 
-        private MySQLDomainChildInsertWithDuplicateKey(DomainInsertPartitionClause<?, ?> clause
-                , Map<?, _Expression> valuePairMap) {
+        private MySQLDomainChildInsertWithDuplicateKey(DomainPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
-            this.valuePairMap = valuePairMap;
+            this.pairList = pairList;
         }
 
         @Override
-        public final Map<?, _Expression> valuePairsForDuplicate() {
-            return this.valuePairMap;
+        public final List<_Pair<Object, _Expression>> duplicatePairList() {
+            return this.pairList;
         }
 
     }//MySQLDomainChildInsertWithDuplicateKey
@@ -1397,9 +1402,9 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final Map<String, FieldMeta<?>> aliasToField;
 
-        private MySQLDomainChildInsertWIthRowAlias(DomainInsertPartitionClause<?, ?> clause
-                , Map<?, _Expression> valuePairMap) {
-            super(clause, valuePairMap);
+        private MySQLDomainChildInsertWIthRowAlias(DomainPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause, pairList);
             this.rowAlias = clause.rowAlias;
             this.aliasToField = clause.aliasToField;
             assert this.rowAlias != null;
@@ -1700,7 +1705,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Map<?, _Expression> valuePairsForDuplicate() {
+        public Map<?, _Expression> duplicatePairList() {
             Map<?, _Expression> map = this.valuePairMap;
             if (map == null) {
                 map = Collections.emptyMap();
@@ -1933,7 +1938,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Map<?, _Expression> valuePairsForDuplicate() {
+        public Map<?, _Expression> duplicatePairList() {
             Map<?, _Expression> map = this.valuePairsForDuplicate;
             if (map == null) {
                 map = Collections.emptyMap();
@@ -2431,7 +2436,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Map<?, _Expression> valuePairsForDuplicate() {
+        public Map<?, _Expression> duplicatePairList() {
             return this.valuePairMap;
         }
 
