@@ -352,10 +352,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _ValueParentAsRowAliasSpec<C, P extends IDomain>
-            extends _ParentAsRowAliasSpec<C, P, _ValueChildInsertIntoSpec<C, P>> {
-
-    }
 
 
     interface _ValueParentStaticValueLeftParenClause<C, P extends IDomain>
@@ -365,7 +361,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _ValueParentStaticValueLeftParenSpec<C, P extends IDomain>
             extends _ValueParentStaticValueLeftParenClause<C, P>
-            , _ValueParentAsRowAliasSpec<C, P> {
+            , _ParentAsRowAliasSpec<C, P, _ValueChildInsertIntoSpec<C, P>> {
 
     }
 
@@ -373,7 +369,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     interface _ValueParentDefaultSpec<C, P extends IDomain>
             extends _ColumnDefaultClause<C, P, _ValueParentDefaultSpec<C, P>>
             , Insert._StaticValuesClause<_ValueParentStaticValueLeftParenClause<C, P>>
-            , Insert._DynamicValuesClause<C, P, _ValueParentAsRowAliasSpec<C, P>> {
+            , Insert._DynamicValuesClause<C, P, _ParentAsRowAliasSpec<C, P, _ValueChildInsertIntoSpec<C, P>>> {
 
     }
 

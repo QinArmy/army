@@ -58,7 +58,7 @@ abstract class InsertSupport {
 
     interface ColumnListClause extends CriteriaContextSpec {
 
-        void validateField(FieldMeta<?> field);
+        void validateField(FieldMeta<?> field, @Nullable ArmyExpression value);
 
 
     }
@@ -298,7 +298,7 @@ abstract class InsertSupport {
 
 
         @Override
-        public final void validateField(final FieldMeta<?> field) {
+        public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap != null) {
                 if (!fieldMap.containsKey(field)) {
@@ -309,6 +309,10 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
             } else if (!this.migration) {
                 _DialectUtils.checkInsertField(this.table, field, this::forbidField);
+            }
+
+            if (value != null && !field.nullable() && value.isNullValue()) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
             }
 
         }
@@ -665,19 +669,16 @@ abstract class InsertSupport {
 
         final C criteria;
 
-        final TableMeta<T> table;
-
-        final Consumer<FieldMeta<?>> validator;
+        final BiConsumer<FieldMeta<?>, ArmyExpression> validator;
 
         private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
-        StaticColumnValuePairClause(CriteriaContext criteriaContext, TableMeta<T> table
+        StaticColumnValuePairClause(CriteriaContext criteriaContext
                 , BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
-            this.table = table;
             this.validator = validator;
         }
 
@@ -784,11 +785,7 @@ abstract class InsertSupport {
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
-            this.validator.accept(field);
-            if (!field.nullable() && ((ArmyExpression) value).isNullValue()) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
-            }
-
+            this.validator.accept(field, (ArmyExpression) value);
             Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
             if (currentRow == null) {
                 currentRow = new HashMap<>();
