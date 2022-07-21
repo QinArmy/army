@@ -24,15 +24,15 @@ public interface MySQLReplace extends ReplaceInsert, DialectStatement, DmlStatem
 
     /*-------------------below domain replace api interfaces -------------------*/
 
-    interface _DomainCommonExpSpec<C, T extends IDomain>
-            extends Insert._ColumnDefaultClause<C, T, _DomainCommonExpSpec<C, T>>
+    interface _DomainDefaultSpec<C, T extends IDomain>
+            extends Insert._ColumnDefaultClause<C, T, _DomainDefaultSpec<C, T>>
             , Insert._DomainValueClause<C, T, _ReplaceSpec> {
 
     }
 
     interface _DomainColumnListSpec<C, T extends IDomain>
-            extends Insert._ColumnListClause<C, T, _DomainCommonExpSpec<C, T>>
-            , _DomainCommonExpSpec<C, T> {
+            extends Insert._ColumnListClause<C, T, _DomainDefaultSpec<C, T>>
+            , _DomainDefaultSpec<C, T> {
 
     }
 
@@ -367,7 +367,7 @@ public interface MySQLReplace extends ReplaceInsert, DialectStatement, DmlStatem
 
         <T extends IDomain> _QueryPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table);
 
-        <P extends IDomain, T extends IDomain> _QueryParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table);
+        <T extends IDomain> _QueryParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table);
 
     }
 

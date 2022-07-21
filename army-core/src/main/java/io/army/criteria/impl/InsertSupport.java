@@ -31,13 +31,6 @@ abstract class InsertSupport {
     }
 
 
-    enum FieldMode {
-        IN_TABLE,
-        IN_LIST,
-        UNKNOWN
-    }
-
-
     interface InsertOptions extends CriteriaContextSpec {
 
 

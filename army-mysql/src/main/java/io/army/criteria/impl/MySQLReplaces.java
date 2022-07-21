@@ -1,16 +1,22 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.Hint;
+import io.army.criteria.ReplaceInsert;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
+import io.army.dialect._DialectUtils;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.util._Assert;
+import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +47,8 @@ abstract class MySQLReplaces extends InsertSupport {
     }
 
 
-    private static abstract class MySQLReplaceClause<C, MR, NR, RR> extends InsertSupport.InsertOptionsImpl<MR, NR>
+    private static abstract class MySQLReplaceClause<C, MR, NR, PR, RR>
+            extends InsertSupport.NonQueryInsertOptionsImpl<MR, NR, PR>
             implements MySQLReplace._ReplaceClause<C, RR> {
 
         private List<Hint> hintList;
@@ -93,10 +100,9 @@ abstract class MySQLReplaces extends InsertSupport {
             C,
             MySQLReplace._DomainNullOptionSpec<C>,
             MySQLReplace._DomainPreferLiteralSpec<C>,
+            MySQLReplace._DomainReplaceIntoSpec<C>,
             MySQLReplace._DomainIntoClause<C>>
-            implements MySQLReplace._DomainOptionSpec<C>, MySQLReplace._DomainIntoClause<C>, NonQueryInsertOptions {
-
-        private boolean preferLiteral;
+            implements MySQLReplace._DomainOptionSpec<C>, MySQLReplace._DomainIntoClause<C> {
 
         private DomainReplaceOptionClause(@Nullable C criteria) {
             super(criteria);
@@ -104,52 +110,38 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLReplace._DomainReplaceIntoSpec<C> preferLiteral(boolean prefer) {
-            this.preferLiteral = prefer;
-            return this;
+        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+            return new DomainPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T, FieldMeta<T>> into(SingleTableMeta<T> table) {
-            return new DomainReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._DomainParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+            return new DomainParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainParentPartitionSpec<C, T, FieldMeta<? super T>> into(ChildTableMeta<T> table) {
-            return new DomainReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
+            return new DomainPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T, FieldMeta<T>> replaceInto(SingleTableMeta<T> table) {
-            return new DomainReplaceStatement<>(this, table);
-        }
-
-        @Override
-        public <T extends IDomain> MySQLReplace._DomainParentPartitionSpec<C, T, FieldMeta<? super T>> replaceInto(ChildTableMeta<T> table) {
-            return new DomainReplaceStatement<>(this, table);
-        }
-
-        @Override
-        public boolean isPreferLiteral() {
-            return this.preferLiteral;
+        public <T extends IDomain> MySQLReplace._DomainParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
+            return new DomainParentPartitionClause<>(this, table);
         }
 
 
     }//DomainReplaceOptionClause
 
 
-    static final class DomainReplaceStatement<C, T extends IDomain, F extends TableField>
+    private static final class DomainPartitionClause<C, T extends IDomain>
             extends InsertSupport.DomainValueClause<
             C,
             T,
-            F,
-            MySQLReplace._DomainCommonExpSpec<C, T, F>,
+            MySQLReplace._DomainDefaultSpec<C, T>,
             ReplaceInsert._ReplaceSpec>
-            implements MySQLReplace._DomainParentPartitionSpec<C, T, F>
-            , MySQLReplace._DomainChildPartitionSpec<C, T, F>
-            , MySQLReplace._DomainPartitionSpec<C, T, F>
-            , MySQLReplace, ReplaceInsert._ReplaceSpec
-            , _MySQLInsert._MySQLDomainInsert, _MySQLInsert._MySQLReplace {
+            implements MySQLReplace._DomainPartitionSpec<C, T> {
+
+        private final _Insert._DomainInsert parentStmt;
 
         private final List<Hint> hintList;
 
@@ -157,64 +149,154 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private List<String> partitionList;
 
-        private List<String> childPartitionList;
+
+        private DomainPartitionClause(DomainReplaceOptionClause<C> clause, SimpleTableMeta<T> table) {
+            super(clause, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+            this.parentStmt = null;
+        }
+
+        private DomainPartitionClause(DomainParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
+            super(clause, table);
+            this.hintList = _CollectionUtils.safeList(clause.childHintList);
+            this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
+            this.parentStmt = clause.createParentStmt(); //couldn't invoke asInsert
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._DomainColumnListSpec<C, T>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        }
+
+        @Override
+        MySQLReplace._DomainDefaultSpec<C, T> columnListEnd() {
+            return this;
+        }
+
+        @Override
+        ReplaceInsert._ReplaceSpec valuesEnd() {
+            final ReplaceInsert._ReplaceSpec spec;
+            if (this.parentStmt == null) {
+                spec = new DomainReplaceStatement(this);
+            } else {
+                spec = new DomainChildReplaceStatement(this);
+            }
+            return spec;
+        }
+
+        private MySQLReplace._DomainColumnListSpec<C, T> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
 
 
-        private Boolean prepared;
+    }//DomainPartitionClause
 
 
-        private DomainReplaceStatement(DomainReplaceOptionClause<C> clause, TableMeta<T> table) {
+    private static final class DomainParentPartitionClause<C, P extends IDomain>
+            extends InsertSupport.DomainValueClause<
+            C,
+            P,
+            MySQLReplace._DomainParentDefaultSpec<C, P>,
+            ReplaceInsert._ReplaceSpec>
+            implements MySQLReplace._DomainParentPartitionSpec<C, P>
+            , MySQLReplace._DomainChildReplaceIntoSpec<C, P>
+            , MySQLReplace._DomainChildIntoClause<C, P>
+            , NonQueryInsertOptions {
+
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private List<String> partitionList;
+
+        private List<Hint> childHintList;
+
+        private List<MySQLWords> childModifierList;
+
+
+        private DomainParentPartitionClause(DomainReplaceOptionClause<C> clause, ParentTableMeta<P> table) {
             super(clause, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._DomainColumnListSpec<C, T, F>> partition() {
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._DomainParentColumnsSpec<C, P>> partition() {
             return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._DomainChildPartitionSpec<C, T, F>> parentPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
-        }
-
-        @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._DomainColumnListSpec<C, T, F>> childPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
-        }
-
-
-        @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
-        }
-
-        @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-        @Override
-        public ReplaceInsert asInsert() {
-            _Assert.nonPrepared(this.prepared);
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.prepared = Boolean.TRUE;
+        public MySQLReplace._DomainChildReplaceIntoSpec<C, P> child() {
+            this.endColumnDefaultClause();
             return this;
         }
 
         @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-            super.clear();
-            this.partitionList = null;
-            this.childPartitionList = null;
+        public MySQLReplace._DomainChildIntoClause<C, P> replace(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::replaceModifier);
+            return this;
         }
 
         @Override
-        public String toString() {
+        public MySQLReplace._DomainChildIntoClause<C, P> replace(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria)
+                    , MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::replaceModifier);
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+            return this.replaceInto(table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
+            final DomainPartitionClause<C, T> childClause;
+            childClause = new DomainPartitionClause<>(this, table);
+            this.childHintList = null;
+            this.childModifierList = null;
+            return childClause;
+        }
+
+        @Override
+        MySQLReplace._DomainParentDefaultSpec<C, P> columnListEnd() {
+            return this;
+        }
+
+        @Override
+        ReplaceInsert._ReplaceSpec valuesEnd() {
+            return this.createParentStmt();
+        }
+
+        private MySQLReplace._DomainParentColumnsSpec<C, P> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private DomainReplaceStatement createParentStmt() {
+            return new DomainReplaceStatement(this);
+        }
+
+
+    }//DomainParentPartitionClause
+
+
+    private static abstract class MySQLValuesSyntaxReplaceStatement extends InsertSupport.ValueSyntaxStatement<ReplaceInsert>
+            implements MySQLReplace, ReplaceInsert._ReplaceSpec {
+
+        private MySQLValuesSyntaxReplaceStatement(_ValuesSyntaxInsert clause) {
+            super(clause);
+        }
+
+        @Override
+        public final String toString() {
             final String s;
             if (this.isPrepared()) {
                 s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
@@ -225,68 +307,86 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
 
-        @Override
-        public List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
+    }//MySQLValuesSyntaxReplaceStatement
+
+
+    static class DomainReplaceStatement extends MySQLValuesSyntaxReplaceStatement
+            implements _MySQLInsert._MySQLDomainInsert {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final List<String> partitionList;
+
+        private final List<IDomain> domainList;
+
+        private DomainReplaceStatement(DomainPartitionClause<?, ?> clause) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.domainList = clause.domainList();
         }
 
-        @Override
-        public List<String> childPartitionList() {
-            List<String> list = this.childPartitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
+        private DomainReplaceStatement(DomainParentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.domainList = clause.domainList();
         }
 
+
         @Override
-        public List<Hint> hintList() {
+        public final List<Hint> hintList() {
             return this.hintList;
         }
 
         @Override
-        public List<MySQLWords> modifierList() {
+        public final List<MySQLWords> modifierList() {
             return this.modifierList;
         }
 
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
 
         @Override
-        MySQLReplace._DomainCommonExpSpec<C, T, F> columnListEnd(int fieldSize, int childFieldSize) {
-            return this;
-        }
-
-        @Override
-        ReplaceInsert._ReplaceSpec valuesEnd() {
-            return this;
-        }
-
-        private MySQLReplace._DomainColumnListSpec<C, T, F> partitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
-        }
-
-        private MySQLReplace._DomainChildPartitionSpec<C, T, F> parentPartitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
-        }
-
-        private MySQLReplace._DomainColumnListSpec<C, T, F> childPartitionEnd(List<String> partitionList) {
-            this.childPartitionList = partitionList;
-            return this;
+        public final List<IDomain> domainList() {
+            return this.domainList;
         }
 
 
     }//DomainReplaceStatement
 
 
+    private static final class DomainChildReplaceStatement extends DomainReplaceStatement
+            implements _Insert._ChildDomainInsert {
+
+        private final _Insert._DomainInsert parentStmt;
+
+        private DomainChildReplaceStatement(DomainPartitionClause<?, ?> clause) {
+            super(clause);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
+        }
+
+        @Override
+        public _DomainInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+
+    }//DomainChildReplaceStatement
+
+
     private static final class ValueReplaceOptionClause<C>
             extends MySQLReplaceClause<
             C,
             MySQLReplace._ValueNullOptionSpec<C>,
+            MySQLReplace._ValuePreferLiteralSpec<C>,
             MySQLReplace._ValueReplaceIntoSpec<C>,
             MySQLReplace._ValueIntoClause<C>>
             implements MySQLReplace._ValueReplaceOptionSpec<C>
@@ -298,40 +398,38 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
-            return new MySQLValueReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+            return new ValuePartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValueParentPartitionSpec<C, FieldMeta<? super T>> into(ChildTableMeta<T> table) {
-            return new MySQLValueReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._ValueParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+            return new ValueParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, FieldMeta<T>> replaceInto(SingleTableMeta<T> table) {
-            return new MySQLValueReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
+            return new ValuePartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValueParentPartitionSpec<C, FieldMeta<? super T>> replaceInto(ChildTableMeta<T> table) {
-            return new MySQLValueReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._ValueParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
+            return new ValueParentPartitionClause<>(this, table);
         }
 
 
     }//ValueReplaceOptionClause
 
 
-    static final class MySQLValueReplaceStatement<C, F extends TableField>
+    private static final class ValuePartitionClause<C, T extends IDomain>
             extends InsertSupport.DynamicValueInsertValueClause<
             C,
-            F,
-            MySQLReplace._ValueDefaultSpec<C, F>,
+            T,
+            MySQLReplace._ValueDefaultSpec<C, T>,
             MySQLReplace._ReplaceSpec>
-            implements MySQLReplace._ValueParentPartitionSpec<C, F>
-            , MySQLReplace._ValueChildPartitionSpec<C, F>
-            , MySQLReplace._ValuePartitionSpec<C, F>
-            , MySQLReplace, ReplaceInsert._ReplaceSpec
-            , _MySQLInsert._MySQLValueInsert, _MySQLInsert._MySQLReplace {
+            implements MySQLReplace._ValuePartitionSpec<C, T> {
+
+        private final _Insert._ValuesInsert parentStmt;
 
         private final List<Hint> hintList;
 
@@ -339,128 +437,144 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private List<String> partitionList;
 
-        private List<String> childPartitionList;
+        private ValuePartitionClause(ValueReplaceOptionClause<C> clause, SimpleTableMeta<T> table) {
+            super(clause, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+            this.parentStmt = null;
+        }
+
+        private ValuePartitionClause(ValueParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
+            super(clause, table);
+            this.hintList = _CollectionUtils.safeList(clause.childHintList);
+            this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
+            this.parentStmt = clause.createParentStmt();//couldn't invoke asInsert
+        }
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._ValueColumnListSpec<C, T>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        }
+
+        @Override
+        public MySQLReplace._ValueStaticValuesLeftParenClause<C, T> values() {
+            return new MySQLStaticValuesSpec<>(this);
+        }
+
+        @Override
+        MySQLReplace._ValueDefaultSpec<C, T> columnListEnd() {
+            return this;
+        }
+
+        @Override
+        MySQLReplace._ReplaceSpec valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+            final MySQLReplace._ReplaceSpec spec;
+            if (this.parentStmt == null) {
+                spec = new ValuesReplaceStatement(this, rowValuesList);
+            } else {
+                spec = new ValuesChildReplaceStatement(this, rowValuesList);
+            }
+            return spec;
+        }
+
+        private MySQLReplace._ValueColumnListSpec<C, T> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+
+    }//ValuePartitionClause
+
+
+    private static final class ValueParentPartitionClause<C, P extends IDomain>
+            extends InsertSupport.DynamicValueInsertValueClause<
+            C,
+            P,
+            MySQLReplace._ValueParentDefaultSpec<C, P>,
+            MySQLReplace._ValueChildSpec<C, P>>
+            implements MySQLReplace._ValueParentPartitionSpec<C, P>
+            , MySQLReplace._ValueChildSpec<C, P>
+            , MySQLReplace._ValueChildReplaceIntoSpec<C, P>
+            , MySQLReplace._ValueChildIntoClause<C, P>
+            , NonQueryInsertOptions {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private List<String> partitionList;
 
         private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
+        private List<Hint> childHintList;
 
-        private Boolean prepared;
+        private List<MySQLWords> childModifierList;
 
 
-        private MySQLValueReplaceStatement(ValueReplaceOptionClause<C> clause, TableMeta<?> table) {
+        private ValueParentPartitionClause(ValueReplaceOptionClause<C> clause, ParentTableMeta<P> table) {
             super(clause, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
         }
 
-
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._ValueColumnListSpec<C, F>> partition() {
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._ValueParentColumnsSpec<C, P>> partition() {
             return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._ValueChildPartitionSpec<C, F>> parentPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
-        }
-
-        @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._ValueColumnListSpec<C, F>> childPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
-        }
-
-        @Override
-        public Insert._StaticValueLeftParenClause<C, F, _ReplaceSpec> value() {
-            return new MySQLStaticValueClause<>(this);
-        }
-
-        @Override
-        public _ValueStaticValuesLeftParenClause<C, F> values() {
-            return new MySQLStaticValuesClause<>(this);
-        }
-
-        @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
-        }
-
-        @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
+        public MySQLReplace._ValueParentStaticValuesLeftParenClause<C, P> values() {
+            return new MySQLParentStaticValuesSpec<>(this);
         }
 
         @Override
         public ReplaceInsert asInsert() {
-            _Assert.nonPrepared(this.prepared);
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.prepared = Boolean.TRUE;
+            return this.createParentStmt().asInsert();
+        }
+
+        @Override
+        public MySQLReplace._ValueChildReplaceIntoSpec<C, P> child() {
             return this;
         }
 
         @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-            super.clear();
-            this.partitionList = null;
-            this.childPartitionList = null;
-            this.rowValuesList = null;
-        }
-
-        @Override
-        public String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
-        }
-
-
-        @Override
-        public List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        @Override
-        public List<String> childPartitionList() {
-            List<String> list = this.childPartitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        @Override
-        public List<Hint> hintList() {
-            return this.hintList;
-        }
-
-        @Override
-        public List<MySQLWords> modifierList() {
-            return this.modifierList;
-        }
-
-        @Override
-        public List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
-            _Assert.prepared(this.prepared);
-            return this.rowValuesList;
-        }
-
-        @Override
-        _ValueDefaultSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
+        public MySQLReplace._ValueChildIntoClause<C, P> replace(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::replaceModifier);
             return this;
         }
 
         @Override
-        _ReplaceSpec valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+        public MySQLReplace._ValueChildIntoClause<C, P> replace(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria)
+                    , MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::replaceModifier);
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+            return this.replaceInto(table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
+            final ValuePartitionClause<C, T> childClause;
+            childClause = new ValuePartitionClause<>(this, table);
+            this.childHintList = null;
+            this.childModifierList = null;
+            return childClause;
+        }
+
+        @Override
+        MySQLReplace._ValueParentDefaultSpec<C, P> columnListEnd() {
+            return this;
+        }
+
+        @Override
+        MySQLReplace._ValueChildSpec<C, P> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
             if (this.rowValuesList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -468,56 +582,36 @@ abstract class MySQLReplaces extends InsertSupport {
             return this;
         }
 
-        private MySQLReplace._ValueColumnListSpec<C, F> partitionEnd(List<String> partitionList) {
+        private MySQLReplace._ValueParentColumnsSpec<C, P> partitionEnd(List<String> partitionList) {
             this.partitionList = partitionList;
             return this;
         }
 
-        private MySQLReplace._ValueChildPartitionSpec<C, F> parentPartitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
+        private ValuesReplaceStatement createParentStmt() {
+            final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
+            if (rowValuesList == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return new ValuesReplaceStatement(this, rowValuesList);
         }
 
-        private MySQLReplace._ValueColumnListSpec<C, F> childPartitionEnd(List<String> partitionList) {
-            this.childPartitionList = partitionList;
-            return this;
-        }
+
+    }//ValueParentPartitionClause
 
 
-    }//MySQLValueReplaceStatement
+    private static final class MySQLStaticValuesSpec<C, T extends IDomain>
+            extends InsertSupport.StaticColumnValuePairClause<C, T, MySQLReplace._ValueStaticValuesLeftParenSpec<C, T>>
+            implements MySQLReplace._ValueStaticValuesLeftParenSpec<C, T> {
 
+        private final ValuePartitionClause<C, T> clause;
 
-    private static final class MySQLStaticValueClause<C, F extends TableField>
-            extends InsertSupport.StaticColumnValuePairClause<C, F, ReplaceInsert._ReplaceSpec> {
-
-        private final MySQLValueReplaceStatement<C, F> clause;
-
-        private MySQLStaticValueClause(MySQLValueReplaceStatement<C, F> clause) {
-            super(clause.criteriaContext, clause::containField);
+        private MySQLStaticValuesSpec(ValuePartitionClause<C, T> clause) {
+            super(clause.criteriaContext, clause::validateField);
             this.clause = clause;
         }
 
         @Override
-        public ReplaceInsert._ReplaceSpec rightParen() {
-            return this.clause.valueClauseEnd(this.endValuesClause());
-        }
-
-
-    }//MySQLStaticValueClause
-
-    private static final class MySQLStaticValuesClause<C, F extends TableField>
-            extends InsertSupport.StaticColumnValuePairClause<C, F, MySQLReplace._ValueStaticValuesLeftParenSpec<C, F>>
-            implements MySQLReplace._ValueStaticValuesLeftParenSpec<C, F> {
-
-        private final MySQLValueReplaceStatement<C, F> clause;
-
-        private MySQLStaticValuesClause(MySQLValueReplaceStatement<C, F> clause) {
-            super(clause.criteriaContext, clause::containField);
-            this.clause = clause;
-        }
-
-        @Override
-        public MySQLReplace._ValueStaticValuesLeftParenSpec<C, F> rightParen() {
+        public MySQLReplace._ValueStaticValuesLeftParenSpec<C, T> rightParen() {
             this.endCurrentRow();
             return this;
         }
@@ -529,13 +623,124 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
 
-    }//MySQLStaticValuesClause
+    }//MySQLStaticValuesSpec
+
+
+    private static final class MySQLParentStaticValuesSpec<C, P extends IDomain>
+            extends InsertSupport.StaticColumnValuePairClause<C, P, MySQLReplace._ValueParentStaticValuesLeftParenSpec<C, P>>
+            implements MySQLReplace._ValueParentStaticValuesLeftParenSpec<C, P> {
+
+        private final ValueParentPartitionClause<C, P> clause;
+
+        private MySQLParentStaticValuesSpec(ValueParentPartitionClause<C, P> clause) {
+            super(clause.criteriaContext, clause::validateField);
+            this.clause = clause;
+        }
+
+        @Override
+        public MySQLReplace._ValueParentStaticValuesLeftParenSpec<C, P> rightParen() {
+            this.endCurrentRow();
+            return this;
+        }
+
+        @Override
+        public ReplaceInsert asInsert() {
+            return this.clause.valueClauseEnd(this.endValuesClause())
+                    .asInsert();
+        }
+
+        @Override
+        public MySQLReplace._ValueChildReplaceIntoSpec<C, P> child() {
+            return this.clause.valueClauseEnd(this.endValuesClause())
+                    .child();
+        }
+
+
+    }//MySQLParentStaticValuesSpec
+
+
+    static class ValuesReplaceStatement extends MySQLValuesSyntaxReplaceStatement
+            implements _MySQLInsert._MySQLValueInsert {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final List<String> partitionList;
+
+        private final List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+
+        private ValuesReplaceStatement(ValuePartitionClause<?, ?> clause
+                , List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.rowValuesList = rowValuesList;
+        }
+
+        private ValuesReplaceStatement(ValueParentPartitionClause<?, ?> clause
+                , List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.rowValuesList = rowValuesList;
+        }
+
+        @Override
+        public final List<Hint> hintList() {
+            return this.hintList;
+        }
+
+        @Override
+        public final List<MySQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public final List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
+            return this.rowValuesList;
+        }
+
+
+    }//ValuesReplaceStatement
+
+
+    private static final class ValuesChildReplaceStatement extends ValuesReplaceStatement
+            implements _Insert._ChildValuesInsert {
+
+        private final _Insert._ValuesInsert parentStmt;
+
+        private ValuesChildReplaceStatement(ValuePartitionClause<?, ?> clause
+                , List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+            super(clause, rowValuesList);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
+        }
+
+        @Override
+        public _ValuesInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+
+    }//ValuesChildReplaceStatement
+
+
+    /*-----------------------below assignment replace class -----------------------*/
 
 
     private static final class AssignmentReplaceOptionClause<C> extends MySQLReplaceClause<
             C,
             MySQLReplace._AssignmentNullOptionSpec<C>,
-            MySQLReplace._AssignmentReplaceIntoClause<C>,
+            MySQLReplace._AssignmentPreferLiteralSpec<C>,
+            MySQLReplace._AssignmentReplaceIntoSpec<C>,
             MySQLReplace._AssignmentIntoClause<C>>
             implements MySQLReplace._AssignmentOptionSpec<C>
             , MySQLReplace._AssignmentIntoClause<C> {
@@ -546,40 +751,38 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
-            return new MySQLAssignmentReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+            return new AssignmentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentParentPartitionSpec<C, FieldMeta<? super T>> into(ChildTableMeta<T> table) {
-            return new MySQLAssignmentReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._AssignmentParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+            return new AssignmentParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, FieldMeta<T>> replaceInto(SingleTableMeta<T> table) {
-            return new MySQLAssignmentReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
+            return new AssignmentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentParentPartitionSpec<C, FieldMeta<? super T>> replaceInto(ChildTableMeta<T> table) {
-            return new MySQLAssignmentReplaceStatement<>(this, table);
+        public <T extends IDomain> MySQLReplace._AssignmentParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
+            return new AssignmentParentPartitionClause<>(this, table);
         }
 
 
     }//AssignmentReplaceOptionClause
 
 
-    static final class MySQLAssignmentReplaceStatement<C, F extends TableField>
+    static final class AssignmentPartitionClause<C, T extends IDomain>
             extends InsertSupport.AssignmentInsertClause<
             C,
-            F,
-            MySQLReplace._AssignmentReplaceSetSpec<C, F>>
-            implements MySQLReplace._AssignmentReplaceSetSpec<C, F>
-            , MySQLReplace._AssignmentChildPartitionSpec<C, F>
-            , MySQLReplace._AssignmentParentPartitionSpec<C, F>
-            , MySQLReplace._AssignmentPartitionSpec<C, F>
-            , MySQLReplace, ReplaceInsert._ReplaceSpec
-            , _MySQLInsert._MySQLAssignmentInsert, _MySQLInsert._MySQLReplace {
+            T,
+            MySQLReplace._AssignmentReplaceSetSpec<C, T>>
+            implements MySQLReplace._AssignmentPartitionSpec<C, T>
+            , MySQLReplace._AssignmentReplaceSetSpec<C, T> {
+
+        private final _Insert._AssignmentInsert parentStmt;
 
         private final List<Hint> hintList;
 
@@ -587,91 +790,192 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private List<String> partitionList;
 
-        private List<String> childPartitionList;
+        private AssignmentPartitionClause(AssignmentReplaceOptionClause<C> clause, SimpleTableMeta<T> table) {
+            super(clause, false, table);
+            this.hintList = clause.hintList();
+            this.modifierList = clause.modifierList();
+            this.parentStmt = null;
+        }
 
-        private Boolean prepared;
+        private AssignmentPartitionClause(AssignmentParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
+            super(clause, false, table);
+            this.hintList = _CollectionUtils.safeList(clause.childHintList);
+            this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
+            this.parentStmt = clause.createParentStmt(); //couldn't invoke asInsert
+        }
 
-        private MySQLAssignmentReplaceStatement(AssignmentReplaceOptionClause<C> clause, TableMeta<?> table) {
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentReplaceSetClause<C, T>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        }
+
+        @Override
+        public ReplaceInsert asInsert() {
+            this.endAssignmentSetClause();
+            final ReplaceInsert._ReplaceSpec spec;
+            if (this.parentStmt == null) {
+                spec = new AssignmentsReplaceStatement(this);
+            } else {
+                spec = new AssignmentsChildReplaceStatement(this);
+            }
+            return spec.asInsert();
+        }
+
+        @Override
+        public void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
+            _DialectUtils.checkInsertField(this.table, field, this::forbidField);
+            if (value != null && !field.nullable() && value.isNullValue()) {
+                throw _Exceptions.nonNullField(field);
+            }
+        }
+
+        private MySQLReplace._AssignmentReplaceSetClause<C, T> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private CriteriaException forbidField(FieldMeta<?> field, Function<FieldMeta<?>, CriteriaException> function) {
+            return CriteriaContextStack.criteriaError(this.criteriaContext, function, field);
+        }
+
+
+    }//AssignmentPartitionClause
+
+    private static final class AssignmentParentPartitionClause<C, P extends IDomain>
+            extends InsertSupport.AssignmentInsertClause<
+            C,
+            P,
+            MySQLReplace._AssignmentParentReplaceSetSpec<C, P>>
+            implements MySQLReplace._AssignmentParentPartitionSpec<C, P>
+            , MySQLReplace._AssignmentParentReplaceSetSpec<C, P>
+            , MySQLReplace._AssignmentChildReplaceIntoSpec<C, P>
+            , MySQLReplace._AssignmentChildIntoClause<C, P>
+            , NonQueryInsertOptions {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private List<String> partitionList;
+
+        private List<Hint> childHintList;
+
+        private List<MySQLWords> childModifierList;
+
+        private AssignmentParentPartitionClause(AssignmentReplaceOptionClause<C> clause, ParentTableMeta<P> table) {
             super(clause, false, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentReplaceSetClause<C, F>> partition() {
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentParentReplaceSetClause<C, P>> partition() {
             return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentChildPartitionSpec<C, F>> parentPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
-        }
+        public void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
 
-        @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentReplaceSetClause<C, F>> childPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
         }
-
 
         @Override
         public ReplaceInsert asInsert() {
-            _Assert.prepared(this.prepared);
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
             this.endAssignmentSetClause();
-            this.prepared = Boolean.TRUE;
+            return this.createParentStmt().asInsert();
+        }
+
+        @Override
+        public MySQLReplace._AssignmentChildReplaceIntoSpec<C, P> child() {
+            this.endAssignmentSetClause();
             return this;
         }
 
         @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
+        public MySQLReplace._AssignmentChildIntoClause<C, P> replace(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::replaceModifier);
+            return this;
         }
 
         @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
+        public MySQLReplace._AssignmentChildIntoClause<C, P> replace(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria)
+                    , MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::replaceModifier);
+            return this;
         }
 
         @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-            super.clear();
-            this.partitionList = null;
-            this.childPartitionList = null;
+        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+            return this.replaceInto(table);
         }
 
         @Override
-        public List<Hint> hintList() {
+        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
+            final AssignmentPartitionClause<C, T> childClause;
+            childClause = new AssignmentPartitionClause<>(this, table);
+            this.childHintList = null;
+            this.childModifierList = null;
+            return childClause;
+        }
+
+
+        private MySQLReplace._AssignmentParentReplaceSetClause<C, P> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+        private AssignmentsReplaceStatement createParentStmt() {
+            return new AssignmentsReplaceStatement(this);
+        }
+
+
+    }//AssignmentParentPartitionClause
+
+
+    static class AssignmentsReplaceStatement extends InsertSupport.AssignmentInsertStatement<ReplaceInsert>
+            implements MySQLReplace, ReplaceInsert._ReplaceSpec, _MySQLInsert._MySQLAssignmentInsert {
+
+        private final List<Hint> hintList;
+
+        private final List<MySQLWords> modifierList;
+
+        private final List<String> partitionList;
+
+        private AssignmentsReplaceStatement(AssignmentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+        }
+
+        private AssignmentsReplaceStatement(AssignmentParentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+        }
+
+        @Override
+        public final List<Hint> hintList() {
             return this.hintList;
         }
 
         @Override
-        public List<MySQLWords> modifierList() {
+        public final List<MySQLWords> modifierList() {
             return this.modifierList;
         }
 
         @Override
-        public List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
+        public final List<String> partitionList() {
+            return this.partitionList;
         }
 
-        @Override
-        public List<String> childPartitionList() {
-            List<String> list = this.childPartitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
 
         @Override
-        public String toString() {
+        public final String toString() {
             final String s;
             if (this.isPrepared()) {
                 s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
@@ -682,23 +986,26 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
 
-        private MySQLReplace._AssignmentReplaceSetClause<C, F> partitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
+    }//AssignmentsReplaceStatement
+
+
+    private static final class AssignmentsChildReplaceStatement extends AssignmentsReplaceStatement
+            implements _Insert._ChildAssignmentInsert {
+
+        private final _Insert._AssignmentInsert parentStmt;
+
+        private AssignmentsChildReplaceStatement(AssignmentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
         }
 
-        private MySQLReplace._AssignmentChildPartitionSpec<C, F> parentPartitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
+        @Override
+        public _AssignmentInsert parentStmt() {
+            return this.parentStmt;
         }
 
-        private MySQLReplace._AssignmentReplaceSetClause<C, F> childPartitionEnd(List<String> partitionList) {
-            this.childPartitionList = partitionList;
-            return this;
-        }
-
-
-    }//MySQLAssignmentReplaceStatement
+    }//AssignmentsChildReplaceStatement
 
 
     private static final class QueryReplaceIntoClause<C>
@@ -732,275 +1039,187 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, FieldMeta<T>> into(SingleTableMeta<T> table) {
-            return new QueryReplaceSubQueryClause<>(this, table);
+        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+            return new QueryPartitionClause<>(this, table);
         }
 
         @Override
-        public <P extends IDomain, T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, P, T> into(ComplexTableMeta<P, T> table) {
-            return new QueryParentReplaceSubQueryClause<>(this, table);
+        public <T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+            return new QueryParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, FieldMeta<T>> replaceInto(SingleTableMeta<T> table) {
-            return new QueryReplaceSubQueryClause<>(this, table);
+        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
+            return new QueryPartitionClause<>(this, table);
         }
 
         @Override
-        public <P extends IDomain, T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, P, T> replaceInto(ComplexTableMeta<P, T> table) {
-            return new QueryParentReplaceSubQueryClause<>(this, table);
+        public <T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
+            return new QueryParentPartitionClause<>(this, table);
         }
 
-        private List<Hint> hintList() {
-            List<Hint> list = this.hintList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-        private List<MySQLWords> modifierList() {
-            List<MySQLWords> list = this.modifierList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
 
     }//QueryReplaceOptionClause
 
 
-    private static final class QueryReplaceSubQueryClause<C, F extends TableField>
-            extends InsertSupport.ColumnsClause<C, F, MySQLReplace._QuerySubQueryClause<C>>
-            implements MySQLReplace._QueryPartitionSpec<C, F>
+    private static final class QueryPartitionClause<C, T extends IDomain>
+            extends InsertSupport.QueryInsertSpaceClause<
+            C,
+            T,
+            MySQLReplace._QuerySubQueryClause<C>,
+            ReplaceInsert._ReplaceSpec>
+            implements MySQLReplace._QueryPartitionSpec<C, T>
             , MySQLReplace._QuerySubQueryClause<C> {
 
+        private final _Insert._QueryInsert parentStmt;
         private final List<Hint> hintList;
 
         private final List<MySQLWords> modifierList;
 
         private List<String> partitionList;
 
-        private SubQuery subQuery;
+        private QueryPartitionClause(QueryReplaceIntoClause<C> clause, SimpleTableMeta<T> table) {
+            super(clause.criteriaContext, table);
+            this.hintList = _CollectionUtils.safeList(clause.hintList);
+            this.modifierList = _CollectionUtils.safeList(clause.modifierList);
+            this.parentStmt = null;
+        }
 
-        private QueryReplaceSubQueryClause(QueryReplaceIntoClause<C> clause, SingleTableMeta<?> table) {
-            super(clause.criteriaContext, true, table);
-            this.hintList = clause.hintList();
-            this.modifierList = clause.modifierList();
+        private QueryPartitionClause(QueryParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
+            super(clause.criteriaContext, table);
+            this.hintList = _CollectionUtils.safeList(clause.childHintList);
+            this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
+            this.parentStmt = clause.createParentStmt();//couldn't invoke asInsert method
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryColumnListClause<C, F>> partition() {
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryColumnListClause<C, T>> partition() {
             return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
-        public ReplaceInsert._ReplaceSpec space(Supplier<? extends SubQuery> supplier) {
-            final SubQuery subQuery;
-            subQuery = supplier.get();
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new MySQLQueryReplaceStatement(this);
-        }
-
-        @Override
-        public ReplaceInsert._ReplaceSpec space(Function<C, ? extends SubQuery> function) {
-            final SubQuery subQuery;
-            subQuery = function.apply(this.criteria);
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new MySQLQueryReplaceStatement(this);
-        }
-
-        @Override
-        MySQLReplace._QuerySubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
-            if (fieldSize == 0) {
-                throw noColumnList(this.criteriaContext, this.table);
-            }
-            if (childFieldSize > 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
+        MySQLReplace._QuerySubQueryClause<C> columnListEnd() {
             return this;
         }
 
-        private MySQLReplace._QueryColumnListClause<C, F> partitionEnd(List<String> partitionList) {
+        @Override
+        ReplaceInsert._ReplaceSpec spaceEnd() {
+            final ReplaceInsert._ReplaceSpec spec;
+            if (this.parentStmt == null) {
+                spec = new QueryReplaceStatement(this);
+            } else {
+                spec = new QueryChildReplaceStatement(this);
+            }
+            return spec;
+        }
+
+        private MySQLReplace._QueryColumnListClause<C, T> partitionEnd(List<String> partitionList) {
             this.partitionList = partitionList;
             return this;
-        }
-
-        private List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
         }
 
 
     }//QueryReplaceSubQueryClause
 
-    private static final class QueryParentReplaceSubQueryClause<C, P extends IDomain, T extends IDomain>
-            extends InsertSupport.ColumnsClause<
+    private static final class QueryParentPartitionClause<C, P extends IDomain>
+            extends InsertSupport.QueryInsertSpaceClause<
             C,
-            FieldMeta<P>,
-            MySQLReplace._QueryParentSubQueryClause<C, FieldMeta<T>>>
-            implements MySQLReplace._QueryParentPartitionSpec<C, P, T>
-            , MySQLReplace._QueryParentSubQueryClause<C, FieldMeta<T>> {
+            P,
+            MySQLReplace._QueryParentSubQueryClause<C, P>,
+            MySQLReplace._QueryChildSpec<C, P>>
+            implements MySQLReplace._QueryParentPartitionSpec<C, P>
+            , MySQLReplace._QueryParentSubQueryClause<C, P>
+            , MySQLReplace._QueryChildSpec<C, P>
+            , MySQLReplace._QueryChildReplaceIntoSpec<C, P>
+            , MySQLReplace._QueryChildIntoClause<C, P> {
 
         private final List<Hint> hintList;
 
         private final List<MySQLWords> modifierList;
 
-        private final ChildTableMeta<T> childTable;
-
         private List<String> partitionList;
 
-        private SubQuery subQuery;
+        private List<Hint> childHintList;
 
-        private QueryParentReplaceSubQueryClause(QueryReplaceIntoClause<C> clause, ComplexTableMeta<P, T> table) {
-            super(clause.criteriaContext, true, table.parentMeta());
-            this.hintList = clause.hintList();
-            this.modifierList = clause.modifierList();
-            this.childTable = table;
+        private List<MySQLWords> childModifierList;
+
+        private QueryParentPartitionClause(QueryReplaceIntoClause<C> clause, ParentTableMeta<P> table) {
+            super(clause.criteriaContext, table);
+            this.hintList = _CollectionUtils.safeList(clause.hintList);
+            this.modifierList = _CollectionUtils.safeList(clause.modifierList);
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>>> parentPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::parentPartitionEnd);
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryParentColumnsClause<C, P>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
-        public MySQLReplace._QueryChildPartitionSpec<C, FieldMeta<T>> space(Supplier<? extends SubQuery> supplier) {
-            final SubQuery subQuery;
-            subQuery = supplier.get();
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new QueryChildReplaceSubQueryClause<>(this);
+        public ReplaceInsert asInsert() {
+            return this.createParentStmt()
+                    .asInsert();
         }
 
         @Override
-        public MySQLReplace._QueryChildPartitionSpec<C, FieldMeta<T>> space(Function<C, ? extends SubQuery> function) {
-            final SubQuery subQuery;
-            subQuery = function.apply(this.criteria);
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new QueryChildReplaceSubQueryClause<>(this);
-        }
-
-
-        @Override
-        MySQLReplace._QueryParentSubQueryClause<C, FieldMeta<T>> columnListEnd(int fieldSize, int childFieldSize) {
-            if (fieldSize == 0) {
-                throw noColumnList(this.criteriaContext, this.table);
-            }
-            if (childFieldSize > 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
+        public MySQLReplace._QueryChildReplaceIntoSpec<C, P> child() {
             return this;
         }
 
-        private MySQLReplace._QueryParentColumnsClause<C, FieldMeta<P>, FieldMeta<T>> parentPartitionEnd(List<String> partitionList) {
+        @Override
+        public MySQLReplace._QueryChildIntoClause<C, P> replace(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::replaceModifier);
+            return this;
+        }
+
+        @Override
+        public MySQLReplace._QueryChildIntoClause<C, P> replace(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria)
+                    , MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::replaceModifier);
+            return this;
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+            return this.replaceInto(table);
+        }
+
+        @Override
+        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
+            final QueryPartitionClause<C, T> childClause;
+            childClause = new QueryPartitionClause<>(this, table);
+            this.childHintList = null;
+            this.childModifierList = null;
+            return childClause;
+        }
+
+        @Override
+        MySQLReplace._QueryParentSubQueryClause<C, P> columnListEnd() {
+            return this;
+        }
+
+        @Override
+        MySQLReplace._QueryChildSpec<C, P> spaceEnd() {
+            return this;
+        }
+
+        private MySQLReplace._QueryParentColumnsClause<C, P> partitionEnd(List<String> partitionList) {
             this.partitionList = partitionList;
             return this;
         }
 
-        private List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
+        private QueryReplaceStatement createParentStmt() {
+            return new QueryReplaceStatement(this);
         }
 
 
-    }//QueryParentReplaceSubQueryClause
+    }//QueryParentPartitionClause
 
-    private static final class QueryChildReplaceSubQueryClause<C, F extends TableField>
-            extends InsertSupport.ColumnsClause<
-            C,
-            F,
-            MySQLReplace._QuerySubQueryClause<C>>
-            implements MySQLReplace._QueryChildPartitionSpec<C, F>
-            , MySQLReplace._QuerySubQueryClause<C> {
-
-        private final QueryParentReplaceSubQueryClause<C, ?, ?> parentClause;
-
-
-        private List<String> partitionList;
-
-        private SubQuery subQuery;
-
-
-        private QueryChildReplaceSubQueryClause(QueryParentReplaceSubQueryClause<C, ?, ?> parentClause) {
-            super(parentClause.criteriaContext, parentClause.migration, parentClause.childTable);
-            this.parentClause = parentClause;
-        }
-
-        @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryColumnListClause<C, F>> childPartition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::childPartitionEnd);
-        }
-
-        @Override
-        public ReplaceInsert._ReplaceSpec space(Supplier<? extends SubQuery> supplier) {
-            final SubQuery subQuery;
-            subQuery = supplier.get();
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new MySQLQueryReplaceStatement(this);
-        }
-
-        @Override
-        public ReplaceInsert._ReplaceSpec space(Function<C, ? extends SubQuery> function) {
-            final SubQuery subQuery;
-            subQuery = function.apply(this.criteria);
-            if (subQuery == null) {
-                throw subQueryIsNull(this.criteriaContext);
-            }
-            this.subQuery = subQuery;
-            return new MySQLQueryReplaceStatement(this);
-        }
-
-        @Override
-        MySQLReplace._QuerySubQueryClause<C> columnListEnd(int fieldSize, int childFieldSize) {
-            if (childFieldSize == 0) {
-                throw noColumnList(this.criteriaContext, this.table);
-            }
-            if (fieldSize > 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return this;
-        }
-
-        private MySQLReplace._QueryColumnListClause<C, F> childPartitionEnd(List<String> partitionList) {
-            this.partitionList = partitionList;
-            return this;
-        }
-
-        private List<String> partitionList() {
-            List<String> list = this.partitionList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
-        }
-
-    }//QueryChildReplaceSubQueryClause
-
-
-    static final class MySQLQueryReplaceStatement extends InsertSupport.QueryInsertStatement<ReplaceInsert>
-            implements MySQLReplace, ReplaceInsert._ReplaceSpec
-            , _MySQLInsert._MySQQueryInsert, _MySQLInsert._MySQLReplace {
+    static class QueryReplaceStatement extends InsertSupport.QueryInsertStatement<ReplaceInsert>
+            implements MySQLReplace, ReplaceInsert._ReplaceSpec, _MySQLInsert._MySQQueryInsert {
 
         private final List<Hint> hintList;
 
@@ -1008,52 +1227,39 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private final List<String> partitionList;
 
-        private final List<String> childPartitionList;
 
-
-        private MySQLQueryReplaceStatement(QueryReplaceSubQueryClause<?, ?> clause) {
-            super(clause, clause.subQuery);
-
+        private QueryReplaceStatement(QueryPartitionClause<?, ?> clause) {
+            super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = clause.partitionList();
-            this.childPartitionList = Collections.emptyList();
-
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
         }
 
-        private MySQLQueryReplaceStatement(QueryChildReplaceSubQueryClause<?, ?> clause) {
-            super(clause.parentClause, clause.parentClause.subQuery, clause, clause.subQuery);
-
-            this.hintList = clause.parentClause.hintList;
-            this.modifierList = clause.parentClause.modifierList;
-            this.partitionList = clause.parentClause.partitionList();
-            this.childPartitionList = clause.partitionList();
-
+        private QueryReplaceStatement(QueryParentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.hintList = clause.hintList;
+            this.modifierList = clause.modifierList;
+            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
         }
 
         @Override
-        public List<Hint> hintList() {
+        public final List<Hint> hintList() {
             return this.hintList;
         }
 
         @Override
-        public List<MySQLWords> modifierList() {
+        public final List<MySQLWords> modifierList() {
             return this.modifierList;
         }
 
         @Override
-        public List<String> partitionList() {
+        public final List<String> partitionList() {
             return this.partitionList;
         }
 
-        @Override
-        public List<String> childPartitionList() {
-            return this.childPartitionList;
-        }
-
 
         @Override
-        public String toString() {
+        public final String toString() {
             final String s;
             if (this.isPrepared()) {
                 s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
@@ -1064,7 +1270,27 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
 
-    }//MySQLQueryReplaceStatement
+    }//QueryReplaceStatement
+
+
+    private static final class QueryChildReplaceStatement extends QueryReplaceStatement
+            implements _Insert._ChildQueryInsert {
+
+        private final _Insert._QueryInsert parentStmt;
+
+        private QueryChildReplaceStatement(QueryPartitionClause<?, ?> clause) {
+            super(clause);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
+        }
+
+        @Override
+        public _QueryInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+
+    }//QueryChildReplaceStatement
 
 
 }
