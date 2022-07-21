@@ -917,6 +917,7 @@ abstract class InsertSupport {
 
         final boolean supportRowItem;
 
+        private Map<FieldMeta<?>, Boolean> fieldMap;
         private List<ItemPair> itemPairList;
 
         AssignmentSetClause(CriteriaContext criteriaContext, boolean supportRowItem, TableMeta<T> table) {
@@ -1033,6 +1034,15 @@ abstract class InsertSupport {
             return pairList;
         }
 
+        @Override
+        public final Map<FieldMeta<?>, Boolean> fieldMap() {
+            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            if (fieldMap == null || fieldMap instanceof HashMap) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return fieldMap;
+        }
+
         final void endAssignmentSetClause() {
             List<ItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
@@ -1045,6 +1055,13 @@ abstract class InsertSupport {
                 itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
             }
             this.itemPairList = itemPairList;
+
+            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            if (fieldMap == null) {
+                this.fieldMap = Collections.emptyMap();
+            } else {
+                this.fieldMap = Collections.unmodifiableMap(fieldMap);
+            }
         }
 
 
@@ -1070,6 +1087,15 @@ abstract class InsertSupport {
         }
 
         private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
+            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            if (fieldMap == null) {
+                fieldMap = new HashMap<>();
+                this.fieldMap = fieldMap;
+            }
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                throw duplicationValuePair(this.criteriaContext, field);
+            }
+
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
@@ -1090,6 +1116,15 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
             this.validateField((FieldMeta<?>) field, null);
+            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            if (fieldMap == null) {
+                fieldMap = new HashMap<>();
+                this.fieldMap = fieldMap;
+            }
+            if (fieldMap.putIfAbsent((FieldMeta<?>) field, Boolean.TRUE) != null) {
+                //TODO 验证方言是否支持 在 row 中 重复赋值
+                throw duplicationValuePair(this.criteriaContext, (FieldMeta<?>) field);
+            }
         }
 
 
@@ -1125,11 +1160,6 @@ abstract class InsertSupport {
         @Override
         public final List<FieldMeta<?>> fieldList() {
             return Collections.emptyList();
-        }
-
-        @Override
-        public final Map<FieldMeta<?>, Boolean> fieldMap() {
-            return Collections.emptyMap();
         }
 
         @Override

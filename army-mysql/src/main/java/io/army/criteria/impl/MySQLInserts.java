@@ -993,9 +993,9 @@ abstract class MySQLInserts extends InsertSupport {
                     spec = new DomainChildInsertWithDuplicateKey(this, pairList);
                 }
             } else if (this.parentStmt == null) {
-                spec = new DomainInsertWIthRowAlias(this, pairList);
+                spec = new DomainInsertWithRowAlias(this, pairList);
             } else {
-                spec = new DomainChildInsertWIthRowAlias(this, pairList);
+                spec = new DomainChildInsertWithRowAlias(this, pairList);
             }
             return spec.asInsert();
         }
@@ -1055,6 +1055,13 @@ abstract class MySQLInserts extends InsertSupport {
             this.modifierList = clause.modifierList();
         }
 
+
+        @Override
+        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._DomainParentColumnsSpec<C, P>> partition() {
+            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        }
+
+
         @Override
         public MySQLInsert._RowColumnAliasListClause<C, P, MySQLInsert._DomainParentOnDuplicateKeyUpdateAliasSpec<C, P>> as(final @Nullable String alias) {
             if (alias == null) {
@@ -1092,11 +1099,6 @@ abstract class MySQLInserts extends InsertSupport {
         public MySQLInsert._DomainChildClause<C, P> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<P>>> consumer) {
             return new DomainParentAsRowAliasSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
-        }
-
-        @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLInsert._DomainParentColumnsSpec<C, P>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -1168,6 +1170,7 @@ abstract class MySQLInserts extends InsertSupport {
             if (this.duplicatePairList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
+            this.endColumnDefaultClause();
             this.duplicatePairList = pairList;
             return this;
         }
@@ -1198,7 +1201,7 @@ abstract class MySQLInserts extends InsertSupport {
             } else if (this.rowAlias == null) {
                 statement = new DomainInsertWithDuplicateKey(this, pairList);
             } else {
-                statement = new DomainInsertWIthRowAlias(this, pairList);
+                statement = new DomainInsertWithRowAlias(this, pairList);
             }
             return statement;
         }
@@ -1279,7 +1282,7 @@ abstract class MySQLInserts extends InsertSupport {
             return this.domainList;
         }
 
-    }//MySQLDomainInsertStatement
+    }//DomainInsertStatement
 
 
     private static class DomainInsertWithDuplicateKey extends DomainInsertStatement
@@ -1306,17 +1309,17 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-    }//MySQLDomainInsertWithDuplicateKey
+    }//DomainInsertWithDuplicateKey
 
 
-    private static class DomainInsertWIthRowAlias extends DomainInsertWithDuplicateKey
+    private static class DomainInsertWithRowAlias extends DomainInsertWithDuplicateKey
             implements _MySQLInsert._InsertWithRowAlias {
 
         private final String rowAlias;
 
         private final Map<String, FieldMeta<?>> aliasToField;
 
-        private DomainInsertWIthRowAlias(DomainPartitionClause<?, ?> clause
+        private DomainInsertWithRowAlias(DomainPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
             this.rowAlias = clause.rowAlias;
@@ -1324,11 +1327,12 @@ abstract class MySQLInserts extends InsertSupport {
             assert this.rowAlias != null && this.aliasToField != null;
         }
 
-        private DomainInsertWIthRowAlias(DomainParentPartitionClause<?, ?> clause
+        private DomainInsertWithRowAlias(DomainParentPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
             this.rowAlias = clause.rowAlias;
             this.aliasToField = clause.aliasToField;
+            assert this.rowAlias != null && this.aliasToField != null;
         }
 
         @Override
@@ -1342,7 +1346,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-    }//MySQLDomainInsertWIthRowAlias
+    }//DomainInsertWithRowAlias
 
 
     private static class DomainChildInsertStatement extends DomainInsertStatement
@@ -1361,7 +1365,7 @@ abstract class MySQLInserts extends InsertSupport {
             return this.parentStmt;
         }
 
-    }//MySQLDomainChildInsertStatement
+    }//DomainChildInsertStatement
 
 
     private static class DomainChildInsertWithDuplicateKey extends DomainChildInsertStatement
@@ -1380,17 +1384,17 @@ abstract class MySQLInserts extends InsertSupport {
             return this.pairList;
         }
 
-    }//MySQLDomainChildInsertWithDuplicateKey
+    }//DomainChildInsertWithDuplicateKey
 
 
-    private static final class DomainChildInsertWIthRowAlias extends DomainChildInsertWithDuplicateKey
+    private static final class DomainChildInsertWithRowAlias extends DomainChildInsertWithDuplicateKey
             implements _MySQLInsert._InsertWithRowAlias {
 
         private final String rowAlias;
 
         private final Map<String, FieldMeta<?>> aliasToField;
 
-        private DomainChildInsertWIthRowAlias(DomainPartitionClause<?, ?> clause
+        private DomainChildInsertWithRowAlias(DomainPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
             this.rowAlias = clause.rowAlias;
@@ -1408,7 +1412,7 @@ abstract class MySQLInserts extends InsertSupport {
             return this.aliasToField;
         }
 
-    }//MySQLDomainChildInsertWIthRowAlias
+    }//DomainChildInsertWithRowAlias
 
 
 
@@ -1459,7 +1463,7 @@ abstract class MySQLInserts extends InsertSupport {
         private final ValuePartitionClause<C, T> clause;
 
         private StaticValuesLeftParenClause(ValuePartitionClause<C, T> clause) {
-            super(clause.getCriteriaContext(), clause::validateField);
+            super(clause.criteriaContext, clause::validateField);
             this.clause = clause;
         }
 
@@ -1576,7 +1580,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public MySQLInsert._ValueChildInsertIntoSpec<C, T> child() {
-            return this.clause.child();
+            return this.clause.childBeforeAs(this.endValuesClause());
         }
 
 
@@ -1656,20 +1660,20 @@ abstract class MySQLInserts extends InsertSupport {
             final Insert._InsertSpec spec;
             if (pairList.size() == 0) {
                 if (this.parentStmt == null) {
-                    spec = new MySQLValueInsertStatement(this);
+                    spec = new ValuesInsertStatement(this);
                 } else {
-                    spec = new MySQLValueChildInsertStatement(this);
+                    spec = new ValueChildInsertStatement(this);
                 }
             } else if (this.rowAlias == null) {
                 if (this.parentStmt == null) {
-                    spec = new MySQLValueInsertWithDuplicateKey(this, pairList);
+                    spec = new ValuesInsertWithDuplicateKey(this, pairList);
                 } else {
-                    spec = new MySQLValueChildInsertWithDuplicateKey(this, pairList);
+                    spec = new ValueChildInsertWithDuplicateKey(this, pairList);
                 }
             } else if (this.parentStmt == null) {
-                spec = new MySQLValueInsertWithRowAlias(this, pairList);
+                spec = new ValuesInsertWithRowAlias(this, pairList);
             } else {
-                spec = new MySQLValueChildInsertWithRowAlias(this, pairList);
+                spec = new ValueChildInsertWithRowAlias(this, pairList);
             }
             return spec.asInsert();
         }
@@ -1710,7 +1714,6 @@ abstract class MySQLInserts extends InsertSupport {
             implements MySQLInsert._ValueParentPartitionSpec<C, P>
             , ParentClauseBeforeRowAlias<C, P, MySQLInsert._ValueChildInsertIntoSpec<C, P>>
             , MySQLInsert._ValueChildInsertIntoSpec<C, P>
-            , Insert._ChildPartClause<MySQLInsert._ValueChildInsertIntoSpec<C, P>>
             , MySQLInsert._ValueChildIntoClause<C, P>
             , InsertOptions {
 
@@ -1749,14 +1752,6 @@ abstract class MySQLInserts extends InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return new ParentStaticValuesLeftParenClause<>(this);
-        }
-
-        @Override
-        public MySQLInsert._ValueChildInsertIntoSpec<C, P> child() {
-            if (this.rowValuesList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            return this;
         }
 
         @Override
@@ -1836,6 +1831,14 @@ abstract class MySQLInserts extends InsertSupport {
             return this.endInsert(Collections.emptyList());
         }
 
+        private MySQLInsert._ValueChildInsertIntoSpec<C, P> childBeforeAs(final List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+            if (this.rowValuesList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.rowValuesList = rowValuesList;
+            return this;
+        }
+
 
         @Override
         MySQLInsert._ValueParentDefaultSpec<C, P> columnListEnd() {
@@ -1848,7 +1851,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-        private MySQLValueInsertStatement createParentStmt() {
+        private ValuesInsertStatement createParentStmt() {
             if (this.rowValuesList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -1856,13 +1859,13 @@ abstract class MySQLInserts extends InsertSupport {
             if (pairList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            final MySQLValueInsertStatement statement;
+            final ValuesInsertStatement statement;
             if (pairList.size() == 0) {
-                statement = new MySQLValueInsertStatement(this);
+                statement = new ValuesInsertStatement(this);
             } else if (this.rowAlias == null) {
-                statement = new MySQLValueInsertWithDuplicateKey(this, pairList);
+                statement = new ValuesInsertWithDuplicateKey(this, pairList);
             } else {
-                statement = new MySQLValueInsertWithRowAlias(this, pairList);
+                statement = new ValuesInsertWithRowAlias(this, pairList);
             }
             return statement;
         }
@@ -1871,7 +1874,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//ValueParentPartitionClause
 
 
-    private static class MySQLValueInsertStatement extends MySQLValueSyntaxStatement
+    private static class ValuesInsertStatement extends MySQLValueSyntaxStatement
             implements _MySQLInsert._MySQLValueInsert {
 
         private final List<Hint> hintList;
@@ -1882,7 +1885,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
-        private MySQLValueInsertStatement(ValuePartitionClause<?, ?> clause) {
+        private ValuesInsertStatement(ValuePartitionClause<?, ?> clause) {
             super(clause);
 
             this.hintList = clause.hintList;
@@ -1893,7 +1896,7 @@ abstract class MySQLInserts extends InsertSupport {
             assert this.rowValuesList != null;
         }
 
-        private MySQLValueInsertStatement(ValueParentPartitionClause<?, ?> clause) {
+        private ValuesInsertStatement(ValueParentPartitionClause<?, ?> clause) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
@@ -1926,18 +1929,18 @@ abstract class MySQLInserts extends InsertSupport {
 
     }//MySQLValueInsertStatement
 
-    private static class MySQLValueInsertWithDuplicateKey extends MySQLValueInsertStatement
+    private static class ValuesInsertWithDuplicateKey extends ValuesInsertStatement
             implements _MySQLInsert._InsertWithDuplicateKey {
 
         private final List<_Pair<Object, _Expression>> pairList;
 
-        private MySQLValueInsertWithDuplicateKey(ValuePartitionClause<?, ?> clause
+        private ValuesInsertWithDuplicateKey(ValuePartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
             this.pairList = pairList;
         }
 
-        private MySQLValueInsertWithDuplicateKey(ValueParentPartitionClause<?, ?> clause
+        private ValuesInsertWithDuplicateKey(ValueParentPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
             this.pairList = pairList;
@@ -1948,16 +1951,16 @@ abstract class MySQLInserts extends InsertSupport {
             return this.pairList;
         }
 
-    }//MySQLValueInsertWithDuplicateKey
+    }//ValuesInsertWithDuplicateKey
 
-    private static final class MySQLValueInsertWithRowAlias extends MySQLValueInsertWithDuplicateKey
+    private static class ValuesInsertWithRowAlias extends ValuesInsertWithDuplicateKey
             implements _MySQLInsert._InsertWithRowAlias {
 
         private final String rowAlias;
 
         private final Map<String, FieldMeta<?>> aliasToField;
 
-        private MySQLValueInsertWithRowAlias(ValuePartitionClause<?, ?> clause
+        private ValuesInsertWithRowAlias(ValuePartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
             this.rowAlias = clause.rowAlias;
@@ -1965,7 +1968,7 @@ abstract class MySQLInserts extends InsertSupport {
             assert this.rowAlias != null && this.aliasToField != null;
         }
 
-        private MySQLValueInsertWithRowAlias(ValueParentPartitionClause<?, ?> clause
+        private ValuesInsertWithRowAlias(ValueParentPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
             this.rowAlias = clause.rowAlias;
@@ -1974,41 +1977,27 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public String rowAlias() {
+        public final String rowAlias() {
             return this.rowAlias;
         }
 
         @Override
-        public Map<String, FieldMeta<?>> aliasToField() {
+        public final Map<String, FieldMeta<?>> aliasToField() {
             return this.aliasToField;
         }
 
 
-    }//MySQLValueInsertWithRowAlias
+    }//ValuesInsertWithRowAlias
 
 
-    private static class MySQLValueChildInsertStatement extends MySQLValueSyntaxStatement
-            implements _MySQLInsert._MySQLValueInsert, _Insert._ChildValuesInsert {
+    private static class ValueChildInsertStatement extends ValuesInsertStatement
+            implements _Insert._ChildValuesInsert {
 
-        private final List<Hint> hintList;
-
-        private final List<MySQLWords> modifierList;
-
-        private final List<String> partitionList;
-
-        private final List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
         private final _Insert._ValuesInsert parentStmt;
 
-        private MySQLValueChildInsertStatement(ValuePartitionClause<?, ?> clause) {
+        private ValueChildInsertStatement(ValuePartitionClause<?, ?> clause) {
             super(clause);
-
-            this.hintList = clause.hintList;
-            this.modifierList = clause.modifierList;
-            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
-            this.rowValuesList = clause.rowValuesList;
-
-            assert this.rowValuesList != null;
 
             this.parentStmt = clause.parentStmt;
             assert this.parentStmt != null;
@@ -2019,75 +2008,47 @@ abstract class MySQLInserts extends InsertSupport {
             return this.parentStmt;
         }
 
-        @Override
-        public final List<Hint> hintList() {
-            return this.hintList;
-        }
 
-        @Override
-        public final List<MySQLWords> modifierList() {
-            return this.modifierList;
-        }
+    }//ValueChildInsertStatement
 
-        @Override
-        public final List<String> partitionList() {
-            return this.partitionList;
-        }
+    private final static class ValueChildInsertWithDuplicateKey extends ValuesInsertWithDuplicateKey
+            implements _Insert._ChildValuesInsert {
 
-        @Override
-        public final List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
-            return this.rowValuesList;
-        }
+        private final _Insert._ValuesInsert parentStmt;
 
-
-    }//MySQLValueChildInsertStatement
-
-    private static class MySQLValueChildInsertWithDuplicateKey extends MySQLValueInsertStatement
-            implements _MySQLInsert._InsertWithDuplicateKey {
-
-        private final List<_Pair<Object, _Expression>> pairList;
-
-        private MySQLValueChildInsertWithDuplicateKey(ValuePartitionClause<?, ?> clause
-                , List<_Pair<Object, _Expression>> pairList) {
-            super(clause);
-            this.pairList = pairList;
-        }
-
-        @Override
-        public final List<_Pair<Object, _Expression>> duplicatePairList() {
-            return this.pairList;
-        }
-
-    }//MySQLValueChildInsertWithDuplicateKey
-
-    private static final class MySQLValueChildInsertWithRowAlias extends MySQLValueInsertWithDuplicateKey
-            implements _MySQLInsert._InsertWithRowAlias {
-
-        private final String rowAlias;
-
-        private final Map<String, FieldMeta<?>> aliasToField;
-
-        private MySQLValueChildInsertWithRowAlias(ValuePartitionClause<?, ?> clause
+        private ValueChildInsertWithDuplicateKey(ValuePartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
-            this.rowAlias = clause.rowAlias;
-            this.aliasToField = clause.aliasToField;
-            assert this.rowAlias != null && this.aliasToField != null;
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
+        }
+
+        @Override
+        public _ValuesInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+    }//ValueChildInsertWithDuplicateKey
+
+    private static final class ValueChildInsertWithRowAlias extends ValuesInsertWithRowAlias
+            implements _Insert._ChildValuesInsert {
+
+        private final _Insert._ValuesInsert parentStmt;
+
+        private ValueChildInsertWithRowAlias(ValuePartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause, pairList);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
         }
 
 
         @Override
-        public String rowAlias() {
-            return this.rowAlias;
+        public _ValuesInsert parentStmt() {
+            return this.parentStmt;
         }
 
-        @Override
-        public Map<String, FieldMeta<?>> aliasToField() {
-            return this.aliasToField;
-        }
-
-
-    }//MySQLValueChildInsertWithRowAlias
+    }//ValueChildInsertWithRowAlias
 
 
 
@@ -2237,20 +2198,20 @@ abstract class MySQLInserts extends InsertSupport {
             final Insert._InsertSpec spec;
             if (pairList.size() == 0) {
                 if (this.parentStmt == null) {
-                    spec = new MySQLAssignmentInsertStatement(this);
+                    spec = new AssignmentsInsertStatement(this);
                 } else {
-                    spec = new AssignmentChildInsertStatement(this);
+                    spec = new AssignmentsChildInsertStatement(this);
                 }
             } else if (this.rowAlias == null) {
                 if (this.parentStmt == null) {
-                    spec = new AssignmentInsertWithDuplicateKey(this, pairList);
+                    spec = new AssignmentsInsertWithDuplicateKey(this, pairList);
                 } else {
-                    spec = new AssignmentChildInsertWithDuplicateKey(this, pairList);
+                    spec = new AssignmentsChildInsertWithDuplicateKey(this, pairList);
                 }
             } else if (this.parentStmt == null) {
-                spec = new AssignmentInsertWithRowAlias(this, pairList);
+                spec = new AssignmentsInsertWithRowAlias(this, pairList);
             } else {
-                spec = new AssignmentChildInsertWithRowAlias(this, pairList);
+                spec = new AssignmentsChildInsertWithRowAlias(this, pairList);
             }
             return spec.asInsert();
         }
@@ -2449,18 +2410,18 @@ abstract class MySQLInserts extends InsertSupport {
             return this;
         }
 
-        private MySQLAssignmentInsertStatement createParentStmt() {
+        private AssignmentsInsertStatement createParentStmt() {
             final List<_Pair<Object, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            final MySQLAssignmentInsertStatement statement;
+            final AssignmentsInsertStatement statement;
             if (pairList.size() == 0) {
-                statement = new MySQLAssignmentInsertStatement(this);
+                statement = new AssignmentsInsertStatement(this);
             } else if (this.rowAlias == null) {
-                statement = new AssignmentInsertWithDuplicateKey(this, pairList);
+                statement = new AssignmentsInsertWithDuplicateKey(this, pairList);
             } else {
-                statement = new AssignmentInsertWithRowAlias(this, pairList);
+                statement = new AssignmentsInsertWithRowAlias(this, pairList);
             }
             return statement;
         }
@@ -2469,7 +2430,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//AssignmentParentPartitionClause
 
 
-    static class MySQLAssignmentInsertStatement extends InsertSupport.AssignmentInsertStatement<Insert>
+    static class AssignmentsInsertStatement extends InsertSupport.AssignmentInsertStatement<Insert>
             implements MySQLInsert, _MySQLInsert._MySQLAssignmentInsert, Insert._InsertSpec {
 
         private final List<Hint> hintList;
@@ -2478,14 +2439,14 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<String> partitionList;
 
-        private MySQLAssignmentInsertStatement(AssignmentPartitionClause<?, ?> clause) {
+        private AssignmentsInsertStatement(AssignmentPartitionClause<?, ?> clause) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
         }
 
-        private MySQLAssignmentInsertStatement(AssignmentParentPartitionClause<?, ?> clause) {
+        private AssignmentsInsertStatement(AssignmentParentPartitionClause<?, ?> clause) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
@@ -2520,18 +2481,18 @@ abstract class MySQLInserts extends InsertSupport {
 
     }//MySQLAssignmentInsertStatement
 
-    private static class AssignmentInsertWithDuplicateKey extends MySQLAssignmentInsertStatement
+    private static class AssignmentsInsertWithDuplicateKey extends AssignmentsInsertStatement
             implements _MySQLInsert._InsertWithDuplicateKey {
 
         private final List<_Pair<Object, _Expression>> pairList;
 
-        private AssignmentInsertWithDuplicateKey(AssignmentPartitionClause<?, ?> clause
+        private AssignmentsInsertWithDuplicateKey(AssignmentPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
             this.pairList = pairList;
         }
 
-        private AssignmentInsertWithDuplicateKey(AssignmentParentPartitionClause<?, ?> clause
+        private AssignmentsInsertWithDuplicateKey(AssignmentParentPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause);
             this.pairList = pairList;
@@ -2546,14 +2507,14 @@ abstract class MySQLInserts extends InsertSupport {
 
     }//AssignmentInsertWithDuplicateKey
 
-    private static class AssignmentInsertWithRowAlias extends AssignmentInsertWithDuplicateKey
+    private static class AssignmentsInsertWithRowAlias extends AssignmentsInsertWithDuplicateKey
             implements _MySQLInsert._InsertWithRowAlias {
 
         private final String rowAlias;
 
         private final Map<String, FieldMeta<?>> aliasToField;
 
-        private AssignmentInsertWithRowAlias(AssignmentPartitionClause<?, ?> clause
+        private AssignmentsInsertWithRowAlias(AssignmentPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
             this.rowAlias = clause.rowAlias;
@@ -2561,7 +2522,7 @@ abstract class MySQLInserts extends InsertSupport {
             assert this.rowAlias != null && this.aliasToField != null;
         }
 
-        private AssignmentInsertWithRowAlias(AssignmentParentPartitionClause<?, ?> clause
+        private AssignmentsInsertWithRowAlias(AssignmentParentPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
             this.rowAlias = clause.rowAlias;
@@ -2582,12 +2543,12 @@ abstract class MySQLInserts extends InsertSupport {
     }//AssignmentInsertWIthRowAlias
 
 
-    private static class AssignmentChildInsertStatement extends MySQLAssignmentInsertStatement
+    private static class AssignmentsChildInsertStatement extends AssignmentsInsertStatement
             implements _Insert._ChildAssignmentInsert {
 
         private final _AssignmentInsert parentStmt;
 
-        private AssignmentChildInsertStatement(AssignmentPartitionClause<?, ?> clause) {
+        private AssignmentsChildInsertStatement(AssignmentPartitionClause<?, ?> clause) {
             super(clause);
             this.parentStmt = clause.parentStmt;
             assert this.parentStmt != null;
@@ -2600,52 +2561,47 @@ abstract class MySQLInserts extends InsertSupport {
 
     }//AssignmentChildInsertStatement
 
-    private static class AssignmentChildInsertWithDuplicateKey extends AssignmentChildInsertStatement
-            implements _MySQLInsert._InsertWithDuplicateKey {
+    private static class AssignmentsChildInsertWithDuplicateKey extends AssignmentsInsertWithDuplicateKey
+            implements _Insert._ChildAssignmentInsert {
 
-        private final List<_Pair<Object, _Expression>> pairList;
+        private final _AssignmentInsert parentStmt;
 
-        private AssignmentChildInsertWithDuplicateKey(AssignmentPartitionClause<?, ?> clause
-                , List<_Pair<Object, _Expression>> pairList) {
-            super(clause);
-            this.pairList = pairList;
-        }
-
-        @Override
-        public final List<_Pair<Object, _Expression>> duplicatePairList() {
-            return this.pairList;
-        }
-
-
-    }//AssignmentChildInsertWithDuplicateKey
-
-    private static final class AssignmentChildInsertWithRowAlias extends AssignmentChildInsertWithDuplicateKey
-            implements _MySQLInsert._InsertWithRowAlias {
-
-        private final String rowAlias;
-
-        private final Map<String, FieldMeta<?>> aliasToField;
-
-        private AssignmentChildInsertWithRowAlias(AssignmentPartitionClause<?, ?> clause
+        private AssignmentsChildInsertWithDuplicateKey(AssignmentPartitionClause<?, ?> clause
                 , List<_Pair<Object, _Expression>> pairList) {
             super(clause, pairList);
-            this.rowAlias = clause.rowAlias;
-            this.aliasToField = clause.aliasToField;
-            assert this.rowAlias != null && this.aliasToField != null;
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
         }
 
         @Override
-        public String rowAlias() {
-            return this.rowAlias;
+        public final _AssignmentInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+
+    }//AssignmentsChildInsertWithDuplicateKey
+
+    private static final class AssignmentsChildInsertWithRowAlias extends AssignmentsInsertWithRowAlias
+            implements _Insert._ChildAssignmentInsert {
+
+        private final _AssignmentInsert parentStmt;
+
+        private AssignmentsChildInsertWithRowAlias(AssignmentPartitionClause<?, ?> clause
+                , List<_Pair<Object, _Expression>> pairList) {
+            super(clause, pairList);
+            this.parentStmt = clause.parentStmt;
+            assert this.parentStmt != null;
         }
 
         @Override
-        public Map<String, FieldMeta<?>> aliasToField() {
-            return this.aliasToField;
+        public _AssignmentInsert parentStmt() {
+            return this.parentStmt;
         }
 
+    }//AssignmentsChildInsertWithRowAlias
 
-    }//AssignmentChildInsertWIthRowAlias
+
+    /*-----------------------below query insert classes-----------------------*/
 
 
     private static final class QueryInsertIntoClause<C> implements MySQLInsert._QueryInsertIntoSpec<C>
@@ -2921,7 +2877,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//QueryParentPartitionClause
 
 
-    static class MySQLQueryInsertStatement extends QueryInsertStatement<Insert>
+    static class MySQLQueryInsertStatement extends InsertSupport.QueryInsertStatement<Insert>
             implements MySQLInsert, Insert._InsertSpec, _MySQLInsert._MySQQueryInsert {
 
         private final List<Hint> hintList;

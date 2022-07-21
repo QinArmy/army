@@ -8,6 +8,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -77,10 +78,18 @@ public interface _Insert extends _Statement {
     interface _AssignmentStatementSpec {
 
         List<ItemPair> rowPairList();
+
+        Map<FieldMeta<?>, Boolean> fieldMap();
     }
 
 
     interface _AssignmentInsert extends _Insert, _InsertOption, _AssignmentStatementSpec {
+
+        /**
+         * @return always {@link  Collections#emptyList()}
+         */
+        @Override
+        List<FieldMeta<?>> fieldList();
 
         boolean isPreferLiteral();
 
