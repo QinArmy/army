@@ -3,7 +3,6 @@ package io.army.criteria.mysql;
 import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.meta.ComplexTableMeta;
-import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
 
@@ -47,9 +46,8 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     }
 
-    interface _ColumnOrVarListSpec<C, T extends IDomain>
-            extends _ColumnOrVarListClause<C, _LoadSetSpec<C, FieldMeta<T>>>
-            , _LoadSetSpec<C, FieldMeta<T>> {
+    interface _ColumnOrVarListSpec<C, T extends IDomain> extends _ColumnOrVarListClause<C, _LoadSetSpec<C, T>>
+            , _LoadSetSpec<C, T> {
 
     }
 
@@ -123,7 +121,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _LinesBeforeIgnoreSpec<C, T extends IDomain> extends _LinesClause<_LineStartingBySpec<C, T>>
+    interface _LinesSpec<C, T extends IDomain> extends _LinesClause<_LineStartingBySpec<C, T>>
             , _IgnoreLineSpec<C, T> {
 
     }
@@ -167,17 +165,16 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
 
     interface _ColumnEscapedByClause<C, T extends IDomain>
-            extends _EscapedByClause<C, _LinesBeforeIgnoreSpec<C, T>> {
+            extends _EscapedByClause<C, _LinesSpec<C, T>> {
 
     }
 
     interface _ColumnEscapedBySpec<C, T extends IDomain> extends _ColumnEscapedByClause<C, T>
-            , _LinesBeforeIgnoreSpec<C, T> {
+            , _LinesSpec<C, T> {
 
     }
 
-    interface _ColumnEnclosedByClause<C, T extends IDomain>
-            extends _EnclosedByClause<C, _ColumnEscapedBySpec<C, T>> {
+    interface _ColumnEnclosedByClause<C, T extends IDomain> extends _EnclosedByClause<C, _ColumnEscapedBySpec<C, T>> {
 
     }
 
@@ -222,7 +219,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
 
     interface _FieldsColumnsSpec<C, T extends IDomain> extends _FieldsColumnsClause<_ColumnTerminatedBySpec<C, T>>
-            , _LinesBeforeIgnoreSpec<C, T> {
+            , _LinesSpec<C, T> {
 
     }
 
@@ -292,115 +289,115 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _ParentAssignmentSetSpec<C, T extends IDomain>
-            extends Insert._AssignmentSetClause<C, FieldMeta<T>, _ParentAssignmentSetSpec<C, T>> {
+    interface _ParentAssignmentSetSpec<C, P extends IDomain>
+            extends Insert._AssignmentSetClause<C, P, _ParentAssignmentSetSpec<C, P>> {
 
-        _ChildLoadInfileClause<C, T> child(List<MySQLWords> modifierList);
-
-    }
-
-
-    interface _ParentColumnVarListSpec<C, T extends IDomain>
-            extends _ColumnOrVarListClause<C, _ParentAssignmentSetSpec<C, T>>
-            , _ParentAssignmentSetSpec<C, T> {
-    }
-
-
-    interface _ParentIgnoreLineSpec<C, T extends IDomain>
-            extends _IgnoreLineClause<C, _ParentColumnVarListSpec<C, T>>
-            , _ParentColumnVarListSpec<C, T> {
-
-    }
-
-    interface _ParentLineTerminatedByClause<C, T extends IDomain>
-            extends _TerminatedByClause<C, _ParentIgnoreLineSpec<C, T>>
-            , _ParentIgnoreLineSpec<C, T> {
-
-    }
-
-    interface _ParentLineTerminatedBySpec<C, T extends IDomain>
-            extends _ParentLineTerminatedByClause<C, T>
-            , _ParentIgnoreLineSpec<C, T> {
+        _ChildLoadInfileClause<C, P> child(List<MySQLWords> modifierList);
 
     }
 
 
-    interface _ParentLineStartingBySpec<C, T extends IDomain>
-            extends _StartingByClause<C, _ParentLineTerminatedBySpec<C, T>>
-            , _ParentLineTerminatedByClause<C, T> {
+    interface _ParentColumnVarListSpec<C, P extends IDomain>
+            extends _ColumnOrVarListClause<C, _ParentAssignmentSetSpec<C, P>>
+            , _ParentAssignmentSetSpec<C, P> {
+    }
+
+
+    interface _ParentIgnoreLineSpec<C, P extends IDomain>
+            extends _IgnoreLineClause<C, _ParentColumnVarListSpec<C, P>>
+            , _ParentColumnVarListSpec<C, P> {
+
+    }
+
+    interface _ParentLineTerminatedByClause<C, P extends IDomain>
+            extends _TerminatedByClause<C, _ParentIgnoreLineSpec<C, P>>
+            , _ParentIgnoreLineSpec<C, P> {
+
+    }
+
+    interface _ParentLineTerminatedBySpec<C, P extends IDomain>
+            extends _ParentLineTerminatedByClause<C, P>
+            , _ParentIgnoreLineSpec<C, P> {
+
+    }
+
+
+    interface _ParentLineStartingBySpec<C, P extends IDomain>
+            extends _StartingByClause<C, _ParentLineTerminatedBySpec<C, P>>
+            , _ParentLineTerminatedByClause<C, P> {
 
 
     }
 
 
-    interface _ParentLinesSpec<C, T extends IDomain> extends _LinesClause<_ParentLineStartingBySpec<C, T>>
-            , _ParentIgnoreLineSpec<C, T> {
+    interface _ParentLinesSpec<C, P extends IDomain> extends _LinesClause<_ParentLineStartingBySpec<C, P>>
+            , _ParentIgnoreLineSpec<C, P> {
 
     }
 
-    interface _ParentColumnEscapedByClause<C, T extends IDomain>
-            extends _EscapedByClause<C, _ParentLinesSpec<C, T>> {
+    interface _ParentColumnEscapedByClause<C, P extends IDomain>
+            extends _EscapedByClause<C, _ParentLinesSpec<C, P>> {
 
     }
 
-    interface _ParentColumnEscapedBySpec<C, T extends IDomain>
-            extends _ParentColumnEscapedByClause<C, T>, _ParentLinesSpec<C, T> {
-
-    }
-
-
-    interface _ParentColumnEnclosedByClause<C, T extends IDomain>
-            extends _EnclosedByClause<C, _ParentColumnEscapedBySpec<C, T>> {
+    interface _ParentColumnEscapedBySpec<C, P extends IDomain>
+            extends _ParentColumnEscapedByClause<C, P>, _ParentLinesSpec<C, P> {
 
     }
 
 
-    interface _ParentColumnEnclosedBySpec<C, T extends IDomain>
-            extends _OptionallyClause<C, _ParentColumnEnclosedByClause<C, T>>
-            , _ParentColumnEnclosedByClause<C, T>
-            , _ParentColumnEscapedBySpec<C, T> {
+    interface _ParentColumnEnclosedByClause<C, P extends IDomain>
+            extends _EnclosedByClause<C, _ParentColumnEscapedBySpec<C, P>> {
 
     }
 
 
-    interface _ParentColumnTerminatedBySpec<C, T extends IDomain>
-            extends _TerminatedByClause<C, _ParentIgnoreLineSpec<C, T>>
-            , _OptionallyClause<C, _ParentColumnEnclosedByClause<C, T>>
-            , _ParentColumnEnclosedByClause<C, T>
-            , _ParentColumnEscapedByClause<C, T> {
+    interface _ParentColumnEnclosedBySpec<C, P extends IDomain>
+            extends _OptionallyClause<C, _ParentColumnEnclosedByClause<C, P>>
+            , _ParentColumnEnclosedByClause<C, P>
+            , _ParentColumnEscapedBySpec<C, P> {
+
+    }
+
+
+    interface _ParentColumnTerminatedBySpec<C, P extends IDomain>
+            extends _TerminatedByClause<C, _ParentIgnoreLineSpec<C, P>>
+            , _OptionallyClause<C, _ParentColumnEnclosedByClause<C, P>>
+            , _ParentColumnEnclosedByClause<C, P>
+            , _ParentColumnEscapedByClause<C, P> {
 
         @Override
-        _ParentColumnEnclosedBySpec<C, T> terminatedBy(String string);
+        _ParentColumnEnclosedBySpec<C, P> terminatedBy(String string);
 
         @Override
-        _ParentColumnEnclosedBySpec<C, T> terminatedBy(Supplier<String> supplier);
+        _ParentColumnEnclosedBySpec<C, P> terminatedBy(Supplier<String> supplier);
 
         @Override
-        _ParentColumnEnclosedBySpec<C, T> terminatedBy(Function<C, String> function);
+        _ParentColumnEnclosedBySpec<C, P> terminatedBy(Function<C, String> function);
 
         @Override
-        _ParentColumnEnclosedBySpec<C, T> ifTerminatedBy(Supplier<String> supplier);
+        _ParentColumnEnclosedBySpec<C, P> ifTerminatedBy(Supplier<String> supplier);
 
         @Override
-        _ParentColumnEnclosedBySpec<C, T> ifTerminatedBy(Function<C, String> function);
+        _ParentColumnEnclosedBySpec<C, P> ifTerminatedBy(Function<C, String> function);
     }
 
 
-    interface _ParentFieldsColumnsSpec<C, T extends IDomain>
-            extends _FieldsColumnsClause<_ParentColumnTerminatedBySpec<C, T>>, _ParentLinesSpec<C, T> {
-
-    }
-
-
-    interface _ParentCharsetSpec<C, T extends IDomain> extends _CharsetClause<C, _ParentFieldsColumnsSpec<C, T>>
-            , _ParentFieldsColumnsSpec<C, T> {
+    interface _ParentFieldsColumnsSpec<C, P extends IDomain>
+            extends _FieldsColumnsClause<_ParentColumnTerminatedBySpec<C, P>>, _ParentLinesSpec<C, P> {
 
     }
 
 
-    interface _ParentPartitionSpec<C, T extends IDomain>
-            extends MySQLQuery._PartitionClause<C, _ParentCharsetSpec<C, T>>
-            , _ParentCharsetSpec<C, T> {
+    interface _ParentCharsetSpec<C, P extends IDomain> extends _CharsetClause<C, _ParentFieldsColumnsSpec<C, P>>
+            , _ParentFieldsColumnsSpec<C, P> {
+
+    }
+
+
+    interface _ParentPartitionSpec<C, P extends IDomain>
+            extends MySQLQuery._PartitionClause<C, _ParentCharsetSpec<C, P>>
+            , _ParentCharsetSpec<C, P> {
 
     }
 

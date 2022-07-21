@@ -59,8 +59,8 @@ public class StandardCriteriaUnitTests {
         insert = SQLs.domainInsert(ChinaRegion_.T)
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
-                .commonLiteral(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
-                .commonLiteral(ChinaRegion_.visible, true)
+                .defaultLiteral(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
+                .defaultLiteral(ChinaRegion_.visible, true)
                 .values(this::createRegionList)
                 .asInsert();
 
@@ -94,6 +94,8 @@ public class StandardCriteriaUnitTests {
         final Insert insert;
         insert = SQLs.domainInsert(ChinaProvince_.T)
                 .preferLiteral(true)
+                .insertInto(ChinaRegion_.T)
+                .child()
                 .insertInto(ChinaProvince_.T)
                 .values(this::createProvinceList)
                 .asInsert();
@@ -416,7 +418,7 @@ public class StandardCriteriaUnitTests {
     public void childTableSubQueryInsert() {
         final Insert stmt;
         stmt = SQLs.rowSetInsert()
-                .insertInto(ChinaCity_.T)
+                .insertInto(ChinaRegion_.T)
 
                 .leftParen(ChinaRegion_.id, ChinaRegion_.createTime)
                 .comma(ChinaRegion_.updateTime, ChinaRegion_.regionType)
@@ -433,7 +435,8 @@ public class StandardCriteriaUnitTests {
                         })
                         .from(ChinaRegion_.T, "r")
                         .asQuery())
-
+                .child()
+                .insertInto(ChinaCity_.T)
                 .leftParen(ChinaCity_.id, ChinaCity_.mayorName)
                 .rightParen()
                 // below sub query is test case,not real.

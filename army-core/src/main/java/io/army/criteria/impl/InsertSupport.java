@@ -899,10 +899,7 @@ abstract class InsertSupport {
     @SuppressWarnings("unchecked")
     static abstract class AssignmentSetClause<C, T extends IDomain, SR>
             implements Insert._AssignmentSetClause<C, T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec {
-
-
         final CriteriaContext criteriaContext;
-
         final C criteria;
 
         final TableMeta<T> table;

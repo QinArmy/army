@@ -14,6 +14,8 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.stmt.Stmt;
 import io.army.util._Assert;
+import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -65,7 +67,7 @@ abstract class MySQLLoads {
 
         private List<MySQLWords> modifierList;
 
-        private Path path;
+        private Path filePath;
 
         private StrategyOption strategyOption;
 
@@ -84,19 +86,19 @@ abstract class MySQLLoads {
 
         @Override
         public MySQLLoad._StrategyOptionSpec<C> infile(Path filePath) {
-            this.path = filePath;
+            this.filePath = filePath;
             return this;
         }
 
         @Override
         public MySQLLoad._StrategyOptionSpec<C> infile(Supplier<Path> supplier) {
-            this.path = supplier.get();
+            this.filePath = supplier.get();
             return this;
         }
 
         @Override
         public MySQLLoad._StrategyOptionSpec<C> infile(Function<C, Path> function) {
-            this.path = function.apply(this.criteriaContext.criteria());
+            this.filePath = function.apply(this.criteriaContext.criteria());
             return this;
         }
 
@@ -157,10 +159,10 @@ abstract class MySQLLoads {
             if (table == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
-            if (this.path == null) {
+            if (this.filePath == null) {
                 throw filePathIsNull(this.criteriaContext, table);
             }
-            return new SimplePartitionClause<>(this, table);
+            return new NonParentPartitionClause<>(this, table);
         }
 
         @Override
@@ -168,19 +170,10 @@ abstract class MySQLLoads {
             if (table == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
-            if (this.path == null) {
+            if (this.filePath == null) {
                 throw filePathIsNull(this.criteriaContext, table);
             }
             return new ParentPartitionClause<>(this, table);
-        }
-
-
-        private List<MySQLWords> modifierList() {
-            List<MySQLWords> list = this.modifierList;
-            if (list == null) {
-                list = Collections.emptyList();
-            }
-            return list;
         }
 
 
@@ -189,7 +182,7 @@ abstract class MySQLLoads {
 
     @SuppressWarnings("unchecked")
     private static abstract class PartitionClause<C, T extends IDomain, PR, CR, FR, OR, ER, DR, LR, RR, GR, VR, SR>
-            extends InsertSupport.AssignmentSetClause<C, FieldMeta<T>, SR>
+            extends InsertSupport.AssignmentSetClause<C, T, SR>
             implements MySQLQuery._PartitionClause<C, PR>
             , MySQLLoad._CharsetClause<C, CR>
             , MySQLLoad._FieldsColumnsClause<FR>
@@ -209,8 +202,6 @@ abstract class MySQLLoads {
         final Path filePath;
 
         final StrategyOption strategyOption;
-
-        final TableMeta<T> table;
 
         private List<String> partitionList;
 
@@ -236,25 +227,22 @@ abstract class MySQLLoads {
 
         private List<_Expression> fieldOrUserVarList;
 
-        private PartitionClause(LoadDataInfileClause<C> clause, TableMeta<T> table) {
-            super(clause.criteriaContext, false);
-            this.modifierList = clause.modifierList();
-            this.filePath = clause.path;
-            assert this.filePath != null;
-
-            this.strategyOption = clause.strategyOption;
-            this.table = table;
-
-        }
-
-        private PartitionClause(ChildLoadDataInfileClause<C,?> clause, ChildTableMeta<T> table) {
-            super(clause.criteriaContext, false);
-            this.modifierList = clause.modifierList;
+        private PartitionClause(LoadDataInfileClause<C> clause, SingleTableMeta<T> table) {
+            super(clause.criteriaContext, false, table);
+            this.modifierList = _CollectionUtils.safeList(clause.modifierList);
             this.filePath = clause.filePath;
             assert this.filePath != null;
 
             this.strategyOption = clause.strategyOption;
-            this.table = table;
+        }
+
+        private PartitionClause(ChildLoadDataInfileClause<C, ?> clause, ChildTableMeta<T> table) {
+            super(clause.criteriaContext, false, table);
+            this.modifierList = _CollectionUtils.safeList(clause.modifierList);
+            this.filePath = clause.filePath;
+            assert this.filePath != null;
+
+            this.strategyOption = clause.strategyOption;
         }
 
         @Override
@@ -550,9 +538,13 @@ abstract class MySQLLoads {
             return (RR) this;
         }
 
+
         @Override
-        final boolean containField(FieldMeta<?> field) {
-            return field.tableMeta() == this.table;
+        public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
+            if (field.tableMeta() != this.table) {
+                throw _Exceptions.unknownColumn(field);
+            }
+            //TODO check non-null filed
         }
 
         private PR partitionEnd(List<String> partitionList) {
@@ -605,7 +597,7 @@ abstract class MySQLLoads {
     }//PartitionClause
 
 
-    private static final class SimplePartitionClause<C, T extends IDomain>
+    private static final class NonParentPartitionClause<C, T extends IDomain>
             extends PartitionClause<
             C,
             T,
@@ -614,28 +606,28 @@ abstract class MySQLLoads {
             MySQLLoad._ColumnTerminatedBySpec<C, T>,
             MySQLLoad._ColumnEnclosedByClause<C, T>,
             MySQLLoad._ColumnEscapedBySpec<C, T>,
-            MySQLLoad._LinesBeforeIgnoreSpec<C, T>,
+            MySQLLoad._LinesSpec<C, T>,
             MySQLLoad._LineStartingBySpec<C, T>,
             MySQLLoad._LinesTerminatedBySpec<C, T>,
             MySQLLoad._ColumnOrVarListSpec<C, T>,
-            MySQLLoad._LoadSetSpec<C, FieldMeta<T>>,
-            MySQLLoad._LoadSetSpec<C, FieldMeta<T>>>
+            MySQLLoad._LoadSetSpec<C, T>,
+            MySQLLoad._LoadSetSpec<C, T>>
             implements MySQLLoad._PartitionSpec<C, T>
             , MySQLLoad._ColumnTerminatedBySpec<C, T>
             , MySQLLoad._ColumnEnclosedBySpec<C, T>
             , MySQLLoad._LineStartingBySpec<C, T>
             , MySQLLoad._LinesTerminatedBySpec<C, T> {
 
-        private final ParentLoadDataStatement parentStatement;
+        private final ParentLoadDataStatement parentStmt;
 
-        private SimplePartitionClause(LoadDataInfileClause<C> clause, SimpleTableMeta<T> table) {
+        private NonParentPartitionClause(LoadDataInfileClause<C> clause, SimpleTableMeta<T> table) {
             super(clause, table);
-            this.parentStatement = null;
+            this.parentStmt = null;
         }
 
-        private SimplePartitionClause(ChildLoadDataInfileClause<C,?> clause, ChildTableMeta<T> table) {
+        private NonParentPartitionClause(ChildLoadDataInfileClause<C, ?> clause, ChildTableMeta<T> table) {
             super(clause, table);
-            this.parentStatement = clause.parentStatement;
+            this.parentStmt = clause.parentStatement;
         }
 
 
@@ -686,12 +678,12 @@ abstract class MySQLLoads {
 
         @Override
         public MySQLLoad asLoadData() {
-          final    MySQLLoad._LoadDataSpec spec;
-             if(this.parentStatement == null){
-                 spec = new SingleLoadDataStatement(this);
-             }else {
-                 spec = new ChildLoadDataStatement(this);
-             }
+            final MySQLLoad._LoadDataSpec spec;
+            if (this.parentStmt == null) {
+                spec = new SingleLoadDataStatement(this);
+            } else {
+                spec = new ChildLoadDataStatement(this);
+            }
             return spec.asLoadData();
         }
 
@@ -699,32 +691,32 @@ abstract class MySQLLoads {
     }//SimplePartitionClause
 
 
-    private static final class ParentPartitionClause<C, T extends IDomain> extends PartitionClause<
+    private static final class ParentPartitionClause<C, P extends IDomain> extends PartitionClause<
             C,
-            T,
-            MySQLLoad._ParentCharsetSpec<C, T>,
-            MySQLLoad._ParentFieldsColumnsSpec<C, T>,
-            MySQLLoad._ParentColumnTerminatedBySpec<C, T>,
-            MySQLLoad._ParentColumnEnclosedByClause<C, T>,
-            MySQLLoad._ParentColumnEscapedBySpec<C, T>,
-            MySQLLoad._ParentLinesSpec<C, T>,
-            MySQLLoad._ParentLineStartingBySpec<C, T>,
-            MySQLLoad._ParentLineTerminatedBySpec<C, T>,
-            MySQLLoad._ParentColumnVarListSpec<C, T>,
-            MySQLLoad._ParentAssignmentSetSpec<C, T>,
-            MySQLLoad._ParentAssignmentSetSpec<C, T>>
-            implements MySQLLoad._ParentPartitionSpec<C, T>
-            , MySQLLoad._ParentColumnTerminatedBySpec<C, T>
-            , MySQLLoad._ParentColumnEnclosedBySpec<C, T>
-            , MySQLLoad._ParentLineStartingBySpec<C, T>
-            , MySQLLoad._ParentLineTerminatedBySpec<C, T> {
+            P,
+            MySQLLoad._ParentCharsetSpec<C, P>,
+            MySQLLoad._ParentFieldsColumnsSpec<C, P>,
+            MySQLLoad._ParentColumnTerminatedBySpec<C, P>,
+            MySQLLoad._ParentColumnEnclosedByClause<C, P>,
+            MySQLLoad._ParentColumnEscapedBySpec<C, P>,
+            MySQLLoad._ParentLinesSpec<C, P>,
+            MySQLLoad._ParentLineStartingBySpec<C, P>,
+            MySQLLoad._ParentLineTerminatedBySpec<C, P>,
+            MySQLLoad._ParentColumnVarListSpec<C, P>,
+            MySQLLoad._ParentAssignmentSetSpec<C, P>,
+            MySQLLoad._ParentAssignmentSetSpec<C, P>>
+            implements MySQLLoad._ParentPartitionSpec<C, P>
+            , MySQLLoad._ParentColumnTerminatedBySpec<C, P>
+            , MySQLLoad._ParentColumnEnclosedBySpec<C, P>
+            , MySQLLoad._ParentLineStartingBySpec<C, P>
+            , MySQLLoad._ParentLineTerminatedBySpec<C, P> {
 
-        private ParentPartitionClause(LoadDataInfileClause<C> clause, ParentTableMeta<T> table) {
+        private ParentPartitionClause(LoadDataInfileClause<C> clause, ParentTableMeta<P> table) {
             super(clause, table);
         }
 
         @Override
-        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> terminatedBy(final @Nullable String string) {
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, P> terminatedBy(final @Nullable String string) {
             if (string == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
@@ -739,17 +731,17 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> terminatedBy(Supplier<String> supplier) {
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, P> terminatedBy(Supplier<String> supplier) {
             return this.terminatedBy(supplier.get());
         }
 
         @Override
-        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> terminatedBy(Function<C, String> function) {
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, P> terminatedBy(Function<C, String> function) {
             return this.terminatedBy(function.apply(this.criteria));
         }
 
         @Override
-        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> ifTerminatedBy(Supplier<String> supplier) {
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, P> ifTerminatedBy(Supplier<String> supplier) {
             final String string;
             string = supplier.get();
             if (string != null) {
@@ -759,7 +751,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public MySQLLoad._ParentColumnEnclosedBySpec<C, T> ifTerminatedBy(Function<C, String> function) {
+        public MySQLLoad._ParentColumnEnclosedBySpec<C, P> ifTerminatedBy(Function<C, String> function) {
             final String string;
             string = function.apply(this.criteria);
             if (string != null) {
@@ -769,10 +761,10 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public MySQLLoad._ChildLoadInfileClause<C, T> child(List<MySQLWords> modifierList) {
-            final List<MySQLWords> list ;
-            list = MySQLUtils.asModifierList(this.criteriaContext,modifierList,MySQLUtils::loadDataModifier);
-            return new ChildLoadDataInfileClause<>(this.criteriaContext,new ParentLoadDataStatement(this),list);
+        public MySQLLoad._ChildLoadInfileClause<C, P> child(List<MySQLWords> modifierList) {
+            final List<MySQLWords> list;
+            list = MySQLUtils.asModifierList(this.criteriaContext, modifierList, MySQLUtils::loadDataModifier);
+            return new ChildLoadDataInfileClause<>(this.criteriaContext, new ParentLoadDataStatement(this), list);
         }
 
 
@@ -790,7 +782,7 @@ abstract class MySQLLoads {
 
         private final List<MySQLWords> modifierList;
 
-        private  Path filePath;
+        private Path filePath;
 
         private StrategyOption strategyOption;
 
@@ -821,52 +813,52 @@ abstract class MySQLLoads {
 
         @Override
         public MySQLLoad._ChildIntoTableClause<C, P> replace() {
-            this.strategyOption  = StrategyOption.REPLACE;
+            this.strategyOption = StrategyOption.REPLACE;
             return this;
         }
 
         @Override
         public MySQLLoad._ChildIntoTableClause<C, P> ifReplace(Supplier<Boolean> supplier) {
-            if(Boolean.TRUE.equals(supplier.get())){
-                this.strategyOption  = StrategyOption.REPLACE;
-            }else {
-                this.strategyOption  = null;
+            if (Boolean.TRUE.equals(supplier.get())) {
+                this.strategyOption = StrategyOption.REPLACE;
+            } else {
+                this.strategyOption = null;
             }
             return this;
         }
 
         @Override
         public MySQLLoad._ChildIntoTableClause<C, P> ifReplace(Predicate<C> predicate) {
-            if(predicate.test(this.criteriaContext.criteria())){
-                this.strategyOption  = StrategyOption.REPLACE;
-            }else {
-                this.strategyOption  = null;
+            if (predicate.test(this.criteriaContext.criteria())) {
+                this.strategyOption = StrategyOption.REPLACE;
+            } else {
+                this.strategyOption = null;
             }
             return this;
         }
 
         @Override
         public MySQLLoad._ChildIntoTableClause<C, P> ignore() {
-            this.strategyOption  = StrategyOption.IGNORE;
+            this.strategyOption = StrategyOption.IGNORE;
             return this;
         }
 
         @Override
         public MySQLLoad._ChildIntoTableClause<C, P> ifIgnore(Supplier<Boolean> supplier) {
-            if(Boolean.TRUE.equals(supplier.get())){
-                this.strategyOption  = StrategyOption.IGNORE;
-            }else {
-                this.strategyOption  = null;
+            if (Boolean.TRUE.equals(supplier.get())) {
+                this.strategyOption = StrategyOption.IGNORE;
+            } else {
+                this.strategyOption = null;
             }
             return this;
         }
 
         @Override
         public MySQLLoad._ChildIntoTableClause<C, P> ifIgnore(Predicate<C> predicate) {
-            if(predicate.test(this.criteriaContext.criteria())){
-                this.strategyOption  = StrategyOption.IGNORE;
-            }else {
-                this.strategyOption  = null;
+            if (predicate.test(this.criteriaContext.criteria())) {
+                this.strategyOption = StrategyOption.IGNORE;
+            } else {
+                this.strategyOption = null;
             }
             return this;
         }
@@ -876,14 +868,14 @@ abstract class MySQLLoads {
             if (table == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
-            if(table.parentMeta() != this.parentStatement.parentTable){
-                String m = String.format("%s isn't child of %s",table,this.parentStatement.parentTable);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext,m);
+            if (table.parentMeta() != this.parentStatement.parentTable) {
+                String m = String.format("%s isn't child of %s", table, this.parentStatement.parentTable);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
             if (this.filePath == null) {
                 throw filePathIsNull(this.criteriaContext, table);
             }
-            return new SimplePartitionClause<>(this, table);
+            return new NonParentPartitionClause<>(this, table);
         }
 
 
@@ -958,7 +950,9 @@ abstract class MySQLLoads {
 
             this.ignoreRows = clause.ignoreRows;
             this.columnOrUserVarList = clause.columnOrUserVarList();
-            this.columItemPairList = clause.endAssignmentSetClause();
+
+            clause.endAssignmentSetClause();
+            this.columItemPairList = clause.rowPairList();
 
         }
 
@@ -1071,7 +1065,7 @@ abstract class MySQLLoads {
 
         private Boolean prepared;
 
-        private SingleLoadDataStatement(SimplePartitionClause<?, ?> clause) {
+        private SingleLoadDataStatement(NonParentPartitionClause<?, ?> clause) {
             super(clause);
             this.criteriaContext = clause.criteriaContext;
             this.table = (SingleTableMeta<?>) clause.table;
@@ -1122,7 +1116,7 @@ abstract class MySQLLoads {
 
 
     private static final class ParentLoadDataStatement extends MySQLLoadDataStatement
-            implements _MySQLLoadData._SingleLoadData{
+            implements _MySQLLoadData._SingleLoadData {
 
         private final ParentTableMeta<?> parentTable;
 
@@ -1155,7 +1149,7 @@ abstract class MySQLLoads {
 
 
     private static final class ChildLoadDataStatement extends MySQLLoadDataStatement
-            implements MySQLLoad,_MySQLLoadData._ChildLoadData,MySQLLoad._LoadDataSpec{
+            implements MySQLLoad, _MySQLLoadData._ChildLoadData, MySQLLoad._LoadDataSpec {
 
 
         private final CriteriaContext criteriaContext;
@@ -1165,11 +1159,11 @@ abstract class MySQLLoads {
 
         private Boolean prepared;
 
-        private ChildLoadDataStatement(SimplePartitionClause<?,?> clause){
+        private ChildLoadDataStatement(NonParentPartitionClause<?, ?> clause) {
             super(clause);
             this.criteriaContext = clause.criteriaContext;
-            this.parentStatement = clause.parentStatement;
-            assert  this.parentStatement != null;
+            this.parentStatement = clause.parentStmt;
+            assert this.parentStatement != null;
             this.childTable = (ChildTableMeta<?>) clause.table;
         }
 
