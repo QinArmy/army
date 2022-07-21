@@ -288,8 +288,9 @@ abstract class MySQLReplaces extends InsertSupport {
     }//DomainParentPartitionClause
 
 
-    private static abstract class MySQLValuesSyntaxReplaceStatement extends InsertSupport.ValueSyntaxStatement<ReplaceInsert>
-            implements MySQLReplace, ReplaceInsert._ReplaceSpec {
+    private static abstract class MySQLValuesSyntaxReplaceStatement
+            extends InsertSupport.ValueSyntaxStatement<ReplaceInsert>
+            implements MySQLReplace, ReplaceInsert._ReplaceSpec, _Insert._DuplicateKeyClause {
 
         private MySQLValuesSyntaxReplaceStatement(_ValuesSyntaxInsert clause) {
             super(clause);
@@ -936,7 +937,10 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     static class AssignmentsReplaceStatement extends InsertSupport.AssignmentInsertStatement<ReplaceInsert>
-            implements MySQLReplace, ReplaceInsert._ReplaceSpec, _MySQLInsert._MySQLAssignmentInsert {
+            implements MySQLReplace
+            , ReplaceInsert._ReplaceSpec
+            , _MySQLInsert._MySQLAssignmentInsert
+            , _Insert._DuplicateKeyClause {
 
         private final List<Hint> hintList;
 
@@ -1219,7 +1223,10 @@ abstract class MySQLReplaces extends InsertSupport {
     }//QueryParentPartitionClause
 
     static class QueryReplaceStatement extends InsertSupport.QueryInsertStatement<ReplaceInsert>
-            implements MySQLReplace, ReplaceInsert._ReplaceSpec, _MySQLInsert._MySQQueryInsert {
+            implements MySQLReplace
+            , ReplaceInsert._ReplaceSpec
+            , _MySQLInsert._MySQQueryInsert
+            , _Insert._DuplicateKeyClause {
 
         private final List<Hint> hintList;
 

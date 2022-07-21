@@ -128,7 +128,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         final ArmyDialect dialect = this.dialect;
         final FieldMeta<?> discriminator = this.discriminator;
-        final Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
+        final Map<FieldMeta<?>, _Expression> commonExpMap = this.defaultValueMap;
 
         final boolean migration = this.migration;
         final NullHandleMode nullHandleMode = this.nullHandleMode;

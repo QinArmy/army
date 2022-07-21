@@ -32,14 +32,17 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         return new DomainInsertContext(dialect, insert, visible);
     }
 
-    static DomainInsertContext forChild(DomainInsertContext parentContext, _Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
+    static DomainInsertContext forChild(DomainInsertContext parentContext, _Insert._DomainInsert insert
+            , ArmyDialect dialect, Visible visible) {
         return new DomainInsertContext(parentContext, insert, dialect, visible);
     }
 
 
-    private final DomainWrapper domainWrapper;
+    private final DomainWrapper wrapper;
 
     private final List<IDomain> domainList;
+
+    private boolean valuesClauseEnd;
 
 
     /**
@@ -49,38 +52,47 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         super(dialect, stmt, visible);
         this.domainList = stmt.domainList();
         //must be stmt.table().javaType()) ,not this.table.javaType()
-        this.domainWrapper = new DomainWrapper(ObjectAccessorFactory.forBean(stmt.table().javaType()));
+        this.wrapper = new DomainWrapper(ObjectAccessorFactory.forBean(stmt.table().javaType()));
 
     }
 
     /**
      * create for {@link  ChildTableMeta}
      */
-    private DomainInsertContext(DomainInsertContext parentContext, _Insert._DomainInsert stmt, ArmyDialect dialect, Visible visible) {
+    private DomainInsertContext(DomainInsertContext parentContext, _Insert._DomainInsert stmt
+            , ArmyDialect dialect, Visible visible) {
         super(stmt, dialect, visible);
         assert parentContext.table == ((ChildTableMeta<?>) this.table).parentMeta();
 
         this.domainList = stmt.domainList();
         assert this.domainList == parentContext.domainList;
-        this.domainWrapper = parentContext.domainWrapper;
+        this.wrapper = parentContext.wrapper;
 
     }
 
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?> field) {
-        // domain insert don't support insert any field in expression
-        throw _Exceptions.unknownColumn(tableAlias, field);
+        if (!this.valuesClauseEnd) {
+            // domain insert don't support insert any field in expression
+            throw _Exceptions.unknownColumn(tableAlias, field);
+        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void appendField(FieldMeta<?> field) {
-        // domain insert don't support insert any field in expression
-        throw _Exceptions.unknownColumn(null, field);
+        if (!this.valuesClauseEnd) {
+            // domain insert don't support insert any field in expression
+            throw _Exceptions.unknownColumn(field);
+        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void appendValueList() {
+        assert !this.valuesClauseEnd;
+
         final List<IDomain> domainList = this.domainList;
         final List<FieldMeta<?>> fieldList = this.fieldList;
         final int domainSize = domainList.size();
@@ -88,7 +100,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         final ArmyDialect dialect = this.dialect;
         final FieldMeta<?> discriminator = this.discriminator;
-        final Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
+        final Map<FieldMeta<?>, _Expression> defaultValueMap = this.defaultValueMap;
 
         final boolean preferLiteral = this.preferLiteral;
         final boolean migration = this.migration;
@@ -99,7 +111,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         sqlBuilder.append(_Constant.SPACE_VALUES);
 
         final _FieldValueGenerator generator;
-        final DomainWrapper domainWrapper = this.domainWrapper;
+        final DomainWrapper domainWrapper = this.wrapper;
         final ObjectAccessor accessor = domainWrapper.accessor;
         final TableMeta<?> table = this.table;
         if (table instanceof ChildTableMeta) {
@@ -162,7 +174,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                     } else {
                         this.appendParam(ParamValue.build(field, value));
                     }
-                } else if ((expression = commonExpMap.get(field)) != null) {
+                } else if ((expression = defaultValueMap.get(field)) != null) {
                     expression.appendSql(this);
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {
                     if ((migration && !field.nullable()) || (!migration && !mockEnv)) {
@@ -184,6 +196,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }//outer for
 
+        this.valuesClauseEnd = true;
     }
 
 
@@ -212,14 +225,14 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     @Override
     public ObjectAccessor domainAccessor() {
-        return this.domainWrapper.accessor;
+        return this.wrapper.accessor;
     }
 
 
     @Nullable
     @Override
     Object readNamedParam(final String name) {
-        return this.domainWrapper.get(name);
+        return this.wrapper.get(name);
     }
 
 

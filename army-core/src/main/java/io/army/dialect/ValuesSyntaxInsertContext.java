@@ -28,7 +28,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     final List<FieldMeta<?>> fieldList;
 
-    final Map<FieldMeta<?>, _Expression> commonExpMap;
+    final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
     final boolean duplicateKeyClause;
 
@@ -63,18 +63,13 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             this.nullHandleMode = handleMode;
         }
         this.preferLiteral = stmt.isPreferLiteral();
-        this.commonExpMap = stmt.defaultExpMap();
+        this.defaultValueMap = stmt.defaultValueMap();
 
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 
         final TableMeta<?> domainTable = stmt.table();
-        if (domainTable instanceof SimpleTableMeta) {
-            this.discriminator = null;
-            this.discriminatorValue = 0;
-        } else {
-            this.discriminator = domainTable.discriminator();
-            this.discriminatorValue = domainTable.discriminatorValue();
-        }
+        this.discriminator = domainTable.discriminator();
+        this.discriminatorValue = domainTable.discriminatorValue();
         if (domainTable instanceof ChildTableMeta) {
             this.table = ((ChildTableMeta<?>) domainTable).parentMeta();
         } else {
@@ -85,7 +80,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         if (fieldList.size() == 0) {
             this.fieldList = castFieldList(this.table);
         } else {
-            this.fieldList = mergeFieldList(this.table, fieldList);
+            this.fieldList = mergeFieldList(this.table, fieldList, stmt.fieldMap());
         }
 
         final PrimaryFieldMeta<?> idField = this.table.id();
@@ -119,7 +114,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             this.nullHandleMode = handleMode;
         }
         this.preferLiteral = stmt.isPreferLiteral();
-        this.commonExpMap = stmt.defaultExpMap();
+        this.defaultValueMap = stmt.defaultValueMap();
 
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 
@@ -129,8 +124,12 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         this.discriminator = table.discriminator();
         this.discriminatorValue = table.discriminatorValue();
 
-        final List<FieldMeta<?>> childFieldList = Collections.emptyList();
-        this.fieldList = castFieldList(this.table);
+        final List<FieldMeta<?>> fieldList = stmt.fieldList();
+        if (fieldList.size() == 0) {
+            this.fieldList = castFieldList(this.table);
+        } else {
+            this.fieldList = mergeFieldList(this.table, fieldList, stmt.fieldMap());
+        }
         this.returnId = null;
         this.idSelectionAlias = null;
 
@@ -159,7 +158,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             if (actualIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            dialect.safeObjectName(fieldList.get(i), sqlBuilder);
+            dialect.safeObjectName(field, sqlBuilder);
             actualIndex++;
         }
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -220,76 +219,81 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends IDomain> List<FieldMeta<?>> castFieldList(final TableMeta<T> table) {
+    private static <T extends IDomain> List<FieldMeta<?>> castFieldList(final TableMeta<T> table) {
         final List<?> list;
         list = table.fieldList();
         return (List<FieldMeta<?>>) list;
     }
 
-    static <T extends IDomain> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table
-            , final List<FieldMeta<?>> fieldList) {
+    private static <T extends IDomain> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table
+            , final List<FieldMeta<?>> fieldList, final Map<FieldMeta<?>, Boolean> fieldMap) {
+        if (fieldList.size() != fieldMap.size()) {
+            //no bug,never here
+            throw new CriteriaException("statement create error");
+        }
+
         final List<FieldMeta<?>> mergeFieldList = new ArrayList<>(fieldList.size());
-        final Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
+        final Map<FieldMeta<?>, Boolean> mergeFieldMap;
+        mergeFieldMap = new HashMap<>(fieldMap);
+
+        FieldMeta<?> managedField;
+        managedField = table.id();
+        if (managedField.insertable() && mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
+            mergeFieldList.add(managedField);
+        }
+
+        if (table instanceof SingleTableMeta) {
+            managedField = table.getField(_MetaBridge.CREATE_TIME);
+            if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
+                mergeFieldList.add(managedField);
+            }
+            if (table.containField(_MetaBridge.UPDATE_TIME)) {
+                managedField = table.getField(_MetaBridge.UPDATE_TIME);
+                if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
+                    mergeFieldList.add(managedField);
+                }
+            }
+            if (table.containField(_MetaBridge.VERSION)) {
+                managedField = table.getField(_MetaBridge.VERSION);
+                if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
+                    mergeFieldList.add(managedField);
+                }
+            }
+            if (table.containField(_MetaBridge.VISIBLE)) {
+                managedField = table.getField(_MetaBridge.VISIBLE);
+                if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
+                    mergeFieldList.add(managedField);
+                }
+            }
+
+        }
+
+        if (table instanceof ParentTableMeta) {
+            managedField = table.discriminator();
+            if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
+                mergeFieldList.add(managedField);
+            }
+        }
+
+        for (FieldMeta<?> field : table.fieldChain()) {
+            if (mergeFieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
+                mergeFieldList.add(field);
+            }
+        }
+
         for (FieldMeta<?> field : fieldList) {
             if (!field.insertable()) {
                 throw _Exceptions.nonInsertableField(field);
             }
             if (field.tableMeta() != table) {
-                throw _Exceptions.unknownColumn(null, field);
+                throw _Exceptions.unknownColumn(field);
             }
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                String m = String.format("%s duplication.", field);
+            if (!fieldMap.containsKey(field)) {
+                String m = String.format("%s not present in field map.", field);
                 throw new CriteriaException(m);
             }
             mergeFieldList.add(field);
         }
-
-        for (FieldMeta<?> field : table.fieldChain()) {
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
-                mergeFieldList.add(field);
-            }
-        }
-
-        FieldMeta<?> field;
-
-        field = table.id();
-        if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
-            mergeFieldList.add(field);
-        }
-
-        if (table instanceof ParentTableMeta) {
-            field = table.discriminator();
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
-                mergeFieldList.add(field);
-            }
-        }
-
-        if (!(table instanceof ChildTableMeta)) {
-            field = table.getField(_MetaBridge.CREATE_TIME);
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
-                mergeFieldList.add(field);
-            }
-            if (table.containField(_MetaBridge.UPDATE_TIME)) {
-                field = table.getField(_MetaBridge.UPDATE_TIME);
-                if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
-                    mergeFieldList.add(field);
-                }
-            }
-            if (table.containField(_MetaBridge.VERSION)) {
-                field = table.getField(_MetaBridge.VERSION);
-                if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
-                    mergeFieldList.add(field);
-                }
-            }
-            if (table.containField(_MetaBridge.VISIBLE)) {
-                field = table.getField(_MetaBridge.VISIBLE);
-                if (fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
-                    mergeFieldList.add(field);
-                }
-            }
-
-        }
-
 
         if (mergeFieldList.size() == 0) {
             String m = String.format("%s no insertable filed.", table);

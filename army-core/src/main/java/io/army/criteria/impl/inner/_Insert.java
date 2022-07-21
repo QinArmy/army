@@ -43,7 +43,7 @@ public interface _Insert extends _Statement {
         boolean isPreferLiteral();
 
 
-        Map<FieldMeta<?>, _Expression> defaultExpMap();
+        Map<FieldMeta<?>, _Expression> defaultValueMap();
 
     }
 

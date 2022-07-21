@@ -462,7 +462,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, _Expression> defaultExpMap() {
+        public final Map<FieldMeta<?>, _Expression> defaultValueMap() {
             Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
             if (map == null) {
                 map = Collections.emptyMap();
@@ -1344,7 +1344,7 @@ abstract class InsertSupport {
             this.migration = clause.isMigration();
             this.nullHandleMode = clause.nullHandle();
             this.preferLiteral = clause.isPreferLiteral();
-            this.defaultExpMap = clause.defaultExpMap();
+            this.defaultExpMap = clause.defaultValueMap();
         }
 
 
@@ -1364,7 +1364,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, _Expression> defaultExpMap() {
+        public final Map<FieldMeta<?>, _Expression> defaultValueMap() {
             return this.defaultExpMap;
         }
 
