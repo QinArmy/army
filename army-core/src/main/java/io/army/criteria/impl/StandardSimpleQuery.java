@@ -9,6 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -181,6 +182,17 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     @Override
     final _UnionOrderBySpec<C, Q> getNoActionUnionRowSet(RowSet rowSet) {
         return StandardUnionQuery.noActionQuery(rowSet);
+    }
+
+    @Override
+    final List<Distinct> asModifierList(@Nullable List<Distinct> modifiers) {
+        return CriteriaUtils.asModifierList(this.criteriaContext, modifiers, CriteriaUtils::standardModifier);
+    }
+
+    @Override
+    final List<Hint> asHintList(@Nullable List<Hint> hints) {
+        //standard statement don't hints
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
     @Override

@@ -312,12 +312,12 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, IR, JT, 
     }
 
     @Override
-    final List<MySQLWords> asModifierList(List<MySQLWords> modifiers) {
+    final List<MySQLWords> asModifierList(@Nullable List<MySQLWords> modifiers) {
         return MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::selectModifier);
     }
 
     @Override
-    final List<Hint> asHintList(List<Hint> hints) {
+    final List<Hint> asHintList(@Nullable List<Hint> hints) {
         return MySQLUtils.asHintList(this.criteriaContext, hints, MySQLHints::castHint);
     }
 

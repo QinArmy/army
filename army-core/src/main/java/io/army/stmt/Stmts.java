@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public abstract class Stmts {
@@ -444,7 +444,7 @@ public abstract class Stmts {
 
     private static final class ValuePostStmt extends PostStmt {
 
-        private final List<Consumer<Object>> consumerList;
+        private final List<BiConsumer<Integer, Object>> consumerList;
 
         private final int rowSize;
 
@@ -468,7 +468,7 @@ public abstract class Stmts {
             if (idValue == null) {
                 throw new NullPointerException("idValue");
             }
-            this.consumerList.get(indexBasedZero).accept(idValue);
+            this.consumerList.get(indexBasedZero).accept(indexBasedZero, idValue);
         }
     }//ValuePostStmt
 

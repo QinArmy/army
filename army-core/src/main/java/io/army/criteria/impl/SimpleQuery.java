@@ -790,9 +790,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     abstract void onClear();
 
-    abstract List<W> asModifierList(List<W> modifiers);
+    abstract List<W> asModifierList(@Nullable List<W> modifiers);
 
-    abstract List<Hint> asHintList(List<Hint> hints);
+    abstract List<Hint> asHintList(@Nullable List<Hint> hints);
 
 
     private void addSelectItem(final SelectItem selectItem) {

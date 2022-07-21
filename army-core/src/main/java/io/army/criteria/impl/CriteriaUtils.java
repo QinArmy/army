@@ -288,6 +288,20 @@ abstract class CriteriaUtils {
         return rowCount;
     }
 
+    static int standardModifier(final Distinct distinct) {
+        final int level;
+        switch (distinct) {
+            case DISTINCT:
+            case DISTINCTROW:
+            case ALL:
+                level = 1;
+                break;
+            default:
+                level = -1;
+        }
+        return level;
+    }
+
     static CriteriaException limitParamError(CriteriaContext criteriaContext, @Nullable Object value) {
         String m = String.format("limit clause only support [%s,%s,%s,%s] and non-negative,but input %s"
                 , Long.class.getName(), Integer.class.getName(), Short.class.getName(), Byte.class.getName(), value);

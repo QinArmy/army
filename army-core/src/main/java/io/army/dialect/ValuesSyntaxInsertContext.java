@@ -129,12 +129,8 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         this.discriminator = table.discriminator();
         this.discriminatorValue = table.discriminatorValue();
 
-        final List<FieldMeta<?>> childFieldList = stmt.childFieldList();
-        if (childFieldList.size() == 0) {
-            this.fieldList = castFieldList(this.table);
-        } else {
-            this.fieldList = mergeFieldList(this.table, childFieldList);
-        }
+        final List<FieldMeta<?>> childFieldList = Collections.emptyList();
+        this.fieldList = castFieldList(this.table);
         this.returnId = null;
         this.idSelectionAlias = null;
 

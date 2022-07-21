@@ -20,7 +20,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     }
 
-    interface _LoadSetSpec<C, F extends TableField> extends Insert._AssignmentSetClause<C, F, _LoadSetSpec<C, F>>
+    interface _LoadSetSpec<C, T extends IDomain> extends Insert._AssignmentSetClause<C, T, _LoadSetSpec<C, T>>
             , _LoadDataSpec {
 
     }

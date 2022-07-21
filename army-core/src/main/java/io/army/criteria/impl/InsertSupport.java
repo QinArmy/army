@@ -770,7 +770,6 @@ abstract class InsertSupport {
 
         private Map<FieldMeta<?>, _Expression> valuePairMap;
 
-
         DynamicValueInsertValueClause(InsertOptions options, TableMeta<T> table) {
             super(options, table);
         }

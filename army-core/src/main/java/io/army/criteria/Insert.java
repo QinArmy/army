@@ -201,7 +201,6 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
-     *
      */
     interface _AssignmentSetClause<C, T extends IDomain, SR> {
 
@@ -343,15 +342,6 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
     /**
-     * @since 1.0
-     */
-    interface _StandardValuesSpec<C, T extends IDomain>
-            extends _StaticValuesClause<_StandardValueStaticLeftParenClause<C, T>>
-            , _DynamicValuesClause<C, T, _InsertSpec> {
-
-    }
-
-    /**
      * <p>
      * This interface is base interface of below:
      * <ul>
@@ -365,7 +355,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      * </p>
      */
     interface _StandardValueDefaultSpec<C, T extends IDomain>
-            extends _ColumnDefaultClause<C, T, _StandardValueDefaultSpec<C, T>>, _StandardValuesSpec<C, T> {
+            extends _ColumnDefaultClause<C, T, _StandardValueDefaultSpec<C, T>>
+            , _StaticValuesClause<_StandardValueStaticLeftParenClause<C, T>>
+            , _DynamicValuesClause<C, T, _InsertSpec> {
 
     }
 
@@ -400,21 +392,16 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-    interface _StandardParentValuesSpec<C, P extends IDomain>
-            extends _StaticValuesClause<_StandardParentStaticValuesClause<C, P>>
+    interface _StandardValueParentDefaultSpec<C, P extends IDomain>
+            extends _ColumnDefaultClause<C, P, _StandardValueParentDefaultSpec<C, P>>
+            , _StaticValuesClause<_StandardParentStaticValuesClause<C, P>>
             , _DynamicValuesClause<C, P, _StandardValueChildSpec<C, P>> {
 
     }
 
-    interface _StandardParentValueDefaultSpec<C, P extends IDomain>
-            extends _ColumnDefaultClause<C, P, _StandardParentValueDefaultSpec<C, P>>
-            , _StandardParentValuesSpec<C, P> {
-
-    }
-
     interface _StandardParentValueColumnsSpec<C, P extends IDomain>
-            extends _ColumnListClause<C, P, _StandardParentValueDefaultSpec<C, P>>
-            , _StandardParentValueDefaultSpec<C, P> {
+            extends _ColumnListClause<C, P, _StandardValueParentDefaultSpec<C, P>>
+            , _StandardValueParentDefaultSpec<C, P> {
 
     }
 
