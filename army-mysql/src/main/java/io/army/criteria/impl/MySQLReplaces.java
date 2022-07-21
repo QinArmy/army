@@ -325,7 +325,7 @@ abstract class MySQLReplaces extends InsertSupport {
             extends InsertSupport.DynamicValueInsertValueClause<
             C,
             F,
-            MySQLReplace._ValueCommonExpSpec<C, F>,
+            MySQLReplace._ValueDefaultSpec<C, F>,
             MySQLReplace._ReplaceSpec>
             implements MySQLReplace._ValueParentPartitionSpec<C, F>
             , MySQLReplace._ValueChildPartitionSpec<C, F>
@@ -455,7 +455,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        MySQLReplace._ValueCommonExpSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
+        _ValueDefaultSpec<C, F> columnListEnd(int fieldSize, int childFieldSize) {
             return this;
         }
 
