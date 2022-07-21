@@ -17,7 +17,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
-import io.army.stmt.ParamValue;
+import io.army.stmt.SqlParam;
 import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
 import io.army.tx.TransactionTimeOutException;
@@ -440,8 +440,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownParamValue(@Nullable ParamValue paramValue) {
-        String m = String.format("unknown %s type %s", ParamValue.class.getName()
+    public static CriteriaException unknownParamValue(@Nullable SqlParam paramValue) {
+        String m = String.format("unknown %s type %s", SqlParam.class.getName()
                 , _ClassUtils.safeClassName(paramValue));
         return new CriteriaException(m);
     }

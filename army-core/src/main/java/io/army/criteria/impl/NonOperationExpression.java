@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.meta.ParamMeta;
-import io.army.stmt.ParamValue;
+import io.army.stmt.SqlParam;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,7 +27,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Selection as(String alias) {
-        if (!(this instanceof ParamValue)) {
+        if (!(this instanceof SqlParam)) {
             throw unsupportedOperation();
         }
         return new ExpressionSelection(this, alias);

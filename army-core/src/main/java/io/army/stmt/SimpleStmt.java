@@ -9,7 +9,7 @@ public interface SimpleStmt extends GenericSimpleStmt {
     /**
      * @return a unmodifiable list
      */
-    List<ParamValue> paramGroup();
+    List<SqlParam> paramGroup();
 
     /**
      * @return a unmodifiable list

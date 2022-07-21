@@ -96,9 +96,9 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     public List<Long> batchUpdate(final BatchStmt stmt, final int timeout) throws DataAccessException {
 
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
-            final List<List<ParamValue>> paramGroupList = stmt.groupList();
+            final List<List<SqlParam>> paramGroupList = stmt.groupList();
 
-            for (List<ParamValue> group : paramGroupList) {
+            for (List<SqlParam> group : paramGroupList) {
                 bindParameter(statement, group);
                 statement.addBatch();
             }
@@ -438,13 +438,13 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
     /**
      * @see #executeInsert(SimpleStmt, int)
      */
-    private void bindParameter(final PreparedStatement statement, final List<ParamValue> paramGroup)
+    private void bindParameter(final PreparedStatement statement, final List<SqlParam> paramGroup)
             throws SQLException {
         final int size = paramGroup.size();
         final ServerMeta serverMeta = this.factory.serverMeta;
         final MappingEnvironment mapEnv = this.factory.mapEnv;
 
-        ParamValue paramValue;
+        SqlParam paramValue;
         Object value;
         MappingType mappingType;
         ParamMeta paramMeta;

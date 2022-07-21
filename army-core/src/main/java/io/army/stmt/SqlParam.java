@@ -14,15 +14,13 @@ import io.army.meta.ParamMeta;
  *     </ul>
  * </p>
  */
-public interface ParamValue {
+public interface SqlParam {
 
     ParamMeta paramMeta();
 
     @Nullable
-    Object value();
-
-    static ParamValue build(ParamMeta paramMeta, @Nullable Object value) {
-        return new ParamValueImpl(paramMeta, value);
+    default Object value() {
+        throw new UnsupportedOperationException();
     }
 
 }

@@ -12,7 +12,7 @@ public interface StmtParams {
     /**
      * @return a unmodified list
      */
-    List<ParamValue> paramList();
+    List<SqlParam> paramList();
 
     /**
      * @return a unmodified list

@@ -12,10 +12,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
-import io.army.stmt.InsertStmtParams;
-import io.army.stmt.ParamValue;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmts;
+import io.army.stmt.*;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -227,7 +224,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                         sqlBuilder.append(_Constant.SPACE);
                         dialect.literal(mappingType, value, sqlBuilder);
                     } else {
-                        this.appendParam(ParamValue.build(field, value));
+                        this.appendParam(SingleParam.build(field, value));
                     }
                 } else if ((expression = fieldExpMap.get(field)) != null) {
                     expression.appendSql(this);
@@ -237,7 +234,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                     if ((migration && !field.nullable()) || (!migration && !mockEnv)) {
                         throw _Exceptions.generatorFieldIsNull(field);
                     }
-                    this.appendParam(ParamValue.build(field, null));
+                    this.appendParam(SingleParam.build(field, null));
                 } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
                 } else if (!field.nullable()) {
@@ -245,7 +242,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 } else if (preferLiteral) {
                     sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {
-                    this.appendParam(ParamValue.build(field, null));
+                    this.appendParam(SingleParam.build(field, null));
                 }
 
             }//inner for
@@ -436,7 +433,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
     }//RowObjectWrapper
 
 
-    private static final class DelayIdParamValue implements ParamValue {
+    private static final class DelayIdParamValue implements SqlParam {
 
         private final PrimaryFieldMeta<?> field;
 

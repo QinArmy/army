@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-import io.army.stmt.ParamValue;
+import io.army.stmt.SqlParam;
 
 /**
  * <p>
@@ -14,7 +14,7 @@ import io.army.stmt.ParamValue;
  *
  * @see NonNullNamedParam
  */
-public interface NamedParam extends Expression, ParamValue {
+public interface NamedParam extends Expression, SqlParam {
 
     String name();
 

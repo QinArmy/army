@@ -6,7 +6,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ParamMeta;
-import io.army.stmt.ParamValue;
+import io.army.stmt.SingleParam;
 import io.army.util._CollectionUtils;
 
 import java.util.Collection;
@@ -64,7 +64,7 @@ final class CollectionParamExpression extends NonOperationExpression {
                 sqlBuilder.append(_Constant.SPACE);
                 dialect.literal(paramMeta, v, sqlBuilder);
             } else {
-                context.appendParam(ParamValue.build(paramMeta, v));
+                context.appendParam(SingleParam.build(paramMeta, v));
             }
             index++;
         }

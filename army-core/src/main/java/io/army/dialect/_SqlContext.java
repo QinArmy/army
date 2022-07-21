@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
-import io.army.stmt.ParamValue;
+import io.army.stmt.SqlParam;
 
 /**
  * <p>
@@ -60,7 +60,7 @@ public interface _SqlContext {
      *     </ol>
      * </p>
      */
-    void appendParam(ParamValue paramValue);
+    void appendParam(SqlParam paramValue);
 
     Visible visible();
 

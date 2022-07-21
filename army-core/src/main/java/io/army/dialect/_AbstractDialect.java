@@ -1214,7 +1214,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 .append(_Constant.SPACE_EQUAL);
 
         if (context.hasParam()) {
-            context.appendParam(ParamValue.build(updateTime.mappingType(), updateTimeValue));
+            context.appendParam(SingleParam.build(updateTime.mappingType(), updateTimeValue));
         } else {
             sqlBuilder.append(_Constant.SPACE);
             this.literal(updateTime.mappingType(), updateTimeValue, sqlBuilder);

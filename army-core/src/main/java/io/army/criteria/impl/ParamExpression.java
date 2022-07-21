@@ -4,18 +4,18 @@ import io.army.criteria.ValueExpression;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
-import io.army.stmt.ParamValue;
+import io.army.stmt.SingleParam;
 
-final class ParamExpression extends OperationExpression implements ValueExpression, ParamValue {
+final class ParamExpression extends OperationExpression implements ValueExpression, SingleParam {
 
 
     static ValueExpression create(final ParamMeta paramMeta, final @Nullable Object value) {
         return new ParamExpression(paramMeta, value);
     }
 
-    final ParamMeta paramMeta;
+    private final ParamMeta paramMeta;
 
-    final Object value;
+    private final Object value;
 
 
     private ParamExpression(ParamMeta paramMeta, @Nullable Object value) {

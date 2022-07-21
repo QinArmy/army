@@ -11,10 +11,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
-import io.army.stmt.InsertStmtParams;
-import io.army.stmt.ParamValue;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmts;
+import io.army.stmt.*;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -157,7 +154,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                     assert table instanceof SingleTableMeta;
                     sqlBuilder.append(_Constant.SPACE)
                             .append(this.discriminatorValue);
-                } else if (field instanceof PrimaryFieldMeta
+                } else if (!migration
+                        && field instanceof PrimaryFieldMeta
                         && table instanceof ChildTableMeta
                         && ((ChildTableMeta<?>) table).parentMeta().id().generatorType() == GeneratorType.POST) {
                     if (delayIdParam != null) {
@@ -172,7 +170,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                         sqlBuilder.append(_Constant.SPACE);
                         dialect.literal(mappingType, value, sqlBuilder);
                     } else {
-                        this.appendParam(ParamValue.build(field, value));
+                        this.appendParam(SingleParam.build(field, value));
                     }
                 } else if ((expression = defaultValueMap.get(field)) != null) {
                     expression.appendSql(this);
@@ -180,20 +178,24 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                     if ((migration && !field.nullable()) || (!migration && !mockEnv)) {
                         throw _Exceptions.generatorFieldIsNull(field);
                     }
-                    this.appendParam(ParamValue.build(field, null));
+                    this.appendParam(SingleParam.build(field, null));
                 } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
+                } else if (nullHandleMode != NullHandleMode.INSERT_NULL) {
+                    //no bug,never here
+                    throw new IllegalStateException();
                 } else if (!field.nullable()) {
                     throw _Exceptions.nonNullField(field);
                 } else if (preferLiteral) {
                     sqlBuilder.append(_Constant.SPACE_NULL);
                 } else {
-                    this.appendParam(ParamValue.build(field, null));
+                    this.appendParam(SingleParam.build(field, null));
                 }
 
             }//inner for
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
         }//outer for
 
         this.valuesClauseEnd = true;
@@ -306,7 +308,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
     }//DomainWrapper
 
 
-    private static final class DelayIdParamValue implements ParamValue {
+    private static final class DelayIdParamValue implements SqlParam {
 
         private final PrimaryFieldMeta<?> field;
 

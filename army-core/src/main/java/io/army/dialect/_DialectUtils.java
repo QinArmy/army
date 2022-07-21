@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util.ArrayUtils;
@@ -68,12 +67,20 @@ public abstract class _DialectUtils {
             throw function.apply(field, _Exceptions::armyManageField);
         }
 
-        if (FORBID_INSERT_FIELDS.contains(field.fieldName())) {
-            if (function == null) {
-                throw _Exceptions.armyManageField(field);
+        switch (field.fieldName()) {
+            case _MetaBridge.ID:
+            case _MetaBridge.CREATE_TIME:
+            case _MetaBridge.UPDATE_TIME:
+            case _MetaBridge.VERSION: {
+                if (function == null) {
+                    throw _Exceptions.armyManageField(field);
+                }
+                throw function.apply(field, _Exceptions::armyManageField);
             }
-            throw function.apply(field, _Exceptions::armyManageField);
+            default:
+                //no-op
         }
+
         if (field.generatorType() != null) {
             if (function == null) {
                 throw _Exceptions.insertExpDontSupportField(field);
@@ -164,15 +171,14 @@ public abstract class _DialectUtils {
     }
 
     static void checkDefaultValueMap(final _Insert._ValuesSyntaxInsert insert) {
+        if (insert.isMigration()) {
+            return;
+        }
         final TableMeta<?> table = insert.table();
-        final boolean migration = insert.isMigration();
-        FieldMeta<?> field;
 
+        FieldMeta<?> field;
         for (Map.Entry<FieldMeta<?>, _Expression> e : insert.defaultValueMap().entrySet()) {
             field = e.getKey();
-            if (!migration && field instanceof PrimaryFieldMeta) {
-                throw _Exceptions.armyManageField(field);
-            }
             checkInsertField(table, field, null);
             if (!field.nullable() && e.getValue().isNullValue()) {
                 throw _Exceptions.nonNullField(field);

@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.NamedParam;
 import io.army.criteria.Statement;
 import io.army.lang.Nullable;
-import io.army.stmt.ParamValue;
+import io.army.stmt.SqlParam;
 
 import java.util.List;
 
@@ -34,8 +34,8 @@ public abstract class _Assert {
     }
 
 
-    public static void noNamedParam(List<ParamValue> paramGroup) {
-        for (ParamValue paramValue : paramGroup) {
+    public static void noNamedParam(List<SqlParam> paramGroup) {
+        for (SqlParam paramValue : paramGroup) {
             if (paramValue instanceof NamedParam) {
                 throw _Exceptions.namedParamInNonBatch((NamedParam) paramValue);
             }

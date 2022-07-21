@@ -1,7 +1,7 @@
 package io.army.dialect;
 
-import io.army.stmt.ParamValue;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.SqlParam;
 
 import java.util.List;
 
@@ -18,8 +18,8 @@ interface StmtContext extends _SqlContext {
     /**
      * for appending updateTime field in set clause.
      *
-     * @return true : currently exists {@link  io.army.stmt.ParamValue} in context
-     * @see #appendParam(ParamValue)
+     * @return true : currently exists {@link  SqlParam} in context
+     * @see #appendParam(SqlParam)
      */
     boolean hasParam();
 
@@ -27,7 +27,7 @@ interface StmtContext extends _SqlContext {
      * for {@link  DmlContext#build(List)}
      *
      * @return true : currently exists {@link  io.army.criteria.NamedParam} in context
-     * @see #appendParam(ParamValue)
+     * @see #appendParam(SqlParam)
      */
     boolean hasNamedParam();
 

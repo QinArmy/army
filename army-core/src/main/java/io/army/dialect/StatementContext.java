@@ -3,7 +3,8 @@ package io.army.dialect;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
-import io.army.stmt.ParamValue;
+import io.army.stmt.SingleParam;
+import io.army.stmt.SqlParam;
 import io.army.stmt.StmtParams;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -83,7 +84,7 @@ abstract class StatementContext implements StmtContext, StmtParams {
 
 
     @Override
-    public final void appendParam(final ParamValue paramValue) {
+    public final void appendParam(final SqlParam paramValue) {
         this.sqlBuilder.append(SPACE_PLACEHOLDER);
         this.paramConsumer.accept(paramValue);
     }
@@ -110,7 +111,7 @@ abstract class StatementContext implements StmtContext, StmtParams {
     }
 
     @Override
-    public final List<ParamValue> paramList() {
+    public final List<SqlParam> paramList() {
         return _CollectionUtils.unmodifiableList(this.paramConsumer.paramList);
     }
 
@@ -129,9 +130,9 @@ abstract class StatementContext implements StmtContext, StmtParams {
     /**
      * This class must be private class
      */
-    private static class ParamConsumer implements Consumer<ParamValue> {
+    private static class ParamConsumer implements Consumer<SqlParam> {
 
-        final ArrayList<ParamValue> paramList = new ArrayList<>();
+        final ArrayList<SqlParam> paramList = new ArrayList<>();
 
         boolean hasNamedParam;
 
@@ -140,7 +141,7 @@ abstract class StatementContext implements StmtContext, StmtParams {
         }
 
         @Override
-        public final void accept(final ParamValue paramValue) {
+        public final void accept(final SqlParam paramValue) {
             if (paramValue instanceof NamedParam) {
                 if (!this.hasNamedParam) {
                     this.hasNamedParam = true;
@@ -208,7 +209,7 @@ abstract class StatementContext implements StmtContext, StmtParams {
                     throw _Exceptions.nonNullNamedParam((NonNullNamedParam) namedParam);
                 }
                 // add actual ParamValue
-                this.paramList.add(ParamValue.build(namedParam.paramMeta(), value));
+                this.paramList.add(SingleParam.build(namedParam.paramMeta(), value));
             }
 
         }
@@ -235,7 +236,7 @@ abstract class StatementContext implements StmtContext, StmtParams {
             final ParamMeta paramMeta = elementParam.paramMeta();
             int elementCount = 0;
             for (Object element : collection) {
-                this.paramList.add(ParamValue.build(paramMeta, element));
+                this.paramList.add(SingleParam.build(paramMeta, element));
                 elementCount++;
             }
 

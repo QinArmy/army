@@ -3,7 +3,10 @@ package io.army.stmt;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
-import io.army.criteria.*;
+import io.army.criteria.CriteriaException;
+import io.army.criteria.NamedElementParam;
+import io.army.criteria.NonNullNamedParam;
+import io.army.criteria.Selection;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
@@ -56,18 +59,18 @@ public abstract class Stmts {
     }
 
     public static BatchStmt batchDml(final DmlStmtParams params, final List<?> paramWrapperList) {
-        final List<ParamValue> paramGroup = params.paramList();
+        final List<SqlParam> paramGroup = params.paramList();
         final int paramSize = paramGroup.size();
-        final List<List<ParamValue>> groupList = new ArrayList<>(paramWrapperList.size());
+        final List<List<SqlParam>> groupList = new ArrayList<>(paramWrapperList.size());
         final ReadAccessor accessor;
         accessor = ObjectAccessorFactory.readOnlyFromInstance(paramWrapperList.get(0));
 
         NamedParam namedParam = null;
-        List<ParamValue> group;
+        List<SqlParam> group;
         Object value;
         for (Object paramObject : paramWrapperList) {
             group = new ArrayList<>(paramSize);
-            ParamValue param;
+            SqlParam param;
             for (int i = 0; i < paramSize; i++) {
                 param = paramGroup.get(i);
                 if (!(param instanceof NamedParam)) {
@@ -91,7 +94,7 @@ public abstract class Stmts {
                             //here expression bug
                             throw _Exceptions.namedElementParamNotMatch(size, index - i);
                         }
-                        group.add(ParamValue.build(paramMeta, element));
+                        group.add(SingleParam.build(paramMeta, element));
                         index++;
                     }
                     if (index > paramSize || i + size != index) {
@@ -101,10 +104,10 @@ public abstract class Stmts {
                 } else {
                     namedParam = ((NamedParam) param);
                     value = accessor.get(paramObject, namedParam.name());
-                    if (value == null && param instanceof NonNullNamedParam) {
+                    if (value == null && param instanceof NonNullNamedParam0) {
                         throw _Exceptions.nonNullNamedParam((NonNullNamedParam) param);
                     }
-                    group.add(ParamValue.build(param.paramMeta(), value));
+                    group.add(SingleParam.build(param.paramMeta(), value));
                 }
             }
 
@@ -125,7 +128,7 @@ public abstract class Stmts {
 
         private final String sql;
 
-        private final List<ParamValue> paramGroup;
+        private final List<SqlParam> paramGroup;
 
         private MinSimpleStmt(StmtParams params) {
             this.sql = params.sql();
@@ -143,7 +146,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public List<ParamValue> paramGroup() {
+        public List<SqlParam> paramGroup() {
             return this.paramGroup;
         }
 
@@ -203,7 +206,7 @@ public abstract class Stmts {
 
         private final String sql;
 
-        private final List<ParamValue> paramGroup;
+        private final List<SqlParam> paramGroup;
 
         private final List<Selection> selectionList;
 
@@ -227,7 +230,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public List<ParamValue> paramGroup() {
+        public List<SqlParam> paramGroup() {
             return this.paramGroup;
         }
 
@@ -251,18 +254,18 @@ public abstract class Stmts {
 
         private final String sql;
 
-        private final List<List<ParamValue>> paramGroupList;
+        private final List<List<SqlParam>> paramGroupList;
 
         private final boolean hasOptimistic;
 
-        private MinBatchDmlStmt(DmlStmtParams params, List<List<ParamValue>> paramGroupList) {
+        private MinBatchDmlStmt(DmlStmtParams params, List<List<SqlParam>> paramGroupList) {
             this.sql = params.sql();
             this.paramGroupList = Collections.unmodifiableList(paramGroupList);
             this.hasOptimistic = params.hasVersion();
         }
 
         @Override
-        public List<List<ParamValue>> groupList() {
+        public List<List<SqlParam>> groupList() {
             return this.paramGroupList;
         }
 
@@ -291,7 +294,7 @@ public abstract class Stmts {
 
         private final String sql;
 
-        private final List<ParamValue> paramGroup;
+        private final List<SqlParam> paramGroup;
 
         private final List<Selection> selectionList;
 
@@ -312,7 +315,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public List<ParamValue> paramGroup() {
+        public List<SqlParam> paramGroup() {
             return this.paramGroup;
         }
 
@@ -338,7 +341,7 @@ public abstract class Stmts {
 
         private final String sql;
 
-        private final List<ParamValue> paramList;
+        private final List<SqlParam> paramList;
 
         private final List<Selection> selectionList;
 
@@ -376,7 +379,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public final List<ParamValue> paramGroup() {
+        public final List<SqlParam> paramGroup() {
             return this.paramList;
         }
 
