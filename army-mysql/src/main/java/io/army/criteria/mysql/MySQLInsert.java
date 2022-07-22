@@ -36,15 +36,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _RowColumnAliasListClause<C, T extends IDomain, CR> {
-
-        _RightParenClause<CR> leftParen(Consumer<BiConsumer<FieldMeta<T>, String>> consumer);
-
-        _RightParenClause<CR> leftParen(BiConsumer<C, BiConsumer<FieldMeta<T>, String>> consumer);
-
-        _ColumnAliasClause<T, CR> leftParen(FieldMeta<T> field, String columnAlias);
-
-    }
 
     interface _StaticOnDuplicateKeyFieldUpdateClause<C, T extends IDomain, UR> {
 
@@ -111,36 +102,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _StaticCommaAliasValuePairSpec<C, T extends IDomain>
-            extends Insert._CommaFieldValuePairClause<C, T, _StaticCommaAliasValuePairSpec<C, T>>
-            , _CommaAliasValuePairClause<C, _StaticCommaAliasValuePairSpec<C, T>>, Insert._InsertSpec {
-
-    }
-
-
-    interface _OnDuplicateKeyUpdateAliasSpec<C, T extends IDomain>
-            extends _StaticOnDuplicateKeyAliasClause<C, T, _StaticCommaAliasValuePairSpec<C, T>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, AliasColumnConsumer<FieldMeta<T>>, Insert._InsertSpec> {
-
-    }
-
-
-    interface _OnDuplicateKeyRowAliasClause<C, T extends IDomain>
-            extends _RowColumnAliasListClause<C, T, _OnDuplicateKeyUpdateAliasSpec<C, T>> {
-
-    }
-
-    interface _AsRowAliasClause<C, T extends IDomain, RR> extends Statement._AsClause<_RowColumnAliasListClause<C, T, RR>> {
-
-    }
-
-
-    interface _AsRowAliasSpec<C, T extends IDomain>
-            extends _AsRowAliasClause<C, T, _OnDuplicateKeyUpdateAliasSpec<C, T>>, _OnDuplicateKeyUpdateFieldSpec<C, T> {
-
-    }
-
-
     interface _MySQLChildSpec<CT> extends Insert._ChildPartClause<CT>, Insert._InsertSpec {
 
     }
@@ -159,26 +120,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _ParentStaticCommaAliasValuePairSpec<C, T extends IDomain, CT>
-            extends Insert._CommaFieldValuePairClause<C, T, _ParentStaticCommaAliasValuePairSpec<C, T, CT>>
-            , _CommaAliasValuePairClause<C, _ParentStaticCommaAliasValuePairSpec<C, T, CT>>, _MySQLChildSpec<CT> {
-
-    }
-
-
-    interface _ParentOnDuplicateKeyUpdateAliasSpec<C, T extends IDomain, CT>
-            extends _StaticOnDuplicateKeyAliasClause<C, T, _ParentStaticCommaAliasValuePairSpec<C, T, CT>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, AliasColumnConsumer<FieldMeta<T>>, _MySQLChildSpec<CT>> {
-
-    }
-
-
-
-    interface _ParentAsRowAliasSpec<C, T extends IDomain, CT>
-            extends _AsRowAliasClause<C, T, _ParentOnDuplicateKeyUpdateAliasSpec<C, T, CT>>
-            , _ParentOnDuplicateKeyUpdateFieldSpec<C, T, CT> {
-
-    }
 
 
 

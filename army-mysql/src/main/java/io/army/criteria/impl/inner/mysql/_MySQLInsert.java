@@ -8,7 +8,6 @@ import io.army.criteria.mysql.MySQLWords;
 import io.army.meta.FieldMeta;
 
 import java.util.List;
-import java.util.Map;
 
 public interface _MySQLInsert extends _Insert {
 
@@ -22,18 +21,11 @@ public interface _MySQLInsert extends _Insert {
 
     interface _InsertWithDuplicateKey extends _Insert._DuplicateKeyClause {
 
-        List<_Pair<Object, _Expression>> duplicatePairList();
+        List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList();
 
     }
 
-    interface _InsertWithRowAlias extends _InsertWithDuplicateKey {
 
-
-        String rowAlias();
-
-        Map<String, FieldMeta<?>> aliasToField();
-
-    }
 
 
     interface _MySQLDomainInsert extends _Insert._DomainInsert, _MySQLInsert {

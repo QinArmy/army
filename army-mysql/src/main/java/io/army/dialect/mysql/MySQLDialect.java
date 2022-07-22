@@ -9,10 +9,7 @@ import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.SingleTableMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -49,6 +46,8 @@ final class MySQLDialect extends MySQL {
     private static final String SPACE_WITH_ROLLUP = " WITH ROLLUP";
 
     private static final String SPACE_INTO = " INTO";
+
+    private static final String SPACE_ON_DUPLICATE_KEY_UPDATE = " ON DUPLICATE KEY UPDATE";
 
 
     private MySQLDialect(_DialectEnv environment, Dialect dialect) {
@@ -102,16 +101,21 @@ final class MySQLDialect extends MySQL {
         //8. values clause
         context.appendValueList();
 
-        if (insert instanceof _MySQLInsert._InsertWithRowAlias) {
-            final _MySQLInsert._InsertWithRowAlias aliasClause = (_MySQLInsert._InsertWithRowAlias) insert;
-            //9. AS keywords
-            sqlBuilder.append(_Constant.SPACE_AS);
-            this.identifier(aliasClause.rowAlias(), sqlBuilder);
+        if (insert instanceof _MySQLInsert._InsertWithDuplicateKey) {
+            //9. on duplicate key update keywords
+            sqlBuilder.append(SPACE_ON_DUPLICATE_KEY_UPDATE);
+            final _MySQLInsert._InsertWithDuplicateKey clause = (_MySQLInsert._InsertWithDuplicateKey) insert;
+            //10. on duplicate key update clause
             int index = 0;
-            for (_Pair<Object, _Expression> pair : aliasClause.duplicatePairList()) {
+            for (_Pair<FieldMeta<?>, _Expression> pair : clause.duplicatePairList()) {
                 if (index > 0) {
-
+                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                } else {
+                    sqlBuilder.append(_Constant.SPACE);
                 }
+                this.safeObjectName(pair.first, sqlBuilder);
+                sqlBuilder.append(_Constant.SPACE_EQUAL);
+                pair.second.appendSql(context);
                 index++;
             }
         }
