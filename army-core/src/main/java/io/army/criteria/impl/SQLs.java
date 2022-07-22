@@ -9,11 +9,12 @@ import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
+import io.army.mapping.BooleanType;
 import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.SqlParam;
+import io.army.stmt.SingleParam;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -86,7 +87,7 @@ public abstract class SQLs extends Functions {
      *
      * @see #namedParam(DataField)
      * @see #namedParam(ParamMeta, String)
-     * @see #namedParams(TableField, int)
+     * @see #namedParams(DataField, int)
      * @see #namedParams(ParamMeta, String, int)
      * @see #nullableNamedParam(DataField)
      * @see #nullableNamedParam(ParamMeta, String)
@@ -104,7 +105,7 @@ public abstract class SQLs extends Functions {
      * @param <C>      criteria java type used to create dynamic batch update and sub query
      * @see #namedParam(DataField)
      * @see #namedParam(ParamMeta, String)
-     * @see #namedParams(TableField, int)
+     * @see #namedParams(DataField, int)
      * @see #namedParams(ParamMeta, String, int)
      * @see #nullableNamedParam(DataField)
      * @see #nullableNamedParam(ParamMeta, String)
@@ -130,7 +131,6 @@ public abstract class SQLs extends Functions {
      *
      * @see #namedParam(DataField)
      * @see #namedParam(ParamMeta, String)
-     * @see #namedParams(TableField, int)
      * @see #namedParams(ParamMeta, String, int)
      * @see #nullableNamedParam(DataField)
      * @see #nullableNamedParam(ParamMeta, String)
@@ -148,7 +148,6 @@ public abstract class SQLs extends Functions {
      * @param <C>      criteria java type used to create dynamic batch update and sub query
      * @see #namedParam(DataField)
      * @see #namedParam(ParamMeta, String)
-     * @see #namedParams(TableField, int)
      * @see #namedParams(ParamMeta, String, int)
      * @see #nullableNamedParam(DataField)
      * @see #nullableNamedParam(ParamMeta, String)
@@ -202,9 +201,9 @@ public abstract class SQLs extends Functions {
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
         } else if (type instanceof TableField) {
-            resultExpression = ParamExpression.create((TableField) type, value);
+            resultExpression = ParamExpression.single((TableField) type, value);
         } else {
-            resultExpression = ParamExpression.create(type.paramMeta(), value);
+            resultExpression = ParamExpression.single(type.paramMeta(), value);
         }
         return resultExpression;
     }
@@ -219,9 +218,9 @@ public abstract class SQLs extends Functions {
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
         } else if (type instanceof TableField) {
-            resultExpression = ParamExpression.create((TableField) type, value);
+            resultExpression = ParamExpression.single((TableField) type, value);
         } else {
-            resultExpression = ParamExpression.create(type.paramMeta(), value);
+            resultExpression = ParamExpression.single(type.paramMeta(), value);
         }
         return (ArmyExpression) resultExpression;
     }
@@ -271,9 +270,9 @@ public abstract class SQLs extends Functions {
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
         } else if (type instanceof TableField) {
-            resultExpression = LiteralExpression.literal((TableField) type, value);
+            resultExpression = LiteralExpression.single((TableField) type, value);
         } else {
-            resultExpression = LiteralExpression.literal(type.paramMeta(), value);
+            resultExpression = LiteralExpression.single(type.paramMeta(), value);
         }
         return (ArmyExpression) resultExpression;
     }
@@ -289,15 +288,15 @@ public abstract class SQLs extends Functions {
             //maybe jvm don't correctly recognize overload method of io.army.criteria.Expression
             resultExpression = (Expression) value;
         } else if (type instanceof TableField) {
-            resultExpression = LiteralExpression.literal((TableField) type, value);
+            resultExpression = LiteralExpression.single((TableField) type, value);
         } else {
-            resultExpression = LiteralExpression.literal(type.paramMeta(), value);
+            resultExpression = LiteralExpression.single(type.paramMeta(), value);
         }
         return (ArmyExpression) resultExpression;
     }
 
     public static Expression nullParam(ParamMeta type) {
-        return ParamExpression.create(type, null);
+        return ParamExpression.single(type, null);
     }
 
     /**
@@ -316,7 +315,7 @@ public abstract class SQLs extends Functions {
      */
     public static Expression param(final Object value) {
         Objects.requireNonNull(value);
-        return ParamExpression.create(_MappingFactory.getDefault(value.getClass()), value);
+        return ParamExpression.single(_MappingFactory.getDefault(value.getClass()), value);
     }
 
     /**
@@ -325,7 +324,7 @@ public abstract class SQLs extends Functions {
      * </p>
      */
     public static Expression param(final ParamMeta paramMeta, final @Nullable Object value) {
-        return ParamExpression.create(paramMeta, value);
+        return ParamExpression.single(paramMeta, value);
     }
 
     /**
@@ -333,8 +332,8 @@ public abstract class SQLs extends Functions {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <E> Expression optimizingParams(ParamMeta paramMeta, Collection<E> value) {
-        return CollectionParamExpression.optimizing(paramMeta, value);
+    public static <E> Expression preferLiteralParams(ParamMeta paramMeta, Collection<E> value) {
+        return ParamExpression.multi(paramMeta, value, true);
     }
 
     /**
@@ -342,8 +341,8 @@ public abstract class SQLs extends Functions {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <E> Expression optimizingParams(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
-        return CollectionParamExpression.optimizing(paramMeta, supplier.get());
+    public static <E> Expression preferLiteralParams(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
+        return ParamExpression.multi(paramMeta, supplier.get(), true);
     }
 
     /**
@@ -351,8 +350,8 @@ public abstract class SQLs extends Functions {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <C, E> Expression optimizingParams(ParamMeta paramMeta, Function<C, Collection<E>> function) {
-        return CollectionParamExpression.optimizing(paramMeta, function.apply(CriteriaContextStack.getTopCriteria()));
+    public static <C, E> Expression preferLiteralParams(ParamMeta paramMeta, Function<C, Collection<E>> function) {
+        return ParamExpression.multi(paramMeta, function.apply(CriteriaContextStack.getTopCriteria()), true);
     }
 
     /**
@@ -361,7 +360,7 @@ public abstract class SQLs extends Functions {
      * </p>
      */
     public static <E> Expression params(ParamMeta paramMeta, Collection<E> value) {
-        return CollectionParamExpression.strict(paramMeta, value);
+        return ParamExpression.multi(paramMeta, value, false);
     }
 
     /**
@@ -370,7 +369,7 @@ public abstract class SQLs extends Functions {
      * </p>
      */
     public static <E> Expression params(ParamMeta paramMeta, Supplier<Collection<E>> supplier) {
-        return CollectionParamExpression.strict(paramMeta, supplier.get());
+        return ParamExpression.multi(paramMeta, supplier.get(), false);
     }
 
     /**
@@ -379,7 +378,7 @@ public abstract class SQLs extends Functions {
      * </p>
      */
     public static <C, E> Expression params(ParamMeta paramMeta, Function<C, Collection<E>> function) {
-        return CollectionParamExpression.strict(paramMeta, function.apply(CriteriaContextStack.getTopCriteria()));
+        return ParamExpression.multi(paramMeta, function.apply(CriteriaContextStack.getTopCriteria()), false);
     }
 
 
@@ -390,8 +389,8 @@ public abstract class SQLs extends Functions {
      *
      * @see Update._BatchSetClause
      */
-    public static NamedParam nullableNamedParam(ParamMeta paramMeta, String name) {
-        return NamedParamImpl.nullable(name, paramMeta);
+    public static Expression nullableNamedParam(ParamMeta paramMeta, String name) {
+        return ParamExpression.namedNullableSingle(paramMeta, name);
     }
 
     /**
@@ -401,14 +400,14 @@ public abstract class SQLs extends Functions {
      *
      * @see Update._BatchSetClause
      */
-    public static NamedParam nullableNamedParam(final DataField field) {
+    public static Expression nullableNamedParam(final DataField field) {
         final ParamMeta paramMeta;
         if (field instanceof TableField) {
             paramMeta = (TableField) field;
         } else {
             paramMeta = field.paramMeta();
         }
-        return NamedParamImpl.nullable(field.fieldName(), paramMeta);
+        return ParamExpression.namedNullableSingle(paramMeta, field.fieldName());
     }
 
 
@@ -422,8 +421,8 @@ public abstract class SQLs extends Functions {
      * @see SQLs#batchDomainDelete()
      * @see SQLs#batchDomainDelete(Object)
      */
-    public static NamedParam namedParam(ParamMeta paramMeta, String name) {
-        return NamedParamImpl.nonNull(name, paramMeta);
+    public static Expression namedParam(ParamMeta paramMeta, String name) {
+        return ParamExpression.namedNonNullSingle(paramMeta, name);
     }
 
     /**
@@ -436,31 +435,57 @@ public abstract class SQLs extends Functions {
      * @see SQLs#batchDomainDelete()
      * @see SQLs#batchDomainDelete(Object)
      */
-    public static NamedParam namedParam(DataField field) {
+    public static Expression namedParam(DataField field) {
         final ParamMeta paramMeta;
         if (field instanceof TableField) {
             paramMeta = (TableField) field;
         } else {
             paramMeta = field.paramMeta();
         }
-        return NamedParamImpl.nonNull(field.fieldName(), paramMeta);
+        return ParamExpression.namedNonNullSingle(paramMeta, field.fieldName());
     }
 
     public static Expression namedParams(ParamMeta paramMeta, String name, int size) {
-        return NamedCollectionParamExpression.named(name, paramMeta, size);
+        return ParamExpression.namedMulti(paramMeta, name, size);
     }
 
-    public static Expression namedParams(TableField field, int size) {
-        return NamedCollectionParamExpression.named(field.fieldName(), field, size);
+    public static Expression namedParams(DataField field, int size) {
+        final ParamMeta paramMeta;
+        if (field instanceof TableField) {
+            paramMeta = (ParamMeta) field;
+        } else {
+            paramMeta = field.paramMeta();
+        }
+        return ParamExpression.namedMulti(paramMeta, field.fieldName(), size);
     }
 
     public static Expression literal(Object value) {
         Objects.requireNonNull(value);
-        return LiteralExpression.literal(_MappingFactory.getDefault(value.getClass()), value);
+        return LiteralExpression.single(_MappingFactory.getDefault(value.getClass()), value);
     }
 
     public static Expression literal(ParamMeta paramMeta, Object value) {
-        return LiteralExpression.literal(paramMeta, value);
+        return LiteralExpression.single(paramMeta, value);
+    }
+
+    public static <E> Expression literals(List<E> valueList) {
+        return LiteralExpression.multi(_MappingFactory.getDefault(valueList.get(0).getClass()), valueList);
+    }
+
+    public static <E> Expression literals(ParamMeta paramMeta, Collection<E> values) {
+        return LiteralExpression.multi(paramMeta, values);
+    }
+
+    public static Expression namedLiteral(ParamMeta paramMeta, String name) {
+        return LiteralExpression.namedSingle(paramMeta, name);
+    }
+
+    public static Expression nullableNamedLiteral(ParamMeta paramMeta, String name) {
+        return LiteralExpression.nullableNamedSingle(paramMeta, name);
+    }
+
+    public static Expression namedLiterals(ParamMeta paramMeta, String name, int size) {
+        return LiteralExpression.namedMulti(paramMeta, name, size);
     }
 
 
@@ -586,6 +611,13 @@ public abstract class SQLs extends Functions {
         return SQLs.NullWord.INSTANCE;
     }
 
+    public static Expression trueWord() {
+        return BooleanWord.TRUE;
+    }
+
+    public static Expression falseWord() {
+        return BooleanWord.FALSE;
+    }
 
 
 
@@ -770,6 +802,48 @@ public abstract class SQLs extends Functions {
 
     }// NullWord
 
+    private static final class BooleanWord extends OperationExpression {
+
+        private static final BooleanWord TRUE = new BooleanWord(true);
+
+        private static final BooleanWord FALSE = new BooleanWord(false);
+
+        private final boolean value;
+
+        private BooleanWord(boolean value) {
+            this.value = value;
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            return BooleanType.INSTANCE;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+            if (this.value) {
+                sqlBuilder.append(BooleanType.TRUE);
+            } else {
+                sqlBuilder.append(BooleanType.FALSE);
+            }
+        }
+
+        @Override
+        public String toString() {
+            final String s;
+            if (this.value) {
+                s = _Constant.SPACE + BooleanType.TRUE;
+            } else {
+                s = _Constant.SPACE + BooleanType.FALSE;
+            }
+            return s;
+        }
+
+
+    }//BooleanWord
+
 
     static abstract class ArmyItemPair implements _ItemPair {
 
@@ -930,7 +1004,8 @@ public abstract class SQLs extends Functions {
 
     }//RowItemPair
 
-    private static final class StringTypeNull extends NonOperationExpression implements SqlParam, ValueExpression {
+    private static final class StringTypeNull extends NonOperationExpression
+            implements SingleParam, SqlValueParam.SingleValue {
 
         private static final StringTypeNull INSTANCE = new StringTypeNull();
 
@@ -943,15 +1018,16 @@ public abstract class SQLs extends Functions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.appendParam(this);
-        }
-
-        @Override
         public Object value() {
             //always null
             return null;
         }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.appendParam(this);
+        }
+
 
     }//StringTypeNull
 

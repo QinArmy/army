@@ -3,13 +3,9 @@ package io.army.stmt;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
-import io.army.criteria.CriteriaException;
-import io.army.criteria.NamedElementParam;
-import io.army.criteria.NonNullNamedParam;
-import io.army.criteria.Selection;
+import io.army.criteria.*;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -70,44 +66,23 @@ public abstract class Stmts {
         Object value;
         for (Object paramObject : paramWrapperList) {
             group = new ArrayList<>(paramSize);
-            SqlParam param;
-            for (int i = 0; i < paramSize; i++) {
-                param = paramGroup.get(i);
-                if (!(param instanceof NamedParam)) {
-                    group.add(param);
-                } else if (param instanceof NamedElementParam) {
-                    namedParam = ((NamedParam) param);
+            for (SqlParam sqlParam : paramGroup) {
+                if (!(sqlParam instanceof NamedParam)) {
+                    group.add(sqlParam);
+                } else if (sqlParam instanceof NamedParam.NamedMulti) {
+                    namedParam = ((NamedParam) sqlParam);
                     value = accessor.get(paramObject, namedParam.name());
                     if (!(value instanceof Collection)) {
-                        throw _Exceptions.namedCollectionParamNotMatch((NamedElementParam) namedParam, value);
+                        throw _Exceptions.namedParamNotMatch((NamedParam.NamedMulti) namedParam, value);
                     }
-                    final int size = ((NamedElementParam) namedParam).size();
-                    final Collection<?> collection = (Collection<?>) value;
-                    if (collection.size() != size) {
-                        throw _Exceptions.namedCollectionParamSizeError((NamedElementParam) namedParam
-                                , collection.size());
-                    }
-                    final ParamMeta paramMeta = namedParam.paramMeta();
-                    int index = i;
-                    for (Object element : collection) {
-                        if (paramGroup.get(index) != namedParam) {
-                            //here expression bug
-                            throw _Exceptions.namedElementParamNotMatch(size, index - i);
-                        }
-                        group.add(SingleParam.build(paramMeta, element));
-                        index++;
-                    }
-                    if (index > paramSize || i + size != index) {
-                        throw _Exceptions.namedCollectionParamSizeError((NamedElementParam) namedParam, index - i);
-                    }
-                    i = index - 1;
+                    group.add(MultiParam.build((NamedParam.NamedMulti) namedParam, (Collection<?>) value));
                 } else {
-                    namedParam = ((NamedParam) param);
+                    namedParam = ((NamedParam) sqlParam);
                     value = accessor.get(paramObject, namedParam.name());
-                    if (value == null && param instanceof NonNullNamedParam0) {
-                        throw _Exceptions.nonNullNamedParam((NonNullNamedParam) param);
+                    if (value == null && sqlParam instanceof SqlValueParam.NonNullValue) {
+                        throw _Exceptions.nonNullNamedParam((NamedParam) sqlParam);
                     }
-                    group.add(SingleParam.build(param.paramMeta(), value));
+                    group.add(SingleParam.build(sqlParam.paramMeta(), value));
                 }
             }
 

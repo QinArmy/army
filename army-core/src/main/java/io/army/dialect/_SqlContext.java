@@ -1,9 +1,10 @@
 package io.army.dialect;
 
+import io.army.criteria.NamedLiteral;
 import io.army.criteria.QualifiedField;
+import io.army.criteria.SqlParam;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
-import io.army.stmt.SqlParam;
 
 /**
  * <p>
@@ -56,11 +57,13 @@ public interface _SqlContext {
      *     <ol>
      *         <li>append one space</li>
      *         <li>append '?' to {@link #sqlBuilder()}</li>
-     *         <li>append paramValue to param list</li>
+     *         <li>append sqlParam to param list</li>
      *     </ol>
      * </p>
      */
-    void appendParam(SqlParam paramValue);
+    void appendParam(SqlParam sqlParam);
+
+    void appendLiteral(NamedLiteral namedLiteral);
 
     Visible visible();
 

@@ -5,6 +5,7 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.NullHandleMode;
+import io.army.criteria.SqlParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -12,7 +13,10 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
-import io.army.stmt.*;
+import io.army.stmt.InsertStmtParams;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.SingleParam;
+import io.army.stmt.Stmts;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -290,7 +294,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
 
     @Override
-    Object readNamedParam(final String name) {
+    Object currentRowNamedValue(final String name) {
         final RowObjectWrapper wrapper = this.rowWrapper;
         final TableMeta<?> domainTable = wrapper.domainTable;
         final FieldMeta<?> field;

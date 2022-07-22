@@ -75,11 +75,11 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
             match = false;
         } else if (predicate.left instanceof TableField
                 && _MetaBridge.VERSION.equals(((TableField) predicate.left).fieldName())) {
-            match = predicate.right instanceof ValueExpression
+            match = predicate.right instanceof SqlValueParam.SingleValue
                     || predicate.right instanceof NamedParam;
         } else if (predicate.right instanceof TableField
                 && _MetaBridge.VERSION.equals(((TableField) predicate.right).fieldName())) {
-            match = predicate.left instanceof ValueExpression
+            match = predicate.left instanceof SqlValueParam.SingleValue
                     || predicate.left instanceof NamedParam;
 
         } else {

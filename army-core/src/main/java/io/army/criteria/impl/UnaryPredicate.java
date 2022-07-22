@@ -1,9 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.DataField;
-import io.army.criteria.NamedParam;
+import io.army.criteria.SqlValueParam;
 import io.army.criteria.SubQuery;
-import io.army.criteria.ValueExpression;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
@@ -56,8 +55,7 @@ final class UnaryPredicate extends OperationPredicate {
             case IS_NULL: {
                 final boolean innerBracket;
                 innerBracket = !(expressionOrSubQuery instanceof DataField
-                        || expressionOrSubQuery instanceof ValueExpression
-                        || expressionOrSubQuery instanceof NamedParam);
+                        || expressionOrSubQuery instanceof SqlValueParam.SingleValue);
 
                 final StringBuilder sqlBuilder = context.sqlBuilder();
                 if (innerBracket) {

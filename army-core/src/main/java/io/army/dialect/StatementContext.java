@@ -3,8 +3,8 @@ package io.army.dialect;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
+import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
-import io.army.stmt.SqlParam;
 import io.army.stmt.StmtParams;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -12,7 +12,6 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -32,16 +31,13 @@ abstract class StatementContext implements StmtContext, StmtParams {
 
     protected final StringBuilder sqlBuilder;
 
-    /**
-     * paramConsumer must be private
-     */
     private final ParamConsumer paramConsumer;
 
     protected StatementContext(ArmyDialect dialect, Visible visible) {
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
-        this.paramConsumer = new ParamConsumer();
+        this.paramConsumer = new ParamConsumer(null);
     }
 
     /**
@@ -49,18 +45,18 @@ abstract class StatementContext implements StmtContext, StmtParams {
      * This Constructor is invoked the implementation of {@link  _ValueInsertContext}.
      * </p>
      */
-    protected StatementContext(ArmyDialect dialect, boolean preferLiteral, Visible visible) {
-        if (!(this instanceof _ValueInsertContext)) {
+    protected StatementContext(ArmyDialect dialect, boolean nonQueryInsert, Visible visible) {
+        if (!(this instanceof InsertContext) || this instanceof _QueryInsertContext) {
             throw new IllegalStateException();
         }
 
         this.dialect = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
-        if (preferLiteral) {
-            this.paramConsumer = new ValueInsertParamConsumer(this::readNamedParam);
+        if (nonQueryInsert) {
+            this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
         } else {
-            this.paramConsumer = new ParamConsumer();
+            this.paramConsumer = new ParamConsumer(null);
         }
     }
 
@@ -69,6 +65,7 @@ abstract class StatementContext implements StmtContext, StmtParams {
         this.visible = outerContext.visible;
         this.sqlBuilder = outerContext.sqlBuilder;
         this.paramConsumer = outerContext.paramConsumer;
+
     }
 
 
@@ -84,9 +81,87 @@ abstract class StatementContext implements StmtContext, StmtParams {
 
 
     @Override
-    public final void appendParam(final SqlParam paramValue) {
-        this.sqlBuilder.append(SPACE_PLACEHOLDER);
-        this.paramConsumer.accept(paramValue);
+    public final void appendParam(final SqlParam sqlParam) {
+        final ArrayList<SqlParam> paramList = this.paramConsumer.paramList;
+        if (sqlParam instanceof SingleParam) {
+            this.sqlBuilder.append(SPACE_PLACEHOLDER);
+            paramList.add(sqlParam);
+        } else if (sqlParam instanceof MultiParam) {
+            appendMultiParamPlaceholder(this.sqlBuilder, (SqlValueParam.MultiValue) sqlParam);
+            paramList.add(sqlParam);
+        } else if (sqlParam instanceof NamedParam.NamedSingle) {
+            this.sqlBuilder.append(SPACE_PLACEHOLDER);
+            if (this.paramConsumer.function == null) {
+                paramList.add(sqlParam);
+                this.paramConsumer.hasNamedParam = true;
+            } else {
+                paramList.add(SingleParam.build(sqlParam.paramMeta(), readNamedValue((NamedParam) sqlParam)));
+            }
+        } else if (sqlParam instanceof NamedParam.NamedMulti) {
+            appendMultiParamPlaceholder(this.sqlBuilder, (SqlValueParam.MultiValue) sqlParam);
+            if (this.paramConsumer.function == null) {
+                paramList.add(sqlParam);
+                this.paramConsumer.hasNamedParam = true;
+            } else {
+                final NamedParam.NamedMulti namedMulti = (NamedParam.NamedMulti) sqlParam;
+                paramList.add(MultiParam.build(namedMulti, readNamedMulti(namedMulti)));
+            }
+        } else {
+            //no bug,never here
+            throw new IllegalArgumentException();
+        }
+
+    }
+
+
+    @Override
+    public final void appendLiteral(final NamedLiteral namedLiteral) {
+        final Function<String, Object> function = this.paramConsumer.function;
+        if (!(this instanceof InsertContext) || this instanceof _QueryInsertContext || function == null) {
+            String m = String.format("%s don't support %s"
+                    , this.getClass().getName(), NamedLiteral.class.getName());
+            throw new CriteriaException(m);
+        }
+
+        final Object value;
+        value = function.apply(namedLiteral.name());
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+
+        if (value == null) {
+            if (namedLiteral instanceof SqlValueParam.NonNullValue) {
+                String m = String.format("named literal(%s) must non-null.", namedLiteral.name());
+                throw new CriteriaException(m);
+            }
+            sqlBuilder.append(_Constant.SPACE_NULL);
+        } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
+            sqlBuilder.append(_Constant.SPACE);
+            this.dialect.literal(namedLiteral.paramMeta(), value, sqlBuilder);
+        } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
+            //no bug,never here
+            throw new IllegalArgumentException();
+        } else if (!(value instanceof Collection)) {
+            throw _Exceptions.namedParamNotMatch((SqlValueParam.NamedMultiValue) namedLiteral, value);
+        } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).valueSize()) {
+
+            final ArmyDialect dialect = this.dialect;
+            final ParamMeta paramMeta = namedLiteral.paramMeta();
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            int i = 0;
+            for (Object v : (Collection<?>) value) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                } else {
+                    sqlBuilder.append(_Constant.SPACE);
+                }
+                dialect.literal(paramMeta, v, sqlBuilder);//TODO codec field
+                i++;
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        } else {
+            throw _Exceptions.namedMultiParamSizeError((SqlValueParam.NamedMultiValue) namedLiteral
+                    , ((Collection<?>) value).size());
+        }
+
     }
 
     @Override
@@ -94,10 +169,6 @@ abstract class StatementContext implements StmtContext, StmtParams {
         return this.paramConsumer.paramList.size() > 0;
     }
 
-    @Override
-    public final boolean hasNamedParam() {
-        return this.paramConsumer.hasNamedParam;
-    }
 
     @Override
     public final Visible visible() {
@@ -120,137 +191,68 @@ abstract class StatementContext implements StmtContext, StmtParams {
         throw new UnsupportedOperationException();
     }
 
+    final boolean hasNamedParam() {
+        return this.paramConsumer.hasNamedParam;
+    }
+
 
     @Nullable
-    Object readNamedParam(String name) {
+    Object currentRowNamedValue(String name) {
         throw new UnsupportedOperationException();
     }
 
 
-    /**
-     * This class must be private class
-     */
-    private static class ParamConsumer implements Consumer<SqlParam> {
-
-        final ArrayList<SqlParam> paramList = new ArrayList<>();
-
-        boolean hasNamedParam;
-
-        private ParamConsumer() {
-
+    @Nullable
+    private Object readNamedValue(final NamedParam namedParam) {
+        final Function<String, Object> function = this.paramConsumer.function;
+        assert function != null;
+        final Object value;
+        value = function.apply(namedParam.name());
+        if (value == null && namedParam instanceof SqlValueParam.NonNullValue) {
+            throw _Exceptions.nonNullNamedParam(namedParam);
         }
+        return value;
+    }
 
-        @Override
-        public final void accept(final SqlParam paramValue) {
-            if (paramValue instanceof NamedParam) {
-                if (!this.hasNamedParam) {
-                    this.hasNamedParam = true;
-                }
-            }
-
-            if (!(this instanceof ValueInsertParamConsumer)) {
-                this.paramList.add(paramValue);
-            } else if (paramValue instanceof NamedParam) {
-                ((ValueInsertParamConsumer) this).acceptNamed((NamedParam) paramValue);
-            } else if (((ValueInsertParamConsumer) this).namedElementParam == null) {
-                this.paramList.add(paramValue);
-            } else {
-                final ValueInsertParamConsumer consumer = (ValueInsertParamConsumer) this;
-                throw _Exceptions.namedElementParamNotMatch(consumer.size, consumer.count);
-            }
-
+    private Collection<?> readNamedMulti(final NamedParam.NamedMulti namedParam) {
+        final Object value;
+        value = readNamedValue(namedParam);
+        if (!(value instanceof Collection)) {
+            throw _Exceptions.namedParamNotMatch(namedParam, value);
         }
+        return (Collection<?>) value;
+    }
 
-    }// ParamConsumer
 
-    private static final class ValueInsertParamConsumer extends ParamConsumer {
+    private static void appendMultiParamPlaceholder(final StringBuilder sqlBuilder
+            , final SqlValueParam.MultiValue sqlParam) {
+        final int paramSize;
+        paramSize = sqlParam.valueSize();
+        assert paramSize > 0;
+        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+        for (int i = 0; i < paramSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            sqlBuilder.append(SPACE_PLACEHOLDER);
+        }
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+    }
+
+
+    private static final class ParamConsumer {
+
+        private final ArrayList<SqlParam> paramList = new ArrayList<>();
 
         private final Function<String, Object> function;
 
-        private NamedElementParam namedElementParam;
+        private boolean hasNamedParam;
 
-        private int size;
-
-        private int count;
-
-        private ValueInsertParamConsumer(Function<String, Object> function) {
+        private ParamConsumer(@Nullable Function<String, Object> function) {
             this.function = function;
         }
 
-        private void acceptNamed(final NamedParam namedParam) {
-            final NamedElementParam namedElementParam = this.namedElementParam;
-            if (namedElementParam != null) {
-                if (namedParam != namedElementParam) {
-                    throw _Exceptions.namedElementParamNotMatch(this.size, count);
-                }
-                this.count++;
-                if (this.count == this.size) {
-                    this.readNamedElementParam();
-                } else if (this.count > this.size) {
-                    //no bug,never here
-                    throw new IllegalStateException("count error");
-                }
-            } else if (namedParam instanceof NamedElementParam) {
-                final NamedElementParam elementParam = (NamedElementParam) namedParam;
-                final int size = elementParam.size();
-                if (size < 1) {
-                    throw _Exceptions.namedElementParamSizeError(elementParam);
-                }
-                this.namedElementParam = (NamedElementParam) namedParam;
-                this.size = size;
-                this.count = 1;
-                if (size == 1) {
-                    this.readNamedElementParam();
-                }
-            } else {
-                final Object value;
-                value = this.function.apply(namedParam.name());
-                if (value == null && namedParam instanceof NonNullNamedParam) {
-                    throw _Exceptions.nonNullNamedParam((NonNullNamedParam) namedParam);
-                }
-                // add actual ParamValue
-                this.paramList.add(SingleParam.build(namedParam.paramMeta(), value));
-            }
-
-        }
-
-
-        private void readNamedElementParam() {
-            final NamedElementParam elementParam = this.namedElementParam;
-            assert elementParam != null;
-
-            final int size = this.size;
-
-            assert this.count == size;
-            assert size == elementParam.size();
-
-            final Object value;
-            value = this.function.apply(elementParam.name());
-            if (!(value instanceof Collection)) {
-                throw _Exceptions.namedCollectionParamNotMatch(elementParam, value);
-            }
-            final Collection<?> collection = (Collection<?>) value;
-            if (collection.size() != size) {
-                throw _Exceptions.namedCollectionParamSizeError(elementParam, collection.size());
-            }
-            final ParamMeta paramMeta = elementParam.paramMeta();
-            int elementCount = 0;
-            for (Object element : collection) {
-                this.paramList.add(SingleParam.build(paramMeta, element));
-                elementCount++;
-            }
-
-            if (elementCount != size) {
-                throw _Exceptions.namedCollectionParamSizeError(elementParam, elementCount);
-            }
-
-            //clear namedElementParam
-            this.namedElementParam = null;
-            this.size = 0;
-            this.count = 0;
-        }
-
-    }//ValueInsertParamConsumer
+    }
 
 
 }

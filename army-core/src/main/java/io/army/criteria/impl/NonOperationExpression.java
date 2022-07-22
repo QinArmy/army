@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.meta.ParamMeta;
-import io.army.stmt.SqlParam;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -13,7 +12,7 @@ import java.util.function.Supplier;
  *     <ul>
  *         <li>{@link SQLs.DefaultWord}</li>
  *         <li>{@link SQLs.NullWord}</li>
- *         <li>{@link CollectionParamExpression}</li>
+ *         <li>{@link MultiParamExpression}</li>
  *         <li>{@link ParamExpression.NullExpression}</li>
  *     </ul>
  * </p>
@@ -36,8 +35,8 @@ abstract class NonOperationExpression implements ArmyExpression {
     @Override
     public final boolean isNullValue() {
         final boolean nullable;
-        if (this instanceof ValueExpression) {
-            nullable = ((ValueExpression) this).value() == null;
+        if (this instanceof SqlValueParam.SingleValue) {
+            nullable = ((SqlValueParam.SingleValue) this).value() == null;
         } else {
             nullable = this instanceof SQLs.NullWord;
         }

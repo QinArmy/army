@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.SqlValueParam;
 import io.army.criteria.TableField;
-import io.army.criteria.ValueExpression;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -89,11 +89,11 @@ final class DualExpression extends OperationExpression {
             case BITWISE_OR:
             case XOR: {
                 outerBracket = true;
-                leftInnerBracket = !(left instanceof ValueExpression
+                leftInnerBracket = !(left instanceof SqlValueParam.SingleValue
                         || left instanceof TableField
                         || left instanceof BracketsExpression);
 
-                rightInnerBracket = !(right instanceof ValueExpression
+                rightInnerBracket = !(right instanceof SqlValueParam.SingleValue
                         || right instanceof TableField
                         || right instanceof BracketsExpression);
             }

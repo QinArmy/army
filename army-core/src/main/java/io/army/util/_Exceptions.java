@@ -17,7 +17,6 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
-import io.army.stmt.SqlParam;
 import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
 import io.army.tx.TransactionTimeOutException;
@@ -150,8 +149,8 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static CriteriaException nonNullNamedParam(NonNullNamedParam param) {
-        String m = String.format("%s[%s] must be non-null.", NonNullNamedParam.class.getName(), param.name());
+    public static CriteriaException nonNullNamedParam(NamedParam param) {
+        String m = String.format("%s[%s] must be non-null.", NamedParam.class.getName(), param.name());
         return new CriteriaException(m);
     }
 
@@ -328,18 +327,9 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     }
 
-    public static CriteriaException namedElementParamSizeError(NamedElementParam param) {
-        String m = String.format("%s size[%s] error", NamedElementParam.class.getName(), param.size());
-        throw new CriteriaException(m);
-    }
 
     public static CriteriaException lateralSubQueryErrorPosition() {
         return new CriteriaException("LATERAL sub query present in error position");
-    }
-
-    public static CriteriaException namedElementParamNotMatch(int size, int actualSize) {
-        String m = String.format("NamedElementParam not match,expected %s but %s .", size, actualSize);
-        throw new CriteriaException(m);
     }
 
     public static CriteriaException tableBlockListIsEmpty(boolean nested) {
@@ -422,21 +412,21 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("Not found named parameter in batch statement.");
     }
 
-    public static CriteriaException namedParamsInNonBatch(NamedElementParam param) {
+    public static CriteriaException namedParamsInNonBatch(NamedParam.NamedMulti param) {
         String m = String.format("Couldn't exist named parameters[name:%s,size:%s] in non-batch statement."
-                , param.name(), param.size());
+                , param.name(), param.valueSize());
         return new CriteriaException(m);
     }
 
-    public static CriteriaException namedCollectionParamNotMatch(NamedElementParam param, @Nullable Object value) {
-        String m = String.format("named collection parameters[name:%s,size:%s] value[%s] isn't %s."
-                , param.name(), param.size(), _ClassUtils.safeClassName(value), Collection.class.getName());
+    public static CriteriaException namedParamNotMatch(SqlValueParam.NamedMultiValue param, @Nullable Object value) {
+        String m = String.format("named value[name:%s,size:%s] value[%s] isn't %s."
+                , param.name(), param.valueSize(), _ClassUtils.safeClassName(value), Collection.class.getName());
         return new CriteriaException(m);
     }
 
-    public static CriteriaException namedCollectionParamSizeError(NamedElementParam param, int size) {
+    public static CriteriaException namedMultiParamSizeError(SqlValueParam.NamedMultiValue param, int size) {
         String m = String.format("named collection parameters[name:%s,size:%s] value size[%s] error."
-                , param.name(), param.size(), size);
+                , param.name(), param.valueSize(), size);
         return new CriteriaException(m);
     }
 

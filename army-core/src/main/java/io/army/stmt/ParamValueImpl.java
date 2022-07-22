@@ -1,5 +1,6 @@
 package io.army.stmt;
 
+import io.army.criteria.SqlParam;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 

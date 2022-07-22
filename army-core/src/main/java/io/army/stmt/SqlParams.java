@@ -1,8 +1,12 @@
 package io.army.stmt;
 
+import io.army.criteria.NamedParam;
+import io.army.criteria.SqlParam;
+import io.army.criteria.SqlValueParam;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,13 +15,15 @@ abstract class SqlParams implements SqlParam {
 
 
     static SingleParam single(ParamMeta paramMeta, @Nullable Object value) {
-        return value == null ? new NullSingleParam(paramMeta) : new NonNullSingleParam(paramMeta, value);
+        return new NullableSingleParam(paramMeta, value);
     }
 
-    static MultiParam multi(final NamedMultiParam namedParam, final Collection<?> values) {
+    static MultiParam multi(final NamedParam.NamedMulti namedParam, final Collection<?> values) {
         final List<?> valueList;
         valueList = _CollectionUtils.asUnmodifiableList(values);
-        assert valueList.size() == namedParam.size();
+        if (valueList.size() != namedParam.valueSize()) {
+            throw _Exceptions.namedMultiParamSizeError(namedParam, values.size());
+        }
         return new SqlMultiParam(namedParam.paramMeta(), valueList);
     }
 
@@ -35,11 +41,12 @@ abstract class SqlParams implements SqlParam {
     }
 
 
-    private static final class NonNullSingleParam extends SqlParams implements SingleParam {
+    private static final class NullableSingleParam extends SqlParams
+            implements SingleParam, SqlValueParam.SingleValue {
 
         private final Object value;
 
-        private NonNullSingleParam(ParamMeta paramMeta, Object value) {
+        private NullableSingleParam(ParamMeta paramMeta, @Nullable Object value) {
             super(paramMeta);
             this.value = value;
         }
@@ -51,22 +58,9 @@ abstract class SqlParams implements SqlParam {
 
     }//NonNullSingleParam
 
-    private static final class NullSingleParam extends SqlParams implements SingleParam {
 
-        private NullSingleParam(ParamMeta paramMeta) {
-            super(paramMeta);
-        }
-
-        @Override
-        public Object value() {
-            //always null
-            return null;
-        }
-
-    }//NullSingleParam
-
-
-    private static final class SqlMultiParam extends SqlParams implements MultiParam {
+    private static final class SqlMultiParam extends SqlParams
+            implements MultiParam, SqlValueParam.MultiValue {
 
         private final List<?> valueList;
 
@@ -74,6 +68,11 @@ abstract class SqlParams implements SqlParam {
             super(paramMeta);
             assert valueList.size() > 0;
             this.valueList = valueList;
+        }
+
+        @Override
+        public int valueSize() {
+            return this.valueList.size();
         }
 
         @Override

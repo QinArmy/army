@@ -255,7 +255,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
+     * Parameters will be wrapped with {@link SQLs#preferLiteralParams(ParamMeta, Collection)}.
      * </p>
      */
     IPredicate in(Object operand);
@@ -280,7 +280,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     /**
      * <p>
-     * Parameters will be wrapped with {@link SQLs#optimizingParams(ParamMeta, Collection)}.
+     * Parameters will be wrapped with {@link SQLs#preferLiteralParams(ParamMeta, Collection)}.
      * </p>
      */
     IPredicate notIn(Object operand);

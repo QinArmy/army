@@ -7,6 +7,7 @@ import io.army.bean.PairBean;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.Selection;
+import io.army.criteria.SqlParam;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnvironment;
 import io.army.mapping.MappingType;

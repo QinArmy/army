@@ -1,9 +1,7 @@
 package io.army.dialect;
 
+import io.army.criteria.SqlParam;
 import io.army.stmt.SimpleStmt;
-import io.army.stmt.SqlParam;
-
-import java.util.List;
 
 /**
  * <p>
@@ -23,13 +21,6 @@ interface StmtContext extends _SqlContext {
      */
     boolean hasParam();
 
-    /**
-     * for {@link  DmlContext#build(List)}
-     *
-     * @return true : currently exists {@link  io.army.criteria.NamedParam} in context
-     * @see #appendParam(SqlParam)
-     */
-    boolean hasNamedParam();
 
     SimpleStmt build();
 

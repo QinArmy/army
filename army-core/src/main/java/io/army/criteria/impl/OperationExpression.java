@@ -37,7 +37,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final boolean isNullValue() {
-        return this instanceof ValueExpression && ((ValueExpression) this).value() == null;
+        return this instanceof SqlValueParam.SingleValue && ((SqlValueParam.SingleValue) this).value() == null;
     }
 
     @Override
@@ -452,7 +452,7 @@ abstract class OperationExpression implements ArmyExpression {
         if (operand instanceof Expression) {
             exp = (Expression) operand;
         } else if (operand instanceof Collection) {
-            exp = SQLs.optimizingParams(this.paramMeta(), (Collection<?>) operand);
+            exp = SQLs.preferLiteralParams(this.paramMeta(), (Collection<?>) operand);
         } else if (operand instanceof SubQuery) {
             throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
         } else {
@@ -498,7 +498,7 @@ abstract class OperationExpression implements ArmyExpression {
         if (operand instanceof Expression) {
             exp = (Expression) operand;
         } else if (operand instanceof Collection) {
-            exp = SQLs.optimizingParams(this.paramMeta(), (Collection<?>) operand);
+            exp = SQLs.preferLiteralParams(this.paramMeta(), (Collection<?>) operand);
         } else if (operand instanceof SubQuery) {
             throw _Exceptions.nonScalarSubQuery((SubQuery) operand);
         } else {
@@ -893,7 +893,7 @@ abstract class OperationExpression implements ArmyExpression {
         } else if ((collection = (Collection<?>) value).size() == 0) {
             predicate = null;
         } else if (optimizing) {
-            predicate = DualPredicate.create(this, operator, SQLs.optimizingParams(this.paramMeta(), collection));
+            predicate = DualPredicate.create(this, operator, SQLs.preferLiteralParams(this.paramMeta(), collection));
         } else {
             predicate = DualPredicate.create(this, operator, SQLs.params(this.paramMeta(), collection));
         }

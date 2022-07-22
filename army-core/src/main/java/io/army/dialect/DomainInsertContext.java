@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.bean.*;
 import io.army.criteria.NullHandleMode;
+import io.army.criteria.SqlParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -11,7 +12,10 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
-import io.army.stmt.*;
+import io.army.stmt.InsertStmtParams;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.SingleParam;
+import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -233,7 +237,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     @Nullable
     @Override
-    Object readNamedParam(final String name) {
+    Object currentRowNamedValue(final String name) {
         return this.wrapper.get(name);
     }
 
