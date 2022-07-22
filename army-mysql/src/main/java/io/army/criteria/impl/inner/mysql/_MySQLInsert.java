@@ -5,7 +5,6 @@ import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.mysql.MySQLWords;
-import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public interface _MySQLInsert extends _Insert {
 
     interface _InsertWithRowAlias extends _InsertWithDuplicateKey {
 
-        @Nullable
+
         String rowAlias();
 
         Map<String, FieldMeta<?>> aliasToField();

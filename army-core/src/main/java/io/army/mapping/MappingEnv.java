@@ -5,7 +5,7 @@ import io.army.meta.ServerMeta;
 
 import java.time.ZoneOffset;
 
-public interface MappingEnvironment {
+public interface MappingEnv {
 
     boolean isReactive();
 

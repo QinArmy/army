@@ -2,7 +2,7 @@ package io.army.mapping.optional;
 
 import io.army.dialect.Database;
 import io.army.mapping.AbstractMappingType;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
@@ -55,12 +55,12 @@ public final class GeometryType extends AbstractMappingType {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Object beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Object afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         throw new UnsupportedOperationException();
     }
 

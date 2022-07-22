@@ -46,12 +46,12 @@ public final class LongType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Long beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Long beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         return beforeBind(sqlType, nonNull, Long.MIN_VALUE, Long.MAX_VALUE);
     }
 
     @Override
-    public Long afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Long afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Long)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

@@ -37,7 +37,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final boolean isNullValue() {
-        return this instanceof SqlValueParam.SingleValue && ((SqlValueParam.SingleValue) this).value() == null;
+        return this instanceof SqlValueParam.SingleValue && ((SqlValueParam.SingleNonNamedValue) this).value() == null;
     }
 
     @Override

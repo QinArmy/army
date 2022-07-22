@@ -12,7 +12,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.util._Assert;
 import io.army.util._TimeUtils;
@@ -120,7 +120,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     }
 
     @Override
-    public MappingEnvironment mappingEnvironment() {
+    public MappingEnv mappingEnvironment() {
         throw new UnsupportedOperationException();
     }
 

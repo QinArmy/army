@@ -43,7 +43,7 @@ public final class FloatType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Float beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Float beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         final float value;
         if (nonNull instanceof Float) {
             value = (Float) nonNull;
@@ -60,7 +60,7 @@ public final class FloatType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Float afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Float afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Float)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

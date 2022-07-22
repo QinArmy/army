@@ -436,6 +436,17 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static ArmyException unexpectedSqlParam(@Nullable SqlParam sqlParam) {
+        String m;
+        m = String.format("unexpected %s type %s", SqlParam.class.getName(), _ClassUtils.safeClassName(sqlParam));
+        return new ArmyException(m);
+    }
+
+    public static CriteriaException namedParamErrorPosition(String name) {
+        String m = String.format("named parameter[%s] present in error position,", name);
+        return new CriteriaException(m);
+    }
+
 
     public static CriteriaException nonScalarSubQuery(SubQuery subQuery) {
         String m = String.format("Expression right value[%s] is non-scalar sub query.", subQuery.getClass().getName());

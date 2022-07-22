@@ -1,7 +1,7 @@
 package io.army.mapping.optional;
 
 import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
@@ -37,12 +37,12 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public OffsetDateTime beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public OffsetDateTime beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         return OffsetDateTimeType.INSTANCE.beforeBind(sqlType, env, nonNull);
     }
 
     @Override
-    public ZonedDateTime afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public ZonedDateTime afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof OffsetDateTime)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

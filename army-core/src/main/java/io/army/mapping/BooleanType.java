@@ -52,7 +52,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public Boolean beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Boolean beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final boolean value;
         if (nonNull instanceof Boolean) {
             value = (Boolean) nonNull;
@@ -81,7 +81,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Boolean afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Boolean afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.ArmyException;
+import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._SQLConsultant;
@@ -77,35 +78,10 @@ public abstract class _AbstractDialect implements ArmyDialect {
             _SQLConsultant.assertStandardInsert(insert);
             stmt = handleStandardValueInsert((_Insert._DomainInsert) insert, visible);
         } else if (insert instanceof _Insert._DomainInsert) {
-            final _Insert._DomainInsert insertStmt = ((_Insert._DomainInsert) insert);
-            final DomainInsertContext singleContext;
-            singleContext = DomainInsertContext.forSingle(insertStmt, this, visible);
-            this.valueSyntaxSingleInsert(singleContext, insertStmt);
-
-            if (insertStmt.table() instanceof ChildTableMeta) {
-                final DomainInsertContext childContext;
-                childContext = DomainInsertContext.forChild(singleContext, insertStmt, this, visible);
-                this.valueSyntaxChildInsert(childContext, insertStmt);
-
-                stmt = Stmts.pair(singleContext.build(), childContext.build());
-            } else {
-                stmt = singleContext.build();
-            }
+            stmt = handleDomainInsert((_Insert._DomainInsert) insert, visible);
         } else if (insert instanceof _Insert._ValuesInsert) {
-            final _Insert._ValuesInsert insertStmt = ((_Insert._ValuesInsert) insert);
-            final ValuesInsertContext singleContext;
-            singleContext = ValuesInsertContext.forSingle(insertStmt, this, visible);
-            this.valueSyntaxSingleInsert(singleContext, insertStmt);
+            stmt = handleValueInsert((_Insert._ValuesInsert) insert, visible);
 
-            if (insertStmt.table() instanceof ChildTableMeta) {
-                final ValuesInsertContext childContext;
-                childContext = ValuesInsertContext.forChild(singleContext, insertStmt, this, visible);
-                this.valueSyntaxChildInsert(childContext, insertStmt);
-
-                stmt = Stmts.pair(singleContext.build(), childContext.build());
-            } else {
-                stmt = singleContext.build();
-            }
         } else if (insert instanceof _Insert._AssignmentInsert) {
             throw new UnsupportedOperationException();
         } else if (insert instanceof _Insert._QueryInsert) {
@@ -115,6 +91,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
         return stmt;
     }
+
 
 
     /*################################## blow update method ##################################*/
@@ -425,13 +402,10 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     /*################################## blow update private method ##################################*/
 
-    protected void valueSyntaxSingleInsert(_ValueInsertContext context, _Insert._ValuesSyntaxInsert stmt) {
+    protected void valueSyntaxInsert(_ValueInsertContext context, _Insert._ValuesSyntaxInsert stmt) {
         throw new UnsupportedOperationException();
     }
 
-    protected void valueSyntaxChildInsert(_ValueInsertContext context, _Insert._ValuesSyntaxInsert stmt) {
-        throw new UnsupportedOperationException();
-    }
 
     protected void assignmentSingleInsert(_AssignmentInsertContext context, _Insert._AssignmentInsert stmt) {
         throw new UnsupportedOperationException();
@@ -1097,6 +1071,65 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     /*################################## blow private method ##################################*/
 
+
+    /**
+     * @see #insert(Insert, Visible)
+     */
+    private Stmt handleDomainInsert(final _Insert._DomainInsert insert, final Visible visible) {
+
+        final Stmt stmt;
+        if (insert instanceof _Insert._ChildDomainInsert) {
+            final _Insert._ChildDomainInsert childStmt = (_Insert._ChildDomainInsert) insert;
+            final _Insert._DomainInsert parentStmt = childStmt.parentStmt();
+
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
+
+            final DomainInsertContext singleContext;
+            singleContext = DomainInsertContext.forSingle(parentStmt, this, visible);
+            this.valueSyntaxInsert(singleContext, parentStmt);
+
+            final DomainInsertContext childContext;
+            childContext = DomainInsertContext.forChild(singleContext, childStmt, this, visible);
+            this.valueSyntaxInsert(childContext, childStmt);
+
+            stmt = Stmts.pair(singleContext.build(), childContext.build());
+        } else {
+            final DomainInsertContext singleContext;
+            singleContext = DomainInsertContext.forSingle(insert, this, visible);
+            this.valueSyntaxInsert(singleContext, insert);
+            stmt = singleContext.build();
+        }
+        return stmt;
+    }
+
+    /**
+     * @see #insert(Insert, Visible)
+     */
+    private Stmt handleValueInsert(final _Insert._ValuesInsert insert, final Visible visible) {
+        final Stmt stmt;
+        if (insert instanceof _Insert._ChildValuesInsert) {
+            final _Insert._ChildValuesInsert childStmt = (_Insert._ChildValuesInsert) insert;
+            final _Insert._ValuesInsert parentStmt = childStmt.parentStmt();
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
+
+            final ValuesInsertContext singleContext;
+            singleContext = ValuesInsertContext.forSingle(parentStmt, this, visible);
+            this.valueSyntaxInsert(singleContext, parentStmt);
+
+            final ValuesInsertContext childContext;
+            childContext = ValuesInsertContext.forChild(singleContext, childStmt, this, visible);
+            this.valueSyntaxInsert(childContext, childStmt);
+
+            stmt = Stmts.pair(singleContext.build(), childContext.build());
+        } else {
+            final ValuesInsertContext singleContext;
+            singleContext = ValuesInsertContext.forSingle(insert, this, visible);
+            this.valueSyntaxInsert(singleContext, insert);
+            stmt = singleContext.build();
+        }
+        return stmt;
+    }
+
     /**
      * @see #rowSet(RowSet, _SqlContext)
      */
@@ -1449,5 +1482,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
     protected static IllegalArgumentException illegalDialect() {
         return new IllegalArgumentException("dialect instance error");
     }
+
+    private static void checkParentStmt(_Insert._ValuesSyntaxInsert parentStmt, ChildTableMeta<?> childTable) {
+        if (parentStmt instanceof _Insert._DuplicateKeyClause
+                && parentStmt.table().id().generatorType() == GeneratorType.POST) {
+            throw _Exceptions.duplicateKeyAndPostIdInsert(childTable);
+        }
+    }
+
 
 }

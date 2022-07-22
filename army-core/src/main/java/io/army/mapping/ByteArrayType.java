@@ -46,7 +46,7 @@ public final class ByteArrayType extends AbstractMappingType {
     }
 
     @Override
-    public byte[] beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public byte[] beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw outRangeOfSqlType(sqlType, nonNull);
         }
@@ -54,7 +54,7 @@ public final class ByteArrayType extends AbstractMappingType {
     }
 
     @Override
-    public byte[] afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public byte[] afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final byte[] value;
         switch (sqlType.database()) {
             case MySQL:

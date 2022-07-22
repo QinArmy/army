@@ -48,12 +48,12 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Long beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Long beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         return LongType.beforeBind(sqlType, nonNull, 0L, 0xFFFF_FFFFL);
     }
 
     @Override
-    public Long afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Long afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         final long value;
         switch (sqlType.database()) {
             case MySQL:

@@ -4,7 +4,7 @@ package io.army.dialect;
 import io.army.bean.ObjectWrapper;
 import io.army.env.ArmyEnvironment;
 import io.army.env.StandardEnvironment;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
@@ -80,7 +80,7 @@ public abstract class _MockDialects {
         }
 
         @Override
-        public MappingEnvironment mappingEnvironment() {
+        public MappingEnv mappingEnvironment() {
             return null;
         }
 

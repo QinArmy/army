@@ -49,12 +49,12 @@ public final class UnsignedByteType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Short beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Short beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         return (short) IntegerType.beforeBind(sqlType, nonNull, 0, 0xFF);
     }
 
     @Override
-    public Short afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Short afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         switch (sqlType.database()) {
             case MySQL:
             case PostgreSQL: {

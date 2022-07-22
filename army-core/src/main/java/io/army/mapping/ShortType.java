@@ -47,12 +47,12 @@ public final class ShortType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Short beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Short beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         return (short) IntegerType.beforeBind(sqlType, nonNull, Short.MIN_VALUE, Short.MAX_VALUE);
     }
 
     @Override
-    public Short afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Short afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         final short value;
         switch (sqlType.database()) {
             case MySQL:

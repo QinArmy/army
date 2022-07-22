@@ -44,13 +44,13 @@ public final class ByteType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Byte beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Byte beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         return (byte) IntegerType.beforeBind(sqlType, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE);
     }
 
 
     @Override
-    public Byte afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Byte afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         final byte value;
         switch (sqlType.database()) {
             case MySQL: {

@@ -36,7 +36,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final boolean isNullValue() {
         final boolean nullable;
         if (this instanceof SqlValueParam.SingleValue) {
-            nullable = ((SqlValueParam.SingleValue) this).value() == null;
+            nullable = ((SqlValueParam.SingleNonNamedValue) this).value() == null;
         } else {
             nullable = this instanceof SQLs.NullWord;
         }

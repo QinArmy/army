@@ -34,7 +34,7 @@ public final class BigIntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public BigDecimal beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final BigDecimal value;
         value = BigDecimalType.INSTANCE.beforeBind(sqlType, env, nonNull);
         if (value.scale() != 0) {
@@ -44,7 +44,7 @@ public final class BigIntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public BigInteger afterGet(final SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public BigInteger afterGet(final SqlType sqlType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

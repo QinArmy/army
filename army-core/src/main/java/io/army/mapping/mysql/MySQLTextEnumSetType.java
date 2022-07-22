@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.mapping.AbstractMappingType;
 import io.army.mapping.ElementMappingType;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.mapping.TextEnumType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
@@ -60,7 +60,7 @@ public final class MySQLTextEnumSetType extends AbstractMappingType implements E
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public String beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Set)) {
             throw outRangeOfSqlType(sqlType, nonNull);
         }
@@ -81,7 +81,7 @@ public final class MySQLTextEnumSetType extends AbstractMappingType implements E
     }
 
     @Override
-    public Set<?> afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Set<?> afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

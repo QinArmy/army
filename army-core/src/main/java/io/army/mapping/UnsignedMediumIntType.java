@@ -47,12 +47,12 @@ public final class UnsignedMediumIntType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Integer beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         return IntegerType.beforeBind(sqlType, nonNull, 0, MAX);
     }
 
     @Override
-    public Integer afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Integer afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

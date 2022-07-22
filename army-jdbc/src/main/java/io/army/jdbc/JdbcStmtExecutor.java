@@ -9,7 +9,7 @@ import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.Selection;
 import io.army.criteria.SqlParam;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -443,30 +443,47 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
             throws SQLException {
         final int size = paramGroup.size();
         final ServerMeta serverMeta = this.factory.serverMeta;
-        final MappingEnvironment mapEnv = this.factory.mapEnv;
+        final MappingEnv mapEnv = this.factory.mapEnv;
 
-        SqlParam paramValue;
+        SqlParam sqlParam;
         Object value;
         MappingType mappingType;
         ParamMeta paramMeta;
         SqlType sqlType;
         for (int i = 0; i < size; i++) {
-            paramValue = paramGroup.get(i);
-            value = paramValue.value();
-            if (value == null) {
-                // bind null
-                statement.setNull(i + 1, Types.NULL);
-                continue;
-            }
-            paramMeta = paramValue.paramMeta();
+            sqlParam = paramGroup.get(i);
+
+            paramMeta = sqlParam.paramMeta();
             if (paramMeta instanceof MappingType) {
                 mappingType = (MappingType) paramMeta;
             } else {
                 mappingType = paramMeta.mappingType();
             }
             sqlType = mappingType.map(serverMeta);
-            value = mappingType.beforeBind(sqlType, mapEnv, value);
-            bind(statement, i + 1, sqlType, value);
+
+            if (sqlParam instanceof SingleParam) {
+                value = ((SingleParam) sqlParam).value();
+                if (value == null) {
+                    // bind null
+                    statement.setNull(i + 1, Types.NULL);
+                } else {
+                    value = mappingType.beforeBind(sqlType, mapEnv, value);
+                    bind(statement, i + 1, sqlType, value);
+                }
+            } else if (sqlParam instanceof MultiParam) {
+                for (Object element : ((MultiParam) sqlParam).valueList()) {
+                    if (element == null) {
+                        // bind null
+                        statement.setNull(i + 1, Types.NULL);
+                    } else {
+                        value = mappingType.beforeBind(sqlType, mapEnv, element);
+                        bind(statement, i + 1, sqlType, value);
+                    }
+                }
+            } else {
+                throw _Exceptions.unexpectedSqlParam(sqlParam);
+            }
+
 
         }
 

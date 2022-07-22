@@ -62,12 +62,12 @@ public final class StringType extends AbstractMappingType {
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public String beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         return beforeBind(sqlType, nonNull);
     }
 
     @Override
-    public String afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public String afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final String value;
         if (nonNull instanceof String) {
             value = (String) nonNull;

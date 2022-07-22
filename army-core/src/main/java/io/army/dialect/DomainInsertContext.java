@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.bean.*;
 import io.army.criteria.NullHandleMode;
-import io.army.criteria.SqlParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -202,6 +201,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         }//outer for
 
+        domainWrapper.domain = null; //finally must clear
         this.valuesClauseEnd = true;
     }
 
@@ -304,7 +304,10 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         public Object get(final String propertyName) throws ObjectAccessException {
             final IDomain domain;
             domain = this.domain;
-            assert domain != null;
+            if (domain == null) {
+                //eg: MySQL onDuplicateKeyUpdate clause
+                throw _Exceptions.namedParamErrorPosition(propertyName);
+            }
             return this.accessor.get(domain, propertyName);
         }
 
@@ -312,7 +315,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
     }//DomainWrapper
 
 
-    private static final class DelayIdParamValue implements SqlParam {
+    private static final class DelayIdParamValue implements SingleParam {
 
         private final PrimaryFieldMeta<?> field;
 

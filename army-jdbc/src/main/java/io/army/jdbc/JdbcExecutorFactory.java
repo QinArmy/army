@@ -4,7 +4,7 @@ import io.army.codec.JsonCodec;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.SyncKey;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.ExecutorEnvironment;
@@ -42,7 +42,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     final ArmyEnvironment env;
 
-    final MappingEnvironment mapEnv;
+    final MappingEnv mapEnv;
 
     final boolean useLargeUpdate;
 
@@ -61,7 +61,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
         this.executorEnv = executorEnv;
 
         this.env = executorEnv.environment();
-        this.mapEnv = new JdbcMappingEnvironment(serverMeta, executorEnv);
+        this.mapEnv = new JdbcMappingEnv(serverMeta, executorEnv);
 
         if (this.env.getOrDefault(SyncKey.JDBC_FORBID_V18)) {
             this.useLargeUpdate = false;
@@ -81,7 +81,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
     }
 
     @Override
-    public MappingEnvironment mappingEnvironment() {
+    public MappingEnv mappingEnvironment() {
         return this.mapEnv;
     }
 
@@ -140,11 +140,11 @@ final class JdbcExecutorFactory implements ExecutorFactory {
     }
 
 
-    private static final class JdbcMappingEnvironment implements MappingEnvironment {
+    private static final class JdbcMappingEnv implements MappingEnv {
 
         private final ServerMeta serverMeta;
 
-        private JdbcMappingEnvironment(ServerMeta serverMeta, ExecutorEnvironment env) {
+        private JdbcMappingEnv(ServerMeta serverMeta, ExecutorEnvironment env) {
             this.serverMeta = serverMeta;
         }
 

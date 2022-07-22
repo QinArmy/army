@@ -48,7 +48,7 @@ public final class UnsignedShortType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Integer beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final int value;
         value = IntegerType.beforeBind(sqlType, nonNull, 0, 0xFFFF);
         if (value < 0 || value > 0xFFFF) {
@@ -58,7 +58,7 @@ public final class UnsignedShortType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Integer afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Integer afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

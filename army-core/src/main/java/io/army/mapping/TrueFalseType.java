@@ -56,7 +56,7 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Object beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof Boolean)) {
             String m = String.format("%s support only %s", TrueFalseType.class.getName(), Boolean.class.getName());
             throw outRangeOfSqlType(sqlType, nonNull, new CriteriaException(m));
@@ -71,7 +71,7 @@ public final class TrueFalseType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Boolean afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Boolean afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final Boolean value;
         if (sqlType.database() == Database.PostgreSQL) {
             if (!(nonNull instanceof Boolean)) {

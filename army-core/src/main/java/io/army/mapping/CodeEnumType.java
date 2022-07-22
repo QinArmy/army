@@ -59,7 +59,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Integer beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!this.enumClass.isInstance(nonNull)) {
             throw outRangeOfSqlType(sqlType, nonNull);
         }
@@ -67,7 +67,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public CodeEnum afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public CodeEnum afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

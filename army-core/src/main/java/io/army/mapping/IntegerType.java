@@ -48,12 +48,12 @@ public final class IntegerType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Integer beforeBind(SqlType sqlType, final MappingEnvironment env, final Object nonNull) {
+    public Integer beforeBind(SqlType sqlType, final MappingEnv env, final Object nonNull) {
         return beforeBind(sqlType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     @Override
-    public Integer afterGet(SqlType sqlType, final MappingEnvironment env, Object nonNull) {
+    public Integer afterGet(SqlType sqlType, final MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Integer)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

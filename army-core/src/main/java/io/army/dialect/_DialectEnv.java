@@ -3,7 +3,7 @@ package io.army.dialect;
 
 import io.army.codec.JsonCodec;
 import io.army.env.ArmyEnvironment;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 
 import java.time.ZoneOffset;
@@ -18,7 +18,7 @@ public interface _DialectEnv {
 
     _FieldValueGenerator fieldValuesGenerator();
 
-    MappingEnvironment mappingEnvironment();
+    MappingEnv mappingEnvironment();
 
 
     default JsonCodec jsonCodec() {

@@ -104,7 +104,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * </p>
      */
     ValuesSyntaxInsertContext(_Insert._ValuesSyntaxInsert stmt, ArmyDialect dialect, Visible visible) {
-        super(dialect, stmt.isPreferLiteral(), visible);
+        super(dialect, true, visible);
 
         this.migration = stmt.isMigration();
         final NullHandleMode handleMode = stmt.nullHandle();

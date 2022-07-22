@@ -47,12 +47,12 @@ public final class UnsignedBigDecimalType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public BigDecimal beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         return BigDecimalType.beforeBind(sqlType, nonNull);
     }
 
     @Override
-    public BigDecimal afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public BigDecimal afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

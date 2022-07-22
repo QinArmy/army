@@ -1,7 +1,7 @@
 package io.army.mapping.mysql;
 
 import io.army.dialect.Database;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
@@ -41,12 +41,12 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Long beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Long beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         return beforeBind(sqlType, nonNull);
     }
 
     @Override
-    public Long afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Long afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Long)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

@@ -53,7 +53,7 @@ public final class UnsignedBigInteger extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public BigDecimal beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public BigDecimal beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         final BigDecimal value;
         value = BigDecimalType.INSTANCE.beforeBind(sqlType, env, nonNull);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
@@ -63,7 +63,7 @@ public final class UnsignedBigInteger extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public BigInteger afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public BigInteger afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof BigDecimal)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

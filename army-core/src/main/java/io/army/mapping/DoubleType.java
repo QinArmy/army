@@ -42,7 +42,7 @@ public final class DoubleType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Double beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Double beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         final double value;
         if (nonNull instanceof Double) {
             value = (Double) nonNull;
@@ -61,7 +61,7 @@ public final class DoubleType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Double afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Double afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Double)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

@@ -47,7 +47,7 @@ public final class YearType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public Object beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final Object value;
         switch (sqlType.database()) {
             case MySQL: {
@@ -78,7 +78,7 @@ public final class YearType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Year afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public Year afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         final Year value;
         switch (sqlType.database()) {
             case MySQL: {

@@ -11,8 +11,8 @@ public interface MappingType extends ParamMeta {
 
     SqlType map(ServerMeta meta);
 
-    Object beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull);
+    Object beforeBind(SqlType sqlType, MappingEnv env, Object nonNull);
 
-    Object afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull);
+    Object afterGet(SqlType sqlType, MappingEnv env, Object nonNull);
 
 }

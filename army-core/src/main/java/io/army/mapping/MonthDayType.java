@@ -49,7 +49,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public LocalDate beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public LocalDate beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final MonthDay value;
         if (nonNull instanceof MonthDay) {
             value = (MonthDay) nonNull;
@@ -71,7 +71,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public MonthDay afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public MonthDay afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof LocalDate)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

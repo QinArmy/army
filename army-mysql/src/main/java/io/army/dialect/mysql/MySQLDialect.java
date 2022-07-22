@@ -58,7 +58,7 @@ final class MySQLDialect extends MySQL {
 
     @Override
     protected void assertDialectInsert(Insert insert) {
-         _MySQLConsultant.assertInsert(insert);
+        _MySQLConsultant.assertInsert(insert);
     }
 
     @Override
@@ -78,15 +78,45 @@ final class MySQLDialect extends MySQL {
 
 
     @Override
-    protected void valueSyntaxSingleInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert stmt) {
-        final _MySQLInsert insert = (_MySQLInsert) stmt;
+    protected void valueSyntaxInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
+        assert context.dialect() == this;
+
+        final _MySQLInsert stmt = (_MySQLInsert) insert;
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+
+        //1. INSERT keywords
+        sqlBuilder.append(_Constant.INSERT);
+        //2. hint clause
+        this.hintClause(stmt.hintList(), sqlBuilder, context);
+        //3. modifier list
+        this.insertModifiers(stmt.modifierList(), sqlBuilder);
+        //4. INTO keywords
+        sqlBuilder.append(_Constant.SPACE_INTO_SPACE);
+
+        //5. table name
+        this.safeObjectName(context.table(), sqlBuilder);
+        //6. partition clause
+        this.partitionClause(stmt.partitionList(), sqlBuilder);
+        //7. column list
+        context.appendFieldList();
+        //8. values clause
+        context.appendValueList();
+
+        if (insert instanceof _MySQLInsert._InsertWithRowAlias) {
+            final _MySQLInsert._InsertWithRowAlias aliasClause = (_MySQLInsert._InsertWithRowAlias) insert;
+            //9. AS keywords
+            sqlBuilder.append(_Constant.SPACE_AS);
+            this.identifier(aliasClause.rowAlias(), sqlBuilder);
+            int index = 0;
+            for (_Pair<Object, _Expression> pair : aliasClause.duplicatePairList()) {
+                if (index > 0) {
+
+                }
+                index++;
+            }
+        }
 
 
-    }
-
-    @Override
-    protected void valueSyntaxChildInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert stmt) {
-        super.valueSyntaxChildInsert(context, stmt);
     }
 
 
@@ -399,6 +429,23 @@ final class MySQLDialect extends MySQL {
                     break;
                 default:
                     throw new CriteriaException(String.format("%s UPDATE don't support %s", this.dialect, modifier));
+
+            }
+        }
+    }
+
+
+    private void insertModifiers(List<MySQLWords> modifierList, StringBuilder builder) {
+        for (MySQLWords modifier : modifierList) {
+            switch (modifier) {
+                case LOW_PRIORITY:
+                case DELAYED:
+                case HIGH_PRIORITY:
+                case IGNORE:
+                    builder.append(modifier.words);
+                    break;
+                default:
+                    throw new CriteriaException(String.format("%s INSERT don't support %s", this.dialect, modifier));
 
             }
         }

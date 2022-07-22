@@ -2,7 +2,7 @@ package io.army.mapping.mysql;
 
 import io.army.dialect.Database;
 import io.army.mapping.AbstractMappingType;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
@@ -38,7 +38,7 @@ public final class MySQLBlobType extends AbstractMappingType {
     }
 
     @Override
-    public byte[] beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public byte[] beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw outRangeOfSqlType(sqlType, nonNull);
         }
@@ -50,7 +50,7 @@ public final class MySQLBlobType extends AbstractMappingType {
     }
 
     @Override
-    public byte[] afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public byte[] afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

@@ -5,7 +5,6 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.NullHandleMode;
-import io.army.criteria.SqlParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -37,10 +36,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         return new ValuesInsertContext(dialect, stmt, visible);
     }
 
-    static ValuesInsertContext forChild(ValuesInsertContext parentContext, _Insert._ValuesInsert insert
+    static ValuesInsertContext forChild(ValuesInsertContext parentContext, _Insert._ChildValuesInsert insert
             , ArmyDialect dialect, Visible visible) {
         return new ValuesInsertContext(parentContext, insert, dialect, visible);
     }
+
 
     private final List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
@@ -93,9 +93,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(ValuesInsertContext, _Insert._ValuesInsert, ArmyDialect, Visible)
+     * @see #forChild(ValuesInsertContext, _Insert._ChildValuesInsert, ArmyDialect, Visible)
      */
-    private ValuesInsertContext(ValuesInsertContext parentContext, _Insert._ValuesInsert stmt
+    private ValuesInsertContext(ValuesInsertContext parentContext, _Insert._ChildValuesInsert stmt
             , ArmyDialect dialect, Visible visible) {
         super(stmt, dialect, visible);
         assert ((ChildTableMeta<?>) this.table).parentMeta() == parentContext.table;
@@ -437,7 +437,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
     }//RowObjectWrapper
 
 
-    private static final class DelayIdParamValue implements SqlParam {
+    private static final class DelayIdParamValue implements SingleParam {
 
         private final PrimaryFieldMeta<?> field;
 

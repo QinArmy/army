@@ -1,7 +1,7 @@
 package io.army.mapping.optional;
 
 import io.army.mapping.AbstractMappingType;
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.mapping.StringType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySqlType;
@@ -47,12 +47,12 @@ public final class JsonStringType extends AbstractMappingType {
     }
 
     @Override
-    public String beforeBind(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public String beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
         return StringType.beforeBind(sqlType, nonNull);
     }
 
     @Override
-    public String afterGet(SqlType sqlType, MappingEnvironment env, Object nonNull) {
+    public String afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }

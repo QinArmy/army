@@ -1,6 +1,6 @@
 package io.army.mapping.optional;
 
-import io.army.mapping.MappingEnvironment;
+import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.OracleDataType;
@@ -53,7 +53,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public OffsetDateTime beforeBind(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public OffsetDateTime beforeBind(SqlType sqlType, MappingEnv env, final Object nonNull) {
         final OffsetDateTime value;
         if (nonNull instanceof OffsetDateTime) {
             value = (OffsetDateTime) nonNull;
@@ -72,7 +72,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public OffsetDateTime afterGet(SqlType sqlType, MappingEnvironment env, final Object nonNull) {
+    public OffsetDateTime afterGet(SqlType sqlType, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof OffsetDateTime)) {
             throw errorJavaTypeForSqlType(sqlType, nonNull);
         }
