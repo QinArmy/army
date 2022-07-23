@@ -450,7 +450,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         } else if (this instanceof Delete) {
             stmt = d.delete((Delete) this, visible);
         } else if (this instanceof Values) {
-            stmt = d.values((Values) this, visible);
+            stmt = d.dialectStmt((Values) this, visible);
         } else {
             throw _Exceptions.castCriteriaApi();
         }
@@ -467,7 +467,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         } else if (this instanceof Delete) {
             stmt = _MockDialects.from(dialect).delete((Delete) this, visible);
         } else if (this instanceof Values) {
-            stmt = _MockDialects.from(dialect).values((Values) this, visible);
+            stmt = _MockDialects.from(dialect).dialectStmt((Values) this, visible);
         } else {
             throw _Exceptions.castCriteriaApi();
         }

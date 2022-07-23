@@ -6,6 +6,7 @@ import io.army.criteria.impl._MySQLConsultant;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
+import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLLoad;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLWords;
@@ -137,11 +138,14 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     public Stmt dialectStmt(final DialectStatement statement, final Visible visible) {
+        statement.prepared();
         final Stmt stmt;
-        if (statement instanceof MySQLLoad) {
+        if (statement instanceof MySQLReplace) {
+            stmt = this.parseInsert((_Insert) statement, visible);
+        } else if (statement instanceof Values && statement instanceof MySQLDqlValues) {
+            stmt = this.values((Values) statement, visible);
+        } else if (statement instanceof MySQLLoad) {
             stmt = this.loadData((MySQLLoad) statement, visible);
-        } else if (statement instanceof MySQLReplace) {
-            stmt = this.dialectInsert((_Insert) statement, visible);
         } else {
             throw _Exceptions.dontSupportDialectStatement(statement, this.dialect);
         }

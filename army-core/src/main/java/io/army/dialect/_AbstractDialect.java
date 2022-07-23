@@ -68,15 +68,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
     @Override
     public final Stmt insert(final Insert insert, final Visible visible) {
         insert.prepared();
-        final Stmt stmt;
         if (insert instanceof StandardStatement) {
             _SQLConsultant.assertStandardInsert(insert);
-            stmt = handleStandardValueInsert((_Insert._DomainInsert) insert, visible);
         } else {
             assertDialectInsert((_Insert) insert);
-            stmt = dialectInsert((_Insert) insert, visible);
         }
-        return stmt;
+        return parseInsert((_Insert) insert, visible);
     }
 
 
@@ -443,20 +440,27 @@ public abstract class _AbstractDialect implements ArmyDialect {
         return MultiDeleteContext.forChild(stmt, this, visible);
     }
 
-    protected final Stmt dialectInsert(_Insert insert, final Visible visible) {
+    /**
+     * @see #insert(Insert, Visible)
+     */
+    protected final Stmt parseInsert(final _Insert insert, final Visible visible) {
         final Stmt stmt;
         if (insert instanceof _Insert._DomainInsert) {
             stmt = handleDomainInsert((_Insert._DomainInsert) insert, visible);
         } else if (insert instanceof _Insert._ValuesInsert) {
             stmt = handleValueInsert((_Insert._ValuesInsert) insert, visible);
         } else if (insert instanceof _Insert._AssignmentInsert) {
-            throw new UnsupportedOperationException();
+            stmt = handleAssignmentInsert((_Insert._AssignmentInsert) insert, visible);
         } else if (insert instanceof _Insert._QueryInsert) {
-            throw new UnsupportedOperationException();
+            stmt = handleQueryInsert((_Insert._QueryInsert) insert, visible);
         } else {
             throw _Exceptions.unknownStatement((Statement) insert, this.dialect);
         }
         return stmt;
+    }
+
+    protected final Stmt values(final Values values, final Visible visible) {
+        throw new UnsupportedOperationException();
     }
 
 
@@ -1066,8 +1070,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     /**
-     * @see #insert(Insert, Visible)
+     * @see #parseInsert(_Insert, Visible)
      */
+    @SuppressWarnings("all")
     private Stmt handleDomainInsert(final _Insert._DomainInsert insert, final Visible visible) {
 
         final Stmt stmt;
@@ -1079,25 +1084,39 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
             final DomainInsertContext singleContext;
             singleContext = DomainInsertContext.forSingle(parentStmt, this, visible);
-            this.valueSyntaxInsert(singleContext, parentStmt);
+
+            if (insert instanceof StandardStatement) {
+                this.standardValueSyntaxInsert(singleContext, parentStmt);
+            } else {
+                this.valueSyntaxInsert(singleContext, parentStmt);
+            }
 
             final DomainInsertContext childContext;
             childContext = DomainInsertContext.forChild(singleContext, childStmt, this, visible);
-            this.valueSyntaxInsert(childContext, childStmt);
 
+            if (insert instanceof StandardStatement) {
+                this.standardValueSyntaxInsert(childContext, childStmt);
+            } else {
+                this.valueSyntaxInsert(childContext, childStmt);
+            }
             stmt = Stmts.pair(singleContext.build(), childContext.build());
         } else {
             final DomainInsertContext singleContext;
             singleContext = DomainInsertContext.forSingle(insert, this, visible);
-            this.valueSyntaxInsert(singleContext, insert);
+            if (insert instanceof StandardStatement) {
+                this.standardValueSyntaxInsert(singleContext, insert);
+            } else {
+                this.valueSyntaxInsert(singleContext, insert);
+            }
             stmt = singleContext.build();
         }
         return stmt;
     }
 
     /**
-     * @see #insert(Insert, Visible)
+     * @see #parseInsert(_Insert, Visible)
      */
+    @SuppressWarnings("all")
     private Stmt handleValueInsert(final _Insert._ValuesInsert insert, final Visible visible) {
         final Stmt stmt;
         if (insert instanceof _Insert._ChildValuesInsert) {
@@ -1107,20 +1126,45 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
             final ValuesInsertContext singleContext;
             singleContext = ValuesInsertContext.forSingle(parentStmt, this, visible);
-            this.valueSyntaxInsert(singleContext, parentStmt);
+            if (insert instanceof StandardStatement) {
+                this.standardValueSyntaxInsert(singleContext, parentStmt);
+            } else {
+                this.valueSyntaxInsert(singleContext, parentStmt);
+            }
 
             final ValuesInsertContext childContext;
             childContext = ValuesInsertContext.forChild(singleContext, childStmt, this, visible);
-            this.valueSyntaxInsert(childContext, childStmt);
-
+            if (insert instanceof StandardStatement) {
+                this.standardValueSyntaxInsert(childContext, childStmt);
+            } else {
+                this.valueSyntaxInsert(childContext, childStmt);
+            }
             stmt = Stmts.pair(singleContext.build(), childContext.build());
         } else {
             final ValuesInsertContext singleContext;
             singleContext = ValuesInsertContext.forSingle(insert, this, visible);
-            this.valueSyntaxInsert(singleContext, insert);
+            if (insert instanceof StandardStatement) {
+                this.standardValueSyntaxInsert(singleContext, insert);
+            } else {
+                this.valueSyntaxInsert(singleContext, insert);
+            }
             stmt = singleContext.build();
         }
         return stmt;
+    }
+
+    /**
+     * @see #parseInsert(_Insert, Visible)
+     */
+    private Stmt handleAssignmentInsert(final _Insert._AssignmentInsert insert, final Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @see #parseInsert(_Insert, Visible)
+     */
+    private Stmt handleQueryInsert(final _Insert._QueryInsert insert, final Visible visible) {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1291,32 +1335,18 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
 
     /**
-     * @see #insert(Insert, Visible)
+     * @see #handleDomainInsert(_Insert._DomainInsert, Visible)
      */
-    private Stmt handleStandardValueInsert(final _Insert._DomainInsert insert, final Visible visible) {
-        final DomainInsertContext nonChildContext;
-        nonChildContext = DomainInsertContext.forSingle(insert, this, visible);
+    private void standardValueSyntaxInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert stmt) {
+        throw new UnsupportedOperationException();
+    }
 
-        _DialectUtils.standardInertIntoTable(nonChildContext);
 
-        nonChildContext.appendFieldList();
-        nonChildContext.appendValueList();
-        nonChildContext.appendReturnIdIfNeed();
-
-        final Stmt stmt;
-        if (insert.table() instanceof ChildTableMeta) {
-            final _ValueInsertContext childContext;
-            childContext = DomainInsertContext.forChild(nonChildContext, insert, this, visible);
-
-            _DialectUtils.standardInertIntoTable(childContext);
-            childContext.appendFieldList();
-            childContext.appendValueList();
-
-            stmt = Stmts.pair(nonChildContext.build(), childContext.build());
-        } else {
-            stmt = nonChildContext.build();
-        }
-        return stmt;
+    /**
+     * @see #handleQueryInsert(_Insert._QueryInsert, Visible)
+     */
+    private void standardQueryInsert(final _QueryInsertContext context, final _Insert._QueryInsert stmt) {
+        throw new UnsupportedOperationException();
     }
 
 

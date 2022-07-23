@@ -31,10 +31,6 @@ public interface DialectParser {
 
     SimpleStmt select(Select select, Visible visible);
 
-    default SimpleStmt values(Values values, Visible visible) {
-        throw new UnsupportedOperationException();
-    }
-
     void rowSet(RowSet rowSet, _SqlContext original);
 
    default Stmt dialectStmt(DialectStatement statement,Visible visible){
