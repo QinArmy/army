@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.meta.TableMeta;
 
-public interface _ValueInsertContext extends InsertContext {
+public interface _ValueInsertContext extends _InsertContext {
 
     TableMeta<?> table();
 

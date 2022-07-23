@@ -110,6 +110,22 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
+    static int queryInsertModifier(final MySQLWords modifier) {
+        final int level;
+        switch (modifier) {
+            case LOW_PRIORITY:
+            case HIGH_PRIORITY:
+                level = 1;
+                break;
+            case IGNORE:
+                level = 2;
+                break;
+            default:
+                level = -1;
+        }
+        return level;
+    }
+
 
     static int replaceModifier(final MySQLWords modifier) {
         final int level;

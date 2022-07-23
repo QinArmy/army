@@ -6,11 +6,14 @@ import io.army.criteria.impl._MySQLConsultant;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
+import io.army.criteria.mysql.MySQLLoad;
+import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.stmt.Stmt;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -28,13 +31,13 @@ import java.util.*;
  *
  * @since 1.0
  */
-final class MySQLDialect extends MySQL {
+final class MySQLDialectParser extends MySQLParser {
 
-    static MySQLDialect create(_DialectEnv environment, Dialect dialect) {
+    static MySQLDialectParser create(_DialectEnv environment, Dialect dialect) {
         if (dialect.database != Database.MySQL) {
             throw new IllegalArgumentException();
         }
-        return new MySQLDialect(environment, dialect);
+        return new MySQLDialectParser(environment, dialect);
     }
 
     private static final String SPACE_HINT_START = " /*+";
@@ -50,14 +53,18 @@ final class MySQLDialect extends MySQL {
     private static final String SPACE_ON_DUPLICATE_KEY_UPDATE = " ON DUPLICATE KEY UPDATE";
 
 
-    private MySQLDialect(_DialectEnv environment, Dialect dialect) {
+    private MySQLDialectParser(_DialectEnv environment, Dialect dialect) {
         super(environment, dialect);
 
     }
 
     @Override
-    protected void assertDialectInsert(Insert insert) {
-        _MySQLConsultant.assertInsert(insert);
+    protected void assertDialectInsert(final _Insert insert) {
+        if (insert instanceof MySQLReplace) {
+            _MySQLConsultant.assertReplace((MySQLReplace) insert);
+        } else {
+            _MySQLConsultant.assertInsert((Insert) insert);
+        }
     }
 
     @Override
@@ -77,50 +84,68 @@ final class MySQLDialect extends MySQL {
 
 
     @Override
-    protected void valueSyntaxInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert insert) {
+    protected void valueSyntaxInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert stmt) {
         assert context.dialect() == this;
-
-        final _MySQLInsert stmt = (_MySQLInsert) insert;
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-
-        //1. INSERT keywords
-        sqlBuilder.append(_Constant.INSERT);
-        //2. hint clause
-        this.hintClause(stmt.hintList(), sqlBuilder, context);
-        //3. modifier list
-        this.insertModifiers(stmt.modifierList(), sqlBuilder);
-        //4. INTO keywords
-        sqlBuilder.append(_Constant.SPACE_INTO_SPACE);
-
-        //5. table name
-        this.safeObjectName(context.table(), sqlBuilder);
-        //6. partition clause
-        this.partitionClause(stmt.partitionList(), sqlBuilder);
-        //7. column list
+        //1. append insert common part
+        this.appendInsertCommonPart(context, (_MySQLInsert) stmt);
+        //2. column list
         context.appendFieldList();
-        //8. values clause
+        //3. values clause
         context.appendValueList();
 
-        if (insert instanceof _MySQLInsert._InsertWithDuplicateKey) {
-            //9. on duplicate key update keywords
-            sqlBuilder.append(SPACE_ON_DUPLICATE_KEY_UPDATE);
-            final _MySQLInsert._InsertWithDuplicateKey clause = (_MySQLInsert._InsertWithDuplicateKey) insert;
-            //10. on duplicate key update clause
-            int index = 0;
-            for (_Pair<FieldMeta<?>, _Expression> pair : clause.duplicatePairList()) {
-                if (index > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-                } else {
-                    sqlBuilder.append(_Constant.SPACE);
-                }
-                this.safeObjectName(pair.first, sqlBuilder);
-                sqlBuilder.append(_Constant.SPACE_EQUAL);
-                pair.second.appendSql(context);
-                index++;
-            }
+        if (stmt instanceof _MySQLInsert._InsertWithDuplicateKey) {
+            //4. on duplicate key update clause
+            this.appendInsertDuplicateKeyClause(context, (_MySQLInsert._InsertWithDuplicateKey) stmt);
         }
 
+    }
 
+
+    @Override
+    protected void assignmentInsert(final _AssignmentInsertContext context, final _Insert._AssignmentInsert stmt) {
+        assert context.dialect() == this;
+        //1. append insert common part
+        this.appendInsertCommonPart(context, (_MySQLInsert) stmt);
+        //2. append assignment clause
+        context.appendAssignmentClause();
+
+        if (stmt instanceof _MySQLInsert._InsertWithDuplicateKey) {
+            //3. on duplicate key update clause
+            this.appendInsertDuplicateKeyClause(context, (_MySQLInsert._InsertWithDuplicateKey) stmt);
+        }
+
+    }
+
+
+    @Override
+    protected void queryInsert(final _QueryInsertContext context, final _Insert._QueryInsert stmt) {
+        assert context.dialect() == this;
+        final _MySQLInsert._MySQQueryInsert insert = (_MySQLInsert._MySQQueryInsert) stmt;
+        //1. append insert common part
+        this.appendInsertCommonPart(context, insert);
+        //2. column list
+        context.appendFieldList();
+        //3. sub query
+        this.rowSet(insert.subQuery(), context);
+
+        if (stmt instanceof _MySQLInsert._InsertWithDuplicateKey) {
+            //4. on duplicate key update clause
+            this.appendInsertDuplicateKeyClause(context, (_MySQLInsert._InsertWithDuplicateKey) stmt);
+        }
+
+    }
+
+    @Override
+    public Stmt dialectStmt(final DialectStatement statement, final Visible visible) {
+        final Stmt stmt;
+        if (statement instanceof MySQLLoad) {
+            stmt = this.loadData((MySQLLoad) statement, visible);
+        } else if (statement instanceof MySQLReplace) {
+            stmt = this.dialectInsert((_Insert) statement, visible);
+        } else {
+            throw _Exceptions.dontSupportDialectStatement(statement, this.dialect);
+        }
+        return stmt;
     }
 
 
@@ -412,6 +437,14 @@ final class MySQLDialect extends MySQL {
 
     }
 
+    /*-----------------------below private method-----------------------*/
+
+
+    private Stmt loadData(final MySQLLoad loadData, final Visible visible) {
+        throw new UnsupportedOperationException();
+    }
+
+
     private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (hintList.size() == 0) {
             return;
@@ -422,6 +455,44 @@ final class MySQLDialect extends MySQL {
             ((_SelfDescribed) hint).appendSql(context);
         }
         sqlBuilder.append(SPACE_HINT_END);
+    }
+
+
+    private void insertModifiers(StringBuilder sqlBuilder, _MySQLInsert stmt) {
+        for (MySQLWords modifier : stmt.modifierList()) {
+            switch (modifier) {
+                case LOW_PRIORITY:
+                case HIGH_PRIORITY:
+                case IGNORE:
+                    sqlBuilder.append(modifier.words);
+                    break;
+                case DELAYED: {
+                    if (stmt instanceof _MySQLInsert._MySQQueryInsert) {
+                        throw new CriteriaException(String.format("%s QUERY INSERT don't support %s"
+                                , this.dialect, modifier));
+                    }
+                    sqlBuilder.append(modifier.words);
+                }
+                break;
+                default:
+                    throw new CriteriaException(String.format("%s INSERT don't support %s"
+                            , this.dialect, modifier));
+            }
+        }
+    }
+
+    private void replaceModifiers(List<MySQLWords> modifierList, StringBuilder sqlBuilder) {
+        assert modifierList.size() == 1;
+        final MySQLWords modifier = modifierList.get(0);
+        switch (modifier) {
+            case LOW_PRIORITY:
+            case DELAYED:
+                sqlBuilder.append(modifier.words);
+                break;
+            default:
+                throw new CriteriaException(String.format("%s REPLACE don't support %s"
+                        , this.dialect, modifier));
+        }
     }
 
     private void updateModifiers(List<MySQLWords> modifierList, StringBuilder builder) {
@@ -438,22 +509,6 @@ final class MySQLDialect extends MySQL {
         }
     }
 
-
-    private void insertModifiers(List<MySQLWords> modifierList, StringBuilder builder) {
-        for (MySQLWords modifier : modifierList) {
-            switch (modifier) {
-                case LOW_PRIORITY:
-                case DELAYED:
-                case HIGH_PRIORITY:
-                case IGNORE:
-                    builder.append(modifier.words);
-                    break;
-                default:
-                    throw new CriteriaException(String.format("%s INSERT don't support %s", this.dialect, modifier));
-
-            }
-        }
-    }
 
     private void deleteModifiers(List<MySQLWords> modifierList, StringBuilder builder) {
         for (MySQLWords modifier : modifierList) {
@@ -483,13 +538,75 @@ final class MySQLDialect extends MySQL {
                 case SQL_BUFFER_RESULT:
                 case SQL_NO_CACHE:
                 case SQL_CALC_FOUND_ROWS:
-                    builder.append(modifier.render());
+                    builder.append(((MySQLWords) modifier).words);
                     break;
                 default:
                     throw new CriteriaException(String.format("%s SELECT don't support %s", this.dialect, modifier));
 
             }
         }
+    }
+
+
+    /**
+     * @see #valueSyntaxInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
+     * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     */
+    private void appendInsertCommonPart(final _InsertContext context, final _MySQLInsert stmt) {
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+
+        //1. INSERT/REPLACE keywords
+        if (stmt instanceof MySQLReplace) {
+            sqlBuilder.append("REPLACE");
+        } else {
+            sqlBuilder.append(_Constant.INSERT);
+        }
+        //2. hint clause
+        this.hintClause(stmt.hintList(), sqlBuilder, context);
+        //3. modifier list
+        if (stmt instanceof MySQLReplace) {
+            this.replaceModifiers(stmt.modifierList(), sqlBuilder);
+        } else {
+            this.insertModifiers(sqlBuilder, stmt);
+        }
+
+        //4. INTO keywords
+        sqlBuilder.append(_Constant.SPACE_INTO_SPACE);
+
+        //5. table name
+        this.safeObjectName(context.table(), sqlBuilder);
+        //6. partition clause
+        this.partitionClause(stmt.partitionList(), sqlBuilder);
+
+    }
+
+
+    /**
+     * @see #valueSyntaxInsert(_ValueInsertContext, _Insert._ValuesSyntaxInsert)
+     * @see #assignmentInsert(_AssignmentInsertContext, _Insert._AssignmentInsert)
+     * @see #queryInsert(_QueryInsertContext, _Insert._QueryInsert)
+     */
+    private void appendInsertDuplicateKeyClause(final _InsertContext context
+            , final _MySQLInsert._InsertWithDuplicateKey clause) {
+        //1. on duplicate key update keywords
+        final StringBuilder sqlBuilder = context.sqlBuilder()
+                .append(SPACE_ON_DUPLICATE_KEY_UPDATE);
+        //2. on duplicate key update clause
+        int index = 0;
+        for (_Pair<FieldMeta<?>, _Expression> pair : clause.duplicatePairList()) {
+            if (index > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            this.safeObjectName(pair.first, sqlBuilder);
+            sqlBuilder.append(_Constant.SPACE_EQUAL);
+            pair.second.appendSql(context);
+            index++;
+        }
+
+        assert index > 0;
     }
 
 

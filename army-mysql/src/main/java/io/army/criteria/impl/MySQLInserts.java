@@ -1780,7 +1780,8 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._QueryIntoClause<C> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
             this.hintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
-            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
+            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::queryInsertModifier);
             return this;
         }
 
@@ -1788,7 +1789,8 @@ abstract class MySQLInserts extends InsertSupport {
         public MySQLInsert._QueryIntoClause<C> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
             this.hintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteriaContext.criteria())
                     , MySQLHints::castHint);
-            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
+            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+                    , MySQLUtils::queryInsertModifier);
             return this;
         }
 
@@ -1944,7 +1946,7 @@ abstract class MySQLInserts extends InsertSupport {
         public MySQLInsert._QueryChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
-                    , MySQLUtils::insertModifier);
+                    , MySQLUtils::queryInsertModifier);
             return this;
         }
 
@@ -1953,7 +1955,7 @@ abstract class MySQLInserts extends InsertSupport {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
                     , MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
-                    , MySQLUtils::insertModifier);
+                    , MySQLUtils::queryInsertModifier);
             return this;
         }
 

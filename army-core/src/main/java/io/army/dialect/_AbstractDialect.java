@@ -69,29 +69,15 @@ public abstract class _AbstractDialect implements ArmyDialect {
     public final Stmt insert(final Insert insert, final Visible visible) {
         insert.prepared();
         final Stmt stmt;
-
-        if (!(insert instanceof StandardStatement)) {
-            assertDialectInsert(insert);
-        }
-
         if (insert instanceof StandardStatement) {
             _SQLConsultant.assertStandardInsert(insert);
             stmt = handleStandardValueInsert((_Insert._DomainInsert) insert, visible);
-        } else if (insert instanceof _Insert._DomainInsert) {
-            stmt = handleDomainInsert((_Insert._DomainInsert) insert, visible);
-        } else if (insert instanceof _Insert._ValuesInsert) {
-            stmt = handleValueInsert((_Insert._ValuesInsert) insert, visible);
-
-        } else if (insert instanceof _Insert._AssignmentInsert) {
-            throw new UnsupportedOperationException();
-        } else if (insert instanceof _Insert._QueryInsert) {
-            throw new UnsupportedOperationException();
         } else {
-            throw _Exceptions.unknownStatement(insert, this.dialect);
+            assertDialectInsert((_Insert) insert);
+            stmt = dialectInsert((_Insert) insert, visible);
         }
         return stmt;
     }
-
 
 
     /*################################## blow update method ##################################*/
@@ -361,7 +347,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     /*################################## blow update template method ##################################*/
 
-    protected void assertDialectInsert(Insert insert) {
+    protected void assertDialectInsert(_Insert insert) {
         String m = String.format("%s don't support this dialect insert[%s]", this, insert.getClass().getName());
         throw new CriteriaException(m);
     }
@@ -406,20 +392,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
         throw new UnsupportedOperationException();
     }
 
-
-    protected void assignmentSingleInsert(_AssignmentInsertContext context, _Insert._AssignmentInsert stmt) {
+    protected void assignmentInsert(_AssignmentInsertContext context, _Insert._AssignmentInsert stmt) {
         throw new UnsupportedOperationException();
     }
 
-    protected void assignmentChildInsert(_AssignmentInsertContext context, _Insert._AssignmentInsert stmt) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected void querySingleInsert(_QueryInsertContext context, _Insert._QueryInsert stmt) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected void queryChildInsert(_QueryInsertContext context, _Insert._QueryInsert stmt) {
+    protected void queryInsert(_QueryInsertContext context, _Insert._QueryInsert stmt) {
         throw new UnsupportedOperationException();
     }
 
@@ -464,6 +441,22 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected final _MultiDeleteContext createMultiDeleteContext(final _SingleDelete stmt, final Visible visible) {
         return MultiDeleteContext.forChild(stmt, this, visible);
+    }
+
+    protected final Stmt dialectInsert(_Insert insert, final Visible visible) {
+        final Stmt stmt;
+        if (insert instanceof _Insert._DomainInsert) {
+            stmt = handleDomainInsert((_Insert._DomainInsert) insert, visible);
+        } else if (insert instanceof _Insert._ValuesInsert) {
+            stmt = handleValueInsert((_Insert._ValuesInsert) insert, visible);
+        } else if (insert instanceof _Insert._AssignmentInsert) {
+            throw new UnsupportedOperationException();
+        } else if (insert instanceof _Insert._QueryInsert) {
+            throw new UnsupportedOperationException();
+        } else {
+            throw _Exceptions.unknownStatement((Statement) insert, this.dialect);
+        }
+        return stmt;
     }
 
 

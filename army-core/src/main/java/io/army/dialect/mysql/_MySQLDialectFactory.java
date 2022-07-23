@@ -14,11 +14,11 @@ public abstract class _MySQLDialectFactory extends _DialectFactory {
 
     public static DialectParser createDialect(final _DialectEnv environment) {
         final String className = "io.army.dialect.mysql._MySQLDialects";
-        final MySQL _dialect;
-        if (_ClassUtils.isPresent(className, MySQL.class.getClassLoader())) {
-            _dialect = _DialectFactory.invokeFactoryMethod(MySQL.class, className, environment);
+        final MySQLParser _dialect;
+        if (_ClassUtils.isPresent(className, MySQLParser.class.getClassLoader())) {
+            _dialect = _DialectFactory.invokeFactoryMethod(MySQLParser.class, className, environment);
         } else {
-            _dialect = MySQL.standard(environment, targetDialect(environment, Database.MySQL));
+            _dialect = MySQLParser.standard(environment, targetDialect(environment, Database.MySQL));
         }
         return _dialect;
     }

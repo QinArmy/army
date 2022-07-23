@@ -177,9 +177,15 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException dontSupportDialectStatement(DialectStatement statement, Dialect dialect) {
+        String m = String.format("%s don't dialect statement[%s]", dialect, _ClassUtils.safeClassName(statement));
+        return new CriteriaException(m);
+    }
+
     public static MetaException dontSupportOnlyDefault(Dialect dialect) {
         return new MetaException(String.format("%s isn't support UpdateMode[%s].", dialect, UpdateMode.ONLY_DEFAULT));
     }
+
 
     public static CriteriaException setClauseNotExists() {
         return new CriteriaException("Not found SET clause,please SET clause");

@@ -46,7 +46,7 @@ abstract class StatementContext implements StmtContext, StmtParams {
      * </p>
      */
     protected StatementContext(ArmyDialect dialect, boolean nonQueryInsert, Visible visible) {
-        if (!(this instanceof InsertContext) || this instanceof _QueryInsertContext) {
+        if (!(this instanceof _InsertContext) || this instanceof _QueryInsertContext) {
             throw new IllegalStateException();
         }
 
@@ -117,7 +117,7 @@ abstract class StatementContext implements StmtContext, StmtParams {
     @Override
     public final void appendLiteral(final NamedLiteral namedLiteral) {
         final Function<String, Object> function = this.paramConsumer.function;
-        if (!(this instanceof InsertContext) || this instanceof _QueryInsertContext || function == null) {
+        if (!(this instanceof _InsertContext) || this instanceof _QueryInsertContext || function == null) {
             String m = String.format("%s don't support %s"
                     , this.getClass().getName(), NamedLiteral.class.getName());
             throw new CriteriaException(m);
