@@ -166,8 +166,7 @@ public abstract class Stmts {
 
         @Override
         public String printSql(final Function<String, String> function) {
-            return String.format("parent sql:\n%s\n%s"
-                    , function.apply(this.parent.sql()), function.apply(this.child.sql()));
+            return String.format("%s\n%s", function.apply(this.parent.sql()), function.apply(this.child.sql()));
         }
 
         @Override

@@ -2,18 +2,13 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
-import io.army.domain.IDomain;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.Person_;
 import io.army.example.pill.domain.User_;
 import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.UserType;
-import io.army.meta.SingleTableMeta;
 import io.army.stmt.BatchStmt;
-import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
-import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -22,7 +17,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 public class StandardCriteriaUnitTests {
@@ -30,69 +24,26 @@ public class StandardCriteriaUnitTests {
     private static final Logger LOG = LoggerFactory.getLogger(StandardCriteriaUnitTests.class);
 
 
-    public <T extends IDomain> void myTest(SingleTableMeta<T> table) {
-//        T domain = null;
-//        final Insert stmt;
-//        stmt = SQLs.domainInsert()
-//                .insertInto(table)
-//                .leftParen(table.getField(""))
-//                .comma(table.getField(""))
-//                .rightParen()
-//                .common(table.getField(""), 0)
-//                .values()
-//
-//                .leftParen(table.getField(""), 0)
-//                .comma(table.getField(""), 0)
-//                .rightParen()
-//
-//                .leftParen(table.getField(""), 0)
-//                .comma(table.getField(""), 0)
-//                .rightParen()
-//
-//                .asInsert();
-    }
 
     @Test
     public void insertParent() {
-        System.out.println(ChinaRegion_.visible.mappingType().getClass().getName());
-        final Insert insert;
-        insert = SQLs.domainInsert(ChinaRegion_.T)
+        final Insert stmt;
+        stmt = SQLs.domainInsert(ChinaRegion_.T)
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
-                .defaultLiteral(ChinaRegion_.regionGdp, new BigDecimal("88888.88"))
+                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
                 .defaultLiteral(ChinaRegion_.visible, true)
+                .defaultLiteral(ChinaRegion_.parentId, 0)
                 .values(this::createRegionList)
                 .asInsert();
-
-        for (Dialect dialect : Dialect.values()) {
-            Stmt stmt;
-            stmt = insert.mockAsStmt(dialect, Visible.ONLY_VISIBLE);
-            assertTrue(stmt instanceof GeneratedKeyStmt);
-            GeneratedKeyStmt keyStmt = (GeneratedKeyStmt) stmt;
-
-            LOG.debug("{}:\n {}", dialect.name(), stmt);
-            switch (dialect.database) {
-                case MySQL:
-                    assertNull(keyStmt.idField());
-                    assertNull(keyStmt.idReturnAlias());
-                    break;
-                case PostgreSQL:
-                case Oracle:
-                case H2:
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(dialect.database);
-            }
-
-        }
+        printStmt(stmt);
 
     }
 
-
     @Test
     public void insertChild() {
-        final Insert insert;
-        insert = SQLs.domainInsert(ChinaProvince_.T)
+        final Insert stmt;
+        stmt = SQLs.domainInsert(ChinaProvince_.T)
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
                 .child()
@@ -100,9 +51,7 @@ public class StandardCriteriaUnitTests {
                 .values(this::createProvinceList)
                 .asInsert();
 
-        for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), insert.mockAsString(mode, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
     }
 
     @Test
@@ -502,5 +451,6 @@ public class StandardCriteriaUnitTests {
         }
 
     }
+
 
 }

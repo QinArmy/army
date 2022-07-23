@@ -13,20 +13,20 @@ import java.time.temporal.Temporal;
 public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenerator {
 
     @Override
-    public final void generate(final TableMeta<?> table, final ObjectWrapper wrapper) {
+    public final void generate(final TableMeta<?> table, boolean manegeVisible, final ObjectWrapper wrapper) {
         if (!(table instanceof SimpleTableMeta)) {
             discriminatorValue(table, wrapper);
         }
-        reservedFields(table, wrapper);
+        reservedFields(table, manegeVisible, wrapper);
         generatorChan(table, wrapper);
     }
 
     @Override
-    public void validate(final TableMeta<?> table, final ObjectWrapper wrapper) {
+    public void validate(final TableMeta<?> table, boolean manegeVisible, final ObjectWrapper wrapper) {
         if (!(table instanceof SimpleTableMeta)) {
             discriminatorValue(table, wrapper);
         }
-        checkArmyManagerFields(table, wrapper);
+        checkManagerFields(table, manegeVisible, wrapper);
     }
 
 
@@ -35,7 +35,7 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
     protected abstract void generatorChan(TableMeta<?> table, ObjectWrapper wrapper);
 
 
-    private void reservedFields(final TableMeta<?> table, final ObjectWrapper wrapper) {
+    private void reservedFields(final TableMeta<?> table, final boolean manegeVisible, final ObjectWrapper wrapper) {
         //1. get non-child
         final TableMeta<?> nonChild;
         if (table instanceof ChildTableMeta) {
@@ -80,7 +80,9 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
             }
         }
         //6. visible
-        if (nonChild.containField(_MetaBridge.VISIBLE) && wrapper.get(_MetaBridge.VISIBLE) == null) {
+        if (manegeVisible
+                && nonChild.containField(_MetaBridge.VISIBLE)
+                && wrapper.get(_MetaBridge.VISIBLE) == null) {
             wrapper.set(_MetaBridge.VISIBLE, Boolean.TRUE);
         }
 
@@ -108,7 +110,8 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
         wrapper.set(discriminator.fieldName(), codeEnum);
     }
 
-    private void checkArmyManagerFields(final TableMeta<?> table, final ObjectWrapper wrapper) {
+    private void checkManagerFields(final TableMeta<?> table, final boolean manegeVisible
+            , final ObjectWrapper wrapper) {
         if (wrapper.get(_MetaBridge.ID) == null) {
             throw nullValueErrorForMigration(table.id());
         }
@@ -129,7 +132,7 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
         if (parent.containField(_MetaBridge.VERSION) && wrapper.get(_MetaBridge.VERSION) == null) {
             throw nullValueErrorForMigration(parent.getField(_MetaBridge.VERSION));
         }
-        if (parent.containField(_MetaBridge.VISIBLE) && wrapper.get(_MetaBridge.VISIBLE) == null) {
+        if (manegeVisible && parent.containField(_MetaBridge.VISIBLE) && wrapper.get(_MetaBridge.VISIBLE) == null) {
             throw nullValueErrorForMigration(parent.getField(_MetaBridge.VISIBLE));
         }
 

@@ -161,7 +161,7 @@ abstract class MySQLReplaces extends InsertSupport {
             super(clause, table);
             this.hintList = _CollectionUtils.safeList(clause.childHintList);
             this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
-            this.parentStmt = clause.createParentStmt(); //couldn't invoke asInsert
+            this.parentStmt = clause.createParentStmt(this::domainList); //couldn't invoke asInsert
         }
 
         @Override
@@ -272,7 +272,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         ReplaceInsert._ReplaceSpec valuesEnd() {
-            return this.createParentStmt();
+            return this.createParentStmt(null);
         }
 
         private MySQLReplace._DomainParentColumnsSpec<C, P> partitionEnd(List<String> partitionList) {
@@ -280,8 +280,8 @@ abstract class MySQLReplaces extends InsertSupport {
             return this;
         }
 
-        private DomainReplaceStatement createParentStmt() {
-            return new DomainReplaceStatement(this);
+        private DomainReplaceStatement createParentStmt(@Nullable Supplier<List<IDomain>> supplier) {
+            return new DomainReplaceStatement(this, supplier);
         }
 
 
@@ -322,20 +322,30 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private final List<IDomain> domainList;
 
+        private final Supplier<List<IDomain>> supplier;
+
         private DomainReplaceStatement(DomainPartitionClause<?, ?> clause) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.domainList = clause.domainList();
+            this.supplier = null;
         }
 
-        private DomainReplaceStatement(DomainParentPartitionClause<?, ?> clause) {
+        private DomainReplaceStatement(DomainParentPartitionClause<?, ?> clause
+                , @Nullable Supplier<List<IDomain>> supplier) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
-            this.domainList = clause.domainList();
+            if (supplier == null) {
+                this.domainList = clause.domainList();
+                this.supplier = null;
+            } else {
+                this.domainList = Collections.emptyList();
+                this.supplier = supplier;
+            }
         }
 
 

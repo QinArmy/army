@@ -10,8 +10,10 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -81,7 +83,7 @@ abstract class StandardInserts extends InsertSupport {
 
         private DomainColumnsClause(DomainParentColumnsClause<C, ?> clause, ChildTableMeta<T> table) {
             super(clause, table);
-            this.parentStmt = clause.createParentStmt();//couldn't invoke asInsert
+            this.parentStmt = clause.createParentStmt(this::domainList);//couldn't invoke asInsert
         }
 
         @Override
@@ -134,11 +136,11 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         Insert._InsertSpec valuesEnd() {
-            return this.createParentStmt();
+            return this.createParentStmt(null);
         }
 
-        private DomainsInsertStatement createParentStmt() {
-            return new DomainsInsertStatement(this);
+        private DomainsInsertStatement createParentStmt(@Nullable Supplier<List<IDomain>> supplier) {
+            return new DomainsInsertStatement(this, supplier);
         }
 
     }//StandardDomainParentColumnsClause
@@ -169,19 +171,29 @@ abstract class StandardInserts extends InsertSupport {
 
         private final List<IDomain> domainList;
 
+        private final Supplier<List<IDomain>> supplier;
+
         private DomainsInsertStatement(DomainColumnsClause<?, ?> clause) {
             super(clause);
             this.domainList = clause.domainList();
+            this.supplier = null;
         }
 
-        private DomainsInsertStatement(DomainParentColumnsClause<?, ?> clause) {
+        private DomainsInsertStatement(DomainParentColumnsClause<?, ?> clause, @Nullable Supplier<List<IDomain>> supplier) {
             super(clause);
-            this.domainList = clause.domainList();
+            if (supplier == null) {
+                this.domainList = clause.domainList();
+                this.supplier = null;
+            } else {
+                this.domainList = Collections.emptyList();
+                this.supplier = supplier;
+            }
+
         }
 
         @Override
         public final List<IDomain> domainList() {
-            return this.domainList;
+            return this.supplier == null ? this.domainList : this.supplier.get();
         }
 
     }//StandardDomainInsertStatement

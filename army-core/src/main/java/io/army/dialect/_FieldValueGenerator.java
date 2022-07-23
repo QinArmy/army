@@ -5,7 +5,9 @@ import io.army.meta.TableMeta;
 
 public interface _FieldValueGenerator {
 
-    void generate(TableMeta<?> table, ObjectWrapper wrapper);
+    void generate(TableMeta<?> table, boolean manegeVisible, ObjectWrapper wrapper);
 
-    void validate(TableMeta<?> table, ObjectWrapper wrapper);
+    void validate(TableMeta<?> table, boolean manegeVisible, ObjectWrapper wrapper);
+
+
 }

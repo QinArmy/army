@@ -24,7 +24,9 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     final boolean preferLiteral;
 
-    final TableMeta<?> table;
+    final TableMeta<?> insertTable;
+
+    final TableMeta<?> domainTable;
 
     final List<FieldMeta<?>> fieldList;
 
@@ -33,7 +35,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     final boolean duplicateKeyClause;
 
     /**
-     * {@link #table} instanceof {@link  SingleTableMeta} and  dialect support returning clause nad generated key.
+     * {@link #insertTable} instanceof {@link  SingleTableMeta} and  dialect support returning clause nad generated key.
      */
     final PrimaryFieldMeta<?> returnId;
 
@@ -52,8 +54,9 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      */
-    ValuesSyntaxInsertContext(ArmyDialect dialect, _Insert._ValuesSyntaxInsert stmt, Visible visible) {
-        super(dialect, stmt.isPreferLiteral(), visible);
+    ValuesSyntaxInsertContext(ArmyDialect dialect, _Insert._ValuesSyntaxInsert stmt
+            , TableMeta<?> domainTable, Visible visible) {
+        super(dialect, true, visible);
 
         this.migration = stmt.isMigration();
         final NullHandleMode handleMode = stmt.nullHandle();
@@ -67,33 +70,43 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 
-        final TableMeta<?> domainTable = stmt.table();
+
+        this.insertTable = stmt.table();
+        assert this.insertTable instanceof SingleTableMeta;
+        if (domainTable instanceof ChildTableMeta) {
+            assert this.insertTable == ((ChildTableMeta<?>) domainTable).parentMeta();
+        } else {
+            assert this.insertTable == domainTable;
+        }
+        this.domainTable = domainTable;
         this.discriminator = domainTable.discriminator();
         this.discriminatorValue = domainTable.discriminatorValue();
-        if (domainTable instanceof ChildTableMeta) {
-            this.table = ((ChildTableMeta<?>) domainTable).parentMeta();
-        } else {
-            this.table = domainTable;
-        }
 
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
         if (fieldList.size() == 0) {
-            this.fieldList = castFieldList(this.table);
+            this.fieldList = castFieldList(this.insertTable);
         } else {
-            this.fieldList = mergeFieldList(this.table, fieldList, stmt.fieldMap());
+            this.fieldList = mergeFieldList(this.insertTable, fieldList, stmt.fieldMap());
         }
 
-        final PrimaryFieldMeta<?> idField = this.table.id();
-        if (idField.generatorType() != GeneratorType.POST || !dialect.supportInsertReturning()) {
+        final PrimaryFieldMeta<?> idField = this.insertTable.id();
+        if (idField.generatorType() != GeneratorType.POST) {
             this.returnId = null;
             this.idSelectionAlias = null;
-        } else if (stmt instanceof _Insert._ReturningInsert) {
+        } else if (dialect.supportInsertReturning()) {
             //TODO
             throw new UnsupportedOperationException();
+        } else if (this.duplicateKeyClause) {
+            if (domainTable instanceof ChildTableMeta) {
+                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainTable);
+            }
+            this.returnId = null;
+            this.idSelectionAlias = null;
         } else {
             this.returnId = idField;
             this.idSelectionAlias = idField.fieldName();
         }
+
 
     }
 
@@ -120,15 +133,16 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
         final ChildTableMeta<?> table = (ChildTableMeta<?>) stmt.table();
 
-        this.table = table;
+        this.insertTable = table;
+        this.domainTable = table;
         this.discriminator = table.discriminator();
         this.discriminatorValue = table.discriminatorValue();
 
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
         if (fieldList.size() == 0) {
-            this.fieldList = castFieldList(this.table);
+            this.fieldList = castFieldList(this.insertTable);
         } else {
-            this.fieldList = mergeFieldList(this.table, fieldList, stmt.fieldMap());
+            this.fieldList = mergeFieldList(this.insertTable, fieldList, stmt.fieldMap());
         }
         this.returnId = null;
         this.idSelectionAlias = null;
@@ -137,7 +151,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     @Override
     public final TableMeta<?> table() {
-        return this.table;
+        return this.insertTable;
     }
 
     @Override
@@ -188,7 +202,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     public final PrimaryFieldMeta<?> idField() {
         PrimaryFieldMeta<?> field = this.returnId;
         if (field == null) {
-            final TableMeta<?> table = this.table;
+            final TableMeta<?> table = this.insertTable;
             if (table instanceof ChildTableMeta) {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -202,7 +216,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     public final String idReturnAlias() {
         String alias = this.idSelectionAlias;
         if (alias == null) {
-            final TableMeta<?> table = this.table;
+            final TableMeta<?> table = this.insertTable;
             if (table instanceof ChildTableMeta) {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -216,6 +230,13 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     public final List<Selection> selectionList() {
         //TODO
         return Collections.emptyList();
+    }
+
+
+    static boolean isManageVisible(TableMeta<?> insertTable, Map<FieldMeta<?>, _Expression> defaultValueMap) {
+        return insertTable instanceof SingleTableMeta
+                && insertTable.containField(_MetaBridge.VISIBLE)
+                && !defaultValueMap.containsKey(insertTable.getField(_MetaBridge.VISIBLE));
     }
 
     @SuppressWarnings("unchecked")

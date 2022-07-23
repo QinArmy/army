@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -12,6 +13,7 @@ import io.army.dialect._DialectUtils;
 import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -63,6 +65,8 @@ abstract class MySQLInserts extends InsertSupport {
          * @param pairList an unmodified list,empty is allowed.
          */
         Insert endInsert(List<_Pair<FieldMeta<?>, _Expression>> pairList);
+
+        TableMeta<?> table();
 
     }
 
@@ -136,6 +140,8 @@ abstract class MySQLInserts extends InsertSupport {
 
         final ClauseBeforeRowAlias clause;
 
+        final TableMeta<?> table;
+
         private boolean optionalOnDuplicateKey = true;
 
         private Map<FieldMeta<?>, Boolean> fieldMap;
@@ -146,6 +152,7 @@ abstract class MySQLInserts extends InsertSupport {
             this.criteriaContext = clause.getCriteriaContext();
             this.criteria = this.criteriaContext.criteria();
             this.clause = clause;
+            this.table = clause.table();
         }
 
 
@@ -273,7 +280,18 @@ abstract class MySQLInserts extends InsertSupport {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
 
-            this.clause.validateField(field, (ArmyExpression) value);
+            if (field.tableMeta() != this.table) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
+            }
+            if (field.updateMode() != UpdateMode.UPDATABLE) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonUpdatableField, field);
+            }
+
+            switch (field.fieldName()) {
+                case _MetaBridge.UPDATE_TIME:
+                case _MetaBridge.VERSION:
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::armyManageField, field);
+            }
 
             Map<FieldMeta<?>, Boolean> filedMap = this.fieldMap;
             if (filedMap == null) {
@@ -441,7 +459,7 @@ abstract class MySQLInserts extends InsertSupport {
             super(parentClause, table);
             this.hintList = _CollectionUtils.safeList(parentClause.childHintList);
             this.modifierList = _CollectionUtils.safeList(parentClause.childModifierList);
-            this.parentStmt = parentClause.createParentStmt(); //couldn't invoke asInsert method
+            this.parentStmt = parentClause.createParentStmt(this::domainList); //couldn't invoke asInsert method
         }
 
         @Override
@@ -605,7 +623,7 @@ abstract class MySQLInserts extends InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.duplicatePairList = pairList;
-            return this.createParentStmt().asInsert();
+            return this.createParentStmt(null).asInsert();
         }
 
         public MySQLInsert._DomainChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
@@ -624,16 +642,16 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-        private DomainInsertStatement createParentStmt() {
+        private DomainInsertStatement createParentStmt(@Nullable Supplier<List<IDomain>> supplier) {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             final DomainInsertStatement statement;
             if (pairList.size() == 0) {
-                statement = new DomainInsertStatement(this);
+                statement = new DomainInsertStatement(this, supplier);
             } else {
-                statement = new DomainInsertWithDuplicateKey(this, pairList);
+                statement = new DomainInsertWithDuplicateKey(this, pairList, supplier);
             }
             return statement;
         }
@@ -676,6 +694,8 @@ abstract class MySQLInserts extends InsertSupport {
         private final List<String> partitionList;
         private final List<IDomain> domainList;
 
+        private final Supplier<List<IDomain>> supplier;
+
         private DomainInsertStatement(DomainPartitionClause<?, ?> clause) {
             super(clause);
 
@@ -683,14 +703,22 @@ abstract class MySQLInserts extends InsertSupport {
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.domainList = clause.domainList();
+            this.supplier = null;
         }
 
-        private DomainInsertStatement(DomainParentPartitionClause<?, ?> clause) {
+        private DomainInsertStatement(DomainParentPartitionClause<?, ?> clause
+                , @Nullable Supplier<List<IDomain>> supplier) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
-            this.domainList = clause.domainList();
+            if (supplier == null) {
+                this.domainList = clause.domainList();
+                this.supplier = null;
+            } else {
+                this.domainList = Collections.emptyList();
+                this.supplier = supplier;
+            }
         }
 
         @Override
@@ -711,7 +739,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public final List<IDomain> domainList() {
-            return this.domainList;
+            return this.supplier == null ? this.domainList : this.supplier.get();
         }
 
     }//DomainInsertStatement
@@ -730,8 +758,8 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         private DomainInsertWithDuplicateKey(DomainParentPartitionClause<?, ?> clause
-                , List<_Pair<FieldMeta<?>, _Expression>> pairList) {
-            super(clause);
+                , List<_Pair<FieldMeta<?>, _Expression>> pairList, @Nullable Supplier<List<IDomain>> supplier) {
+            super(clause, supplier);
             this.pairList = pairList;
         }
 

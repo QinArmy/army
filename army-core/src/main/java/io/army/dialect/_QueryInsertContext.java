@@ -4,4 +4,6 @@ public interface _QueryInsertContext extends _InsertContext {
 
     void appendFieldList();
 
+    void appendSubQuery();
+
 }

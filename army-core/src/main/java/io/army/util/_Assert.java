@@ -18,7 +18,7 @@ public abstract class _Assert {
     }
 
     public static void prepared(@Nullable Boolean prepared) {
-        if (prepared != null && prepared) {
+        if (prepared == null && !prepared) {
             throw new CriteriaException(String.format("%s is non-prepared state.", Statement.class.getName()));
         }
     }

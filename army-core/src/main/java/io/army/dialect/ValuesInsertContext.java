@@ -26,14 +26,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
 
     static ValuesInsertContext forSingle(_Insert._ValuesInsert stmt, ArmyDialect dialect, Visible visible) {
-        final TableMeta<?> table = stmt.table();
-        if (table instanceof ChildTableMeta
-                && stmt instanceof _Insert._DuplicateKeyClause
-                && ((ChildTableMeta<?>) table).parentMeta().id().generatorType() == GeneratorType.POST) {
-            throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) table);
-        }
         _DialectUtils.checkDefaultValueMap(stmt);
-        return new ValuesInsertContext(dialect, stmt, visible);
+        return new ValuesInsertContext(stmt, stmt.table(), dialect, visible);
+    }
+
+    static ValuesInsertContext forParent(_Insert._ValuesInsert parentStmt, ChildTableMeta<?> childTable
+            , ArmyDialect dialect, Visible visible) {
+        return new ValuesInsertContext(parentStmt, childTable, dialect, visible);
     }
 
     static ValuesInsertContext forChild(ValuesInsertContext parentContext, _Insert._ChildValuesInsert insert
@@ -63,23 +62,27 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
      *
      * @see #forSingle(_Insert._ValuesInsert, ArmyDialect, Visible)
      */
-    private ValuesInsertContext(ArmyDialect dialect, _Insert._ValuesInsert stmt, Visible visible) {
-        super(dialect, stmt, visible);
+    private ValuesInsertContext(_Insert._ValuesInsert stmt, TableMeta<?> domainTable
+            , ArmyDialect dialect, Visible visible) {
+        super(dialect, stmt, domainTable, visible);
 
         this.rowValuesList = stmt.rowValuesList();
         //must be stmt.table() , not this.table
-        this.rowWrapper = new RowObjectWrapper(stmt.table());
+        final boolean manageVisible;
+        manageVisible = isManageVisible(this.insertTable, this.defaultValueMap);
+        this.rowWrapper = new RowObjectWrapper(stmt.table(), manageVisible);
 
         final int rowSize = this.rowValuesList.size();
         if (this.migration) {
             this.rowGeneratedValuesList = null;
+            this.tempRowGeneratedValuesList = null;
         } else {
             final List<Map<FieldMeta<?>, Object>> list = new ArrayList<>(rowSize);
             this.rowGeneratedValuesList = Collections.unmodifiableList(list);
             this.tempRowGeneratedValuesList = list;
         }
 
-        if (!this.duplicateKeyClause && this.table.id().generatorType() == GeneratorType.POST) {
+        if (!this.duplicateKeyClause && this.insertTable.id().generatorType() == GeneratorType.POST) {
             final Map<Integer, Object> rowIdMap = new HashMap<>((int) (rowSize / 0.75F));
             this.rowIdMap = Collections.unmodifiableMap(rowIdMap);
             this.tempRowIdMap = rowIdMap;
@@ -98,7 +101,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
     private ValuesInsertContext(ValuesInsertContext parentContext, _Insert._ChildValuesInsert stmt
             , ArmyDialect dialect, Visible visible) {
         super(stmt, dialect, visible);
-        assert ((ChildTableMeta<?>) this.table).parentMeta() == parentContext.table;
+        assert ((ChildTableMeta<?>) this.insertTable).parentMeta() == parentContext.insertTable;
         this.rowValuesList = stmt.rowValuesList();
         assert this.rowValuesList == parentContext.rowValuesList;
         this.rowGeneratedValuesList = parentContext.rowGeneratedValuesList;
@@ -129,24 +132,23 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         final ArmyDialect dialect = this.dialect;
         final FieldMeta<?> discriminator = this.discriminator;
-        final Map<FieldMeta<?>, _Expression> commonExpMap = this.defaultValueMap;
+        final Map<FieldMeta<?>, _Expression> defaultValueMap = this.defaultValueMap;
 
         final boolean migration = this.migration;
         final NullHandleMode nullHandleMode = this.nullHandleMode;
         final boolean preferLiteral = this.preferLiteral;
         final boolean mockEnv = dialect.isMockEnv();
 
-        final StringBuilder sqlBuilder = this.sqlBuilder;
-
-        sqlBuilder.append(_Constant.SPACE_VALUES);
-
         final _FieldValueGenerator generator;
         final RowObjectWrapper rowWrapper = this.rowWrapper;
-        final TableMeta<?> table = this.table;
+        final TableMeta<?> insertTable = this.insertTable, domainTable = this.domainTable;
         final List<Map<FieldMeta<?>, Object>> generatedValuesList;
+
+        final boolean manageVisible = rowWrapper.manageVisible;
+
         final Map<Integer, Object> rowIdMap;
         final List<BiConsumer<Integer, Object>> consumerList;
-        if (table instanceof ChildTableMeta) {
+        if (insertTable instanceof ChildTableMeta) {
             generator = null;
             generatedValuesList = this.rowGeneratedValuesList;
             consumerList = null;
@@ -154,47 +156,51 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         } else {
             generator = dialect.getFieldValueGenerator();
             generatedValuesList = this.tempRowGeneratedValuesList;
-            assert generatedValuesList instanceof ArrayList;
-            this.tempRowGeneratedValuesList = null;
-
+            if (generatedValuesList == null) {
+                assert migration;
+            } else {
+                assert generatedValuesList instanceof ArrayList;
+                this.tempRowGeneratedValuesList = null;
+            }
             consumerList = new ArrayList<>(rowSize);
             rowIdMap = this.tempRowIdMap;
             assert rowIdMap instanceof HashMap;
             this.tempRowIdMap = null;
         }
-        Map<FieldMeta<?>, _Expression> fieldExpMap;
-        Map<FieldMeta<?>, Object> fieldValueMap;
+        final Map<FieldMeta<?>, Object> emptyMap = Collections.emptyMap();
+        Map<FieldMeta<?>, _Expression> rowValuesMap;
+        Map<FieldMeta<?>, Object> generatedMap;
         DelayIdParamValue delayIdParam;
         FieldMeta<?> field;
         _Expression expression;
         Object value;
         MappingType mappingType;
+
+        final StringBuilder sqlBuilder = this.sqlBuilder
+                .append(_Constant.SPACE_VALUES);
         for (int rowIndex = 0; rowIndex < rowSize; rowIndex++) {
-            fieldExpMap = rowValuesList.get(rowIndex);
-            rowWrapper.fieldExpMap = fieldExpMap;
-            if (generator == null) {
-                fieldValueMap = generatedValuesList.get(rowIndex);
-                rowWrapper.fieldValueMap = fieldValueMap;
+            rowValuesMap = rowValuesList.get(rowIndex);
+            rowWrapper.rowValuesMap = rowValuesMap;
+            if (generator == null) {//here insertTable is ChildTable
+                generatedMap = generatedValuesList == null ? emptyMap : generatedValuesList.get(rowIndex);
+                rowWrapper.generatedMap = generatedMap;
             } else if (migration) {
-                fieldValueMap = Collections.emptyMap();
-                rowWrapper.fieldValueMap = fieldValueMap;
-
-                generator.validate(table, rowWrapper);// validate the values that is managed by army
-                generatedValuesList.add(fieldValueMap);
+                rowWrapper.generatedMap = generatedMap = emptyMap;
+                //use ths.domainTable,not this.insertTable
+                generator.validate(domainTable, manageVisible, rowWrapper);// validate the values that is managed by army
             } else {
-                fieldValueMap = new HashMap<>();
-                rowWrapper.fieldValueMap = fieldValueMap; // update domain value
+                generatedMap = new HashMap<>();
+                rowWrapper.generatedMap = generatedMap; // update domain value
+                //use ths.domainTable,not this.insertTable
+                generator.generate(domainTable, manageVisible, rowWrapper); // create the values that is managed by army
 
-                generator.generate(table, rowWrapper); // create the values that is managed by army
-
-                fieldValueMap = Collections.unmodifiableMap(fieldValueMap);
-                generatedValuesList.add(fieldValueMap);
+                generatedMap = Collections.unmodifiableMap(generatedMap);
+                generatedValuesList.add(generatedMap);
             }
 
             if (rowIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
             delayIdParam = null; //clear last param
@@ -210,19 +216,19 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 actualFieldIndex++;
 
                 if (field == discriminator) {
-                    assert table instanceof SingleTableMeta;
+                    assert insertTable instanceof SingleTableMeta;
                     sqlBuilder.append(_Constant.SPACE)
                             .append(this.discriminatorValue);
                 } else if (field instanceof PrimaryFieldMeta
-                        && table instanceof ChildTableMeta
-                        && ((ChildTableMeta<?>) table).parentMeta().id().generatorType() == GeneratorType.POST) {
+                        && insertTable instanceof ChildTableMeta
+                        && ((ChildTableMeta<?>) insertTable).parentMeta().id().generatorType() == GeneratorType.POST) {
                     if (delayIdParam != null || consumerList != null || rowIdMap == null) {
                         //no bug,never here
                         throw new IllegalStateException();
                     }
                     delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, rowIndex, rowIdMap);
                     this.appendParam(delayIdParam);
-                } else if ((value = fieldValueMap.get(field)) != null) {
+                } else if ((value = generatedMap.get(field)) != null) {
                     mappingType = field.mappingType();
                     if (preferLiteral && mappingType instanceof _ArmyNoInjectionMapping) {//TODO field codec
                         sqlBuilder.append(_Constant.SPACE);
@@ -230,9 +236,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                     } else {
                         this.appendParam(SingleParam.build(field, value));
                     }
-                } else if ((expression = fieldExpMap.get(field)) != null) {
+                } else if ((expression = rowValuesMap.get(field)) != null) {
                     expression.appendSql(this);
-                } else if ((expression = commonExpMap.get(field)) != null) {
+                } else if ((expression = defaultValueMap.get(field)) != null) {
                     expression.appendSql(this);
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {
                     if ((migration && !field.nullable()) || (!migration && !mockEnv)) {
@@ -262,6 +268,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             this.consumerList = _CollectionUtils.unmodifiableList(consumerList);
         }
 
+        rowWrapper.rowValuesMap = null; //finally must clear
+        rowWrapper.generatedMap = null;//finally must clear
+
     }
 
 
@@ -278,7 +287,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
     @Override
     public SimpleStmt build() {
         final SimpleStmt stmt;
-        final TableMeta<?> table = this.table;
+        final TableMeta<?> table = this.insertTable;
         if (this.returnId != null) {
             //dialect support returning clause
             stmt = Stmts.valuePost(this);
@@ -302,7 +311,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         if (field == null) {
             throw _Exceptions.invalidNamedParam(name);
         }
-        final Map<FieldMeta<?>, Object> fieldValueMap = wrapper.fieldValueMap;
+        final Map<FieldMeta<?>, Object> fieldValueMap = wrapper.generatedMap;
         assert fieldValueMap != null;
         return fieldValueMap.get(field);
 
@@ -337,13 +346,16 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         private final ReadWrapper readWrapper;
 
-        private Map<FieldMeta<?>, Object> fieldValueMap;
+        private final boolean manageVisible;
 
-        private Map<FieldMeta<?>, _Expression> fieldExpMap;
+        private Map<FieldMeta<?>, Object> generatedMap;
 
-        private RowObjectWrapper(TableMeta<?> domainTable) {
+        private Map<FieldMeta<?>, _Expression> rowValuesMap;
+
+        private RowObjectWrapper(TableMeta<?> domainTable, boolean manageVisible) {
             this.domainTable = domainTable;
             this.readWrapper = new RowReadWrapper(this);
+            this.manageVisible = manageVisible;
         }
 
         @Override
@@ -352,7 +364,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             final FieldMeta<?> field;
             field = domainTable.tryGetComplexFiled(propertyName);
 
-            final Map<FieldMeta<?>, _Expression> filedExpMap = this.fieldExpMap;
+            final Map<FieldMeta<?>, _Expression> filedExpMap = this.rowValuesMap;
             assert filedExpMap != null;
 
             final boolean writable;
@@ -360,7 +372,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 writable = false;
             } else if (field == domainTable.discriminator()) {
                 writable = true;
-            } else if (!(this.fieldValueMap instanceof HashMap)) {
+            } else if (!(this.generatedMap instanceof HashMap)) {
                 writable = false;
             } else if (domainTable instanceof SingleTableMeta || !(field instanceof PrimaryFieldMeta)) {
                 writable = !filedExpMap.containsKey(field);
@@ -378,7 +390,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             final FieldMeta<?> field;
             field = domainTable.tryGetComplexFiled(propertyName);
 
-            final Map<FieldMeta<?>, _Expression> filedExpMap = this.fieldExpMap;
+            final Map<FieldMeta<?>, _Expression> filedExpMap = this.rowValuesMap;
             assert filedExpMap != null;
             if (field == null
                     || filedExpMap.containsKey(field)
@@ -388,7 +400,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 throw _Exceptions.nonWritableProperty(this.domainTable, propertyName);
             }
 
-            final Map<FieldMeta<?>, Object> fieldValueMap = this.fieldValueMap;
+            final Map<FieldMeta<?>, Object> fieldValueMap = this.generatedMap;
             if (!(fieldValueMap instanceof HashMap)) {
                 if (field == domainTable.discriminator()) {
                     //ignore,here io.army.dialect._FieldValueGenerator.validate
@@ -428,7 +440,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             if (field == null) {
                 throw _Exceptions.nonReadableProperty(this.domainTable, propertyName);
             }
-            final Map<FieldMeta<?>, Object> fieldValueMap = this.fieldValueMap;
+            final Map<FieldMeta<?>, Object> fieldValueMap = this.generatedMap;
             assert fieldValueMap != null;
             return fieldValueMap.get(field);
         }

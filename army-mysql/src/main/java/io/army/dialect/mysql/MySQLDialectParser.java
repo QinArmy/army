@@ -1,5 +1,6 @@
 package io.army.dialect.mysql;
 
+import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._MySQLConsultant;
@@ -127,7 +128,7 @@ final class MySQLDialectParser extends MySQLParser {
         //2. column list
         context.appendFieldList();
         //3. sub query
-        this.rowSet(insert.subQuery(), context);
+        context.appendSubQuery();
 
         if (stmt instanceof _MySQLInsert._InsertWithDuplicateKey) {
             //4. on duplicate key update clause
@@ -597,8 +598,22 @@ final class MySQLDialectParser extends MySQLParser {
         final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(SPACE_ON_DUPLICATE_KEY_UPDATE);
         //2. on duplicate key update clause
+        final TableMeta<?> table = context.table();
+        FieldMeta<?> field;
         int index = 0;
         for (_Pair<FieldMeta<?>, _Expression> pair : clause.duplicatePairList()) {
+            field = pair.first;
+            if (field.tableMeta() != table) {
+                throw _Exceptions.unknownColumn(field);
+            }
+            if (field.updateMode() != UpdateMode.UPDATABLE) {
+                throw _Exceptions.nonUpdatableField(field);
+            }
+            switch (field.fieldName()) {
+                case _MetaBridge.UPDATE_TIME:
+                case _MetaBridge.VERSION:
+                    throw _Exceptions.armyManageField(field);
+            }
             if (index > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
             } else {
@@ -609,6 +624,8 @@ final class MySQLDialectParser extends MySQLParser {
             pair.second.appendSql(context);
             index++;
         }
+
+        //TODO updateTime and version
 
         assert index > 0;
     }
