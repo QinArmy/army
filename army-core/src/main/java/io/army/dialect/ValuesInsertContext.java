@@ -16,11 +16,12 @@ import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmts;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 final class ValuesInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams.ValueParams {
 
@@ -55,6 +56,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     private Map<Integer, Object> tempRowIdMap;
 
+    private boolean valuesClauseEnd;
+
     /**
      * <p>
      * For {@link  io.army.meta.SingleTableMeta}
@@ -67,12 +70,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         super(dialect, stmt, domainTable, visible);
 
         this.rowValuesList = stmt.rowValuesList();
-        //must be stmt.table() , not this.table
         final boolean manageVisible;
         manageVisible = isManageVisible(this.insertTable, this.defaultValueMap);
-        this.rowWrapper = new RowObjectWrapper(stmt.table(), manageVisible);
+        //must be domainTable , not this.insertTable
+        this.rowWrapper = new RowObjectWrapper(domainTable, manageVisible, this.returnId != null);
 
         final int rowSize = this.rowValuesList.size();
+        assert rowSize > 0;
         if (this.migration) {
             this.rowGeneratedValuesList = null;
             this.tempRowGeneratedValuesList = null;
@@ -82,12 +86,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             this.tempRowGeneratedValuesList = list;
         }
 
-        if (!this.duplicateKeyClause && this.insertTable.id().generatorType() == GeneratorType.POST) {
+        if (this.returnId == null) {
+            this.rowIdMap = null;
+            this.tempRowIdMap = null;
+        } else {
             final Map<Integer, Object> rowIdMap = new HashMap<>((int) (rowSize / 0.75F));
             this.rowIdMap = Collections.unmodifiableMap(rowIdMap);
             this.tempRowIdMap = rowIdMap;
-        } else {
-            this.rowIdMap = null;
         }
     }
 
@@ -103,6 +108,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         super(stmt, dialect, visible);
         assert ((ChildTableMeta<?>) this.insertTable).parentMeta() == parentContext.insertTable;
         this.rowValuesList = stmt.rowValuesList();
+        assert this.rowValuesList.size() == parentContext.rowValuesList.size();
+
         assert this.rowValuesList == parentContext.rowValuesList;
         this.rowGeneratedValuesList = parentContext.rowGeneratedValuesList;
         this.rowWrapper = parentContext.rowWrapper;
@@ -125,13 +132,14 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     @Override
     public void appendValueList() {
+        assert !this.valuesClauseEnd;
+
         final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
         final List<FieldMeta<?>> fieldList = this.fieldList;
         final int rowSize = rowValuesList.size();
         final int fieldSize = fieldList.size();
 
         final ArmyDialect dialect = this.dialect;
-        final FieldMeta<?> discriminator = this.discriminator;
         final Map<FieldMeta<?>, _Expression> defaultValueMap = this.defaultValueMap;
 
         final boolean migration = this.migration;
@@ -146,13 +154,12 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         final boolean manageVisible = rowWrapper.manageVisible;
 
-        final Map<Integer, Object> rowIdMap;
-        final List<BiConsumer<Integer, Object>> consumerList;
+
+        final FieldMeta<?> discriminator = domainTable.discriminator();
+        final int discriminatorValue = domainTable.discriminatorValue();
         if (insertTable instanceof ChildTableMeta) {
             generator = null;
             generatedValuesList = this.rowGeneratedValuesList;
-            consumerList = null;
-            rowIdMap = this.rowIdMap;
         } else {
             generator = dialect.getFieldValueGenerator();
             generatedValuesList = this.tempRowGeneratedValuesList;
@@ -163,10 +170,12 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 this.tempRowGeneratedValuesList = null;
             }
             consumerList = new ArrayList<>(rowSize);
-            rowIdMap = this.tempRowIdMap;
             assert rowIdMap instanceof HashMap;
             this.tempRowIdMap = null;
         }
+
+        final Map<Integer, Object> rowIdMap = rowWrapper.rowIdMap;
+
         final Map<FieldMeta<?>, Object> emptyMap = Collections.emptyMap();
         Map<FieldMeta<?>, _Expression> rowValuesMap;
         Map<FieldMeta<?>, Object> generatedMap;
@@ -218,15 +227,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 if (field == discriminator) {
                     assert insertTable instanceof SingleTableMeta;
                     sqlBuilder.append(_Constant.SPACE)
-                            .append(this.discriminatorValue);
-                } else if (field instanceof PrimaryFieldMeta
+                            .append(discriminatorValue);
+                } else if (!migration
+                        && field instanceof PrimaryFieldMeta
                         && insertTable instanceof ChildTableMeta
                         && ((ChildTableMeta<?>) insertTable).parentMeta().id().generatorType() == GeneratorType.POST) {
-                    if (delayIdParam != null || consumerList != null || rowIdMap == null) {
-                        //no bug,never here
-                        throw new IllegalStateException();
-                    }
-                    delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, rowIndex, rowIdMap);
+                    assert delayIdParam == null && rowIdMap != null;
+                    delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, rowIndex, rowIdMap::get);
                     this.appendParam(delayIdParam);
                 } else if ((value = generatedMap.get(field)) != null) {
                     mappingType = field.mappingType();
@@ -258,16 +265,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             }//inner for
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-            if (consumerList != null) {
-                consumerList.add(rowIdMap::putIfAbsent);
-            }
 
         }//outer for
 
-        if (consumerList != null) {
-            this.consumerList = _CollectionUtils.unmodifiableList(consumerList);
-        }
 
+        this.valuesClauseEnd = true;
         rowWrapper.rowValuesMap = null; //finally must clear
         rowWrapper.generatedMap = null;//finally must clear
 
@@ -275,25 +277,22 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
 
     @Override
-    public List<BiConsumer<Integer, Object>> consumerList() {
-        final List<BiConsumer<Integer, Object>> consumerList = this.consumerList;
-        if (consumerList == null || consumerList.size() != this.rowValuesList.size()) {
-            //no bug,never here
-            throw new IllegalStateException();
-        }
-        return consumerList;
+    public int rowSize() {
+        return this.rowValuesList.size();
     }
+
+    @Override
+    public BiFunction<Integer, Object, Object> function() {
+        final Map<Integer, Object> rowIdMap = this.rowWrapper.rowIdMap;
+        assert this.valuesClauseEnd && rowIdMap != null && this.insertTable instanceof SingleTableMeta;
+        return rowIdMap::putIfAbsent;
+    }
+
 
     @Override
     public SimpleStmt build() {
         final SimpleStmt stmt;
-        final TableMeta<?> table = this.insertTable;
-        if (this.returnId != null) {
-            //dialect support returning clause
-            stmt = Stmts.valuePost(this);
-        } else if (this.duplicateKeyClause
-                || table instanceof ChildTableMeta
-                || table.id().generatorType() != GeneratorType.POST) {
+        if (this.returnId == null) {
             stmt = Stmts.minSimple(this);
         } else {
             stmt = Stmts.valuePost(this);
@@ -348,14 +347,21 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         private final boolean manageVisible;
 
+        private final Map<Integer, Object> rowIdMap;
+
         private Map<FieldMeta<?>, Object> generatedMap;
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
-        private RowObjectWrapper(TableMeta<?> domainTable, boolean manageVisible) {
+        private RowObjectWrapper(TableMeta<?> domainTable, boolean manageVisible, boolean post) {
             this.domainTable = domainTable;
             this.readWrapper = new RowReadWrapper(this);
             this.manageVisible = manageVisible;
+            if (post) {
+                this.rowIdMap = new HashMap<>();
+            } else {
+                this.rowIdMap = null;
+            }
         }
 
         @Override
@@ -455,12 +461,12 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         private final int rowIndex;
 
-        private final Map<Integer, Object> rowIdMap;
+        private final Function<Integer, Object> function;
 
-        private DelayIdParamValue(PrimaryFieldMeta<?> field, int rowIndex, Map<Integer, Object> rowIdMap) {
+        private DelayIdParamValue(PrimaryFieldMeta<?> field, int rowIndex, Function<Integer, Object> function) {
             this.field = field;
             this.rowIndex = rowIndex;
-            this.rowIdMap = rowIdMap;
+            this.function = function;
         }
 
         @Override
@@ -471,10 +477,10 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         @Override
         public Object value() {
             final Object value;
-            value = this.rowIdMap.get(this.rowIndex);
+            value = this.function.apply(this.rowIndex);
             if (value == null) {
                 //no bug,never here
-                throw new IllegalStateException("value is null");
+                throw parentStmtDontExecute(this.field);
             }
             return value;
         }

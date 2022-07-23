@@ -141,7 +141,7 @@ abstract class MySQLReplaces extends InsertSupport {
             ReplaceInsert._ReplaceSpec>
             implements MySQLReplace._DomainPartitionSpec<C, T> {
 
-        private final _Insert._DomainInsert parentStmt;
+        private final DomainParentPartitionClause<C, ?> parentStmt;
 
         private final List<Hint> hintList;
 
@@ -161,7 +161,7 @@ abstract class MySQLReplaces extends InsertSupport {
             super(clause, table);
             this.hintList = _CollectionUtils.safeList(clause.childHintList);
             this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
-            this.parentStmt = clause.createParentStmt(this::domainList); //couldn't invoke asInsert
+            this.parentStmt = clause;
         }
 
         @Override
@@ -180,7 +180,9 @@ abstract class MySQLReplaces extends InsertSupport {
             if (this.parentStmt == null) {
                 spec = new DomainReplaceStatement(this);
             } else {
-                spec = new DomainChildReplaceStatement(this);
+                final _Insert._DomainInsert parentStatement;
+                parentStatement = this.parentStmt.createParentStmt(this::domainList);
+                spec = new DomainChildReplaceStatement(this, parentStatement);
             }
             return spec;
         }
@@ -272,7 +274,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         ReplaceInsert._ReplaceSpec valuesEnd() {
-            return this.createParentStmt(null);
+            return this.createParentStmt(this::domainList);
         }
 
         private MySQLReplace._DomainParentColumnsSpec<C, P> partitionEnd(List<String> partitionList) {
@@ -280,7 +282,7 @@ abstract class MySQLReplaces extends InsertSupport {
             return this;
         }
 
-        private DomainReplaceStatement createParentStmt(@Nullable Supplier<List<IDomain>> supplier) {
+        private DomainReplaceStatement createParentStmt(Supplier<List<IDomain>> supplier) {
             return new DomainReplaceStatement(this, supplier);
         }
 
@@ -322,7 +324,6 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private final List<IDomain> domainList;
 
-        private final Supplier<List<IDomain>> supplier;
 
         private DomainReplaceStatement(DomainPartitionClause<?, ?> clause) {
             super(clause);
@@ -330,22 +331,16 @@ abstract class MySQLReplaces extends InsertSupport {
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.domainList = clause.domainList();
-            this.supplier = null;
         }
 
         private DomainReplaceStatement(DomainParentPartitionClause<?, ?> clause
-                , @Nullable Supplier<List<IDomain>> supplier) {
+                , Supplier<List<IDomain>> supplier) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
-            if (supplier == null) {
-                this.domainList = clause.domainList();
-                this.supplier = null;
-            } else {
-                this.domainList = Collections.emptyList();
-                this.supplier = supplier;
-            }
+
+            this.domainList = supplier.get();
         }
 
 
@@ -378,10 +373,9 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private final _Insert._DomainInsert parentStmt;
 
-        private DomainChildReplaceStatement(DomainPartitionClause<?, ?> clause) {
+        private DomainChildReplaceStatement(DomainPartitionClause<?, ?> clause, _Insert._DomainInsert parentStmt) {
             super(clause);
-            this.parentStmt = clause.parentStmt;
-            assert this.parentStmt != null;
+            this.parentStmt = parentStmt;
         }
 
         @Override

@@ -110,7 +110,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         final int fieldSize = fieldList.size();
 
         final ArmyDialect dialect = this.dialect;
-        final FieldMeta<?> discriminator = this.discriminator;
         final Map<FieldMeta<?>, _Expression> defaultValueMap = this.defaultValueMap;
 
         final boolean preferLiteral = this.preferLiteral;
@@ -124,7 +123,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         final TableMeta<?> insertTable = this.insertTable, domainTable = this.domainTable;
 
         final boolean manageVisible = domainWrapper.manageVisible;
-
+        final FieldMeta<?> discriminator = domainTable.discriminator();
+        final int discriminatorValue = domainTable.discriminatorValue();
         if (insertTable instanceof ChildTableMeta) {
             generator = null;
         } else {
@@ -172,7 +172,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                 if (field == discriminator) {
                     assert insertTable instanceof SingleTableMeta;
                     sqlBuilder.append(_Constant.SPACE)
-                            .append(this.discriminatorValue);
+                            .append(discriminatorValue);
                 } else if (!migration
                         && field instanceof PrimaryFieldMeta
                         && insertTable instanceof ChildTableMeta

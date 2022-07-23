@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
@@ -55,6 +56,16 @@ abstract class MySQLInserts extends InsertSupport {
 
     static <C> MySQLInsert._QueryInsertIntoSpec<C> queryInsert(@Nullable C criteria) {
         return new QueryInsertIntoClause<>(criteria);
+    }
+
+    private static void assertParent(CriteriaContext criteriaContext, _Insert parent, ChildTableMeta<?> childTable) {
+        final PrimaryFieldMeta<?> parentId;
+        parentId = parent.table().id();
+        if (parent instanceof _Insert._DuplicateKeyClause
+                && parentId.generatorType() == GeneratorType.POST) {
+            throw CriteriaContextStack.criteriaError(criteriaContext, _Exceptions::duplicateKeyAndPostIdInsert
+                    , childTable);
+        }
     }
 
 
@@ -439,7 +450,7 @@ abstract class MySQLInserts extends InsertSupport {
             implements MySQLInsert._DomainPartitionSpec<C, T>
             , MySQLInserts.ClauseBeforeRowAlias {
 
-        private final _Insert._DomainInsert parentStmt;
+        private final DomainParentPartitionClause<C, ?> parentStmt;
 
         private final List<Hint> hintList;
 
@@ -459,7 +470,7 @@ abstract class MySQLInserts extends InsertSupport {
             super(parentClause, table);
             this.hintList = _CollectionUtils.safeList(parentClause.childHintList);
             this.modifierList = _CollectionUtils.safeList(parentClause.childModifierList);
-            this.parentStmt = parentClause.createParentStmt(this::domainList); //couldn't invoke asInsert method
+            this.parentStmt = parentClause;
         }
 
         @Override
@@ -475,12 +486,18 @@ abstract class MySQLInserts extends InsertSupport {
                 if (this.parentStmt == null) {
                     spec = new DomainInsertStatement(this);
                 } else {
-                    spec = new DomainChildInsertStatement(this);
+                    final _Insert._DomainInsert parentStatement;
+                    parentStatement = this.parentStmt.createParentStmt(this::domainList);
+                    assertParent(this.criteriaContext, parentStatement, (ChildTableMeta<?>) this.table);
+                    spec = new DomainChildInsertStatement(this, parentStatement);
                 }
             } else if (this.parentStmt == null) {
                 spec = new DomainInsertWithDuplicateKey(this, pairList);
             } else {
-                spec = new DomainChildInsertWithDuplicateKey(this, pairList);
+                final _Insert._DomainInsert parentStatement;
+                parentStatement = this.parentStmt.createParentStmt(this::domainList);
+                assertParent(this.criteriaContext, parentStatement, (ChildTableMeta<?>) this.table);
+                spec = new DomainChildInsertWithDuplicateKey(this, parentStatement, pairList);
             }
             return spec.asInsert();
         }
@@ -623,7 +640,7 @@ abstract class MySQLInserts extends InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.duplicatePairList = pairList;
-            return this.createParentStmt(null).asInsert();
+            return this.createParentStmt(this::domainList).asInsert();
         }
 
         public MySQLInsert._DomainChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
@@ -642,7 +659,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
 
-        private DomainInsertStatement createParentStmt(@Nullable Supplier<List<IDomain>> supplier) {
+        private DomainInsertStatement createParentStmt(Supplier<List<IDomain>> supplier) {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
@@ -694,8 +711,6 @@ abstract class MySQLInserts extends InsertSupport {
         private final List<String> partitionList;
         private final List<IDomain> domainList;
 
-        private final Supplier<List<IDomain>> supplier;
-
         private DomainInsertStatement(DomainPartitionClause<?, ?> clause) {
             super(clause);
 
@@ -703,22 +718,15 @@ abstract class MySQLInserts extends InsertSupport {
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
             this.domainList = clause.domainList();
-            this.supplier = null;
         }
 
         private DomainInsertStatement(DomainParentPartitionClause<?, ?> clause
-                , @Nullable Supplier<List<IDomain>> supplier) {
+                , Supplier<List<IDomain>> supplier) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
             this.partitionList = _CollectionUtils.safeList(clause.partitionList);
-            if (supplier == null) {
-                this.domainList = clause.domainList();
-                this.supplier = null;
-            } else {
-                this.domainList = Collections.emptyList();
-                this.supplier = supplier;
-            }
+            this.domainList = supplier.get();
         }
 
         @Override
@@ -739,7 +747,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public final List<IDomain> domainList() {
-            return this.supplier == null ? this.domainList : this.supplier.get();
+            return this.domainList;
         }
 
     }//DomainInsertStatement
@@ -758,7 +766,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         private DomainInsertWithDuplicateKey(DomainParentPartitionClause<?, ?> clause
-                , List<_Pair<FieldMeta<?>, _Expression>> pairList, @Nullable Supplier<List<IDomain>> supplier) {
+                , List<_Pair<FieldMeta<?>, _Expression>> pairList, Supplier<List<IDomain>> supplier) {
             super(clause, supplier);
             this.pairList = pairList;
         }
@@ -777,10 +785,10 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final _Insert._DomainInsert parentStmt;
 
-        private DomainChildInsertStatement(DomainPartitionClause<?, ?> clause) {
+        private DomainChildInsertStatement(DomainPartitionClause<?, ?> clause, _Insert._DomainInsert parentStmt) {
             super(clause);
-            this.parentStmt = clause.parentStmt;
-            assert this.parentStmt != null;
+            assert clause.parentStmt != null;
+            this.parentStmt = parentStmt;
         }
 
         @Override
@@ -797,8 +805,9 @@ abstract class MySQLInserts extends InsertSupport {
         private final List<_Pair<FieldMeta<?>, _Expression>> pairList;
 
         private DomainChildInsertWithDuplicateKey(DomainPartitionClause<?, ?> clause
+                , _Insert._DomainInsert parentStmt
                 , List<_Pair<FieldMeta<?>, _Expression>> pairList) {
-            super(clause);
+            super(clause, parentStmt);
             this.pairList = pairList;
         }
 
@@ -1033,12 +1042,18 @@ abstract class MySQLInserts extends InsertSupport {
                 if (this.parentStmt == null) {
                     spec = new ValuesInsertStatement(this);
                 } else {
-                    spec = new ValueChildInsertStatement(this);
+                    final ValueChildInsertStatement statement;
+                    statement = new ValueChildInsertStatement(this);
+                    assertParent(this.criteriaContext, statement.parentStmt, (ChildTableMeta<?>) statement.table);
+                    spec = statement;
                 }
             } else if (this.parentStmt == null) {
                 spec = new ValuesInsertWithDuplicateKey(this, pairList);
             } else {
-                spec = new ValueChildInsertWithDuplicateKey(this, pairList);
+                final ValueChildInsertWithDuplicateKey statement;
+                statement = new ValueChildInsertWithDuplicateKey(this, pairList);
+                assertParent(this.criteriaContext, statement.parentStmt, (ChildTableMeta<?>) statement.table);
+                spec = statement;
             }
             return spec.asInsert();
         }
@@ -1469,12 +1484,18 @@ abstract class MySQLInserts extends InsertSupport {
                 if (this.parentStmt == null) {
                     spec = new AssignmentsInsertStatement(this);
                 } else {
-                    spec = new AssignmentsChildInsertStatement(this);
+                    final AssignmentsChildInsertStatement statement;
+                    statement = new AssignmentsChildInsertStatement(this);
+                    assertParent(this.criteriaContext, statement.parentStmt, (ChildTableMeta<?>) statement.table);
+                    spec = statement;
                 }
             } else if (this.parentStmt == null) {
                 spec = new AssignmentsInsertWithDuplicateKey(this, pairList);
             } else {
-                spec = new AssignmentsChildInsertWithDuplicateKey(this, pairList);
+                final AssignmentsChildInsertWithDuplicateKey statement;
+                statement = new AssignmentsChildInsertWithDuplicateKey(this, pairList);
+                assertParent(this.criteriaContext, statement.parentStmt, (ChildTableMeta<?>) statement.table);
+                spec = statement;
             }
             return spec.asInsert();
         }

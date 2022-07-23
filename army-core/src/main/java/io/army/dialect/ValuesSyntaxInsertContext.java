@@ -44,10 +44,6 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      */
     final String idSelectionAlias;
 
-    final FieldMeta<?> discriminator;
-
-    final int discriminatorValue;
-
 
     /**
      * <p>
@@ -72,15 +68,13 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
 
         this.insertTable = stmt.table();
+        this.domainTable = domainTable;
         assert this.insertTable instanceof SingleTableMeta;
         if (domainTable instanceof ChildTableMeta) {
             assert this.insertTable == ((ChildTableMeta<?>) domainTable).parentMeta();
         } else {
             assert this.insertTable == domainTable;
         }
-        this.domainTable = domainTable;
-        this.discriminator = domainTable.discriminator();
-        this.discriminatorValue = domainTable.discriminatorValue();
 
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
         if (fieldList.size() == 0) {
@@ -90,7 +84,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         }
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
-        if (idField.generatorType() != GeneratorType.POST) {
+        if (this.migration || idField.generatorType() != GeneratorType.POST) {
             this.returnId = null;
             this.idSelectionAlias = null;
         } else if (dialect.supportInsertReturning()) {
@@ -135,8 +129,6 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
         this.insertTable = table;
         this.domainTable = table;
-        this.discriminator = table.discriminator();
-        this.discriminatorValue = table.discriminatorValue();
 
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
         if (fieldList.size() == 0) {

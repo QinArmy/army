@@ -6,7 +6,7 @@ import io.army.lang.Nullable;
 import io.army.meta.PrimaryFieldMeta;
 
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 public interface InsertStmtParams extends StmtParams {
 
@@ -29,7 +29,9 @@ public interface InsertStmtParams extends StmtParams {
 
     interface ValueParams extends InsertStmtParams {
 
-        List<BiConsumer<Integer, Object>> consumerList();
+        int rowSize();
+
+        BiFunction<Integer, Object, Object> function();
 
     }
 

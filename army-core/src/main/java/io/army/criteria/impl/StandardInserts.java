@@ -10,7 +10,6 @@ import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -73,7 +72,7 @@ abstract class StandardInserts extends InsertSupport {
             extends DomainValueClause<C, T, Insert._StandardDomainDefaultSpec<C, T>, Insert._InsertSpec>
             implements Insert._StandardDomainColumnsSpec<C, T> {
 
-        private final _DomainInsert parentStmt;
+        private final DomainParentColumnsClause<C, ?> parentStmt;
 
 
         private DomainColumnsClause(InsertOptions options, SimpleTableMeta<T> table) {
@@ -83,7 +82,7 @@ abstract class StandardInserts extends InsertSupport {
 
         private DomainColumnsClause(DomainParentColumnsClause<C, ?> clause, ChildTableMeta<T> table) {
             super(clause, table);
-            this.parentStmt = clause.createParentStmt(this::domainList);//couldn't invoke asInsert
+            this.parentStmt = clause;
         }
 
         @Override
@@ -136,10 +135,10 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         Insert._InsertSpec valuesEnd() {
-            return this.createParentStmt(null);
+            return this.createParentStmt(this::domainList);
         }
 
-        private DomainsInsertStatement createParentStmt(@Nullable Supplier<List<IDomain>> supplier) {
+        private DomainsInsertStatement createParentStmt(Supplier<List<IDomain>> supplier) {
             return new DomainsInsertStatement(this, supplier);
         }
 
@@ -171,29 +170,19 @@ abstract class StandardInserts extends InsertSupport {
 
         private final List<IDomain> domainList;
 
-        private final Supplier<List<IDomain>> supplier;
-
         private DomainsInsertStatement(DomainColumnsClause<?, ?> clause) {
             super(clause);
             this.domainList = clause.domainList();
-            this.supplier = null;
         }
 
-        private DomainsInsertStatement(DomainParentColumnsClause<?, ?> clause, @Nullable Supplier<List<IDomain>> supplier) {
+        private DomainsInsertStatement(DomainParentColumnsClause<?, ?> clause, Supplier<List<IDomain>> supplier) {
             super(clause);
-            if (supplier == null) {
-                this.domainList = clause.domainList();
-                this.supplier = null;
-            } else {
-                this.domainList = Collections.emptyList();
-                this.supplier = supplier;
-            }
-
+            this.domainList = supplier.get();
         }
 
         @Override
         public final List<IDomain> domainList() {
-            return this.supplier == null ? this.domainList : this.supplier.get();
+            return this.domainList;
         }
 
     }//StandardDomainInsertStatement
@@ -205,8 +194,8 @@ abstract class StandardInserts extends InsertSupport {
 
         private StandardDomainChildInsertStatement(DomainColumnsClause<?, ?> clause) {
             super(clause);
-            this.parentStmt = clause.parentStmt;
-            assert this.parentStmt != null;
+            assert clause.parentStmt != null;
+            this.parentStmt = clause.parentStmt.createParentStmt(clause::domainList);
         }
 
         @Override
