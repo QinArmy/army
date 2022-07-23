@@ -29,7 +29,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-
     interface _ColumnAliasClause<T extends IDomain, CR> extends _RightParenClause<CR> {
 
         _ColumnAliasClause<T, CR> comma(FieldMeta<T> field, String columnAlias);
@@ -125,10 +124,10 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     /*-------------------below domain insert syntax interfaces  -------------------*/
 
-    interface _DomainValuesSpec<C, T extends IDomain> extends Insert._DomainValueClause<C, T, _AsRowAliasSpec<C, T>> {
+    interface _DomainValuesSpec<C, T extends IDomain>
+            extends Insert._DomainValueClause<C, T, _OnDuplicateKeyUpdateFieldSpec<C, T>> {
 
     }
-
 
     interface _DomainDefaultSpec<C, T extends IDomain>
             extends _ColumnDefaultClause<C, T, _DomainDefaultSpec<C, T>>, _DomainValuesSpec<C, T> {
@@ -177,32 +176,10 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-
-    interface _DomainParentStaticCommaAliasValuePairSpec<C, P extends IDomain>
-            extends Insert._CommaFieldValuePairClause<C, P, _DomainParentStaticCommaAliasValuePairSpec<C, P>>
-            , _CommaAliasValuePairClause<C, _DomainParentStaticCommaAliasValuePairSpec<C, P>>
-            , _DomainChildClause<C, P> {
-
-    }
-
-
-    interface _DomainParentOnDuplicateKeyUpdateAliasSpec<C, P extends IDomain>
-            extends _StaticOnDuplicateKeyAliasClause<C, P, _DomainParentStaticCommaAliasValuePairSpec<C, P>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, AliasColumnConsumer<FieldMeta<P>>, _DomainChildClause<C, P>> {
-
-    }
-
-
-    interface _DomainParentAsRowAliasSpec<C, P extends IDomain>
-            extends _AsRowAliasClause<C, P, _DomainParentOnDuplicateKeyUpdateAliasSpec<C, P>>
-            , _DomainParentOnDuplicateKeyUpdateFieldSpec<C, P> {
-
-    }
-
-
     interface _DomainParentDefaultSpec<C, P extends IDomain>
-            extends Insert._ColumnDefaultClause<C, P, _DomainParentDefaultSpec<C, P>>, _DomainValuesSpec<C, P>
-            , _DomainParentAsRowAliasSpec<C, P> {
+            extends Insert._ColumnDefaultClause<C, P, _DomainParentDefaultSpec<C, P>>
+            , _DomainParentOnDuplicateKeyUpdateFieldSpec<C, P>
+            , _DomainValuesSpec<C, P> {
 
     }
 
@@ -259,14 +236,14 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _ValueStaticValuesLeftParenSpec<C, T extends IDomain> extends _ValueStaticValuesLeftParenClause<C, T>
-            , _AsRowAliasSpec<C, T> {
+            , _OnDuplicateKeyUpdateFieldSpec<C, T> {
 
     }
 
     interface _ValueDefaultSpec<C, T extends IDomain>
             extends _ColumnDefaultClause<C, T, _ValueDefaultSpec<C, T>>
             , Insert._StaticValuesClause<_ValueStaticValuesLeftParenClause<C, T>>
-            , Insert._DynamicValuesClause<C, T, _AsRowAliasSpec<C, T>> {
+            , Insert._DynamicValuesClause<C, T, _OnDuplicateKeyUpdateFieldSpec<C, T>> {
 
     }
 
@@ -300,7 +277,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _ValueParentStaticValueLeftParenSpec<C, P extends IDomain>
             extends _ValueParentStaticValueLeftParenClause<C, P>
-            , _ParentAsRowAliasSpec<C, P, _ValueChildInsertIntoSpec<C, P>> {
+            , _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _ValueChildInsertIntoSpec<C, P>> {
 
     }
 
@@ -308,7 +285,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     interface _ValueParentDefaultSpec<C, P extends IDomain>
             extends _ColumnDefaultClause<C, P, _ValueParentDefaultSpec<C, P>>
             , Insert._StaticValuesClause<_ValueParentStaticValueLeftParenClause<C, P>>
-            , Insert._DynamicValuesClause<C, P, _ParentAsRowAliasSpec<C, P, _ValueChildInsertIntoSpec<C, P>>> {
+            , Insert._DynamicValuesClause<C, P, _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _ValueChildInsertIntoSpec<C, P>>> {
 
     }
 
@@ -363,7 +340,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _MySQLAssignmentSetSpec<C, T extends IDomain> extends _MySQLAssignmentSetClause<C, T>
-            , _AsRowAliasSpec<C, T> {
+            , _OnDuplicateKeyUpdateFieldSpec<C, T> {
 
     }
 
@@ -392,7 +369,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _AssignmentParentSetSpec<C, P extends IDomain> extends _AssignmentParentSetClause<C, P>
-            , _ParentAsRowAliasSpec<C, P, _AssignmentChildInsertIntoSpec<C, P>> {
+            , _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _AssignmentChildInsertIntoSpec<C, P>> {
 
     }
 
