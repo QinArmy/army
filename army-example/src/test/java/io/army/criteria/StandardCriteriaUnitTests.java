@@ -7,8 +7,6 @@ import io.army.example.pill.domain.Person_;
 import io.army.example.pill.domain.User_;
 import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.UserType;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.SimpleStmt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -17,18 +15,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.testng.Assert.assertTrue;
-
 public class StandardCriteriaUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StandardCriteriaUnitTests.class);
 
 
-
     @Test
-    public void insertParent() {
+    public void domainInsertParent() {
         final Insert stmt;
-        stmt = SQLs.domainInsert(ChinaRegion_.T)
+        stmt = SQLs.domainInsert()
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
                 .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
@@ -36,19 +31,80 @@ public class StandardCriteriaUnitTests {
                 .defaultLiteral(ChinaRegion_.parentId, 0)
                 .values(this::createRegionList)
                 .asInsert();
+
         printStmt(stmt);
 
     }
 
     @Test
-    public void insertChild() {
+    public void domainInsertChild() {
         final Insert stmt;
-        stmt = SQLs.domainInsert(ChinaProvince_.T)
+        stmt = SQLs.domainInsert()
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
                 .child()
                 .insertInto(ChinaProvince_.T)
                 .values(this::createProvinceList)
+                .asInsert();
+
+        printStmt(stmt);
+    }
+
+
+    @Test
+    public void valueInsertParent() {
+        final Insert stmt;
+        stmt = SQLs.valueInsert()
+                .preferLiteral(true)
+                .insertInto(ChinaRegion_.T)
+                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
+                .defaultLiteral(ChinaRegion_.visible, true)
+                .values()
+
+                .leftParen(ChinaRegion_.name, "武当山")
+                .commaLiteral(ChinaRegion_.regionGdp, "6666.66")
+                .comma(ChinaRegion_.parentId, 0)
+                .rightParen()
+
+                .leftParen(ChinaRegion_.name, "光明顶")
+                .comma(ChinaRegion_.parentId, 0)
+                .rightParen()
+                .asInsert();
+
+        printStmt(stmt);
+    }
+
+    @Test
+    public void valueInsertChild() {
+        final Insert stmt;
+        stmt = SQLs.valueInsert()
+                .preferLiteral(true)
+                .insertInto(ChinaRegion_.T)
+                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
+                .defaultLiteral(ChinaRegion_.visible, true)
+                .values()
+
+                .leftParen(ChinaRegion_.name, "武当山")
+                .commaLiteral(ChinaRegion_.regionGdp, "6666.66")
+                .comma(ChinaRegion_.parentId, 0)
+                .rightParen()
+
+                .leftParen(ChinaRegion_.name, "光明顶")
+                .comma(ChinaRegion_.parentId, 0)
+                .rightParen()
+
+                .child()
+
+                .insertInto(ChinaCity_.T)
+                .defaultValue(ChinaCity_.mayorName, "")
+                .values()
+
+                .leftParen(ChinaCity_.mayorName, "远浪舰长")
+                .rightParen()
+
+                .leftParen(ChinaCity_.mayorName, "远浪舰长")
+                .rightParen()
+
                 .asInsert();
 
         printStmt(stmt);
@@ -61,8 +117,8 @@ public class StandardCriteriaUnitTests {
         map.put("firstId", (byte) 1);
         map.put("secondId", "3");
 
-        final Update update;
-        update = SQLs.domainUpdate()
+        final Update stmt;
+        stmt = SQLs.domainUpdate()
                 .update(ChinaRegion_.T, "c")
                 .set(ChinaRegion_.name, "武侠江湖")
                 .setPlus(ChinaRegion_.regionGdp, addGdp)
@@ -71,16 +127,14 @@ public class StandardCriteriaUnitTests {
                 .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqualLiteral(BigDecimal.ZERO))
                 .asUpdate();
 
-        for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), update.mockAsString(mode, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
     }
 
     @Test
     public void updateChild() {
         final BigDecimal addGdp = new BigDecimal("888.8");
-        final Update update;
-        update = SQLs.domainUpdate()
+        final Update stmt;
+        stmt = SQLs.domainUpdate()
                 .update(ChinaProvince_.T, "p")
                 .set(ChinaProvince_.name, "武侠江湖")
                 .setPlusLiteral(ChinaProvince_.regionGdp, addGdp)
@@ -96,15 +150,14 @@ public class StandardCriteriaUnitTests {
                 }))
                 .asUpdate();
 
-        for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), update.mockAsString(mode, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
+
     }
 
     @Test
     public void batchUpdateParent() {
-        final Update update;
-        update = SQLs.batchDomainUpdate()
+        final Update stmt;
+        stmt = SQLs.batchDomainUpdate()
                 .update(ChinaProvince_.T, "p")
                 .setPlus(ChinaProvince_.regionGdp)
                 .set(ChinaProvince_.governor)
@@ -114,12 +167,7 @@ public class StandardCriteriaUnitTests {
                 .paramList(this::createProvinceList)
                 .asUpdate();
 
-        for (Dialect mode : Dialect.values()) {
-            BatchStmt stmt;
-            stmt = (BatchStmt) update.mockAsStmt(mode, Visible.ONLY_VISIBLE);
-            assertTrue(stmt.hasOptimistic(), "optimistic lock");
-            LOG.debug("batchUpdateParent\n{}\n{}", mode.name(), stmt.sql());
-        }
+        printStmt(stmt);
 
     }
 
@@ -129,8 +177,8 @@ public class StandardCriteriaUnitTests {
      */
     @Test
     public void updateParentWithOnlyNullMode() {
-        final Update update;
-        update = SQLs.domainUpdate()
+        final Update stmt;
+        stmt = SQLs.domainUpdate()
                 .update(User_.T, "u")
                 .set(User_.identityType, IdentityType.PERSON)
                 .set(User_.identityId, 888)
@@ -139,34 +187,27 @@ public class StandardCriteriaUnitTests {
                 .and(User_.nickName.equal("zoro"))
                 .asUpdate();
 
-        for (Dialect mode : Dialect.values()) {
-            LOG.debug("{} {}", mode.name(), update.mockAsString(mode, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
     }
 
     @Test
     public void deleteParent() {
-        final Delete delete;
-        delete = SQLs.domainDelete()
+        final Delete stmt;
+        stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaRegion_.T, "r")
                 .where(ChinaRegion_.id.equal(1))
                 .and(ChinaRegion_.name.equal("马鱼腮角"))
                 .and(ChinaProvince_.version.equal(2))
                 .asDelete();
 
-        for (Dialect mode : Dialect.values()) {
-            SimpleStmt stmt;
-            stmt = (SimpleStmt) delete.mockAsStmt(mode, Visible.ONLY_VISIBLE);
-            assertTrue(stmt.hasOptimistic(), "optimistic lock");
-            LOG.debug("deleteParent\n{}\n{}", mode.name(), stmt.sql());
-        }
+        printStmt(stmt);
 
     }
 
     @Test
     public void deleteChild() {
-        final Delete delete;
-        delete = SQLs.domainDelete()
+        final Delete stmt;
+        stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaProvince_.T, "p")
                 .where(ChinaProvince_.id.equal(1))
                 .and(ChinaProvince_.name.equal("江南省"))
@@ -174,40 +215,30 @@ public class StandardCriteriaUnitTests {
                 .and(ChinaProvince_.version.equal(2))
                 .asDelete();
 
-        for (Dialect mode : Dialect.values()) {
-            SimpleStmt stmt;
-            stmt = (SimpleStmt) delete.mockAsStmt(mode, Visible.ONLY_VISIBLE);
-            assertTrue(stmt.hasOptimistic(), "optimistic lock");
-            LOG.debug("deleteChild\n{}\n{}", mode.name(), stmt.sql());
-        }
+        printStmt(stmt);
     }
 
     @Test
     public void batchDeleteChild() {
-        final Delete delete;
-        delete = SQLs.batchDomainDelete()
+        final Delete stmt;
+        stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaProvince_.T, "p")
                 .where(ChinaProvince_.id.equalNamed())
                 .and(ChinaProvince_.name.equalNamed())
                 .and(ChinaProvince_.governor.equalNamed())
                 .and(ChinaProvince_.regionGdp.plusNamed().lessThan("6666.66"))
                 .and(ChinaProvince_.version.equal(2))
-                .paramList(this.createProvinceList())
+                .paramList(this::createProvinceList)
                 .asDelete();
 
-        for (Dialect mode : Dialect.values()) {
-            BatchStmt stmt;
-            stmt = (BatchStmt) delete.mockAsStmt(mode, Visible.ONLY_VISIBLE);
-            assertTrue(stmt.hasOptimistic(), "optimistic lock");
-            LOG.debug("batchDeleteChild\n{}\n{}", mode.name(), stmt.sql());
-        }
+        printStmt(stmt);
     }
 
     @Test
     public void simpleSingleSelect() {
-        final Select select;
+        final Select stmt;
 
-        select = SQLs.query()
+        stmt = SQLs.query()
                 .select(SQLs.group(User_.T, "u"))
                 .from(User_.T, "u")
                 .ifGroupBy(Collections::emptyList)
@@ -217,16 +248,14 @@ public class StandardCriteriaUnitTests {
                 .lock(LockMode.READ)
                 .asQuery();
 
-        for (Dialect dialect : Dialect.values()) {
-            LOG.debug("simpleSingleSelect:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
     }
 
     @Test
     public void simpleChildSelect() {
-        final Select select;
+        final Select stmt;
 
-        select = SQLs.query()
+        stmt = SQLs.query()
                 .select(SQLs.childGroup(Person_.T, "p", "u"))
                 .from(Person_.T, "p")
                 .join(User_.T, "u").on(Person_.id.equal(User_.id))
@@ -240,17 +269,15 @@ public class StandardCriteriaUnitTests {
                 .lock(LockMode.WRITE)
                 .asQuery();
 
-        for (Dialect dialect : Dialect.values()) {
-            LOG.debug("simpleChildSelect:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
 
     }
 
     @Test
     public void unionSelect() {
-        final Select select;
+        final Select stmt;
 
-        select = SQLs.query()
+        stmt = SQLs.query()
                 .select(User_.id)
                 .from(User_.T, "p")
                 .where(User_.id.equal("1"))
@@ -294,15 +321,13 @@ public class StandardCriteriaUnitTests {
 
                 .asQuery();
 
-        for (Dialect dialect : Dialect.values()) {
-            LOG.debug("union select:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
     }
 
     @Test
     public void simpleSubQuery() {
-        final Select select;
-        select = SQLs.query()
+        final Select stmt;
+        stmt = SQLs.query()
                 .select(User_.nickName)
                 .from(User_.T, "u")
                 .where(User_.nickName.equal("蛮吉"))
@@ -315,9 +340,7 @@ public class StandardCriteriaUnitTests {
                 )
                 .asQuery();
 
-        for (Dialect dialect : Dialect.values()) {
-            LOG.debug("union select:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
     }
 
     @Test
@@ -326,16 +349,14 @@ public class StandardCriteriaUnitTests {
         criteria.put("offset", 0L);
         criteria.put("rowCount", 100L);
 
-        final Select select;
-        select = SQLs.query(criteria)
+        final Select stmt;
+        stmt = SQLs.query(criteria)
                 .select(SQLs.ref("us", "one"), SQLs.derivedGroup("us"))
                 .from(this::userInfo, "us")
                 .where(SQLs.ref("us", "one").equalLiteral(1))
                 .asQuery();
 
-        for (Dialect dialect : Dialect.values()) {
-            LOG.debug("union select:\n{}", select.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
-        }
+        printStmt(stmt);
     }
 
     @Test

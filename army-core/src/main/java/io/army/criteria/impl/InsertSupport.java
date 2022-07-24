@@ -723,22 +723,16 @@ abstract class InsertSupport {
         }
 
         final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
-            final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
-            if (!(currentRow instanceof HashMap)) {
+            if (this.rowValuesMap != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowValuesList;
-
-            if (rowValueList == null) {
-                rowValueList = Collections.singletonList(Collections.unmodifiableMap(currentRow));
-            } else if (rowValueList instanceof ArrayList) {
-                rowValueList.add(Collections.unmodifiableMap(currentRow));
-                rowValueList = Collections.unmodifiableList(rowValueList);
+            if (rowValueList instanceof ArrayList) {
+                rowValueList = _CollectionUtils.unmodifiableList(rowValueList);
             } else {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.rowValuesList = rowValueList;
-            this.rowValuesMap = null;
             return rowValueList;
         }
 
