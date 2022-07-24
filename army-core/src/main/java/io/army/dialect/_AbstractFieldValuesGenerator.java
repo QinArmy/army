@@ -5,6 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
+import io.army.util._Exceptions;
 
 import java.math.BigInteger;
 import java.time.*;
@@ -43,28 +44,36 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
         } else {
             nonChild = table;
         }
-        //2. get now
+
+        FieldMeta<?> field;
+        Object fieldValue;
+
+        //2. check id
+        field = nonChild.id();
+        if (field.generatorType() == null && wrapper.get(field.fieldName()) == null) {
+            throw _Exceptions.nonNullField(field);
+        }
+
+        //3. get now
         final Instant now = Instant.now();
         final ZoneId systemZoneId, factoryZoneId;
         systemZoneId = ZoneId.systemDefault();
         factoryZoneId = factoryZoneOffset();
 
-        FieldMeta<?> field;
-        Object fieldValue;
 
-        //3. create time
+        //4. create time
         field = nonChild.getField(_MetaBridge.CREATE_TIME);
         fieldValue = createDateTimeValue(field, now, systemZoneId, factoryZoneId);
         wrapper.set(field.fieldName(), fieldValue);
 
-        //4. update time
+        //5. update time
         if (!nonChild.immutable()) {
             field = nonChild.getField(_MetaBridge.UPDATE_TIME);
             fieldValue = createDateTimeValue(field, now, systemZoneId, factoryZoneId);
             wrapper.set(field.fieldName(), fieldValue);
         }
 
-        //5. version
+        //6. version
         if (nonChild.containField(_MetaBridge.VERSION)) {
             field = nonChild.getField(_MetaBridge.VERSION);
             final Class<?> javaType = field.javaType();
@@ -79,7 +88,7 @@ public abstract class _AbstractFieldValuesGenerator implements _FieldValueGenera
                 throw new MetaException(m);
             }
         }
-        //6. visible
+        //7. visible
         if (manegeVisible
                 && nonChild.containField(_MetaBridge.VISIBLE)
                 && wrapper.get(_MetaBridge.VISIBLE) == null) {

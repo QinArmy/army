@@ -170,6 +170,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException childAndParentRowsNotMatch(ChildTableMeta<?> table, int parent, int child) {
+        String m = String.format("%s rows number[%s] and parent row number[%s] not match"
+                , table, child, parent);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException duplicateKeyAndPostIdInsert(ChildTableMeta<?> table) {
         String m;
         m = String.format("%s don't support duplicate key clause or replace insert,because %s generator type is %s"
@@ -609,6 +615,12 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static ObjectAccessException nonWritableProperty(Object target, String propertyName) {
         String m = String.format("%s property[%s] isn't writable.", target, propertyName);
+        return new ObjectAccessException(m);
+    }
+
+    public static ObjectAccessException propertyTypeNotMatch(FieldMeta<?> field, Object value) {
+        String m = String.format("%s java type is %s,but value type is %s,not match."
+                , field, field.javaType().getName(), _ClassUtils.safeClassName(value));
         return new ObjectAccessException(m);
     }
 

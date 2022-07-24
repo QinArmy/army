@@ -1034,26 +1034,33 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
-            if (this.rowValuesList == null) {
+            final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
+            if (rowValuesList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             final Insert._InsertSpec spec;
             if (pairList.size() == 0) {
                 if (this.parentStmt == null) {
                     spec = new ValuesInsertStatement(this);
-                } else {
+                } else if (rowValuesList.size() == this.parentStmt.rowValuesList().size()) {
                     final ValueChildInsertStatement statement;
                     statement = new ValueChildInsertStatement(this);
                     assertParent(this.criteriaContext, statement.parentStmt, (ChildTableMeta<?>) statement.table);
                     spec = statement;
+                } else {
+                    throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
+                            , this.parentStmt.rowValuesList().size(), rowValuesList.size());
                 }
             } else if (this.parentStmt == null) {
                 spec = new ValuesInsertWithDuplicateKey(this, pairList);
-            } else {
+            } else if (rowValuesList.size() == this.parentStmt.rowValuesList().size()) {
                 final ValueChildInsertWithDuplicateKey statement;
                 statement = new ValueChildInsertWithDuplicateKey(this, pairList);
                 assertParent(this.criteriaContext, statement.parentStmt, (ChildTableMeta<?>) statement.table);
                 spec = statement;
+            } else {
+                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
+                        , this.parentStmt.rowValuesList().size(), rowValuesList.size());
             }
             return spec.asInsert();
         }

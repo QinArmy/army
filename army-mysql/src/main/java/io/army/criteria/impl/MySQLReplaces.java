@@ -476,8 +476,11 @@ abstract class MySQLReplaces extends InsertSupport {
             final MySQLReplace._ReplaceSpec spec;
             if (this.parentStmt == null) {
                 spec = new ValuesReplaceStatement(this, rowValuesList);
-            } else {
+            } else if (rowValuesList.size() == this.parentStmt.rowValuesList().size()) {
                 spec = new ValuesChildReplaceStatement(this, rowValuesList);
+            } else {
+                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
+                        , this.parentStmt.rowValuesList().size(), rowValuesList.size());
             }
             return spec;
         }

@@ -8,6 +8,7 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -126,7 +127,7 @@ public abstract class _DialectUtils {
     static void standardInertIntoTable(final _ValueInsertContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
-        ((ArmyDialect) context.dialect()).safeObjectName(context.table(), sqlBuilder);
+        ((ArmyDialect) context.dialect()).safeObjectName(context.insertTable(), sqlBuilder);
     }
 
     static void appendConditionFields(final _SingleUpdateContext context
@@ -186,6 +187,12 @@ public abstract class _DialectUtils {
 
         }
 
+    }
+
+    static boolean isDiscriminatorValue(TableMeta<?> domainTable, @Nullable Object value) {
+        final FieldMeta<?> discriminator = domainTable.discriminator();
+        assert discriminator != null;
+        return value == CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
     }
 
 

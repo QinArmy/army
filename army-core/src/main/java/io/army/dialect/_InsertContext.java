@@ -4,6 +4,6 @@ import io.army.meta.TableMeta;
 
 public interface _InsertContext extends StmtContext {
 
-    TableMeta<?> table();
+    TableMeta<?> insertTable();
 
 }

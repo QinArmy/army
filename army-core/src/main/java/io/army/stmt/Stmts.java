@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class Stmts {
@@ -409,8 +409,7 @@ public abstract class Stmts {
             final String fieldName = this.field.fieldName();
 
             if (this.domainAccessor.get(domain, fieldName) != null) {
-                String m = String.format("%s value duplication.", this.field);
-                throw new IllegalStateException(m);
+                throw duplicateId(this.field);
             }
             this.domainAccessor.set(domain, fieldName, idValue);
         }
@@ -419,16 +418,17 @@ public abstract class Stmts {
     }//DomainPostStmt
 
 
+
     private static final class ValuePostStmt extends PostStmt {
 
-        private final List<BiConsumer<Integer, Object>> consumerList;
+        private final BiFunction<Integer, Object, Object> function;
 
         private final int rowSize;
 
         private ValuePostStmt(InsertStmtParams.ValueParams params) {
             super(params);
-            this.consumerList = params.consumerList();
-            this.rowSize = this.consumerList.size();
+            this.function = params.function();
+            this.rowSize = this.rowSize();
         }
 
         @Override
@@ -445,9 +445,18 @@ public abstract class Stmts {
             if (idValue == null) {
                 throw new NullPointerException("idValue");
             }
-            this.consumerList.get(indexBasedZero).accept(indexBasedZero, idValue);
+            if (this.function.apply(indexBasedZero, idValue) != null) {
+                throw duplicateId(this.field);
+            }
+
         }
     }//ValuePostStmt
+
+
+    private static IllegalStateException duplicateId(PrimaryFieldMeta<?> field) {
+        String m = String.format("%s value duplication.", field);
+        throw new IllegalStateException(m);
+    }
 
 
 }

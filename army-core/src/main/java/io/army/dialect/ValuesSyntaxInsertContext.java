@@ -28,7 +28,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     final TableMeta<?> domainTable;
 
-    final List<FieldMeta<?>> fieldList;
+    private final List<FieldMeta<?>> fieldList;
 
     final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
@@ -43,6 +43,10 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * @see #returnId
      */
     final String idSelectionAlias;
+
+    private boolean columnListClauseEnd;
+
+    private boolean valuesClauseEnd;
 
 
     /**
@@ -142,12 +146,13 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
     @Override
-    public final TableMeta<?> table() {
+    public final TableMeta<?> insertTable() {
         return this.insertTable;
     }
 
     @Override
     public final void appendFieldList() {
+        assert !this.columnListClauseEnd;
         final List<FieldMeta<?>> fieldList = this.fieldList;
         final int fieldSize = fieldList.size();
         final ArmyDialect dialect = this.dialect;
@@ -168,8 +173,34 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             actualIndex++;
         }
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        this.columnListClauseEnd = true;
     }
 
+    @Override
+    public final void appendValueList() {
+        assert this.columnListClauseEnd && !this.valuesClauseEnd;
+        this.doAppendValuesList(this.fieldList);
+        this.valuesClauseEnd = true;
+    }
+
+    @Override
+    public final void appendField(String tableAlias, FieldMeta<?> field) {
+        // domain insert don't support insert any field in expression
+        throw _Exceptions.unknownColumn(tableAlias, field);
+    }
+
+    @Override
+    public final void appendField(final FieldMeta<?> field) {
+        if (!(this.valuesClauseEnd && this.duplicateKeyClause && field.tableMeta() == this.insertTable)) {
+            // domain insert don't support insert any field in expression
+            throw _Exceptions.unknownColumn(field);
+        }
+        final StringBuilder sqlBuilder = this.sqlBuilder
+                .append(_Constant.SPACE);
+        this.dialect.safeObjectName(field, sqlBuilder);
+
+    }
 
     @Override
     public final void appendReturnIdIfNeed() {
@@ -222,6 +253,13 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     public final List<Selection> selectionList() {
         //TODO
         return Collections.emptyList();
+    }
+
+
+    abstract void doAppendValuesList(List<FieldMeta<?>> fieldList);
+
+    final boolean isValuesClauseEnd() {
+        return this.valuesClauseEnd;
     }
 
 

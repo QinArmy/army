@@ -1499,5 +1499,12 @@ abstract class InsertSupport {
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
+    static CriteriaException childAndParentRowsNotMatch(CriteriaContext criteriaContext
+            , ChildTableMeta<?> table, int parent, int child) {
+        Supplier<CriteriaException> supplier;
+        supplier = () -> _Exceptions.childAndParentRowsNotMatch(table, parent, child);
+        return CriteriaContextStack.criteriaError(criteriaContext, supplier);
+    }
+
 
 }

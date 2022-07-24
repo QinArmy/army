@@ -1343,7 +1343,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         //1. INSERT INTO keywords
         sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
         //2. table name
-        this.safeObjectName(context.table(), sqlBuilder);
+        this.safeObjectName(context.insertTable(), sqlBuilder);
         //3. table column list
         context.appendFieldList();
         //4. values clause
@@ -1359,7 +1359,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         //1. INSERT INTO keywords
         sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
         //2. table name
-        this.safeObjectName(context.table(), sqlBuilder);
+        this.safeObjectName(context.insertTable(), sqlBuilder);
         //3. table column list
         context.appendFieldList();
         //4. sub query

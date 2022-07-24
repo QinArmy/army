@@ -48,8 +48,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     private final List<IDomain> domainList;
 
-    private boolean valuesClauseEnd;
-
 
     /**
      * create for {@link  SingleTableMeta}
@@ -58,7 +56,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
             , TableMeta<?> domainTable, Visible visible) {
         super(dialect, stmt, domainTable, visible);
         this.domainList = stmt.domainList();
-        //must be domainTable ,not this.table.javaType()
+        //must be domainTable ,not this.insertTable
         final boolean manageVisible;
         manageVisible = isManageVisible(this.insertTable, this.defaultValueMap);
 
@@ -82,29 +80,9 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
 
     @Override
-    public void appendField(String tableAlias, FieldMeta<?> field) {
-        // domain insert don't support insert any field in expression
-        throw _Exceptions.unknownColumn(tableAlias, field);
-    }
-
-    @Override
-    public void appendField(final FieldMeta<?> field) {
-        if (!(this.valuesClauseEnd && this.duplicateKeyClause && field.tableMeta() == this.insertTable)) {
-            // domain insert don't support insert any field in expression
-            throw _Exceptions.unknownColumn(field);
-        }
-        final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE);
-        this.dialect.safeObjectName(field, sqlBuilder);
-
-    }
-
-    @Override
-    public void appendValueList() {
-        assert !this.valuesClauseEnd;
+    void doAppendValuesList(final List<FieldMeta<?>> fieldList) {
 
         final List<IDomain> domainList = this.domainList;
-        final List<FieldMeta<?>> fieldList = this.fieldList;
         final int domainSize = domainList.size();
         assert domainSize > 0; //must check for criteria api implementation
         final int fieldSize = fieldList.size();
@@ -218,7 +196,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         }//outer for
 
         domainWrapper.domain = null; //finally must clear
-        this.valuesClauseEnd = true;
     }
 
 

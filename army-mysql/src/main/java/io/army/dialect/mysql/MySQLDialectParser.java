@@ -580,7 +580,7 @@ final class MySQLDialectParser extends MySQLParser {
         sqlBuilder.append(_Constant.SPACE_INTO_SPACE);
 
         //5. table name
-        this.safeObjectName(context.table(), sqlBuilder);
+        this.safeObjectName(context.insertTable(), sqlBuilder);
         //6. partition clause
         this.partitionClause(stmt.partitionList(), sqlBuilder);
 
@@ -598,7 +598,7 @@ final class MySQLDialectParser extends MySQLParser {
         final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(SPACE_ON_DUPLICATE_KEY_UPDATE);
         //2. on duplicate key update clause
-        final TableMeta<?> table = context.table();
+        final TableMeta<?> table = context.insertTable();
         FieldMeta<?> field;
         int index = 0;
         for (_Pair<FieldMeta<?>, _Expression> pair : clause.duplicatePairList()) {

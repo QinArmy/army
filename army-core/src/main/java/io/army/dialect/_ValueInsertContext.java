@@ -4,7 +4,7 @@ import io.army.meta.TableMeta;
 
 public interface _ValueInsertContext extends _InsertContext {
 
-    TableMeta<?> table();
+    TableMeta<?> insertTable();
 
     void appendFieldList();
 
