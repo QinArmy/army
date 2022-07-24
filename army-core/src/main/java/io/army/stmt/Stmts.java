@@ -4,7 +4,6 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._CollectionUtils;
@@ -377,7 +376,7 @@ public abstract class Stmts {
 
     private static final class DomainPostStmt extends PostStmt {
 
-        private final List<IDomain> domainList;
+        private final List<?> domainList;
 
         private final int rowSize;
 
@@ -404,7 +403,7 @@ public abstract class Stmts {
             if (idValue == null) {
                 throw new NullPointerException("idValue");
             }
-            final IDomain domain;
+            final Object domain;
             domain = this.domainList.get(indexBasedZero);
             final String fieldName = this.field.fieldName();
 

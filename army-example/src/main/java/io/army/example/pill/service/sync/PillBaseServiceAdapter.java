@@ -1,6 +1,6 @@
 package io.army.example.pill.service.sync;
 
-import io.army.domain.IDomain;
+
 import io.army.example.common.BaseService;
 import io.army.example.common.Domain;
 import io.army.example.common.SyncBaseService;
@@ -37,7 +37,7 @@ public class PillBaseServiceAdapter implements BaseService {
     }
 
     @Override
-    public Mono<Map<String, Object>> findByIdAsMap(Class<? extends IDomain> domainClass, Object id) {
+    public Mono<Map<String, Object>> findByIdAsMap(Class<?> domainClass, Object id) {
         return Mono.defer(() -> Mono.justOrEmpty(getBaseService().findByIdAsMap(domainClass, id)));
     }
 

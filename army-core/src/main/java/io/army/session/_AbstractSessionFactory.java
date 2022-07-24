@@ -7,7 +7,6 @@ import io.army.codec.JsonCodec;
 import io.army.dialect._AbstractFieldValuesGenerator;
 import io.army.dialect._DialectEnv;
 import io.army.dialect._FieldValueGenerator;
-import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.generator.FieldGenerator;
@@ -132,7 +131,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public final <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+    public final <T> TableMeta<T> tableMeta(Class<T> domainClass) {
         return (TableMeta<T>) this.tableMap.get(domainClass);
     }
 

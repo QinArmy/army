@@ -1,6 +1,6 @@
 package io.army.session;
 
-import io.army.domain.IDomain;
+
 import io.army.meta.TableMeta;
 
 /**
@@ -23,6 +23,6 @@ public interface GenericSession {
     /**
      * @throws IllegalArgumentException throw,when not found {@link TableMeta}.
      */
-    <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
+    <T> TableMeta<T> tableMeta(Class<T> domainClass);
 
 }

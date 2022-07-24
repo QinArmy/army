@@ -1,6 +1,6 @@
 package io.army.example.common;
 
-import io.army.domain.IDomain;
+
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public interface BaseDao {
 
     <T extends Domain> Mono<T> getById(Class<T> domainClass, Object id);
 
-    Mono<Map<String, Object>> getByIdAsMap(Class<? extends IDomain> domainClass, Object id);
+    Mono<Map<String, Object>> getByIdAsMap(Class<?> domainClass, Object id);
 
     Mono<Void> flush();
 }

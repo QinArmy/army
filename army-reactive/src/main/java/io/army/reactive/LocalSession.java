@@ -1,7 +1,6 @@
 package io.army.reactive;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
@@ -62,7 +61,7 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
-    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+    public <T> TableMeta<T> tableMeta(Class<T> domainClass) {
         return null;
     }
 
@@ -72,22 +71,22 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
-    public <R extends IDomain> Mono<R> get(TableMeta<R> table, Object id) {
+    public <R> Mono<R> get(TableMeta<R> table, Object id) {
         return null;
     }
 
     @Override
-    public <R extends IDomain> Mono<R> get(TableMeta<R> table, Object id, Visible visible) {
+    public <R> Mono<R> get(TableMeta<R> table, Object id, Visible visible) {
         return null;
     }
 
     @Override
-    public <R extends IDomain> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value) {
+    public <R> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value) {
         return null;
     }
 
     @Override
-    public <R extends IDomain> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible) {
+    public <R> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible) {
         return null;
     }
 
@@ -107,7 +106,7 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
-    public <T extends IDomain> Mono<Void> save(T domain, NullHandleMode mode, Visible visible) {
+    public <T> Mono<Void> save(T domain, NullHandleMode mode, Visible visible) {
         return null;
     }
 
@@ -132,7 +131,7 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
-    public <T extends IDomain> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode, Visible visible) {
+    public <T> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode, Visible visible) {
         return null;
     }
 

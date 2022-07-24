@@ -1,7 +1,6 @@
 package io.army.reactive;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.util._Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -94,12 +93,12 @@ public abstract class _AbstractReactiveSession implements ReactiveSession {
     }
 
     @Override
-    public final <T extends IDomain> Mono<Void> save(T domain) {
+    public final <T> Mono<Void> save(T domain) {
         return this.save(domain, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <T extends IDomain> Mono<Void> save(T domain, NullHandleMode mode) {
+    public final <T> Mono<Void> save(T domain, NullHandleMode mode) {
         return this.save(domain, mode, Visible.ONLY_VISIBLE);
     }
 
@@ -135,12 +134,12 @@ public abstract class _AbstractReactiveSession implements ReactiveSession {
     }
 
     @Override
-    public final <T extends IDomain> Mono<Void> batchSave(List<T> domainList) {
+    public final <T> Mono<Void> batchSave(List<T> domainList) {
         return this.batchSave(domainList, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <T extends IDomain> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode) {
+    public final <T> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode) {
         return this.batchSave(domainList, mode, Visible.ONLY_VISIBLE);
     }
 

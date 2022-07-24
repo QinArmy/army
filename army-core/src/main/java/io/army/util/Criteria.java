@@ -2,7 +2,6 @@ package io.army.util;
 
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
-import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
@@ -15,7 +14,7 @@ public abstract class Criteria {
     }
 
 
-    public static <T extends IDomain> Select createSelectDomainById(final TableMeta<T> table, final Object id) {
+    public static <T> Select createSelectDomainById(final TableMeta<T> table, final Object id) {
         final Select stmt;
         if (table instanceof ChildTableMeta) {
             final ChildTableMeta<?> child = (ChildTableMeta<?>) table;
@@ -37,7 +36,7 @@ public abstract class Criteria {
         return stmt;
     }
 
-    public static <T extends IDomain> Select createSelectDomainByUnique(final TableMeta<T> table
+    public static <T> Select createSelectDomainByUnique(final TableMeta<T> table
             , final UniqueFieldMeta<? super T> field, final Object value) {
         final Select stmt;
         if (table instanceof ChildTableMeta) {

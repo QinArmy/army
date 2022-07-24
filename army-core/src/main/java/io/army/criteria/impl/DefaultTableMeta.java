@@ -4,7 +4,6 @@ import io.army.ArmyException;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.domain.IDomain;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -17,12 +16,12 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
+abstract class DefaultTableMeta<T> implements TableMeta<T> {
 
     private static final ConcurrentMap<Class<?>, DefaultTableMeta<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
-    static <T extends IDomain> TableMeta<T> getTableMeta(final Class<T> domainClass) {
+    static <T> TableMeta<T> getTableMeta(final Class<T> domainClass) {
         final TableMeta<T> cache = (TableMeta<T>) INSTANCE_MAP.get(domainClass);
         final TableMeta<T> tableMeta;
         if (cache != null) {
@@ -46,7 +45,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return tableMeta;
     }
 
-    static <T extends IDomain> SimpleTableMeta<T> getSimpleTableMeta(final Class<T> domainClass) {
+    static <T> SimpleTableMeta<T> getSimpleTableMeta(final Class<T> domainClass) {
         SimpleTableMeta<T> simple;
         simple = getSimpleFromCache(domainClass);
         if (simple == null) {
@@ -56,7 +55,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
 
-    static <T extends IDomain> ParentTableMeta<T> getParentTableMeta(final Class<T> domainClass) {
+    static <T> ParentTableMeta<T> getParentTableMeta(final Class<T> domainClass) {
         ParentTableMeta<T> parent;
         parent = getParentFromCache(domainClass);
         if (parent == null) {
@@ -65,7 +64,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return parent;
     }
 
-    static <P extends IDomain, T extends IDomain> ComplexTableMeta<P, T> getChildTableMeta(final ParentTableMeta<P> parent
+    static <P, T> ComplexTableMeta<P, T> getChildTableMeta(final ParentTableMeta<P> parent
             , final Class<T> domainClass) {
         if (!(parent instanceof DefaultParentTable) || !parent.javaType().isAssignableFrom(domainClass)) {
             throw new IllegalArgumentException("parentTableMeta error");
@@ -84,7 +83,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    private static <T extends IDomain> ChildTableMeta<T> getChildFromCache(final Class<T> domainClass) {
+    private static <T> ChildTableMeta<T> getChildFromCache(final Class<T> domainClass) {
         final TableMeta<?> tableMeta = INSTANCE_MAP.get(domainClass);
         final ChildTableMeta<T> child;
         if (tableMeta == null) {
@@ -102,7 +101,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    private static <T extends IDomain> ParentTableMeta<T> getParentFromCache(final Class<T> domainClass) {
+    private static <T> ParentTableMeta<T> getParentFromCache(final Class<T> domainClass) {
         final TableMeta<?> tableMeta = INSTANCE_MAP.get(domainClass);
         final ParentTableMeta<T> parent;
         if (tableMeta == null) {
@@ -119,7 +118,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    private static <T extends IDomain> SimpleTableMeta<T> getSimpleFromCache(final Class<T> domainClass) {
+    private static <T> SimpleTableMeta<T> getSimpleFromCache(final Class<T> domainClass) {
         final TableMeta<?> tableMeta = INSTANCE_MAP.get(domainClass);
         final SimpleTableMeta<T> simple;
         if (tableMeta == null) {
@@ -134,7 +133,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return simple;
     }
 
-    private static <T extends IDomain> ParentTableMeta<T> createParentTableMeta(final Class<T> domainClass) {
+    private static <T> ParentTableMeta<T> createParentTableMeta(final Class<T> domainClass) {
         synchronized (DefaultParentTable.class) {
             final ParentTableMeta<T> parent;
             parent = getParentFromCache(domainClass);
@@ -157,7 +156,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private static <P extends IDomain, T extends P> ChildTableMeta<T> createChildTableMeta(final Class<T> domainClass) {
+    private static <P, T extends P> ChildTableMeta<T> createChildTableMeta(final Class<T> domainClass) {
         synchronized (DefaultChildTable.class) {
             final ChildTableMeta<T> child;
             child = getChildFromCache(domainClass);
@@ -187,7 +186,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
     }
 
 
-    private static <T extends IDomain> SimpleTableMeta<T> createSimpleTableMeta(final Class<T> domainClass) {
+    private static <T> SimpleTableMeta<T> createSimpleTableMeta(final Class<T> domainClass) {
         synchronized (DefaultSimpleTable.class) {
             final SimpleTableMeta<T> simple;
             simple = getSimpleFromCache(domainClass);
@@ -222,7 +221,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
         return new IllegalArgumentException(m);
     }
 
-    private static <T extends IDomain> List<FieldMeta<T>> createFieldList(final Class<T> domainClass
+    private static <T> List<FieldMeta<T>> createFieldList(final Class<T> domainClass
             , final Map<String, FieldMeta<T>> fieldNameToField) {
 
         final List<FieldMeta<T>> fieldList = new ArrayList<>(fieldNameToField.size());
@@ -287,10 +286,6 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     private DefaultTableMeta(final Class<T> domainClass) {
         Objects.requireNonNull(domainClass, "javaType required");
-        if (!IDomain.class.isAssignableFrom(domainClass)) {
-            String m = String.format("Class[%s] not implements %s .", domainClass.getName(), IDomain.class.getName());
-            throw new IllegalArgumentException(m);
-        }
         this.javaType = domainClass;
         try {
 
@@ -492,7 +487,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     /*################################## blow static class ##################################*/
 
-    private static final class DefaultSimpleTable<T extends IDomain> extends DefaultTableMeta<T>
+    private static final class DefaultSimpleTable<T> extends DefaultTableMeta<T>
             implements SimpleTableMeta<T> {
 
         private DefaultSimpleTable(final Class<T> domainClass) {
@@ -545,7 +540,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     }
 
-    private static final class DefaultParentTable<T extends IDomain> extends DefaultTableMeta<T>
+    private static final class DefaultParentTable<T> extends DefaultTableMeta<T>
             implements ParentTableMeta<T> {
 
         private final FieldMeta<T> discriminator;
@@ -600,7 +595,7 @@ abstract class DefaultTableMeta<T extends IDomain> implements TableMeta<T> {
 
     }
 
-    private static final class DefaultChildTable<P extends IDomain, T extends P> extends DefaultTableMeta<T>
+    private static final class DefaultChildTable<P, T extends P> extends DefaultTableMeta<T>
             implements ComplexTableMeta<P, T> {
 
         private final DefaultParentTable<P> parent;

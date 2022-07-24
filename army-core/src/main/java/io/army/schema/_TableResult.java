@@ -1,6 +1,6 @@
 package io.army.schema;
 
-import io.army.domain.IDomain;
+
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -15,7 +15,7 @@ public interface _TableResult {
 
     boolean comment();
 
-    List<FieldMeta<? extends IDomain>> newFieldList();
+    List<FieldMeta<?>> newFieldList();
 
     List<_FieldResult> changeFieldList();
 

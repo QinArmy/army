@@ -7,7 +7,6 @@ import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._MockDialects;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
@@ -128,7 +127,7 @@ abstract class InsertSupport {
     }//NonQueryInsertOptionsImpl
 
 
-    static abstract class ColumnsClause<C, T extends IDomain, RR>
+    static abstract class ColumnsClause<C, T, RR>
             implements Insert._ColumnListClause<C, T, RR>, Insert._StaticColumnDualClause<T, RR>
             , _Insert, ColumnListClause {
 
@@ -318,7 +317,7 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ColumnDefaultClause<C, T extends IDomain, RR> extends ColumnsClause<C, T, RR>
+    static abstract class ColumnDefaultClause<C, T, RR> extends ColumnsClause<C, T, RR>
             implements Insert._ColumnDefaultClause<C, T, RR>, _Insert._ValuesSyntaxInsert {
 
 
@@ -511,20 +510,22 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class DomainValueClause<C, T extends IDomain, CR, VR>
+    static abstract class DomainValueClause<C, T, CR, VR>
             extends ColumnDefaultClause<C, T, CR> implements Insert._DomainValueClause<C, T, VR>
             , _Insert._DomainInsert {
 
 
-        private List<IDomain> domainList;
+        private List<?> domainList;
 
         DomainValueClause(InsertOptions options, TableMeta<T> table) {
             super(options, table);
         }
 
         @Override
-        public final VR value(T domain) {
-            CriteriaContextStack.assertNonNull(this.criteriaContext, domain, "domain must non-null");
+        public final VR value(@Nullable T domain) {
+            if (domain == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
             this.domainList = Collections.singletonList(domain);
             this.endColumnDefaultClause();
             return this.valuesEnd();
@@ -551,9 +552,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR values(final List<T> domainList) {
-            CriteriaContextStack.assertNonNull(this.criteriaContext, domainList, "domainList must non-empty");
-            if (domainList.size() == 0) {
+        public final VR values(final @Nullable List<T> domainList) {
+            if (domainList == null || domainList.size() == 0) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
             }
             this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
@@ -581,31 +581,21 @@ abstract class InsertSupport {
             }
 
             final List<?> domainList = (List<?>) value;
-            final int size = domainList.size();
-            if (size == 0) {
+            if (domainList.size() == 0) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
             }
-            final TableMeta<?> table = this.table;
-            if (table == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            if (!this.table.javaType().isInstance(domainList.get(0))) {
+                throw nonDomainInstance(this.criteriaContext, domainList.get(0), this.table);
             }
-            final Class<?> javaType = table.javaType();
-            final List<IDomain> list = new ArrayList<>(size);
-            for (Object domain : domainList) {
-                if (domain == null || !javaType.isAssignableFrom(domain.getClass())) {
-                    throw nonDomainInstance(this.criteriaContext, domain, this.table);
-                }
-                list.add((IDomain) domain);
-            }
-            this.domainList = Collections.unmodifiableList(list);
+            this.domainList = _CollectionUtils.asUnmodifiableList(domainList);
             this.endColumnDefaultClause();
             return this.valuesEnd();
         }
 
 
         @Override
-        public final List<IDomain> domainList() {
-            final List<IDomain> list = this.domainList;
+        public final List<?> domainList() {
+            final List<?> list = this.domainList;
             if (list == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -623,7 +613,7 @@ abstract class InsertSupport {
     }//DomainValueClause
 
 
-    static abstract class StaticColumnValuePairClause<C, T extends IDomain, VR>
+    static abstract class StaticColumnValuePairClause<C, T, VR>
             implements Insert._StaticValueLeftParenClause<C, T, VR>, Insert._StaticColumnValueClause<C, T, VR>
             , CriteriaContextSpec {
 
@@ -756,7 +746,7 @@ abstract class InsertSupport {
     }//StaticValueColumnClause
 
 
-    static abstract class DynamicValueInsertValueClause<C, T extends IDomain, RR, VR>
+    static abstract class DynamicValueInsertValueClause<C, T, RR, VR>
             extends ColumnDefaultClause<C, T, RR> implements Insert._DynamicValuesClause<C, T, VR>
             , PairsConstructor<FieldMeta<T>> {
 
@@ -891,7 +881,7 @@ abstract class InsertSupport {
     }//ValueInsertValueClause
 
     @SuppressWarnings("unchecked")
-    static abstract class AssignmentSetClause<C, T extends IDomain, SR>
+    static abstract class AssignmentSetClause<C, T, SR>
             implements Insert._AssignmentSetClause<C, T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec {
         final CriteriaContext criteriaContext;
         final C criteria;
@@ -1114,7 +1104,7 @@ abstract class InsertSupport {
     }//AssignmentSetClause
 
 
-    static abstract class AssignmentInsertClause<C, T extends IDomain, SR>
+    static abstract class AssignmentInsertClause<C, T, SR>
             extends AssignmentSetClause<C, T, SR>
             implements Insert._AssignmentSetClause<C, T, SR>, _Insert._AssignmentInsert {
 
@@ -1169,7 +1159,7 @@ abstract class InsertSupport {
     }//AssignmentInsertClause
 
 
-    static abstract class QueryInsertSpaceClause<C, T extends IDomain, RR, SR> extends ColumnsClause<C, T, RR>
+    static abstract class QueryInsertSpaceClause<C, T, RR, SR> extends ColumnsClause<C, T, RR>
             implements Insert._SpaceSubQueryClause<C, SR>, _Insert._QueryInsert {
 
         private SubQuery subQuery;

@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.domain.IDomain;
+
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
@@ -13,7 +13,7 @@ interface DdlDialect {
 
     void dropTable(List<TableMeta<?>> tableList, List<String> sqlList);
 
-    <T extends IDomain> void createTable(TableMeta<T> table, List<String> sqlList);
+    <T> void createTable(TableMeta<T> table, List<String> sqlList);
 
     void addColumn(List<FieldMeta<?>> fieldList, List<String> sqlList);
 
@@ -21,9 +21,9 @@ interface DdlDialect {
 
     void modifyColumn(List<_FieldResult> resultList, List<String> sqlList);
 
-    <T extends IDomain> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
+    <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
 
-      <T extends IDomain> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
+    <T> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
 
-    <T extends IDomain> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
+    <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList);
 }

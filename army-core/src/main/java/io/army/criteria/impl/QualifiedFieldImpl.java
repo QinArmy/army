@@ -8,7 +8,6 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.domain.IDomain;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
@@ -22,11 +21,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-final class QualifiedFieldImpl<T extends IDomain> extends OperationField
+final class QualifiedFieldImpl<T> extends OperationField
         implements QualifiedField<T>, _Selection {
 
     @SuppressWarnings("unchecked")
-    static <T extends IDomain> QualifiedField<T> reference(final String tableAlias, final FieldMeta<T> field) {
+    static <T> QualifiedField<T> reference(final String tableAlias, final FieldMeta<T> field) {
         final ConcurrentMap<String, FieldReference<?>> fieldMap;
         fieldMap = CACHE.computeIfAbsent(field, QualifiedFieldImpl::createFieldReferenceMap);
 
@@ -188,7 +187,7 @@ final class QualifiedFieldImpl<T extends IDomain> extends OperationField
         return this.field.generatorType;
     }
 
-    private static final class FieldReference<T extends IDomain> extends SoftReference<QualifiedFieldImpl<T>> {
+    private static final class FieldReference<T> extends SoftReference<QualifiedFieldImpl<T>> {
 
 
         private final ConcurrentMap<String, FieldReference<?>> aliasToRef;

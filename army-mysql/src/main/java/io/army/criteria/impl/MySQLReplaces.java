@@ -12,7 +12,6 @@ import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.dialect._DialectUtils;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
@@ -110,22 +109,22 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+        public <T> MySQLReplace._DomainPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
             return new DomainPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+        public <T> MySQLReplace._DomainParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
             return new DomainParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
+        public <T> MySQLReplace._DomainPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
             return new DomainPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
+        public <T> MySQLReplace._DomainParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
             return new DomainParentPartitionClause<>(this, table);
         }
 
@@ -133,7 +132,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//DomainReplaceOptionClause
 
 
-    private static final class DomainPartitionClause<C, T extends IDomain>
+    private static final class DomainPartitionClause<C, T>
             extends InsertSupport.DomainValueClause<
             C,
             T,
@@ -196,7 +195,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//DomainPartitionClause
 
 
-    private static final class DomainParentPartitionClause<C, P extends IDomain>
+    private static final class DomainParentPartitionClause<C, P>
             extends InsertSupport.DomainValueClause<
             C,
             P,
@@ -254,12 +253,12 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._DomainPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
             return this.replaceInto(table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._DomainPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._DomainPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
             final DomainPartitionClause<C, T> childClause;
             childClause = new DomainPartitionClause<>(this, table);
             this.childHintList = null;
@@ -282,7 +281,7 @@ abstract class MySQLReplaces extends InsertSupport {
             return this;
         }
 
-        private DomainReplaceStatement createParentStmt(Supplier<List<IDomain>> supplier) {
+        private DomainReplaceStatement createParentStmt(Supplier<List<?>> supplier) {
             return new DomainReplaceStatement(this, supplier);
         }
 
@@ -322,7 +321,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private final List<String> partitionList;
 
-        private final List<IDomain> domainList;
+        private final List<?> domainList;
 
 
         private DomainReplaceStatement(DomainPartitionClause<?, ?> clause) {
@@ -334,7 +333,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         private DomainReplaceStatement(DomainParentPartitionClause<?, ?> clause
-                , Supplier<List<IDomain>> supplier) {
+                , Supplier<List<?>> supplier) {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
@@ -360,7 +359,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public final List<IDomain> domainList() {
+        public final List<?> domainList() {
             return this.domainList;
         }
 
@@ -403,22 +402,22 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+        public <T> MySQLReplace._ValuePartitionSpec<C, T> into(SimpleTableMeta<T> table) {
             return new ValuePartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValueParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+        public <T> MySQLReplace._ValueParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
             return new ValueParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
+        public <T> MySQLReplace._ValuePartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
             return new ValuePartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValueParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
+        public <T> MySQLReplace._ValueParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
             return new ValueParentPartitionClause<>(this, table);
         }
 
@@ -426,7 +425,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//ValueReplaceOptionClause
 
 
-    private static final class ValuePartitionClause<C, T extends IDomain>
+    private static final class ValuePartitionClause<C, T>
             extends InsertSupport.DynamicValueInsertValueClause<
             C,
             T,
@@ -494,7 +493,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//ValuePartitionClause
 
 
-    private static final class ValueParentPartitionClause<C, P extends IDomain>
+    private static final class ValueParentPartitionClause<C, P>
             extends InsertSupport.DynamicValueInsertValueClause<
             C,
             P,
@@ -563,12 +562,12 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._ValuePartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
             return this.replaceInto(table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._ValuePartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._ValuePartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
             final ValuePartitionClause<C, T> childClause;
             childClause = new ValuePartitionClause<>(this, table);
             this.childHintList = null;
@@ -607,7 +606,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//ValueParentPartitionClause
 
 
-    private static final class MySQLStaticValuesSpec<C, T extends IDomain>
+    private static final class MySQLStaticValuesSpec<C, T>
             extends InsertSupport.StaticColumnValuePairClause<C, T, MySQLReplace._ValueStaticValuesLeftParenSpec<C, T>>
             implements MySQLReplace._ValueStaticValuesLeftParenSpec<C, T> {
 
@@ -634,7 +633,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//MySQLStaticValuesSpec
 
 
-    private static final class MySQLParentStaticValuesSpec<C, P extends IDomain>
+    private static final class MySQLParentStaticValuesSpec<C, P>
             extends InsertSupport.StaticColumnValuePairClause<C, P, MySQLReplace._ValueParentStaticValuesLeftParenSpec<C, P>>
             implements MySQLReplace._ValueParentStaticValuesLeftParenSpec<C, P> {
 
@@ -759,22 +758,22 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+        public <T> MySQLReplace._AssignmentPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
             return new AssignmentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+        public <T> MySQLReplace._AssignmentParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
             return new AssignmentParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
+        public <T> MySQLReplace._AssignmentPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
             return new AssignmentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
+        public <T> MySQLReplace._AssignmentParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
             return new AssignmentParentPartitionClause<>(this, table);
         }
 
@@ -782,7 +781,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//AssignmentReplaceOptionClause
 
 
-    static final class AssignmentPartitionClause<C, T extends IDomain>
+    static final class AssignmentPartitionClause<C, T>
             extends InsertSupport.AssignmentInsertClause<
             C,
             T,
@@ -849,7 +848,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
     }//AssignmentPartitionClause
 
-    private static final class AssignmentParentPartitionClause<C, P extends IDomain>
+    private static final class AssignmentParentPartitionClause<C, P>
             extends InsertSupport.AssignmentInsertClause<
             C,
             P,
@@ -916,12 +915,12 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._AssignmentPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
             return this.replaceInto(table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._AssignmentPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._AssignmentPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
             final AssignmentPartitionClause<C, T> childClause;
             childClause = new AssignmentPartitionClause<>(this, table);
             this.childHintList = null;
@@ -1050,22 +1049,22 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
+        public <T> MySQLReplace._QueryPartitionSpec<C, T> into(SimpleTableMeta<T> table) {
             return new QueryPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
+        public <T> MySQLReplace._QueryParentPartitionSpec<C, T> into(ParentTableMeta<T> table) {
             return new QueryParentPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
+        public <T> MySQLReplace._QueryPartitionSpec<C, T> replaceInto(SimpleTableMeta<T> table) {
             return new QueryPartitionClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._QueryParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
+        public <T> MySQLReplace._QueryParentPartitionSpec<C, T> replaceInto(ParentTableMeta<T> table) {
             return new QueryParentPartitionClause<>(this, table);
         }
 
@@ -1073,7 +1072,7 @@ abstract class MySQLReplaces extends InsertSupport {
     }//QueryReplaceOptionClause
 
 
-    private static final class QueryPartitionClause<C, T extends IDomain>
+    private static final class QueryPartitionClause<C, T>
             extends InsertSupport.QueryInsertSpaceClause<
             C,
             T,
@@ -1132,7 +1131,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
     }//QueryReplaceSubQueryClause
 
-    private static final class QueryParentPartitionClause<C, P extends IDomain>
+    private static final class QueryParentPartitionClause<C, P>
             extends InsertSupport.QueryInsertSpaceClause<
             C,
             P,
@@ -1194,12 +1193,12 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._QueryPartitionSpec<C, T> into(ComplexTableMeta<P, T> table) {
             return this.replaceInto(table);
         }
 
         @Override
-        public <T extends IDomain> MySQLReplace._QueryPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
+        public <T> MySQLReplace._QueryPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table) {
             final QueryPartitionClause<C, T> childClause;
             childClause = new QueryPartitionClause<>(this, table);
             this.childHintList = null;

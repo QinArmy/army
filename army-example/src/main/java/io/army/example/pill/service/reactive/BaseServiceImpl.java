@@ -1,6 +1,6 @@
 package io.army.example.pill.service.reactive;
 
-import io.army.domain.IDomain;
+
 import io.army.example.common.BaseService;
 import io.army.example.common.Domain;
 import org.springframework.beans.BeansException;
@@ -57,7 +57,7 @@ public class BaseServiceImpl implements BaseService, InitializingBean, Applicati
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
     @Override
-    public Mono<Map<String, Object>> findByIdAsMap(Class<? extends IDomain> domainClass, Object id) {
+    public Mono<Map<String, Object>> findByIdAsMap(Class<?> domainClass, Object id) {
         throw new UnsupportedOperationException();
     }
 

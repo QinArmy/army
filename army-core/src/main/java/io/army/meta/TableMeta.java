@@ -1,7 +1,6 @@
 package io.army.meta;
 
 import io.army.criteria.TableItem;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
  * @see IndexMeta
  * @see IndexFieldMeta
  */
-public interface TableMeta<T extends IDomain> extends TableItem, DatabaseObject {
+public interface TableMeta<T> extends TableItem, DatabaseObject {
 
 
     Class<T> javaType();

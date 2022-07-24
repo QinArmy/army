@@ -1,7 +1,6 @@
 package io.army.sync;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
@@ -23,13 +22,13 @@ public abstract class _AbstractSyncSession implements SyncSession {
 
     @Nullable
     @Override
-    public final <R extends IDomain> R get(TableMeta<R> table, Object id) {
+    public final <R> R get(TableMeta<R> table, Object id) {
         return this.get(table, id, Visible.ONLY_VISIBLE);
     }
 
     @Nullable
     @Override
-    public final <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value) {
+    public final <R> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value) {
         return this.getByUnique(table, field, value, Visible.ONLY_VISIBLE);
     }
 
@@ -130,22 +129,22 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
-    public final <T extends IDomain> void save(T domain) {
+    public final <T> void save(T domain) {
         this.save(domain, false, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <T extends IDomain> void save(T domain, boolean optimizingParam) {
+    public final <T> void save(T domain, boolean optimizingParam) {
         this.save(domain, optimizingParam, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <T extends IDomain> void save(T domain, Visible visible) {
+    public final <T> void save(T domain, Visible visible) {
         this.save(domain, false, NullHandleMode.INSERT_DEFAULT, visible);
     }
 
     @Override
-    public final <T extends IDomain> void save(T domain, NullHandleMode mode) {
+    public final <T> void save(T domain, NullHandleMode mode) {
         this.save(domain, false, mode, Visible.ONLY_VISIBLE);
     }
 
@@ -187,22 +186,22 @@ public abstract class _AbstractSyncSession implements SyncSession {
     }
 
     @Override
-    public final <T extends IDomain> void batchSave(List<T> domainList) {
+    public final <T> void batchSave(List<T> domainList) {
         this.batchSave(domainList, false, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <T extends IDomain> void batchSave(List<T> domainList, boolean preferLiteral) {
+    public final <T> void batchSave(List<T> domainList, boolean preferLiteral) {
         this.batchSave(domainList, preferLiteral, NullHandleMode.INSERT_DEFAULT, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final <T extends IDomain> void batchSave(List<T> domainList, Visible visible) {
+    public final <T> void batchSave(List<T> domainList, Visible visible) {
         this.batchSave(domainList, false, NullHandleMode.INSERT_DEFAULT, visible);
     }
 
     @Override
-    public final <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode) {
+    public final <T> void batchSave(List<T> domainList, NullHandleMode mode) {
         this.batchSave(domainList, false, mode, Visible.ONLY_VISIBLE);
     }
 

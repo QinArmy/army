@@ -1,6 +1,6 @@
 package io.army.proxy;
 
-import io.army.domain.IDomain;
+
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
@@ -42,7 +42,7 @@ final class SessionCacheFactory implements _SessionCacheFactory {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> Class<? extends T> getProxyClass(final TableMeta<T> table) {
+    public <T> Class<? extends T> getProxyClass(final TableMeta<T> table) {
         return (Class<? extends T>) this.proxyClassMap.computeIfAbsent(table.javaType(), k -> createProxy(table));
     }
 
@@ -53,7 +53,7 @@ final class SessionCacheFactory implements _SessionCacheFactory {
 
 
     @SuppressWarnings("unchecked")
-    private <T extends IDomain> Class<? extends T> createProxy(final TableMeta<T> table) {
+    private <T> Class<? extends T> createProxy(final TableMeta<T> table) {
         final Class<T> domainClass = table.javaType();
 
         String fieldName, setterName;

@@ -3,7 +3,6 @@ package io.army.dialect.mysql;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._Constant;
 import io.army.dialect._DdlDialect;
-import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
@@ -93,7 +92,7 @@ final class MySQLDdl extends _DdlDialect {
 
 
     @Override
-    public <T extends IDomain> void createIndex(final TableMeta<T> table, final List<String> indexNameList
+    public <T> void createIndex(final TableMeta<T> table, final List<String> indexNameList
             , final List<String> sqlList) {
         final int indexNameSize = indexNameList.size();
         if (indexNameSize == 0) {
@@ -170,7 +169,7 @@ final class MySQLDdl extends _DdlDialect {
 
 
     @Override
-    public <T extends IDomain> void changeIndex(final TableMeta<T> table, final List<String> indexNameList
+    public <T> void changeIndex(final TableMeta<T> table, final List<String> indexNameList
             , final List<String> sqlList) {
 
         dropIndex(table, indexNameList, sqlList);
@@ -178,7 +177,7 @@ final class MySQLDdl extends _DdlDialect {
     }
 
     @Override
-    public <T extends IDomain> void dropIndex(TableMeta<T> table, List<String> indexNameList
+    public <T> void dropIndex(TableMeta<T> table, List<String> indexNameList
             , List<String> sqlList) {
         final int indexNameSize = indexNameList.size();
         if (indexNameSize == 0) {

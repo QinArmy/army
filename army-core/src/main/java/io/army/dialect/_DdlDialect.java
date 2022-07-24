@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
 import io.army.util._StringUtils;
@@ -49,7 +48,7 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
     @Override
-    public final <T extends IDomain> void createTable(final TableMeta<T> table, List<String> sqlList) {
+    public final <T> void createTable(final TableMeta<T> table, List<String> sqlList) {
         final _AbstractDialect dialect = this.dialect;
         final StringBuilder builder = new StringBuilder(128)
                 .append("CREATE TABLE IF NOT EXISTS ");
@@ -299,7 +298,7 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
 
-    private <T extends IDomain> void index(final TableMeta<T> table, final StringBuilder builder) {
+    private <T> void index(final TableMeta<T> table, final StringBuilder builder) {
         final _AbstractDialect dialect = this.dialect;
         for (IndexMeta<T> index : table.indexList()) {
 

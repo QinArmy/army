@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.*;
-import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.mapping.CodeEnumType;
@@ -62,7 +61,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         }
     }
 
-    static Column columnMeta(final Class<? extends IDomain> domainClass, final Field field) throws MetaException {
+    static Column columnMeta(final Class<?> domainClass, final Field field) throws MetaException {
         final Column column = field.getAnnotation(Column.class);
         if (column == null) {
             String m = String.format("Field[%s.%s] isn't annotated by %s."

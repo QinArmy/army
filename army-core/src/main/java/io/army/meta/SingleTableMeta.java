@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.domain.IDomain;
+
 
 /**
  * <p>
@@ -13,6 +13,6 @@ import io.army.domain.IDomain;
  *
  * @param <T> domain java type
  */
-public interface SingleTableMeta<T extends IDomain> extends TableMeta<T> {
+public interface SingleTableMeta<T> extends TableMeta<T> {
 
 }

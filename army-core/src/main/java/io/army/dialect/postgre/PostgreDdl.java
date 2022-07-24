@@ -2,7 +2,6 @@ package io.army.dialect.postgre;
 
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._DdlDialect;
-import io.army.domain.IDomain;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
@@ -31,17 +30,17 @@ final class PostgreDdl extends _DdlDialect {
     }
 
     @Override
-    public <T extends IDomain> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+    public <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
 
     }
 
     @Override
-    public <T extends IDomain> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+    public <T> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
 
     }
 
     @Override
-    public <T extends IDomain> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+    public <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
 
     }
 

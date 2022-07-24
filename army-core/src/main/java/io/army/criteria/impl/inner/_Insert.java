@@ -3,7 +3,6 @@ package io.army.criteria.impl.inner;
 import io.army.criteria.ItemPair;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.SubQuery;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -66,7 +65,7 @@ public interface _Insert extends _Statement {
     interface _DomainInsert extends _ValuesSyntaxInsert {
 
 
-        List<IDomain> domainList();
+        List<?> domainList();
 
     }
 

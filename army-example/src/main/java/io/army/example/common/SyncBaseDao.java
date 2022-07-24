@@ -1,6 +1,6 @@
 package io.army.example.common;
 
-import io.army.domain.IDomain;
+
 import io.army.lang.Nullable;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public interface SyncBaseDao {
     <T extends Domain> T findById(Class<T> domainClass, Object id);
 
     @Nullable
-    Map<String, Object> findByIdAsMap(Class<? extends IDomain> domainClass, Object id);
+    Map<String, Object> findByIdAsMap(Class<?> domainClass, Object id);
 
     void flush();
 

@@ -1,6 +1,6 @@
 package io.army.example.pill.service.sync;
 
-import io.army.domain.IDomain;
+
 import io.army.example.common.BaseService;
 import io.army.example.common.Domain;
 import io.army.example.common.SyncBaseDao;
@@ -43,7 +43,7 @@ public class PillSyncBaseService implements SyncBaseService {
 
     @Transactional(value = TX_MANAGER, isolation = Isolation.READ_COMMITTED, readOnly = true)
     @Override
-    public Map<String, Object> findByIdAsMap(Class<? extends IDomain> domainClass, Object id) {
+    public Map<String, Object> findByIdAsMap(Class<?> domainClass, Object id) {
         return this.baseDao.findByIdAsMap(domainClass, id);
     }
 

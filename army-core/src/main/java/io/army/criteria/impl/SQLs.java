@@ -7,7 +7,6 @@ import io.army.criteria.impl.inner._ItemPair;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.StringType;
@@ -629,7 +628,7 @@ public abstract class SQLs extends Functions {
      * Get a {@link QualifiedField}. You don't need a {@link QualifiedField},if no self-join in statement.
      * </p>
      */
-    public static <T extends IDomain> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
+    public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
         return QualifiedFieldImpl.reference(tableAlias, field);
     }
 
@@ -675,22 +674,22 @@ public abstract class SQLs extends Functions {
     }
 
 
-    public static <T extends IDomain> SelectionGroup group(TableMeta<T> table, String alias) {
+    public static <T> SelectionGroup group(TableMeta<T> table, String alias) {
         return SelectionGroups.singleGroup(table, alias);
     }
 
-    public static <T extends IDomain> SelectionGroup group(String tableAlias, List<FieldMeta<T>> fieldList) {
+    public static <T> SelectionGroup group(String tableAlias, List<FieldMeta<T>> fieldList) {
         return SelectionGroups.singleGroup(tableAlias, fieldList);
     }
 
     /**
      * @return a group that no {@link ParentTableMeta#id()} column
      */
-    public static <T extends IDomain> SelectionGroup groupWithoutId(TableMeta<T> table, String alias) {
+    public static <T> SelectionGroup groupWithoutId(TableMeta<T> table, String alias) {
         return SelectionGroups.groupWithoutId(table, alias);
     }
 
-    public static <T extends IDomain> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias
+    public static <T> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias
             , String parentAlias) {
         return SelectionGroups.childGroup(child, childAlias, parentAlias);
     }

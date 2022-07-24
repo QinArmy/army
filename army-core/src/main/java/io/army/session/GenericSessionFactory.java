@@ -1,7 +1,6 @@
 package io.army.session;
 
 import io.army.ArmyException;
-import io.army.domain.IDomain;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
@@ -27,7 +26,7 @@ public interface GenericSessionFactory {
     Map<Class<?>, TableMeta<?>> tableMap();
 
     @Nullable
-    <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass);
+    <T> TableMeta<T> tableMeta(Class<T> domainClass);
 
 
     boolean supportSavePoints();

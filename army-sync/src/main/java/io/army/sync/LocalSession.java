@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Statement;
-import io.army.domain.IDomain;
 import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -78,7 +77,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
     }
 
     @Override
-    public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+    public <T> TableMeta<T> tableMeta(Class<T> domainClass) {
         final TableMeta<T> table;
         table = this.sessionFactory.tableMeta(domainClass);
         if (table == null) {
@@ -102,7 +101,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @Nullable
     @Override
-    public <R extends IDomain> R get(final TableMeta<R> table, final Object id, final Visible visible) {
+    public <R> R get(final TableMeta<R> table, final Object id, final Visible visible) {
         if (!this.sessionFactory.tableMap.containsKey(table.javaType())) {
             throw _Exceptions.tableDontBelongOf(table, this.sessionFactory);
         }
@@ -133,7 +132,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
 
     @Override
-    public <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
+    public <R> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
             , final Visible visible) {
         if (!this.sessionFactory.uniqueCache) {
             throw _Exceptions.dontSupportUniqueCache(this.sessionFactory);
@@ -218,7 +217,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> void save(final T domain, final boolean preferLiteral
+    public <T> void save(final T domain, final boolean preferLiteral
             , final NullHandleMode mode, final Visible visible) {
         final TableMeta<T> table;
         table = (TableMeta<T>) this.sessionFactory.tableMeta(domain.getClass());
@@ -267,7 +266,7 @@ final class LocalSession extends _AbstractSyncSession implements Session {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> void batchSave(final List<T> domainList, final boolean preferLiteral
+    public <T> void batchSave(final List<T> domainList, final boolean preferLiteral
             , final NullHandleMode mode, final Visible visible) {
         final Class<T> domainClass;
         domainClass = (Class<T>) domainList.get(0).getClass();

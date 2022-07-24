@@ -6,7 +6,6 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Dialect;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 
@@ -56,19 +55,19 @@ abstract class StandardInserts extends InsertSupport {
 
 
         @Override
-        public <T extends IDomain> Insert._StandardDomainColumnsSpec<C, T> insertInto(SimpleTableMeta<T> table) {
+        public <T> Insert._StandardDomainColumnsSpec<C, T> insertInto(SimpleTableMeta<T> table) {
             return new DomainColumnsClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardParentDomainColumnsSpec<C, T> insertInto(ParentTableMeta<T> table) {
+        public <T> Insert._StandardParentDomainColumnsSpec<C, T> insertInto(ParentTableMeta<T> table) {
             return new DomainParentColumnsClause<>(this, table);
         }
 
     }//StandardDomainOptionClause
 
 
-    private static final class DomainColumnsClause<C, T extends IDomain>
+    private static final class DomainColumnsClause<C, T>
             extends DomainValueClause<C, T, Insert._StandardDomainDefaultSpec<C, T>, Insert._InsertSpec>
             implements Insert._StandardDomainColumnsSpec<C, T> {
 
@@ -104,7 +103,7 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardDomainColumnsClause
 
 
-    private static final class DomainParentColumnsClause<C, P extends IDomain>
+    private static final class DomainParentColumnsClause<C, P>
             extends InsertSupport.DomainValueClause<
             C,
             P,
@@ -124,7 +123,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardDomainColumnsSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
+        public <T> Insert._StandardDomainColumnsSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
             return new DomainColumnsClause<>(this, table);
         }
 
@@ -138,7 +137,7 @@ abstract class StandardInserts extends InsertSupport {
             return this.createParentStmt(this::domainList);
         }
 
-        private DomainsInsertStatement createParentStmt(Supplier<List<IDomain>> supplier) {
+        private DomainsInsertStatement createParentStmt(Supplier<List<?>> supplier) {
             return new DomainsInsertStatement(this, supplier);
         }
 
@@ -168,20 +167,20 @@ abstract class StandardInserts extends InsertSupport {
     static class DomainsInsertStatement extends StandardValuesSyntaxStatement
             implements _Insert._DomainInsert {
 
-        private final List<IDomain> domainList;
+        private final List<?> domainList;
 
         private DomainsInsertStatement(DomainColumnsClause<?, ?> clause) {
             super(clause);
             this.domainList = clause.domainList();
         }
 
-        private DomainsInsertStatement(DomainParentColumnsClause<?, ?> clause, Supplier<List<IDomain>> supplier) {
+        private DomainsInsertStatement(DomainParentColumnsClause<?, ?> clause, Supplier<List<?>> supplier) {
             super(clause);
             this.domainList = supplier.get();
         }
 
         @Override
-        public final List<IDomain> domainList() {
+        public final List<?> domainList() {
             return this.domainList;
         }
 
@@ -223,12 +222,12 @@ abstract class StandardInserts extends InsertSupport {
 
 
         @Override
-        public <T extends IDomain> Insert._StandardValueColumnsSpec<C, T> insertInto(SimpleTableMeta<T> table) {
+        public <T> Insert._StandardValueColumnsSpec<C, T> insertInto(SimpleTableMeta<T> table) {
             return new StandardValueColumnsClause<>(this, table);
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardParentValueColumnsSpec<C, T> insertInto(ParentTableMeta<T> table) {
+        public <T> Insert._StandardParentValueColumnsSpec<C, T> insertInto(ParentTableMeta<T> table) {
             return new StandardValueParentColumnsClause<>(this, table);
         }
 
@@ -236,7 +235,7 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardValueInsertOptionClause
 
 
-    private static final class StandardStaticValuesPairClause<C, T extends IDomain>
+    private static final class StandardStaticValuesPairClause<C, T>
             extends StaticColumnValuePairClause<C, T, Insert._StandardValueStaticLeftParenSpec<C, T>>
             implements Insert._StandardValueStaticLeftParenSpec<C, T> {
 
@@ -263,7 +262,7 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardStaticValuesPairClause
 
 
-    private static final class StandardParentStaticValuesPairClause<C, P extends IDomain>
+    private static final class StandardParentStaticValuesPairClause<C, P>
             extends StaticColumnValuePairClause<C, P, Insert._StandardParentStaticValuesSpec<C, P>>
             implements Insert._StandardParentStaticValuesSpec<C, P> {
 
@@ -294,7 +293,7 @@ abstract class StandardInserts extends InsertSupport {
 
     }//StandardParentStaticValuesPairClause
 
-    private static final class StandardValueColumnsClause<C, T extends IDomain>
+    private static final class StandardValueColumnsClause<C, T>
             extends DynamicValueInsertValueClause<
             C,
             T,
@@ -343,7 +342,7 @@ abstract class StandardInserts extends InsertSupport {
 
     }//StandardValueValuesClause
 
-    private static final class StandardValueParentColumnsClause<C, P extends IDomain>
+    private static final class StandardValueParentColumnsClause<C, P>
             extends InsertSupport.DynamicValueInsertValueClause<
             C,
             P,
@@ -377,7 +376,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardValueColumnsSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
+        public <T> Insert._StandardValueColumnsSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
             return new StandardValueColumnsClause<>(this, table);
         }
 
@@ -471,12 +470,12 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardSingleColumnsClause<C, T> insertInto(SimpleTableMeta<T> table) {
+        public <T> Insert._StandardSingleColumnsClause<C, T> insertInto(SimpleTableMeta<T> table) {
             return new QueryColumnsClause<>(this.criteriaContext, table);
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardParentColumnsClause<C, T> insertInto(ParentTableMeta<T> table) {
+        public <T> Insert._StandardParentColumnsClause<C, T> insertInto(ParentTableMeta<T> table) {
             return new QueryParentColumnsClause<>(this.criteriaContext, table);
         }
 
@@ -484,7 +483,7 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardSubQueryInsertIntoClause
 
 
-    private static final class QueryColumnsClause<C, T extends IDomain>
+    private static final class QueryColumnsClause<C, T>
             extends InsertSupport.QueryInsertSpaceClause<
             C,
             T,
@@ -525,7 +524,7 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardQueryColumnsClause
 
 
-    private static final class QueryParentColumnsClause<C, P extends IDomain>
+    private static final class QueryParentColumnsClause<C, P>
             extends InsertSupport.QueryInsertSpaceClause<
             C,
             P,
@@ -552,7 +551,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public <T extends IDomain> Insert._StandardSingleColumnsClause<C, T> insertInto(ComplexTableMeta<P, T> table) {
+        public <T> Insert._StandardSingleColumnsClause<C, T> insertInto(ComplexTableMeta<P, T> table) {
             return new QueryColumnsClause<>(this, table);
         }
 

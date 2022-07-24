@@ -1,7 +1,6 @@
 package io.army.meta;
 
 import io.army.criteria.TableField;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
 
@@ -12,7 +11,7 @@ import java.util.List;
  *
  * @param <T> representing Domain Java Type
  */
-public interface FieldMeta<T extends IDomain> extends TableField {
+public interface FieldMeta<T> extends TableField {
 
 
     @Override

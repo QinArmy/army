@@ -6,7 +6,6 @@ import io.army.criteria.IPredicate;
 import io.army.criteria.ItemPair;
 import io.army.criteria.Update;
 import io.army.criteria.impl.SQLs;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -44,7 +43,7 @@ final class SessionCache implements _SessionCache {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> T get(final TableMeta<T> table, final Object id) {
+    public <T> T get(final TableMeta<T> table, final Object id) {
         if (!table.id().javaType().isInstance(id)) {
             String m = String.format("%s isn't %s type.", _ClassUtils.safeClassName(id), table);
             throw new IllegalArgumentException(m);
@@ -69,7 +68,7 @@ final class SessionCache implements _SessionCache {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> T get(final TableMeta<T> table, final UniqueFieldMeta<? super T> field
+    public <T> T get(final TableMeta<T> table, final UniqueFieldMeta<? super T> field
             , final Object fieldValue) {
         final TableMeta<? super T> belongTable = field.tableMeta();
         if (belongTable != table
@@ -99,7 +98,7 @@ final class SessionCache implements _SessionCache {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IDomain> T putIfAbsent(final TableMeta<T> table, final T domain) {
+    public <T> T putIfAbsent(final TableMeta<T> table, final T domain) {
         final ObjectAccessor accessor;
         accessor = ObjectAccessorFactory.forBean(table.javaType());
         final Object id;
@@ -173,7 +172,7 @@ final class SessionCache implements _SessionCache {
     private _CacheBlock createCacheBlock(final TableMeta<?> table, final Wrapper w) {
         final Map<String, Boolean> changedFieldMap = w.changedMap;
         final ObjectAccessor accessor = w.accessor;
-        final IDomain domain = w.domain;
+        final Object domain = w.domain;
 
 
         final Object id = accessor.get(domain, _MetaBridge.ID);
@@ -224,7 +223,7 @@ final class SessionCache implements _SessionCache {
         return new CacheBlock(w, versionValue, stmt);
     }
 
-    private <T extends IDomain> void doUniqueMapping(final TableMeta<T> table, final T domain
+    private <T> void doUniqueMapping(final TableMeta<T> table, final T domain
             , final Map<Object, Wrapper> wrapperMap, final ObjectAccessor accessor, final Wrapper w) {
         UniqueKey uniqueKey;
         Object value;
@@ -252,7 +251,7 @@ final class SessionCache implements _SessionCache {
 
     }
 
-    private Wrapper createWrapper(ObjectAccessor accessor, IDomain domain) {
+    private Wrapper createWrapper(ObjectAccessor accessor, Object domain) {
         final Wrapper w;
         w = new Wrapper(accessor, domain, this.reactive);
         ((ArmyProxy) domain).setArmy$_interceptor$$__(w);
@@ -347,11 +346,11 @@ final class SessionCache implements _SessionCache {
 
         private final ObjectAccessor accessor;
 
-        private final IDomain domain;
+        private final Object domain;
 
         private final Map<String, Boolean> changedMap;
 
-        private Wrapper(ObjectAccessor accessor, IDomain domain, boolean reactive) {
+        private Wrapper(ObjectAccessor accessor, Object domain, boolean reactive) {
             this.id = accessor.get(domain, _MetaBridge.ID);
             assert this.id != null;
             this.accessor = accessor;

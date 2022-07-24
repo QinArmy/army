@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.Table;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen.ArmyMetaModelDomainProcessor;
@@ -33,15 +32,15 @@ public abstract class _TableMetaFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static <T extends IDomain> SimpleTableMeta<T> getSimpleTableMeta(final Class<T> domainClass) {
+    public static <T> SimpleTableMeta<T> getSimpleTableMeta(final Class<T> domainClass) {
         return DefaultTableMeta.getSimpleTableMeta(domainClass);
     }
 
-    public static <T extends IDomain> ParentTableMeta<T> getParentTableMeta(final Class<T> domainClass) {
+    public static <T> ParentTableMeta<T> getParentTableMeta(final Class<T> domainClass) {
         return DefaultTableMeta.getParentTableMeta(domainClass);
     }
 
-    public static <P extends IDomain, T extends IDomain> ComplexTableMeta<P, T> getChildTableMeta(
+    public static <P, T> ComplexTableMeta<P, T> getChildTableMeta(
             ParentTableMeta<P> parent, Class<T> domainClass) {
         return DefaultTableMeta.getChildTableMeta(parent, domainClass);
     }
@@ -235,15 +234,10 @@ public abstract class _TableMetaFactory {
     /**
      * @see #getTableMetaMap(SchemaMeta, List, ClassLoader)
      */
-    private static <T extends IDomain> TableMeta<T> getOrCreateTableMeta(final String className) {
+    private static <T> TableMeta<T> getOrCreateTableMeta(final String className) {
         try {
             final Class<?> clazz;
             clazz = Class.forName(className);
-            if (!IDomain.class.isAssignableFrom(clazz)) {
-                String m = String.format("class[%s] not implements %s"
-                        , className, IDomain.class.getName());
-                throw new TableMetaLoadException(m);
-            }
             @SuppressWarnings("unchecked")
             Class<T> domainClass = (Class<T>) clazz;
             return DefaultTableMeta.getTableMeta(domainClass);

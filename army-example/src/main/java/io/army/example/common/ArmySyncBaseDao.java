@@ -3,7 +3,6 @@ package io.army.example.common;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Select;
 import io.army.criteria.impl.SQLs;
-import io.army.domain.IDomain;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
@@ -54,7 +53,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
     }
 
     @Override
-    public Map<String, Object> findByIdAsMap(Class<? extends IDomain> domainClass, Object id) {
+    public Map<String, Object> findByIdAsMap(Class<?> domainClass, Object id) {
         final SyncSession session;
         session = this.sessionContext.currentSession();
         final Select stmt;
@@ -68,7 +67,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
     }
 
 
-    protected <T extends IDomain> Select createFindByIdStmt(SyncSession session, Class<T> domainClass, Object id) {
+    protected <T> Select createFindByIdStmt(SyncSession session, Class<T> domainClass, Object id) {
         final TableMeta<T> table;
         table = session.tableMeta(domainClass);
 

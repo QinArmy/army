@@ -7,7 +7,6 @@ import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt._InsertStmtParams;
@@ -253,13 +252,13 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends IDomain> List<FieldMeta<?>> castFieldList(final TableMeta<T> table) {
+    private static <T> List<FieldMeta<?>> castFieldList(final TableMeta<T> table) {
         final List<?> list;
         list = table.fieldList();
         return (List<FieldMeta<?>>) list;
     }
 
-    private static <T extends IDomain> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table
+    private static <T> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table
             , final List<FieldMeta<?>> fieldList, final Map<FieldMeta<?>, Boolean> fieldMap) {
         if (fieldList.size() != fieldMap.size()) {
             //no bug,never here

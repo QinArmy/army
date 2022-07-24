@@ -1,7 +1,6 @@
 package io.army.stmt;
 
 import io.army.bean.ObjectAccessor;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.PrimaryFieldMeta;
 
@@ -20,7 +19,7 @@ public interface _InsertStmtParams extends _StmtParams {
 
     interface _DomainParams extends _InsertStmtParams {
 
-        List<IDomain> domainList();
+        List<?> domainList();
 
         ObjectAccessor domainAccessor();
 

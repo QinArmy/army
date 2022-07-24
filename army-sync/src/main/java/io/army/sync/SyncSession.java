@@ -1,7 +1,6 @@
 package io.army.sync;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
@@ -33,22 +32,22 @@ public interface SyncSession extends GenericSession {
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R extends IDomain> R get(TableMeta<R> table, Object id);
+    <R> R get(TableMeta<R> table, Object id);
 
     /**
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R extends IDomain> R get(TableMeta<R> table, Object id, Visible visible);
+    <R> R get(TableMeta<R> table, Object id, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value);
+    <R> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value);
 
     @Nullable
-    <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible);
+    <R> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
@@ -113,15 +112,15 @@ public interface SyncSession extends GenericSession {
     List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
-    <T extends IDomain> void save(T domain);
+    <T> void save(T domain);
 
-    <T extends IDomain> void save(T domain, boolean optimizingParam);
+    <T> void save(T domain, boolean optimizingParam);
 
-    <T extends IDomain> void save(T domain, Visible visible);
+    <T> void save(T domain, Visible visible);
 
-    <T extends IDomain> void save(T domain, NullHandleMode mode);
+    <T> void save(T domain, NullHandleMode mode);
 
-    <T extends IDomain> void save(T domain, boolean preferLiteral, NullHandleMode mode, Visible visible);
+    <T> void save(T domain, boolean preferLiteral, NullHandleMode mode, Visible visible);
 
     long update(DmlStatement dml);
 
@@ -156,15 +155,15 @@ public interface SyncSession extends GenericSession {
             , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
 
-    <T extends IDomain> void batchSave(List<T> domainList);
+    <T> void batchSave(List<T> domainList);
 
-    <T extends IDomain> void batchSave(List<T> domainList, boolean preferLiteral);
+    <T> void batchSave(List<T> domainList, boolean preferLiteral);
 
-    <T extends IDomain> void batchSave(List<T> domainList, Visible visible);
+    <T> void batchSave(List<T> domainList, Visible visible);
 
-    <T extends IDomain> void batchSave(List<T> domainList, NullHandleMode mode);
+    <T> void batchSave(List<T> domainList, NullHandleMode mode);
 
-    <T extends IDomain> void batchSave(List<T> domainList, boolean preferLiteral, NullHandleMode mode, Visible visible);
+    <T> void batchSave(List<T> domainList, boolean preferLiteral, NullHandleMode mode, Visible visible);
 
     /**
      * @return a unmodifiable list

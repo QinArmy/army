@@ -9,7 +9,6 @@ import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.stmt.Stmt;
@@ -155,7 +154,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public <T extends IDomain> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable SimpleTableMeta<T> table) {
+        public <T> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable SimpleTableMeta<T> table) {
             if (table == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
@@ -166,7 +165,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public <T extends IDomain> MySQLLoad._ParentPartitionSpec<C, T> intoTable(@Nullable ParentTableMeta<T> table) {
+        public <T> MySQLLoad._ParentPartitionSpec<C, T> intoTable(@Nullable ParentTableMeta<T> table) {
             if (table == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
@@ -181,7 +180,7 @@ abstract class MySQLLoads {
 
 
     @SuppressWarnings("unchecked")
-    private static abstract class PartitionClause<C, T extends IDomain, PR, CR, FR, OR, ER, DR, LR, RR, GR, VR, SR>
+    private static abstract class PartitionClause<C, T, PR, CR, FR, OR, ER, DR, LR, RR, GR, VR, SR>
             extends InsertSupport.AssignmentSetClause<C, T, SR>
             implements MySQLQuery._PartitionClause<C, PR>
             , MySQLLoad._CharsetClause<C, CR>
@@ -597,7 +596,7 @@ abstract class MySQLLoads {
     }//PartitionClause
 
 
-    private static final class NonParentPartitionClause<C, T extends IDomain>
+    private static final class NonParentPartitionClause<C, T>
             extends PartitionClause<
             C,
             T,
@@ -691,7 +690,7 @@ abstract class MySQLLoads {
     }//SimplePartitionClause
 
 
-    private static final class ParentPartitionClause<C, P extends IDomain> extends PartitionClause<
+    private static final class ParentPartitionClause<C, P> extends PartitionClause<
             C,
             P,
             MySQLLoad._ParentCharsetSpec<C, P>,
@@ -771,7 +770,7 @@ abstract class MySQLLoads {
     }//ParentPartitionClause
 
 
-    private static final class ChildLoadDataInfileClause<C, P extends IDomain>
+    private static final class ChildLoadDataInfileClause<C, P>
             implements MySQLLoad._ChildLoadInfileClause<C, P>
             , MySQLLoad._ChildLoadStrategySpec<C, P>
             , MySQLLoad._ChildIntoTableClause<C, P> {
@@ -864,7 +863,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public <T extends IDomain> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable ComplexTableMeta<P, T> table) {
+        public <T> MySQLLoad._PartitionSpec<C, T> intoTable(@Nullable ComplexTableMeta<P, T> table) {
             if (table == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }

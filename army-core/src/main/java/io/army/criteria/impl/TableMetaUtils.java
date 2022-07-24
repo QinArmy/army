@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.annotation.*;
 import io.army.dialect._Constant;
-import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
@@ -69,7 +68,7 @@ abstract class TableMetaUtils {
 
 
     @NonNull
-    static Table tableMeta(@NonNull Class<? extends IDomain> entityClass) {
+    static Table tableMeta(@NonNull Class<?> entityClass) {
         final Table table = entityClass.getAnnotation(Table.class);
         if (table == null) {
             throw createNonAnnotationException(entityClass, Table.class);
@@ -77,7 +76,7 @@ abstract class TableMetaUtils {
         return table;
     }
 
-    static String tableName(Table table, Class<? extends IDomain> domainClass) {
+    static String tableName(Table table, Class<?> domainClass) {
         final String name = table.name();
         if (!_StringUtils.hasText(name)) {
             String m = String.format("Domain[%s] table name required", domainClass.getName());
@@ -86,7 +85,7 @@ abstract class TableMetaUtils {
         return name;
     }
 
-    static String tableComment(Table table, Class<? extends IDomain> domainClass) {
+    static String tableComment(Table table, Class<?> domainClass) {
         final String comment = table.comment();
         if (!_StringUtils.hasText(comment)) {
             String m = String.format("Domain[%s] no tableMeta comment", domainClass.getName());
@@ -95,7 +94,7 @@ abstract class TableMetaUtils {
         return comment;
     }
 
-    static boolean immutable(Table table, Class<? extends IDomain> domainClass) {
+    static boolean immutable(Table table, Class<?> domainClass) {
         final boolean immutable = table.immutable();
         if (immutable && domainClass.getAnnotation(Inheritance.class) != null) {
             String m = String.format("Parent Domain[%s] couldn't be immutable.", domainClass.getName());
@@ -104,7 +103,7 @@ abstract class TableMetaUtils {
         return immutable;
     }
 
-    static <T extends IDomain> void assertParentTableMeta(ParentTableMeta<? super T> parentTableMeta
+    static <T> void assertParentTableMeta(ParentTableMeta<? super T> parentTableMeta
             , Class<T> domainClass) {
         if (!(parentTableMeta instanceof DefaultTableMeta)) {
             String m = String.format("%s isn't instance of %s", TableMeta.class.getName()
@@ -152,7 +151,7 @@ abstract class TableMetaUtils {
         return value;
     }
 
-    static <T extends IDomain> FieldMeta<T> discriminator(final Map<String, FieldMeta<T>> fieldMetaMap
+    static <T> FieldMeta<T> discriminator(final Map<String, FieldMeta<T>> fieldMetaMap
             , final Class<T> domainClass) {
         final Inheritance inheritance = domainClass.getAnnotation(Inheritance.class);
         assert inheritance != null;
@@ -220,7 +219,7 @@ abstract class TableMetaUtils {
     }
 
 
-    static <T extends IDomain> FieldMetaPair<T> createFieldMetaPair(final TableMeta<T> tableMeta) {
+    static <T> FieldMetaPair<T> createFieldMetaPair(final TableMeta<T> tableMeta) {
 
         final Class<T> domainClass = tableMeta.javaType();
         // 1. create columnNameSet
@@ -492,7 +491,7 @@ abstract class TableMetaUtils {
     }
 
 
-    static MetaException createNonAnnotationException(Class<? extends IDomain> entityClass
+    static MetaException createNonAnnotationException(Class<?> entityClass
             , Class<?> annotationClass) {
         String m = String.format("class[%s] isn't annotated by %s "
                 , entityClass.getName()
@@ -500,7 +499,7 @@ abstract class TableMetaUtils {
         return new MetaException(m);
     }
 
-    static <T extends IDomain> List<FieldMeta<?>> createGeneratorChain(final Map<String, FieldMeta<T>> nameToField)
+    static <T> List<FieldMeta<?>> createGeneratorChain(final Map<String, FieldMeta<T>> nameToField)
             throws MetaException {
 
         final List<Pair<FieldMeta<T>, Integer>> levelList = new ArrayList<>(4);
@@ -563,7 +562,7 @@ abstract class TableMetaUtils {
      * @param <T>              entity java class
      * @return value indexMap's {@link IndexFieldMeta}
      */
-    private static <T extends IDomain> List<IndexFieldMeta<T>> createIndexFieldMetaList(
+    private static <T> List<IndexFieldMeta<T>> createIndexFieldMetaList(
             final String[] indexColumns,
             final IndexMeta<T> indexMeta,
             final Map<String, Field> nameToFieldMap,
@@ -705,7 +704,7 @@ abstract class TableMetaUtils {
      * @param <T> domain java type
      * @see #createFieldMetaPair(TableMeta)
      */
-    private static final class DefaultIndexMeta<T extends IDomain> implements IndexMeta<T> {
+    private static final class DefaultIndexMeta<T> implements IndexMeta<T> {
 
         private final TableMeta<T> table;
 
@@ -814,7 +813,7 @@ abstract class TableMetaUtils {
 
     }
 
-    static final class FieldMetaPair<T extends IDomain> {
+    static final class FieldMetaPair<T> {
 
         final List<IndexMeta<T>> indexMetaList;
 

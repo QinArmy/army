@@ -1,7 +1,6 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
@@ -19,7 +18,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     }
 
-    interface _LoadSetSpec<C, T extends IDomain> extends Insert._AssignmentSetClause<C, T, _LoadSetSpec<C, T>>
+    interface _LoadSetSpec<C, T> extends Insert._AssignmentSetClause<C, T, _LoadSetSpec<C, T>>
             , _LoadDataSpec {
 
     }
@@ -46,7 +45,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     }
 
-    interface _ColumnOrVarListSpec<C, T extends IDomain> extends _ColumnOrVarListClause<C, _LoadSetSpec<C, T>>
+    interface _ColumnOrVarListSpec<C, T> extends _ColumnOrVarListClause<C, _LoadSetSpec<C, T>>
             , _LoadSetSpec<C, T> {
 
     }
@@ -77,7 +76,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
         _LineAfterIgnoreClause<GR> ifIgnore(Function<C, Long> function);
     }
 
-    interface _IgnoreLineSpec<C, T extends IDomain> extends _IgnoreLineClause<C, _ColumnOrVarListSpec<C, T>>
+    interface _IgnoreLineSpec<C, T> extends _IgnoreLineClause<C, _ColumnOrVarListSpec<C, T>>
             , _ColumnOrVarListSpec<C, T> {
 
     }
@@ -109,19 +108,19 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _LinesTerminatedBySpec<C, T extends IDomain> extends _TerminatedByClause<C, _IgnoreLineSpec<C, T>>
+    interface _LinesTerminatedBySpec<C, T> extends _TerminatedByClause<C, _IgnoreLineSpec<C, T>>
             , _IgnoreLineSpec<C, T> {
 
     }
 
 
-    interface _LineStartingBySpec<C, T extends IDomain> extends _StartingByClause<C, _LinesTerminatedBySpec<C, T>>
+    interface _LineStartingBySpec<C, T> extends _StartingByClause<C, _LinesTerminatedBySpec<C, T>>
             , _TerminatedByClause<C, _IgnoreLineSpec<C, T>> {
 
     }
 
 
-    interface _LinesSpec<C, T extends IDomain> extends _LinesClause<_LineStartingBySpec<C, T>>
+    interface _LinesSpec<C, T> extends _LinesClause<_LineStartingBySpec<C, T>>
             , _IgnoreLineSpec<C, T> {
 
     }
@@ -164,22 +163,22 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _ColumnEscapedByClause<C, T extends IDomain>
+    interface _ColumnEscapedByClause<C, T>
             extends _EscapedByClause<C, _LinesSpec<C, T>> {
 
     }
 
-    interface _ColumnEscapedBySpec<C, T extends IDomain> extends _ColumnEscapedByClause<C, T>
+    interface _ColumnEscapedBySpec<C, T> extends _ColumnEscapedByClause<C, T>
             , _LinesSpec<C, T> {
 
     }
 
-    interface _ColumnEnclosedByClause<C, T extends IDomain> extends _EnclosedByClause<C, _ColumnEscapedBySpec<C, T>> {
+    interface _ColumnEnclosedByClause<C, T> extends _EnclosedByClause<C, _ColumnEscapedBySpec<C, T>> {
 
     }
 
 
-    interface _ColumnEnclosedBySpec<C, T extends IDomain>
+    interface _ColumnEnclosedBySpec<C, T>
             extends _ColumnEnclosedByClause<C, T>, _ColumnEscapedBySpec<C, T>
             , _OptionallyClause<C, _ColumnEnclosedByClause<C, T>> {
 
@@ -187,7 +186,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _ColumnTerminatedBySpec<C, T extends IDomain>
+    interface _ColumnTerminatedBySpec<C, T>
             extends _TerminatedByClause<C, _IgnoreLineSpec<C, T>>
             , _OptionallyClause<C, _ColumnEnclosedByClause<C, T>>
             , _ColumnEnclosedByClause<C, T>
@@ -218,7 +217,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _FieldsColumnsSpec<C, T extends IDomain> extends _FieldsColumnsClause<_ColumnTerminatedBySpec<C, T>>
+    interface _FieldsColumnsSpec<C, T> extends _FieldsColumnsClause<_ColumnTerminatedBySpec<C, T>>
             , _LinesSpec<C, T> {
 
     }
@@ -237,11 +236,11 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     }
 
-    interface _CharsetSpec<C, T extends IDomain> extends _CharsetClause<C, _FieldsColumnsSpec<C, T>>
+    interface _CharsetSpec<C, T> extends _CharsetClause<C, _FieldsColumnsSpec<C, T>>
             , _FieldsColumnsSpec<C, T> {
     }
 
-    interface _PartitionSpec<C, T extends IDomain> extends MySQLQuery._PartitionClause<C, _CharsetSpec<C, T>>
+    interface _PartitionSpec<C, T> extends MySQLQuery._PartitionClause<C, _CharsetSpec<C, T>>
             , _CharsetSpec<C, T> {
 
     }
@@ -273,23 +272,23 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
         FR infile(Function<C, Path> function);
     }
 
-    interface _ChildIntoTableClause<C, P extends IDomain> {
+    interface _ChildIntoTableClause<C, P> {
 
-        <T extends IDomain> _PartitionSpec<C, T> intoTable(ComplexTableMeta<P, T> table);
+        <T> _PartitionSpec<C, T> intoTable(ComplexTableMeta<P, T> table);
     }
 
-    interface _ChildLoadStrategySpec<C, P extends IDomain> extends _StrategyOptionClause<C, _ChildIntoTableClause<C, P>>
+    interface _ChildLoadStrategySpec<C, P> extends _StrategyOptionClause<C, _ChildIntoTableClause<C, P>>
             , _ChildIntoTableClause<C, P> {
 
     }
 
 
-    interface _ChildLoadInfileClause<C, P extends IDomain> extends _LoadInfileClause<C, _ChildLoadStrategySpec<C, P>> {
+    interface _ChildLoadInfileClause<C, P> extends _LoadInfileClause<C, _ChildLoadStrategySpec<C, P>> {
 
     }
 
 
-    interface _ParentAssignmentSetSpec<C, P extends IDomain>
+    interface _ParentAssignmentSetSpec<C, P>
             extends Insert._AssignmentSetClause<C, P, _ParentAssignmentSetSpec<C, P>> {
 
         _ChildLoadInfileClause<C, P> child(List<MySQLWords> modifierList);
@@ -297,32 +296,32 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _ParentColumnVarListSpec<C, P extends IDomain>
+    interface _ParentColumnVarListSpec<C, P>
             extends _ColumnOrVarListClause<C, _ParentAssignmentSetSpec<C, P>>
             , _ParentAssignmentSetSpec<C, P> {
     }
 
 
-    interface _ParentIgnoreLineSpec<C, P extends IDomain>
+    interface _ParentIgnoreLineSpec<C, P>
             extends _IgnoreLineClause<C, _ParentColumnVarListSpec<C, P>>
             , _ParentColumnVarListSpec<C, P> {
 
     }
 
-    interface _ParentLineTerminatedByClause<C, P extends IDomain>
+    interface _ParentLineTerminatedByClause<C, P>
             extends _TerminatedByClause<C, _ParentIgnoreLineSpec<C, P>>
             , _ParentIgnoreLineSpec<C, P> {
 
     }
 
-    interface _ParentLineTerminatedBySpec<C, P extends IDomain>
+    interface _ParentLineTerminatedBySpec<C, P>
             extends _ParentLineTerminatedByClause<C, P>
             , _ParentIgnoreLineSpec<C, P> {
 
     }
 
 
-    interface _ParentLineStartingBySpec<C, P extends IDomain>
+    interface _ParentLineStartingBySpec<C, P>
             extends _StartingByClause<C, _ParentLineTerminatedBySpec<C, P>>
             , _ParentLineTerminatedByClause<C, P> {
 
@@ -330,29 +329,29 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _ParentLinesSpec<C, P extends IDomain> extends _LinesClause<_ParentLineStartingBySpec<C, P>>
+    interface _ParentLinesSpec<C, P> extends _LinesClause<_ParentLineStartingBySpec<C, P>>
             , _ParentIgnoreLineSpec<C, P> {
 
     }
 
-    interface _ParentColumnEscapedByClause<C, P extends IDomain>
+    interface _ParentColumnEscapedByClause<C, P>
             extends _EscapedByClause<C, _ParentLinesSpec<C, P>> {
 
     }
 
-    interface _ParentColumnEscapedBySpec<C, P extends IDomain>
+    interface _ParentColumnEscapedBySpec<C, P>
             extends _ParentColumnEscapedByClause<C, P>, _ParentLinesSpec<C, P> {
 
     }
 
 
-    interface _ParentColumnEnclosedByClause<C, P extends IDomain>
+    interface _ParentColumnEnclosedByClause<C, P>
             extends _EnclosedByClause<C, _ParentColumnEscapedBySpec<C, P>> {
 
     }
 
 
-    interface _ParentColumnEnclosedBySpec<C, P extends IDomain>
+    interface _ParentColumnEnclosedBySpec<C, P>
             extends _OptionallyClause<C, _ParentColumnEnclosedByClause<C, P>>
             , _ParentColumnEnclosedByClause<C, P>
             , _ParentColumnEscapedBySpec<C, P> {
@@ -360,7 +359,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _ParentColumnTerminatedBySpec<C, P extends IDomain>
+    interface _ParentColumnTerminatedBySpec<C, P>
             extends _TerminatedByClause<C, _ParentIgnoreLineSpec<C, P>>
             , _OptionallyClause<C, _ParentColumnEnclosedByClause<C, P>>
             , _ParentColumnEnclosedByClause<C, P>
@@ -383,19 +382,19 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     }
 
 
-    interface _ParentFieldsColumnsSpec<C, P extends IDomain>
+    interface _ParentFieldsColumnsSpec<C, P>
             extends _FieldsColumnsClause<_ParentColumnTerminatedBySpec<C, P>>, _ParentLinesSpec<C, P> {
 
     }
 
 
-    interface _ParentCharsetSpec<C, P extends IDomain> extends _CharsetClause<C, _ParentFieldsColumnsSpec<C, P>>
+    interface _ParentCharsetSpec<C, P> extends _CharsetClause<C, _ParentFieldsColumnsSpec<C, P>>
             , _ParentFieldsColumnsSpec<C, P> {
 
     }
 
 
-    interface _ParentPartitionSpec<C, P extends IDomain>
+    interface _ParentPartitionSpec<C, P>
             extends MySQLQuery._PartitionClause<C, _ParentCharsetSpec<C, P>>
             , _ParentCharsetSpec<C, P> {
 
@@ -403,9 +402,9 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     interface _IntoTableClause<C> {
 
-        <T extends IDomain> _PartitionSpec<C, T> intoTable(SimpleTableMeta<T> table);
+        <T> _PartitionSpec<C, T> intoTable(SimpleTableMeta<T> table);
 
-        <T extends IDomain> _ParentPartitionSpec<C, T> intoTable(ParentTableMeta<T> table);
+        <T> _ParentPartitionSpec<C, T> intoTable(ParentTableMeta<T> table);
 
     }
 

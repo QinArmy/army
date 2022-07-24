@@ -1,7 +1,6 @@
 package io.army.tx.sync;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 import io.army.session.SessionException;
@@ -399,18 +398,18 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public <T extends IDomain> TableMeta<T> tableMeta(Class<T> domainClass) {
+        public <T> TableMeta<T> tableMeta(Class<T> domainClass) {
             return this.session.tableMeta(domainClass);
         }
 
 
         @Override
-        public <R extends IDomain> R get(TableMeta<R> table, Object id, Visible visible) {
+        public <R> R get(TableMeta<R> table, Object id, Visible visible) {
             return this.session.get(table, id, visible);
         }
 
         @Override
-        public <R extends IDomain> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
+        public <R> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
                 , Visible visible) {
             return this.session.getByUnique(table, field, value, visible);
         }
@@ -427,7 +426,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public <T extends IDomain> void save(T domain, boolean preferLiteral, NullHandleMode mode, Visible visible) {
+        public <T> void save(T domain, boolean preferLiteral, NullHandleMode mode, Visible visible) {
             this.session.save(domain, preferLiteral, mode, visible);
         }
 
@@ -449,7 +448,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public <T extends IDomain> void batchSave(List<T> domainList, boolean preferLiteral, NullHandleMode mode, Visible visible) {
+        public <T> void batchSave(List<T> domainList, boolean preferLiteral, NullHandleMode mode, Visible visible) {
             this.session.batchSave(domainList, preferLiteral, mode, visible);
         }
 

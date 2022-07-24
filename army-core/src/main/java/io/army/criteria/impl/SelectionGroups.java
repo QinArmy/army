@@ -9,7 +9,6 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
-import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
 
@@ -24,20 +23,20 @@ abstract class SelectionGroups {
         throw new UnsupportedOperationException();
     }
 
-    static <T extends IDomain> SelectionGroup singleGroup(
+    static <T> SelectionGroup singleGroup(
             String tableAlias, List<FieldMeta<T>> fieldList) {
         return new TableFieldGroup<>(tableAlias, fieldList);
     }
 
-    static <T extends IDomain> SelectionGroup singleGroup(TableMeta<T> table, String tableAlias) {
+    static <T> SelectionGroup singleGroup(TableMeta<T> table, String tableAlias) {
         return new TableFieldGroup<>(table, tableAlias);
     }
 
-    static <T extends IDomain> SelectionGroup groupWithoutId(TableMeta<T> table, String tableAlias) {
+    static <T> SelectionGroup groupWithoutId(TableMeta<T> table, String tableAlias) {
         return new TableFieldGroup<>(tableAlias, table);
     }
 
-    static <T extends IDomain> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias, String parentAlias) {
+    static <T> SelectionGroup childGroup(ChildTableMeta<T> child, String childAlias, String parentAlias) {
         return new ChildTableGroup<>(child, childAlias, child.parentMeta(), parentAlias);
     }
 
@@ -54,7 +53,7 @@ abstract class SelectionGroups {
     /*################################## blow static inner class  ##################################*/
 
 
-    private static final class TableFieldGroup<T extends IDomain> implements SelectionGroup, _SelfDescribed {
+    private static final class TableFieldGroup<T> implements SelectionGroup, _SelfDescribed {
 
         private final String tableAlias;
 
@@ -133,7 +132,7 @@ abstract class SelectionGroups {
     }//TableFieldGroup
 
 
-    private static final class ChildTableGroup<P extends IDomain, T extends IDomain>
+    private static final class ChildTableGroup<P, T>
             implements SelectionGroup, _SelfDescribed {
 
         private final String childAlias;

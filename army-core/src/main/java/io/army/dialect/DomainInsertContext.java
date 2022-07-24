@@ -6,7 +6,6 @@ import io.army.criteria.NullHandleMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.domain.IDomain;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -46,7 +45,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
     private final DomainWrapper wrapper;
 
-    private final List<IDomain> domainList;
+    private final List<?> domainList;
 
 
     /**
@@ -81,7 +80,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     @Override
     void doAppendValuesList(final List<FieldMeta<?>> fieldList) {
 
-        final List<IDomain> domainList = this.domainList;
+        final List<?> domainList = this.domainList;
         final int domainSize = domainList.size();
         assert domainSize > 0; //must check for criteria api implementation
         final int fieldSize = fieldList.size();
@@ -107,10 +106,9 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         } else {
             generator = dialect.getFieldValueGenerator();
         }
-        IDomain domain;
         FieldMeta<?> field;
         _Expression expression;
-        Object value;
+        Object value, domain;
         MappingType mappingType;
         DelayIdParamValue delayIdParam;
 
@@ -211,7 +209,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
 
     @Override
-    public List<IDomain> domainList() {
+    public List<?> domainList() {
         return this.domainList;
     }
 
@@ -258,7 +256,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
         private final boolean manageVisible;
 
-        private IDomain domain;
+        private Object domain;
 
         private DomainWrapper(ObjectAccessor accessor, boolean manageVisible) {
             this.accessor = accessor;
@@ -273,7 +271,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
         @Override
         public void set(String propertyName, @Nullable Object value) throws ObjectAccessException {
-            final IDomain domain;
+            final Object domain;
             domain = this.domain;
             assert domain != null;
             this.accessor.set(domain, propertyName, value);
@@ -291,7 +289,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
         @Override
         public Object get(final String propertyName) throws ObjectAccessException {
-            final IDomain domain;
+            final Object domain;
             domain = this.domain;
             if (domain == null) {
                 //eg: MySQL onDuplicateKeyUpdate clause
@@ -308,11 +306,11 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
         private final PrimaryFieldMeta<?> field;
 
-        private final IDomain domain;
+        private final Object domain;
 
         private final ObjectAccessor accessor;
 
-        private DelayIdParamValue(PrimaryFieldMeta<?> field, IDomain domain, ObjectAccessor accessor) {
+        private DelayIdParamValue(PrimaryFieldMeta<?> field, Object domain, ObjectAccessor accessor) {
             this.field = field;
             this.domain = domain;
             this.accessor = accessor;

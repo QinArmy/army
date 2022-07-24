@@ -1,7 +1,6 @@
 package io.army.reactive;
 
 import io.army.criteria.*;
-import io.army.domain.IDomain;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 import io.army.session.GenericSession;
@@ -23,19 +22,19 @@ public interface ReactiveSession extends GenericSession {
     /**
      * @param <R> representing select result Java Type.
      */
-    <R extends IDomain> Mono<R> get(TableMeta<R> table, Object id);
+    <R> Mono<R> get(TableMeta<R> table, Object id);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R extends IDomain> Mono<R> get(TableMeta<R> table, Object id, Visible visible);
+    <R> Mono<R> get(TableMeta<R> table, Object id, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R extends IDomain> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value);
+    <R> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value);
 
-    <R extends IDomain> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible);
+    <R> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
@@ -95,11 +94,11 @@ public interface ReactiveSession extends GenericSession {
 
     Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
 
-    <T extends IDomain> Mono<Void> save(T domain);
+    <T> Mono<Void> save(T domain);
 
-    <T extends IDomain> Mono<Void> save(T domain, NullHandleMode mode);
+    <T> Mono<Void> save(T domain, NullHandleMode mode);
 
-    <T extends IDomain> Mono<Void> save(T domain, NullHandleMode mode, Visible visible);
+    <T> Mono<Void> save(T domain, NullHandleMode mode, Visible visible);
 
     Mono<Long> update(DmlStatement dml);
 
@@ -123,11 +122,11 @@ public interface ReactiveSession extends GenericSession {
     <R> Flux<Optional<R>> returningNullableUpdate(DmlStatement dml, Class<R> resultClass, Visible visible);
 
 
-    <T extends IDomain> Mono<Void> batchSave(List<T> domainList);
+    <T> Mono<Void> batchSave(List<T> domainList);
 
-    <T extends IDomain> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode);
+    <T> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode);
 
-    <T extends IDomain> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode, Visible visible);
+    <T> Mono<Void> batchSave(List<T> domainList, NullHandleMode mode, Visible visible);
 
     Flux<Long> batchUpdate(NarrowDmlStatement dml);
 

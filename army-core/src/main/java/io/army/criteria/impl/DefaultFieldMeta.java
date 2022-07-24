@@ -7,7 +7,6 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.domain.IDomain;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
 import io.army.mapping.ElementMappingType;
@@ -28,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implements FieldMeta<T>, _Selection {
+abstract class DefaultFieldMeta<T> extends OperationField implements FieldMeta<T>, _Selection {
 
     private static final String ID = _MetaBridge.ID;
 
@@ -40,7 +39,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
      * @see DefaultTableMeta#getTableMeta(Class)
      */
     @SuppressWarnings("unchecked")
-    static <T extends IDomain> FieldMeta<T> createFieldMeta(final TableMeta<T> table, final Field field) {
+    static <T> FieldMeta<T> createFieldMeta(final TableMeta<T> table, final Field field) {
         if (_MetaBridge.ID.equals(field.getName())) {
             throw new IllegalArgumentException("id can't invoke this method.");
         }
@@ -69,7 +68,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
      * @see DefaultTableMeta#getTableMeta(Class)
      */
     @SuppressWarnings("unchecked")
-    static <T extends IDomain> IndexFieldMeta<T> createIndexFieldMeta(final TableMeta<T> table, final Field field
+    static <T> IndexFieldMeta<T> createIndexFieldMeta(final TableMeta<T> table, final Field field
             , final IndexMeta<T> indexMeta, final int columnCount, final @Nullable Boolean fieldAsc) {
         final DefaultIndexFieldMeta<T> newFieldMeta;
         // create new IndexFieldMeta
@@ -440,7 +439,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
 
     /*################################## blow private method ##################################*/
 
-    private static class DefaultSimpleFieldMeta<T extends IDomain> extends DefaultFieldMeta<T> {
+    private static class DefaultSimpleFieldMeta<T> extends DefaultFieldMeta<T> {
 
         private DefaultSimpleFieldMeta(TableMeta<T> table, Field field) throws MetaException {
             super(table, field);
@@ -448,7 +447,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
 
     }
 
-    private static class DefaultIndexFieldMeta<T extends IDomain> extends DefaultFieldMeta<T>
+    private static class DefaultIndexFieldMeta<T> extends DefaultFieldMeta<T>
             implements IndexFieldMeta<T> {
 
         private final IndexMeta<T> indexMeta;
@@ -476,7 +475,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
         }
     }
 
-    private static class DefaultUniqueFieldMeta<T extends IDomain> extends DefaultIndexFieldMeta<T>
+    private static class DefaultUniqueFieldMeta<T> extends DefaultIndexFieldMeta<T>
             implements UniqueFieldMeta<T> {
 
         private DefaultUniqueFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
@@ -489,7 +488,7 @@ abstract class DefaultFieldMeta<T extends IDomain> extends OperationField implem
         }
     }
 
-    private static final class DefaultPrimaryFieldMeta<T extends IDomain> extends DefaultUniqueFieldMeta<T>
+    private static final class DefaultPrimaryFieldMeta<T> extends DefaultUniqueFieldMeta<T>
             implements PrimaryFieldMeta<T> {
 
         private DefaultPrimaryFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta

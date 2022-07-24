@@ -1,6 +1,6 @@
 package io.army.schema;
 
-import io.army.domain.IDomain;
+
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
@@ -46,7 +46,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
             }
 
             compareColumns(tableInfo, table, builder);
-            compareIndex(tableInfo, (TableMeta<? extends IDomain>) table, builder);
+            compareIndex(tableInfo, (TableMeta<?>) table, builder);
             tableResultList.add(builder.buildAndClear());
         }
         return new SchemaResult(schemaMeta.catalog(), schemaMeta.schema(), newTableList, tableResultList);
@@ -114,7 +114,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
 
     }
 
-    private <T extends IDomain> void compareIndex(_TableInfo tableInfo, TableMeta<T> table
+    private <T> void compareIndex(_TableInfo tableInfo, TableMeta<T> table
             , _TableResult.Builder tableBuilder) {
 
         final Map<String, _IndexInfo> indexMap = tableInfo.indexMap();

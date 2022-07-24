@@ -1,8 +1,7 @@
 package io.army.meta;
 
-import io.army.domain.IDomain;
 
-public interface PrimaryFieldMeta<T extends IDomain> extends UniqueFieldMeta<T> {
+public interface PrimaryFieldMeta<T> extends UniqueFieldMeta<T> {
 
 
 }

@@ -5,7 +5,6 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._MockDialects;
-import io.army.domain.IDomain;
 import io.army.example.pill.domain.User_;
 import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
@@ -55,7 +54,7 @@ public class MySQLDdlTests {
     public void addColumn() {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
-        final TableMeta<? extends IDomain> table = User_.T;
+        final TableMeta<?> table = User_.T;
         for (Dialect dialect : Dialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
@@ -117,7 +116,7 @@ public class MySQLDdlTests {
     public void createIndex() {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
-        final TableMeta<? extends IDomain> table = User_.T;
+        final TableMeta<?> table = User_.T;
         for (Dialect dialect : Dialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
@@ -144,7 +143,7 @@ public class MySQLDdlTests {
     public void changeIndex() {
         final EnumMap<Dialect, List<String>> sqlMap = new EnumMap<>(Dialect.class);
         MySQLDdl ddl;
-        final TableMeta<? extends IDomain> table = User_.T;
+        final TableMeta<?> table = User_.T;
         for (Dialect dialect : Dialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
@@ -180,7 +179,7 @@ public class MySQLDdlTests {
     public void dropIndex() {
         final EnumMap<Dialect, List<String>> sqlMap = new EnumMap<>(Dialect.class);
         MySQLDdl ddl;
-        final TableMeta<? extends IDomain> table = User_.T;
+        final TableMeta<?> table = User_.T;
         for (Dialect dialect : Dialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
