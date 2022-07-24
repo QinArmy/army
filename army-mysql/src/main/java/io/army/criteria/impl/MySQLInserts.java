@@ -1423,14 +1423,14 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         private AssignmentPartitionClause(AssignmentInsertOptionClause<C> clause, SimpleTableMeta<T> table) {
-            super(clause, false, table);
+            super(clause, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
             this.parentStmt = null;
         }
 
         private AssignmentPartitionClause(AssignmentParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
-            super(clause, false, table);
+            super(clause, table);
             this.hintList = _CollectionUtils.safeList(clause.childHintList);
             this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
             this.parentStmt = clause.createParentStmt(); //couldn't invoke asInsert method
@@ -1552,7 +1552,7 @@ abstract class MySQLInserts extends InsertSupport {
         private List<MySQLWords> childModifierList;
 
         private AssignmentParentPartitionClause(AssignmentInsertOptionClause<C> clause, ParentTableMeta<P> table) {
-            super(clause, false, table);
+            super(clause, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
         }

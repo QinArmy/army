@@ -1,13 +1,11 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.ItemPair;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.SubQuery;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -15,12 +13,7 @@ public interface _Insert extends _Statement {
 
     TableMeta<?> table();
 
-    /**
-     * @return a unmodifiable list , maybe empty.
-     */
-    List<FieldMeta<?>> fieldList();
 
-    Map<FieldMeta<?>, Boolean> fieldMap();
 
 
     interface _DuplicateKeyClause {
@@ -37,7 +30,19 @@ public interface _Insert extends _Statement {
     }
 
 
-    interface _ValuesSyntaxInsert extends _Insert, _InsertOption {
+    interface _ColumnListInsert extends _Insert {
+
+        /**
+         * @return a unmodifiable list , maybe empty.
+         */
+        List<FieldMeta<?>> fieldList();
+
+        Map<FieldMeta<?>, Boolean> fieldMap();
+    }
+
+
+    interface _ValuesSyntaxInsert extends _ColumnListInsert, _InsertOption {
+
 
         boolean isPreferLiteral();
 
@@ -76,19 +81,14 @@ public interface _Insert extends _Statement {
 
     interface _AssignmentStatementSpec {
 
-        List<ItemPair> rowPairList();
+        List<_ItemPair._FieldItemPair> rowPairList();
 
-        Map<FieldMeta<?>, Boolean> fieldMap();
+        Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap();
     }
 
 
     interface _AssignmentInsert extends _Insert, _InsertOption, _AssignmentStatementSpec {
 
-        /**
-         * @return always {@link  Collections#emptyList()}
-         */
-        @Override
-        List<FieldMeta<?>> fieldList();
 
         boolean isPreferLiteral();
 
@@ -100,7 +100,7 @@ public interface _Insert extends _Statement {
     }
 
 
-    interface _QueryInsert extends _Insert {
+    interface _QueryInsert extends _ColumnListInsert {
 
         SubQuery subQuery();
 

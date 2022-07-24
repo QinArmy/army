@@ -6,6 +6,7 @@ import io.army.criteria.ItemPair;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
@@ -51,7 +52,7 @@ final class AssignmentInsertContext extends StatementContext
 
     private final TableMeta<?> domainTable;
 
-    private final List<ItemPair> rowPairList;
+    private final List<_ItemPair._FieldItemPair> rowPairList;
 
     private final PrimaryFieldMeta<?> returnId;
 

@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._DialectUtils;
@@ -129,7 +130,7 @@ abstract class InsertSupport {
 
     static abstract class ColumnsClause<C, T, RR>
             implements Insert._ColumnListClause<C, T, RR>, Insert._StaticColumnDualClause<T, RR>
-            , _Insert, ColumnListClause {
+            , _Insert._ColumnListInsert, ColumnListClause {
 
         final CriteriaContext criteriaContext;
 
@@ -748,13 +749,13 @@ abstract class InsertSupport {
 
     static abstract class DynamicValueInsertValueClause<C, T, RR, VR>
             extends ColumnDefaultClause<C, T, RR> implements Insert._DynamicValuesClause<C, T, VR>
-            , PairsConstructor<FieldMeta<T>> {
+            , PairsConstructor<FieldMeta<T>>, NonQueryInsertOptions {
 
         private List<Map<FieldMeta<?>, _Expression>> valuePairList;
 
         private Map<FieldMeta<?>, _Expression> valuePairMap;
 
-        DynamicValueInsertValueClause(InsertOptions options, TableMeta<T> table) {
+        DynamicValueInsertValueClause(NonQueryInsertOptions options, TableMeta<T> table) {
             super(options, table);
         }
 
@@ -888,16 +889,13 @@ abstract class InsertSupport {
 
         final TableMeta<T> table;
 
-        final boolean supportRowItem;
+        private Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldPairMap;
+        private List<_ItemPair._FieldItemPair> itemPairList;
 
-        private Map<FieldMeta<?>, Boolean> fieldMap;
-        private List<ItemPair> itemPairList;
-
-        AssignmentSetClause(CriteriaContext criteriaContext, boolean supportRowItem, TableMeta<T> table) {
+        AssignmentSetClause(CriteriaContext criteriaContext, TableMeta<T> table) {
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
             this.table = table;
-            this.supportRowItem = supportRowItem;
         }
 
 
@@ -999,8 +997,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final List<ItemPair> rowPairList() {
-            final List<ItemPair> pairList = this.itemPairList;
+        public final List<_ItemPair._FieldItemPair> rowPairList() {
+            final List<_ItemPair._FieldItemPair> pairList = this.itemPairList;
             if (pairList == null || pairList instanceof ArrayList) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -1008,8 +1006,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, Boolean> fieldMap() {
-            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+        public final Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap() {
+            final Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap = this.fieldPairMap;
             if (fieldMap == null || fieldMap instanceof HashMap) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -1017,7 +1015,7 @@ abstract class InsertSupport {
         }
 
         final void endAssignmentSetClause() {
-            List<ItemPair> itemPairList = this.itemPairList;
+            List<_ItemPair._FieldItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 itemPairList = Collections.emptyList();
             } else if (!(itemPairList instanceof ArrayList)) {
@@ -1029,75 +1027,65 @@ abstract class InsertSupport {
             }
             this.itemPairList = itemPairList;
 
-            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap = this.fieldPairMap;
             if (fieldMap == null) {
-                this.fieldMap = Collections.emptyMap();
+                fieldMap = Collections.emptyMap();
             } else {
-                this.fieldMap = Collections.unmodifiableMap(fieldMap);
+                fieldMap = Collections.unmodifiableMap(fieldMap);
             }
+            this.fieldPairMap = fieldMap;
+
+            assert fieldMap.size() == itemPairList.size();
+
         }
 
 
         private void innerAddItemPair(final ItemPair itemPair) {
-            if (itemPair instanceof SQLs.FieldItemPair) {
-                this.validateItemField(((SQLs.FieldItemPair) itemPair).field);
-            } else if (!(itemPair instanceof SQLs.RowItemPair)) {
+            if (itemPair instanceof SQLs.RowItemPair) {
+                String m = "Assignment insert support only field pair.";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            } else if (!(itemPair instanceof SQLs.FieldItemPair)) {
                 String m = String.format("Non-Army %s", ItemPair.class.getName());
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            } else if (this.supportRowItem) {
-                for (DataField field : ((SQLs.RowItemPair) itemPair).fieldList) {
-                    this.validateItemField(field);
-                }
-            } else {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "Don't support row item");
             }
-            List<ItemPair> itemPairList = this.itemPairList;
-            if (itemPairList == null) {
-                itemPairList = new ArrayList<>();
-                this.itemPairList = itemPairList;
+
+            final SQLs.FieldItemPair fieldPair = (SQLs.FieldItemPair) itemPair;
+            if (!(fieldPair.field instanceof FieldMeta)) {
+                String m = String.format("Assignment insert support only %s.", FieldMeta.class.getName());
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
-            itemPairList.add(itemPair);
+            if (!(fieldPair.right instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+            }
+            this.validateField((FieldMeta<?>) fieldPair.field, (ArmyExpression) fieldPair.right);
+
+            this.addSafeItemPair(fieldPair);
         }
 
         private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
-            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            if (fieldMap == null) {
-                fieldMap = new HashMap<>();
-                this.fieldMap = fieldMap;
-            }
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
-            }
-
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
             this.validateField(field, (ArmyExpression) value);
+            this.addSafeItemPair((SQLs.FieldItemPair) SQLs._itemPair(field, null, value));
+            return (SR) this;
+        }
 
-            List<ItemPair> itemPairList = this.itemPairList;
+        private void addSafeItemPair(final SQLs.FieldItemPair fieldPair) {
+            Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldPairMap = this.fieldPairMap;
+            if (fieldPairMap == null) {
+                fieldPairMap = new HashMap<>();
+                this.fieldPairMap = fieldPairMap;
+            }
+            if (fieldPairMap.putIfAbsent((FieldMeta<?>) fieldPair.field, fieldPair) != null) {
+                throw duplicationValuePair(this.criteriaContext, (FieldMeta<?>) fieldPair.field);
+            }
+            List<_ItemPair._FieldItemPair> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 itemPairList = new ArrayList<>();
                 this.itemPairList = itemPairList;
             }
-            itemPairList.add(SQLs.itemPair(field, value));
-            return (SR) this;
-        }
-
-        private void validateItemField(final DataField field) {
-            if (!(field instanceof FieldMeta)) {
-                String m = String.format("assignment insert syntax support only %s", FieldMeta.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-            this.validateField((FieldMeta<?>) field, null);
-            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            if (fieldMap == null) {
-                fieldMap = new HashMap<>();
-                this.fieldMap = fieldMap;
-            }
-            if (fieldMap.putIfAbsent((FieldMeta<?>) field, Boolean.TRUE) != null) {
-                //TODO 验证方言是否支持 在 row 中 重复赋值
-                throw duplicationValuePair(this.criteriaContext, (FieldMeta<?>) field);
-            }
+            itemPairList.add(fieldPair);
         }
 
 
@@ -1114,25 +1102,17 @@ abstract class InsertSupport {
 
         final boolean preferLiteral;
 
-        final boolean supportRowItem;
-
-        AssignmentInsertClause(NonQueryInsertOptions options, boolean supportRowItem, TableMeta<T> table) {
-            super(options.getCriteriaContext(), supportRowItem, table);
+        AssignmentInsertClause(NonQueryInsertOptions options, TableMeta<T> table) {
+            super(options.getCriteriaContext(), table);
 
             this.migration = options.isMigration();
             this.nullHandleMode = options.nullHandle();
             this.preferLiteral = options.isPreferLiteral();
-            this.supportRowItem = supportRowItem;
         }
 
         @Override
         public final TableMeta<?> table() {
             return this.table;
-        }
-
-        @Override
-        public final List<FieldMeta<?>> fieldList() {
-            return Collections.emptyList();
         }
 
         @Override
@@ -1220,18 +1200,11 @@ abstract class InsertSupport {
 
         final TableMeta<?> table;
 
-        final List<FieldMeta<?>> fieldList;
-
-        final Map<FieldMeta<?>, Boolean> fieldMap;
-
-
         private Boolean prepared;
 
         InsertStatement(_Insert clause) {
             this.criteriaContext = ((CriteriaContextSpec) clause).getCriteriaContext();
             this.table = clause.table();
-            this.fieldList = clause.fieldList();
-            this.fieldMap = clause.fieldMap();
         }
 
 
@@ -1252,15 +1225,6 @@ abstract class InsertSupport {
             return this.table;
         }
 
-        @Override
-        public final List<FieldMeta<?>> fieldList() {
-            return this.fieldList;
-        }
-
-        @Override
-        public final Map<FieldMeta<?>, Boolean> fieldMap() {
-            return this.fieldMap;
-        }
 
         @SuppressWarnings("unchecked")
         @Override
@@ -1321,6 +1285,10 @@ abstract class InsertSupport {
 
         private final boolean preferLiteral;
 
+        private final List<FieldMeta<?>> fieldList;
+
+        private final Map<FieldMeta<?>, Boolean> fieldMap;
+
         private final Map<FieldMeta<?>, _Expression> defaultExpMap;
 
         ValueSyntaxStatement(_ValuesSyntaxInsert clause) {
@@ -1328,6 +1296,9 @@ abstract class InsertSupport {
             this.migration = clause.isMigration();
             this.nullHandleMode = clause.nullHandle();
             this.preferLiteral = clause.isPreferLiteral();
+            this.fieldList = clause.fieldList();
+
+            this.fieldMap = clause.fieldMap();
             this.defaultExpMap = clause.defaultValueMap();
         }
 
@@ -1348,6 +1319,16 @@ abstract class InsertSupport {
         }
 
         @Override
+        public final List<FieldMeta<?>> fieldList() {
+            return this.fieldList;
+        }
+
+        @Override
+        public final Map<FieldMeta<?>, Boolean> fieldMap() {
+            return this.fieldMap;
+        }
+
+        @Override
         public final Map<FieldMeta<?>, _Expression> defaultValueMap() {
             return this.defaultExpMap;
         }
@@ -1365,7 +1346,9 @@ abstract class InsertSupport {
 
         private final boolean preferLiteral;
 
-        private final List<ItemPair> rowPairList;
+        private final List<_ItemPair._FieldItemPair> rowPairList;
+
+        private final Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap;
 
         AssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
@@ -1373,6 +1356,8 @@ abstract class InsertSupport {
             this.nullHandleMode = clause.nullHandle();
             this.preferLiteral = clause.isPreferLiteral();
             this.rowPairList = clause.rowPairList();
+
+            this.fieldMap = clause.fieldMap();
         }
 
         @Override
@@ -1391,7 +1376,12 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final List<ItemPair> rowPairList() {
+        public final Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap() {
+            return this.fieldMap;
+        }
+
+        @Override
+        public final List<_ItemPair._FieldItemPair> rowPairList() {
             return this.rowPairList;
         }
 
@@ -1403,14 +1393,29 @@ abstract class InsertSupport {
             extends InsertStatement<I>
             implements _Insert._QueryInsert {
 
-        final Map<FieldMeta<?>, Boolean> fieldMap;
 
-        final SubQuery subQuery;
+        private final List<FieldMeta<?>> fieldList;
+
+        private final Map<FieldMeta<?>, Boolean> fieldMap;
+
+        private final SubQuery subQuery;
 
         QueryInsertStatement(_QueryInsert clause) {
             super(clause);
+            this.fieldList = clause.fieldList();
             this.fieldMap = clause.fieldMap();
             this.subQuery = clause.subQuery();
+        }
+
+
+        @Override
+        public final List<FieldMeta<?>> fieldList() {
+            return this.fieldList;
+        }
+
+        @Override
+        public final Map<FieldMeta<?>, Boolean> fieldMap() {
+            return this.fieldMap;
         }
 
         @Override

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner.mysql._MySQLLoadData;
 import io.army.criteria.mysql.MySQLLoad;
 import io.army.criteria.mysql.MySQLQuery;
@@ -227,7 +228,7 @@ abstract class MySQLLoads {
         private List<_Expression> fieldOrUserVarList;
 
         private PartitionClause(LoadDataInfileClause<C> clause, SingleTableMeta<T> table) {
-            super(clause.criteriaContext, false, table);
+            super(clause.criteriaContext, table);
             this.modifierList = _CollectionUtils.safeList(clause.modifierList);
             this.filePath = clause.filePath;
             assert this.filePath != null;
@@ -236,7 +237,7 @@ abstract class MySQLLoads {
         }
 
         private PartitionClause(ChildLoadDataInfileClause<C, ?> clause, ChildTableMeta<T> table) {
-            super(clause.criteriaContext, false, table);
+            super(clause.criteriaContext, table);
             this.modifierList = _CollectionUtils.safeList(clause.modifierList);
             this.filePath = clause.filePath;
             assert this.filePath != null;
@@ -915,7 +916,7 @@ abstract class MySQLLoads {
 
         private final List<_Expression> columnOrUserVarList;
 
-        private final List<ItemPair> columItemPairList;
+        private final List<_ItemPair._FieldItemPair> columItemPairList;
 
         private MySQLLoadDataStatement(PartitionClause<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause) {
             this.modifierList = clause.modifierList;
@@ -1046,7 +1047,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public final List<ItemPair> columItemPairList() {
+        public final List<_ItemPair._FieldItemPair> columItemPairList() {
             return this.columItemPairList;
         }
 

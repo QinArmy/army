@@ -798,14 +798,14 @@ abstract class MySQLReplaces extends InsertSupport {
         private List<String> partitionList;
 
         private AssignmentPartitionClause(AssignmentReplaceOptionClause<C> clause, SimpleTableMeta<T> table) {
-            super(clause, false, table);
+            super(clause, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
             this.parentStmt = null;
         }
 
         private AssignmentPartitionClause(AssignmentParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
-            super(clause, false, table);
+            super(clause, table);
             this.hintList = _CollectionUtils.safeList(clause.childHintList);
             this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
             this.parentStmt = clause.createParentStmt(); //couldn't invoke asInsert
@@ -870,7 +870,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private List<MySQLWords> childModifierList;
 
         private AssignmentParentPartitionClause(AssignmentReplaceOptionClause<C> clause, ParentTableMeta<P> table) {
-            super(clause, false, table);
+            super(clause, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
         }

@@ -1,13 +1,14 @@
 package io.army.criteria.impl.inner.mysql;
 
-import io.army.criteria.ItemPair;
 import io.army.criteria.SQLWords;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.lang.Nullable;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.SingleTableMeta;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -55,7 +56,7 @@ public interface _MySQLLoadData extends _Statement, _DialectStatement {
 
     List<_Expression> columnOrUserVarList();
 
-    List<ItemPair> columItemPairList();
+    List<_ItemPair._FieldItemPair> columItemPairList();
 
 
 
