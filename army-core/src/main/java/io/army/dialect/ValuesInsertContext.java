@@ -5,6 +5,7 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.NullHandleMode;
+import io.army.criteria.SqlValueParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -12,10 +13,11 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
-import io.army.stmt.InsertStmtParams;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmts;
+import io.army.stmt._InsertStmtParams;
 import io.army.struct.CodeEnum;
 import io.army.util._Exceptions;
 
@@ -23,7 +25,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-final class ValuesInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams.ValueParams {
+final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._ValueParams {
 
 
     static ValuesInsertContext forSingle(_Insert._ValuesInsert stmt, ArmyDialect dialect, Visible visible) {
@@ -56,6 +58,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
      * </p>
      *
      * @see #forSingle(_Insert._ValuesInsert, ArmyDialect, Visible)
+     * @see #forParent(_Insert._ValuesInsert, ChildTableMeta, ArmyDialect, Visible)
      */
     private ValuesInsertContext(_Insert._ValuesInsert stmt, TableMeta<?> domainTable
             , ArmyDialect dialect, Visible visible) {
@@ -92,8 +95,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
      */
     private ValuesInsertContext(ValuesInsertContext parentContext, _Insert._ChildValuesInsert stmt
             , ArmyDialect dialect, Visible visible) {
-        super(stmt, dialect, visible);
-        assert ((ChildTableMeta<?>) this.insertTable).parentMeta() == parentContext.insertTable;
+        super(parentContext, stmt, dialect, visible);
+
         this.rowValuesList = stmt.rowValuesList();
         assert this.rowValuesList.size() == parentContext.rowValuesList.size();
 
@@ -287,9 +290,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     private static final class RowReadWrapper implements ReadWrapper {
 
-        private final RowObjectWrapper actualWrapper;
+        private final RowWrapper actualWrapper;
 
-        private RowReadWrapper(RowObjectWrapper actualWrapper) {
+        private RowReadWrapper(RowWrapper actualWrapper) {
             this.actualWrapper = actualWrapper;
         }
 
@@ -307,87 +310,64 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
     }//RowReadWrapper
 
 
-    private static final class RowObjectWrapper implements ObjectWrapper {
+    static abstract class RowWrapper implements ObjectWrapper {
 
-        private final TableMeta<?> domainTable;
+        final TableMeta<?> domainTable;
 
-        private final FieldMeta<?> discriminator;
+        final FieldMeta<?> discriminator;
 
-        private final ReadWrapper readWrapper;
+        private final RowReadWrapper readWrapper;
 
-        private final boolean manageVisible;
-
-        private final Map<Integer, Object> rowIdMap;
-
-        private Map<FieldMeta<?>, Object> generatedMap;
-
-        private Map<FieldMeta<?>, _Expression> rowValuesMap;
-
-        private RowObjectWrapper(TableMeta<?> domainTable, boolean manageVisible, int rowIdMapSize) {
+        RowWrapper(TableMeta<?> domainTable) {
             this.domainTable = domainTable;
             this.discriminator = domainTable.discriminator();
             this.readWrapper = new RowReadWrapper(this);
-            this.manageVisible = manageVisible;
-
-            if (rowIdMapSize > 0) {
-                this.rowIdMap = new HashMap<>((int) (rowIdMapSize / 0.75F));
-            } else {
-                this.rowIdMap = null;
-            }
         }
 
         @Override
-        public boolean isWritable(final String propertyName) {
+        public final boolean isReadable(final String propertyName) {
+            return this.domainTable.containComplexField(propertyName);
+        }
+
+        @Override
+        public final boolean isWritable(final String propertyName) {
             final TableMeta<?> domainTable = this.domainTable;
             final FieldMeta<?> field;
             field = domainTable.tryGetComplexFiled(propertyName);
-
-            final Map<FieldMeta<?>, _Expression> rowValuesMap = this.rowValuesMap;
-            assert rowValuesMap != null;
 
             final boolean writable;
             if (field == null) {
                 writable = false;
             } else if (field == this.discriminator) {
                 writable = true;
-            } else if (!(this.generatedMap instanceof HashMap)) {
+            } else if (this.getGeneratedMap() == null) {
                 writable = false;
-            } else if (domainTable instanceof SingleTableMeta || !(field instanceof PrimaryFieldMeta)) {
-                writable = !rowValuesMap.containsKey(field);
-            } else if (rowValuesMap.containsKey(field)) {
-                writable = false;
+            } else if (field.generatorType() == GeneratorType.PRECEDE) {
+                writable = true;
             } else {
-                writable = !rowValuesMap.containsKey(domainTable.nonChildId());
+                writable = _MetaBridge.isReserved(field.fieldName());
             }
             return writable;
         }
 
         @Override
-        public void set(final String propertyName, final @Nullable Object value) throws ObjectAccessException {
+        public final void set(final String propertyName, final @Nullable Object value) throws ObjectAccessException {
             final TableMeta<?> domainTable = this.domainTable;
             final FieldMeta<?> field;
             field = domainTable.tryGetComplexFiled(propertyName);
 
-            final Map<FieldMeta<?>, _Expression> rowValuesMap = this.rowValuesMap;
-            assert rowValuesMap != null;
-            if (field == null
-                    || rowValuesMap.containsKey(field)
-                    || (domainTable instanceof ChildTableMeta
-                    && field instanceof PrimaryFieldMeta
-                    && rowValuesMap.containsKey(domainTable.nonChildId()))) {
+            if (field == null) {
                 throw _Exceptions.nonWritableProperty(this.domainTable, propertyName);
             }
 
-            final Map<FieldMeta<?>, Object> generatedMap = this.generatedMap;
-            if (!(generatedMap instanceof HashMap)) {
-                if (field == this.discriminator
-                        && _DialectUtils.isDiscriminatorValue(this.domainTable, value)) {
-                    //ignore,here io.army.dialect._FieldValueGenerator.validate
-                    return;
-                }
-                //no bug,never here
+            final Map<FieldMeta<?>, Object> generatedMap = this.getGeneratedMap();
+            if (generatedMap == null
+                    || !(field.generatorType() == GeneratorType.PRECEDE
+                    || field == this.discriminator
+                    || _MetaBridge.isReserved(field.fieldName()))) {
                 throw _Exceptions.nonWritableProperty(this.domainTable, propertyName);
             }
+
             if (value == null) {
                 generatedMap.remove(field);
                 if (domainTable instanceof ChildTableMeta && field instanceof PrimaryFieldMeta) {
@@ -401,17 +381,38 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             } else {
                 throw _Exceptions.propertyTypeNotMatch(field, value);
             }
-
         }
 
         @Override
-        public ReadWrapper readonlyWrapper() {
+        public final ReadWrapper readonlyWrapper() {
             return this.readWrapper;
         }
 
-        @Override
-        public boolean isReadable(final String propertyName) {
-            return this.domainTable.containComplexField(propertyName);
+        @Nullable
+        abstract Map<FieldMeta<?>, Object> getGeneratedMap();
+
+
+    }//RowWrapper
+
+
+    private static final class RowObjectWrapper extends RowWrapper {
+        private final boolean manageVisible;
+
+        private final Map<Integer, Object> rowIdMap;
+
+        private Map<FieldMeta<?>, Object> generatedMap;
+
+        private Map<FieldMeta<?>, _Expression> rowValuesMap;
+
+        private RowObjectWrapper(TableMeta<?> domainTable, boolean manageVisible, int rowIdMapSize) {
+            super(domainTable);
+            this.manageVisible = manageVisible;
+
+            if (rowIdMapSize > 0) {
+                this.rowIdMap = new HashMap<>((int) (rowIdMapSize / 0.75F));
+            } else {
+                this.rowIdMap = null;
+            }
         }
 
         @Override
@@ -422,14 +423,30 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             if (field == null) {
                 throw _Exceptions.nonReadableProperty(this.domainTable, propertyName);
             }
-            final Map<FieldMeta<?>, Object> fieldValueMap = this.generatedMap;
-            assert fieldValueMap != null;
+            final Map<FieldMeta<?>, Object> generatedMap = this.generatedMap;
+            assert generatedMap != null;
             Object value;
-            value = fieldValueMap.get(field);
-            if (value == null && field == this.discriminator) {
+            value = generatedMap.get(field);
+            if (value != null) {
+                return value;
+            }
+            if (field == this.discriminator) {
                 value = CodeEnum.resolve(field.javaType(), this.domainTable.discriminatorValue());
+            } else {
+                final Map<FieldMeta<?>, _Expression> rowValuesMap = this.rowValuesMap;
+                assert rowValuesMap != null;
+                final _Expression expression;
+                expression = rowValuesMap.get(field);
+                if (expression instanceof SqlValueParam.SingleNonNamedValue) {
+                    value = ((SqlValueParam.SingleNonNamedValue) expression).value();
+                }
             }
             return value;
+        }
+
+        @Override
+        Map<FieldMeta<?>, Object> getGeneratedMap() {
+            return this.generatedMap;
         }
 
 

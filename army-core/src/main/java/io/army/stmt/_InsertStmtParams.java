@@ -8,7 +8,7 @@ import io.army.meta.PrimaryFieldMeta;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public interface InsertStmtParams extends StmtParams {
+public interface _InsertStmtParams extends _StmtParams {
 
 
     @Nullable
@@ -18,7 +18,7 @@ public interface InsertStmtParams extends StmtParams {
     String idReturnAlias();
 
 
-    interface DomainParams extends InsertStmtParams {
+    interface _DomainParams extends _InsertStmtParams {
 
         List<IDomain> domainList();
 
@@ -27,9 +27,15 @@ public interface InsertStmtParams extends StmtParams {
     }
 
 
-    interface ValueParams extends InsertStmtParams {
+    interface _ValueParams extends _InsertStmtParams {
 
         int rowSize();
+
+        BiFunction<Integer, Object, Object> function();
+
+    }
+
+    interface _AssignmentParams extends _InsertStmtParams {
 
         BiFunction<Integer, Object, Object> function();
 

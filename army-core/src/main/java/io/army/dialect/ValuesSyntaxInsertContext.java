@@ -10,12 +10,12 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.domain.IDomain;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.InsertStmtParams;
+import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
 import java.util.*;
 
-abstract class ValuesSyntaxInsertContext extends StatementContext implements _ValueInsertContext, InsertStmtParams {
+abstract class ValuesSyntaxInsertContext extends StatementContext implements _ValueInsertContext, _InsertStmtParams {
 
 
     final boolean migration;
@@ -59,12 +59,9 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         super(dialect, true, visible);
 
         this.migration = stmt.isMigration();
-        final NullHandleMode handleMode = stmt.nullHandle();
-        if (handleMode == null) {
-            this.nullHandleMode = NullHandleMode.INSERT_DEFAULT;
-        } else {
-            this.nullHandleMode = handleMode;
-        }
+        final NullHandleMode handleMode;
+        handleMode = stmt.nullHandle();
+        this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
         this.preferLiteral = stmt.isPreferLiteral();
         this.defaultValueMap = stmt.defaultValueMap();
 
@@ -114,25 +111,27 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      */
-    ValuesSyntaxInsertContext(_Insert._ValuesSyntaxInsert stmt, ArmyDialect dialect, Visible visible) {
+    ValuesSyntaxInsertContext(ValuesSyntaxInsertContext parentContext, _Insert._ValuesSyntaxInsert stmt
+            , ArmyDialect dialect, Visible visible) {
         super(dialect, true, visible);
 
         this.migration = stmt.isMigration();
-        final NullHandleMode handleMode = stmt.nullHandle();
-        if (handleMode == null) {
-            this.nullHandleMode = NullHandleMode.INSERT_DEFAULT;
-        } else {
-            this.nullHandleMode = handleMode;
-        }
+        final NullHandleMode handleMode;
+        handleMode = stmt.nullHandle();
+        this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
         this.preferLiteral = stmt.isPreferLiteral();
         this.defaultValueMap = stmt.defaultValueMap();
 
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 
-        final ChildTableMeta<?> table = (ChildTableMeta<?>) stmt.table();
+        this.insertTable = stmt.table();
+        this.domainTable = this.insertTable;
 
-        this.insertTable = table;
-        this.domainTable = table;
+        assert this.insertTable instanceof ChildTableMeta
+                && this.migration == parentContext.migration
+                && this.nullHandleMode == parentContext.nullHandleMode
+                && this.preferLiteral == parentContext.preferLiteral
+                && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
         if (fieldList.size() == 0) {
@@ -186,14 +185,12 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     @Override
     public final void appendField(String tableAlias, FieldMeta<?> field) {
-        // domain insert don't support insert any field in expression
         throw _Exceptions.unknownColumn(tableAlias, field);
     }
 
     @Override
     public final void appendField(final FieldMeta<?> field) {
         if (!(this.valuesClauseEnd && this.duplicateKeyClause && field.tableMeta() == this.insertTable)) {
-            // domain insert don't support insert any field in expression
             throw _Exceptions.unknownColumn(field);
         }
         final StringBuilder sqlBuilder = this.sqlBuilder
@@ -223,29 +220,15 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     @Override
     public final PrimaryFieldMeta<?> idField() {
-        PrimaryFieldMeta<?> field = this.returnId;
-        if (field == null) {
-            final TableMeta<?> table = this.insertTable;
-            if (table instanceof ChildTableMeta) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
-            field = table.id();
-        }
+        final PrimaryFieldMeta<?> field = this.returnId;
+        assert field != null;
         return field;
     }
 
     @Override
     public final String idReturnAlias() {
-        String alias = this.idSelectionAlias;
-        if (alias == null) {
-            final TableMeta<?> table = this.insertTable;
-            if (table instanceof ChildTableMeta) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
-            alias = table.id().fieldName();
-        }
+        final String alias = this.idSelectionAlias;
+        assert alias != null;
         return alias;
     }
 

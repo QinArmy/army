@@ -5,7 +5,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
-import io.army.stmt.StmtParams;
+import io.army.stmt._StmtParams;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -21,7 +21,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class StatementContext implements StmtContext, StmtParams {
+abstract class StatementContext implements StmtContext, _StmtParams {
 
     static final String SPACE_PLACEHOLDER = " ?";
 

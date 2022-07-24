@@ -82,5 +82,22 @@ public abstract class _MetaBridge {
         return list;
     }
 
+    public static boolean isReserved(final String fieldName) {
+        final boolean match;
+        switch (fieldName) {
+            case _MetaBridge.ID:
+            case _MetaBridge.CREATE_TIME:
+            case _MetaBridge.UPDATE_TIME:
+            case _MetaBridge.VERSION:
+            case _MetaBridge.VISIBLE:
+                match = true;
+                break;
+            default:
+                match = false;
+        }
+        return match;
+
+    }
+
 
 }

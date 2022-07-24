@@ -8,7 +8,7 @@ import io.army.lang.Nullable;
  * This interface is base interface of below:
  *     <ul>
  *         <li>{@link  SqlParam}</li>
- *          <li>{@link SqlLiteral}</li>
+ *          <li>SQL literal expression</li>
  *     </ul>
  * </p>
  *

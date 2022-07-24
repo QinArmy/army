@@ -6,7 +6,7 @@ import io.army.criteria.SqlParam;
 
 import java.util.List;
 
-public interface StmtParams {
+public interface _StmtParams {
 
     String sql();
 

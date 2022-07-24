@@ -11,10 +11,10 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
-import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmts;
+import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.Map;
  * This class representing standard value insert context.
  * </p>
  */
-final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams.DomainParams {
+final class DomainInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._DomainParams {
 
     static DomainInsertContext forSingle(_Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
         _DialectUtils.checkDefaultValueMap(insert);
@@ -69,8 +69,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
      */
     private DomainInsertContext(DomainInsertContext parentContext, _Insert._DomainInsert stmt
             , ArmyDialect dialect, Visible visible) {
-        super(stmt, dialect, visible);
-        assert parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
+        super(parentContext, stmt, dialect, visible);
 
         this.domainList = stmt.domainList();//must check for criteria api implementation
         assert this.domainList == parentContext.domainList;

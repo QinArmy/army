@@ -64,6 +64,7 @@ public final class BigDecimalType extends _ArmyNoInjectionMapping {
         return (BigDecimal) nonNull;
     }
 
+
     public static BigDecimal beforeBind(final SqlType sqlType, final Object nonNull) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {

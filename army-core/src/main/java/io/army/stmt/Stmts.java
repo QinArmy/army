@@ -28,15 +28,15 @@ public abstract class Stmts {
      * Post insert for generated key
      * </p>
      */
-    public static GeneratedKeyStmt domainPost(final InsertStmtParams.DomainParams params) {
+    public static GeneratedKeyStmt domainPost(final _InsertStmtParams._DomainParams params) {
         return new DomainPostStmt(params);
     }
 
-    public static GeneratedKeyStmt valuePost(final InsertStmtParams.ValueParams params) {
+    public static GeneratedKeyStmt valuePost(final _InsertStmtParams._ValueParams params) {
         return new ValuePostStmt(params);
     }
 
-    public static io.army.stmt.SimpleStmt minSimple(final StmtParams params) {
+    public static io.army.stmt.SimpleStmt minSimple(final _StmtParams params) {
         return new MinSimpleStmt(params);
     }
 
@@ -46,7 +46,7 @@ public abstract class Stmts {
     }
 
 
-    public static io.army.stmt.SimpleStmt queryStmt(StmtParams params) {
+    public static io.army.stmt.SimpleStmt queryStmt(_StmtParams params) {
         return new QueryStmt(params);
     }
 
@@ -105,7 +105,7 @@ public abstract class Stmts {
 
         private final List<SqlParam> paramGroup;
 
-        private MinSimpleStmt(StmtParams params) {
+        private MinSimpleStmt(_StmtParams params) {
             this.sql = params.sql();
             this.paramGroup = params.paramList();
         }
@@ -272,7 +272,7 @@ public abstract class Stmts {
 
         private final List<Selection> selectionList;
 
-        private QueryStmt(StmtParams params) {
+        private QueryStmt(_StmtParams params) {
             this.sql = params.sql();
             this.paramGroup = params.paramList();
             this.selectionList = params.selectionList();
@@ -323,7 +323,7 @@ public abstract class Stmts {
 
         private final String idReturnAlias;
 
-        private PostStmt(InsertStmtParams params) {
+        private PostStmt(_InsertStmtParams params) {
             this.sql = params.sql();
             this.paramList = params.paramList();
             this.selectionList = params.selectionList();
@@ -383,7 +383,7 @@ public abstract class Stmts {
 
         private final ObjectAccessor domainAccessor;
 
-        private DomainPostStmt(InsertStmtParams.DomainParams params) {
+        private DomainPostStmt(_InsertStmtParams._DomainParams params) {
             super(params);
             this.domainList = params.domainList();
             this.rowSize = this.domainList.size();
@@ -425,7 +425,7 @@ public abstract class Stmts {
 
         private final int rowSize;
 
-        private ValuePostStmt(InsertStmtParams.ValueParams params) {
+        private ValuePostStmt(_InsertStmtParams._ValueParams params) {
             super(params);
             this.function = params.function();
             this.rowSize = this.rowSize();

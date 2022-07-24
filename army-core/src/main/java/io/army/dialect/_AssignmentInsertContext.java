@@ -5,4 +5,5 @@ public interface _AssignmentInsertContext extends _InsertContext {
 
     void appendAssignmentClause();
 
+
 }
