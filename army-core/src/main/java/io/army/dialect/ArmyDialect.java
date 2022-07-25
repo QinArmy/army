@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.mapping.MappingEnv;
 import io.army.meta.DatabaseObject;
 
 /**
@@ -36,7 +37,7 @@ interface ArmyDialect extends DialectParser {
 
     boolean isMockEnv();
 
-    _FieldValueGenerator getFieldValueGenerator();
+    FieldValueGenerator getGenerator();
 
 
     String defaultFuncName();
@@ -44,6 +45,9 @@ interface ArmyDialect extends DialectParser {
     String safeObjectName(DatabaseObject object);
 
     StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder);
+
+
+    MappingEnv mappingEnv();
 
 
 }

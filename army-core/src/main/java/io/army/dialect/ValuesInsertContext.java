@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
 import io.army.bean.ObjectAccessException;
-import io.army.bean.ObjectWrapper;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.SqlValueParam;
@@ -10,6 +9,7 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
@@ -46,7 +46,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
     private final List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
-    private final RowObjectWrapper rowWrapper;
+    private final ValuesRowWrapper rowWrapper;
 
     private final List<Map<FieldMeta<?>, Object>> rowGeneratedValuesList;
 
@@ -81,7 +81,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         }
 
         //must be domainTable , not this.insertTable
-        this.rowWrapper = new RowObjectWrapper(domainTable, manageVisible, this.returnId == null ? 0 : rowSize);
+        this.rowWrapper = new ValuesRowWrapper(domainTable, manageVisible, this.returnId == null ? 0 : rowSize);
 
 
     }
@@ -123,8 +123,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         final boolean preferLiteral = this.preferLiteral;
         final boolean mockEnv = dialect.isMockEnv();
 
-        final _FieldValueGenerator generator;
-        final RowObjectWrapper rowWrapper = this.rowWrapper;
+        final FieldValueGenerator generator;
+        final ValuesRowWrapper rowWrapper = this.rowWrapper;
         final TableMeta<?> insertTable = this.insertTable, domainTable = this.domainTable;
         final List<Map<FieldMeta<?>, Object>> generatedValuesList;
 
@@ -137,7 +137,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
             generator = null;
             generatedValuesList = this.rowGeneratedValuesList;
         } else {
-            generator = dialect.getFieldValueGenerator();
+            generator = dialect.getGenerator();
             generatedValuesList = this.tempRowGeneratedValuesList;
             if (generatedValuesList == null) {
                 assert migration;
@@ -274,7 +274,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
     @Override
     Object currentRowNamedValue(final String name) {
-        final RowObjectWrapper wrapper = this.rowWrapper;
+        final ValuesRowWrapper wrapper = this.rowWrapper;
         final TableMeta<?> domainTable = wrapper.domainTable;
         final FieldMeta<?> field;
         field = domainTable.tryGetComplexFiled(name);
@@ -290,9 +290,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
     private static final class RowReadWrapper implements ReadWrapper {
 
-        private final RowWrapper actualWrapper;
+        private final ExpRowWrapper actualWrapper;
 
-        private RowReadWrapper(RowWrapper actualWrapper) {
+        private RowReadWrapper(ExpRowWrapper actualWrapper) {
             this.actualWrapper = actualWrapper;
         }
 
@@ -310,17 +310,25 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
     }//RowReadWrapper
 
 
-    static abstract class RowWrapper implements ObjectWrapper {
+    static abstract class ExpRowWrapper implements RowWrapper {
 
         final TableMeta<?> domainTable;
 
         final FieldMeta<?> discriminator;
 
+        final boolean manageVisible;
+
+        private final MappingEnv mappingEnv;
+
         private final RowReadWrapper readWrapper;
 
-        RowWrapper(TableMeta<?> domainTable) {
+
+        ExpRowWrapper(TableMeta<?> domainTable, MappingEnv mappingEnv, boolean manageVisible) {
             this.domainTable = domainTable;
+            this.mappingEnv = mappingEnv;
+            this.manageVisible = manageVisible;
             this.discriminator = domainTable.discriminator();
+
             this.readWrapper = new RowReadWrapper(this);
         }
 
@@ -329,42 +337,21 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
             return this.domainTable.containComplexField(propertyName);
         }
 
-        @Override
-        public final boolean isWritable(final String propertyName) {
-            final TableMeta<?> domainTable = this.domainTable;
-            final FieldMeta<?> field;
-            field = domainTable.tryGetComplexFiled(propertyName);
-
-            final boolean writable;
-            if (field == null) {
-                writable = false;
-            } else if (field == this.discriminator) {
-                writable = true;
-            } else if (this.getGeneratedMap() == null) {
-                writable = false;
-            } else if (field.generatorType() == GeneratorType.PRECEDE) {
-                writable = true;
-            } else {
-                writable = _MetaBridge.isReserved(field.fieldName());
-            }
-            return writable;
-        }
 
         @Override
         public final void set(final String propertyName, final @Nullable Object value) throws ObjectAccessException {
-            final TableMeta<?> domainTable = this.domainTable;
-            final FieldMeta<?> field;
-            field = domainTable.tryGetComplexFiled(propertyName);
 
-            if (field == null) {
-                throw _Exceptions.nonWritableProperty(this.domainTable, propertyName);
-            }
 
             final Map<FieldMeta<?>, Object> generatedMap = this.getGeneratedMap();
             if (generatedMap == null
                     || !(field.generatorType() == GeneratorType.PRECEDE
                     || field == this.discriminator
-                    || _MetaBridge.isReserved(field.fieldName()))) {
+                    || _MetaBridge.isReserved(propertyName))) {
+                throw _Exceptions.nonWritableProperty(this.domainTable, propertyName);
+            }
+
+            if (!this.manageVisible && _MetaBridge.VISIBLE.equals(propertyName)) {
+                //no bug,never here
                 throw _Exceptions.nonWritableProperty(this.domainTable, propertyName);
             }
 
@@ -392,10 +379,31 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         abstract Map<FieldMeta<?>, Object> getGeneratedMap();
 
 
+        @Nullable
+        final Object readValueFromExpression(final FieldMeta<?> field, final _Expression expression) {
+            if (!(expression instanceof SqlValueParam.SingleNonNamedValue)) {
+                return null;
+            }
+            Object value;
+            value = ((SqlValueParam.SingleNonNamedValue) expression).value();
+            final Class<?> javaType = field.javaType();
+            if (value == null || javaType.isInstance(value)) {
+                return value;
+            }
+            value = field.mappingType().convert(this.mappingEnv, value);
+            if (!javaType.isInstance(value)) {
+                String m = String.format("%s convert method don't return instance of %s"
+                        , field.mappingType().getClass().getName(), javaType.getName());
+                throw new MetaException(m);
+            }
+            return value;
+        }
+
+
     }//RowWrapper
 
 
-    private static final class RowObjectWrapper extends RowWrapper {
+    private static final class ValuesRowWrapper extends ExpRowWrapper {
         private final boolean manageVisible;
 
         private final Map<Integer, Object> rowIdMap;
@@ -404,7 +412,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
-        private RowObjectWrapper(TableMeta<?> domainTable, boolean manageVisible, int rowIdMapSize) {
+        private ValuesRowWrapper(TableMeta<?> domainTable, boolean manageVisible, int rowIdMapSize) {
             super(domainTable);
             this.manageVisible = manageVisible;
 

@@ -152,9 +152,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     interface _DynamicValuesClause<C, T, VR> {
 
-        VR values(Consumer<PairsConstructor<FieldMeta<T>>> consumer);
+        VR values(Consumer<PairsConstructor<T>> consumer);
 
-        VR values(BiConsumer<C, PairsConstructor<FieldMeta<T>>> consumer);
+        VR values(BiConsumer<C, PairsConstructor<T>> consumer);
     }
 
 
@@ -203,9 +203,9 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
      */
     interface _AssignmentSetClause<C, T, SR> {
 
-        SR setPair(Consumer<Consumer<ItemPair>> consumer);
+        SR setPair(Consumer<PairConsumer<T>> consumer);
 
-        SR setPair(BiConsumer<C, Consumer<ItemPair>> consumer);
+        SR setPair(BiConsumer<C, PairConsumer<T>> consumer);
 
         SR set(FieldMeta<T> field, @Nullable Object value);
 
@@ -240,19 +240,6 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
         SR commaExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
         SR commaExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
-
-    }
-
-
-    interface _CommaAliasValuePairClause<C, SR> {
-
-        SR comma(String columnAlias, @Nullable Object value);
-
-        SR commaLiteral(String columnAlias, @Nullable Object value);
-
-        SR commaExp(String columnAlias, Supplier<? extends Expression> supplier);
-
-        SR commaExp(String columnAlias, Function<C, ? extends Expression> function);
 
     }
 

@@ -775,7 +775,7 @@ public abstract class SQLs extends Functions {
      * This class representing sql {@code NULL} key word.
      * </p>
      */
-    static final class NullWord extends NonOperationExpression {
+    static final class NullWord extends NonOperationExpression implements SqlValueParam.SingleNonNamedValue {
 
         private static final NullWord INSTANCE = new NullWord();
 
@@ -791,6 +791,12 @@ public abstract class SQLs extends Functions {
         @Override
         public ParamMeta paramMeta() {
             throw unsupportedOperation();
+        }
+
+        @Override
+        public Object value() {
+            //always null
+            return null;
         }
 
         @Override
@@ -885,6 +891,11 @@ public abstract class SQLs extends Functions {
         @Override
         public final DataField field() {
             return this.field;
+        }
+
+        @Override
+        public final _Expression value() {
+            return (_Expression) this.right;
         }
 
         @Override

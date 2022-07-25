@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._ItemPair;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._DialectUtils;
@@ -749,7 +748,7 @@ abstract class InsertSupport {
 
     static abstract class DynamicValueInsertValueClause<C, T, RR, VR>
             extends ColumnDefaultClause<C, T, RR> implements Insert._DynamicValuesClause<C, T, VR>
-            , PairsConstructor<FieldMeta<T>>, NonQueryInsertOptions {
+            , PairsConstructor<T>, NonQueryInsertOptions {
 
         private List<Map<FieldMeta<?>, _Expression>> valuePairList;
 
@@ -760,17 +759,17 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR values(Consumer<PairsConstructor<FieldMeta<T>>> consumer) {
+        public final VR values(Consumer<PairsConstructor<T>> consumer) {
             return this.multiRowValues(consumer);
         }
 
         @Override
-        public final VR values(BiConsumer<C, PairsConstructor<FieldMeta<T>>> consumer) {
+        public final VR values(BiConsumer<C, PairsConstructor<T>> consumer) {
             return this.multiRowValues(consumer);
         }
 
         @Override
-        public final PairConsumer<FieldMeta<T>> row() {
+        public final PairConsumer<T> row() {
             final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
             if (currentPairMap instanceof HashMap) {
                 List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
@@ -789,17 +788,17 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final PairConsumer<FieldMeta<T>> accept(FieldMeta<T> field, @Nullable Object value) {
+        public final PairConsumer<T> accept(FieldMeta<T> field, @Nullable Object value) {
             return this.addValuePair(field, SQLs._nullableParam(field, value));
         }
 
         @Override
-        public final PairConsumer<FieldMeta<T>> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
+        public final PairConsumer<T> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
             return this.addValuePair(field, SQLs._nullableLiteral(field, value));
         }
 
         @Override
-        public final PairConsumer<FieldMeta<T>> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final PairConsumer<T> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
             return this.addValuePair(field, supplier.get());
         }
 
@@ -816,7 +815,7 @@ abstract class InsertSupport {
         abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList);
 
 
-        private PairConsumer<FieldMeta<T>> addValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
+        private PairConsumer<T> addValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
             final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
             if (currentPairMap == null) {
                 String m = String.format("Not found any row,please use %s.row() method create row."
@@ -846,9 +845,9 @@ abstract class InsertSupport {
             }
             //2. callback
             if (callback instanceof Consumer) {
-                ((Consumer<PairsConstructor<FieldMeta<T>>>) callback).accept(this);
+                ((Consumer<PairsConstructor<T>>) callback).accept(this);
             } else if (callback instanceof BiConsumer) {
-                ((BiConsumer<C, PairsConstructor<FieldMeta<T>>>) callback).accept(this.criteria, this);
+                ((BiConsumer<C, PairsConstructor<T>>) callback).accept(this.criteria, this);
             } else {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -883,14 +882,15 @@ abstract class InsertSupport {
 
     @SuppressWarnings("unchecked")
     static abstract class AssignmentSetClause<C, T, SR>
-            implements Insert._AssignmentSetClause<C, T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec {
+            implements Insert._AssignmentSetClause<C, T, SR>, ColumnListClause, _Insert._AssignmentStatementSpec
+            , PairConsumer<T> {
         final CriteriaContext criteriaContext;
         final C criteria;
 
         final TableMeta<T> table;
 
-        private Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldPairMap;
-        private List<_ItemPair._FieldItemPair> itemPairList;
+        private Map<FieldMeta<?>, _Expression> fieldPairMap;
+        private List<_Pair<FieldMeta<?>, _Expression>> itemPairList;
 
         AssignmentSetClause(CriteriaContext criteriaContext, TableMeta<T> table) {
             this.criteriaContext = criteriaContext;
@@ -900,14 +900,14 @@ abstract class InsertSupport {
 
 
         @Override
-        public final SR setPair(Consumer<Consumer<ItemPair>> consumer) {
-            consumer.accept(this::innerAddItemPair);
+        public final SR setPair(Consumer<PairConsumer<T>> consumer) {
+            consumer.accept(this);
             return (SR) this;
         }
 
         @Override
-        public final SR setPair(BiConsumer<C, Consumer<ItemPair>> consumer) {
-            consumer.accept(this.criteria, this::innerAddItemPair);
+        public final SR setPair(BiConsumer<C, PairConsumer<T>> consumer) {
+            consumer.accept(this.criteria, this);
             return (SR) this;
         }
 
@@ -991,14 +991,33 @@ abstract class InsertSupport {
             return (SR) this;
         }
 
+
+        @Override
+        public final PairConsumer<T> accept(FieldMeta<T> field, @Nullable Object value) {
+            this.addFieldPair(field, SQLs._nullableParam(field, value));
+            return this;
+        }
+
+        @Override
+        public final PairConsumer<T> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
+            this.addFieldPair(field, SQLs._nullableLiteral(field, value));
+            return this;
+        }
+
+        @Override
+        public final PairConsumer<T> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            this.addFieldPair(field, supplier.get());
+            return this;
+        }
+
         @Override
         public final CriteriaContext getCriteriaContext() {
             return this.criteriaContext;
         }
 
         @Override
-        public final List<_ItemPair._FieldItemPair> rowPairList() {
-            final List<_ItemPair._FieldItemPair> pairList = this.itemPairList;
+        public final List<_Pair<FieldMeta<?>, _Expression>> rowPairList() {
+            final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.itemPairList;
             if (pairList == null || pairList instanceof ArrayList) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -1006,16 +1025,17 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap() {
-            final Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap = this.fieldPairMap;
+        public final Map<FieldMeta<?>, _Expression> rowPairMap() {
+            final Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
             if (fieldMap == null || fieldMap instanceof HashMap) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return fieldMap;
         }
 
+
         final void endAssignmentSetClause() {
-            List<_ItemPair._FieldItemPair> itemPairList = this.itemPairList;
+            List<_Pair<FieldMeta<?>, _Expression>> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 itemPairList = Collections.emptyList();
             } else if (!(itemPairList instanceof ArrayList)) {
@@ -1027,7 +1047,7 @@ abstract class InsertSupport {
             }
             this.itemPairList = itemPairList;
 
-            Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap = this.fieldPairMap;
+            Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
             if (fieldMap == null) {
                 fieldMap = Collections.emptyMap();
             } else {
@@ -1040,52 +1060,27 @@ abstract class InsertSupport {
         }
 
 
-        private void innerAddItemPair(final ItemPair itemPair) {
-            if (itemPair instanceof SQLs.RowItemPair) {
-                String m = "Assignment insert support only field pair.";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            } else if (!(itemPair instanceof SQLs.FieldItemPair)) {
-                String m = String.format("Non-Army %s", ItemPair.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-
-            final SQLs.FieldItemPair fieldPair = (SQLs.FieldItemPair) itemPair;
-            if (!(fieldPair.field instanceof FieldMeta)) {
-                String m = String.format("Assignment insert support only %s.", FieldMeta.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-            if (!(fieldPair.right instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
-            }
-            this.validateField((FieldMeta<?>) fieldPair.field, (ArmyExpression) fieldPair.right);
-
-            this.addSafeItemPair(fieldPair);
-        }
-
-        private SR addFieldPair(FieldMeta<?> field, @Nullable Expression value) {
+        private SR addFieldPair(final FieldMeta<?> field, final @Nullable Expression value) {
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
             this.validateField(field, (ArmyExpression) value);
-            this.addSafeItemPair((SQLs.FieldItemPair) SQLs._itemPair(field, null, value));
-            return (SR) this;
-        }
 
-        private void addSafeItemPair(final SQLs.FieldItemPair fieldPair) {
-            Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldPairMap = this.fieldPairMap;
+            Map<FieldMeta<?>, _Expression> fieldPairMap = this.fieldPairMap;
             if (fieldPairMap == null) {
                 fieldPairMap = new HashMap<>();
                 this.fieldPairMap = fieldPairMap;
             }
-            if (fieldPairMap.putIfAbsent((FieldMeta<?>) fieldPair.field, fieldPair) != null) {
-                throw duplicationValuePair(this.criteriaContext, (FieldMeta<?>) fieldPair.field);
+            if (fieldPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
+                throw duplicationValuePair(this.criteriaContext, field);
             }
-            List<_ItemPair._FieldItemPair> itemPairList = this.itemPairList;
+            List<_Pair<FieldMeta<?>, _Expression>> itemPairList = this.itemPairList;
             if (itemPairList == null) {
                 itemPairList = new ArrayList<>();
                 this.itemPairList = itemPairList;
             }
-            itemPairList.add(fieldPair);
+            itemPairList.add(_Pair.create(field, (ArmyExpression) value));
+            return (SR) this;
         }
 
 
@@ -1346,9 +1341,9 @@ abstract class InsertSupport {
 
         private final boolean preferLiteral;
 
-        private final List<_ItemPair._FieldItemPair> rowPairList;
+        private final List<_Pair<FieldMeta<?>, _Expression>> rowPairList;
 
-        private final Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap;
+        private final Map<FieldMeta<?>, _Expression> fieldMap;
 
         AssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
@@ -1357,7 +1352,7 @@ abstract class InsertSupport {
             this.preferLiteral = clause.isPreferLiteral();
             this.rowPairList = clause.rowPairList();
 
-            this.fieldMap = clause.fieldMap();
+            this.fieldMap = clause.rowPairMap();
         }
 
         @Override
@@ -1376,12 +1371,12 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap() {
+        public final Map<FieldMeta<?>, _Expression> rowPairMap() {
             return this.fieldMap;
         }
 
         @Override
-        public final List<_ItemPair._FieldItemPair> rowPairList() {
+        public final List<_Pair<FieldMeta<?>, _Expression>> rowPairList() {
             return this.rowPairList;
         }
 

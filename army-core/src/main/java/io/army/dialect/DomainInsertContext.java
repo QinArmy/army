@@ -1,7 +1,10 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.bean.*;
+import io.army.bean.ObjectAccessException;
+import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.ReadWrapper;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
@@ -93,7 +96,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final boolean mockEnv = dialect.isMockEnv();
         final NullHandleMode nullHandleMode = this.nullHandleMode;
 
-        final _FieldValueGenerator generator;
+        final FieldValueGenerator generator;
         final DomainWrapper domainWrapper = this.wrapper;
         final ObjectAccessor accessor = domainWrapper.accessor;
         final TableMeta<?> insertTable = this.insertTable, domainTable = this.domainTable;
@@ -104,7 +107,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         if (insertTable instanceof ChildTableMeta) {
             generator = null;
         } else {
-            generator = dialect.getFieldValueGenerator();
+            generator = dialect.getGenerator();
         }
         FieldMeta<?> field;
         _Expression expression;
@@ -248,7 +251,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     }//BeanReadWrapper
 
 
-    private static final class DomainWrapper implements ObjectWrapper {
+    private static final class DomainWrapper implements RowWrapper {
 
         private final ObjectAccessor accessor;
 

@@ -1,25 +1,27 @@
 package io.army.dialect;
 
 
-import io.army.bean.ObjectWrapper;
+import io.army.codec.JsonCodec;
 import io.army.env.ArmyEnvironment;
 import io.army.env.StandardEnvironment;
+import io.army.generator.FieldGenerator;
 import io.army.mapping.MappingEnv;
-import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
-import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
-import io.army.util._TimeUtils;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class _MockDialects {
+public abstract class _MockDialects implements _DialectEnv {
 
     private static final ConcurrentMap<Dialect, DialectParser> DIALECT_MAP = new ConcurrentHashMap<>();
+
 
     public static DialectParser from(final Dialect dialect) {
         return DIALECT_MAP.computeIfAbsent(dialect, _MockDialects::createDialect);
@@ -44,44 +46,48 @@ public abstract class _MockDialects {
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
-        return _DialectFactory.createDialect(new MockEnvironment(meta));
+        return _DialectFactory.createDialect(new MockDialectEnv(new MockMappingEnv(meta)));
     }
 
-    final ServerMeta serverMeta;
+    private final MappingEnv mappingEnv;
+    private final ServerMeta serverMeta;
 
 
-    private _MockDialects(ServerMeta serverMeta) {
-        this.serverMeta = serverMeta;
+    private _MockDialects(MappingEnv mappingEnv) {
+        this.mappingEnv = mappingEnv;
+        this.serverMeta = mappingEnv.serverMeta();
     }
 
 
-    private static final class MockEnvironment extends _MockDialects implements _DialectEnv {
+    @Override
+    public final ServerMeta serverMeta() {
+        return this.serverMeta;
+    }
+
+    @Override
+    public final ZoneOffset zoneOffset() {
+        return this.mappingEnv.zoneOffset();
+    }
+
+
+    @Override
+    public final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public final MappingEnv mappingEnv() {
+        return this.mappingEnv;
+    }
+
+
+    private static final class MockDialectEnv extends _MockDialects {
 
         private final ArmyEnvironment env;
 
-        private MockEnvironment(ServerMeta serverMeta) {
-            super(serverMeta);
+        private MockDialectEnv(MappingEnv mappingEnv) {
+            super(mappingEnv);
             this.env = StandardEnvironment.from(Collections.emptyMap());
-        }
-
-        @Override
-        public ServerMeta serverMeta() {
-            return this.serverMeta;
-        }
-
-        @Override
-        public ZoneOffset zoneOffset() {
-            return _TimeUtils.systemZoneOffset();
-        }
-
-        @Override
-        public _FieldValueGenerator fieldValuesGenerator() {
-            return MockDomainValuesGenerator.INSTANCE;
-        }
-
-        @Override
-        public MappingEnv mappingEnvironment() {
-            return null;
         }
 
         @Override
@@ -89,7 +95,8 @@ public abstract class _MockDialects {
             return this.env;
         }
 
-    }//MockEnvironment
+
+    }//MockDialectEnv
 
 
     private static final class MockServerMeta implements ServerMeta {
@@ -154,32 +161,44 @@ public abstract class _MockDialects {
             sb.append('}');
             return sb.toString();
         }
+
+
     }//MockServerMeta
 
 
-    private static final class MockDomainValuesGenerator extends _AbstractFieldValuesGenerator {
+    private static final class MockMappingEnv implements MappingEnv {
 
-        private static final MockDomainValuesGenerator INSTANCE = new MockDomainValuesGenerator();
+        private final ServerMeta serverMeta;
 
-        @Override
-        protected ZoneOffset factoryZoneOffset() {
-            return _TimeUtils.systemZoneOffset();
+        private final ZoneOffset zoneOffset;
+
+        private MockMappingEnv(ServerMeta serverMeta) {
+            this.serverMeta = serverMeta;
+            this.zoneOffset = ZoneId.systemDefault().getRules().getOffset(Instant.now());
         }
 
         @Override
-        protected void generatorChan(TableMeta<?> table, ObjectWrapper wrapper) {
-            for (FieldMeta<?> field : table.fieldChain()) {
-                wrapper.set(field.fieldName(), null);
-            }
-            if (table instanceof ChildTableMeta) {
-                for (FieldMeta<?> field : ((ChildTableMeta<?>) table).parentMeta().fieldChain()) {
-                    wrapper.set(field.fieldName(), null);
-                }
-            }
-
+        public boolean isReactive() {
+            return false;
         }
 
-    }//MockDomainValuesGenerator
+        @Override
+        public ServerMeta serverMeta() {
+            return this.serverMeta;
+        }
+
+        @Override
+        public ZoneOffset zoneOffset() {
+            return this.zoneOffset;
+        }
+
+        @Override
+        public JsonCodec jsonCodec() {
+            throw new UnsupportedOperationException();
+        }
+
+
+    }//MockMappingEnv
 
 
 }

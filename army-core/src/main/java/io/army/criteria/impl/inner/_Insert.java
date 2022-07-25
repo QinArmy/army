@@ -2,6 +2,7 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.SubQuery;
+import io.army.criteria.impl._Pair;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -81,9 +82,9 @@ public interface _Insert extends _Statement {
 
     interface _AssignmentStatementSpec {
 
-        List<_ItemPair._FieldItemPair> rowPairList();
+        List<_Pair<FieldMeta<?>, _Expression>> rowPairList();
 
-        Map<FieldMeta<?>, _ItemPair._FieldItemPair> fieldMap();
+        Map<FieldMeta<?>, _Expression> rowPairMap();
     }
 
 

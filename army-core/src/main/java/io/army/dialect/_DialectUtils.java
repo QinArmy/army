@@ -1,12 +1,14 @@
 package io.army.dialect;
 
+import io.army.bean.ObjectAccessException;
+import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
+import io.army.mapping.MappingEnv;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public abstract class _DialectUtils {
 
@@ -196,7 +199,201 @@ public abstract class _DialectUtils {
     }
 
 
+    static void appendSingleTableField(final SingleTableMeta<?> insertTable, final List<FieldMeta<?>> fieldList
+            , final Map<FieldMeta<?>, Boolean> fieldMap, final Predicate<FieldMeta<?>> predicate) {
+
+        FieldMeta<?> field;
+        field = insertTable.id();
+        if (field.insertable() && field.generatorType() != null) {
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            fieldList.add(field);
+        }
+
+        field = insertTable.getField(_MetaBridge.CREATE_TIME);
+        if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+            //no bug,never here
+            throw new IllegalStateException();
+        }
+        fieldList.add(field);
+
+        field = insertTable.tryGetField(_MetaBridge.UPDATE_TIME);
+        if (field != null) {
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            fieldList.add(field);
+        }
+
+        field = insertTable.tryGetField(_MetaBridge.VERSION);
+        if (field != null) {
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            fieldList.add(field);
+        }
+
+
+        field = insertTable.tryGetField(_MetaBridge.VISIBLE);
+        if (field != null && !predicate.test(field)) {
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            fieldList.add(field);
+        }
+
+        if (insertTable instanceof ParentTableMeta) {
+            field = insertTable.discriminator();
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            fieldList.add(field);
+        }
+
+        for (FieldMeta<?> f : fieldList) {
+            if (f instanceof PrimaryFieldMeta) {
+                continue;
+            }
+            if (fieldMap.putIfAbsent(f, Boolean.TRUE) != null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            fieldList.add(f);
+        }
+
+
+    }
+
+    static void appendChildTableField(final ChildTableMeta<?> insertTable, final List<FieldMeta<?>> fieldList
+            , final Map<FieldMeta<?>, Boolean> fieldMap) {
+
+        final PrimaryFieldMeta<?> idField;
+        idField = insertTable.id();
+        if (fieldMap.putIfAbsent(idField, Boolean.TRUE) != null) {
+            //no bug,never here
+            throw new IllegalStateException();
+        }
+        fieldList.add(idField);
+
+        for (FieldMeta<?> field : insertTable.fieldChain()) {
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            fieldList.add(field);
+        }
+
+    }
+
+
     /*################################## blow private static innner class ##################################*/
+
+
+    static abstract class ExpRowWrapper implements RowWrapper {
+
+        final TableMeta<?> domainTable;
+
+        private final ReadWrapper readWrapper;
+
+        ExpRowWrapper(TableMeta<?> domainTable, MappingEnv mappingEnv) {
+            this.domainTable = domainTable;
+            this.readWrapper = new RowReadWrapper(this, mappingEnv);
+        }
+
+
+        @Override
+        public final boolean isNull(final FieldMeta<?> field) {
+            final _Expression expression;
+            expression = this.getExpression(field);
+            final boolean match;
+            if (expression == null) {
+                match = true;
+            } else if (expression instanceof SqlValueParam.SingleNonNamedValue) {
+                match = ((SqlValueParam.SingleNonNamedValue) expression).value() != null;
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public final ReadWrapper readonlyWrapper() {
+            return this.readWrapper;
+        }
+
+        /**
+         * @return a unmodified map
+         */
+        @Nullable
+        abstract Object getGeneratedValue(FieldMeta<?> field);
+
+        @Nullable
+        abstract _Expression getExpression(FieldMeta<?> field);
+
+
+    }//ExpRowWrapper
+
+
+    private static final class RowReadWrapper implements ReadWrapper {
+
+        private final ExpRowWrapper wrapper;
+
+        private final MappingEnv mappingEnv;
+
+        private RowReadWrapper(ExpRowWrapper wrapper, MappingEnv mappingEnv) {
+            this.wrapper = wrapper;
+            this.mappingEnv = mappingEnv;
+        }
+
+        @Override
+        public boolean isReadable(final String propertyName) {
+            return this.wrapper.domainTable.containComplexField(propertyName);
+        }
+
+        @Override
+        public Object get(final String propertyName) throws ObjectAccessException {
+            final ExpRowWrapper wrapper = this.wrapper;
+            final TableMeta<?> domainTable = wrapper.domainTable;
+            final FieldMeta<?> field;
+            field = domainTable.tryGetComplexFiled(propertyName);
+            if (field == null) {
+                throw _Exceptions.nonReadableProperty(domainTable, propertyName);
+            }
+            Object value;
+            value = wrapper.getGeneratedValue(field);
+            if (value != null) {
+                return value;
+            }
+
+            final _Expression expression;
+            expression = wrapper.getExpression(field);
+
+            if (!(expression instanceof SqlValueParam.SingleNonNamedValue)) {
+                return null;
+            }
+            value = ((SqlValueParam.SingleNonNamedValue) expression).value();
+
+            final Class<?> javaType = field.javaType();
+            if (value == null || javaType.isInstance(value)) {
+                return value;
+            }
+            value = field.mappingType().convert(this.mappingEnv, value);
+            if (!javaType.isInstance(value)) {
+                String m = String.format("%s convert method don't return instance of %s"
+                        , field.mappingType().getClass().getName(), javaType.getName());
+                throw new MetaException(m);
+            }
+            return value;
+        }
+
+
+    }//RowReadWrapper
 
 
 }

@@ -28,12 +28,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _ColumnAliasClause<T, CR> extends _RightParenClause<CR> {
-
-        _ColumnAliasClause<T, CR> comma(FieldMeta<T> field, String columnAlias);
-
-    }
-
 
     interface _StaticOnDuplicateKeyFieldUpdateClause<C, T, UR> {
 

@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner.mysql._MySQLLoadData;
 import io.army.criteria.mysql.MySQLLoad;
 import io.army.criteria.mysql.MySQLQuery;
@@ -916,7 +915,7 @@ abstract class MySQLLoads {
 
         private final List<_Expression> columnOrUserVarList;
 
-        private final List<_ItemPair._FieldItemPair> columItemPairList;
+        private final List<_Pair<FieldMeta<?>, _Expression>> columItemPairList;
 
         private MySQLLoadDataStatement(PartitionClause<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause) {
             this.modifierList = clause.modifierList;
@@ -1047,7 +1046,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public final List<_ItemPair._FieldItemPair> columItemPairList() {
+        public final List<_Pair<FieldMeta<?>, _Expression>> columItemPairList() {
             return this.columItemPairList;
         }
 

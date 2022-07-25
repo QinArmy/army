@@ -419,6 +419,10 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
         return fieldMeta;
     }
 
+    @Override
+    public final FieldMeta<T> tryGetField(String fieldName) {
+        return this.fieldNameToFields.get(fieldName);
+    }
 
     @Override
     public final IndexFieldMeta<T> getIndexField(final String fieldName) {

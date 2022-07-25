@@ -7,6 +7,7 @@ import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
@@ -51,12 +52,16 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected final Dialect dialect;
 
+    private final FieldValueGenerator generator;
+
     protected _AbstractDialect(_DialectEnv dialectEnv, Dialect dialect) {
         this.dialectEnv = dialectEnv;
         this.dialect = dialect;
         this.identifierQuote = identifierQuote();
         this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
+
         this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(dialectEnv.serverMeta()));
+        this.generator = FieldValuesGenerators.create(dialectEnv.zoneOffset(), dialectEnv.fieldGeneratorMap());
     }
 
     /*################################## blow DML batchInsert method ##################################*/
@@ -309,8 +314,13 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     @Override
-    public final _FieldValueGenerator getFieldValueGenerator() {
-        return this.dialectEnv.fieldValuesGenerator();
+    public final FieldValueGenerator getGenerator() {
+        return this.generator;
+    }
+
+    @Override
+    public final MappingEnv mappingEnv() {
+        return this.dialectEnv.mappingEnv();
     }
 
     @Override

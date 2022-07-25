@@ -1,24 +1,18 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.bean.ObjectAccessException;
-import io.army.criteria.ItemPair;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Visible;
+import io.army.criteria.impl._Pair;
+import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._ItemPair;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.PrimaryFieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 
 final class AssignmentInsertContext extends StatementContext
@@ -52,7 +46,13 @@ final class AssignmentInsertContext extends StatementContext
 
     private final TableMeta<?> domainTable;
 
-    private final List<_ItemPair._FieldItemPair> rowPairList;
+
+    private final List<_Pair<FieldMeta<?>, _Expression>> rowPairList;
+
+    private final Map<FieldMeta<?>, _Expression> rowPairMap;
+
+    private final RowObjectWrapper rowWrapper;
+
 
     private final PrimaryFieldMeta<?> returnId;
 
@@ -90,6 +90,7 @@ final class AssignmentInsertContext extends StatementContext
         this.insertTable = stmt.table();
         this.domainTable = domainTable;
 
+        assert this.insertTable instanceof SingleTableMeta;
         if (domainTable instanceof ChildTableMeta) {
             assert this.insertTable == ((ChildTableMeta<?>) domainTable).parentMeta();
         } else {
@@ -97,6 +98,7 @@ final class AssignmentInsertContext extends StatementContext
         }
 
         this.rowPairList = stmt.rowPairList();
+        this.rowPairMap = stmt.rowPairMap();
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
         if (this.migration || idField.generatorType() != GeneratorType.POST) {
@@ -124,6 +126,12 @@ final class AssignmentInsertContext extends StatementContext
             this.generatedMap = Collections.unmodifiableMap(map);
             this.tempGeneratedValueMap = map;
         }
+
+        final FieldMeta<?> visibleField;
+        visibleField = this.insertTable.tryGetComplexFiled(_MetaBridge.VISIBLE);
+        final boolean manageVisible;
+        manageVisible = visibleField != null && !this.rowPairMap.containsKey(visibleField);
+        this.rowWrapper = new RowObjectWrapper(this, manageVisible);
 
     }
 
@@ -155,11 +163,14 @@ final class AssignmentInsertContext extends StatementContext
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
         this.rowPairList = stmt.rowPairList();
+        this.rowPairMap = stmt.rowPairMap();
 
         this.generatedMap = parentContext.generatedMap;
         this.tempGeneratedValueMap = null;
         this.returnId = null;
         this.idSelectionAlias = null;
+
+        this.rowWrapper = parentContext.rowWrapper;
 
     }
 
@@ -173,6 +184,56 @@ final class AssignmentInsertContext extends StatementContext
     public void appendAssignmentClause() {
         assert !this.assignmentClauseEnd;
 
+        final ArmyDialect dialect = this.dialect;
+
+        final TableMeta<?> insertTable;
+        insertTable = this.insertTable;
+
+
+        if (insertTable instanceof SingleTableMeta) {
+            final RowObjectWrapper wrapper = this.rowWrapper;
+            final FieldValueGenerator generator;
+            generator = this.dialect.getGenerator();
+            if (this.migration) {
+                //use this.domainTable not this.insertTable
+                generator.validate(this.domainTable, wrapper);
+            } else {
+                //use this.domainTable not this.insertTable
+                generator.generate(this.domainTable, wrapper.manageVisible, wrapper);
+            }
+
+        }
+
+        final StringBuilder sqlBuilder = this.sqlBuilder
+                .append(_Constant.SPACE_SET);
+        if (!this.migration) {
+
+        }
+        FieldMeta<?> field;
+        field = insertTable.id();
+        if (insertTable instanceof SingleTableMeta) {
+            if (field.insertable()) {
+
+            }
+        }
+
+
+        final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.rowPairList;
+
+        final int pariSize = pairList.size();
+        _Pair<FieldMeta<?>, _Expression> pair;
+        for (int i = 0; i < pariSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            pair = pairList.get(i);
+            dialect.safeObjectName(pair.first, sqlBuilder)
+                    .append(_Constant.SPACE_EQUAL);
+            pair.second.appendSql(this);
+        }
+
         this.assignmentClauseEnd = true;
     }
 
@@ -184,13 +245,14 @@ final class AssignmentInsertContext extends StatementContext
 
     @Override
     public void appendField(final FieldMeta<?> field) {
-        if (!(this.assignmentClauseEnd && this.duplicateKeyClause && field.tableMeta() == this.insertTable)) {
+        if (field.tableMeta() != this.insertTable) {
             throw _Exceptions.unknownColumn(field);
         }
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE);
         this.dialect.safeObjectName(field, sqlBuilder);
     }
+
 
     @Override
     public SimpleStmt build() {
@@ -218,42 +280,68 @@ final class AssignmentInsertContext extends StatementContext
     }
 
 
-    private static final class RowObjectWrapper extends ValuesInsertContext.RowWrapper {
+    private static List<FieldMeta<?>> createArmyManageFieldList(final TableMeta<?> insertTable
+            , final Map<FieldMeta<?>, _Expression> rowPairMap) {
 
-        private Map<FieldMeta<?>, Object> generatedMap;
+        final int fieldSize;
+        fieldSize = 6 + insertTable.fieldChain().size();
 
-        private List<ItemPair> rowPairList;
+        final List<FieldMeta<?>> fieldList = new ArrayList<>(fieldSize);
+        final Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>((int) (fieldSize / 0.75F));
 
-        private Map<FieldMeta<?>, ItemPair> parentSinglePairMap;
+        if (insertTable instanceof SingleTableMeta) {
+            _DialectUtils.appendSingleTableField((SingleTableMeta<?>) insertTable, fieldList, fieldMap
+                    , rowPairMap::containsKey);
+        } else {
+            _DialectUtils.appendChildTableField((ChildTableMeta<?>) insertTable, fieldList, fieldMap);
+        }
+        return Collections.unmodifiableList(fieldList);
 
-        private RowObjectWrapper(TableMeta<?> domainTable) {
-            super(domainTable);
+    }
+
+
+    private static final class RowObjectWrapper extends _DialectUtils.ExpRowWrapper {
+
+        private final Map<FieldMeta<?>, _Expression> nonChildPairMap;
+
+        private final
+
+        private Map<FieldMeta<?>, _Expression> childPairMap;
+
+
+        private final Map<FieldMeta<?>, Object> generatedMap;
+
+        private Map<FieldMeta<?>, Object> tempGeneratedMap;
+
+        private RowObjectWrapper(AssignmentInsertContext context, boolean manageVisible) {
+            super(context.domainTable, context.dialect.mappingEnv());
+            this.nonChildPairMap = context.rowPairMap;
+
+            final Map<FieldMeta<?>, Object> map = new HashMap<>();
+            this.generatedMap = Collections.unmodifiableMap(map);
+            this.tempGeneratedMap = map;
+
+        }
+
+
+        @Override
+        public void set(final FieldMeta<?> field, final Object value) {
+            final Map<FieldMeta<?>, Object> map = this.tempGeneratedMap;
+            assert map != null;
+            map.put(field, value);
+            if (field instanceof PrimaryFieldMeta && field.tableMeta() != this.domainTable) {
+                map.put(this.domainTable.id(), value);
+            }
         }
 
         @Override
-        public Object get(final String propertyName) throws ObjectAccessException {
-            final TableMeta<?> domainTable = this.domainTable;
-            final FieldMeta<?> field;
-            field = domainTable.tryGetComplexFiled(propertyName);
-            if (field == null) {
-                throw _Exceptions.nonReadableProperty(domainTable, propertyName);
-            }
-            final Map<FieldMeta<?>, Object> generatedMap = this.generatedMap;
-            assert generatedMap != null;
-            Object value;
-            value = generatedMap.get(field);
-            if (value != null) {
-                return value;
-            }
-            final Map<FieldMeta<?>, ItemPair> parentSinglePairMap = this.parentSinglePairMap;
-            assert parentSinglePairMap != null;
+        Object getGeneratedValue(final FieldMeta<?> field) {
+            return this.generatedMap.get(field);
+        }
 
+        @Override
+        _Expression getExpression(final FieldMeta<?> field) {
             return null;
-        }
-
-        @Override
-        Map<FieldMeta<?>, Object> getGeneratedMap() {
-            return this.generatedMap;
         }
 
 

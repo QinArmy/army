@@ -309,6 +309,10 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         }
 
         for (FieldMeta<?> field : table.fieldChain()) {
+            if (field instanceof PrimaryFieldMeta) {
+                continue;
+            }
+            //TODO fix me
             if (mergeFieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
                 mergeFieldList.add(field);
             }

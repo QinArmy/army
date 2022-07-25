@@ -11,9 +11,12 @@ public interface _ItemPair extends ItemPair {
 
     void appendItemPair(_SetClauseContext context);
 
+
     interface _FieldItemPair {
 
         DataField field();
+
+        _Expression value();
 
     }
 

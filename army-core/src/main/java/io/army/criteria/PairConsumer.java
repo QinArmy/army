@@ -1,17 +1,18 @@
 package io.army.criteria;
 
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 
 import java.util.function.Supplier;
 
-public interface PairConsumer<F extends TableField> {
+public interface PairConsumer<T> {
 
 
-    PairConsumer<F> accept(F field, @Nullable Object value);
+    PairConsumer<T> accept(FieldMeta<T> field, @Nullable Object value);
 
-    PairConsumer<F> acceptLiteral(F field, @Nullable Object value);
+    PairConsumer<T> acceptLiteral(FieldMeta<T> field, @Nullable Object value);
 
-    PairConsumer<F> acceptExp(F field, Supplier<? extends Expression> supplier);
+    PairConsumer<T> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
 
 
 }

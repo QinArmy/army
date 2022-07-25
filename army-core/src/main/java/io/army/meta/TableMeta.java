@@ -66,6 +66,9 @@ public interface TableMeta<T> extends TableItem, DatabaseObject {
      */
     FieldMeta<T> getField(String fieldName);
 
+    @Nullable
+    FieldMeta<T> tryGetField(String fieldName);
+
 
     FieldMeta<? super T> getComplexFiled(String filedName);
 

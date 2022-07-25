@@ -1,12 +1,14 @@
 package io.army.dialect;
 
 
-import io.army.codec.JsonCodec;
 import io.army.env.ArmyEnvironment;
+import io.army.generator.FieldGenerator;
 import io.army.mapping.MappingEnv;
+import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
 
 import java.time.ZoneOffset;
+import java.util.Map;
 
 public interface _DialectEnv {
 
@@ -16,14 +18,10 @@ public interface _DialectEnv {
 
     ArmyEnvironment environment();
 
-    _FieldValueGenerator fieldValuesGenerator();
+    Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap();
 
-    MappingEnv mappingEnvironment();
+    MappingEnv mappingEnv();
 
-
-    default JsonCodec jsonCodec() {
-        throw new UnsupportedOperationException();
-    }
 
 
 }
