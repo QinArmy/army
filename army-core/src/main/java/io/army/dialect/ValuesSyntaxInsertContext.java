@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.CriteriaException;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
@@ -12,10 +11,14 @@ import io.army.modelgen._MetaBridge;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 abstract class ValuesSyntaxInsertContext extends StatementContext implements _ValueInsertContext, _InsertStmtParams {
 
+
+    final TableMeta<?> insertTable;
 
     final boolean migration;
 
@@ -23,15 +26,9 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     final boolean preferLiteral;
 
-    final TableMeta<?> insertTable;
-
-    final TableMeta<?> domainTable;
+    final boolean duplicateKeyClause;
 
     private final List<FieldMeta<?>> fieldList;
-
-    final Map<FieldMeta<?>, _Expression> defaultValueMap;
-
-    final boolean duplicateKeyClause;
 
     /**
      * {@link #insertTable} instanceof {@link  SingleTableMeta} and  dialect support returning clause nad generated key.
@@ -53,34 +50,35 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      */
-    ValuesSyntaxInsertContext(ArmyDialect dialect, _Insert._ValuesSyntaxInsert stmt
-            , TableMeta<?> domainTable, Visible visible) {
+    ValuesSyntaxInsertContext(ArmyDialect dialect, final _Insert._ValuesSyntaxInsert domainStmt, Visible visible) {
         super(dialect, true, visible);
 
-        this.migration = stmt.isMigration();
-        final NullHandleMode handleMode;
-        handleMode = stmt.nullHandle();
-        this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
-        this.preferLiteral = stmt.isPreferLiteral();
-        this.defaultValueMap = stmt.defaultValueMap();
-
-        this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
-
-
-        this.insertTable = stmt.table();
-        this.domainTable = domainTable;
-        assert this.insertTable instanceof SingleTableMeta;
-        if (domainTable instanceof ChildTableMeta) {
-            assert this.insertTable == ((ChildTableMeta<?>) domainTable).parentMeta();
+        final _Insert._ValuesSyntaxInsert nonChildStmt;
+        if (domainStmt instanceof _Insert._ChildInsert) {
+            nonChildStmt = (_Insert._ValuesSyntaxInsert) ((_Insert._ChildInsert) domainStmt).parentStmt();
         } else {
-            assert this.insertTable == domainTable;
+            nonChildStmt = domainStmt;
         }
+        this.migration = nonChildStmt.isMigration();
+        final NullHandleMode handleMode = nonChildStmt.nullHandle();
+        this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
+        this.preferLiteral = nonChildStmt.isPreferLiteral();
 
-        final List<FieldMeta<?>> fieldList = stmt.fieldList();
+        this.duplicateKeyClause = nonChildStmt instanceof _Insert._DuplicateKeyClause;
+        this.insertTable = nonChildStmt.table();
+        assert this.insertTable instanceof SingleTableMeta;
+
+        final List<FieldMeta<?>> fieldList = nonChildStmt.fieldList();
         if (fieldList.size() == 0) {
             this.fieldList = castFieldList(this.insertTable);
+        } else if (this.migration) {
+            this.fieldList = fieldList;// because have validated by the implementation of Insert
         } else {
-            this.fieldList = mergeFieldList(this.insertTable, fieldList, stmt.fieldMap());
+            final List<FieldMeta<?>> mergeFieldList;
+            mergeFieldList = _DialectUtils.createNonChildFieldList((SingleTableMeta<?>) insertTable
+                    , nonChildStmt.defaultValueMap()::containsKey);
+            mergeFieldList.addAll(fieldList);// because have validated by the implementation of Insert
+            this.fieldList = Collections.unmodifiableList(mergeFieldList);
         }
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
@@ -91,8 +89,8 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             //TODO
             throw new UnsupportedOperationException();
         } else if (this.duplicateKeyClause) {
-            if (domainTable instanceof ChildTableMeta) {
-                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainTable);
+            if (domainStmt.table() instanceof ChildTableMeta) {
+                throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.table());
             }
             this.returnId = null;
             this.idSelectionAlias = null;
@@ -114,17 +112,15 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             , ArmyDialect dialect, Visible visible) {
         super(dialect, true, visible);
 
+        assert stmt instanceof _Insert._ChildInsert;
+
         this.migration = stmt.isMigration();
-        final NullHandleMode handleMode;
-        handleMode = stmt.nullHandle();
+        final NullHandleMode handleMode = stmt.nullHandle();
         this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
         this.preferLiteral = stmt.isPreferLiteral();
-        this.defaultValueMap = stmt.defaultValueMap();
 
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
-
         this.insertTable = stmt.table();
-        this.domainTable = this.insertTable;
 
         assert this.insertTable instanceof ChildTableMeta
                 && this.migration == parentContext.migration
@@ -135,8 +131,13 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
         if (fieldList.size() == 0) {
             this.fieldList = castFieldList(this.insertTable);
+        } else if (this.migration) {
+            this.fieldList = fieldList;// because have validated by the implementation of Insert
         } else {
-            this.fieldList = mergeFieldList(this.insertTable, fieldList, stmt.fieldMap());
+            final List<FieldMeta<?>> mergeFieldList;
+            mergeFieldList = _DialectUtils.createChildFieldList((ChildTableMeta<?>) this.insertTable);
+            mergeFieldList.addAll(fieldList);// because have validated by the implementation of Insert
+            this.fieldList = Collections.unmodifiableList(mergeFieldList);
         }
         this.returnId = null;
         this.idSelectionAlias = null;
@@ -252,92 +253,12 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> List<FieldMeta<?>> castFieldList(final TableMeta<T> table) {
+    private static List<FieldMeta<?>> castFieldList(final TableMeta<?> table) {
         final List<?> list;
         list = table.fieldList();
         return (List<FieldMeta<?>>) list;
     }
 
-    private static <T> List<FieldMeta<?>> mergeFieldList(final TableMeta<T> table
-            , final List<FieldMeta<?>> fieldList, final Map<FieldMeta<?>, Boolean> fieldMap) {
-        if (fieldList.size() != fieldMap.size()) {
-            //no bug,never here
-            throw new CriteriaException("statement create error");
-        }
-
-        final List<FieldMeta<?>> mergeFieldList = new ArrayList<>(fieldList.size());
-        final Map<FieldMeta<?>, Boolean> mergeFieldMap;
-        mergeFieldMap = new HashMap<>(fieldMap);
-
-        FieldMeta<?> managedField;
-        managedField = table.id();
-        if (managedField.insertable() && mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
-            mergeFieldList.add(managedField);
-        }
-
-        if (table instanceof SingleTableMeta) {
-            managedField = table.getField(_MetaBridge.CREATE_TIME);
-            if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
-                mergeFieldList.add(managedField);
-            }
-            if (table.containField(_MetaBridge.UPDATE_TIME)) {
-                managedField = table.getField(_MetaBridge.UPDATE_TIME);
-                if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
-                    mergeFieldList.add(managedField);
-                }
-            }
-            if (table.containField(_MetaBridge.VERSION)) {
-                managedField = table.getField(_MetaBridge.VERSION);
-                if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
-                    mergeFieldList.add(managedField);
-                }
-            }
-            if (table.containField(_MetaBridge.VISIBLE)) {
-                managedField = table.getField(_MetaBridge.VISIBLE);
-                if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
-                    mergeFieldList.add(managedField);
-                }
-            }
-
-        }
-
-        if (table instanceof ParentTableMeta) {
-            managedField = table.discriminator();
-            if (mergeFieldMap.putIfAbsent(managedField, Boolean.TRUE) == null) {
-                mergeFieldList.add(managedField);
-            }
-        }
-
-        for (FieldMeta<?> field : table.fieldChain()) {
-            if (field instanceof PrimaryFieldMeta) {
-                continue;
-            }
-            //TODO fix me
-            if (mergeFieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
-                mergeFieldList.add(field);
-            }
-        }
-
-        for (FieldMeta<?> field : fieldList) {
-            if (!field.insertable()) {
-                throw _Exceptions.nonInsertableField(field);
-            }
-            if (field.tableMeta() != table) {
-                throw _Exceptions.unknownColumn(field);
-            }
-            if (!fieldMap.containsKey(field)) {
-                String m = String.format("%s not present in field map.", field);
-                throw new CriteriaException(m);
-            }
-            mergeFieldList.add(field);
-        }
-
-        if (mergeFieldList.size() == 0) {
-            String m = String.format("%s no insertable filed.", table);
-            throw new CriteriaException(m);
-        }
-        return Collections.unmodifiableList(mergeFieldList);
-    }
 
     static IllegalStateException parentStmtDontExecute(PrimaryFieldMeta<?> filed) {
         String m = String.format("parent stmt don't execute so %s parameter value is null", filed);

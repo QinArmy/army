@@ -1,6 +1,6 @@
 package io.army.meta;
 
-import io.army.criteria.QualifiedField;
+import io.army.criteria.TableField;
 import io.army.mapping.MappingType;
 
 /**
@@ -9,16 +9,15 @@ import io.army.mapping.MappingType;
  * This interface is base interface of below:
  *     <ul>
  *         <li>{@link MappingType}</li>
- *         <li>{@link FieldMeta}</li>
- *         <li>{@link QualifiedField}</li>
+ *         <li>{@link TableField}</li>
  *     </ul>
  * </p>
  *
  * @see MappingType
  * @see FieldMeta
- * @see QualifiedField
  */
 public interface ParamMeta extends Meta {
 
     MappingType mappingType();
+
 }

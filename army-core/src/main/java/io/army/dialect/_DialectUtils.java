@@ -10,7 +10,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -192,67 +191,121 @@ public abstract class _DialectUtils {
 
     }
 
-    static boolean isDiscriminatorValue(TableMeta<?> domainTable, @Nullable Object value) {
-        final FieldMeta<?> discriminator = domainTable.discriminator();
-        assert discriminator != null;
-        return value == CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
-    }
 
-
-    static void appendSingleTableField(final SingleTableMeta<?> insertTable, final List<FieldMeta<?>> fieldList
+    static List<FieldMeta<?>> createNonChildFieldList(final SingleTableMeta<?> insertTable
             , final Predicate<FieldMeta<?>> predicate) {
 
-        FieldMeta<?> field;
-        field = insertTable.id();
-        if (field.insertable() && field.generatorType() != null) {
-            fieldList.add(field);
+        final List<FieldMeta<?>> insertFieldChain;
+        insertFieldChain = insertTable.fieldChain();
+
+        final ArrayList<FieldMeta<?>> fieldList = new ArrayList<>(6 + insertFieldChain.size());
+
+        FieldMeta<?> reservedField;
+        reservedField = insertTable.id();
+        if (reservedField.insertable() && reservedField.generatorType() != null) {
+            fieldList.add(reservedField);
         }
 
-        field = insertTable.getField(_MetaBridge.CREATE_TIME);
-        fieldList.add(field);
+        reservedField = insertTable.getField(_MetaBridge.CREATE_TIME);
+        fieldList.add(reservedField);
 
-        field = insertTable.tryGetField(_MetaBridge.UPDATE_TIME);
-        if (field != null) {
-            fieldList.add(field);
+        reservedField = insertTable.tryGetField(_MetaBridge.UPDATE_TIME);
+        if (reservedField != null) {
+            fieldList.add(reservedField);
         }
 
-        field = insertTable.tryGetField(_MetaBridge.VERSION);
-        if (field != null) {
-            fieldList.add(field);
+        reservedField = insertTable.tryGetField(_MetaBridge.VERSION);
+        if (reservedField != null) {
+            fieldList.add(reservedField);
         }
 
 
-        field = insertTable.tryGetField(_MetaBridge.VISIBLE);
-        if (field != null && !predicate.test(field)) {
-            fieldList.add(field);
+        reservedField = insertTable.tryGetField(_MetaBridge.VISIBLE);
+        if (reservedField != null && !predicate.test(reservedField)) {
+            fieldList.add(reservedField);
         }
 
         if (insertTable instanceof ParentTableMeta) {
             fieldList.add(insertTable.discriminator());
         }
 
-        for (FieldMeta<?> f : insertTable.fieldChain()) {
-            if (f instanceof PrimaryFieldMeta) {
-                continue;
-            }
-            fieldList.add(f);
-        }
-
-
-    }
-
-    static void appendChildTableField(final ChildTableMeta<?> insertTable, final List<FieldMeta<?>> fieldList) {
-
-        fieldList.add(insertTable.id());
-
-        for (FieldMeta<?> field : insertTable.fieldChain()) {
+        for (FieldMeta<?> field : insertFieldChain) {
             if (field instanceof PrimaryFieldMeta) {
                 continue;
             }
             fieldList.add(field);
         }
 
+        return fieldList;
     }
+
+    static List<FieldMeta<?>> createChildFieldList(final ChildTableMeta<?> insertTable) {
+        final List<FieldMeta<?>> fieldChain;
+        fieldChain = insertTable.fieldChain();
+
+        final ArrayList<FieldMeta<?>> fieldList = new ArrayList<>(1 + fieldChain.size());
+        fieldList.add(insertTable.id());
+
+        for (FieldMeta<?> field : fieldChain) {
+            assert !(field instanceof PrimaryFieldMeta);
+            fieldList.add(field);
+        }
+        return fieldList;
+
+    }
+
+    static int generatedFieldSize(final TableMeta<?> domainTable, final boolean manageVisible) {
+        int size = 1; //create time
+
+        if (domainTable instanceof SingleTableMeta) {
+            if (domainTable.containField(_MetaBridge.UPDATE_TIME)) {
+                size++;
+            }
+            if (domainTable.containField(_MetaBridge.VERSION)) {
+                size++;
+            }
+            if (manageVisible && domainTable.containField(_MetaBridge.VISIBLE)) {
+                size++;
+            }
+        }
+
+        if (!(domainTable instanceof SimpleTableMeta)) {
+            size++; //discriminator
+        }
+
+
+        size += domainTable.fieldChain().size();
+
+        if (domainTable instanceof ChildTableMeta) {
+            size += ((ChildTableMeta<?>) domainTable).parentMeta().fieldChain().size();
+        }
+        return size;
+    }
+
+
+    @Nullable
+    static Object readParamValue(final FieldMeta<?> field, final @Nullable _Expression expression
+            , final MappingEnv mappingEnv) {
+        if (!(expression instanceof SqlValueParam.SingleNonNamedValue)) {
+            return null;
+        }
+        Object value;
+        value = ((SqlValueParam.SingleNonNamedValue) expression).value();
+
+        final Class<?> javaType = field.javaType();
+        if (value == null || javaType.isInstance(value)) {
+            return value;
+        }
+        value = field.mappingType().convert(mappingEnv, value);
+        if (!javaType.isInstance(value)) {
+            String m = String.format("%s convert method don't return instance of %s"
+                    , field.mappingType().getClass().getName(), javaType.getName());
+            throw new MetaException(m);
+        }
+        return value;
+
+    }
+
 
 
     /*################################## blow private static innner class ##################################*/
@@ -271,7 +324,7 @@ public abstract class _DialectUtils {
 
 
         @Override
-        public final boolean isNull(final FieldMeta<?> field) {
+        public final boolean isNullMigrationValue(final FieldMeta<?> field) {
             final _Expression expression;
             expression = this.getExpression(field);
             final boolean match;
@@ -328,7 +381,7 @@ public abstract class _DialectUtils {
             if (field == null) {
                 throw _Exceptions.nonReadableProperty(domainTable, propertyName);
             }
-            Object value;
+            final Object value;
             value = wrapper.getGeneratedValue(field);
             if (value != null) {
                 return value;
@@ -340,23 +393,7 @@ public abstract class _DialectUtils {
             } else {
                 expression = wrapper.getExpression(field);
             }
-
-            if (!(expression instanceof SqlValueParam.SingleNonNamedValue)) {
-                return null;
-            }
-            value = ((SqlValueParam.SingleNonNamedValue) expression).value();
-
-            final Class<?> javaType = field.javaType();
-            if (value == null || javaType.isInstance(value)) {
-                return value;
-            }
-            value = field.mappingType().convert(this.mappingEnv, value);
-            if (!javaType.isInstance(value)) {
-                String m = String.format("%s convert method don't return instance of %s"
-                        , field.mappingType().getClass().getName(), javaType.getName());
-                throw new MetaException(m);
-            }
-            return value;
+            return readParamValue(field, expression, this.mappingEnv);
         }
 
 

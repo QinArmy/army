@@ -17,12 +17,13 @@ interface RowWrapper {
 
     /**
      * <p>
-     * This method is invoked by {@link  FieldValueGenerator#validate(TableMeta, RowWrapper) }
+     * This method is invoked by {@link  FieldValueGenerator#validate(TableMeta, RowWrapper) }.
+     * Note: couldn't read value from default expression map.
      * </p>
      *
      * @see FieldValueGenerator#validate(TableMeta, RowWrapper)
      */
-    boolean isNull(FieldMeta<?> field);
+    boolean isNullMigrationValue(FieldMeta<?> field);
 
 
     /**

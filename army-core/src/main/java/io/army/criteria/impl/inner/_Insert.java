@@ -26,8 +26,7 @@ public interface _Insert extends _Statement {
 
         boolean isMigration();
 
-        @Nullable
-        NullHandleMode nullHandle();
+        boolean isPreferLiteral();
     }
 
 
@@ -41,11 +40,16 @@ public interface _Insert extends _Statement {
         Map<FieldMeta<?>, Boolean> fieldMap();
     }
 
+    interface _ChildInsert extends _Insert {
+
+        _Insert parentStmt();
+    }
+
 
     interface _ValuesSyntaxInsert extends _ColumnListInsert, _InsertOption {
 
-
-        boolean isPreferLiteral();
+        @Nullable
+        NullHandleMode nullHandle();
 
 
         Map<FieldMeta<?>, _Expression> defaultValueMap();
@@ -56,14 +60,15 @@ public interface _Insert extends _Statement {
     interface _ValuesInsert extends _ValuesSyntaxInsert {
 
 
-        List<Map<FieldMeta<?>, _Expression>> rowValuesList();
+        List<Map<FieldMeta<?>, _Expression>> rowList();
 
 
     }
 
 
-    interface _ChildValuesInsert extends _ValuesInsert {
+    interface _ChildValuesInsert extends _ValuesInsert, _ChildInsert {
 
+        @Override
         _ValuesInsert parentStmt();
     }
 
@@ -75,8 +80,9 @@ public interface _Insert extends _Statement {
 
     }
 
-    interface _ChildDomainInsert extends _DomainInsert {
+    interface _ChildDomainInsert extends _DomainInsert, _ChildInsert {
 
+        @Override
         _DomainInsert parentStmt();
     }
 

@@ -1041,25 +1041,25 @@ abstract class MySQLInserts extends InsertSupport {
             if (pairList.size() == 0) {
                 if (this.parentStmt == null) {
                     spec = new ValuesInsertStatement(this);
-                } else if (rowValuesList.size() == this.parentStmt.rowValuesList().size()) {
+                } else if (rowValuesList.size() == this.parentStmt.rowList().size()) {
                     final ValueChildInsertStatement statement;
                     statement = new ValueChildInsertStatement(this);
                     assertParent(this.criteriaContext, statement.parentStmt, (ChildTableMeta<?>) statement.table);
                     spec = statement;
                 } else {
                     throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
-                            , this.parentStmt.rowValuesList().size(), rowValuesList.size());
+                            , this.parentStmt.rowList().size(), rowValuesList.size());
                 }
             } else if (this.parentStmt == null) {
                 spec = new ValuesInsertWithDuplicateKey(this, pairList);
-            } else if (rowValuesList.size() == this.parentStmt.rowValuesList().size()) {
+            } else if (rowValuesList.size() == this.parentStmt.rowList().size()) {
                 final ValueChildInsertWithDuplicateKey statement;
                 statement = new ValueChildInsertWithDuplicateKey(this, pairList);
                 assertParent(this.criteriaContext, statement.parentStmt, (ChildTableMeta<?>) statement.table);
                 spec = statement;
             } else {
                 throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
-                        , this.parentStmt.rowValuesList().size(), rowValuesList.size());
+                        , this.parentStmt.rowList().size(), rowValuesList.size());
             }
             return spec.asInsert();
         }
@@ -1292,7 +1292,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
+        public final List<Map<FieldMeta<?>, _Expression>> rowList() {
             return this.rowValuesList;
         }
 

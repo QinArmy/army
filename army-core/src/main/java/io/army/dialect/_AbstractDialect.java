@@ -74,8 +74,10 @@ public abstract class _AbstractDialect implements ArmyDialect {
     public final Stmt insert(final Insert insert, final Visible visible) {
         insert.prepared();
         if (insert instanceof StandardStatement) {
+            //validate implementation class
             _SQLConsultant.assertStandardInsert(insert);
         } else {
+            //validate implementation class
             assertDialectInsert((_Insert) insert);
         }
         return parseInsert((_Insert) insert, visible);
@@ -451,6 +453,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     /**
+     * @param insert possibly be below :
+     *               <ul>
+     *                  <li>{@link Insert}</li>
+     *                  <li>{@link ReplaceInsert}</li>
+     *                  <li>{@link MergeInsert}</li>
+     *               </ul>
      * @see #insert(Insert, Visible)
      */
     protected final Stmt parseInsert(final _Insert insert, final Visible visible) {
@@ -1132,11 +1140,10 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (insert instanceof _Insert._ChildValuesInsert) {
             final _Insert._ChildValuesInsert childStmt = (_Insert._ChildValuesInsert) insert;
             final _Insert._ValuesInsert parentStmt = childStmt.parentStmt();
-            final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childStmt.table();
-            checkParentStmt(parentStmt, childTable);
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
 
             final ValuesInsertContext parentContext;
-            parentContext = ValuesInsertContext.forParent(parentStmt, childTable, this, visible);
+            parentContext = ValuesInsertContext.forParent(childStmt, this, visible);
             if (standardStmt) {
                 this.standardValueSyntaxInsert(parentContext);
             } else {
@@ -1168,7 +1175,28 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #parseInsert(_Insert, Visible)
      */
     private Stmt handleAssignmentInsert(final _Insert._AssignmentInsert insert, final Visible visible) {
-        throw new UnsupportedOperationException();
+        final Stmt stmt;
+        if (insert instanceof _Insert._ChildAssignmentInsert) {
+            final _Insert._ChildAssignmentInsert childStmt = (_Insert._ChildAssignmentInsert) insert;
+            final _Insert._AssignmentInsert parentStmt = childStmt.parentStmt();
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
+
+            final AssignmentInsertContext parentContext;
+            parentContext = AssignmentInsertContext.forParent(childStmt, this, visible);
+            this.assignmentInsert(parentContext, parentStmt);
+
+            final AssignmentInsertContext childContext;
+            childContext = AssignmentInsertContext.forChild(parentContext, childStmt, this, visible);
+            this.assignmentInsert(childContext, childStmt);
+
+            stmt = Stmts.pair(parentContext.build(), childContext.build());
+        } else {
+            final AssignmentInsertContext singleContext;
+            singleContext = AssignmentInsertContext.forSingle(insert, this, visible);
+            this.assignmentInsert(singleContext, insert);
+            stmt = singleContext.build();
+        }
+        return stmt;
     }
 
     /**
@@ -1533,7 +1561,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         return new IllegalArgumentException("dialect instance error");
     }
 
-    private static void checkParentStmt(_Insert._ValuesSyntaxInsert parentStmt, ChildTableMeta<?> childTable) {
+    private static void checkParentStmt(_Insert parentStmt, ChildTableMeta<?> childTable) {
         if (parentStmt instanceof _Insert._DuplicateKeyClause
                 && parentStmt.table().id().generatorType() == GeneratorType.POST) {
             throw _Exceptions.duplicateKeyAndPostIdInsert(childTable);

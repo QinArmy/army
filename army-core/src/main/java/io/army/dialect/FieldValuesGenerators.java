@@ -89,34 +89,34 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             nonChild = domainTable;
         }
 
-        if (wrapper.isNull(nonChild.id())) {
+        if (wrapper.isNullMigrationValue(nonChild.id())) {
             throw nullValueErrorForMigration(nonChild.id());
         }
-        if (wrapper.isNull(nonChild.getField(_MetaBridge.CREATE_TIME))) {
+        if (wrapper.isNullMigrationValue(nonChild.getField(_MetaBridge.CREATE_TIME))) {
             throw nullValueErrorForMigration(nonChild.getField(_MetaBridge.CREATE_TIME));
         }
 
         FieldMeta<?> reservedField;
-        if ((reservedField = nonChild.tryGetField(_MetaBridge.UPDATE_TIME)) != null && wrapper.isNull(reservedField)) {
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.UPDATE_TIME)) != null && wrapper.isNullMigrationValue(reservedField)) {
             throw nullValueErrorForMigration(reservedField);
         }
-        if ((reservedField = nonChild.tryGetField(_MetaBridge.VERSION)) != null && wrapper.isNull(reservedField)) {
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.VERSION)) != null && wrapper.isNullMigrationValue(reservedField)) {
             throw nullValueErrorForMigration(reservedField);
         }
-        if ((reservedField = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null && wrapper.isNull(reservedField)) {
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null && wrapper.isNullMigrationValue(reservedField)) {
             throw nullValueErrorForMigration(reservedField);
         }
 
         if (domainTable != nonChild) {
             for (FieldMeta<?> field : nonChild.fieldChain()) {
-                if (wrapper.isNull(field) && !field.nullable()) {
+                if (wrapper.isNullMigrationValue(field) && !field.nullable()) {
                     throw nullValueErrorForMigration(field);
                 }
             }
         }
 
         for (FieldMeta<?> field : domainTable.fieldChain()) {
-            if (wrapper.isNull(field) && !field.nullable()) {
+            if (wrapper.isNullMigrationValue(field) && !field.nullable()) {
                 throw nullValueErrorForMigration(field);
             }
         }
@@ -133,7 +133,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         //1. check id
         field = nonChild.id();
-        if (field.generatorType() == null && wrapper.isNull(field)) {
+        if (field.generatorType() == null && wrapper.isNullMigrationValue(field)) {
             throw _Exceptions.nonNullField(field);
         }
 
@@ -179,7 +179,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
         //5. visible
         if (manegeVisible
                 && (field = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null
-                && wrapper.isNull(field)) {
+                && wrapper.isNullMigrationValue(field)) {
             wrapper.set(field, Boolean.TRUE);
         }
 

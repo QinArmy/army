@@ -15,22 +15,25 @@ import io.army.stmt.Stmts;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 final class AssignmentInsertContext extends StatementContext
         implements _AssignmentInsertContext, _InsertStmtParams._AssignmentParams {
 
-    AssignmentInsertContext forSingle(_Insert._AssignmentInsert stmt, ArmyDialect dialect, Visible visible) {
+    static AssignmentInsertContext forSingle(_Insert._AssignmentInsert stmt, ArmyDialect dialect, Visible visible) {
         assert !(stmt instanceof _Insert._ChildAssignmentInsert);
         return new AssignmentInsertContext(stmt, dialect, visible);
     }
 
-    AssignmentInsertContext forParent(_Insert._ChildAssignmentInsert stmt, ArmyDialect dialect, Visible visible) {
+    static AssignmentInsertContext forParent(_Insert._ChildAssignmentInsert stmt, ArmyDialect dialect, Visible visible) {
         return new AssignmentInsertContext(stmt, dialect, visible);
     }
 
-    AssignmentInsertContext forChild(AssignmentInsertContext parentContext, _Insert._ChildAssignmentInsert stmt
+    static AssignmentInsertContext forChild(AssignmentInsertContext parentContext, _Insert._ChildAssignmentInsert stmt
             , ArmyDialect dialect, Visible visible) {
         return new AssignmentInsertContext(parentContext, stmt, dialect, visible);
     }
@@ -43,7 +46,7 @@ final class AssignmentInsertContext extends StatementContext
 
     private final boolean duplicateKeyClause;
 
-    private final List<_Pair<FieldMeta<?>, _Expression>> rowPairList;
+    private final List<_Pair<FieldMeta<?>, _Expression>> pairList;
 
     /**
      * the list of the fields that is managed by army
@@ -89,19 +92,18 @@ final class AssignmentInsertContext extends StatementContext
         this.migration = nonChildStmt.isMigration();
         this.preferLiteral = nonChildStmt.isPreferLiteral();
         this.duplicateKeyClause = nonChildStmt instanceof _Insert._DuplicateKeyClause;
-
-        this.rowPairList = nonChildStmt.rowPairList();
+        this.pairList = nonChildStmt.rowPairList();
 
         final Map<FieldMeta<?>, _Expression> rowPairMap;
         rowPairMap = nonChildStmt.rowPairMap();
-        assert rowPairMap.size() == this.rowPairList.size();
+        assert rowPairMap.size() == this.pairList.size();
 
         if (this.migration) {
             this.fieldList = Collections.emptyList();
         } else {
-            final List<FieldMeta<?>> fieldList = new ArrayList<>(6 + this.insertTable.fieldChain().size());
-            _DialectUtils.appendSingleTableField((SingleTableMeta<?>) this.insertTable
-                    , fieldList, rowPairMap::containsKey);
+            final List<FieldMeta<?>> fieldList;
+            fieldList = _DialectUtils.createNonChildFieldList((SingleTableMeta<?>) this.insertTable
+                    , rowPairMap::containsKey);
             this.fieldList = Collections.unmodifiableList(fieldList);
         }
 
@@ -149,13 +151,13 @@ final class AssignmentInsertContext extends StatementContext
                 && this.preferLiteral == parentContext.preferLiteral
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
-        this.rowPairList = stmt.rowPairList();
+        this.pairList = stmt.rowPairList();
 
         if (this.migration) {
             this.fieldList = Collections.emptyList();
         } else {
-            final List<FieldMeta<?>> fieldList = new ArrayList<>(1 + this.insertTable.fieldChain().size());
-            _DialectUtils.appendChildTableField((ChildTableMeta<?>) this.insertTable, fieldList);
+            final List<FieldMeta<?>> fieldList;
+            fieldList = _DialectUtils.createChildFieldList((ChildTableMeta<?>) this.insertTable);
             this.fieldList = Collections.unmodifiableList(fieldList);
         }
         this.returnId = null;
@@ -217,7 +219,7 @@ final class AssignmentInsertContext extends StatementContext
         }
 
         //4. assignment clause of application developer
-        final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.rowPairList;
+        final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.pairList;
 
         final int pariSize = pairList.size();
         _Pair<FieldMeta<?>, _Expression> pair;

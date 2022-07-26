@@ -10,15 +10,17 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
+import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmts;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,13 +33,12 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
     static DomainInsertContext forSingle(_Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
         _DialectUtils.checkDefaultValueMap(insert);
-        return new DomainInsertContext(dialect, insert, insert.table(), visible);
+        return new DomainInsertContext(dialect, insert, visible);
     }
 
-    static DomainInsertContext forParent(_Insert._DomainInsert parentStmt, ChildTableMeta<?> childTable
-            , ArmyDialect dialect, Visible visible) {
-        _DialectUtils.checkDefaultValueMap(parentStmt);
-        return new DomainInsertContext(dialect, parentStmt, childTable, visible);
+    static DomainInsertContext forParent(_Insert._ChildDomainInsert domainStmt, ArmyDialect dialect, Visible visible) {
+        _DialectUtils.checkDefaultValueMap(domainStmt);
+        return new DomainInsertContext(dialect, domainStmt, visible);
     }
 
 
@@ -54,29 +55,25 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     /**
      * create for {@link  SingleTableMeta}
      */
-    private DomainInsertContext(ArmyDialect dialect, _Insert._DomainInsert stmt
-            , TableMeta<?> domainTable, Visible visible) {
-        super(dialect, stmt, domainTable, visible);
-        this.domainList = stmt.domainList();
-        //must be domainTable ,not this.insertTable
-        final boolean manageVisible;
-        manageVisible = isManageVisible(this.insertTable, this.defaultValueMap);
+    private DomainInsertContext(ArmyDialect dialect, _Insert._DomainInsert domainStmt, Visible visible) {
+        super(dialect, domainStmt, visible);
 
-        this.wrapper = new DomainWrapper(ObjectAccessorFactory.forBean(domainTable.javaType()), manageVisible);
-
+        this.domainList = domainStmt.domainList();
+        this.wrapper = new DomainWrapper(this, domainStmt);
     }
 
     /**
      * create for {@link  ChildTableMeta}
      */
-    private DomainInsertContext(DomainInsertContext parentContext, _Insert._DomainInsert stmt
+    private DomainInsertContext(DomainInsertContext parentContext, _Insert._ChildDomainInsert stmt
             , ArmyDialect dialect, Visible visible) {
         super(parentContext, stmt, dialect, visible);
 
-        this.domainList = stmt.domainList();//must check for criteria api implementation
-        assert this.domainList == parentContext.domainList;
+        this.domainList = stmt.domainList();
+        assert this.domainList == parentContext.domainList;//must check for criteria api implementation
         this.wrapper = parentContext.wrapper;
-
+        assert this.wrapper.domainTable == this.insertTable;
+        assert this.wrapper.childDefaultMap == stmt.defaultValueMap();
     }
 
 
@@ -89,7 +86,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final int fieldSize = fieldList.size();
 
         final ArmyDialect dialect = this.dialect;
-        final Map<FieldMeta<?>, _Expression> defaultValueMap = this.defaultValueMap;
+        final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
         final boolean preferLiteral = this.preferLiteral;
         final boolean migration = this.migration;
@@ -97,44 +94,50 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final NullHandleMode nullHandleMode = this.nullHandleMode;
 
         final FieldValueGenerator generator;
-        final DomainWrapper domainWrapper = this.wrapper;
-        final ObjectAccessor accessor = domainWrapper.accessor;
-        final TableMeta<?> insertTable = this.insertTable, domainTable = this.domainTable;
+        final DomainWrapper wrapper = this.wrapper;
+        final ObjectAccessor accessor = wrapper.accessor;
+        final TableMeta<?> insertTable = this.insertTable, domainTable = wrapper.domainTable;
 
-        final boolean manageVisible = domainWrapper.manageVisible;
+        final boolean manageVisible;
         final FieldMeta<?> discriminator = domainTable.discriminator();
         final int discriminatorValue = domainTable.discriminatorValue();
         if (insertTable instanceof ChildTableMeta) {
             generator = null;
+            manageVisible = false;
+            defaultValueMap = wrapper.childDefaultMap;
         } else {
             generator = dialect.getGenerator();
+            final FieldMeta<?> visibleField;
+            visibleField = insertTable.tryGetField(_MetaBridge.VISIBLE);
+            manageVisible = visibleField != null && !wrapper.nonChildDefaultMap.containsKey(visibleField);
+            defaultValueMap = wrapper.nonChildDefaultMap;
         }
         FieldMeta<?> field;
         _Expression expression;
-        Object value, domain;
-        MappingType mappingType;
+        Object value, currentDomain;
         DelayIdParamValue delayIdParam;
 
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_VALUES);
         for (int rowIndex = 0; rowIndex < domainSize; rowIndex++) {
-            domain = domainList.get(rowIndex);
-            domainWrapper.domain = domain; //update current domain
+            currentDomain = domainList.get(rowIndex);
+            wrapper.domain = currentDomain; //firstly,update current domain
+
             if (generator != null) {
                 if (migration) {
                     //use ths.domainTable,not this.insertTable
-                    generator.validate(domainTable, manageVisible, domainWrapper);
+                    generator.validate(domainTable, wrapper);
                 } else {
                     //use ths.domainTable,not this.insertTable
-                    generator.generate(domainTable, manageVisible, domainWrapper);
+                    generator.generate(domainTable, manageVisible, wrapper);
                 }
             }
 
             if (rowIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+
             delayIdParam = null;//clear
             for (int fieldIndex = 0, actualFieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
                 field = fieldList.get(fieldIndex);
@@ -148,39 +151,48 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                 actualFieldIndex++;
 
                 if (field == discriminator) {
-                    assert insertTable instanceof SingleTableMeta;
+                    assert insertTable instanceof ParentTableMeta;
                     sqlBuilder.append(_Constant.SPACE)
                             .append(discriminatorValue);
-                } else if (!migration
-                        && field instanceof PrimaryFieldMeta
-                        && insertTable instanceof ChildTableMeta
-                        && ((ChildTableMeta<?>) insertTable).parentMeta().id().generatorType() == GeneratorType.POST) {
-                    if (delayIdParam != null) {
-                        //no bug,never here
-                        throw new IllegalStateException();
-                    }
-                    delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, domain, accessor);
-                    this.appendParam(delayIdParam);
-                } else if ((value = accessor.get(domain, field.fieldName())) != null) {
-                    mappingType = field.mappingType();
-                    if (preferLiteral && mappingType instanceof _ArmyNoInjectionMapping) {//TODO field codec
+                } else if ((value = accessor.get(currentDomain, field.fieldName())) != null) {
+                    if (preferLiteral && field.mappingType() instanceof _ArmyNoInjectionMapping) {//TODO field codec
                         sqlBuilder.append(_Constant.SPACE);
-                        dialect.literal(mappingType, value, sqlBuilder);
+                        dialect.literal(field, value, sqlBuilder);
                     } else {
                         this.appendParam(SingleParam.build(field, value));
+                    }
+                } else if (field instanceof PrimaryFieldMeta
+                        && insertTable instanceof ChildTableMeta) {//child id must be managed by army
+
+                    if (field.generatorType() == GeneratorType.POST) {
+                        assert delayIdParam == null;
+                        delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
+                        this.appendParam(delayIdParam);
+                    } else if (!mockEnv) {
+                        //no bug,never here,here generatorType == GeneratorType.PRECEDE
+                        throw new IllegalStateException(String.format("no generate value for %s", field));
+                    } else if (preferLiteral) {
+                        sqlBuilder.append(_Constant.SPACE_NULL);
+                    } else {
+                        this.appendParam(SingleParam.build(field, null));
                     }
                 } else if ((expression = defaultValueMap.get(field)) != null) {
                     expression.appendSql(this);
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {
-                    if ((migration && !field.nullable()) || (!migration && !mockEnv)) {
-                        throw _Exceptions.generatorFieldIsNull(field);
+                    assert mockEnv || migration;
+                    if (migration && !field.nullable()) {
+                        throw _Exceptions.nonNullField(field);
                     }
-                    this.appendParam(SingleParam.build(field, null));
+                    if (preferLiteral) {
+                        sqlBuilder.append(_Constant.SPACE_NULL);
+                    } else {
+                        this.appendParam(SingleParam.build(field, null));
+                    }
                 } else if (nullHandleMode == NullHandleMode.INSERT_DEFAULT) {
                     sqlBuilder.append(_Constant.SPACE_DEFAULT);
                 } else if (nullHandleMode != NullHandleMode.INSERT_NULL) {
                     //no bug,never here
-                    throw new IllegalStateException();
+                    throw new IllegalStateException(String.format("nullHandleMode[%s] error.", nullHandleMode));
                 } else if (!field.nullable()) {
                     throw _Exceptions.nonNullField(field);
                 } else if (preferLiteral) {
@@ -195,7 +207,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
         }//outer for
 
-        domainWrapper.domain = null; //finally must clear
+        wrapper.domain = null; //finally must clear
     }
 
 
@@ -225,26 +237,53 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     @Nullable
     @Override
     Object currentRowNamedValue(final String name) {
-        return this.wrapper.get(name);
+        final DomainWrapper wrapper = this.wrapper;
+        final Object domain = wrapper.domain;
+        assert domain != null;
+        return wrapper.accessor.get(domain, name);
     }
 
 
-    private static final class BeanReadWrapper implements ReadWrapper {
+    private static final class DomainReadWrapper implements ReadWrapper {
 
-        private final DomainWrapper actual;
+        private final DomainWrapper wrapper;
 
-        BeanReadWrapper(DomainWrapper actual) {
-            this.actual = actual;
+        private final MappingEnv mappingEnv;
+
+        DomainReadWrapper(DomainWrapper wrapper, MappingEnv mappingEnv) {
+            this.wrapper = wrapper;
+            this.mappingEnv = mappingEnv;
         }
 
         @Override
-        public boolean isReadable(String propertyName) {
-            return this.actual.isReadable(propertyName);
+        public boolean isReadable(final String propertyName) {
+            return this.wrapper.domainTable.containComplexField(propertyName);
         }
 
         @Override
-        public Object get(String propertyName) throws ObjectAccessException {
-            return this.actual.get(propertyName);
+        public Object get(final String propertyName) throws ObjectAccessException {
+            final DomainWrapper wrapper = this.wrapper;
+
+            final FieldMeta<?> field;
+            field = wrapper.domainTable.tryGetComplexFiled(propertyName);
+            if (field == null) {
+                throw _Exceptions.nonReadableProperty(wrapper.domainTable, propertyName);
+            }
+            final Object domain = wrapper.domain;
+            assert domain != null;
+
+            Object value;
+            value = wrapper.accessor.get(domain, propertyName);
+            if (value != null) {
+                return value;
+            }
+            final _Expression expression;
+            if (field.tableMeta() instanceof ChildTableMeta) {
+                expression = wrapper.childDefaultMap.get(field);
+            } else {
+                expression = wrapper.nonChildDefaultMap.get(field);
+            }
+            return _DialectUtils.readParamValue(field, expression, this.mappingEnv);
         }
 
 
@@ -253,52 +292,50 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
     private static final class DomainWrapper implements RowWrapper {
 
+        private final TableMeta<?> domainTable;
+
+        private final Map<FieldMeta<?>, _Expression> nonChildDefaultMap;
+
+        private final Map<FieldMeta<?>, _Expression> childDefaultMap;
+
         private final ObjectAccessor accessor;
 
-        private final BeanReadWrapper readWrapper;
-
-        private final boolean manageVisible;
+        private final DomainReadWrapper readWrapper;
 
         private Object domain;
 
-        private DomainWrapper(ObjectAccessor accessor, boolean manageVisible) {
-            this.accessor = accessor;
-            this.readWrapper = new BeanReadWrapper(this);
-            this.manageVisible = manageVisible;
+        private DomainWrapper(DomainInsertContext context, _Insert._DomainInsert domainStmt) {
+            this.domainTable = domainStmt.table();
+
+            if (domainStmt instanceof _Insert._ChildDomainInsert) {
+                final _Insert._DomainInsert parentStmt = ((_Insert._ChildDomainInsert) domainStmt).parentStmt();
+                this.nonChildDefaultMap = parentStmt.defaultValueMap();
+                this.childDefaultMap = domainStmt.defaultValueMap();
+            } else {
+                this.nonChildDefaultMap = domainStmt.defaultValueMap();
+                this.childDefaultMap = Collections.emptyMap();
+            }
+            this.accessor = ObjectAccessorFactory.forBean(this.domainTable.javaType());
+            this.readWrapper = new DomainReadWrapper(this, context.dialect.mappingEnv());
         }
 
         @Override
-        public boolean isWritable(String propertyName) {
-            return this.accessor.isWritable(propertyName);
-        }
-
-        @Override
-        public void set(String propertyName, @Nullable Object value) throws ObjectAccessException {
-            final Object domain;
-            domain = this.domain;
+        public void set(final FieldMeta<?> field, final Object value) {
+            final Object domain = this.domain;
             assert domain != null;
-            this.accessor.set(domain, propertyName, value);
+            this.accessor.set(domain, field.fieldName(), value);
+        }
+
+        @Override
+        public boolean isNullMigrationValue(final FieldMeta<?> field) {
+            final Object domain = this.domain;
+            assert domain != null;
+            return this.accessor.get(domain, field.fieldName()) == null;
         }
 
         @Override
         public ReadWrapper readonlyWrapper() {
             return this.readWrapper;
-        }
-
-        @Override
-        public boolean isReadable(String propertyName) {
-            return this.accessor.isReadable(propertyName);
-        }
-
-        @Override
-        public Object get(final String propertyName) throws ObjectAccessException {
-            final Object domain;
-            domain = this.domain;
-            if (domain == null) {
-                //eg: MySQL onDuplicateKeyUpdate clause
-                throw _Exceptions.namedParamErrorPosition(propertyName);
-            }
-            return this.accessor.get(domain, propertyName);
         }
 
 

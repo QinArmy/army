@@ -330,11 +330,11 @@ abstract class StandardInserts extends InsertSupport {
             final Insert._InsertSpec spec;
             if (this.parentStmt == null) {
                 spec = new ValuesInsertStatement(this, rowValuesList);
-            } else if (rowValuesList.size() == this.parentStmt.rowValuesList().size()) {
+            } else if (rowValuesList.size() == this.parentStmt.rowList().size()) {
                 spec = new StandardValueChildInsertStatement(this, rowValuesList);
             } else {
                 throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
-                        , this.parentStmt.rowValuesList().size(), rowValuesList.size());
+                        , this.parentStmt.rowList().size(), rowValuesList.size());
             }
             return spec;
         }
@@ -424,7 +424,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public final List<Map<FieldMeta<?>, _Expression>> rowValuesList() {
+        public final List<Map<FieldMeta<?>, _Expression>> rowList() {
             return this.rowValuesList;
         }
 
