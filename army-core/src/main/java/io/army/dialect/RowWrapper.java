@@ -2,14 +2,36 @@ package io.army.dialect;
 
 import io.army.bean.ReadWrapper;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 
 interface RowWrapper {
 
+    /**
+     * <p>
+     * This method is invoked by {@link FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)}
+     * </p>
+     *
+     * @see FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)
+     */
     void set(FieldMeta<?> field, Object value);
 
+    /**
+     * <p>
+     * This method is invoked by {@link  FieldValueGenerator#validate(TableMeta, RowWrapper) }
+     * </p>
+     *
+     * @see FieldValueGenerator#validate(TableMeta, RowWrapper)
+     */
     boolean isNull(FieldMeta<?> field);
 
 
+    /**
+     * <p>
+     * This method is invoked by {@link FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)}
+     * </p>
+     *
+     * @see FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)
+     */
     ReadWrapper readonlyWrapper();
 
 

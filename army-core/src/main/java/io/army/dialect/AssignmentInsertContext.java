@@ -1,32 +1,33 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.NullHandleMode;
+import io.army.criteria.SqlValueParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.SingleParam;
+import io.army.stmt.Stmts;
 import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 final class AssignmentInsertContext extends StatementContext
         implements _AssignmentInsertContext, _InsertStmtParams._AssignmentParams {
 
     AssignmentInsertContext forSingle(_Insert._AssignmentInsert stmt, ArmyDialect dialect, Visible visible) {
         assert !(stmt instanceof _Insert._ChildAssignmentInsert);
-        return new AssignmentInsertContext(stmt, stmt.table(), dialect, visible);
+        return new AssignmentInsertContext(stmt, dialect, visible);
     }
 
-    AssignmentInsertContext forParent(_Insert._AssignmentInsert parentStmt, ChildTableMeta<?> childTable
-            , ArmyDialect dialect, Visible visible) {
-        assert !(parentStmt instanceof _Insert._ChildAssignmentInsert);
-        return new AssignmentInsertContext(parentStmt, childTable, dialect, visible);
+    AssignmentInsertContext forParent(_Insert._ChildAssignmentInsert stmt, ArmyDialect dialect, Visible visible) {
+        return new AssignmentInsertContext(stmt, dialect, visible);
     }
 
     AssignmentInsertContext forChild(AssignmentInsertContext parentContext, _Insert._ChildAssignmentInsert stmt
@@ -34,22 +35,20 @@ final class AssignmentInsertContext extends StatementContext
         return new AssignmentInsertContext(parentContext, stmt, dialect, visible);
     }
 
-    private final boolean migration;
+    private final TableMeta<?> insertTable;
 
-    private final NullHandleMode nullHandleMode;
+    private final boolean migration;
 
     private final boolean preferLiteral;
 
     private final boolean duplicateKeyClause;
 
-    private final TableMeta<?> insertTable;
-
-    private final TableMeta<?> domainTable;
-
-
     private final List<_Pair<FieldMeta<?>, _Expression>> rowPairList;
 
-    private final Map<FieldMeta<?>, _Expression> rowPairMap;
+    /**
+     * the list of the fields that is managed by army
+     */
+    private final List<FieldMeta<?>> fieldList;
 
     private final RowObjectWrapper rowWrapper;
 
@@ -61,10 +60,6 @@ final class AssignmentInsertContext extends StatementContext
      */
     private final String idSelectionAlias;
 
-    private final Map<FieldMeta<?>, Object> generatedMap;
-
-    private Map<FieldMeta<?>, Object> tempGeneratedValueMap;
-
     private boolean assignmentClauseEnd;
 
 
@@ -74,31 +69,41 @@ final class AssignmentInsertContext extends StatementContext
      * </p>
      *
      * @see #forSingle(_Insert._AssignmentInsert, ArmyDialect, Visible)
-     * @see #forParent(_Insert._AssignmentInsert, ChildTableMeta, ArmyDialect, Visible)
+     * @see #forParent(_Insert._ChildAssignmentInsert, ArmyDialect, Visible)
      */
-    private AssignmentInsertContext(_Insert._AssignmentInsert stmt, TableMeta<?> domainTable
-            , ArmyDialect dialect, Visible visible) {
+    private AssignmentInsertContext(_Insert._AssignmentInsert domainStmt, ArmyDialect dialect, Visible visible) {
         super(dialect, true, visible);
 
-        this.migration = stmt.isMigration();
-        final NullHandleMode handleMode;
-        handleMode = stmt.nullHandle();
-        this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
-        this.preferLiteral = stmt.isPreferLiteral();
-        this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
+        final TableMeta<?> domainTable = domainStmt.table();
 
-        this.insertTable = stmt.table();
-        this.domainTable = domainTable;
-
-        assert this.insertTable instanceof SingleTableMeta;
-        if (domainTable instanceof ChildTableMeta) {
-            assert this.insertTable == ((ChildTableMeta<?>) domainTable).parentMeta();
+        final _Insert._AssignmentInsert nonChildStmt;
+        if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
+            nonChildStmt = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt();
+            this.insertTable = nonChildStmt.table();
         } else {
-            assert this.insertTable == domainTable;
+            nonChildStmt = domainStmt;
+            this.insertTable = domainTable;
         }
+        assert this.insertTable instanceof SingleTableMeta;
 
-        this.rowPairList = stmt.rowPairList();
-        this.rowPairMap = stmt.rowPairMap();
+        this.migration = nonChildStmt.isMigration();
+        this.preferLiteral = nonChildStmt.isPreferLiteral();
+        this.duplicateKeyClause = nonChildStmt instanceof _Insert._DuplicateKeyClause;
+
+        this.rowPairList = nonChildStmt.rowPairList();
+
+        final Map<FieldMeta<?>, _Expression> rowPairMap;
+        rowPairMap = nonChildStmt.rowPairMap();
+        assert rowPairMap.size() == this.rowPairList.size();
+
+        if (this.migration) {
+            this.fieldList = Collections.emptyList();
+        } else {
+            final List<FieldMeta<?>> fieldList = new ArrayList<>(6 + this.insertTable.fieldChain().size());
+            _DialectUtils.appendSingleTableField((SingleTableMeta<?>) this.insertTable
+                    , fieldList, rowPairMap::containsKey);
+            this.fieldList = Collections.unmodifiableList(fieldList);
+        }
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
         if (this.migration || idField.generatorType() != GeneratorType.POST) {
@@ -118,20 +123,8 @@ final class AssignmentInsertContext extends StatementContext
             this.idSelectionAlias = idField.fieldName();
         }
 
-        if (this.migration) {
-            this.generatedMap = Collections.emptyMap();
-            this.tempGeneratedValueMap = null;
-        } else {
-            final Map<FieldMeta<?>, Object> map = new HashMap<>();
-            this.generatedMap = Collections.unmodifiableMap(map);
-            this.tempGeneratedValueMap = map;
-        }
-
-        final FieldMeta<?> visibleField;
-        visibleField = this.insertTable.tryGetComplexFiled(_MetaBridge.VISIBLE);
-        final boolean manageVisible;
-        manageVisible = visibleField != null && !this.rowPairMap.containsKey(visibleField);
-        this.rowWrapper = new RowObjectWrapper(this, manageVisible);
+        this.rowWrapper = new RowObjectWrapper(this, domainStmt);
+        assert this.rowWrapper.domainTable == domainTable;
 
     }
 
@@ -146,31 +139,29 @@ final class AssignmentInsertContext extends StatementContext
             , ArmyDialect dialect, Visible visible) {
         super(dialect, true, visible);
 
+        this.insertTable = stmt.table();
         this.migration = stmt.isMigration();
-        final NullHandleMode handleMode;
-        handleMode = stmt.nullHandle();
-        this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
         this.preferLiteral = stmt.isPreferLiteral();
         this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
 
-        this.insertTable = stmt.table();
-        this.domainTable = this.insertTable;
-
         assert this.insertTable instanceof ChildTableMeta
                 && this.migration == parentContext.migration
-                && this.nullHandleMode == parentContext.nullHandleMode
                 && this.preferLiteral == parentContext.preferLiteral
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
         this.rowPairList = stmt.rowPairList();
-        this.rowPairMap = stmt.rowPairMap();
 
-        this.generatedMap = parentContext.generatedMap;
-        this.tempGeneratedValueMap = null;
+        if (this.migration) {
+            this.fieldList = Collections.emptyList();
+        } else {
+            final List<FieldMeta<?>> fieldList = new ArrayList<>(1 + this.insertTable.fieldChain().size());
+            _DialectUtils.appendChildTableField((ChildTableMeta<?>) this.insertTable, fieldList);
+            this.fieldList = Collections.unmodifiableList(fieldList);
+        }
         this.returnId = null;
         this.idSelectionAlias = null;
-
         this.rowWrapper = parentContext.rowWrapper;
+        assert this.rowWrapper.domainTable == this.insertTable;
 
     }
 
@@ -186,50 +177,60 @@ final class AssignmentInsertContext extends StatementContext
 
         final ArmyDialect dialect = this.dialect;
 
-        final TableMeta<?> insertTable;
-        insertTable = this.insertTable;
+        final TableMeta<?> insertTable = this.insertTable;
 
-
+        final RowObjectWrapper wrapper = this.rowWrapper;
+        //1. generate or validate
         if (insertTable instanceof SingleTableMeta) {
-            final RowObjectWrapper wrapper = this.rowWrapper;
+
             final FieldValueGenerator generator;
             generator = this.dialect.getGenerator();
             if (this.migration) {
-                //use this.domainTable not this.insertTable
-                generator.validate(this.domainTable, wrapper);
+                //use wrapper.domainTable not this.insertTable
+                generator.validate(wrapper.domainTable, wrapper);
             } else {
-                //use this.domainTable not this.insertTable
-                generator.generate(this.domainTable, wrapper.manageVisible, wrapper);
+                final boolean manageVisible;
+                manageVisible = insertTable.containField(_MetaBridge.VISIBLE)
+                        && !wrapper.nonChildPairMap.containsKey(insertTable.getField(_MetaBridge.VISIBLE));
+                //use wrapper.domainTable not this.insertTable
+                generator.generate(wrapper.domainTable, manageVisible, wrapper);
+                wrapper.tempGeneratedMap = null;  //clear
             }
 
         }
 
+        //2. SET keyword and space
         final StringBuilder sqlBuilder = this.sqlBuilder
-                .append(_Constant.SPACE_SET);
+                .append(_Constant.SPACE_SET_SPACE);
+
+        //3. the fields that is managed by army
         if (!this.migration) {
+            this.appendArmyManageFields();
+        } else if (insertTable instanceof ChildTableMeta) {
+            final _Expression expression;
+            expression = wrapper.nonChildPairMap.get(insertTable.nonChildId());
+            assert expression instanceof SqlValueParam.SingleNonNamedValue;
 
+            dialect.safeObjectName(insertTable.id(), sqlBuilder)
+                    .append(_Constant.SPACE_EQUAL);
+            expression.appendSql(this);
         }
-        FieldMeta<?> field;
-        field = insertTable.id();
-        if (insertTable instanceof SingleTableMeta) {
-            if (field.insertable()) {
 
-            }
-        }
-
-
+        //4. assignment clause of application developer
         final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.rowPairList;
 
         final int pariSize = pairList.size();
         _Pair<FieldMeta<?>, _Expression> pair;
+        FieldMeta<?> field;
         for (int i = 0; i < pariSize; i++) {
-            if (i > 0) {
+            if (i > 0 || !this.migration || insertTable instanceof ChildTableMeta) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            } else {
-                sqlBuilder.append(_Constant.SPACE);
             }
             pair = pairList.get(i);
-            dialect.safeObjectName(pair.first, sqlBuilder)
+            field = pair.first;
+            assert !(field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta); // child id must be managed by army
+
+            dialect.safeObjectName(field, sqlBuilder)
                     .append(_Constant.SPACE_EQUAL);
             pair.second.appendSql(this);
         }
@@ -256,7 +257,13 @@ final class AssignmentInsertContext extends StatementContext
 
     @Override
     public SimpleStmt build() {
-        return null;
+        final SimpleStmt stmt;
+        if (this.returnId == null) {
+            stmt = Stmts.minSimple(this);
+        } else {
+            stmt = Stmts.assignmentPost(this);
+        }
+        return stmt;
     }
 
 
@@ -274,28 +281,68 @@ final class AssignmentInsertContext extends StatementContext
         return alias;
     }
 
+
     @Override
-    public BiFunction<Integer, Object, Object> function() {
-        return null;
+    public Function<Object, Object> function() {
+        final DelayIdParam delayIdParam = this.rowWrapper.delayIdParam;
+        assert delayIdParam != null && this.assignmentClauseEnd && this.insertTable instanceof ParentTableMeta;
+        this.rowWrapper.delayIdParam = null;
+        return delayIdParam::parentPostId;
     }
 
+    private void appendArmyManageFields() {
+        assert !this.migration;
 
-    private static List<FieldMeta<?>> createArmyManageFieldList(final TableMeta<?> insertTable
-            , final Map<FieldMeta<?>, _Expression> rowPairMap) {
+        final ArmyDialect dialect = this.dialect;
+        final StringBuilder sqlBuilder = this.sqlBuilder;
 
-        final int fieldSize;
-        fieldSize = 6 + insertTable.fieldChain().size();
+        final Map<FieldMeta<?>, Object> generatedMap = this.rowWrapper.generatedMap;
 
-        final List<FieldMeta<?>> fieldList = new ArrayList<>(fieldSize);
-        final Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>((int) (fieldSize / 0.75F));
+        final List<FieldMeta<?>> fieldList = this.fieldList;
+        final int fieldSize = fieldList.size();
+        assert fieldSize > 0;
 
-        if (insertTable instanceof SingleTableMeta) {
-            _DialectUtils.appendSingleTableField((SingleTableMeta<?>) insertTable, fieldList, fieldMap
-                    , rowPairMap::containsKey);
-        } else {
-            _DialectUtils.appendChildTableField((ChildTableMeta<?>) insertTable, fieldList, fieldMap);
+        final boolean preferLiteral = this.preferLiteral;
+        final boolean mockEnv = dialect.isMockEnv();
+
+        FieldMeta<?> field;
+        Object value;
+        DelayIdParam delayIdParam = null;
+        for (int i = 0; i < fieldSize; i++) {
+            field = fieldList.get(i);
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            }
+
+            dialect.safeObjectName(field, sqlBuilder);
+
+            if (field instanceof PrimaryFieldMeta
+                    && field.generatorType() != null
+                    && this.insertTable.nonChildId().generatorType() == GeneratorType.POST) {
+                assert field.tableMeta() == this.insertTable && delayIdParam == null;
+                delayIdParam = new DelayIdParam((PrimaryFieldMeta<?>) field);
+                this.rowWrapper.delayIdParam = delayIdParam;
+
+                sqlBuilder.append(_Constant.SPACE_EQUAL);
+                this.appendParam(delayIdParam);
+                continue;
+            }
+
+            value = generatedMap.get(field);
+            if (value == null) {
+                assert mockEnv;
+                sqlBuilder.append(_Constant.SPACE_EQUAL);
+                this.appendParam(SingleParam.build(field, null));
+            } else if (preferLiteral) {
+                sqlBuilder.append(_Constant.SPACE_EQUAL_SPACE);
+                dialect.literal(field, value, sqlBuilder);
+            } else {
+                sqlBuilder.append(_Constant.SPACE_EQUAL);
+                this.appendParam(SingleParam.build(field, value));
+            }
+
         }
-        return Collections.unmodifiableList(fieldList);
+
 
     }
 
@@ -304,22 +351,41 @@ final class AssignmentInsertContext extends StatementContext
 
         private final Map<FieldMeta<?>, _Expression> nonChildPairMap;
 
-        private final
-
-        private Map<FieldMeta<?>, _Expression> childPairMap;
-
+        private final Map<FieldMeta<?>, _Expression> childPairMap;
 
         private final Map<FieldMeta<?>, Object> generatedMap;
 
         private Map<FieldMeta<?>, Object> tempGeneratedMap;
 
-        private RowObjectWrapper(AssignmentInsertContext context, boolean manageVisible) {
-            super(context.domainTable, context.dialect.mappingEnv());
-            this.nonChildPairMap = context.rowPairMap;
+        private DelayIdParam delayIdParam;
 
-            final Map<FieldMeta<?>, Object> map = new HashMap<>();
-            this.generatedMap = Collections.unmodifiableMap(map);
-            this.tempGeneratedMap = map;
+        private RowObjectWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
+            super(domainStmt.table(), context.dialect.mappingEnv());
+
+            if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
+                this.nonChildPairMap = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().rowPairMap();
+                this.childPairMap = domainStmt.rowPairMap();
+            } else {
+                this.nonChildPairMap = domainStmt.rowPairMap();
+                this.childPairMap = Collections.emptyMap();
+            }
+
+            if (context.migration) {
+                this.generatedMap = Collections.emptyMap();
+                this.tempGeneratedMap = null;
+            } else {
+                int maxSize = 6;
+
+                if (domainTable instanceof ChildTableMeta) {
+                    maxSize += ((ChildTableMeta<?>) domainTable).parentMeta().fieldChain().size();
+                }
+                maxSize += domainTable.fieldChain().size();
+
+                final Map<FieldMeta<?>, Object> map = new HashMap<>((int) (maxSize / 0.75F));
+                this.generatedMap = Collections.unmodifiableMap(map);
+                this.tempGeneratedMap = map;
+            }
+
 
         }
 
@@ -329,8 +395,12 @@ final class AssignmentInsertContext extends StatementContext
             final Map<FieldMeta<?>, Object> map = this.tempGeneratedMap;
             assert map != null;
             map.put(field, value);
-            if (field instanceof PrimaryFieldMeta && field.tableMeta() != this.domainTable) {
-                map.put(this.domainTable.id(), value);
+            if (field instanceof PrimaryFieldMeta) {
+                final TableMeta<?> fieldTable = field.tableMeta();
+                assert fieldTable instanceof SingleTableMeta;
+                if (fieldTable != this.domainTable) {
+                    map.put(this.domainTable.id(), value);
+                }
             }
         }
 
@@ -341,11 +411,53 @@ final class AssignmentInsertContext extends StatementContext
 
         @Override
         _Expression getExpression(final FieldMeta<?> field) {
-            return null;
+            final _Expression expression;
+            if (field.tableMeta() instanceof SingleTableMeta) {
+                expression = this.nonChildPairMap.get(field);
+            } else {
+                expression = this.childPairMap.get(field);
+            }
+            return expression;
         }
 
 
     }//RowObjectWrapper
+
+
+    private static final class DelayIdParam implements SingleParam {
+
+        private final PrimaryFieldMeta<?> field;
+
+        private Object idValue;
+
+        private DelayIdParam(PrimaryFieldMeta<?> field) {
+            this.field = field;
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            return this.field;
+        }
+
+        @Nullable
+        private Object parentPostId(final Object idValue) {
+            final Object oldValue = this.idValue;
+            if (oldValue == null) {
+                this.idValue = idValue;
+            }
+            return oldValue;
+        }
+
+        @Override
+        public Object value() {
+            final Object idValue;
+            idValue = this.idValue;
+            if (idValue == null) {
+                throw ValuesSyntaxInsertContext.parentStmtDontExecute(this.field);
+            }
+            return idValue;
+        }
+    }//DelayIdParam
 
 
 }

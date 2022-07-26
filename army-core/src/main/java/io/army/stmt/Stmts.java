@@ -35,8 +35,12 @@ public abstract class Stmts {
         return new ValuePostStmt(params);
     }
 
-    public static io.army.stmt.SimpleStmt minSimple(final _StmtParams params) {
+    public static SimpleStmt minSimple(final _StmtParams params) {
         return new MinSimpleStmt(params);
+    }
+
+    public static GeneratedKeyStmt assignmentPost(final _InsertStmtParams._AssignmentParams params) {
+        return new AssignmentPostStmt(params);
     }
 
 
@@ -417,7 +421,6 @@ public abstract class Stmts {
     }//DomainPostStmt
 
 
-
     private static final class ValuePostStmt extends PostStmt {
 
         private final BiFunction<Integer, Object, Object> function;
@@ -450,6 +453,39 @@ public abstract class Stmts {
 
         }
     }//ValuePostStmt
+
+    private static final class AssignmentPostStmt extends PostStmt {
+
+        private final Function<Object, Object> function;
+
+        private AssignmentPostStmt(_InsertStmtParams._AssignmentParams params) {
+            super(params);
+            this.function = params.function();
+        }
+
+        @Override
+        public int rowSize() {
+            return 1;
+        }
+
+        @Override
+        public void setGeneratedIdValue(final int indexBasedZero, final @Nullable Object idValue) {
+            if (indexBasedZero != 0) {
+                String m = String.format("indexBasedZero[%s] not 0", indexBasedZero);
+                throw new IllegalArgumentException(m);
+            }
+            if (idValue == null) {
+                throw new NullPointerException("idValue");
+            }
+
+            if (this.function.apply(idValue) != null) {
+                throw duplicateId(this.field);
+            }
+
+        }
+
+
+    }//AssignmentPostStmt
 
 
     private static IllegalStateException duplicateId(PrimaryFieldMeta<?> field) {

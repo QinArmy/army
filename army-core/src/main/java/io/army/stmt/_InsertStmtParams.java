@@ -6,6 +6,7 @@ import io.army.meta.PrimaryFieldMeta;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public interface _InsertStmtParams extends _StmtParams {
 
@@ -36,7 +37,7 @@ public interface _InsertStmtParams extends _StmtParams {
 
     interface _AssignmentParams extends _InsertStmtParams {
 
-        BiFunction<Integer, Object, Object> function();
+        Function<Object, Object> function();
 
     }
 

@@ -41,7 +41,16 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             , final RowWrapper wrapper) {
 
         if (!(domainTable instanceof SimpleTableMeta)) {
-            discriminatorValue(domainTable, wrapper);
+            final FieldMeta<?> discriminator;
+            discriminator = domainTable.discriminator();
+            assert discriminator != null;
+
+            final CodeEnum codeEnum;
+            codeEnum = CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
+            if (codeEnum == null) {
+                throw discriminatorNoMapping(domainTable, discriminator);
+            }
+            wrapper.set(discriminator, codeEnum);
         }
 
         if (domainTable instanceof ChildTableMeta) {
@@ -59,7 +68,18 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
     public final void validate(final TableMeta<?> domainTable, final RowWrapper wrapper) {
 
         if (!(domainTable instanceof SimpleTableMeta)) {
-            discriminatorValue(domainTable, wrapper);
+            final FieldMeta<?> discriminator = domainTable.discriminator();
+            assert discriminator != null;
+            final CodeEnum codeEnum;
+            codeEnum = CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
+            if (codeEnum == null) {
+                throw discriminatorNoMapping(domainTable, discriminator);
+            }
+            if (wrapper.readonlyWrapper().get(discriminator.fieldName()) != codeEnum) {
+                String m = String.format("%s discriminator value isn't %s", domainTable, codeEnum.name());
+                throw new CriteriaException(m);
+            }
+
         }
 
         final TableMeta<?> nonChild;
@@ -68,38 +88,40 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
         } else {
             nonChild = domainTable;
         }
-        if (wrapper.get(_MetaBridge.ID) == null) {
+
+        if (wrapper.isNull(nonChild.id())) {
             throw nullValueErrorForMigration(nonChild.id());
         }
-
-        if (wrapper.get(_MetaBridge.CREATE_TIME) == null) {
+        if (wrapper.isNull(nonChild.getField(_MetaBridge.CREATE_TIME))) {
             throw nullValueErrorForMigration(nonChild.getField(_MetaBridge.CREATE_TIME));
         }
 
-        if (!nonChild.immutable() && wrapper.get(_MetaBridge.UPDATE_TIME) == null) {
-            throw nullValueErrorForMigration(nonChild.getField(_MetaBridge.UPDATE_TIME));
+        FieldMeta<?> reservedField;
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.UPDATE_TIME)) != null && wrapper.isNull(reservedField)) {
+            throw nullValueErrorForMigration(reservedField);
         }
-        if (nonChild.containField(_MetaBridge.VERSION) && wrapper.get(_MetaBridge.VERSION) == null) {
-            throw nullValueErrorForMigration(nonChild.getField(_MetaBridge.VERSION));
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.VERSION)) != null && wrapper.isNull(reservedField)) {
+            throw nullValueErrorForMigration(reservedField);
         }
-        if (nonChild.containField(_MetaBridge.VISIBLE) && wrapper.get(_MetaBridge.VISIBLE) == null) {
-            throw nullValueErrorForMigration(nonChild.getField(_MetaBridge.VISIBLE));
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null && wrapper.isNull(reservedField)) {
+            throw nullValueErrorForMigration(reservedField);
         }
-
 
         if (domainTable != nonChild) {
             for (FieldMeta<?> field : nonChild.fieldChain()) {
-                if (wrapper.get(field.fieldName()) == null && !field.nullable()) {
+                if (wrapper.isNull(field) && !field.nullable()) {
                     throw nullValueErrorForMigration(field);
                 }
             }
         }
 
         for (FieldMeta<?> field : domainTable.fieldChain()) {
-            if (wrapper.get(field.fieldName()) == null && !field.nullable()) {
+            if (wrapper.isNull(field) && !field.nullable()) {
                 throw nullValueErrorForMigration(field);
             }
         }
+
+
     }
 
     abstract void generatorChan(List<FieldMeta<?>> fieldChain, RowWrapper wrapper);
@@ -111,7 +133,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         //1. check id
         field = nonChild.id();
-        if (field.generatorType() == null && wrapper.get(field.fieldName()) == null) {
+        if (field.generatorType() == null && wrapper.isNull(field)) {
             throw _Exceptions.nonNullField(field);
         }
 
@@ -131,24 +153,24 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             String m = String.format("%s not support java type[%s]", field, createTimeJavaType.getName());
             throw new MetaException(m);
         }
-        wrapper.set(_MetaBridge.CREATE_TIME, now);
+        wrapper.set(field, now);
 
         //3. update time
         if (!nonChild.immutable()) {
             //update time java type always same with create time
-            wrapper.set(_MetaBridge.UPDATE_TIME, now);
+            wrapper.set(nonChild.getField(_MetaBridge.UPDATE_TIME), now);
         }
 
         //4. version
-        if (nonChild.containField(_MetaBridge.VERSION)) {
-            field = nonChild.getField(_MetaBridge.VERSION);
+        field = nonChild.tryGetField(_MetaBridge.VERSION);
+        if (field != null) {
             final Class<?> javaType = field.javaType();
             if (javaType == Integer.class) {
-                wrapper.set(_MetaBridge.VERSION, 0);
+                wrapper.set(field, 0);
             } else if (javaType == Long.class) {
-                wrapper.set(_MetaBridge.VERSION, 0L);
+                wrapper.set(field, 0L);
             } else if (javaType == BigInteger.class) {
-                wrapper.set(_MetaBridge.VERSION, BigInteger.ZERO);
+                wrapper.set(field, BigInteger.ZERO);
             } else {
                 String m = String.format("%s not support java type[%s]", field, javaType.getName());
                 throw new MetaException(m);
@@ -156,33 +178,23 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
         }
         //5. visible
         if (manegeVisible
-                && nonChild.containField(_MetaBridge.VISIBLE)
-                && wrapper.get(_MetaBridge.VISIBLE) == null) {
-            wrapper.set(_MetaBridge.VISIBLE, Boolean.TRUE);
+                && (field = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null
+                && wrapper.isNull(field)) {
+            wrapper.set(field, Boolean.TRUE);
         }
 
-    }
-
-
-    private void discriminatorValue(final TableMeta<?> domainTable, final RowWrapper wrapper) {
-        final FieldMeta<?> discriminator;
-        discriminator = domainTable.discriminator();
-        assert discriminator != null;
-
-        final CodeEnum codeEnum;
-        codeEnum = CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
-        if (codeEnum == null) {
-            String m = String.format("%s code[%s] no mapping.", discriminator.javaType().getName()
-                    , domainTable.discriminatorValue());
-            throw new MetaException(m);
-        }
-        wrapper.set(discriminator, codeEnum);
     }
 
 
     private static CriteriaException nullValueErrorForMigration(FieldMeta<?> field) {
         String m = String.format("%s couldn't be null in migration mode.", field);
         return new CriteriaException(m);
+    }
+
+    private static MetaException discriminatorNoMapping(TableMeta<?> domainTable, FieldMeta<?> discriminator) {
+        String m = String.format("%s code[%s] no mapping.", discriminator.javaType().getName()
+                , domainTable.discriminatorValue());
+        throw new MetaException(m);
     }
 
 
@@ -206,10 +218,10 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
                 generator = generatorMap.get(field);
                 assert generator != null;
                 fieldValue = generator.next(field, readWrapper);
-                if (!field.javaType().isInstance(fieldValue)) {
+                if (!field.javaType().isInstance(fieldValue)) { //must validate
                     throw returnValueError(generator, field, fieldValue);
                 }
-                wrapper.set(field.fieldName(), fieldValue);
+                wrapper.set(field, fieldValue);
             }
 
         }
@@ -226,9 +238,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         @Override
         void generatorChan(final List<FieldMeta<?>> fieldChain, final RowWrapper wrapper) {
-            for (FieldMeta<?> field : fieldChain) {
-                wrapper.set(field.fieldName(), null);
-            }
+            //mock environment,no-op
         }
 
 

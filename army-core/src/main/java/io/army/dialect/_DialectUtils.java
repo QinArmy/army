@@ -200,69 +200,40 @@ public abstract class _DialectUtils {
 
 
     static void appendSingleTableField(final SingleTableMeta<?> insertTable, final List<FieldMeta<?>> fieldList
-            , final Map<FieldMeta<?>, Boolean> fieldMap, final Predicate<FieldMeta<?>> predicate) {
+            , final Predicate<FieldMeta<?>> predicate) {
 
         FieldMeta<?> field;
         field = insertTable.id();
         if (field.insertable() && field.generatorType() != null) {
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
             fieldList.add(field);
         }
 
         field = insertTable.getField(_MetaBridge.CREATE_TIME);
-        if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-            //no bug,never here
-            throw new IllegalStateException();
-        }
         fieldList.add(field);
 
         field = insertTable.tryGetField(_MetaBridge.UPDATE_TIME);
         if (field != null) {
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
             fieldList.add(field);
         }
 
         field = insertTable.tryGetField(_MetaBridge.VERSION);
         if (field != null) {
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
             fieldList.add(field);
         }
 
 
         field = insertTable.tryGetField(_MetaBridge.VISIBLE);
         if (field != null && !predicate.test(field)) {
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
             fieldList.add(field);
         }
 
         if (insertTable instanceof ParentTableMeta) {
-            field = insertTable.discriminator();
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
-            fieldList.add(field);
+            fieldList.add(insertTable.discriminator());
         }
 
-        for (FieldMeta<?> f : fieldList) {
+        for (FieldMeta<?> f : insertTable.fieldChain()) {
             if (f instanceof PrimaryFieldMeta) {
                 continue;
-            }
-            if (fieldMap.putIfAbsent(f, Boolean.TRUE) != null) {
-                //no bug,never here
-                throw new IllegalStateException();
             }
             fieldList.add(f);
         }
@@ -270,21 +241,13 @@ public abstract class _DialectUtils {
 
     }
 
-    static void appendChildTableField(final ChildTableMeta<?> insertTable, final List<FieldMeta<?>> fieldList
-            , final Map<FieldMeta<?>, Boolean> fieldMap) {
+    static void appendChildTableField(final ChildTableMeta<?> insertTable, final List<FieldMeta<?>> fieldList) {
 
-        final PrimaryFieldMeta<?> idField;
-        idField = insertTable.id();
-        if (fieldMap.putIfAbsent(idField, Boolean.TRUE) != null) {
-            //no bug,never here
-            throw new IllegalStateException();
-        }
-        fieldList.add(idField);
+        fieldList.add(insertTable.id());
 
         for (FieldMeta<?> field : insertTable.fieldChain()) {
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                //no bug,never here
-                throw new IllegalStateException();
+            if (field instanceof PrimaryFieldMeta) {
+                continue;
             }
             fieldList.add(field);
         }
@@ -372,7 +335,11 @@ public abstract class _DialectUtils {
             }
 
             final _Expression expression;
-            expression = wrapper.getExpression(field);
+            if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
+                expression = wrapper.getExpression(field.tableMeta().nonChildId());
+            } else {
+                expression = wrapper.getExpression(field);
+            }
 
             if (!(expression instanceof SqlValueParam.SingleNonNamedValue)) {
                 return null;
