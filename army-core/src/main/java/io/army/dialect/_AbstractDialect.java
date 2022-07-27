@@ -1096,8 +1096,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (insert instanceof _Insert._ChildDomainInsert) {
             final _Insert._ChildDomainInsert childStmt = (_Insert._ChildDomainInsert) insert;
             final _Insert._DomainInsert parentStmt = childStmt.parentStmt();
-            final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childStmt.table();
-            checkParentStmt(parentStmt, childTable);
+            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
 
             final DomainInsertContext parentContext;
             parentContext = DomainInsertContext.forParent(childStmt, this, visible);
@@ -1552,6 +1551,15 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
+    private void checkParentStmt(_Insert parentStmt, ChildTableMeta<?> childTable) {
+        if (parentStmt instanceof _Insert._DuplicateKeyClause
+                && parentStmt.table().id().generatorType() == GeneratorType.POST
+                && !this.supportInsertReturning()) {
+            throw _Exceptions.duplicateKeyAndPostIdInsert(childTable);
+        }
+    }
+
+
     private static String nonBeautifySql(String sql) {
         return sql;
     }
@@ -1559,13 +1567,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected static IllegalArgumentException illegalDialect() {
         return new IllegalArgumentException("dialect instance error");
-    }
-
-    private static void checkParentStmt(_Insert parentStmt, ChildTableMeta<?> childTable) {
-        if (parentStmt instanceof _Insert._DuplicateKeyClause
-                && parentStmt.table().id().generatorType() == GeneratorType.POST) {
-            throw _Exceptions.duplicateKeyAndPostIdInsert(childTable);
-        }
     }
 
 

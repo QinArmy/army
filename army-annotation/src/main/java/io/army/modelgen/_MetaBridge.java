@@ -32,10 +32,6 @@ public abstract class _MetaBridge {
 
     public static final String TABLE_META = "T";
 
-    public static final String TABLE_NAME = "TABLE_NAME";
-
-    public static final String FIELD_COUNT = "FIELD_COUNT";
-
     public static final String META_CLASS_NAME_SUFFIX = "_";
 
 

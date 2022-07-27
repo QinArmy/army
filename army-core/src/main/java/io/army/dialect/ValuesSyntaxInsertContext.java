@@ -74,11 +74,9 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         } else if (this.migration) {
             this.fieldList = fieldList;// because have validated by the implementation of Insert
         } else {
-            final List<FieldMeta<?>> mergeFieldList;
-            mergeFieldList = _DialectUtils.createNonChildFieldList((SingleTableMeta<?>) insertTable
-                    , nonChildStmt.defaultValueMap()::containsKey);
-            mergeFieldList.addAll(fieldList);// because have validated by the implementation of Insert
-            this.fieldList = Collections.unmodifiableList(mergeFieldList);
+            assert fieldList.size() > 1;
+            assert _MetaBridge.CREATE_TIME.equals(fieldList.get(1).fieldName());
+            this.fieldList = fieldList;// because have validated by the implementation of Insert
         }
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
@@ -89,7 +87,8 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
             //TODO
             throw new UnsupportedOperationException();
         } else if (this.duplicateKeyClause) {
-            if (domainStmt.table() instanceof ChildTableMeta) {
+            if (nonChildStmt != domainStmt) {
+                //the implementations of io.army.criteria.Insert no bug,never here
                 throw _Exceptions.duplicateKeyAndPostIdInsert((ChildTableMeta<?>) domainStmt.table());
             }
             this.returnId = null;
@@ -131,14 +130,9 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
         if (fieldList.size() == 0) {
             this.fieldList = castFieldList(this.insertTable);
-        } else if (this.migration) {
+        } else {
             assert fieldList.get(0) == this.insertTable.id();
             this.fieldList = fieldList;// because have validated by the implementation of Insert
-        } else {
-            final List<FieldMeta<?>> mergeFieldList;
-            mergeFieldList = _DialectUtils.createChildFieldList((ChildTableMeta<?>) this.insertTable);
-            mergeFieldList.addAll(fieldList);// because have validated by the implementation of Insert
-            this.fieldList = Collections.unmodifiableList(mergeFieldList);
         }
         this.returnId = null;
         this.idSelectionAlias = null;

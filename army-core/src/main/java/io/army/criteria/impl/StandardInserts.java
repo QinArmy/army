@@ -71,17 +71,17 @@ abstract class StandardInserts extends InsertSupport {
             extends DomainValueClause<C, T, Insert._StandardDomainDefaultSpec<C, T>, Insert._InsertSpec>
             implements Insert._StandardDomainColumnsSpec<C, T> {
 
-        private final DomainParentColumnsClause<C, ?> parentStmt;
+        private final DomainParentColumnsClause<C, ?> parentClause;
 
 
         private DomainColumnsClause(InsertOptions options, SimpleTableMeta<T> table) {
             super(options, table);
-            this.parentStmt = null;
+            this.parentClause = null;
         }
 
         private DomainColumnsClause(DomainParentColumnsClause<C, ?> clause, ChildTableMeta<T> table) {
             super(clause, table);
-            this.parentStmt = clause;
+            this.parentClause = clause;
         }
 
         @Override
@@ -92,7 +92,7 @@ abstract class StandardInserts extends InsertSupport {
         @Override
         Insert._InsertSpec valuesEnd() {
             final Insert._InsertSpec spec;
-            if (this.parentStmt == null) {
+            if (this.parentClause == null) {
                 spec = new DomainsInsertStatement(this);
             } else {
                 spec = new StandardDomainChildInsertStatement(this);
@@ -119,6 +119,7 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public Insert._StandardChildInsertIntoClause<C, P> child() {
+            this.endColumnDefaultClause();
             return this;
         }
 
@@ -193,8 +194,8 @@ abstract class StandardInserts extends InsertSupport {
 
         private StandardDomainChildInsertStatement(DomainColumnsClause<?, ?> clause) {
             super(clause);
-            assert clause.parentStmt != null;
-            this.parentStmt = clause.parentStmt.createParentStmt(clause::domainList);
+            assert clause.parentClause != null;
+            this.parentStmt = clause.parentClause.createParentStmt(clause::domainList);
         }
 
         @Override
@@ -245,7 +246,6 @@ abstract class StandardInserts extends InsertSupport {
             super(clause.criteriaContext, clause::validateField);
             this.clause = clause;
         }
-
 
         @Override
         public Insert asInsert() {
@@ -325,16 +325,16 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        Insert._InsertSpec valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+        Insert._InsertSpec valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             this.endColumnDefaultClause();
             final Insert._InsertSpec spec;
             if (this.parentStmt == null) {
-                spec = new ValuesInsertStatement(this, rowValuesList);
-            } else if (rowValuesList.size() == this.parentStmt.rowList().size()) {
-                spec = new StandardValueChildInsertStatement(this, rowValuesList);
+                spec = new ValuesInsertStatement(this, rowList);
+            } else if (rowList.size() == this.parentStmt.rowList().size()) {
+                spec = new StandardValueChildInsertStatement(this, rowList);
             } else {
                 throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
-                        , this.parentStmt.rowList().size(), rowValuesList.size());
+                        , this.parentStmt.rowList().size(), rowList.size());
             }
             return spec;
         }
@@ -352,7 +352,7 @@ abstract class StandardInserts extends InsertSupport {
             , Insert._StandardValueChildSpec<C, P>
             , Insert._StandardValueChildInsertIntoClause<C, P> {
 
-        private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+        private List<Map<FieldMeta<?>, _Expression>> rowList;
 
         private StandardValueParentColumnsClause(ValueSyntaxOptions options, ParentTableMeta<P> table) {
             super(options, table);
@@ -385,17 +385,17 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        Insert._StandardValueChildSpec<C, P> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
-            if (this.rowValuesList != null) {
+        Insert._StandardValueChildSpec<C, P> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowList) {
+            if (this.rowList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.endColumnDefaultClause();
-            this.rowValuesList = rowValuesList;
+            this.rowList = rowList;
             return this;
         }
 
         private ValuesInsertStatement createParentStmt() {
-            final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
+            final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowList;
             if (rowValuesList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }

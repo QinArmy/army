@@ -15,9 +15,11 @@ public interface _Insert extends _Statement {
     TableMeta<?> table();
 
 
-
-
     interface _DuplicateKeyClause {
+
+    }
+
+    interface _SupportReturningClause {
 
     }
 
@@ -101,7 +103,7 @@ public interface _Insert extends _Statement {
 
     }
 
-    interface _ChildAssignmentInsert extends _AssignmentInsert {
+    interface _ChildAssignmentInsert extends _AssignmentInsert, _ChildInsert {
 
         _AssignmentInsert parentStmt();
     }
@@ -113,14 +115,9 @@ public interface _Insert extends _Statement {
 
     }
 
-    interface _ChildQueryInsert extends _QueryInsert {
+    interface _ChildQueryInsert extends _QueryInsert, _ChildInsert {
 
         _QueryInsert parentStmt();
-    }
-
-    interface _ReturningInsert extends _Insert {
-
-
     }
 
 

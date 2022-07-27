@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
@@ -269,7 +270,7 @@ abstract class InsertSupport {
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap == null) {
-                this.innerCheckField(field);
+                checkField(this.criteriaContext, this.table, this.migration, field);
             } else if (!fieldMap.containsKey(field)) {
                 throw notContainField(this.criteriaContext, field);
             }
@@ -280,50 +281,94 @@ abstract class InsertSupport {
         }
 
         private void addField(final FieldMeta<T> field) {
-            this.innerCheckField(field);
+            checkField(this.criteriaContext, this.table, this.migration, field);
+            if (_MetaBridge.VISIBLE.equals(field.fieldName())) {
+                String m = String.format("%s is managed by army for column list clause.", _MetaBridge.VISIBLE);
+                throw new CriteriaException(m);
+            }
 
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            List<FieldMeta<?>> fieldList;
             if (fieldMap == null) {
-                fieldMap = new HashMap<>();
-                this.fieldMap = fieldMap;
+                fieldMap = this.createFieldMap(); // create map and add the fields that is managed by army.
+                fieldList = this.fieldList;
+                assert fieldList != null && fieldList.size() == fieldMap.size();
+            } else {
+                fieldList = this.fieldList;
+                assert fieldList != null;
             }
+
+
             if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
                 String m = String.format("%s duplication", field);
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-
-            List<FieldMeta<?>> fieldList = this.fieldList;
-            if (fieldList == null) {
-                fieldList = new ArrayList<>();
-                this.fieldList = fieldList;
-                if (this.migration && this.table instanceof ChildTableMeta) {
-                    final PrimaryFieldMeta<?> childId = this.table.id();
-                    assert field != childId; // validated
-                    fieldMap.put(childId, Boolean.TRUE);
-                    fieldList.add(childId);
-                }
             }
             fieldList.add(field);
 
         }
 
+        private Map<FieldMeta<?>, Boolean> createFieldMap() {
+            assert this.fieldMap == null && this.fieldList == null;
+            final Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
+            final List<FieldMeta<?>> fieldList = new ArrayList<>();
 
-        private void innerCheckField(final FieldMeta<?> field) {
-            final TableMeta<?> table = this.table;
-            if (field.tableMeta() != table) {
-                //don't contain parent field
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
-            } else if (this.migration) {
-                if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
-                    throw childIdIsManaged(this.criteriaContext, (ChildTableMeta<?>) field.tableMeta());
+            final TableMeta<?> insertTable = this.table;
+            FieldMeta<?> reservedField;
+            if (this.migration) {
+                if (insertTable instanceof ChildTableMeta) {
+                    reservedField = insertTable.id();
+                    fieldMap.put(reservedField, Boolean.TRUE); // child id must be managed by army
+                    fieldList.add(reservedField);
                 }
-            } else if (!field.insertable()) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonInsertableField, field);
-            } else if (isArmyManageField(this.table, field)) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::armyManageField, field);
-            } else if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
-                throw childIdIsManaged(this.criteriaContext, (ChildTableMeta<?>) field.tableMeta());
+            } else if (insertTable instanceof ChildTableMeta) {
+                reservedField = insertTable.id();
+                fieldMap.put(reservedField, Boolean.TRUE); // child id must be managed by army
+                fieldList.add(reservedField);
+
+                for (FieldMeta<?> field : insertTable.fieldChain()) {
+                    if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                        //no bug,never here
+                        throw new IllegalStateException("fieldChain error");
+                    }
+                    fieldList.add(field);
+                }
+            } else {
+                for (String fieldName : _MetaBridge.RESERVED_PROPS) {
+                    reservedField = insertTable.tryGetField(fieldName);
+                    if (reservedField == null) {
+                        continue;
+                    }
+                    if (reservedField instanceof PrimaryFieldMeta
+                            && (!reservedField.insertable() || reservedField.generatorType() == null)) {
+                        continue;
+                    }
+                    fieldMap.putIfAbsent(reservedField, Boolean.TRUE);
+                    fieldList.add(reservedField);
+
+                }
+                reservedField = insertTable.discriminator();
+                if (reservedField != null) {
+                    fieldMap.putIfAbsent(reservedField, Boolean.TRUE);
+                    fieldList.add(reservedField);
+                }
+
+                for (FieldMeta<?> field : insertTable.fieldChain()) {
+                    if (field instanceof PrimaryFieldMeta) {
+                        continue;
+                    }
+                    if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                        //no bug,never here
+                        throw new IllegalStateException("fieldChain error");
+                    }
+                    fieldList.add(field);
+                }
+
             }
+
+            assert fieldList.size() == fieldMap.size();
+            this.fieldMap = fieldMap;
+            this.fieldList = fieldList;
+            return fieldMap;
         }
 
     }//ColumnsClause
@@ -640,7 +685,7 @@ abstract class InsertSupport {
 
         final BiConsumer<FieldMeta<?>, ArmyExpression> validator;
 
-        private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
+        private List<Map<FieldMeta<?>, _Expression>> rowList;
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
@@ -718,10 +763,10 @@ abstract class InsertSupport {
             if (!(currentRow instanceof HashMap)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowValuesList;
+            List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
             if (rowValueList == null) {
                 rowValueList = new ArrayList<>();
-                this.rowValuesList = rowValueList;
+                this.rowList = rowValueList;
             } else if (!(rowValueList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -733,13 +778,13 @@ abstract class InsertSupport {
             if (this.rowValuesMap != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowValuesList;
+            List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
             if (rowValueList instanceof ArrayList) {
                 rowValueList = _CollectionUtils.unmodifiableList(rowValueList);
             } else {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.rowValuesList = rowValueList;
+            this.rowList = rowValueList;
             return rowValueList;
         }
 
@@ -751,12 +796,23 @@ abstract class InsertSupport {
             this.validator.accept(field, (ArmyExpression) value);
             Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
             if (currentRow == null) {
-                currentRow = new HashMap<>();
+                currentRow = this.newMap();
                 this.rowValuesMap = currentRow;
             }
             if (currentRow.putIfAbsent(field, (ArmyExpression) value) != null) {
                 throw duplicationValuePair(this.criteriaContext, field);
             }
+        }
+
+        private Map<FieldMeta<?>, _Expression> newMap() {
+            final List<Map<FieldMeta<?>, _Expression>> rowList = this.rowList;
+            final Map<FieldMeta<?>, _Expression> map;
+            if (rowList == null) {
+                map = new HashMap<>();
+            } else {
+                map = new HashMap<>((int) (rowList.get(0).size() / 0.75F));
+            }
+            return map;
         }
 
 
@@ -827,9 +883,9 @@ abstract class InsertSupport {
         }
 
         /**
-         * @param rowValuesList a unmodified list
+         * @param rowList a unmodified list
          */
-        abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowValuesList);
+        abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowList);
 
 
         private PairConsumer<T> addValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
@@ -1119,6 +1175,16 @@ abstract class InsertSupport {
             this.preferLiteral = options.isPreferLiteral();
         }
 
+
+        @Override
+        public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
+            InsertSupport.checkField(this.criteriaContext, this.table, true, field);
+            if (value != null && !field.nullable() && value.isNullValue()) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
+            }
+
+        }
+
         @Override
         public final TableMeta<?> table() {
             return this.table;
@@ -1201,7 +1267,7 @@ abstract class InsertSupport {
             , DmlStatement.DmlInsert {
 
 
-        private final CriteriaContext criteriaContext;
+        final CriteriaContext criteriaContext;
 
         final TableMeta<?> table;
 
@@ -1235,14 +1301,25 @@ abstract class InsertSupport {
         @Override
         public final I asInsert() {
             _Assert.nonPrepared(this.prepared);
+
+            if (this instanceof QueryInsertStatement) {
+                ((QueryInsertStatement<I>) this).validateStatement();
+            } else if (this instanceof _Insert._ChildInsert) {
+                final _Insert parentStmt = ((_ChildInsert) this).parentStmt();
+                if (parentStmt instanceof _Insert._DuplicateKeyClause
+                        && parentStmt.table().id().generatorType() == GeneratorType.POST
+                        && !(parentStmt instanceof _Insert._SupportReturningClause)) {
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext
+                            , _Exceptions::duplicateKeyAndPostIdInsert, (ChildTableMeta<?>) this.table);
+                }
+            }
+
             if (this instanceof SubStatement) {
                 CriteriaContextStack.pop(this.criteriaContext);
             } else {
                 CriteriaContextStack.clearContextStack(this.criteriaContext);
             }
-            if (this instanceof QueryInsertStatement) {
-                ((QueryInsertStatement<I>) this).validateStatement();
-            }
+
             this.prepared = Boolean.TRUE;
             return (I) this;
         }
@@ -1438,25 +1515,50 @@ abstract class InsertSupport {
 
         }
 
-        private static void doValidateStatement(final TableMeta<?> table, final List<FieldMeta<?>> fieldList
+        private void doValidateStatement(final TableMeta<?> table, final List<FieldMeta<?>> fieldList
                 , final @Nullable RowSet rowSet) {
             final int size;
             size = fieldList.size();
             if (size == 0) {
-                throw _Exceptions.noFieldsForRowSetInsert(table);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext
+                        , _Exceptions::noFieldsForRowSetInsert, table);
             }
             if (rowSet == null) {
-                throw new CriteriaException(String.format("RowSet is null for %s", table));
+                String m = String.format("RowSet is null for %s", table);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
             final int selectionSize;
             selectionSize = CriteriaUtils.selectionCount(rowSet);
             if (selectionSize != size) {
-                throw _Exceptions.rowSetSelectionAndFieldSizeNotMatch(selectionSize, size, table);
+                Supplier<CriteriaException> supplier;
+                supplier = () -> _Exceptions.rowSetSelectionAndFieldSizeNotMatch(selectionSize, size, table);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, supplier);
             }
         }
 
 
-    }//RowSetInsertStatement
+    }//QueryInsertStatement
+
+
+    static void checkField(final CriteriaContext context, final TableMeta<?> table
+            , final boolean migration, final FieldMeta<?> field) {
+
+        if (field.tableMeta() != table) {
+            //don't contain parent field
+            throw CriteriaContextStack.criteriaError(context, _Exceptions::unknownColumn, field);
+        } else if (migration) {
+            if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
+                throw childIdIsManaged(context, (ChildTableMeta<?>) field.tableMeta());
+            }
+        } else if (!field.insertable()) {
+            throw CriteriaContextStack.criteriaError(context, _Exceptions::nonInsertableField, field);
+        } else if (isArmyManageField(table, field)) {
+            throw CriteriaContextStack.criteriaError(context, _Exceptions::armyManageField, field);
+        } else if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
+            throw childIdIsManaged(context, (ChildTableMeta<?>) field.tableMeta());
+        }
+
+    }
 
 
     static CriteriaException notContainField(CriteriaContext criteriaContext, FieldMeta<?> field) {
@@ -1469,14 +1571,6 @@ abstract class InsertSupport {
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
-    static CriteriaException subQueryIsNull(CriteriaContext criteriaContext) {
-        return CriteriaContextStack.criteriaError(criteriaContext, "sub query must be non-null");
-    }
-
-    static CriteriaException noColumnList(CriteriaContext criteriaContext, TableMeta<?> table) {
-        String m = String.format("You must specified column list of %s for row set insert.", table);
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
-    }
 
     private static CriteriaException nonDomainInstance(CriteriaContext criteriaContext, @Nullable Object domain
             , TableMeta<?> table) {
@@ -1503,6 +1597,7 @@ abstract class InsertSupport {
             case _MetaBridge.CREATE_TIME:
             case _MetaBridge.UPDATE_TIME:
             case _MetaBridge.VERSION:
+                // here,don't contain visible field
                 match = true;
                 break;
             default:

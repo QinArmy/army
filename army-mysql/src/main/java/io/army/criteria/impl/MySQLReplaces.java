@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
 import io.army.criteria.Hint;
 import io.army.criteria.ReplaceInsert;
 import io.army.criteria.Visible;
@@ -11,11 +10,9 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
-import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
-import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
@@ -140,7 +137,7 @@ abstract class MySQLReplaces extends InsertSupport {
             ReplaceInsert._ReplaceSpec>
             implements MySQLReplace._DomainPartitionSpec<C, T> {
 
-        private final DomainParentPartitionClause<C, ?> parentStmt;
+        private final DomainParentPartitionClause<C, ?> parentClause;
 
         private final List<Hint> hintList;
 
@@ -153,14 +150,14 @@ abstract class MySQLReplaces extends InsertSupport {
             super(clause, table);
             this.hintList = clause.hintList();
             this.modifierList = clause.modifierList();
-            this.parentStmt = null;
+            this.parentClause = null;
         }
 
         private DomainPartitionClause(DomainParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
             super(clause, table);
             this.hintList = _CollectionUtils.safeList(clause.childHintList);
             this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
-            this.parentStmt = clause;
+            this.parentClause = clause;
         }
 
         @Override
@@ -176,11 +173,11 @@ abstract class MySQLReplaces extends InsertSupport {
         @Override
         ReplaceInsert._ReplaceSpec valuesEnd() {
             final ReplaceInsert._ReplaceSpec spec;
-            if (this.parentStmt == null) {
+            if (this.parentClause == null) {
                 spec = new DomainReplaceStatement(this);
             } else {
                 final _Insert._DomainInsert parentStatement;
-                parentStatement = this.parentStmt.createParentStmt(this::domainList);
+                parentStatement = this.parentClause.createParentStmt(this::domainList);
                 spec = new DomainChildReplaceStatement(this, parentStatement);
             }
             return spec;
@@ -231,7 +228,6 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public MySQLReplace._DomainChildReplaceIntoSpec<C, P> child() {
-            this.endColumnDefaultClause();
             return this;
         }
 
@@ -471,15 +467,15 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        MySQLReplace._ReplaceSpec valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+        MySQLReplace._ReplaceSpec valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             final MySQLReplace._ReplaceSpec spec;
             if (this.parentStmt == null) {
-                spec = new ValuesReplaceStatement(this, rowValuesList);
-            } else if (rowValuesList.size() == this.parentStmt.rowList().size()) {
-                spec = new ValuesChildReplaceStatement(this, rowValuesList);
+                spec = new ValuesReplaceStatement(this, rowList);
+            } else if (rowList.size() == this.parentStmt.rowList().size()) {
+                spec = new ValuesChildReplaceStatement(this, rowList);
             } else {
                 throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
-                        , this.parentStmt.rowList().size(), rowValuesList.size());
+                        , this.parentStmt.rowList().size(), rowList.size());
             }
             return spec;
         }
@@ -581,11 +577,11 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        MySQLReplace._ValueChildSpec<C, P> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowValuesList) {
+        MySQLReplace._ValueChildSpec<C, P> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowValuesList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.rowValuesList = rowValuesList;
+            this.rowValuesList = rowList;
             return this;
         }
 
@@ -828,21 +824,9 @@ abstract class MySQLReplaces extends InsertSupport {
             return spec.asInsert();
         }
 
-        @Override
-        public void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
-            _DialectUtils.checkInsertField(this.table, field, this::forbidField);
-            if (value != null && !field.nullable() && value.isNullValue()) {
-                throw _Exceptions.nonNullField(field);
-            }
-        }
-
         private MySQLReplace._AssignmentReplaceSetClause<C, T> partitionEnd(List<String> partitionList) {
             this.partitionList = partitionList;
             return this;
-        }
-
-        private CriteriaException forbidField(FieldMeta<?> field, Function<FieldMeta<?>, CriteriaException> function) {
-            return CriteriaContextStack.criteriaError(this.criteriaContext, function, field);
         }
 
 
@@ -878,11 +862,6 @@ abstract class MySQLReplaces extends InsertSupport {
         @Override
         public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentParentReplaceSetClause<C, P>> partition() {
             return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
-        }
-
-        @Override
-        public void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
-
         }
 
         @Override

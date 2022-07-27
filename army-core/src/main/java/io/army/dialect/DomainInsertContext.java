@@ -32,12 +32,10 @@ import java.util.Map;
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._DomainParams {
 
     static DomainInsertContext forSingle(_Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
-        _DialectUtils.checkDefaultValueMap(insert);
         return new DomainInsertContext(dialect, insert, visible);
     }
 
     static DomainInsertContext forParent(_Insert._ChildDomainInsert domainStmt, ArmyDialect dialect, Visible visible) {
-        _DialectUtils.checkDefaultValueMap(domainStmt);
         return new DomainInsertContext(dialect, domainStmt, visible);
     }
 
