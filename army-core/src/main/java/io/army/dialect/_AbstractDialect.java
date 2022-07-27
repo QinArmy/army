@@ -1100,7 +1100,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
             checkParentStmt(parentStmt, childTable);
 
             final DomainInsertContext parentContext;
-            parentContext = DomainInsertContext.forParent(parentStmt, childTable, this, visible);
+            parentContext = DomainInsertContext.forParent(childStmt, this, visible);
 
             if (standardStmt) {
                 this.standardValueSyntaxInsert(parentContext);

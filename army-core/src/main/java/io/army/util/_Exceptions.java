@@ -15,6 +15,7 @@ import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
@@ -120,7 +121,36 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
     public static CriteriaException armyManageField(TableField field) {
-        return new CriteriaException(String.format("%s is managed by Army.", field));
+        final String m;
+        m = String.format("%s is managed by army,\nbelow is managed by army:\n%s,\n%s,\n%s,\n%s\n%s%s"
+                , field
+
+                , _MetaBridge.CREATE_TIME
+                , _MetaBridge.UPDATE_TIME
+                , _MetaBridge.VERSION
+                , "discriminator"
+
+                , "the field annotated by "
+                , Generator.class.getName());
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException migrationModeGeneratorField(FieldMeta<?> field) {
+        String m;
+        m = String.format("%s is annotated by %s and non-null,so required in column list clause int migration mode."
+                , field, Generator.class.getName());
+        throw new CriteriaException(m);
+    }
+
+    public static CriteriaException migrationManageGeneratorField(FieldMeta<?> field) {
+        String m;
+        m = "reserved fields and discriminator required in column clause in migration mode,but not found %s";
+        throw new CriteriaException(String.format(m, field));
+    }
+
+    public static CriteriaException childIdIsManagedByArmy(ChildTableMeta<?> table) {
+        String m = String.format("child id %s always is managed by army", table.id());
+        return new CriteriaException(m);
     }
 
     public static CriteriaException visibleField(Visible visible, TableField field) {

@@ -88,7 +88,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _OnDuplicateKeyUpdateFieldSpec<C, T>
             extends _StaticOnDuplicateKeyFieldClause<C, T, _StaticAssignmentCommaFieldSpec<C, T>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<FieldMeta<T>>, Insert._InsertSpec>
+            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<T>, Insert._InsertSpec>
             , Insert._InsertSpec {
 
     }
@@ -106,7 +106,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _ParentOnDuplicateKeyUpdateFieldSpec<C, T, CT>
             extends _StaticOnDuplicateKeyFieldClause<C, T, _ParentStaticAssignmentCommaFieldSpec<C, T, CT>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<FieldMeta<T>>, _MySQLChildSpec<CT>>
+            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<T>, _MySQLChildSpec<CT>>
             , _MySQLChildSpec<CT> {
 
     }
@@ -164,7 +164,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _DomainParentOnDuplicateKeyUpdateFieldSpec<C, P>
             extends _StaticOnDuplicateKeyFieldClause<C, P, _DomainParentStaticAssignmentCommaFieldSpec<C, P>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<FieldMeta<P>>, _DomainChildClause<C, P>>
+            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<P>, _DomainChildClause<C, P>>
             , _DomainChildClause<C, P> {
 
     }

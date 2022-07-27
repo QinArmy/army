@@ -132,6 +132,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         if (fieldList.size() == 0) {
             this.fieldList = castFieldList(this.insertTable);
         } else if (this.migration) {
+            assert fieldList.get(0) == this.insertTable.id();
             this.fieldList = fieldList;// because have validated by the implementation of Insert
         } else {
             final List<FieldMeta<?>> mergeFieldList;

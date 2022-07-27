@@ -204,7 +204,7 @@ abstract class MySQLReplaces extends InsertSupport {
             implements MySQLReplace._DomainParentPartitionSpec<C, P>
             , MySQLReplace._DomainChildReplaceIntoSpec<C, P>
             , MySQLReplace._DomainChildIntoClause<C, P>
-            , NonQueryInsertOptions {
+            , ValueSyntaxOptions {
 
 
         private final List<Hint> hintList;
@@ -503,7 +503,7 @@ abstract class MySQLReplaces extends InsertSupport {
             , MySQLReplace._ValueChildSpec<C, P>
             , MySQLReplace._ValueChildReplaceIntoSpec<C, P>
             , MySQLReplace._ValueChildIntoClause<C, P>
-            , NonQueryInsertOptions {
+            , ValueSyntaxOptions {
 
         private final List<Hint> hintList;
 
@@ -857,7 +857,7 @@ abstract class MySQLReplaces extends InsertSupport {
             , MySQLReplace._AssignmentParentReplaceSetSpec<C, P>
             , MySQLReplace._AssignmentChildReplaceIntoSpec<C, P>
             , MySQLReplace._AssignmentChildIntoClause<C, P>
-            , NonQueryInsertOptions {
+            , InsertOptions {
 
         private final List<Hint> hintList;
 

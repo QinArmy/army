@@ -303,7 +303,7 @@ abstract class StandardInserts extends InsertSupport {
 
         private final _ValuesInsert parentStmt;
 
-        private StandardValueColumnsClause(NonQueryInsertOptions options, SimpleTableMeta<T> table) {
+        private StandardValueColumnsClause(ValueSyntaxOptions options, SimpleTableMeta<T> table) {
             super(options, table);
             this.parentStmt = null;
         }
@@ -354,7 +354,7 @@ abstract class StandardInserts extends InsertSupport {
 
         private List<Map<FieldMeta<?>, _Expression>> rowValuesList;
 
-        private StandardValueParentColumnsClause(NonQueryInsertOptions options, ParentTableMeta<P> table) {
+        private StandardValueParentColumnsClause(ValueSyntaxOptions options, ParentTableMeta<P> table) {
             super(options, table);
         }
 

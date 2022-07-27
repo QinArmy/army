@@ -5,12 +5,10 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
-import io.army.dialect._DialectUtils;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
+import io.army.meta.*;
+import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
 import io.army.util._Assert;
 import io.army.util._ClassUtils;
@@ -30,39 +28,37 @@ abstract class InsertSupport {
     }
 
 
-    interface InsertOptions extends CriteriaContextSpec {
-
-
-        boolean isMigration();
-
-        @Nullable
-        NullHandleMode nullHandle();
+    interface InsertOptions extends CriteriaContextSpec, _Insert._InsertOption {
 
 
     }
 
-    interface NonQueryInsertOptions extends InsertOptions {
+    interface ValueSyntaxOptions extends InsertOptions {
 
-        boolean isPreferLiteral();
+        @Nullable
+        NullHandleMode nullHandle();
 
     }
 
 
     interface ColumnListClause extends CriteriaContextSpec {
 
+        /**
+         * @param value if non-null and not {@link  FieldMeta#nullable()},then validate value isn't non-null expression
+         */
         void validateField(FieldMeta<?> field, @Nullable ArmyExpression value);
 
 
     }
 
-    static abstract class InsertOptionsImpl<MR, NR> implements InsertOptions, Insert._MigrationOptionClause<MR>
-            , Insert._NullOptionClause<NR> {
+    static abstract class InsertOptionsImpl<MR, PR> implements InsertOptions, Insert._MigrationOptionClause<MR>
+            , Insert._PreferLiteralClause<PR> {
 
         final CriteriaContext criteriaContext;
 
         private boolean migration;
 
-        private NullHandleMode nullHandleMode;
+        private boolean preferLiteral;
 
         InsertOptionsImpl(CriteriaContext criteriaContext) {
             this.criteriaContext = criteriaContext;
@@ -77,9 +73,9 @@ abstract class InsertSupport {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final NR nullHandle(NullHandleMode mode) {
-            this.nullHandleMode = mode;
-            return (NR) this;
+        public final PR preferLiteral(boolean prefer) {
+            this.preferLiteral = prefer;
+            return (PR) this;
         }
 
         @Override
@@ -93,19 +89,19 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final NullHandleMode nullHandle() {
-            return this.nullHandleMode;
+        public final boolean isPreferLiteral() {
+            return this.preferLiteral;
         }
 
 
     }//InsertOptionsImpl
 
 
-    static abstract class NonQueryInsertOptionsImpl<MR, NR, PR> extends InsertOptionsImpl<MR, NR>
-            implements NonQueryInsertOptions, Insert._PreferLiteralClause<PR> {
+    static abstract class NonQueryInsertOptionsImpl<MR, NR, PR> extends InsertOptionsImpl<MR, PR>
+            implements ValueSyntaxOptions, Insert._NullOptionClause<NR> {
 
 
-        private boolean preferLiteral;
+        private NullHandleMode nullHandleMode;
 
         NonQueryInsertOptionsImpl(CriteriaContext criteriaContext) {
             super(criteriaContext);
@@ -113,16 +109,15 @@ abstract class InsertSupport {
 
         @SuppressWarnings("unchecked")
         @Override
-        public final PR preferLiteral(boolean prefer) {
-            this.preferLiteral = prefer;
-            return (PR) this;
+        public final NR nullHandle(NullHandleMode mode) {
+            this.nullHandleMode = mode;
+            return (NR) this;
         }
 
         @Override
-        public final boolean isPreferLiteral() {
-            return this.preferLiteral;
+        public final NullHandleMode nullHandle() {
+            return this.nullHandleMode;
         }
-
 
     }//NonQueryInsertOptionsImpl
 
@@ -199,19 +194,30 @@ abstract class InsertSupport {
 
         @Override
         public final RR rightParen() {
-            final List<FieldMeta<?>> fieldList;
-            fieldList = this.fieldList;
+            final List<FieldMeta<?>> fieldList = this.fieldList;
+            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+
             if (fieldList == null) {
                 this.fieldList = Collections.emptyList();
+                assert fieldMap == null;
             } else if (!(fieldList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            } else if (fieldList.size() == 1) {
-                this.fieldList = Collections.singletonList(fieldList.get(0));
             } else {
-                this.fieldList = Collections.unmodifiableList(fieldList);
+                assert fieldMap != null && fieldList.size() == fieldMap.size();
+
+                if (this.migration) {
+                    final TableMeta<?> table = this.table;
+                    assert !(table instanceof ChildTableMeta) || fieldList.get(0) == table.id();
+                    validateMigrationColumnList(table, fieldMap);
+                }
+                if (fieldList.size() == 1) {
+                    this.fieldList = Collections.singletonList(fieldList.get(0));
+                } else {
+                    this.fieldList = Collections.unmodifiableList(fieldList);
+                }
             }
 
-            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+
             if (fieldMap == null) {
                 this.fieldMap = Collections.emptyMap();
             } else if (fieldMap instanceof HashMap) {
@@ -262,37 +268,19 @@ abstract class InsertSupport {
         @Override
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            if (fieldMap != null) {
-                if (!fieldMap.containsKey(field)) {
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
-                }
-            } else if (field.tableMeta() != this.table) {
-                // don't contain parent filed
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
-            } else if (!this.migration) {
-                _DialectUtils.checkInsertField(this.table, field, this::forbidField);
+            if (fieldMap == null) {
+                this.innerCheckField(field);
+            } else if (!fieldMap.containsKey(field)) {
+                throw notContainField(this.criteriaContext, field);
             }
-
             if (value != null && !field.nullable() && value.isNullValue()) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
             }
 
         }
 
-        final CriteriaException forbidField(FieldMeta<?> field, Function<FieldMeta<?>, CriteriaException> function) {
-            return CriteriaContextStack.criteriaError(this.criteriaContext, function, field);
-        }
-
-
         private void addField(final FieldMeta<T> field) {
-            final TableMeta<?> table = this.table;
-            if (field.tableMeta() != table) {
-                //don't contain parent field
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
-            }
-            if (!this.migration) {
-                _DialectUtils.checkInsertField(this.table, field, this::forbidField);
-            }
+            this.innerCheckField(field);
 
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap == null) {
@@ -308,9 +296,34 @@ abstract class InsertSupport {
             if (fieldList == null) {
                 fieldList = new ArrayList<>();
                 this.fieldList = fieldList;
+                if (this.migration && this.table instanceof ChildTableMeta) {
+                    final PrimaryFieldMeta<?> childId = this.table.id();
+                    assert field != childId; // validated
+                    fieldMap.put(childId, Boolean.TRUE);
+                    fieldList.add(childId);
+                }
             }
             fieldList.add(field);
 
+        }
+
+
+        private void innerCheckField(final FieldMeta<?> field) {
+            final TableMeta<?> table = this.table;
+            if (field.tableMeta() != table) {
+                //don't contain parent field
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::unknownColumn, field);
+            } else if (this.migration) {
+                if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
+                    throw childIdIsManaged(this.criteriaContext, (ChildTableMeta<?>) field.tableMeta());
+                }
+            } else if (!field.insertable()) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonInsertableField, field);
+            } else if (isArmyManageField(this.table, field)) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::armyManageField, field);
+            } else if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
+                throw childIdIsManaged(this.criteriaContext, (ChildTableMeta<?>) field.tableMeta());
+            }
         }
 
     }//ColumnsClause
@@ -329,16 +342,20 @@ abstract class InsertSupport {
 
         ColumnDefaultClause(InsertOptions options, TableMeta<T> table) {
             super(options.getCriteriaContext(), options.isMigration(), table);
-            if (options instanceof NonQueryInsertOptions) {
-                this.preferLiteral = ((NonQueryInsertOptions) options).isPreferLiteral();
+            if (options instanceof ValueSyntaxOptions) {
+                this.nullHandleMode = ((ValueSyntaxOptions) options).nullHandle();
             } else {
-                this.preferLiteral = false;
+                this.nullHandleMode = null;
             }
-            this.nullHandleMode = options.nullHandle();
+            this.preferLiteral = options.isPreferLiteral();
         }
 
         @Override
         public final RR defaultValue(final FieldMeta<T> field, final @Nullable Object value) {
+            if (this.migration) {
+                String m = "migration mode not support default value clause";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
             final ArmyExpression valueExp;
             if (value == null) {
                 if (this.preferLiteral) {
@@ -362,7 +379,7 @@ abstract class InsertSupport {
                 this.commonExpMap = commonExpMap;
             }
             if (commonExpMap.putIfAbsent(field, valueExp) != null) {
-                String m = String.format("duplication common expression for %s.", field);
+                String m = String.format("duplication default for %s.", field);
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
             return (RR) this;
@@ -748,13 +765,13 @@ abstract class InsertSupport {
 
     static abstract class DynamicValueInsertValueClause<C, T, RR, VR>
             extends ColumnDefaultClause<C, T, RR> implements Insert._DynamicValuesClause<C, T, VR>
-            , PairsConstructor<T>, NonQueryInsertOptions {
+            , PairsConstructor<T>, ValueSyntaxOptions {
 
         private List<Map<FieldMeta<?>, _Expression>> valuePairList;
 
         private Map<FieldMeta<?>, _Expression> valuePairMap;
 
-        DynamicValueInsertValueClause(NonQueryInsertOptions options, TableMeta<T> table) {
+        DynamicValueInsertValueClause(ValueSyntaxOptions options, TableMeta<T> table) {
             super(options, table);
         }
 
@@ -1093,15 +1110,12 @@ abstract class InsertSupport {
 
         final boolean migration;
 
-        final NullHandleMode nullHandleMode;
-
         final boolean preferLiteral;
 
-        AssignmentInsertClause(NonQueryInsertOptions options, TableMeta<T> table) {
+        AssignmentInsertClause(InsertOptions options, TableMeta<T> table) {
             super(options.getCriteriaContext(), table);
 
             this.migration = options.isMigration();
-            this.nullHandleMode = options.nullHandle();
             this.preferLiteral = options.isPreferLiteral();
         }
 
@@ -1120,10 +1134,6 @@ abstract class InsertSupport {
             return this.preferLiteral;
         }
 
-        @Override
-        public final NullHandleMode nullHandle() {
-            return this.nullHandleMode;
-        }
 
         @Override
         public void clear() {
@@ -1337,8 +1347,6 @@ abstract class InsertSupport {
 
         private final boolean migration;
 
-        private final NullHandleMode nullHandleMode;
-
         private final boolean preferLiteral;
 
         private final List<_Pair<FieldMeta<?>, _Expression>> rowPairList;
@@ -1348,7 +1356,6 @@ abstract class InsertSupport {
         AssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
             this.migration = clause.isMigration();
-            this.nullHandleMode = clause.nullHandle();
             this.preferLiteral = clause.isPreferLiteral();
             this.rowPairList = clause.rowPairList();
 
@@ -1358,11 +1365,6 @@ abstract class InsertSupport {
         @Override
         public final boolean isMigration() {
             return this.migration;
-        }
-
-        @Override
-        public final NullHandleMode nullHandle() {
-            return this.nullHandleMode;
         }
 
         @Override
@@ -1483,11 +1485,55 @@ abstract class InsertSupport {
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
+    private static CriteriaException childIdIsManaged(CriteriaContext criteriaContext, ChildTableMeta<?> table) {
+        return CriteriaContextStack.criteriaError(criteriaContext, _Exceptions::childIdIsManagedByArmy, table);
+    }
+
     static CriteriaException childAndParentRowsNotMatch(CriteriaContext criteriaContext
             , ChildTableMeta<?> table, int parent, int child) {
         Supplier<CriteriaException> supplier;
         supplier = () -> _Exceptions.childAndParentRowsNotMatch(table, parent, child);
         return CriteriaContextStack.criteriaError(criteriaContext, supplier);
+    }
+
+
+    private static boolean isArmyManageField(final TableMeta<?> insertTable, final FieldMeta<?> field) {
+        final boolean match;
+        switch (field.fieldName()) {
+            case _MetaBridge.CREATE_TIME:
+            case _MetaBridge.UPDATE_TIME:
+            case _MetaBridge.VERSION:
+                match = true;
+                break;
+            default:
+                match = field == insertTable.discriminator() || field.generatorType() != null;
+
+        }
+        return match;
+    }
+
+    private static void validateMigrationColumnList(final TableMeta<?> table
+            , final Map<FieldMeta<?>, Boolean> fieldMap) {
+        if (table instanceof SingleTableMeta) {
+            FieldMeta<?> field;
+            for (String fieldName : _MetaBridge.RESERVED_PROPS) {
+                field = table.tryGetField(fieldName);
+                if (field != null && fieldMap.get(field) == null) {
+                    throw _Exceptions.migrationManageGeneratorField(field);
+                }
+            }
+            field = table.discriminator();
+            if (field != null && fieldMap.get(field) == null) {
+                throw _Exceptions.migrationManageGeneratorField(field);
+            }
+        }
+
+        for (FieldMeta<?> field : table.fieldChain()) {
+            if (!field.nullable() && fieldMap.get(field) == null) {
+                throw _Exceptions.migrationModeGeneratorField(field);
+            }
+        }
+
     }
 
 

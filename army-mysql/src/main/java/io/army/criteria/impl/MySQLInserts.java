@@ -141,8 +141,8 @@ abstract class MySQLInserts extends InsertSupport {
             implements Insert._CommaFieldValuePairClause<C, T, UR>
             , MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, T, UR>
             , MySQLInsert._StaticOnDuplicateKeyFieldClause<C, T, UR>
-            , MySQLInsert._DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<FieldMeta<T>>, DR>
-            , PairConsumer<FieldMeta<T>> {
+            , MySQLInsert._DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<T>, DR>
+            , PairConsumer<T> {
 
         final CriteriaContext criteriaContext;
 
@@ -221,47 +221,47 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final DR onDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
+        public final DR onDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             this.optionalOnDuplicateKey = false;
             consumer.accept(this);
             return (DR) this;
         }
 
         @Override
-        public final DR onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
+        public final DR onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
             this.optionalOnDuplicateKey = false;
             consumer.accept(this.criteria, this);
             return (DR) this;
         }
 
         @Override
-        public final DR ifOnDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
+        public final DR ifOnDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             this.optionalOnDuplicateKey = true;
             consumer.accept(this);
             return (DR) this;
         }
 
         @Override
-        public final DR ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
+        public final DR ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
             this.optionalOnDuplicateKey = true;
             consumer.accept(this.criteria, this);
             return (DR) this;
         }
 
         @Override
-        public final PairConsumer<FieldMeta<T>> accept(FieldMeta<T> field, @Nullable Object value) {
+        public final PairConsumer<T> accept(FieldMeta<T> field, @Nullable Object value) {
             this.addValuePair(field, SQLs._nullableParam(field, value));
             return this;
         }
 
         @Override
-        public final PairConsumer<FieldMeta<T>> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
+        public final PairConsumer<T> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
             this.addValuePair(field, SQLs._nullableLiteral(field, value));
             return this;
         }
 
         @Override
-        public final PairConsumer<FieldMeta<T>> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final PairConsumer<T> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
             this.addValuePair(field, supplier.get());
             return this;
         }
@@ -531,7 +531,7 @@ abstract class MySQLInserts extends InsertSupport {
             , MySQLInsert._DomainChildClause<C, P>
             , MySQLInsert._DomainChildInsertIntoSpec<C, P>
             , MySQLInsert._DomainChildIntoClause<C, P>
-            , InsertSupport.NonQueryInsertOptions {
+            , ValueSyntaxOptions {
 
         private final List<Hint> hintList;
 
@@ -564,25 +564,25 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._DomainChildClause<C, P> onDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<P>>> consumer) {
+        public MySQLInsert._DomainChildClause<C, P> onDuplicateKeyUpdate(Consumer<PairConsumer<P>> consumer) {
             return new DomainDuplicateKeyUpdateSpec<>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._DomainChildClause<C, P> onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<P>>> consumer) {
+        public MySQLInsert._DomainChildClause<C, P> onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<P>> consumer) {
             return new DomainDuplicateKeyUpdateSpec<>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._DomainChildClause<C, P> ifOnDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<P>>> consumer) {
+        public MySQLInsert._DomainChildClause<C, P> ifOnDuplicateKeyUpdate(Consumer<PairConsumer<P>> consumer) {
             return new DomainDuplicateKeyUpdateSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._DomainChildClause<C, P> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<P>>> consumer) {
+        public MySQLInsert._DomainChildClause<C, P> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<P>> consumer) {
             return new DomainDuplicateKeyUpdateSpec<>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
         }
@@ -886,25 +886,25 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .ifOnDuplicateKeyUpdate(consumer);
         }
@@ -941,25 +941,25 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         @Override
-        public MySQLInsert._MySQLChildSpec<MySQLInsert._ValueChildInsertIntoSpec<C, T>> onDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._ValueChildInsertIntoSpec<C, T>> onDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._MySQLChildSpec<MySQLInsert._ValueChildInsertIntoSpec<C, T>> onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._ValueChildInsertIntoSpec<C, T>> onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._MySQLChildSpec<MySQLInsert._ValueChildInsertIntoSpec<C, T>> ifOnDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._ValueChildInsertIntoSpec<C, T>> ifOnDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._MySQLChildSpec<MySQLInsert._ValueChildInsertIntoSpec<C, T>> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._ValueChildInsertIntoSpec<C, T>> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .ifOnDuplicateKeyUpdate(consumer);
         }
@@ -1413,7 +1413,6 @@ abstract class MySQLInserts extends InsertSupport {
             , MySQLInsert._MySQLAssignmentSetSpec<C, T>
             , ClauseBeforeRowAlias {
 
-
         private final _Insert._AssignmentInsert parentStmt;
         private final List<Hint> hintList;
 
@@ -1450,28 +1449,28 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             this.endAssignmentSetClause();
             return new NonParentDuplicateKeyUpdateSpec<C, T>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
+        public Insert._InsertSpec onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
             this.endAssignmentSetClause();
             return new NonParentDuplicateKeyUpdateSpec<C, T>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<T>>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(Consumer<PairConsumer<T>> consumer) {
             this.endAssignmentSetClause();
             return new NonParentDuplicateKeyUpdateSpec<C, T>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<T>>> consumer) {
+        public Insert._InsertSpec ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<T>> consumer) {
             this.endAssignmentSetClause();
             return new NonParentDuplicateKeyUpdateSpec<C, T>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
@@ -1537,7 +1536,7 @@ abstract class MySQLInserts extends InsertSupport {
             , ParentClauseBeforeRowAlias<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>>
             , MySQLInsert._AssignmentChildInsertIntoSpec<C, P>
             , MySQLInsert._AssignmentChildIntoClause<C, P>
-            , NonQueryInsertOptions {
+            , InsertOptions {
 
         private final List<Hint> hintList;
 
@@ -1570,28 +1569,28 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> onDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<P>>> consumer) {
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> onDuplicateKeyUpdate(Consumer<PairConsumer<P>> consumer) {
             this.endAssignmentSetClause();
             return new ParentDuplicateKeyUpdateSpec<C, P, MySQLInsert._AssignmentChildInsertIntoSpec<C, P>>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<P>>> consumer) {
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<P>> consumer) {
             this.endAssignmentSetClause();
             return new ParentDuplicateKeyUpdateSpec<C, P, MySQLInsert._AssignmentChildInsertIntoSpec<C, P>>(this)
                     .onDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> ifOnDuplicateKeyUpdate(Consumer<PairConsumer<FieldMeta<P>>> consumer) {
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> ifOnDuplicateKeyUpdate(Consumer<PairConsumer<P>> consumer) {
             this.endAssignmentSetClause();
             return new ParentDuplicateKeyUpdateSpec<C, P, MySQLInsert._AssignmentChildInsertIntoSpec<C, P>>(this)
                     .ifOnDuplicateKeyUpdate(consumer);
         }
 
         @Override
-        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<FieldMeta<P>>> consumer) {
+        public MySQLInsert._MySQLChildSpec<MySQLInsert._AssignmentChildInsertIntoSpec<C, P>> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<P>> consumer) {
             this.endAssignmentSetClause();
             return new ParentDuplicateKeyUpdateSpec<C, P, MySQLInsert._AssignmentChildInsertIntoSpec<C, P>>(this)
                     .ifOnDuplicateKeyUpdate(consumer);

@@ -229,7 +229,7 @@ abstract class MySQLParser extends _AbstractDialect {
                 literal = MySQLLiterals.text(sqlType, nonNull);
                 break;
             case JSON:
-                literal = MySQLLiterals.text(sqlType, this.dialectEnv.jsonCodec().encode(nonNull));
+                literal = MySQLLiterals.text(sqlType, this.dialectEnv.mappingEnv().jsonCodec().encode(nonNull));
                 break;
             case BINARY:
             case VARBINARY:
