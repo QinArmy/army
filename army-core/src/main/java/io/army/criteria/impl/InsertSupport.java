@@ -205,7 +205,8 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             } else {
                 if (this.migration) {
-                    validateMigrationColumnList(this.insertTable, fieldMap);
+                    validateMigrationColumnList(this.criteriaContext, this.insertTable, fieldMap);
+                    assert !(this.insertTable instanceof ChildTableMeta) || fieldMap.containsKey(this.insertTable.id());
                 }
                 if (fieldList.size() == 1) {
                     this.fieldList = Collections.singletonList(fieldList.get(0));
@@ -654,7 +655,7 @@ abstract class InsertSupport {
         @Override
         public final List<?> domainList() {
             final List<?> list = this.domainList;
-            if (list == null) {
+            if (list == null || list instanceof ArrayList) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return list;
@@ -958,15 +959,15 @@ abstract class InsertSupport {
         final CriteriaContext criteriaContext;
         final C criteria;
 
-        final TableMeta<T> table;
+        final TableMeta<T> insertTable;
 
         private Map<FieldMeta<?>, _Expression> fieldPairMap;
         private List<_Pair<FieldMeta<?>, _Expression>> itemPairList;
 
-        AssignmentSetClause(CriteriaContext criteriaContext, TableMeta<T> table) {
+        AssignmentSetClause(CriteriaContext criteriaContext, TableMeta<T> insertTable) {
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
-            this.table = table;
+            this.insertTable = insertTable;
         }
 
 
@@ -1087,7 +1088,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final List<_Pair<FieldMeta<?>, _Expression>> rowPairList() {
+        public final List<_Pair<FieldMeta<?>, _Expression>> pairList() {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.itemPairList;
             if (pairList == null || pairList instanceof ArrayList) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
@@ -1096,7 +1097,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, _Expression> rowPairMap() {
+        public final Map<FieldMeta<?>, _Expression> pairMap() {
             final Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
             if (fieldMap == null || fieldMap instanceof HashMap) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
@@ -1107,18 +1108,25 @@ abstract class InsertSupport {
 
         final void endAssignmentSetClause() {
             List<_Pair<FieldMeta<?>, _Expression>> itemPairList = this.itemPairList;
+            Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
+
             if (itemPairList == null) {
                 itemPairList = Collections.emptyList();
+
             } else if (!(itemPairList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            } else if (itemPairList.size() == 1) {
-                itemPairList = Collections.singletonList(itemPairList.get(0));
             } else {
-                itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+                if (this instanceof AssignmentInsertClause && ((AssignmentInsertClause<C, T, SR>) this).migration) {
+                    validateMigrationColumnList(this.criteriaContext, this.insertTable, fieldMap);
+                }
+                if (itemPairList.size() == 1) {
+                    itemPairList = Collections.singletonList(itemPairList.get(0));
+                } else {
+                    itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+                }
             }
             this.itemPairList = itemPairList;
 
-            Map<FieldMeta<?>, _Expression> fieldMap = this.fieldPairMap;
             if (fieldMap == null) {
                 fieldMap = Collections.emptyMap();
             } else {
@@ -1132,7 +1140,10 @@ abstract class InsertSupport {
 
 
         private SR addFieldPair(final FieldMeta<?> field, final @Nullable Expression value) {
-            if (!(value instanceof ArmyExpression)) {
+            if (value instanceof DataField && this instanceof AssignmentInsertClause) {
+                String m = "assignment insert value must be non-field.";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            } else if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
             this.validateField(field, (ArmyExpression) value);
@@ -1176,7 +1187,7 @@ abstract class InsertSupport {
 
         @Override
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
-            InsertSupport.checkField(this.criteriaContext, this.table, true, field);
+            InsertSupport.checkField(this.criteriaContext, this.insertTable, true, field);
             if (value != null && !field.nullable() && value.isNullValue()) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
             }
@@ -1185,7 +1196,7 @@ abstract class InsertSupport {
 
         @Override
         public final TableMeta<?> table() {
-            return this.table;
+            return this.insertTable;
         }
 
         @Override
@@ -1432,9 +1443,9 @@ abstract class InsertSupport {
             super(clause);
             this.migration = clause.isMigration();
             this.preferLiteral = clause.isPreferLiteral();
-            this.rowPairList = clause.rowPairList();
+            this.rowPairList = clause.pairList();
 
-            this.fieldMap = clause.rowPairMap();
+            this.fieldMap = clause.pairMap();
         }
 
         @Override
@@ -1448,12 +1459,12 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Map<FieldMeta<?>, _Expression> rowPairMap() {
+        public final Map<FieldMeta<?>, _Expression> pairMap() {
             return this.fieldMap;
         }
 
         @Override
-        public final List<_Pair<FieldMeta<?>, _Expression>> rowPairList() {
+        public final List<_Pair<FieldMeta<?>, _Expression>> pairList() {
             return this.rowPairList;
         }
 
@@ -1605,27 +1616,25 @@ abstract class InsertSupport {
         return match;
     }
 
-    private static void validateMigrationColumnList(final TableMeta<?> insertTable
-            , final Map<FieldMeta<?>, Boolean> fieldMap) {
+    private static void validateMigrationColumnList(final CriteriaContext context, final TableMeta<?> insertTable
+            , final Map<FieldMeta<?>, ?> fieldMap) {
         if (insertTable instanceof SingleTableMeta) {
             FieldMeta<?> field;
             for (String fieldName : _MetaBridge.RESERVED_FIELDS) {
                 field = insertTable.tryGetField(fieldName);
                 if (field != null && fieldMap.get(field) == null) {
-                    throw _Exceptions.migrationManageGeneratorField(field);
+                    throw CriteriaContextStack.criteriaError(context, _Exceptions::migrationManageGeneratorField, field);
                 }
             }
             field = insertTable.discriminator();
             if (field != null && fieldMap.get(field) == null) {
-                throw _Exceptions.migrationManageGeneratorField(field);
+                throw CriteriaContextStack.criteriaError(context, _Exceptions::migrationManageGeneratorField, field);
             }
-        } else {
-            assert fieldMap.containsKey(insertTable.id());
         }
 
         for (FieldMeta<?> field : insertTable.fieldChain()) {
             if (!field.nullable() && fieldMap.get(field) == null) {
-                throw _Exceptions.migrationModeGeneratorField(field);
+                throw CriteriaContextStack.criteriaError(context, _Exceptions::migrationModeGeneratorField, field);
             }
         }
 

@@ -1,5 +1,6 @@
-package io.army.criteria;
+package io.army.criteria.standard;
 
+import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;

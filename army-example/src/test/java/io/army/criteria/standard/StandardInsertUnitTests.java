@@ -1,6 +1,7 @@
 package io.army.criteria.standard;
 
 import io.army.criteria.Insert;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
@@ -38,7 +39,8 @@ public class StandardInsertUnitTests {
 
     @Test
     public void domainInsertChild() {
-        final Insert stmt;
+
+        Insert stmt;
         stmt = SQLs.domainInsert()
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
@@ -48,6 +50,7 @@ public class StandardInsertUnitTests {
                 .asInsert();
 
         printStmt(stmt);
+
     }
 
 
@@ -143,8 +146,9 @@ public class StandardInsertUnitTests {
     private static void printStmt(final Insert insert) {
         String sql;
         for (Dialect dialect : Dialect.values()) {
-            //sql = insert.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
-            sql = insert.toString();
+            sql = insert.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
+            // sql = insert.toString();
+            //insert.mockAsStmt(dialect, Visible.ONLY_VISIBLE);
             LOG.debug("{}:\n{}", dialect.name(), sql);
         }
 

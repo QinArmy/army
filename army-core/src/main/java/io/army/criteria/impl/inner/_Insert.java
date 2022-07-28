@@ -90,9 +90,9 @@ public interface _Insert extends _Statement {
 
     interface _AssignmentStatementSpec {
 
-        List<_Pair<FieldMeta<?>, _Expression>> rowPairList();
+        List<_Pair<FieldMeta<?>, _Expression>> pairList();
 
-        Map<FieldMeta<?>, _Expression> rowPairMap();
+        Map<FieldMeta<?>, _Expression> pairMap();
     }
 
 

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public abstract class _DialectUtils {
 
@@ -192,68 +191,6 @@ public abstract class _DialectUtils {
     }
 
 
-    static List<FieldMeta<?>> createNonChildFieldList(final SingleTableMeta<?> insertTable
-            , final Predicate<FieldMeta<?>> predicate) {
-
-        final List<FieldMeta<?>> insertFieldChain;
-        insertFieldChain = insertTable.fieldChain();
-
-        final ArrayList<FieldMeta<?>> fieldList = new ArrayList<>(6 + insertFieldChain.size());
-
-        FieldMeta<?> reservedField;
-        reservedField = insertTable.id();
-        if (reservedField.insertable() && reservedField.generatorType() != null) {
-            fieldList.add(reservedField);
-        }
-
-        reservedField = insertTable.getField(_MetaBridge.CREATE_TIME);
-        fieldList.add(reservedField);
-
-        reservedField = insertTable.tryGetField(_MetaBridge.UPDATE_TIME);
-        if (reservedField != null) {
-            fieldList.add(reservedField);
-        }
-
-        reservedField = insertTable.tryGetField(_MetaBridge.VERSION);
-        if (reservedField != null) {
-            fieldList.add(reservedField);
-        }
-
-
-        reservedField = insertTable.tryGetField(_MetaBridge.VISIBLE);
-        if (reservedField != null && !predicate.test(reservedField)) {
-            fieldList.add(reservedField);
-        }
-
-        if (insertTable instanceof ParentTableMeta) {
-            fieldList.add(insertTable.discriminator());
-        }
-
-        for (FieldMeta<?> field : insertFieldChain) {
-            if (field instanceof PrimaryFieldMeta) {
-                continue;
-            }
-            fieldList.add(field);
-        }
-
-        return fieldList;
-    }
-
-    static List<FieldMeta<?>> createChildFieldList(final ChildTableMeta<?> insertTable) {
-        final List<FieldMeta<?>> fieldChain;
-        fieldChain = insertTable.fieldChain();
-
-        final ArrayList<FieldMeta<?>> fieldList = new ArrayList<>(1 + fieldChain.size());
-        fieldList.add(insertTable.id());
-
-        for (FieldMeta<?> field : fieldChain) {
-            assert !(field instanceof PrimaryFieldMeta);
-            fieldList.add(field);
-        }
-        return fieldList;
-
-    }
-
     static int generatedFieldSize(final TableMeta<?> domainTable, final boolean manageVisible) {
         int size = 1; //create time
 
@@ -331,7 +268,7 @@ public abstract class _DialectUtils {
             if (expression == null) {
                 match = true;
             } else if (expression instanceof SqlValueParam.SingleNonNamedValue) {
-                match = ((SqlValueParam.SingleNonNamedValue) expression).value() != null;
+                match = ((SqlValueParam.SingleNonNamedValue) expression).value() == null;
             } else {
                 match = true; //the fields that is managed by field must be value param
             }

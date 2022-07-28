@@ -1,8 +1,8 @@
-package io.army.criteria;
+package io.army.criteria.mysql;
 
+import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
-import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.account.BankAccount_;

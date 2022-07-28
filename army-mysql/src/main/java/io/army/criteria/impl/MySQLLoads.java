@@ -540,7 +540,7 @@ abstract class MySQLLoads {
 
         @Override
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
-            if (field.tableMeta() != this.table) {
+            if (field.tableMeta() != this.insertTable) {
                 throw _Exceptions.unknownColumn(field);
             }
             //TODO check non-null filed
@@ -562,8 +562,8 @@ abstract class MySQLLoads {
 
         private void addFieldOrVar(final @Nullable Expression columnOrVar) {
             if (columnOrVar instanceof FieldMeta) {
-                if (((FieldMeta<?>) columnOrVar).tableMeta() != this.table) {
-                    String m = String.format("%s isn't belong of %s", columnOrVar, this.table);
+                if (((FieldMeta<?>) columnOrVar).tableMeta() != this.insertTable) {
+                    String m = String.format("%s isn't belong of %s", columnOrVar, this.insertTable);
                     throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
                 }
             } else if (!(columnOrVar instanceof VarExpression)) {
@@ -951,7 +951,7 @@ abstract class MySQLLoads {
             this.columnOrUserVarList = clause.columnOrUserVarList();
 
             clause.endAssignmentSetClause();
-            this.columItemPairList = clause.rowPairList();
+            this.columItemPairList = clause.pairList();
 
         }
 
@@ -1067,7 +1067,7 @@ abstract class MySQLLoads {
         private SingleLoadDataStatement(NonParentPartitionClause<?, ?> clause) {
             super(clause);
             this.criteriaContext = clause.criteriaContext;
-            this.table = (SingleTableMeta<?>) clause.table;
+            this.table = (SingleTableMeta<?>) clause.insertTable;
         }
 
         @Override
@@ -1121,7 +1121,7 @@ abstract class MySQLLoads {
 
         private ParentLoadDataStatement(final ParentPartitionClause<?, ?> clause) {
             super(clause);
-            this.parentTable = (ParentTableMeta<?>) clause.table;
+            this.parentTable = (ParentTableMeta<?>) clause.insertTable;
         }
 
         @Override
@@ -1163,7 +1163,7 @@ abstract class MySQLLoads {
             this.criteriaContext = clause.criteriaContext;
             this.parentStatement = clause.parentStmt;
             assert this.parentStatement != null;
-            this.childTable = (ChildTableMeta<?>) clause.table;
+            this.childTable = (ChildTableMeta<?>) clause.insertTable;
         }
 
 

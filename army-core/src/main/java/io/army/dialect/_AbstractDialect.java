@@ -1178,7 +1178,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (insert instanceof _Insert._ChildAssignmentInsert) {
             final _Insert._ChildAssignmentInsert childStmt = (_Insert._ChildAssignmentInsert) insert;
             final _Insert._AssignmentInsert parentStmt = childStmt.parentStmt();
-            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
 
             final AssignmentInsertContext parentContext;
             parentContext = AssignmentInsertContext.forParent(childStmt, this, visible);
