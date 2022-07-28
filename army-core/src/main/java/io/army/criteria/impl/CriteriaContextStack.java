@@ -159,7 +159,7 @@ abstract class CriteriaContextStack {
         return new CriteriaException(message);
     }
 
-    private static void clearStackOnError(CriteriaContext criteriaContext) {
+    private static void clearStackOnError(final CriteriaContext criteriaContext) {
         final Stack stack;
         stack = HOLDER.get();
         if (stack != null && stack.peek() == criteriaContext) {

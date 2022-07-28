@@ -26,35 +26,46 @@ final class QualifiedFieldImpl<T> extends OperationField
 
     @SuppressWarnings("unchecked")
     static <T> QualifiedField<T> reference(final String tableAlias, final FieldMeta<T> field) {
-        final ConcurrentMap<String, FieldReference<?>> fieldMap;
-        fieldMap = CACHE.computeIfAbsent(field, QualifiedFieldImpl::createFieldReferenceMap);
-
-        final FieldReference<?> fieldReference;
-        fieldReference = fieldMap.computeIfAbsent(tableAlias, k -> {
-            final FieldReference<?> reference;
-            reference = new FieldReference<>(new QualifiedFieldImpl<>(tableAlias, field), fieldMap);
-            return reference;
-        });
+        final ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>> fieldToQualified;
+        fieldToQualified = getFieldToQualified(tableAlias);
 
         QualifiedFieldImpl<?> qualifiedField;
-        qualifiedField = fieldReference.get();
-
+        qualifiedField = fieldToQualified.get(field);
         if (qualifiedField == null
-                || qualifiedField.field != field
-                || qualifiedField.tableAlias.equals(tableAlias)) {
+                || !qualifiedField.tableAlias.equals(tableAlias)
+                || qualifiedField.field != field) {
             qualifiedField = new QualifiedFieldImpl<>(tableAlias, field);
-            fieldMap.put(tableAlias, new FieldReference<>(qualifiedField, fieldMap));
+            fieldToQualified.put(field, qualifiedField);
         }
         return (QualifiedField<T>) qualifiedField;
     }
 
 
-    private static ConcurrentMap<String, FieldReference<?>> createFieldReferenceMap(FieldMeta<?> field) {
+    private static ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>> getFieldToQualified(final String tableAlias) {
+        SoftReference<ConcurrentMap<String, ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>>>> cacheReference;
+        cacheReference = QualifiedFieldImpl.cacheReference;
+
+        ConcurrentMap<String, ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>>> aliasToMap;
+        if (cacheReference == null || (aliasToMap = cacheReference.get()) == null) {
+            synchronized (QualifiedFieldImpl.class) {
+                cacheReference = QualifiedFieldImpl.cacheReference;
+                if (cacheReference == null || (aliasToMap = cacheReference.get()) == null) {
+                    aliasToMap = new ConcurrentHashMap<>();
+                    QualifiedFieldImpl.cacheReference = new SoftReference<>(aliasToMap);
+                }
+
+            }
+        }
+        return aliasToMap.computeIfAbsent(tableAlias, QualifiedFieldImpl::createFieldToQualifiedMap);
+    }
+
+
+    private static ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>> createFieldToQualifiedMap(final String alias) {
         return new ConcurrentHashMap<>();
     }
 
-    private static final ConcurrentMap<FieldMeta<?>, ConcurrentMap<String, FieldReference<?>>>
-            CACHE = new ConcurrentHashMap<>();
+    private static SoftReference<ConcurrentMap<String, ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>>>> cacheReference;
+
 
     private final String tableAlias;
 
@@ -95,14 +106,16 @@ final class QualifiedFieldImpl<T> extends OperationField
     public void appendSelection(final _SqlContext context) {
         context.appendField(this.tableAlias, this.field);
 
-        context.sqlBuilder()
-                .append(_Constant.SPACE_AS_SPACE)
-                .append(this.field.fieldName);
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_AS_SPACE);
+
+        context.dialect().identifier(this.field.fieldName, sqlBuilder);
     }
 
     @Override
     public void appendSql(final _SqlContext context) {
-        if (context.visible() != Visible.BOTH && _MetaBridge.VISIBLE.equals(this.field.fieldName())) {
+        if (context.visible() != Visible.BOTH && _MetaBridge.VISIBLE.equals(this.field.fieldName)) {
             throw _Exceptions.visibleField(context.visible(), this);
         }
         context.appendField(this.tableAlias, this.field);
@@ -186,32 +199,6 @@ final class QualifiedFieldImpl<T> extends OperationField
     public GeneratorType generatorType() {
         return this.field.generatorType;
     }
-
-    private static final class FieldReference<T> extends SoftReference<QualifiedFieldImpl<T>> {
-
-
-        private final ConcurrentMap<String, FieldReference<?>> aliasToRef;
-
-        private FieldReference(QualifiedFieldImpl<T> referent, ConcurrentMap<String, FieldReference<?>> aliasToRef) {
-            super(referent);
-            this.aliasToRef = aliasToRef;
-        }
-
-        @Override
-        public void clear() {
-            final QualifiedFieldImpl<T> referent;
-            referent = this.get();
-            super.clear();
-            if (referent != null) {
-                this.aliasToRef.remove(referent.tableAlias(), this);
-                if (this.aliasToRef.size() == 0) {
-                    CACHE.remove(referent.fieldMeta());
-                }
-            }
-        }
-
-
-    }// FieldReference
 
 
 }

@@ -26,7 +26,7 @@ public abstract class _MetaBridge {
 
     public static final String VERSION = "version";
 
-    public static final List<String> RESERVED_PROPS = asUnmodifiableList(
+    public static final List<String> RESERVED_FIELDS = asUnmodifiableList(
             ID, CREATE_TIME, UPDATE_TIME, VERSION, VISIBLE);
 
 

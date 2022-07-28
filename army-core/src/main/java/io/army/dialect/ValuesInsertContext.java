@@ -102,7 +102,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
 
     @Override
-    void doAppendValuesList(final List<FieldMeta<?>> fieldList) {
+    void doAppendValuesList(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
         final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowList;
         final int rowSize = rowValuesList.size();
@@ -124,7 +124,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
         final FieldMeta<?> discriminator = domainTable.discriminator();
         final int discriminatorValue = domainTable.discriminatorValue();
-        final Map<Integer, Object> postIdMap;
+        final Map<Integer, Object> postIdMap = rowWrapper.postIdMap;
         final boolean manageVisible;
         final int generatedFieldSize;
 
@@ -133,11 +133,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
             generatedValuesList = this.generatedValuesList;
             manageVisible = false;
             assert !(generatedValuesList == null && !migration);
-            if (insertTable.nonChildId().generatorType() == GeneratorType.POST) {
-                postIdMap = new HashMap<>((int) (rowSize / 0.75F));
-            } else {
-                postIdMap = null;
-            }
+
             generatedFieldSize = 0;
             defaultValueMap = rowWrapper.childDefaultMap;
         } else {
@@ -151,21 +147,23 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
                 assert generatedValuesList instanceof ArrayList;
                 this.tempGeneratedValuesList = null;
             }
-            postIdMap = null;
             generatedFieldSize = (int) (_DialectUtils.generatedFieldSize(domainTable, manageVisible) / 0.75F);
             defaultValueMap = rowWrapper.nonChildDefaultMap;
         }
 
 
         final Map<FieldMeta<?>, Object> emptyMap = Collections.emptyMap();
+        final PrimaryFieldMeta<?> nonChildId = insertTable.nonChildId();
 
         Map<FieldMeta<?>, _Expression> rowValuesMap;
         Map<FieldMeta<?>, Object> generatedMap;
         DelayIdParamValue delayIdParam;
-        FieldMeta<?> field;
         _Expression expression;
+        FieldMeta<?> field;
         Object value;
         GeneratorType generatorType;
+
+        int outputValueSize = 0;
 
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_VALUES);
@@ -195,9 +193,10 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
             delayIdParam = null; //clear last param
+            outputValueSize = 0; //reset
             for (int fieldIndex = 0, actualFieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
                 field = fieldList.get(fieldIndex);
-                if (!field.insertable()) {
+                if (!migration && !field.insertable()) {
                     // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
                     continue;
                 }
@@ -205,6 +204,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 actualFieldIndex++;
+                outputValueSize = actualFieldIndex;
 
                 if (field == discriminator) {
                     assert insertTable instanceof ParentTableMeta;
@@ -220,8 +220,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
                 } else if (field instanceof PrimaryFieldMeta
                         && insertTable instanceof ChildTableMeta) { //child id must be managed by army
 
-                    if (migration || (generatorType = field.generatorType()) == null) {
-                        expression = rowWrapper.nonChildRowList.get(rowIndex).get(insertTable.nonChildId());
+                    if (migration || (generatorType = nonChildId.generatorType()) == null) {
+                        expression = rowWrapper.nonChildRowList.get(rowIndex).get(nonChildId);
                         assert expression instanceof SqlValueParam.SingleNonNamedValue;//because io.army.dialect.FieldValueGenerator have validated
                         expression.appendSql(this);
                     } else if (generatorType == GeneratorType.POST) {
@@ -269,12 +269,10 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
         }//outer for
 
+        assert outputValueSize == outputColumnSize;
+
         rowWrapper.rowValuesMap = null; //finally must clear
         rowWrapper.generatedMap = null;//finally must clear
-
-        if (postIdMap != null) {
-            rowWrapper.postIdMap = postIdMap;
-        }
 
     }
 
@@ -288,7 +286,6 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
     public BiFunction<Integer, Object, Object> function() {
         final Map<Integer, Object> postIdMap = this.rowWrapper.postIdMap;
         assert postIdMap != null && this.isValuesClauseEnd() && this.insertTable instanceof SingleTableMeta;
-        this.rowWrapper.postIdMap = null;// clear
         return postIdMap::putIfAbsent;
     }
 
@@ -329,12 +326,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
         private final Map<FieldMeta<?>, _Expression> childDefaultMap;
 
+        private final Map<Integer, Object> postIdMap;
+
         private Map<FieldMeta<?>, Object> generatedMap;
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
-
-        private Map<Integer, Object> postIdMap;
-
 
         private ValuesRowWrapper(ValuesInsertContext context, _Insert._ValuesInsert domainStmt) {
             super(domainStmt.table(), context.dialect.mappingEnv());
@@ -348,6 +344,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
                 this.childDefaultMap = Collections.emptyMap();
             }
 
+            if (context.returnId == null) {
+                postIdMap = null;
+            } else {
+                postIdMap = new HashMap<>((int) (this.nonChildRowList.size() / 0.75F));
+            }
 
         }
 

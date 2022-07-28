@@ -54,8 +54,9 @@ public interface DialectParser {
 
 
     default StringBuilder identifier(String identifier, StringBuilder builder) {
-        return builder;
+       throw new UnsupportedOperationException();
     }
+
 
     String identifier(String identifier);
 

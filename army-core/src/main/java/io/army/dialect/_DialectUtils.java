@@ -324,7 +324,7 @@ public abstract class _DialectUtils {
 
 
         @Override
-        public final boolean isNullMigrationValue(final FieldMeta<?> field) {
+        public final boolean isNullValueParam(final FieldMeta<?> field) {
             final _Expression expression;
             expression = this.getExpression(field);
             final boolean match;
@@ -333,7 +333,7 @@ public abstract class _DialectUtils {
             } else if (expression instanceof SqlValueParam.SingleNonNamedValue) {
                 match = ((SqlValueParam.SingleNonNamedValue) expression).value() != null;
             } else {
-                match = false;
+                match = true; //the fields that is managed by field must be value param
             }
             return match;
         }
@@ -343,12 +343,15 @@ public abstract class _DialectUtils {
             return this.readWrapper;
         }
 
-        /**
-         * @return a unmodified map
-         */
+
         @Nullable
         abstract Object getGeneratedValue(FieldMeta<?> field);
 
+        /**
+         * <p>
+         * Must read row value not default value of column
+         * </p>
+         */
         @Nullable
         abstract _Expression getExpression(FieldMeta<?> field);
 

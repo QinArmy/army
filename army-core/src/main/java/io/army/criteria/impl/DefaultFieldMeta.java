@@ -146,7 +146,7 @@ abstract class DefaultFieldMeta<T> extends OperationField implements FieldMeta<T
 
     final boolean nullable;
 
-     final boolean insertable;
+    final boolean insertable;
 
     final UpdateMode updateMode;
 
@@ -200,7 +200,7 @@ abstract class DefaultFieldMeta<T> extends OperationField implements FieldMeta<T
             }
             this.updateMode = FieldMetaUtils.columnUpdatable(this, column, isDiscriminator);
             this.comment = FieldMetaUtils.columnComment(column, this, isDiscriminator);
-            this.nullable = !_MetaBridge.RESERVED_PROPS.contains(this.fieldName)
+            this.nullable = !_MetaBridge.RESERVED_FIELDS.contains(this.fieldName)
                     && !isDiscriminator
                     && column.nullable();
             this.defaultValue = column.defaultValue();
@@ -422,10 +422,11 @@ abstract class DefaultFieldMeta<T> extends OperationField implements FieldMeta<T
     @Override
     public final void appendSelection(final _SqlContext context) {
         context.appendField(this);
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE_AS_SPACE);
 
-        context.sqlBuilder()
-                .append(_Constant.SPACE_AS_SPACE)
-                .append(this.fieldName);
+        context.dialect().identifier(this.fieldName, sqlBuilder);
     }
 
     @Override

@@ -335,7 +335,7 @@ abstract class TableMetaUtils {
         final String columnName;
         if (customColumnName.isEmpty()) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
-        } else if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
+        } else if (_MetaBridge.RESERVED_FIELDS.contains(fieldName)) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
             if (_StringUtils.hasText(customColumnName) && !customColumnName.equals(columnName)) {
                 String m = String.format("Mapped class[%s] reserved filed[%s] column name must use default value.",

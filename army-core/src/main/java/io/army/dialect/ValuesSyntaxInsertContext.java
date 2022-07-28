@@ -44,6 +44,8 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
 
     private boolean valuesClauseEnd;
 
+    private int outputColumnSize;
+
 
     /**
      * <p>
@@ -69,13 +71,12 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         assert this.insertTable instanceof SingleTableMeta;
 
         final List<FieldMeta<?>> fieldList = nonChildStmt.fieldList();
-        if (fieldList.size() == 0) {
+        final int fieldSize = fieldList.size();
+        assert nonChildStmt.fieldMap().size() == fieldSize;
+
+        if (fieldSize == 0) {
             this.fieldList = castFieldList(this.insertTable);
-        } else if (this.migration) {
-            this.fieldList = fieldList;// because have validated by the implementation of Insert
         } else {
-            assert fieldList.size() > 1;
-            assert _MetaBridge.CREATE_TIME.equals(fieldList.get(1).fieldName());
             this.fieldList = fieldList;// because have validated by the implementation of Insert
         }
 
@@ -128,7 +129,9 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta();
 
         final List<FieldMeta<?>> fieldList = stmt.fieldList();
-        if (fieldList.size() == 0) {
+        final int fieldSize = fieldList.size();
+        assert stmt.fieldMap().size() == fieldSize;
+        if (fieldSize == 0) {
             this.fieldList = castFieldList(this.insertTable);
         } else {
             assert fieldList.get(0) == this.insertTable.id();
@@ -147,34 +150,43 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     @Override
     public final void appendFieldList() {
         assert !this.columnListClauseEnd;
-        final List<FieldMeta<?>> fieldList = this.fieldList;
-        final int fieldSize = fieldList.size();
+
         final ArmyDialect dialect = this.dialect;
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_LEFT_PAREN);
 
+        final boolean migration = this.migration;
+        final List<FieldMeta<?>> fieldList = this.fieldList;
+        final int fieldSize = fieldList.size();
         FieldMeta<?> field;
+        int outputColumnSize = 0;
         for (int i = 0, actualIndex = 0; i < fieldSize; i++) {
             field = fieldList.get(i);
-            if (!field.insertable()) {
+            if (!migration && !field.insertable()) {
                 // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
                 continue;
             }
             if (actualIndex > 0) {
-                sqlBuilder.append(_Constant.SPACE_COMMA);
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
             }
             dialect.safeObjectName(field, sqlBuilder);
             actualIndex++;
+            outputColumnSize = actualIndex;
         }
+
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
+        assert outputColumnSize > 0;
+        this.outputColumnSize = outputColumnSize;
         this.columnListClauseEnd = true;
     }
 
     @Override
     public final void appendValueList() {
         assert this.columnListClauseEnd && !this.valuesClauseEnd;
-        this.doAppendValuesList(this.fieldList);
+        this.doAppendValuesList(this.outputColumnSize, this.fieldList);
         this.valuesClauseEnd = true;
     }
 
@@ -234,7 +246,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
 
-    abstract void doAppendValuesList(List<FieldMeta<?>> fieldList);
+    abstract void doAppendValuesList(int outputColumnSize, List<FieldMeta<?>> fieldList);
 
     final boolean isValuesClauseEnd() {
         return this.valuesClauseEnd;

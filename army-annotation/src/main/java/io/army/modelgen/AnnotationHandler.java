@@ -327,7 +327,7 @@ final class AnnotationHandler {
         customColumnName = column.name();
         if (customColumnName.isEmpty()) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
-        } else if (_MetaBridge.RESERVED_PROPS.contains(fieldName)) {
+        } else if (_MetaBridge.RESERVED_FIELDS.contains(fieldName)) {
             columnName = _MetaBridge.camelToLowerCase(fieldName);
             if (!customColumnName.equals(columnName)) {
                 String m = String.format("Field %s.%s is reserved field,so must use column name[%s]."

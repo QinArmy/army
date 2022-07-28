@@ -97,7 +97,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     static GeneratorMeta columnGeneratorMeta(Generator generator, FieldMeta<?> fieldMeta, boolean isDiscriminator) {
         final String fieldName = fieldMeta.fieldName();
-        if (isDiscriminator || (!_MetaBridge.ID.equals(fieldName) && _MetaBridge.RESERVED_PROPS.contains(fieldName))) {
+        if (isDiscriminator || (!_MetaBridge.ID.equals(fieldName) && _MetaBridge.RESERVED_FIELDS.contains(fieldName))) {
             String m = String.format("%s is managed by army ,so must no %s", fieldMeta, Generator.class.getName());
             throw new MetaException(m);
         }
@@ -151,7 +151,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         final boolean insertable;
         if (generator == null) {
             insertable = isDiscriminator
-                    || _MetaBridge.RESERVED_PROPS.contains(field.fieldName())
+                    || _MetaBridge.RESERVED_FIELDS.contains(field.fieldName())
                     || column.insertable();
         } else {
             switch (generator.type()) {
@@ -192,7 +192,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
 
     static String columnComment(final Column column, FieldMeta<?> fieldMeta, final boolean isDiscriminator) {
         String comment = column.comment();
-        if (_MetaBridge.RESERVED_PROPS.contains(fieldMeta.fieldName()) || isDiscriminator) {
+        if (_MetaBridge.RESERVED_FIELDS.contains(fieldMeta.fieldName()) || isDiscriminator) {
             if (!_StringUtils.hasText(comment)) {
                 comment = commentManagedByArmy(fieldMeta);
             }

@@ -76,12 +76,13 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
 
     @Override
-    void doAppendValuesList(final List<FieldMeta<?>> fieldList) {
+    void doAppendValuesList(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
         final List<?> domainList = this.domainList;
-        final int domainSize = domainList.size();
-        assert domainSize > 0; //must check for criteria api implementation
+        final int rowSize = domainList.size();
+        assert rowSize > 0; //must check for criteria api implementation
         final int fieldSize = fieldList.size();
+
 
         final ArmyDialect dialect = this.dialect;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
@@ -100,6 +101,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final FieldMeta<?> discriminator = domainTable.discriminator();
         final int discriminatorValue = domainTable.discriminatorValue();
         if (insertTable instanceof ChildTableMeta) {
+            assert insertTable == domainTable;
             generator = null;
             manageVisible = false;
             defaultValueMap = wrapper.childDefaultMap;
@@ -114,10 +116,11 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         _Expression expression;
         Object value, currentDomain;
         DelayIdParamValue delayIdParam;
+        int outputValueSize = 0;
 
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_VALUES);
-        for (int rowIndex = 0; rowIndex < domainSize; rowIndex++) {
+        for (int rowIndex = 0; rowIndex < rowSize; rowIndex++) {
             currentDomain = domainList.get(rowIndex);
             wrapper.domain = currentDomain; //firstly,update current domain
 
@@ -137,9 +140,10 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
             delayIdParam = null;//clear
+            outputValueSize = 0;//reset
             for (int fieldIndex = 0, actualFieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
                 field = fieldList.get(fieldIndex);
-                if (!field.insertable()) {
+                if (!migration && !field.insertable()) {
                     // fieldList have be checked,fieldList possibly is io.army.meta.TableMeta.fieldList()
                     continue;
                 }
@@ -147,7 +151,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 actualFieldIndex++;
-
+                outputValueSize = actualFieldIndex;
                 if (field == discriminator) {
                     assert insertTable instanceof ParentTableMeta;
                     sqlBuilder.append(_Constant.SPACE)
@@ -204,6 +208,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
         }//outer for
+
 
         wrapper.domain = null; //finally must clear
     }
@@ -306,10 +311,12 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
             this.domainTable = domainStmt.table();
 
             if (domainStmt instanceof _Insert._ChildDomainInsert) {
+                assert ((ChildTableMeta<?>) this.domainTable).parentMeta() == context.insertTable;
                 final _Insert._DomainInsert parentStmt = ((_Insert._ChildDomainInsert) domainStmt).parentStmt();
                 this.nonChildDefaultMap = parentStmt.defaultValueMap();
                 this.childDefaultMap = domainStmt.defaultValueMap();
             } else {
+                assert this.domainTable == context.insertTable;
                 this.nonChildDefaultMap = domainStmt.defaultValueMap();
                 this.childDefaultMap = Collections.emptyMap();
             }
@@ -325,7 +332,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         }
 
         @Override
-        public boolean isNullMigrationValue(final FieldMeta<?> field) {
+        public boolean isNullValueParam(final FieldMeta<?> field) {
             final Object domain = this.domain;
             assert domain != null;
             return this.accessor.get(domain, field.fieldName()) == null;

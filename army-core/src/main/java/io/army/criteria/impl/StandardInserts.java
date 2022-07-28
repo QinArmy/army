@@ -333,7 +333,7 @@ abstract class StandardInserts extends InsertSupport {
             } else if (rowList.size() == this.parentStmt.rowList().size()) {
                 spec = new StandardValueChildInsertStatement(this, rowList);
             } else {
-                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
+                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.insertTable
                         , this.parentStmt.rowList().size(), rowList.size());
             }
             return spec;

@@ -226,7 +226,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
 
         final List<FieldMeta<T>> fieldList = new ArrayList<>(fieldNameToField.size());
 
-        for (String fieldName : _MetaBridge.RESERVED_PROPS) {
+        for (String fieldName : _MetaBridge.RESERVED_FIELDS) {
             final FieldMeta<T> reservedField;
             reservedField = fieldNameToField.get(fieldName);
             if (reservedField != null) {
@@ -249,7 +249,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
 
         for (FieldMeta<T> field : fieldNameToField.values()) {
             if (field == discriminatorField
-                    || _MetaBridge.RESERVED_PROPS.contains(field.fieldName())) {
+                    || _MetaBridge.RESERVED_FIELDS.contains(field.fieldName())) {
                 continue;
             }
             fieldList.add(field);

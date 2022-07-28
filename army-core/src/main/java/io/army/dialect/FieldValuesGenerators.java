@@ -76,7 +76,12 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
                 throw discriminatorNoMapping(domainTable, discriminator);
             }
             if (wrapper.readonlyWrapper().get(discriminator.fieldName()) != codeEnum) {
-                String m = String.format("%s discriminator value isn't %s", domainTable, codeEnum.name());
+                Class<?> enumClass = codeEnum.getClass();
+                if (enumClass.isAnonymousClass()) {
+                    enumClass = enumClass.getSuperclass();
+                }
+                String m = String.format("%s discriminator value isn't %s.%s"
+                        , domainTable, enumClass.getName(), codeEnum.name());
                 throw new CriteriaException(m);
             }
 
@@ -89,34 +94,37 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             nonChild = domainTable;
         }
 
-        if (wrapper.isNullMigrationValue(nonChild.id())) {
+        if (wrapper.isNullValueParam(nonChild.id())) {
             throw nullValueErrorForMigration(nonChild.id());
         }
-        if (wrapper.isNullMigrationValue(nonChild.getField(_MetaBridge.CREATE_TIME))) {
+        if (wrapper.isNullValueParam(nonChild.getField(_MetaBridge.CREATE_TIME))) {
             throw nullValueErrorForMigration(nonChild.getField(_MetaBridge.CREATE_TIME));
         }
 
         FieldMeta<?> reservedField;
-        if ((reservedField = nonChild.tryGetField(_MetaBridge.UPDATE_TIME)) != null && wrapper.isNullMigrationValue(reservedField)) {
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.UPDATE_TIME)) != null
+                && wrapper.isNullValueParam(reservedField)) {
             throw nullValueErrorForMigration(reservedField);
         }
-        if ((reservedField = nonChild.tryGetField(_MetaBridge.VERSION)) != null && wrapper.isNullMigrationValue(reservedField)) {
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.VERSION)) != null
+                && wrapper.isNullValueParam(reservedField)) {
             throw nullValueErrorForMigration(reservedField);
         }
-        if ((reservedField = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null && wrapper.isNullMigrationValue(reservedField)) {
+        if ((reservedField = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null
+                && wrapper.isNullValueParam(reservedField)) {
             throw nullValueErrorForMigration(reservedField);
         }
 
         if (domainTable != nonChild) {
             for (FieldMeta<?> field : nonChild.fieldChain()) {
-                if (wrapper.isNullMigrationValue(field) && !field.nullable()) {
+                if (wrapper.isNullValueParam(field) && !field.nullable()) {
                     throw nullValueErrorForMigration(field);
                 }
             }
         }
 
         for (FieldMeta<?> field : domainTable.fieldChain()) {
-            if (wrapper.isNullMigrationValue(field) && !field.nullable()) {
+            if (wrapper.isNullValueParam(field) && !field.nullable()) {
                 throw nullValueErrorForMigration(field);
             }
         }
@@ -133,7 +141,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         //1. check id
         field = nonChild.id();
-        if (field.generatorType() == null && wrapper.isNullMigrationValue(field)) {
+        if (field.generatorType() == null && wrapper.isNullValueParam(field)) {
             throw _Exceptions.nonNullField(field);
         }
 
@@ -179,7 +187,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
         //5. visible
         if (manegeVisible
                 && (field = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null
-                && wrapper.isNullMigrationValue(field)) {
+                && wrapper.isNullValueParam(field)) {
             wrapper.set(field, Boolean.TRUE);
         }
 
@@ -187,7 +195,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
 
     private static CriteriaException nullValueErrorForMigration(FieldMeta<?> field) {
-        String m = String.format("%s couldn't be null in migration mode.", field);
+        String m = String.format("%s must be non-null value parameter/literal in migration mode.", field);
         return new CriteriaException(m);
     }
 

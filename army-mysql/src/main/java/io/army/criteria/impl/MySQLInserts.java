@@ -1042,7 +1042,7 @@ abstract class MySQLInserts extends InsertSupport {
                 } else if (rowList.size() == this.parentStmt.rowList().size()) {
                     spec = new ValueChildInsertStatement(this);
                 } else {
-                    throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
+                    throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.insertTable
                             , this.parentStmt.rowList().size(), rowList.size());
                 }
             } else if (this.parentStmt == null) {
@@ -1050,7 +1050,7 @@ abstract class MySQLInserts extends InsertSupport {
             } else if (rowList.size() == this.parentStmt.rowList().size()) {
                 spec = new ValueChildInsertWithDuplicateKey(this, pairList);
             } else {
-                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.table
+                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.insertTable
                         , this.parentStmt.rowList().size(), rowList.size());
             }
             return spec.asInsert();

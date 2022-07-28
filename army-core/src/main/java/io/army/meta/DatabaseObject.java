@@ -13,6 +13,10 @@ package io.army.meta;
  */
 public interface DatabaseObject {
 
+    /**
+     * @see TableMeta#tableName()
+     * @see FieldMeta#columnName()
+     */
     String objectName();
 
 }

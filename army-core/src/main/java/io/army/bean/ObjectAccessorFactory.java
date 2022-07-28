@@ -8,6 +8,7 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -24,13 +25,35 @@ public abstract class ObjectAccessorFactory {
 
     private static final byte READ_METHOD = 2;
 
-    private static final ConcurrentMap<Class<?>, BeanAccessorsReference> ACCESSOR_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, SoftReference<BeanWriterAccessor>> ACCESSOR_CACHE;
+
+    static {
+        ACCESSOR_CACHE = new ConcurrentHashMap<>();
+    }
 
     public static ObjectAccessor forBean(Class<?> beanClass) {
         while (ArmyProxy.class.isAssignableFrom(beanClass)) {
             beanClass = beanClass.getSuperclass();
         }
-        return new BeanWriterAccessor(getBeanAccessors(beanClass));
+        SoftReference<BeanWriterAccessor> reference;
+        reference = ACCESSOR_CACHE.get(beanClass);
+        BeanWriterAccessor accessor;
+        if (reference != null
+                && (accessor = reference.get()) != null
+                && accessor.accessors.beanClass == beanClass) {
+            return accessor;
+        }
+
+        final BeanAccessors beanAccessors;
+        if (FieldAccessBean.class.isAssignableFrom(beanClass)) {
+            beanAccessors = createFieldAccessorPair(beanClass);
+        } else {
+            beanAccessors = createMethodAccessors(beanClass);
+        }
+        accessor = new BeanWriterAccessor(beanAccessors);
+
+        ACCESSOR_CACHE.put(beanClass, new SoftReference<>(accessor));
+        return accessor;
     }
 
     public static ReadAccessor readOnlyFromInstance(final Object instance) {
@@ -38,7 +61,8 @@ public abstract class ObjectAccessorFactory {
         if (instance instanceof Map) {
             accessor = MapReadAccessor.INSTANCE;
         } else {
-            accessor = forBean(instance.getClass());
+            accessor = forBean(instance.getClass())
+                    .getReadAccessor();
         }
         return accessor;
     }
@@ -81,26 +105,6 @@ public abstract class ObjectAccessorFactory {
                     , constructor.getDeclaringClass().getName());
             throw new ObjectAccessException(m, e);
         }
-    }
-
-
-    private static BeanAccessors getBeanAccessors(final Class<?> beanClass) {
-        final BeanAccessorsReference reference;
-        reference = ACCESSOR_CACHE.get(beanClass);
-        BeanAccessors accessors = null;
-        if (reference != null) {
-            accessors = reference.get();
-        }
-        if (accessors != null) {
-            return accessors;
-        }
-        if (FieldAccessBean.class.isAssignableFrom(beanClass)) {
-            accessors = createFieldAccessorPair(beanClass);
-        } else {
-            accessors = createMethodAccessors(beanClass);
-        }
-        ACCESSOR_CACHE.put(beanClass, new BeanAccessorsReference(accessors));
-        return accessors;
     }
 
 
@@ -194,24 +198,59 @@ public abstract class ObjectAccessorFactory {
     }
 
 
-    private static final class BeanAccessorsReference extends SoftReference<BeanAccessors> {
+    private static final class BeanWriterAccessor extends BeanReadAccessor implements ObjectAccessor {
 
-        private BeanAccessorsReference(BeanAccessors accessors) {
+        private BeanReadAccessor readAccessor;
+
+        BeanWriterAccessor(BeanAccessors accessors) {
             super(accessors);
         }
 
         @Override
-        public void clear() {
-            final BeanAccessors accessors;
-            accessors = get();
-            super.clear();
-            if (accessors != null) {
-                ACCESSOR_CACHE.remove(accessors.beanClass, this);
-            }
-
+        public boolean isWritable(String propertyName) {
+            return this.accessors.writerMap.get(propertyName) != null;
         }
 
-    }//AccessorReference
+        @Override
+        public void set(final Object target, final String propertyName, final @Nullable Object value)
+                throws ObjectAccessException {
+            if (!this.accessors.beanClass.isInstance(target)) {
+                Objects.requireNonNull(target);
+                String m = String.format("%s isn't %s type."
+                        , target.getClass().getName(), this.accessors.beanClass.getName());
+                throw new IllegalArgumentException(m);
+            }
+            final ValueWriteAccessor accessor;
+            accessor = accessors.writerMap.get(propertyName);
+            if (accessor == null) {
+                throw invalidProperty(propertyName);
+            }
+            try {
+                accessor.set(target, value);
+            } catch (InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+                throw accessError(propertyName, e);
+            }
+        }
+
+        @Override
+        public ReadAccessor getReadAccessor() {
+            BeanReadAccessor readAccessor = this.readAccessor;
+            if (readAccessor == null) {
+                readAccessor = new BeanReadAccessor(this.accessors);
+                this.readAccessor = readAccessor;
+            } else {
+                assert readAccessor.accessors == this.accessors;
+            }
+            return readAccessor;
+        }
+
+        @Override
+        protected void finalize() {
+            ACCESSOR_CACHE.remove(this.accessors.beanClass);
+        }
+
+
+    }//BeanWriterAccessor
 
 
 }

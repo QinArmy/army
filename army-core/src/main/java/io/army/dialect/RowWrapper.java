@@ -23,7 +23,7 @@ interface RowWrapper {
      *
      * @see FieldValueGenerator#validate(TableMeta, RowWrapper)
      */
-    boolean isNullMigrationValue(FieldMeta<?> field);
+    boolean isNullValueParam(FieldMeta<?> field);
 
 
     /**

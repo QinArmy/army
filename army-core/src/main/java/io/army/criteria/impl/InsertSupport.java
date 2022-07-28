@@ -133,7 +133,7 @@ abstract class InsertSupport {
 
         final boolean migration;
 
-        final TableMeta<T> table;
+        final TableMeta<T> insertTable;
 
         private List<FieldMeta<?>> fieldList;
 
@@ -147,7 +147,7 @@ abstract class InsertSupport {
             this.criteriaContext = criteriaContext;
             this.criteria = criteriaContext.criteria();
             this.migration = migration;
-            this.table = table;
+            this.insertTable = table;
         }
 
         @Override
@@ -204,12 +204,8 @@ abstract class InsertSupport {
             } else if (!(fieldList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             } else {
-                assert fieldMap != null && fieldList.size() == fieldMap.size();
-
                 if (this.migration) {
-                    final TableMeta<?> table = this.table;
-                    assert !(table instanceof ChildTableMeta) || fieldList.get(0) == table.id();
-                    validateMigrationColumnList(table, fieldMap);
+                    validateMigrationColumnList(this.insertTable, fieldMap);
                 }
                 if (fieldList.size() == 1) {
                     this.fieldList = Collections.singletonList(fieldList.get(0));
@@ -217,7 +213,6 @@ abstract class InsertSupport {
                     this.fieldList = Collections.unmodifiableList(fieldList);
                 }
             }
-
 
             if (fieldMap == null) {
                 this.fieldMap = Collections.emptyMap();
@@ -232,7 +227,7 @@ abstract class InsertSupport {
 
         @Override
         public final TableMeta<?> table() {
-            return this.table;
+            return this.insertTable;
         }
 
         @Override
@@ -270,7 +265,7 @@ abstract class InsertSupport {
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap == null) {
-                checkField(this.criteriaContext, this.table, this.migration, field);
+                checkField(this.criteriaContext, this.insertTable, this.migration, field);
             } else if (!fieldMap.containsKey(field)) {
                 throw notContainField(this.criteriaContext, field);
             }
@@ -281,23 +276,23 @@ abstract class InsertSupport {
         }
 
         private void addField(final FieldMeta<T> field) {
-            checkField(this.criteriaContext, this.table, this.migration, field);
-            if (_MetaBridge.VISIBLE.equals(field.fieldName())) {
-                String m = String.format("%s is managed by army for column list clause.", _MetaBridge.VISIBLE);
-                throw new CriteriaException(m);
+            checkField(this.criteriaContext, this.insertTable, this.migration, field);
+            if (!this.migration && _MetaBridge.VISIBLE.equals(field.fieldName())) {
+                String m = String.format("%s is managed by army for column list clause,in non-migration mode."
+                        , _MetaBridge.VISIBLE);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
 
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             List<FieldMeta<?>> fieldList;
             if (fieldMap == null) {
-                fieldMap = this.createFieldMap(); // create map and add the fields that is managed by army.
+                fieldMap = this.createAndInitializingFieldMap(); // create map and add the fields that is managed by army.
+                this.fieldMap = fieldMap;
                 fieldList = this.fieldList;
                 assert fieldList != null && fieldList.size() == fieldMap.size();
             } else {
                 fieldList = this.fieldList;
-                assert fieldList != null;
             }
-
 
             if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
                 String m = String.format("%s duplication", field);
@@ -307,12 +302,12 @@ abstract class InsertSupport {
 
         }
 
-        private Map<FieldMeta<?>, Boolean> createFieldMap() {
+        private Map<FieldMeta<?>, Boolean> createAndInitializingFieldMap() {
             assert this.fieldMap == null && this.fieldList == null;
             final Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
             final List<FieldMeta<?>> fieldList = new ArrayList<>();
 
-            final TableMeta<?> insertTable = this.table;
+            final TableMeta<?> insertTable = this.insertTable;
             FieldMeta<?> reservedField;
             if (this.migration) {
                 if (insertTable instanceof ChildTableMeta) {
@@ -333,7 +328,7 @@ abstract class InsertSupport {
                     fieldList.add(field);
                 }
             } else {
-                for (String fieldName : _MetaBridge.RESERVED_PROPS) {
+                for (String fieldName : _MetaBridge.RESERVED_FIELDS) {
                     reservedField = insertTable.tryGetField(fieldName);
                     if (reservedField == null) {
                         continue;
@@ -365,8 +360,6 @@ abstract class InsertSupport {
 
             }
 
-            assert fieldList.size() == fieldMap.size();
-            this.fieldMap = fieldMap;
             this.fieldList = fieldList;
             return fieldMap;
         }
@@ -408,6 +401,9 @@ abstract class InsertSupport {
                 } else {
                     valueExp = (ArmyExpression) SQLs.param(field, null);
                 }
+            } else if (value instanceof DataField) {
+                String m = "column default value must be non-field";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             } else if (!(value instanceof Expression)) {
                 valueExp = (ArmyExpression) SQLs.param(field, value);
             } else if (value instanceof ArmyExpression) {
@@ -607,8 +603,8 @@ abstract class InsertSupport {
         public final VR value(Function<String, Object> function, String keyName) {
             final Object domain;
             domain = function.apply(keyName);
-            if (!this.table.javaType().isInstance(domain)) {
-                throw nonDomainInstance(this.criteriaContext, domain, this.table);
+            if (!this.insertTable.javaType().isInstance(domain)) {
+                throw nonDomainInstance(this.criteriaContext, domain, this.insertTable);
             }
             return this.value((T) domain);
         }
@@ -646,8 +642,8 @@ abstract class InsertSupport {
             if (domainList.size() == 0) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
             }
-            if (!this.table.javaType().isInstance(domainList.get(0))) {
-                throw nonDomainInstance(this.criteriaContext, domainList.get(0), this.table);
+            if (!this.insertTable.javaType().isInstance(domainList.get(0))) {
+                throw nonDomainInstance(this.criteriaContext, domainList.get(0), this.insertTable);
             }
             this.domainList = _CollectionUtils.asUnmodifiableList(domainList);
             this.endColumnDefaultClause();
@@ -790,7 +786,9 @@ abstract class InsertSupport {
 
 
         private void innerAddValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
-            if (!(value instanceof ArmyExpression)) {
+            if (value instanceof DataField) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "column value must be non-field.");
+            } else if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
             }
             this.validator.accept(field, (ArmyExpression) value);
@@ -1597,7 +1595,7 @@ abstract class InsertSupport {
             case _MetaBridge.CREATE_TIME:
             case _MetaBridge.UPDATE_TIME:
             case _MetaBridge.VERSION:
-                // here,don't contain visible field
+                // here,don't contain  id or visible field
                 match = true;
                 break;
             default:
@@ -1607,23 +1605,25 @@ abstract class InsertSupport {
         return match;
     }
 
-    private static void validateMigrationColumnList(final TableMeta<?> table
+    private static void validateMigrationColumnList(final TableMeta<?> insertTable
             , final Map<FieldMeta<?>, Boolean> fieldMap) {
-        if (table instanceof SingleTableMeta) {
+        if (insertTable instanceof SingleTableMeta) {
             FieldMeta<?> field;
-            for (String fieldName : _MetaBridge.RESERVED_PROPS) {
-                field = table.tryGetField(fieldName);
+            for (String fieldName : _MetaBridge.RESERVED_FIELDS) {
+                field = insertTable.tryGetField(fieldName);
                 if (field != null && fieldMap.get(field) == null) {
                     throw _Exceptions.migrationManageGeneratorField(field);
                 }
             }
-            field = table.discriminator();
+            field = insertTable.discriminator();
             if (field != null && fieldMap.get(field) == null) {
                 throw _Exceptions.migrationManageGeneratorField(field);
             }
+        } else {
+            assert fieldMap.containsKey(insertTable.id());
         }
 
-        for (FieldMeta<?> field : table.fieldChain()) {
+        for (FieldMeta<?> field : insertTable.fieldChain()) {
             if (!field.nullable() && fieldMap.get(field) == null) {
                 throw _Exceptions.migrationModeGeneratorField(field);
             }

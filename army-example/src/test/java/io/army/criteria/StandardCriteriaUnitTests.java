@@ -21,96 +21,6 @@ public class StandardCriteriaUnitTests {
 
 
     @Test
-    public void domainInsertParent() {
-        final Insert stmt;
-        stmt = SQLs.domainInsert()
-                .preferLiteral(true)
-                .insertInto(ChinaRegion_.T)
-                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
-                .defaultLiteral(ChinaRegion_.visible, true)
-                .defaultLiteral(ChinaRegion_.parentId, 0)
-                .values(this::createRegionList)
-                .asInsert();
-
-        printStmt(stmt);
-
-    }
-
-    @Test
-    public void domainInsertChild() {
-        final Insert stmt;
-        stmt = SQLs.domainInsert()
-                .preferLiteral(true)
-                .insertInto(ChinaRegion_.T)
-                .child()
-                .insertInto(ChinaProvince_.T)
-                .values(this::createProvinceList)
-                .asInsert();
-
-        printStmt(stmt);
-    }
-
-
-    @Test
-    public void valueInsertParent() {
-        final Insert stmt;
-        stmt = SQLs.valueInsert()
-                .preferLiteral(true)
-                .insertInto(ChinaRegion_.T)
-                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
-                .defaultLiteral(ChinaRegion_.visible, true)
-                .values()
-
-                .leftParen(ChinaRegion_.name, "武当山")
-                .commaLiteral(ChinaRegion_.regionGdp, "6666.66")
-                .comma(ChinaRegion_.parentId, 0)
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, "光明顶")
-                .comma(ChinaRegion_.parentId, 0)
-                .rightParen()
-                .asInsert();
-
-        printStmt(stmt);
-    }
-
-    @Test
-    public void valueInsertChild() {
-        final Insert stmt;
-        stmt = SQLs.valueInsert()
-                .preferLiteral(true)
-                .insertInto(ChinaRegion_.T)
-                .defaultLiteral(ChinaRegion_.regionGdp, "88888.88")
-                .defaultLiteral(ChinaRegion_.visible, true)
-                .values()
-
-                .leftParen(ChinaRegion_.name, "武当山")
-                .commaLiteral(ChinaRegion_.regionGdp, "6666.66")
-                .comma(ChinaRegion_.parentId, 0)
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, "光明顶")
-                .comma(ChinaRegion_.parentId, 0)
-                .rightParen()
-
-                .child()
-
-                .insertInto(ChinaCity_.T)
-                .defaultValue(ChinaCity_.mayorName, "")
-                .values()
-
-                .leftParen(ChinaCity_.mayorName, "远浪舰长")
-                .rightParen()
-
-                .leftParen(ChinaCity_.mayorName, "远浪舰长")
-                .rightParen()
-
-                .asInsert();
-
-        printStmt(stmt);
-    }
-
-    @Test
     public void updateParent() {
         final BigDecimal addGdp = new BigDecimal("888.8");
         final Map<String, Object> map = new HashMap<>();
@@ -437,18 +347,7 @@ public class StandardCriteriaUnitTests {
     }
 
 
-    private List<ChinaRegion<?>> createRegionList() {
-        List<ChinaRegion<?>> domainList = new ArrayList<>();
-        ChinaRegion<?> region;
 
-        for (int i = 0; i < 3; i++) {
-            region = new ChinaRegion<>();
-            region.setId((long) i);
-            region.setName("江湖" + i);
-            domainList.add(region);
-        }
-        return domainList;
-    }
 
     private List<ChinaProvince> createProvinceList() {
         List<ChinaProvince> domainList = new ArrayList<>();
