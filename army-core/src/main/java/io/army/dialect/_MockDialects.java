@@ -65,7 +65,7 @@ public abstract class _MockDialects implements _DialectEnv {
     }
 
     @Override
-    public final ZoneOffset zoneOffset() {
+    public final ZoneOffset envZoneId() {
         return this.mappingEnv.zoneOffset();
     }
 

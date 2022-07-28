@@ -148,6 +148,11 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     }
 
     @Override
+    public final boolean isPreferLiteral() {
+        return this.preferLiteral;
+    }
+
+    @Override
     public final void appendFieldList() {
         assert !this.columnListClauseEnd;
 

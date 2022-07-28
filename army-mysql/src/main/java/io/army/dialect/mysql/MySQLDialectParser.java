@@ -598,12 +598,21 @@ final class MySQLDialectParser extends MySQLParser {
         final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(SPACE_ON_DUPLICATE_KEY_UPDATE);
         //2. on duplicate key update clause
-        final TableMeta<?> table = context.insertTable();
+        final TableMeta<?> insertTable;
+        insertTable = context.insertTable();
+
+        final List<_Pair<FieldMeta<?>, _Expression>> pairList;
+        pairList = clause.duplicatePairList();
+        final int pairSize = pairList.size();
+        assert pairSize > 0;
+
+        _Pair<FieldMeta<?>, _Expression> pair;
         FieldMeta<?> field;
-        int index = 0;
-        for (_Pair<FieldMeta<?>, _Expression> pair : clause.duplicatePairList()) {
+
+        for (int i = 0; i < pairSize; i++) {
+            pair = pairList.get(i);
             field = pair.first;
-            if (field.tableMeta() != table) {
+            if (field.tableMeta() != insertTable) {
                 throw _Exceptions.unknownColumn(field);
             }
             if (field.updateMode() != UpdateMode.UPDATABLE) {
@@ -614,20 +623,21 @@ final class MySQLDialectParser extends MySQLParser {
                 case _MetaBridge.VERSION:
                     throw _Exceptions.armyManageField(field);
             }
-            if (index > 0) {
+            if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
             } else {
                 sqlBuilder.append(_Constant.SPACE);
             }
-            this.safeObjectName(pair.first, sqlBuilder);
-            sqlBuilder.append(_Constant.SPACE_EQUAL);
+            this.safeObjectName(pair.first, sqlBuilder)
+                    .append(_Constant.SPACE_EQUAL);
             pair.second.appendSql(context);
-            index++;
         }
 
-        //TODO updateTime and version
+        if (insertTable instanceof SingleTableMeta) {
+            this.appendUpdateTimeAndVersion((SingleTableMeta<?>) insertTable, null, context);
+        }
 
-        assert index > 0;
+
     }
 
 

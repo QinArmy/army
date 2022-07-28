@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MySQLInsertUnitTests {
@@ -44,7 +45,10 @@ public class MySQLInsertUnitTests {
                 .comma(ChinaRegion_.parentId)
                 .rightParen()
                 .defaultLiteral(ChinaRegion_.visible, true)
-                .values(this::createRegionList)
+                .values(this::addChinaRegin)
+                .onDuplicateKey()
+                .update(ChinaRegion_.name, "光明顶")
+                .commaLiteral(ChinaRegion_.regionGdp, "6666.88")
                 .asInsert();
 
         printStmt(stmt);
@@ -52,8 +56,37 @@ public class MySQLInsertUnitTests {
     }
 
 
-    private List<ChinaRegion<?>> createRegionList() {
-        List<ChinaRegion<?>> list = new ArrayList<>();
+    @Test
+    public void assignmentInsertParentPost() {
+        final Supplier<List<Hint>> hintSupplier;
+        hintSupplier = () -> {
+            List<Hint> hintList = new ArrayList<>();
+            hintList.add(MySQLs.qbName("regionBlock"));
+            return hintList;
+        };
+
+        Insert stmt;
+        stmt = MySQLs.assignmentInsert()
+                .preferLiteral(false)
+                .insert(hintSupplier, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
+                .into(ChinaRegion_.T)
+                .partition()
+                .leftParen("p1")
+                .rightParen()
+                .set(ChinaRegion_.name, "光明顶")
+                .setLiteral(ChinaRegion_.regionGdp, "6666.88")
+                .setLiteral(ChinaRegion_.parentId, 0)
+                .onDuplicateKey()
+                .update(ChinaRegion_.name, "光明顶")
+                .commaLiteral(ChinaRegion_.regionGdp, "6666.88")
+                .asInsert();
+
+        printStmt(stmt);
+
+    }
+
+
+    private void addChinaRegin(final Consumer<ChinaRegion<?>> consumer) {
         ChinaRegion<?> c;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
@@ -69,9 +102,9 @@ public class MySQLInsertUnitTests {
                     .setVersion(0)
                     .setVisible(Boolean.TRUE);
 
-            list.add(c);
+            consumer.accept(c);
         }
-        return list;
+
     }
 
 

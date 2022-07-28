@@ -6,4 +6,6 @@ public interface _InsertContext extends StmtContext {
 
     TableMeta<?> insertTable();
 
+    boolean isPreferLiteral();
+
 }

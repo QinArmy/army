@@ -12,7 +12,10 @@ import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.math.BigInteger;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +23,7 @@ import java.util.Map;
 abstract class FieldValuesGenerators implements FieldValueGenerator {
 
 
-    static FieldValuesGenerators create(@Nullable ZoneOffset zoneOffset
+    static FieldValuesGenerators create(@Nullable ZoneId zoneOffset
             , Map<FieldMeta<?>, FieldGenerator> generatorMap) {
         return new DefaultFieldValuesGenerator(zoneOffset, generatorMap);
     }
@@ -30,9 +33,9 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
     }
 
 
-    private final ZoneOffset zoneOffset;
+    private final ZoneId zoneOffset;
 
-    private FieldValuesGenerators(@Nullable ZoneOffset zoneOffset) {
+    private FieldValuesGenerators(@Nullable ZoneId zoneOffset) {
         this.zoneOffset = zoneOffset;
     }
 
@@ -210,7 +213,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         private final Map<FieldMeta<?>, FieldGenerator> generatorMap;
 
-        private DefaultFieldValuesGenerator(@Nullable ZoneOffset zoneOffset
+        private DefaultFieldValuesGenerator(@Nullable ZoneId zoneOffset
                 , Map<FieldMeta<?>, FieldGenerator> generatorMap) {
             super(zoneOffset);
             this.generatorMap = generatorMap;

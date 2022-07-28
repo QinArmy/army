@@ -613,7 +613,7 @@ abstract class InsertSupport {
         @Override
         public final VR values(final @Nullable List<T> domainList) {
             if (domainList == null || domainList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
+                throw domainListIsEmpty();
             }
             this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
             this.endColumnDefaultClause();
@@ -631,6 +631,30 @@ abstract class InsertSupport {
         }
 
         @Override
+        public final VR values(Consumer<Consumer<T>> consumer) {
+            final List<T> list = new ArrayList<>();
+            consumer.accept(list::add);
+            if (list.size() == 0) {
+                throw domainListIsEmpty();
+            }
+            this.domainList = _CollectionUtils.unmodifiableList(list);
+            this.endColumnDefaultClause();
+            return this.valuesEnd();
+        }
+
+        @Override
+        public final VR values(BiConsumer<C, Consumer<T>> consumer) {
+            final List<T> list = new ArrayList<>();
+            consumer.accept(this.criteria, list::add);
+            if (list.size() == 0) {
+                throw domainListIsEmpty();
+            }
+            this.domainList = _CollectionUtils.unmodifiableList(list);
+            this.endColumnDefaultClause();
+            return this.valuesEnd();
+        }
+
+        @Override
         public final VR values(Function<String, Object> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
@@ -641,7 +665,7 @@ abstract class InsertSupport {
 
             final List<?> domainList = (List<?>) value;
             if (domainList.size() == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
+                throw domainListIsEmpty();
             }
             if (!this.insertTable.javaType().isInstance(domainList.get(0))) {
                 throw nonDomainInstance(this.criteriaContext, domainList.get(0), this.insertTable);
@@ -668,6 +692,11 @@ abstract class InsertSupport {
         }
 
         abstract VR valuesEnd();
+
+        private CriteriaException domainListIsEmpty() {
+            return CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
+        }
+
 
     }//DomainValueClause
 

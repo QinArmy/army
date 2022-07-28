@@ -19,6 +19,7 @@ import io.army.util._StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.*;
@@ -52,6 +53,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected final Dialect dialect;
 
+    private final ZoneId envZoneId;
     private final FieldValueGenerator generator;
 
     protected _AbstractDialect(_DialectEnv dialectEnv, Dialect dialect) {
@@ -61,7 +63,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
         this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
 
         this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(dialectEnv.serverMeta()));
-        this.generator = FieldValuesGenerators.create(dialectEnv.zoneOffset(), dialectEnv.fieldGeneratorMap());
+        this.envZoneId = dialectEnv.envZoneId();
+        this.generator = FieldValuesGenerators.create(this.envZoneId, dialectEnv.fieldGeneratorMap());
     }
 
     /*################################## blow DML batchInsert method ##################################*/
@@ -1084,6 +1087,71 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
 
+    /**
+     * @see #singleTableSetClause(_SingleUpdate, _SingleUpdateContext)
+     * @see #multiTableSetClause(_MultiUpdate, _MultiUpdateContext)
+     * @see #parseInsert(_Insert, Visible)
+     */
+    protected final void appendUpdateTimeAndVersion(final SingleTableMeta<?> table
+            , final @Nullable String safeTableAlias, final StmtContext context) {
+
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        FieldMeta<?> field;
+        field = table.getField(_MetaBridge.UPDATE_TIME);
+
+        final Class<?> javaType = field.javaType();
+        final Temporal updateTimeValue;
+        if (javaType == LocalDateTime.class) {
+            updateTimeValue = LocalDateTime.now();
+        } else if (javaType == OffsetDateTime.class) {
+            updateTimeValue = OffsetDateTime.now(this.envZoneId == null ? ZoneId.systemDefault() : this.envZoneId);
+        } else if (javaType == ZonedDateTime.class) {
+            updateTimeValue = ZonedDateTime.now(this.envZoneId == null ? ZoneId.systemDefault() : this.envZoneId);
+        } else {
+            String m = String.format("%s don't support java type[%s]", field, javaType);
+            throw new MetaException(m);
+        }
+        final boolean supportTableAlias;
+        supportTableAlias = safeTableAlias != null && this.setClauseTableAlias();
+
+        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+        if (supportTableAlias) {
+            sqlBuilder.append(safeTableAlias)
+                    .append(_Constant.POINT);
+        }
+        this.safeObjectName(field, sqlBuilder)
+                .append(_Constant.SPACE_EQUAL);
+
+        if ((context instanceof _InsertContext && ((_InsertContext) context).isPreferLiteral())
+                || !context.hasParam()) {
+            sqlBuilder.append(_Constant.SPACE);
+            this.literal(field, updateTimeValue, sqlBuilder);
+        } else {
+            context.appendParam(SingleParam.build(field, updateTimeValue));
+        }
+
+        if ((field = table.tryGetField(_MetaBridge.VERSION)) != null) {
+            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            if (supportTableAlias) {
+                sqlBuilder.append(safeTableAlias)
+                        .append(_Constant.POINT);
+            }
+            final String versionColumnName = this.safeObjectName(field);
+            sqlBuilder.append(versionColumnName)
+                    .append(_Constant.SPACE_EQUAL_SPACE);
+
+            if (supportTableAlias) {
+                sqlBuilder.append(safeTableAlias)
+                        .append(_Constant.POINT);
+            }
+            sqlBuilder.append(versionColumnName)
+                    .append(" + 1");
+
+        }
+
+    }
+
+
     /*################################## blow private method ##################################*/
 
 
@@ -1285,63 +1353,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         if (outerParen) {
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);// append space left bracket after sub query end.
-        }
-
-    }
-
-
-    /**
-     * @see #singleTableSetClause(_SingleUpdate, _SingleUpdateContext)
-     * @see #multiTableSetClause(_MultiUpdate, _MultiUpdateContext)
-     */
-    private void appendUpdateTimeAndVersion(final SingleTableMeta<?> table, final String safeTableAlias
-            , final StmtContext context) {
-
-        final StringBuilder sqlBuilder = context.sqlBuilder();
-        final FieldMeta<?> updateTime = table.getField(_MetaBridge.UPDATE_TIME);
-        final Class<?> javaType = updateTime.javaType();
-        final Temporal updateTimeValue;
-        if (javaType == LocalDateTime.class) {
-            updateTimeValue = LocalDateTime.now();
-        } else if (javaType == OffsetDateTime.class) {
-            updateTimeValue = OffsetDateTime.now(this.dialectEnv.zoneOffset());
-        } else if (javaType == ZonedDateTime.class) {
-            updateTimeValue = ZonedDateTime.now(this.dialectEnv.zoneOffset());
-        } else {
-            String m = String.format("%s don't support java type[%s]", updateTime, javaType);
-            throw new MetaException(m);
-        }
-        final boolean supportTableAlias = this.setClauseTableAlias();
-        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-        if (supportTableAlias) {
-            sqlBuilder.append(safeTableAlias)
-                    .append(_Constant.POINT);
-        }
-        this.safeObjectName(updateTime, sqlBuilder)
-                .append(_Constant.SPACE_EQUAL);
-
-        if (context.hasParam()) {
-            context.appendParam(SingleParam.build(updateTime.mappingType(), updateTimeValue));
-        } else {
-            sqlBuilder.append(_Constant.SPACE);
-            this.literal(updateTime.mappingType(), updateTimeValue, sqlBuilder);
-        }
-
-        if (table.containField(_MetaBridge.VERSION)) {
-            sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
-            if (supportTableAlias) {
-                sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
-            }
-            final FieldMeta<?> version = table.getField(_MetaBridge.VERSION);
-            final String versionColumnName = this.identifier(version.columnName());
-            sqlBuilder.append(versionColumnName)
-                    .append(_Constant.SPACE_EQUAL_SPACE)
-                    .append(safeTableAlias)
-                    .append(_Constant.POINT)
-                    .append(versionColumnName)
-                    .append(" + 1");
-
         }
 
     }

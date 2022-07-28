@@ -11,9 +11,8 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
-import io.army.util._TimeUtils;
 
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +42,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected final boolean readonly;
 
-    protected final ZoneOffset zoneOffset;
+    protected final ZoneId zoneId;
 
     public final boolean uniqueCache;
 
@@ -76,7 +75,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         this.subQueryInsertMode = env.getOrDefault(ArmyKey.SUBQUERY_INSERT_MODE);
         this.readonly = env.getOrDefault(ArmyKey.READ_ONLY);
 
-        this.zoneOffset = support.zoneOffset;
+        this.zoneId = support.zoneOffset;
         this.fieldGeneratorMap = support.generatorMap;
 
         final DdlMode ddlMode = support.ddlMode;
@@ -105,10 +104,16 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         return this.env;
     }
 
+    @Nullable
     @Override
-    public final ZoneOffset zoneOffset() {
-        final ZoneOffset zoneOffset = this.zoneOffset;
-        return zoneOffset == null ? _TimeUtils.systemZoneOffset() : zoneOffset;
+    public final ZoneId envZoneId() {
+        return this.zoneId;
+    }
+
+    @Override
+    public final ZoneId zoneId() {
+        final ZoneId zoneOffset = this.zoneId;
+        return zoneOffset == null ? ZoneId.systemDefault() : zoneOffset;
     }
 
     @Override
@@ -147,7 +152,6 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     public final Function<ArmyException, RuntimeException> exceptionFunction() {
         return this.exceptionFunction;
     }
-
 
 
     @Override
@@ -218,7 +222,6 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         }
         return (byte) tableCount;
     }
-
 
 
 }

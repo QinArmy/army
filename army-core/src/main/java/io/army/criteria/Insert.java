@@ -140,6 +140,10 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         VR values(Supplier<List<T>> supplier);
 
+        VR values(Consumer<Consumer<T>> consumer);
+
+        VR values(BiConsumer<C, Consumer<T>> consumer);
+
         VR values(Function<String, Object> function, String keyName);
     }
 

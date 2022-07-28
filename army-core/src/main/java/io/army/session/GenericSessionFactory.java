@@ -7,7 +7,7 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -17,7 +17,7 @@ public interface GenericSessionFactory {
 
     ArmyEnvironment environment();
 
-    ZoneOffset zoneOffset();
+    ZoneId zoneId();
 
     SchemaMeta schemaMeta();
 

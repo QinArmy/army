@@ -1610,7 +1610,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
-            if (this.duplicatePairList == null) {
+            if (this.duplicatePairList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.endAssignmentSetClause();

@@ -169,6 +169,11 @@ final class AssignmentInsertContext extends StatementContext
     }
 
     @Override
+    public boolean isPreferLiteral() {
+        return this.preferLiteral;
+    }
+
+    @Override
     public void appendAssignmentClause() {
         assert !this.assignmentClauseEnd;
 
