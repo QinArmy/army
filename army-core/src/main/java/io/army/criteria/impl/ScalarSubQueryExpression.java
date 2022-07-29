@@ -23,7 +23,7 @@ final class ScalarSubQueryExpression extends OperationExpression implements Scal
     }
 
     @Override
-    public List<SelectItem> selectItemList() {
+    public List<? extends SelectItem> selectItemList() {
         return this.subQuery.selectItemList();
     }
 

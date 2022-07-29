@@ -91,25 +91,6 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _PartitionLeftParenClause<C, PR> {
-
-        Statement._RightParenClause<PR> leftParen(String partitionName);
-
-        _PartitionCommaDualClause<PR> leftParen(String partitionName1, String partitionName2);
-
-        _PartitionCommaQuadraClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3, String partitionName4);
-
-        Statement._RightParenClause<PR> leftParen(Consumer<Consumer<String>> consumer);
-
-        Statement._RightParenClause<PR> leftParen(BiConsumer<C, Consumer<String>> consumer);
-
-        Statement._RightParenClause<PR> leftParenIf(Consumer<Consumer<String>> consumer);
-
-        Statement._RightParenClause<PR> leftParenIf(BiConsumer<C, Consumer<String>> consumer);
-
-    }
-
-
     interface _PartitionCommaDualClause<PR> extends Statement._RightParenClause<PR> {
 
         Statement._RightParenClause<PR> comma(String partitionName);
@@ -126,6 +107,24 @@ public interface MySQLQuery extends Query, DialectStatement {
         Statement._RightParenClause<PR> comma(String partitionName1, String partitionName2, String partitionName3);
 
         _PartitionCommaQuadraClause<PR> comma(String partitionName1, String partitionName2, String partitionName3, String partitionName4);
+
+    }
+
+    interface _PartitionLeftParenClause<C, PR> {
+
+        Statement._RightParenClause<PR> leftParen(String partitionName);
+
+        _PartitionCommaDualClause<PR> leftParen(String partitionName1, String partitionName2);
+
+        _PartitionCommaQuadraClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3, String partitionName4);
+
+        Statement._RightParenClause<PR> leftParen(Consumer<Consumer<String>> consumer);
+
+        Statement._RightParenClause<PR> leftParen(BiConsumer<C, Consumer<String>> consumer);
+
+        Statement._RightParenClause<PR> leftParenIf(Consumer<Consumer<String>> consumer);
+
+        Statement._RightParenClause<PR> leftParenIf(BiConsumer<C, Consumer<String>> consumer);
 
     }
 

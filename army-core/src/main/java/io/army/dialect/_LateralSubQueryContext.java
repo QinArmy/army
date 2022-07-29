@@ -5,13 +5,13 @@ package io.army.dialect;
  * Package interface,this interface representing lateral sub query context.
  * </p>
  *
- * @see SelectContext
- * @see UnionQueryContext
- * @see SubQueryContext
+ * @see _SelectContext
+ * @see _UnionQueryContext
+ * @see _SubQueryContext
  * @see _SimpleQueryContext
  * @since 1.0
  */
-interface LateralSubQueryContext extends SubQueryContext {
+interface _LateralSubQueryContext extends _SubQueryContext {
 
 
 }

@@ -339,7 +339,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
         //here no outer paren
         if (subQuery instanceof _UnionRowSet) {
-            final UnionQueryContext context;
+            final _UnionQueryContext context;
             context = UnionSubQueryContext.create(outerContext);
             this.standardUnionQuery((_UnionRowSet) subQuery, context);
         } else {
@@ -512,8 +512,57 @@ public abstract class _AbstractDialect implements ArmyDialect {
         return stmt;
     }
 
-    protected final Stmt values(final Values values, final Visible visible) {
+    protected void dialectSimpleValues(_ValuesContext context, _Values values) {
         throw new UnsupportedOperationException();
+    }
+
+    protected final SimpleStmt values(final Values values, final Visible visible) {
+        final StmtContext context;
+        if (values instanceof _UnionRowSet) {
+            context = UnionValuesContext.create((_UnionRowSet) values, this, visible);
+            this.standardUnionQuery((_UnionRowSet) values, context);
+        } else {
+            context = ValuesContext.create((_Values) values, this, visible);
+            this.dialectSimpleValues((_ValuesContext) context, (_Values) values);
+        }
+        return context.build();
+    }
+
+
+    protected final void valuesClauseOfValues(final _ValuesContext context, @Nullable String rowKeyword
+            , final List<List<_Expression>> rowList) {
+
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
+        final int rowSize = rowList.size();
+        assert rowSize > 0;
+
+        List<_Expression> columnList;
+        for (int rowIndex = 0, columnSize; rowIndex < rowSize; rowIndex++) {
+            if (rowIndex > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+
+            if (rowKeyword != null) {
+                sqlBuilder.append(rowKeyword);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+
+            columnList = rowList.get(rowIndex);
+            columnSize = columnList.size();
+            assert columnSize > 0;
+            for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
+                if (columnIndex > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                columnList.get(columnIndex).appendSql(context);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
     }
 
 
@@ -1076,7 +1125,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         //2. assert sub query implementation class.
         if (subQuery instanceof _LateralSubQuery) {
-            if (!(outerContext instanceof LateralSubQueryContext && outerContext instanceof UnionQueryContext)) {
+            if (!(outerContext instanceof _LateralSubQueryContext && outerContext instanceof _UnionQueryContext)) {
                 throw _Exceptions.lateralSubQueryErrorPosition();
             }
         } else if (subQuery instanceof StandardQuery) {
@@ -1354,11 +1403,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
         }
         //4. parse select
         if (select instanceof _UnionRowSet) {
-            final UnionQueryContext context;
-            if (original instanceof UnionQueryContext) {
-                context = (UnionQueryContext) original;
+            final _UnionQueryContext context;
+            if (original instanceof _UnionQueryContext) {
+                context = (_UnionQueryContext) original;
             } else {
-                context = UnionSelectContext.create(select, (SelectContext) original);
+                context = UnionSelectContext.create(select, (_SelectContext) original);
             }
             this.standardUnionQuery((_UnionRowSet) select, context);
         } else {
@@ -1367,7 +1416,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 builder.append(_Constant.SPACE); // append space before select key word
             }
             final SimpleSelectContext context;
-            context = SimpleSelectContext.create(select, (SelectContext) original);//create new simple select context
+            context = SimpleSelectContext.create(select, (_SelectContext) original);//create new simple select context
             if (select instanceof StandardQuery) {
                 this.standardSimpleQuery((_StandardQuery) select, context);
             } else {
@@ -1387,15 +1436,15 @@ public abstract class _AbstractDialect implements ArmyDialect {
         final StringBuilder sqlBuilder = outerContext.sqlBuilder();
         //3. parse sub query
         final boolean outerParen;
-        outerParen = !(outerContext instanceof SubQueryContext) || outerContext instanceof _SimpleQueryContext;
+        outerParen = !(outerContext instanceof _SubQueryContext) || outerContext instanceof _SimpleQueryContext;
 
         if (outerParen) {
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);// append space left bracket before select key word
         }
         if (subQuery instanceof _UnionRowSet) {
-            final UnionQueryContext context;
-            if (outerContext instanceof SubQueryContext && outerContext instanceof UnionQueryContext) {
-                context = (UnionQueryContext) outerContext;
+            final _UnionQueryContext context;
+            if (outerContext instanceof _SubQueryContext && outerContext instanceof _UnionQueryContext) {
+                context = (_UnionQueryContext) outerContext;
             } else if (subQuery instanceof _LateralSubQuery) {
                 context = UnionSubQueryContext.forLateral(outerContext);
             } else {

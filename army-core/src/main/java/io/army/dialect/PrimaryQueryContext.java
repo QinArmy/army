@@ -4,7 +4,7 @@ package io.army.dialect;
  * <p>
  * Package interface, this interface is base interface of below:
  *     <ul>
- *         <li>{@link  SelectContext}</li>
+ *         <li>{@link  _SelectContext}</li>
  *         <li>{@link  _ValuesContext}</li>
  *     </ul>
  * </p>

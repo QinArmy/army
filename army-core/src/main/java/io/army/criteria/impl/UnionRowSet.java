@@ -63,7 +63,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     }
 
     @Override
-    public final List<SelectItem> selectItemList() {
+    public final List<? extends SelectItem> selectItemList() {
         return ((_PartRowSet) this.left).selectItemList();
     }
 

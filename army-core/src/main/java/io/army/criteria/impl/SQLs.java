@@ -1117,9 +1117,9 @@ public abstract class SQLs extends Functions {
         }
 
         @Override
-        public List<SelectItem> selectItemList() {
+        public List<? extends SelectItem> selectItemList() {
             final SubStatement subStatement = this.subStatement;
-            final List<SelectItem> list;
+            final List<? extends SelectItem> list;
             if (subStatement instanceof DerivedTable) {
                 list = ((DerivedTable) subStatement).selectItemList();
             } else {

@@ -6,10 +6,10 @@ package io.army.dialect;
  * This interface representing simple query context.
  * </p>
  *
- * @see SelectContext
- * @see UnionQueryContext
- * @see SubQueryContext
- * @see LateralSubQueryContext
+ * @see _SelectContext
+ * @see _UnionQueryContext
+ * @see _SubQueryContext
+ * @see _LateralSubQueryContext
  * @since 1.0
  */
 public interface _SimpleQueryContext extends StmtContext, _MultiTableContext {

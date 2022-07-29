@@ -19,28 +19,54 @@ abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
-    static Expression safeParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
+    static ArmyExpression constantParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
         if (value == null) {
             throw CriteriaContextStack.nullPointer(criteriaContext);
         }
-        final MappingType type;
-        type = _MappingFactory.getDefaultIfMatch(value.getClass());
-        if (type == null) {
-            throw noDefaultMappingType(criteriaContext, value);
+        if (value instanceof DataField) {
+            String m = "constant must be non-field";
+            throw CriteriaContextStack.criteriaError(criteriaContext, m);
         }
-        return SQLs.param(type, value);
+        final ArmyExpression expression;
+        if (value instanceof Expression) {
+            if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(criteriaContext);
+            }
+            expression = (ArmyExpression) value;
+        } else {
+            final MappingType type;
+            type = _MappingFactory.getDefaultIfMatch(value.getClass());
+            if (type == null) {
+                throw noDefaultMappingType(criteriaContext, value);
+            }
+            expression = (ArmyExpression) SQLs.param(type, value);
+        }
+        return expression;
     }
 
-    static Expression safeLiteral(final CriteriaContext criteriaContext, final @Nullable Object value) {
+    static ArmyExpression constantLiteral(final CriteriaContext criteriaContext, final @Nullable Object value) {
         if (value == null) {
             throw CriteriaContextStack.nullPointer(criteriaContext);
         }
-        final MappingType type;
-        type = _MappingFactory.getDefaultIfMatch(value.getClass());
-        if (type == null) {
-            throw noDefaultMappingType(criteriaContext, value);
+        if (value instanceof DataField) {
+            String m = "constant must be non-field";
+            throw CriteriaContextStack.criteriaError(criteriaContext, m);
         }
-        return SQLs.literal(type, value);
+        final ArmyExpression expression;
+        if (value instanceof Expression) {
+            if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(criteriaContext);
+            }
+            expression = (ArmyExpression) value;
+        } else {
+            final MappingType type;
+            type = _MappingFactory.getDefaultIfMatch(value.getClass());
+            if (type == null) {
+                throw noDefaultMappingType(criteriaContext, value);
+            }
+            expression = (ArmyExpression) SQLs.literal(type, value);
+        }
+        return expression;
     }
 
     static void withClause(final boolean recursive, final Cte cte, final CriteriaContext context
@@ -198,7 +224,7 @@ abstract class CriteriaUtils {
     }
 
     static void assertSelectItemSizeMatch(RowSet left, RowSet right) {
-        final List<SelectItem> leftList, rightList;
+        final List<? extends SelectItem> leftList, rightList;
 
         leftList = ((_PartRowSet) left).selectItemList();
         rightList = ((_PartRowSet) right).selectItemList();

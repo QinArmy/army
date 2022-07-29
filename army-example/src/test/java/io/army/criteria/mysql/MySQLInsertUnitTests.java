@@ -6,6 +6,7 @@ import io.army.criteria.Insert;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.inner._Insert;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
@@ -24,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MySQLInsertUnitTests {
@@ -54,7 +54,7 @@ public class MySQLInsertUnitTests {
                 .comma(ChinaRegion_.parentId)
                 .rightParen()
                 .defaultLiteral(ChinaRegion_.visible, true)
-                .values(this::addChinaRegin)
+                .values(this::createReginList)
                 .onDuplicateKey()
                 .update(ChinaRegion_.name, "光明顶")
                 .commaLiteral(ChinaRegion_.regionGdp, "6666.88")
@@ -143,14 +143,16 @@ public class MySQLInsertUnitTests {
     }
 
 
-    private void addChinaRegin(final Consumer<ChinaRegion<?>> consumer) {
+    private List<ChinaRegion<?>> createReginList() {
+        final List<ChinaRegion<?>> list = new ArrayList<>();
         ChinaRegion<?> c;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
         for (int i = 0; i < rowSize; i++) {
             c = new ChinaRegion<>()
                     .setId((long) i)
-                    .setCreateTime(now).setUpdateTime(now)
+                    .setCreateTime(now)
+                    .setUpdateTime(now)
 
                     .setName("海龟徒弟" + i)
                     .setRegionType(RegionType.NONE)
@@ -159,9 +161,9 @@ public class MySQLInsertUnitTests {
                     .setVersion(0)
                     .setVisible(Boolean.TRUE);
 
-            consumer.accept(c);
+            list.add(c);
         }
-
+        return list;
     }
 
 
@@ -171,6 +173,9 @@ public class MySQLInsertUnitTests {
         Stmt stmt;
         _Insert parentStmt;
         for (Dialect dialect : Dialect.values()) {
+            if (dialect.database != Database.MySQL) {
+                continue;
+            }
             parser = _MockDialects.from(dialect);
 
             stmt = parser.insert(insert, Visible.ONLY_VISIBLE);
@@ -181,9 +186,8 @@ public class MySQLInsertUnitTests {
             if (insert instanceof _Insert._ChildInsert && !(insert instanceof _Insert._QueryInsert)) {
                 assert stmt instanceof PairStmt;
                 parentStmt = ((_Insert._ChildInsert) insert).parentStmt();
-                if (parentStmt.table().id().generatorType() == GeneratorType.POST) {
-                    assert ((PairStmt) stmt).parentStmt() instanceof GeneratedKeyStmt;
-                }
+                assert parentStmt.table().id().generatorType() != GeneratorType.POST
+                        || ((PairStmt) stmt).parentStmt() instanceof GeneratedKeyStmt;
             }
 
         }

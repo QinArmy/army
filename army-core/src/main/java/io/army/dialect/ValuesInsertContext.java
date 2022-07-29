@@ -6,6 +6,7 @@ import io.army.criteria.SqlValueParam;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -353,9 +354,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         }
 
         @Override
-        public void set(final FieldMeta<?> field, final Object value) {
+        public void set(final FieldMeta<?> field, final @Nullable Object value) {
             final Map<FieldMeta<?>, Object> map = this.generatedMap;
             assert map != null;
+            if (value == null) {
+                //here mock environment
+                return;
+            }
             map.put(field, value);
 
             if (field instanceof PrimaryFieldMeta) {

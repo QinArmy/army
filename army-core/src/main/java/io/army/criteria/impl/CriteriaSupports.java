@@ -34,12 +34,12 @@ abstract class CriteriaSupports {
 
         @Override
         public ColumnConsumer accept(final Object value) {
-            return this.addColumn(CriteriaUtils.safeParam(this.criteriaContext, value));
+            return this.addColumn(CriteriaUtils.constantParam(this.criteriaContext, value));
         }
 
         @Override
         public ColumnConsumer acceptLiteral(final Object value) {
-            return this.addColumn(CriteriaUtils.safeLiteral(this.criteriaContext, value));
+            return this.addColumn(CriteriaUtils.constantLiteral(this.criteriaContext, value));
         }
 
         @Override
@@ -50,29 +50,54 @@ abstract class CriteriaSupports {
         @Override
         public ColumnConsumer row() {
             final List<_Expression> columnList = this.columnList;
-            if (columnList != null) {
-                List<List<_Expression>> rowList = this.rowList;
-                if (rowList == null) {
-                    rowList = new ArrayList<>();
-                    this.rowList = rowList;
-                } else if (!(rowList instanceof ArrayList)) {
+            List<List<_Expression>> rowList = this.rowList;
+
+            final int firstColumnSize;
+            if (columnList == null) {
+                if (rowList != null) {
                     throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-                } else if (columnList.size() != rowList.get(0).size()) {
-                    final int firstColumnSize = rowList.get(0).size();
-                    throw _Exceptions.valuesColumnSizeNotMatch(firstColumnSize, rowList.size(), columnList.size());
                 }
+                firstColumnSize = 0;
+            } else if (columnList.size() == 0) {
+                String m = "You don't add any column.";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            } else if (rowList == null) {
+                rowList = new ArrayList<>();
+                this.rowList = rowList;
+                firstColumnSize = 0;
+            } else if (!(rowList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            } else if (columnList.size() != (firstColumnSize = rowList.get(0).size())) {
+                throw _Exceptions.valuesColumnSizeNotMatch(firstColumnSize, rowList.size(), columnList.size());
+            }
+
+            if (columnList != null) {
                 rowList.add(_CollectionUtils.unmodifiableList(columnList));
             }
-            this.columnList = new ArrayList<>();
+
+            if (firstColumnSize == 0) {
+                this.columnList = new ArrayList<>();
+            } else {
+                this.columnList = new ArrayList<>(firstColumnSize);
+            }
             return this;
         }
 
         List<List<_Expression>> endConstructor() {
             final List<_Expression> columnList = this.columnList;
-            if (!(columnList instanceof ArrayList)) {
+            List<List<_Expression>> rowList = this.rowList;
+
+            if (columnList == null) {
+                String m = "You don't add any row.";
+                if (rowList == null) {
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                } else {
+                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                }
+            } else if (!(columnList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            List<List<_Expression>> rowList = this.rowList;
+
             if (rowList == null) {
                 rowList = Collections.singletonList(_CollectionUtils.unmodifiableList(columnList));
                 this.rowList = rowList;

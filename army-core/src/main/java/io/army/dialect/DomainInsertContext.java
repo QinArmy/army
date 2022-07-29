@@ -325,7 +325,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         }
 
         @Override
-        public void set(final FieldMeta<?> field, final Object value) {
+        public void set(final FieldMeta<?> field, final @Nullable Object value) {
             final Object domain = this.domain;
             assert domain != null;
             this.accessor.set(domain, field.fieldName(), value);

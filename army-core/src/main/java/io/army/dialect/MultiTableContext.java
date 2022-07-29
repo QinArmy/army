@@ -38,7 +38,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
     public final void appendField(final String tableAlias, final FieldMeta<?> field) {
         if (this.aliasToTable.get(tableAlias) == field.tableMeta()) {
             this.appendSafeField(tableAlias, field);
-        } else if (this instanceof SubQueryContext) {
+        } else if (this instanceof _SubQueryContext) {
             this.appendOuterField(tableAlias, field);
         } else {
             throw _Exceptions.unknownColumn(tableAlias, field);
@@ -59,7 +59,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
             this.dialect.safeObjectName(field, sqlBuilder);
         } else if (this.aliasToTable.containsValue(fieldTable)) {
             throw _Exceptions.selfJoinNonQualifiedField(field);
-        } else if (this instanceof SubQueryContext) {
+        } else if (this instanceof _SubQueryContext) {
             this.appendOuterField(field);
         } else {
             throw _Exceptions.unknownColumn(field);

@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
-final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQueryContext, SubQueryContext {
+final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQueryContext, _SubQueryContext {
 
 
     static SimpleSubQueryContext create(SubQuery subQuery, _SqlContext outerContext) {
@@ -54,10 +54,10 @@ final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQu
     @Override
     void appendOuterField(final String tableAlias, final FieldMeta<?> field) {
         final _SqlContext outerContext = this.outerContext;
-        if (outerContext instanceof UnionQueryContext) {
+        if (outerContext instanceof _UnionQueryContext) {
             throw _Exceptions.unknownColumn(tableAlias, field);
-        } else if (outerContext instanceof SubQueryContext) {
-            ((SubQueryContext) outerContext).appendThisField(tableAlias, field);
+        } else if (outerContext instanceof _SubQueryContext) {
+            ((_SubQueryContext) outerContext).appendThisField(tableAlias, field);
         } else {
             outerContext.appendField(field);
         }
@@ -66,10 +66,10 @@ final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQu
     @Override
     void appendOuterField(final FieldMeta<?> field) {
         final _SqlContext outerContext = this.outerContext;
-        if (outerContext instanceof UnionQueryContext) {
+        if (outerContext instanceof _UnionQueryContext) {
             throw _Exceptions.unknownColumn(field);
-        } else if (outerContext instanceof SubQueryContext) {
-            ((SubQueryContext) outerContext).appendThisField(field);
+        } else if (outerContext instanceof _SubQueryContext) {
+            ((_SubQueryContext) outerContext).appendThisField(field);
         } else {
             outerContext.appendField(field);
         }

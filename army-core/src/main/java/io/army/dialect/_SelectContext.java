@@ -5,13 +5,13 @@ package io.army.dialect;
  * Package interface,this interface representing SELECT query context.
  * </p>
  *
- * @see SubQueryContext
- * @see UnionQueryContext
- * @see LateralSubQueryContext
+ * @see _SubQueryContext
+ * @see _UnionQueryContext
+ * @see _LateralSubQueryContext
  * @see _SimpleQueryContext
  * @since 1.0
  */
-interface SelectContext extends PrimaryQueryContext {
+interface _SelectContext extends PrimaryQueryContext {
 
 
 }

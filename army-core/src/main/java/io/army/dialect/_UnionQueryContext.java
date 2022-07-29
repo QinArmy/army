@@ -5,12 +5,14 @@ package io.army.dialect;
  * Package interface,this interface representing union query context.
  * </p>
  *
- * @see SelectContext
+ * @see _SelectContext
  * @see _SimpleQueryContext
- * @see SubQueryContext
- * @see LateralSubQueryContext
+ * @see _SubQueryContext
+ * @see _LateralSubQueryContext
+ * @see _ValuesContext
  * @since 1.0
  */
-interface UnionQueryContext extends _SqlContext {
+interface _UnionQueryContext extends _SqlContext {
+
 
 }

@@ -144,6 +144,7 @@ final class MySQLDialectParser extends MySQLParser {
         if (statement instanceof MySQLReplace) {
             stmt = this.parseInsert((_Insert) statement, visible);
         } else if (statement instanceof Values && statement instanceof MySQLDqlValues) {
+            _MySQLConsultant.assertValues((MySQLDqlValues) statement);
             stmt = this.values((Values) statement, visible);
         } else if (statement instanceof MySQLLoad) {
             stmt = this.loadData((MySQLLoad) statement, visible);
@@ -233,6 +234,21 @@ final class MySQLDialectParser extends MySQLParser {
             //14. as of MySQL 8.0 into clause
             this.intoClause(intoList, sqlBuilder);
         }
+
+    }
+
+
+    @Override
+    protected void dialectSimpleValues(final _ValuesContext context, final _Values values) {
+        assert context.dialect() == this;
+        //1. VALUES keyword
+        context.sqlBuilder().append(_Constant.VALUES);
+        //2. row_constructor_list
+        this.valuesClauseOfValues(context, _Constant.SPACE_ROW, values.rowList());
+        //3. ORDER BY clause
+        this.orderByClause(values.orderByList(), context);
+        //4. LIMIT clause
+        this.standardLimitClause(values.offset(), values.rowCount(), context);
 
     }
 

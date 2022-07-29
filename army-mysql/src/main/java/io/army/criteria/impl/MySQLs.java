@@ -158,11 +158,11 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLDqlValues._ValuesStmtValuesClause<Void, Values> primaryValues() {
-       return MySQLSimpleValues.primaryValues(null);
+    public static MySQLDqlValues._ValuesStmtValuesClause<Void, Values> valuesStmt() {
+        return MySQLSimpleValues.primaryValues(null);
     }
 
-    public static <C> MySQLDqlValues._ValuesStmtValuesClause<C, Values> primaryValues(C criteria) {
+    public static <C> MySQLDqlValues._ValuesStmtValuesClause<C, Values> valuesStmt(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLSimpleValues.primaryValues(criteria);
     }

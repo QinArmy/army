@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.bean.ReadWrapper;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
@@ -13,7 +14,7 @@ interface RowWrapper {
      *
      * @see FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)
      */
-    void set(FieldMeta<?> field, Object value);
+    void set(FieldMeta<?> field, @Nullable Object value);
 
     /**
      * <p>

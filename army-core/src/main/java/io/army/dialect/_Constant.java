@@ -78,6 +78,8 @@ public interface _Constant {
 
     String INSERT_INTO_SPACE = "INSERT INTO ";
 
+    String VALUES = "VALUES";
+
     String SPACE_VALUES = " VALUES";
 
     String SPACE_BETWEEN = " BETWEEN";

@@ -66,7 +66,7 @@ abstract class CriteriaContexts {
     static CriteriaContext bracketContext(final RowSet left) {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
-        final List<SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
+        final List<? extends SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -83,7 +83,7 @@ abstract class CriteriaContexts {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) rowSet).getCriteriaContext();
 
-        final List<SelectItem> selectItemList = ((_PartRowSet) rowSet).selectItemList();
+        final List<? extends SelectItem> selectItemList = ((_PartRowSet) rowSet).selectItemList();
         final CriteriaContext outerContext;
         if (rowSet instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -99,7 +99,7 @@ abstract class CriteriaContexts {
     static CriteriaContext unionContext(final RowSet left, final RowSet right) {
         final AbstractContext leftContext;
         leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
-        final List<SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
+        final List<? extends SelectItem> selectItemList = ((_PartRowSet) left).selectItemList();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -128,11 +128,11 @@ abstract class CriteriaContexts {
     }
 
     static CriteriaContext primaryValuesContext(@Nullable Object criteria) {
-        throw new UnsupportedOperationException();
+        return new ValuesContext(null, criteria);
     }
 
     static CriteriaContext subValuesContext(@Nullable Object criteria) {
-        throw new UnsupportedOperationException();
+        return new ValuesContext(CriteriaContextStack.peek(), criteria);
     }
 
     static CriteriaContext otherPrimaryContext(@Nullable Object criteria) {
@@ -185,6 +185,11 @@ abstract class CriteriaContexts {
     private static CriteriaException referenceCteSyntaxError(String cteName) {
         String m = String.format("reference cte[%s] syntax error.", cteName);
         return new CriteriaException(m);
+    }
+
+    private static CriteriaException unknownSelection(CriteriaContext context, String selectionAlias) {
+        String m = String.format("unknown %s[%s]", Selection.class.getName(), selectionAlias);
+        return CriteriaContextStack.criteriaError(context, m);
     }
 
     private static CriteriaException notFoundDerivedGroup(List<DerivedGroup> groupList) {
@@ -1070,6 +1075,67 @@ abstract class CriteriaContexts {
 
     }//UnionQueryContext
 
+    private static final class ValuesContext extends AbstractContext {
+
+        private List<? extends SelectItem> selectItemList;
+
+        private Map<String, RefSelection> selectionMap;
+
+        private ValuesContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
+            super(outerContext, criteria);
+        }
+
+        @Override
+        public void selectList(List<? extends SelectItem> selectItemList) {
+            this.selectItemList = selectItemList;
+        }
+
+        @Override
+        public Expression ref(final String selectionAlias) {
+            Map<String, RefSelection> selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                selectionMap = this.createSelectionMap();
+            }
+            final RefSelection selection;
+            selection = selectionMap.get(selectionAlias);
+            if (selection == null) {
+                throw unknownSelection(this, selectionAlias);
+            }
+            return selection;
+        }
+
+
+        /**
+         * @return a unmodified map
+         */
+        private Map<String, RefSelection> createSelectionMap() {
+            final List<? extends SelectItem> selectItemList = this.selectItemList;
+            if (selectItemList == null) {
+                String m = "You don't add any row";
+                throw CriteriaContextStack.criteriaError(this, m);
+            }
+            final int selectionSize = selectItemList.size();
+
+            Map<String, RefSelection> selectionMap;
+            Selection selection;
+            if (selectionSize == 1) {
+                selection = (Selection) selectItemList.get(0);
+                selectionMap = Collections.singletonMap(selection.alias(), new RefSelection(selection));
+            } else {
+                selectionMap = new HashMap<>((int) (selectionSize / 0.75F));
+                for (SelectItem selectItem : selectItemList) {
+                    selection = (Selection) selectItem;
+                    selectionMap.put(selection.alias(), new RefSelection(selection));
+                }
+                selectionMap = Collections.unmodifiableMap(selectionMap);
+            }
+            return selectionMap;
+
+        }
+
+
+    }//ValuesContext
+
 
     private static final class DerivedSelection extends OperationExpression
             implements DerivedField, _Selection {
@@ -1392,7 +1458,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<SelectItem> selectItemList() {
+        public List<? extends SelectItem> selectItemList() {
             final Cte actualCte = this.actualCte;
             if (actualCte == null) {
                 throw new IllegalStateException("No actual cte");

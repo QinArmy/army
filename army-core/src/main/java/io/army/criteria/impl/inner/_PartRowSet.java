@@ -11,7 +11,7 @@ public interface _PartRowSet extends _Statement, RowSet {
 
     int selectionSize();
 
-    List<SelectItem> selectItemList();
+    List<? extends SelectItem> selectItemList();
 
     List<? extends SortItem> orderByList();
 

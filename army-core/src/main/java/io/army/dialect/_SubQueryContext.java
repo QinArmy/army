@@ -7,13 +7,13 @@ import io.army.meta.FieldMeta;
  * Package interface,this interface representing sub query context.
  * </p>
  *
- * @see SelectContext
- * @see UnionQueryContext
- * @see LateralSubQueryContext
+ * @see _SelectContext
+ * @see _UnionQueryContext
+ * @see _LateralSubQueryContext
  * @see _SimpleQueryContext
  * @since 1.0
  */
-interface SubQueryContext extends _SqlContext {
+interface _SubQueryContext extends _SqlContext {
 
     /**
      * <p>

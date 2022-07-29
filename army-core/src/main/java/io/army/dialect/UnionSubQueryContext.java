@@ -4,7 +4,7 @@ import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.util._Exceptions;
 
-class UnionSubQueryContext extends StatementContext implements UnionQueryContext, SubQueryContext {
+class UnionSubQueryContext extends StatementContext implements _UnionQueryContext, _SubQueryContext {
 
     static UnionSubQueryContext create(_SqlContext outerContext) {
         return new UnionSubQueryContext((StatementContext) outerContext);
@@ -48,7 +48,7 @@ class UnionSubQueryContext extends StatementContext implements UnionQueryContext
 
 
     private static final class LateralUnionSubQueryContext extends UnionSubQueryContext
-            implements LateralSubQueryContext {
+            implements _LateralSubQueryContext {
 
         private LateralUnionSubQueryContext(StatementContext outerContext) {
             super(outerContext);

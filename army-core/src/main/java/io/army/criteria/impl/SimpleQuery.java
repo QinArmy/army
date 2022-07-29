@@ -657,8 +657,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final List<SelectItem> selectItemList() {
-        final List<SelectItem> selectItemList = this.selectItemList;
+    public final List<? extends SelectItem> selectItemList() {
+        final List<? extends SelectItem> selectItemList = this.selectItemList;
         assert selectItemList != null;
         return selectItemList;
     }

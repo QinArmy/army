@@ -52,7 +52,7 @@ final class AssignmentInsertContext extends StatementContext
      */
     private final List<FieldMeta<?>> fieldList;
 
-    private final RowObjectWrapper rowWrapper;
+    private final AssignmentWrapper rowWrapper;
 
 
     private final PrimaryFieldMeta<?> returnId;
@@ -121,7 +121,7 @@ final class AssignmentInsertContext extends StatementContext
             this.idSelectionAlias = idField.fieldName();
         }
 
-        this.rowWrapper = new RowObjectWrapper(this, domainStmt);
+        this.rowWrapper = new AssignmentWrapper(this, domainStmt);
         assert this.rowWrapper.domainTable == domainTable;
 
     }
@@ -181,7 +181,7 @@ final class AssignmentInsertContext extends StatementContext
 
         final TableMeta<?> insertTable = this.insertTable;
 
-        final RowObjectWrapper wrapper = this.rowWrapper;
+        final AssignmentWrapper wrapper = this.rowWrapper;
         //1. generate or validate
         if (insertTable instanceof SingleTableMeta) {
 
@@ -427,7 +427,7 @@ final class AssignmentInsertContext extends StatementContext
 
     }
 
-    private static final class RowObjectWrapper extends _DialectUtils.ExpRowWrapper {
+    private static final class AssignmentWrapper extends _DialectUtils.ExpRowWrapper {
 
         private final Map<FieldMeta<?>, _Expression> nonChildPairMap;
 
@@ -439,7 +439,7 @@ final class AssignmentInsertContext extends StatementContext
 
         private DelayIdParam delayIdParam;
 
-        private RowObjectWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
+        private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
             super(domainStmt.table(), context.dialect.mappingEnv());
 
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
@@ -471,9 +471,13 @@ final class AssignmentInsertContext extends StatementContext
 
 
         @Override
-        public void set(final FieldMeta<?> field, final Object value) {
+        public void set(final FieldMeta<?> field, final @Nullable Object value) {
             final Map<FieldMeta<?>, Object> map = this.tempGeneratedMap;
             assert map != null;
+            if (value == null) {
+                //here mock environment
+                return;
+            }
             map.put(field, value);
             if (field instanceof PrimaryFieldMeta) {
                 final TableMeta<?> fieldTable = field.tableMeta();

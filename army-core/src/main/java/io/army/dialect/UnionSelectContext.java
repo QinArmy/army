@@ -11,20 +11,20 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-final class UnionSelectContext extends StatementContext implements UnionQueryContext, SelectContext {
+final class UnionSelectContext extends StatementContext implements _UnionQueryContext, _SelectContext {
 
     static UnionSelectContext create(Select select, ArmyDialect dialect, Visible visible) {
         return new UnionSelectContext(select, dialect, visible);
     }
 
-    static UnionSelectContext create(Select select, SelectContext outerContext) {
+    static UnionSelectContext create(Select select, _SelectContext outerContext) {
         return new UnionSelectContext(select, outerContext);
     }
 
 
     private final List<Selection> selectionList;
 
-    private final SelectContext outerContext;
+    private final _SelectContext outerContext;
 
     private UnionSelectContext(Select select, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
@@ -33,7 +33,7 @@ final class UnionSelectContext extends StatementContext implements UnionQueryCon
     }
 
 
-    private UnionSelectContext(Select select, SelectContext outerContext) {
+    private UnionSelectContext(Select select, _SelectContext outerContext) {
         super((StatementContext) outerContext);
         this.selectionList = _DialectUtils.flatSelectItem(((_PartRowSet) select).selectItemList());
         this.outerContext = outerContext;
@@ -52,7 +52,7 @@ final class UnionSelectContext extends StatementContext implements UnionQueryCon
 
     @Override
     public SimpleStmt build() {
-        final SelectContext outerContext = this.outerContext;
+        final _SelectContext outerContext = this.outerContext;
         if (outerContext != null) {
             throw new IllegalStateException("This context is inner context, don't support create Stmt.");
         }

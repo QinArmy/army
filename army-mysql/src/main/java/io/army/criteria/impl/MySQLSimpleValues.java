@@ -2,10 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Values;
 import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.dialect.Dialect;
-import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -14,33 +12,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @see MySQLUnionValues
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
-        extends PartRowSet<
+abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
+        extends SimpleValues<
         C,
-        U,
-        Void,
-        Void,
-        Void,
-        Void,
-        Void,
-        Void,
-        MySQLDqlValues._UnionOrderBySpec<C, U>,
-        MySQLDqlValues._LimitSpec<C, U>,
-        MySQLDqlValues._UnionSpec<C, U>,
-        Void>
-        implements RowSet.DqlValues, MySQLDqlValues._ValuesStmtValuesClause<C, U>
-        , MySQLDqlValues._StaticValueRowSpec<C, U>
-        , MySQLDqlValues._ValueRowCommaSpec<C, U>
-        , MySQLDqlValues, _Values {
+        V,
+        MySQLDqlValues._StaticRowSpec<C, V>,
+        MySQLDqlValues._OrderBySpec<C, V>,
+        MySQLDqlValues._UnionOrderBySpec<C, V>,
+        MySQLDqlValues._LimitSpec<C, V>,
+        MySQLDqlValues._UnionSpec<C, V>>
+        implements MySQLDqlValues._ValuesStmtValuesClause<C, V>
+        , MySQLDqlValues._StaticRowSpec<C, V>
+        , MySQLDqlValues {
 
     static <C> MySQLDqlValues._ValuesStmtValuesClause<C, Values> primaryValues(@Nullable C criteria) {
         return new SimpleValues<>(CriteriaContexts.primaryValuesContext(criteria));
@@ -53,92 +41,28 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
 
     private List<List<_Expression>> rowList;
 
-    private List<SelectItem> selectItemList;
+    private List<Selection> selectionList;
 
     private List<_Expression> columnList;
 
-    private int columnSize = -1;
-
-    private Map<String, Selection> selectionMap;
-
 
     private MySQLSimpleValues(CriteriaContext criteriaContext) {
-        super(criteriaContext, JoinableClause.voidClauseSuppler());
+        super(criteriaContext);
     }
 
     @Override
-    public final MySQLDqlValues._StaticValueRowClause<C, U> values() {
+    public final _StaticRowClause<C, V> values() {
+        return this;
+    }
+
+
+    @Override
+    public final Values._StaticValueLeftParenClause<_StaticRowSpec<C, V>> row() {
         return this;
     }
 
     @Override
-    public final MySQLDqlValues._OrderBySpec<C, U> values(Consumer<RowConstructor> consumer) {
-        if (this.rowList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
-        final CriteriaSupports.RowConstructorImpl constructor;
-        constructor = new CriteriaSupports.RowConstructorImpl(this.criteriaContext);
-        consumer.accept(constructor);
-        this.rowList = constructor.endConstructor();
-        return this;
-    }
-
-    @Override
-    public final MySQLDqlValues._OrderBySpec<C, U> values(BiConsumer<C, RowConstructor> consumer) {
-        if (this.rowList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
-        final CriteriaSupports.RowConstructorImpl constructor;
-        constructor = new CriteriaSupports.RowConstructorImpl(this.criteriaContext);
-        consumer.accept(this.criteria, constructor);
-        this.rowList = constructor.endConstructor();
-        return this;
-    }
-
-    @Override
-    public final MySQLDqlValues._ValueRowCommaSpec<C, U> row(Object value) {
-        return this.createNewRow(SQLs.param(value));
-    }
-
-    @Override
-    public final MySQLDqlValues._ValueRowCommaSpec<C, U> rowLiteral(Object value) {
-        return this.createNewRow(SQLs.literal(value));
-    }
-
-    @Override
-    public final MySQLDqlValues._ValueRowCommaSpec<C, U> rowExp(Supplier<? extends Expression> supplier) {
-        return this.createNewRow(supplier.get());
-    }
-
-    @Override
-    public final MySQLDqlValues._ValueRowCommaSpec<C, U> rowExp(Function<C, ? extends Expression> function) {
-        return this.createNewRow(function.apply(this.criteria));
-    }
-
-
-    @Override
-    public final MySQLDqlValues._ValueRowCommaSpec<C, U> comma(Object value) {
-        return this.addExpression(CriteriaUtils.safeParam(this.criteriaContext, value));
-    }
-
-    @Override
-    public final MySQLDqlValues._ValueRowCommaSpec<C, U> commaLiteral(Object value) {
-        return this.addExpression(CriteriaUtils.safeLiteral(this.criteriaContext, value));
-    }
-
-    @Override
-    public final MySQLDqlValues._ValueRowCommaSpec<C, U> commaExp(Supplier<? extends Expression> supplier) {
-        return this.addExpression(supplier.get());
-    }
-
-    @Override
-    public final MySQLDqlValues._ValueRowCommaSpec<C, U> commaExp(Function<C, ? extends Expression> function) {
-        return this.addExpression(function.apply(this.criteria));
-    }
-
-
-    @Override
-    public final MySQLDqlValues._StaticValueRowSpec<C, U> rightParen() {
+    public final _StaticRowSpec<C, V> rightParen() {
         final List<_Expression> columnList = this.columnList;
         final int currentColumnSize;
         if (columnList == null || (currentColumnSize = columnList.size()) == 0) {
@@ -151,23 +75,27 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
             this.rowList = rowList;
         } else if (!(rowList instanceof ArrayList)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        } else if (currentColumnSize != rowList.get(0).size()) {
+            throw _Exceptions.valuesColumnSizeNotMatch(rowList.get(0).size(), rowList.size(), currentColumnSize);
         }
 
-        final int firstRowColumnSize = this.columnSize;
-        if (firstRowColumnSize < 0) {
-            this.columnSize = currentColumnSize;
-        } else if (currentColumnSize != firstRowColumnSize) {
-            throw _Exceptions.valuesColumnSizeNotMatch(firstRowColumnSize, rowList.size(), currentColumnSize);
+        if (rowList.size() == 0) {
+            final List<Selection> selectionList;
+            if (currentColumnSize == 1) {
+                selectionList = Collections.singletonList(columnList.get(0).as("column_0"));
+            } else {
+                final List<Selection> tempList = new ArrayList<>(currentColumnSize);
+                for (int i = 0; i < currentColumnSize; i++) {
+                    tempList.add(columnList.get(i).as("column_" + i));
+                }
+                selectionList = Collections.unmodifiableList(tempList);
+            }
+            this.selectionList = selectionList;
+            this.criteriaContext.selectList(selectionList);//notify context
         }
-
         rowList.add(_CollectionUtils.unmodifiableList(columnList));
         this.columnList = null;
         return this;
-    }
-
-    @Override
-    public final U asValues() {
-        return this.asQuery();
     }
 
     @Override
@@ -187,108 +115,83 @@ abstract class MySQLSimpleValues<C, U extends RowSet.DqlValues>
         return this.rowList;
     }
 
-    @Override
-    final void onOrderBy() {
-        //no-op
-    }
 
     @Override
-    final void crossJoinEvent(boolean success) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-    }
-
-    @Override
-    final U internalAsRowSet(final boolean fromAsQueryMethod) {
+    final V internalAsRowSet(final boolean fromAsQueryMethod) {
         final List<List<_Expression>> rowList = this.rowList;
         if (!fromAsQueryMethod || this.columnList != null || !(rowList instanceof ArrayList)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        final List<_Expression> firstRow = rowList.get(0);
-        final int columnSize = firstRow.size();
-        if (columnSize == 1) {
-            this.selectItemList = Collections.singletonList(firstRow.get(0).as("column_0"));
-        } else {
-            final List<SelectItem> selectItemList = new ArrayList<>(columnSize);
-            for (int i = 0; i < columnSize; i++) {
-                selectItemList.add(firstRow.get(i).as("column_" + i));
-            }
-            this.selectItemList = Collections.unmodifiableList(selectItemList);
-        }
-        this.rowList = Collections.unmodifiableList(rowList);
-        return (U) this;
+        this.rowList = _CollectionUtils.unmodifiableList(rowList);
+        return (V) this;
     }
 
     @Override
-    final MySQLDqlValues._UnionOrderBySpec<C, U> createBracketQuery(RowSet rowSet) {
+    final MySQLDqlValues._UnionOrderBySpec<C, V> createBracketQuery(RowSet rowSet) {
         return MySQLUnionValues.bracket(rowSet);
     }
 
     @Override
-    final MySQLDqlValues._UnionOrderBySpec<C, U> getNoActionUnionRowSet(RowSet rowSet) {
+    final MySQLDqlValues._UnionOrderBySpec<C, V> getNoActionUnionRowSet(RowSet rowSet) {
         return MySQLUnionValues.noActionValues(rowSet);
     }
 
     @Override
-    final MySQLDqlValues._UnionOrderBySpec<C, U> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
-        return MySQLUnionValues.union((U) left, unionType, right);
+    final MySQLDqlValues._UnionOrderBySpec<C, V> createUnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+        return MySQLUnionValues.union((V) left, unionType, right);
     }
 
     @Override
     final void internalClear() {
         this.rowList = null;
-        this.selectItemList = null;
-        this.selectionMap = null;
+        this.selectionList = null;
     }
 
 
     @Override
-    final Void asUnionAndRowSet(UnionType unionType) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-    }
-
-    @Override
-    public final List<SelectItem> selectItemList() {
+    public final List<? extends SelectItem> selectItemList() {
         prepared();
-        return this.selectItemList;
-    }
-
-    @Override
-    public final void appendSql(final _SqlContext context) {
-        if (!(this instanceof SubValues)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
-        context.dialect().rowSet(this, context);
+        return this.selectionList;
     }
 
     @Override
     public final int selectionSize() {
         prepared();
-        return this.selectItemList.size();
+        return this.selectionList.size();
     }
 
-    private MySQLDqlValues._ValueRowCommaSpec<C, U> createNewRow(final @Nullable Expression value) {
-        if (this.columnList != null) {
+    @Override
+    final _OrderBySpec<C, V> dynamicValuesEnd(List<List<_Expression>> rowList) {
+        if (this.rowList != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        if (!(value instanceof ArmyExpression)) {
-            throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
-        }
-        final List<_Expression> columnList = new ArrayList<>();
-        columnList.add((ArmyExpression) value);
-        this.columnList = columnList;
+        this.rowList = rowList;
         return this;
     }
 
-    private MySQLDqlValues._ValueRowCommaSpec<C, U> addExpression(final @Nullable Expression value) {
+    @Override
+    final List<_Expression> createNewRow() {
+        final List<List<_Expression>> rowList = this.rowList;
+        if (this.columnList != null || (rowList != null && !(rowList instanceof ArrayList))) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        final List<_Expression> columnList;
+        if (rowList == null) {
+            columnList = new ArrayList<>();
+        } else {
+            columnList = new ArrayList<>(rowList.get(0).size());
+        }
+        this.columnList = columnList;
+        return columnList;
+    }
+
+    @Override
+    final List<_Expression> getCurrentRow() {
         final List<_Expression> columnList = this.columnList;
         if (columnList == null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        if (!(value instanceof ArmyExpression)) {
-            throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
-        }
-        columnList.add((ArmyExpression) value);
-        return this;
+        return columnList;
     }
 
 

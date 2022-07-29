@@ -243,7 +243,10 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         @Override
         void generatorChan(final List<FieldMeta<?>> fieldChain, final RowWrapper wrapper) {
-            //mock environment,no-op
+
+            for (FieldMeta<?> field : fieldChain) {
+                wrapper.set(field, null);
+            }
         }
 
 
