@@ -740,8 +740,8 @@ final class MySQLDialectParser extends MySQLParser {
                 } else if (!"".equals(alias)) {
                     throw _Exceptions.tableItemAliasNoText(tableItem);
                 }
-            } else if (tableItem instanceof Values) {
-                this.valuesStmt((Values) tableItem, context);
+            } else if (tableItem instanceof SubValues && tableItem instanceof MySQLDqlValues) {
+                this.valuesStmt((MySQLDqlValues) tableItem, context);
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else {

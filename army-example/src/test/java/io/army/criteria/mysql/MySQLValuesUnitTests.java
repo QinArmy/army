@@ -1,8 +1,6 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.RowSet;
-import io.army.criteria.Values;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Database;
@@ -45,6 +43,21 @@ public class MySQLValuesUnitTests {
 
     }
 
+    @Test
+    public void simpleSubValues() {
+        Select stmt;
+        stmt = MySQLs.query()
+                .select(SQLs.derivedGroup("s"))
+                .from(() -> this.createSimpleValues(MySQLs::subValues)
+                        .asValues(), "s")
+//                .join(ChinaRegion_.T,"c").on(SQLs.ref("s","column_0")::equal,ChinaRegion_.id)
+//                .where(ChinaRegion_.id.equalLiteral(1))
+                .asQuery();
+
+        printStmt(stmt);
+
+    }
+
 
     /**
      * <strong>Note:</strong><br/>
@@ -62,18 +75,18 @@ public class MySQLValuesUnitTests {
                 .rightParen()
 
                 .row()
-                .leftParenLiteral(2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
-                .commaLiteral(DayOfWeek.SUNDAY, SQLs.trueWord(), SQLs.literal(13).minus(3))
+                .leftParen(2, "大仓", new BigDecimal("9999.66"), LocalDate.now().plusDays(1))
+                .comma(DayOfWeek.SUNDAY, SQLs.trueWord(), SQLs.literal(13).minusLiteral(3))
                 .rightParen()
 
                 .row()
-                .leftParenLiteral(3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
-                .commaLiteral(DayOfWeek.FRIDAY, SQLs.trueWord(), SQLs.literal(3).times(3))
+                .leftParen(3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
+                .comma(DayOfWeek.FRIDAY, SQLs.trueWord(), SQLs.literal(3).timesLiteral(3))
                 .rightParen()
 
                 .row()
-                .leftParenLiteral(4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
-                .commaLiteral(DayOfWeek.TUESDAY, SQLs.trueWord(), SQLs.literal(81).divideLiteral(3))
+                .leftParen(4, "幽弥狂", new BigDecimal("8888.88"), LocalDate.now().minusDays(8))
+                .comma(DayOfWeek.TUESDAY, SQLs.trueWord(), SQLs.literal(81).divideLiteral(3))
                 .rightParen()
 
                 .orderBy(SQLs.ref("column_1"), SQLs.literal(2).desc())
@@ -81,13 +94,16 @@ public class MySQLValuesUnitTests {
     }
 
 
-    private void printStmt(final Values values) {
+    private void printStmt(final PrimaryStatement statement) {
         String sql;
         for (Dialect dialect : Dialect.values()) {
             if (dialect.database != Database.MySQL) {
                 continue;
             }
-            sql = values.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
+            if (!(statement instanceof Values) && dialect.version() < Dialect.MySQL80.version()) {
+                continue;
+            }
+            sql = statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
             LOG.debug("{}:\n{}", dialect.name(), sql);
         }
 

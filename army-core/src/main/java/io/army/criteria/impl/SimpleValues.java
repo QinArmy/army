@@ -65,40 +65,12 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
 
     @Override
     public final _RightParenClause<RR> leftParen(Object value) {
-        this.createNewRow().add(CriteriaUtils.constantParam(this.criteriaContext, value));
-        return this;
-    }
-
-    @Override
-    public final Values._StaticValueRowCommaDualSpec<RR> leftParen(Object value1, Object value2) {
-        final List<_Expression> columnList;
-        columnList = this.createNewRow();
-
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value2));
-        return this;
-    }
-
-    @Override
-    public final Values._StaticValueRowCommaQuadraSpec<RR> leftParen(Object value1, Object value2, Object value3, Object value4) {
-        final List<_Expression> columnList;
-        columnList = this.createNewRow();
-
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value2));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value3));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value4));
-        return this;
-    }
-
-    @Override
-    public _RightParenClause<RR> leftParenLiteral(Object value) {
         this.createNewRow().add(CriteriaUtils.constantLiteral(this.criteriaContext, value));
         return this;
     }
 
     @Override
-    public final Values._StaticValueRowCommaDualSpec<RR> leftParenLiteral(Object value1, Object value2) {
+    public final Values._StaticValueRowCommaDualSpec<RR> leftParen(Object value1, Object value2) {
         final List<_Expression> columnList;
         columnList = this.createNewRow();
 
@@ -108,7 +80,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
     }
 
     @Override
-    public final Values._StaticValueRowCommaQuadraSpec<RR> leftParenLiteral(Object value1, Object value2, Object value3, Object value4) {
+    public final Values._StaticValueRowCommaQuadraSpec<RR> leftParen(Object value1, Object value2, Object value3, Object value4) {
         final List<_Expression> columnList;
         columnList = this.createNewRow();
 
@@ -122,7 +94,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
 
     @Override
     public final _RightParenClause<RR> comma(Object value) {
-        this.getCurrentRow().add(CriteriaUtils.constantParam(this.criteriaContext, value));
+        this.getCurrentRow().add(CriteriaUtils.constantLiteral(this.criteriaContext, value));
         return this;
     }
 
@@ -131,8 +103,8 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         final List<_Expression> columnList;
         columnList = this.getCurrentRow();
 
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value2));
+        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value1));
+        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value2));
         return this;
     }
 
@@ -142,56 +114,14 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         final List<_Expression> columnList;
         columnList = this.getCurrentRow();
 
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value2));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value3));
-        return this;
-    }
-
-    @Override
-    public final Values._StaticValueRowCommaQuadraSpec<RR> comma(Object value1, Object value2, Object value3, Object value4) {
-        final List<_Expression> columnList;
-        columnList = this.getCurrentRow();
-
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value2));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value3));
-        columnList.add(CriteriaUtils.constantParam(this.criteriaContext, value4));
-        return this;
-    }
-
-
-    @Override
-    public final _RightParenClause<RR> commaLiteral(Object value) {
-        this.getCurrentRow().add(CriteriaUtils.constantLiteral(this.criteriaContext, value));
-        return this;
-    }
-
-    @Override
-    public final Values._StaticValueRowCommaDualSpec<RR> commaLiteral(Object value1, Object value2) {
-        final List<_Expression> columnList;
-        columnList = this.getCurrentRow();
-
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value2));
-        return this;
-    }
-
-
-    @Override
-    public final _RightParenClause<RR> commaLiteral(Object value1, Object value2, Object value3) {
-        final List<_Expression> columnList;
-        columnList = this.getCurrentRow();
-
         columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value1));
         columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value2));
         columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value3));
         return this;
     }
 
-
     @Override
-    public final Values._StaticValueRowCommaQuadraSpec<RR> commaLiteral(Object value1, Object value2, Object value3, Object value4) {
+    public final Values._StaticValueRowCommaQuadraSpec<RR> comma(Object value1, Object value2, Object value3, Object value4) {
         final List<_Expression> columnList;
         columnList = this.getCurrentRow();
 

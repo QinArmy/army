@@ -23,10 +23,6 @@ public interface Values extends DqlStatement, DialectStatement, RowSet.DqlValues
 
         _StaticValueRowCommaDualSpec<RR> comma(Object value1, Object value2);
 
-        Statement._RightParenClause<RR> commaLiteral(Object value);
-
-        _StaticValueRowCommaDualSpec<RR> commaLiteral(Object value1, Object value2);
-
     }
 
     interface _StaticValueRowCommaQuadraSpec<RR> extends Statement._RightParenClause<RR> {
@@ -39,14 +35,6 @@ public interface Values extends DqlStatement, DialectStatement, RowSet.DqlValues
 
         _StaticValueRowCommaQuadraSpec<RR> comma(Object value1, Object value2, Object value3, Object value4);
 
-        Statement._RightParenClause<RR> commaLiteral(Object value);
-
-        Statement._RightParenClause<RR> commaLiteral(Object value1, Object value2);
-
-        Statement._RightParenClause<RR> commaLiteral(Object value1, Object value2, Object value3);
-
-        _StaticValueRowCommaQuadraSpec<RR> commaLiteral(Object value1, Object value2, Object value3, Object value4);
-
     }
 
 
@@ -57,12 +45,6 @@ public interface Values extends DqlStatement, DialectStatement, RowSet.DqlValues
         _StaticValueRowCommaDualSpec<RR> leftParen(Object value1, Object value2);
 
         _StaticValueRowCommaQuadraSpec<RR> leftParen(Object value1, Object value2, Object value3, Object value4);
-
-        Statement._RightParenClause<RR> leftParenLiteral(Object value);
-
-        _StaticValueRowCommaDualSpec<RR> leftParenLiteral(Object value1, Object value2);
-
-        _StaticValueRowCommaQuadraSpec<RR> leftParenLiteral(Object value1, Object value2, Object value3, Object value4);
 
     }
 

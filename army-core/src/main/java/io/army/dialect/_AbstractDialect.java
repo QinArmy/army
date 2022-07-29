@@ -898,23 +898,44 @@ public abstract class _AbstractDialect implements ArmyDialect {
     protected final void queryWhereClause(final List<_TableBlock> tableBlockList, final List<_Predicate> predicateList
             , final _MultiTableContext context) {
         final int predicateSize = predicateList.size();
-        final Visible visible = context.visible();
-        if (predicateSize == 0 && visible == Visible.BOTH) {
-            return;
-        }
-        //1. append where key word
-        final StringBuilder builder = context.sqlBuilder()
-                .append(_Constant.SPACE_WHERE);
-        //2. append where predicates
-        for (int i = 0; i < predicateSize; i++) {
-            if (i > 0) {
-                builder.append(_Constant.SPACE_AND);
+
+        final StringBuilder builder = context.sqlBuilder();
+        if (predicateSize > 0) {
+            //1. append where key word
+            builder.append(_Constant.SPACE_WHERE);
+            //2. append where predicates
+            for (int i = 0; i < predicateSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_AND);
+                }
+                predicateList.get(i).appendSql(context);
             }
-            predicateList.get(i).appendSql(context);
+
         }
 
-        if (visible != Visible.BOTH) {
-            this.multiTableVisible(tableBlockList, context, predicateSize == 0);
+        if (context.visible() == Visible.BOTH) {
+            return;
+        }
+
+        TableItem tableItem;
+        String safeTableAlias;
+        SingleTableMeta<?> table;
+        int count = 0;
+        for (_TableBlock block : tableBlockList) {
+            tableItem = block.tableItem();
+            if (!(tableItem instanceof SingleTableMeta)) {
+                continue;
+            }
+            table = (SingleTableMeta<?>) tableItem;
+            if (!table.containField(_MetaBridge.VISIBLE)) {
+                continue;
+            }
+            safeTableAlias = context.safeTableAlias(block.alias());
+            if (count == 0 && predicateSize == 0) {
+                builder.append(_Constant.SPACE_WHERE);
+            }
+            this.visiblePredicate(table, safeTableAlias, context, count == 0 && predicateSize == 0);
+            count++;
         }
 
     }
