@@ -80,8 +80,15 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     @Override
-    protected void assertDialectRowSet(RowSet rowSet) {
-        _MySQLConsultant.assertRowSet(rowSet);
+    protected void assertDialectRowSet(final RowSet rowSet) {
+        if (rowSet instanceof Query) {
+            _MySQLConsultant.assertQuery((Query) rowSet);
+        } else if (rowSet instanceof MySQLDqlValues) {
+            _MySQLConsultant.assertValues((MySQLDqlValues) rowSet);
+        } else {
+            throw _Exceptions.unknownStatement(rowSet, this.dialect);
+        }
+
     }
 
 

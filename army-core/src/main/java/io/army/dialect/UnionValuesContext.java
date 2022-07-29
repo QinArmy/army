@@ -21,13 +21,13 @@ final class UnionValuesContext extends StatementContext implements _ValuesContex
     }
 
 
-    static UnionValuesContext create(_ValuesContext outerContext) {
+    static UnionValuesContext create(_SqlContext outerContext) {
         return new UnionValuesContext(outerContext);
     }
 
 
     private final List<Selection> selectionList;
-    private final _ValuesContext outerContext;
+    private final _SqlContext outerContext;
 
     private UnionValuesContext(_UnionRowSet stmt, ArmyDialect dialect, Visible visible) {
         super(dialect, visible);
@@ -36,7 +36,7 @@ final class UnionValuesContext extends StatementContext implements _ValuesContex
         assert this.selectionList.size() > 0;
     }
 
-    private UnionValuesContext(_ValuesContext outerContext) {
+    private UnionValuesContext(_SqlContext outerContext) {
         super((StatementContext) outerContext);
         this.outerContext = outerContext;
         this.selectionList = Collections.emptyList();
@@ -61,7 +61,7 @@ final class UnionValuesContext extends StatementContext implements _ValuesContex
 
     @Override
     public SimpleStmt build() {
-        final _ValuesContext outerContext = this.outerContext;
+        final _SqlContext outerContext = this.outerContext;
         if (outerContext != null) {
             throw new IllegalStateException("This context is inner context, don't support create Stmt.");
         }

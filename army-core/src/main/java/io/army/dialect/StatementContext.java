@@ -224,6 +224,11 @@ abstract class StatementContext implements StmtContext, _StmtParams {
     }
 
 
+    static IllegalStateException nonTopContext() {
+        return new IllegalStateException("Non-top context couldn't create stmt.");
+    }
+
+
     private static void appendMultiParamPlaceholder(final StringBuilder sqlBuilder
             , final SqlValueParam.MultiValue sqlParam) {
         final int paramSize;

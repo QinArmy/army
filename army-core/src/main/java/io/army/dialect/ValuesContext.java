@@ -18,6 +18,10 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
         return new ValuesContext(stmt, dialect, visible);
     }
 
+    static ValuesContext create(_SqlContext outerContext) {
+        return new ValuesContext(outerContext);
+    }
+
 
     private final List<Selection> selectionList;
 
@@ -37,6 +41,11 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
 
     }
 
+    private ValuesContext(_SqlContext outerContext) {
+        super((StatementContext) outerContext);
+        this.selectionList = null;
+    }
+
     @Override
     public void appendField(String tableAlias, FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(tableAlias, field);
@@ -50,6 +59,9 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
 
     @Override
     public SimpleStmt build() {
+        if (this.selectionList == null) {
+            throw nonTopContext();
+        }
         return Stmts.queryStmt(this);
     }
 

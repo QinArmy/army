@@ -54,10 +54,10 @@ public interface MySQLDqlValues extends DialectStatement, RowSet.DqlValues {
     }
 
 
-    interface _ValuesStmtValuesClause<C, U extends DqlValues>
-            extends Values._ValuesDynamicClause<C, _OrderBySpec<C, U>> {
+    interface _ValuesStmtValuesClause<C, V extends DqlValues>
+            extends Values._ValuesDynamicClause<C, _OrderBySpec<C, V>> {
 
-        _StaticRowClause<C, U> values();
+        _StaticRowClause<C, V> values();
 
 
     }

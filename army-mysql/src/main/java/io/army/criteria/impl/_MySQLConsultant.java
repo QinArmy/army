@@ -88,7 +88,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         }
     }
 
-    public static void assertRowSet(final RowSet rowSet) {
+    public static void assertQuery(final Query rowSet) {
         if (rowSet instanceof _UnionRowSet) {
             if (!(rowSet instanceof MySQL80UnionQuery)) {
                 throw instanceNotMatch(rowSet, MySQL80UnionQuery.class);

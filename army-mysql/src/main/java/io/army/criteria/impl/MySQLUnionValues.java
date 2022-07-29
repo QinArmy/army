@@ -75,17 +75,17 @@ abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowS
         final String message;
         if (right instanceof Select || right instanceof Values) {
             if (right instanceof MySQLQuery || right instanceof StandardQuery || right instanceof MySQLDqlValues) {
+                message = null;
+            } else {
                 message = String.format("union right item isn't MySQL %s or %s."
                         , Select.class.getName(), Values.class.getName());
-            } else {
-                message = null;
             }
         } else if (right instanceof SubQuery || right instanceof SubValues) {
             if (right instanceof MySQLQuery || right instanceof StandardQuery || right instanceof MySQLDqlValues) {
+                message = null;
+            } else {
                 message = String.format("union right item isn't MySQL %s or %s."
                         , SubQuery.class.getName(), SubValues.class.getName());
-            } else {
-                message = null;
             }
         } else {
             message = "unknown union right item";

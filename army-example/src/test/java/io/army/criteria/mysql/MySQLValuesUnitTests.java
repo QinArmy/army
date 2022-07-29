@@ -1,5 +1,6 @@
 package io.army.criteria.mysql;
 
+import io.army.criteria.RowSet;
 import io.army.criteria.Values;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.MySQLs;
@@ -13,6 +14,7 @@ import org.testng.annotations.Test;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.function.Supplier;
 
 public class MySQLValuesUnitTests {
 
@@ -20,9 +22,38 @@ public class MySQLValuesUnitTests {
 
 
     @Test
-    public void primaryValues() {
+    public void simpleValues() {
         Values stmt;
-        stmt = MySQLs.valuesStmt()
+        stmt = this.createSimpleValues(MySQLs::valuesStmt)
+                .asValues();
+        printStmt(stmt);
+
+    }
+
+    @Test
+    public void unionValues() {
+        Values stmt;
+        stmt = this.createSimpleValues(MySQLs::valuesStmt)
+                .bracket()
+                .union(() -> this.createSimpleValues(MySQLs::valuesStmt)
+                        .bracket()
+                        .asValues())
+                .bracket()
+                .limit(3)
+                .asValues();
+        printStmt(stmt);
+
+    }
+
+
+    /**
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use the interface that start with {@code _ }
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     */
+    private <V extends RowSet.DqlValues> MySQLDqlValues._UnionSpec<Void, V> createSimpleValues(Supplier<MySQLDqlValues._ValuesStmtValuesClause<Void, V>> supplier) {
+        return supplier.get()
                 .values()
 
                 .row()
@@ -45,13 +76,8 @@ public class MySQLValuesUnitTests {
                 .commaLiteral(DayOfWeek.TUESDAY, SQLs.trueWord(), SQLs.literal(81).divideLiteral(3))
                 .rightParen()
 
-                .orderBy(SQLs.ref("column_1"))
-                .limit(4)
-                .asValues();
-
-        printStmt(stmt);
-
-
+                .orderBy(SQLs.ref("column_1"), SQLs.literal(2).desc())
+                .limit(4);
     }
 
 

@@ -224,8 +224,8 @@ public abstract class _AbstractDialect implements ArmyDialect {
             this.selectStmt((Select) rowSet, original);
         } else if (rowSet instanceof SubQuery) {
             this.subQueryStmt((SubQuery) rowSet, original);
-        } else if (rowSet instanceof Values) {
-            this.valuesStmt((Values) rowSet, original);
+        } else if (rowSet instanceof RowSet.DqlValues) {
+            this.valuesStmt((RowSet.DqlValues) rowSet, original);
         } else {
             throw _Exceptions.unknownStatement(rowSet, this.dialect);
         }
@@ -543,11 +543,12 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
 
-            if (rowKeyword != null) {
-                sqlBuilder.append(rowKeyword);
+            if (rowKeyword == null) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            } else {
+                sqlBuilder.append(rowKeyword)
+                        .append(_Constant.LEFT_PAREN);
             }
-
-            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
             columnList = rowList.get(rowIndex);
             columnSize = columnList.size();
@@ -1158,13 +1159,32 @@ public abstract class _AbstractDialect implements ArmyDialect {
     /**
      * @see #rowSet(RowSet, _SqlContext)
      */
-    protected final void valuesStmt(final Values values, final _SqlContext original) {
+    protected final void valuesStmt(final RowSet.DqlValues values, final _SqlContext original) {
         //1. assert prepared
         values.prepared();
 
         //2. assert sub query implementation class.
         this.assertDialectRowSet(values);
-        throw new UnsupportedOperationException();
+        final StringBuilder sqlBuilder = original.sqlBuilder();
+
+        final boolean outerParen;
+        outerParen = values instanceof SubValues
+                && !(original instanceof _UnionQueryContext && original instanceof _ValuesContext);
+
+        if (outerParen) {
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+        }
+        if (values instanceof _UnionRowSet) {
+            this.standardUnionQuery((_UnionRowSet) values, UnionValuesContext.create(original));
+        } else {
+            sqlBuilder.append(_Constant.SPACE);
+            this.dialectSimpleValues(ValuesContext.create(original), (_Values) values);
+        }
+        if (outerParen) {
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
     }
 
 
