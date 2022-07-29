@@ -28,7 +28,7 @@ final class FieldSelectionImpl implements FieldSelection, _Selection {
         return selection;
     }
 
-    private final TableField field;
+    final TableField field;
 
     private final String alias;
 

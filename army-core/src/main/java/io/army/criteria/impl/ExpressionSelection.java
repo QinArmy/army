@@ -10,7 +10,7 @@ import io.army.util._Assert;
 
 final class ExpressionSelection implements _Selection {
 
-    private final _Expression expression;
+     final _Expression expression;
 
     private final String alias;
 

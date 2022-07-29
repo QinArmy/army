@@ -56,7 +56,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
     private final ZoneId envZoneId;
     private final FieldValueGenerator generator;
 
-    protected _AbstractDialect(_DialectEnv dialectEnv, Dialect dialect) {
+    protected _AbstractDialect(final _DialectEnv dialectEnv, final Dialect dialect) {
         this.dialectEnv = dialectEnv;
         this.dialect = dialect;
         this.identifierQuote = identifierQuote();
@@ -64,7 +64,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
         this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(dialectEnv.serverMeta()));
         this.envZoneId = dialectEnv.envZoneId();
-        this.generator = FieldValuesGenerators.create(this.envZoneId, dialectEnv.fieldGeneratorMap());
+        if (dialectEnv instanceof _MockDialects) {
+            this.generator = FieldValuesGenerators.mock(this::getEnvZoneId);
+        } else {
+            this.generator = FieldValuesGenerators.create(this::getEnvZoneId, dialectEnv.fieldGeneratorMap());
+        }
     }
 
     /*################################## blow DML batchInsert method ##################################*/
@@ -329,6 +333,29 @@ public abstract class _AbstractDialect implements ArmyDialect {
     }
 
     @Override
+    public final void subQueryOfQueryInsert(final _QueryInsertContext outerContext, final SubQuery subQuery) {
+        if (subQuery instanceof _LateralSubQuery) {
+            throw _Exceptions.queryInsertDontSupportLateralSubQuery();
+        }
+        //here no outer paren
+        if (subQuery instanceof _UnionRowSet) {
+            final UnionQueryContext context;
+            context = UnionSubQueryContext.create(outerContext);
+            this.standardUnionQuery((_UnionRowSet) subQuery, context);
+        } else {
+            outerContext.sqlBuilder().append(_Constant.SPACE);
+            final SimpleSubQueryContext context;
+            context = SimpleSubQueryContext.create(subQuery, outerContext);//create new simple sub query context
+            if (subQuery instanceof StandardQuery) {
+                this.standardSimpleQuery((_StandardQuery) subQuery, context);
+            } else {
+                this.dialectSimpleQuery((_Query) subQuery, context);
+            }
+        }
+
+    }
+
+    @Override
     public final String printStmt(final Stmt stmt, final boolean beautify) {
         return beautify ? stmt.printSql(this::beautifySql) : stmt.printSql(_AbstractDialect::nonBeautifySql);
     }
@@ -440,6 +467,11 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected Stmt standardChildDelete(_SingleDelete delete, Visible visible) {
         throw new UnsupportedOperationException();
+    }
+
+    protected final ZoneId getEnvZoneId() {
+        final ZoneId zoneId = this.envZoneId;
+        return zoneId == null ? ZoneId.systemDefault() : zoneId;
     }
 
 
@@ -1104,9 +1136,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (javaType == LocalDateTime.class) {
             updateTimeValue = LocalDateTime.now();
         } else if (javaType == OffsetDateTime.class) {
-            updateTimeValue = OffsetDateTime.now(this.envZoneId == null ? ZoneId.systemDefault() : this.envZoneId);
+            updateTimeValue = OffsetDateTime.now(this.getEnvZoneId());
         } else if (javaType == ZonedDateTime.class) {
-            updateTimeValue = ZonedDateTime.now(this.envZoneId == null ? ZoneId.systemDefault() : this.envZoneId);
+            updateTimeValue = ZonedDateTime.now(this.getEnvZoneId());
         } else {
             String m = String.format("%s don't support java type[%s]", field, javaType);
             throw new MetaException(m);
@@ -1207,7 +1239,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (insert instanceof _Insert._ChildValuesInsert) {
             final _Insert._ChildValuesInsert childStmt = (_Insert._ChildValuesInsert) insert;
             final _Insert._ValuesInsert parentStmt = childStmt.parentStmt();
-            checkParentStmt(parentStmt, (ChildTableMeta<?>) childStmt.table());
 
             final ValuesInsertContext parentContext;
             parentContext = ValuesInsertContext.forParent(childStmt, this, visible);
@@ -1269,7 +1300,38 @@ public abstract class _AbstractDialect implements ArmyDialect {
      * @see #parseInsert(_Insert, Visible)
      */
     private Stmt handleQueryInsert(final _Insert._QueryInsert insert, final Visible visible) {
-        throw new UnsupportedOperationException();
+        final boolean standardStmt = insert instanceof StandardStatement;
+        final Stmt stmt;
+        if (insert instanceof _Insert._ChildQueryInsert) {
+            final _Insert._ChildQueryInsert childStmt = (_Insert._ChildQueryInsert) insert;
+
+            final QueryInsertContext parentContext;
+            parentContext = QueryInsertContext.forParent(childStmt, this, visible);
+            if (standardStmt) {
+                this.standardQueryInsert(parentContext);
+            } else {
+                this.queryInsert(parentContext, childStmt.parentStmt());
+            }
+
+            final QueryInsertContext childContext;
+            childContext = QueryInsertContext.forChild(parentContext, childStmt, this, visible);
+            if (standardStmt) {
+                this.standardQueryInsert(childContext);
+            } else {
+                this.queryInsert(childContext, childStmt);
+            }
+            stmt = Stmts.pair(parentContext.build(), childContext.build());
+        } else {
+            final QueryInsertContext singleContext;
+            singleContext = QueryInsertContext.forSingle(insert, this, visible);
+            if (standardStmt) {
+                this.standardQueryInsert(singleContext);
+            } else {
+                this.queryInsert(singleContext, insert);
+            }
+            stmt = singleContext.build();
+        }
+        return stmt;
     }
 
     /**

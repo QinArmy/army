@@ -4,7 +4,6 @@ import io.army.bean.ReadWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.generator.FieldGenerator;
 import io.army.generator.GeneratorException;
-import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
@@ -19,24 +18,25 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 abstract class FieldValuesGenerators implements FieldValueGenerator {
 
 
-    static FieldValuesGenerators create(@Nullable ZoneId zoneOffset
+    static FieldValuesGenerators create(Supplier<ZoneId> zoneIdSupplier
             , Map<FieldMeta<?>, FieldGenerator> generatorMap) {
-        return new DefaultFieldValuesGenerator(zoneOffset, generatorMap);
+        return new DefaultFieldValuesGenerator(zoneIdSupplier, generatorMap);
     }
 
-    static FieldValuesGenerators mock() {
-        return new MockFieldValuesGenerator();
+    static FieldValuesGenerators mock(Supplier<ZoneId> zoneIdSupplier) {
+        return new MockFieldValuesGenerator(zoneIdSupplier);
     }
 
 
-    private final ZoneId zoneOffset;
+    private final Supplier<ZoneId> zoneIdSupplier;
 
-    private FieldValuesGenerators(@Nullable ZoneId zoneOffset) {
-        this.zoneOffset = zoneOffset;
+    private FieldValuesGenerators(Supplier<ZoneId> zoneIdSupplier) {
+        this.zoneIdSupplier = zoneIdSupplier;
     }
 
     @Override
@@ -51,7 +51,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             final CodeEnum codeEnum;
             codeEnum = CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
             if (codeEnum == null) {
-                throw discriminatorNoMapping(domainTable, discriminator);
+                throw _Exceptions.discriminatorNoMapping(domainTable);
             }
             wrapper.set(discriminator, codeEnum);
         }
@@ -76,7 +76,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             final CodeEnum codeEnum;
             codeEnum = CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
             if (codeEnum == null) {
-                throw discriminatorNoMapping(domainTable, discriminator);
+                throw _Exceptions.discriminatorNoMapping(domainTable);
             }
             if (wrapper.readonlyWrapper().get(discriminator.fieldName()) != codeEnum) {
                 Class<?> enumClass = codeEnum.getClass();
@@ -157,9 +157,9 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
         if (createTimeJavaType == LocalDateTime.class) {
             now = LocalDateTime.now();
         } else if (createTimeJavaType == OffsetDateTime.class) {
-            now = OffsetDateTime.now(this.zoneOffset == null ? ZoneId.systemDefault() : this.zoneOffset);
+            now = OffsetDateTime.now(this.zoneIdSupplier.get());
         } else if (createTimeJavaType == ZonedDateTime.class) {
-            now = ZonedDateTime.now(this.zoneOffset == null ? ZoneId.systemDefault() : this.zoneOffset);
+            now = ZonedDateTime.now(this.zoneIdSupplier.get());
         } else {
             String m = String.format("%s not support java type[%s]", field, createTimeJavaType.getName());
             throw new MetaException(m);
@@ -202,20 +202,14 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
         return new CriteriaException(m);
     }
 
-    private static MetaException discriminatorNoMapping(TableMeta<?> domainTable, FieldMeta<?> discriminator) {
-        String m = String.format("%s code[%s] no mapping.", discriminator.javaType().getName()
-                , domainTable.discriminatorValue());
-        throw new MetaException(m);
-    }
-
 
     private static final class DefaultFieldValuesGenerator extends FieldValuesGenerators {
 
         private final Map<FieldMeta<?>, FieldGenerator> generatorMap;
 
-        private DefaultFieldValuesGenerator(@Nullable ZoneId zoneOffset
+        private DefaultFieldValuesGenerator(Supplier<ZoneId> zoneIdSupplier
                 , Map<FieldMeta<?>, FieldGenerator> generatorMap) {
-            super(zoneOffset);
+            super(zoneIdSupplier);
             this.generatorMap = generatorMap;
         }
 
@@ -243,8 +237,8 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
     private static final class MockFieldValuesGenerator extends FieldValuesGenerators {
 
-        private MockFieldValuesGenerator() {
-            super(null);
+        private MockFieldValuesGenerator(Supplier<ZoneId> supplier) {
+            super(supplier);
         }
 
         @Override

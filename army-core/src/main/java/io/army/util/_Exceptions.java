@@ -57,6 +57,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         throw new TransactionTimeOutException(m);
     }
 
+
     public static CriteriaException tableAliasDuplication(String tableAlias) {
         String m = String.format("Table alias[%s] duplication", tableAlias);
         return new CriteriaException(m);
@@ -188,14 +189,14 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is non-insertable.", field));
     }
 
-    public static CriteriaException noFieldsForRowSetInsert(TableMeta<?> table) {
+    public static CriteriaException noFieldsForQueryInsert(TableMeta<?> table) {
 
-        return new CriteriaException(String.format("No fields for row set insert for %s", table));
+        return new CriteriaException(String.format("No fields for query insert for %s", table));
     }
 
     public static CriteriaException rowSetSelectionAndFieldSizeNotMatch(int rowSetSelectionSize, int fieldSize
             , TableMeta<?> table) {
-        String m = String.format("RowSet selection size[%s] and field size[%s] not match for %s"
+        String m = String.format("query selection size[%s] and field size[%s] not match for %s"
                 , rowSetSelectionSize, fieldSize, table);
         return new CriteriaException(m);
     }
@@ -311,6 +312,10 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException cteListIsEmpty() {
         return new CriteriaException("with clause cte list must not empty. ");
+    }
+
+    public static CriteriaException queryInsertDontSupportLateralSubQuery() {
+        return new CriteriaException("Query insert don't support lateral sub query.");
     }
 
     public static CriteriaException predicateListIsEmpty() {
@@ -657,6 +662,21 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static ObjectAccessException nonReadableProperty(Object target, String propertyName) {
         String m = String.format("%s property[%s] isn't readable.", target, propertyName);
         return new ObjectAccessException(m);
+    }
+
+
+    public static MetaException discriminatorNoMapping(TableMeta<?> domainTable) {
+        final FieldMeta<?> discriminator;
+        discriminator = domainTable.discriminator();
+        assert discriminator != null;
+        Class<?> javaType;
+        javaType = discriminator.javaType();
+        if (javaType.isAnonymousClass()) {
+            javaType = javaType.getSuperclass();
+        }
+        String m = String.format("%s code[%s] no mapping.", javaType.getName()
+                , domainTable.discriminatorValue());
+        throw new MetaException(m);
     }
 
 

@@ -14,10 +14,7 @@ import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -32,6 +29,9 @@ public abstract class _DialectUtils {
     }
 
 
+    /**
+     * @return a unmodified list
+     */
     public static List<Selection> flatSelectItem(final List<? extends SelectItem> selectPartList) {
         final List<Selection> selectionList = new ArrayList<>(selectPartList.size());
         for (SelectItem selectItem : selectPartList) {
@@ -43,7 +43,7 @@ public abstract class _DialectUtils {
                 throw _Exceptions.unknownSelectItem(selectItem);
             }
         }
-        return selectionList;
+        return Collections.unmodifiableList(selectionList);
     }
 
 

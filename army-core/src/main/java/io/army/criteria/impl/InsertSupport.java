@@ -4,18 +4,23 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._Query;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
+import io.army.dialect._DialectUtils;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
+import io.army.struct.CodeEnum;
 import io.army.util._Assert;
 import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -1259,30 +1264,12 @@ abstract class InsertSupport {
 
         @Override
         public final SR space(Supplier<? extends SubQuery> supplier) {
-            final SubQuery query;
-            query = supplier.get();
-            if (query == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
-            }
-            if (this.subQuery != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            this.subQuery = query;
-            return this.spaceEnd();
+            return this.innerSpace(supplier.get());
         }
 
         @Override
         public final SR space(Function<C, ? extends SubQuery> function) {
-            final SubQuery query;
-            query = function.apply(this.criteria);
-            if (query == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
-            }
-            if (this.subQuery != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            this.subQuery = query;
-            return this.spaceEnd();
+            return this.innerSpace(function.apply(this.criteria));
         }
 
         @Override
@@ -1296,6 +1283,16 @@ abstract class InsertSupport {
 
         abstract SR spaceEnd();
 
+        private SR innerSpace(final @Nullable SubQuery query) {
+            if (query == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            if (this.subQuery != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.subQuery = query;
+            return this.spaceEnd();
+        }
 
     }//QueryInsertSpaceClause
 
@@ -1341,7 +1338,7 @@ abstract class InsertSupport {
             _Assert.nonPrepared(this.prepared);
 
             if (this instanceof QueryInsertStatement) {
-                ((QueryInsertStatement<I>) this).validateStatement();
+                ((QueryInsertStatement<I>) this).validateQueryInsertStatement();
             } else if (this instanceof _Insert._ChildInsert) {
                 final _Insert parentStmt = ((_ChildInsert) this).parentStmt();
                 if (parentStmt instanceof _Insert._DuplicateKeyClause
@@ -1541,37 +1538,194 @@ abstract class InsertSupport {
          * and {@link  CriteriaContextStack#pop(CriteriaContext)}.
          * </p>
          */
-        private void validateStatement() {
-            final TableMeta<?> table = this.table;
-            if (table instanceof ChildTableMeta) {
-                doValidateStatement(((ChildTableMeta<?>) table).parentMeta(), this.fieldList, this.subQuery);
-                final _Insert._QueryInsert parentStmt = ((_Insert._ChildQueryInsert) this).parentStmt();
-                doValidateStatement(table, parentStmt.fieldList(), parentStmt.subQuery());
-            } else {
-                doValidateStatement(table, this.fieldList, this.subQuery);
+        private void validateQueryInsertStatement() {
+            if (this instanceof _Insert._ChildQueryInsert) {
+                final _Insert._QueryInsert parentStmt = ((_ChildQueryInsert) this).parentStmt();
+                this.doValidateStatement(parentStmt.table(), parentStmt.fieldList(), parentStmt.subQuery());
             }
+            this.doValidateStatement(this.table, this.fieldList, this.subQuery);
+        }
+
+
+        private List<Selection> doValidateStatement(final TableMeta<?> insertTable, final List<FieldMeta<?>> fieldList
+                , final @Nullable SubQuery query) {
+            final int fieldSize;
+            fieldSize = fieldList.size();
+            if (fieldSize == 0) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext
+                        , _Exceptions::noFieldsForQueryInsert, insertTable);
+            }
+            if (query == null) {
+                String m = String.format("SubQuery must be non-null for query insert of %s", insertTable);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+            final List<Selection> selectionList;
+            selectionList = _DialectUtils.flatSelectItem(query.selectItemList());
+
+            if (selectionList.size() != fieldSize) {
+                Supplier<CriteriaException> supplier;
+                supplier = () -> _Exceptions.rowSetSelectionAndFieldSizeNotMatch(selectionList.size(), fieldSize, insertTable);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, supplier);
+            }
+            return selectionList;
+        }
+
+        private void validateDiscriminator(final TableMeta<?> domainTable, final SubQuery query
+                , final List<FieldMeta<?>> fieldList, final List<Selection> selectionList) {
+
+            final FieldMeta<?> discriminator = domainTable.discriminator();
+            assert discriminator != null;
+
+            final CodeEnum discriminatorEnum;
+            discriminatorEnum = CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
+            if (discriminatorEnum == null) {
+                MetaException metaException = _Exceptions.discriminatorNoMapping(domainTable);
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, CriteriaException::new, metaException);
+            }
+
+            final int fieldSize = fieldList.size();
+            int discriminatorIndex = -1;
+            for (int i = 0; i < fieldSize; i++) {
+                if (fieldList.get(i) == discriminator) {
+                    discriminatorIndex = i;
+                    break;
+                }
+            }
+
+            assert discriminatorIndex > -1; //column list clause no bug,success
+
+            final Selection selection;
+            selection = selectionList.get(discriminatorIndex);
+
+
+            if (selection instanceof FieldSelection) {
+                this.validateFieldSelection(domainTable, query, (FieldSelection) selection);
+            } else if (selection instanceof ExpressionSelection) {
+                final Expression expression = ((ExpressionSelection) selection).expression;
+                if (!(expression instanceof SqlValueParam.SingleNonNamedValue)) {
+                    throw errorDiscriminatorType(domainTable, selection);
+                }
+                final Object value;
+                value = ((SqlValueParam.SingleNonNamedValue) expression).value();
+                if (!this.validateConstant(discriminatorEnum, value)) {
+                    throw errorDiscriminatorValue(domainTable, selection, value);
+                }
+            } else {
+                throw errorDiscriminatorType(domainTable, selection);
+            }
+
 
         }
 
-        private void doValidateStatement(final TableMeta<?> table, final List<FieldMeta<?>> fieldList
-                , final @Nullable RowSet rowSet) {
-            final int size;
-            size = fieldList.size();
-            if (size == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext
-                        , _Exceptions::noFieldsForRowSetInsert, table);
+        private void validateFieldSelection(final TableMeta<?> domainTable, final SubQuery query
+                , final FieldSelection selection) {
+            final String tableAlias;
+            final FieldMeta<?> field;
+            if (selection instanceof FieldMeta) {
+                tableAlias = null;
+                field = (FieldMeta<?>) selection;
+            } else if (selection instanceof QualifiedField) {
+                tableAlias = ((QualifiedField<?>) selection).tableAlias();
+                field = selection.fieldMeta();
+            } else {
+                assert selection instanceof FieldSelectionImpl;
+                final TableField tableField;
+                tableField = ((FieldSelectionImpl) selection).field;
+                if (tableField instanceof FieldMeta) {
+                    tableAlias = null;
+                    field = (FieldMeta<?>) tableField;
+                } else {
+                    tableAlias = ((QualifiedField<?>) tableField).tableAlias();
+                    field = selection.fieldMeta();
+                }
             }
-            if (rowSet == null) {
-                String m = String.format("RowSet is null for %s", table);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+
+
+            DualPredicate dualPredicate;
+            FieldMeta<?> targetField;
+            String targetAlias;
+            for (_Predicate predicate : ((_Query) query).predicateList()) {
+                if (!(predicate instanceof DualPredicate)) {
+                    continue;
+                }
+                dualPredicate = (DualPredicate) predicate;
+                if (dualPredicate.operator != DualOperator.EQ) {
+                    continue;
+                }
+
+                if (dualPredicate.left instanceof TableField
+                        && dualPredicate.right instanceof SqlValueParam.SingleNonNamedValue) {
+                    targetAlias = dualPredicate.left instanceof FieldMeta
+                            ? null
+                            : ((QualifiedField<?>) dualPredicate.left).tableAlias();
+
+                    targetField = ((TableField) dualPredicate.left).fieldMeta();
+                } else if (dualPredicate.right instanceof TableField
+                        && dualPredicate.left instanceof SqlValueParam.SingleNonNamedValue) {
+                    targetAlias = dualPredicate.right instanceof FieldMeta
+                            ? null
+                            : ((QualifiedField<?>) dualPredicate.right).tableAlias();
+
+                    targetField = ((TableField) dualPredicate.right).fieldMeta();
+                } else {
+                    continue;
+                }
+
+                if (targetField != field) {
+                    continue;
+                }
+
+                if (tableAlias == null) {
+
+                } else {
+
+                }
+
+
             }
-            final int selectionSize;
-            selectionSize = CriteriaUtils.selectionCount(rowSet);
-            if (selectionSize != size) {
-                Supplier<CriteriaException> supplier;
-                supplier = () -> _Exceptions.rowSetSelectionAndFieldSizeNotMatch(selectionSize, size, table);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, supplier);
+
+
+        }
+
+        private boolean validateConstant(final CodeEnum discriminatorEnum, @Nullable Object value) {
+            final boolean match;
+            if (value == null) {
+                match = false;
+            } else if (value instanceof CodeEnum) {
+                match = ((CodeEnum) value).code() == discriminatorEnum.code();
+            } else if (value instanceof Integer
+                    || value instanceof Short
+                    || value instanceof Byte) {
+                match = ((Number) value).intValue() == discriminatorEnum.code();
+            } else if (value instanceof Long) {
+                match = (Long) value == discriminatorEnum.code();
+            } else if (value instanceof BigInteger) {
+                match = BigInteger.valueOf(discriminatorEnum.code()).equals(value);
+            } else if (value instanceof String) {
+                int v;
+                try {
+                    v = Integer.parseInt((String) value);
+                } catch (NumberFormatException e) {
+                    v = -1;
+                }
+                match = v == discriminatorEnum.code();
+            } else {
+                match = false;
             }
+            return match;
+        }
+
+        private CriteriaException errorDiscriminatorValue(final TableMeta<?> domainTable, final Selection selection
+                , final @Nullable Object value) {
+            String m = String.format("%s[%s] constant[%s] and %s discriminator not match."
+                    , Selection.class.getName(), selection.alias(), value, domainTable);
+            return CriteriaContextStack.criteriaError(this.criteriaContext, m);
+        }
+
+        private CriteriaException errorDiscriminatorType(final TableMeta<?> domainTable, final Selection selection) {
+            String m = String.format("%s query insert discriminator %s[%s] must be constant or %s."
+                    , domainTable, Selection.class.getName(), selection.alias(), TableField.class.getName());
+            return CriteriaContextStack.criteriaError(this.criteriaContext, m);
         }
 
 

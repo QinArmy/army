@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.criteria.SubQuery;
 import io.army.mapping.MappingEnv;
 import io.army.meta.DatabaseObject;
 
@@ -48,6 +49,8 @@ interface ArmyDialect extends DialectParser {
 
 
     MappingEnv mappingEnv();
+
+    void subQueryOfQueryInsert(_QueryInsertContext outerContext, SubQuery subQuery);
 
 
 }
