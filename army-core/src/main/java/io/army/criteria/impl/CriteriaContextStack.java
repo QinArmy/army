@@ -20,6 +20,8 @@ import java.util.function.Supplier;
  */
 abstract class CriteriaContextStack {
 
+    //  private static final Logger LOG = LoggerFactory.getLogger(CriteriaContextStack.class);
+
     private CriteriaContextStack() {
         throw new UnsupportedOperationException();
     }
@@ -29,6 +31,7 @@ abstract class CriteriaContextStack {
 
     static void setContextStack(CriteriaContext rootContext) {
         HOLDER.set(new ContextStack(rootContext));
+        // LOG.debug("setContextStack {},hash:{}",rootContext.getClass().getName(),System.identityHashCode(rootContext));
     }
 
     static CriteriaContext peek() {
@@ -46,6 +49,7 @@ abstract class CriteriaContextStack {
             throw noContextStack();
         }
         stack.pop(subContext);
+        // LOG.debug("pop {},hash:{}",subContext.getClass().getName(),System.identityHashCode(subContext));
     }
 
     static void push(final CriteriaContext subContext) {
@@ -54,6 +58,7 @@ abstract class CriteriaContextStack {
             throw noContextStack();
         }
         stack.push(subContext);
+        // LOG.debug("push {},hash:{}",subContext.getClass().getName(),System.identityHashCode(subContext));
     }
 
     static CriteriaContext root() {
@@ -80,6 +85,7 @@ abstract class CriteriaContextStack {
         }
         stack.clear(rootContext);
         HOLDER.remove();
+        // LOG.debug("clearContextStack {},hash:{}",rootContext.getClass().getName(),System.identityHashCode(rootContext));
     }
 
     private static CriteriaException noContextStack() {
@@ -130,12 +136,6 @@ abstract class CriteriaContextStack {
         return new NullPointerException();
     }
 
-    static void assertNonNull(CriteriaContext criteriaContext, @Nullable Object obj, String message) {
-        if (obj == null) {
-            clearStackOnError(criteriaContext);
-            throw new CriteriaException(message);
-        }
-    }
 
     @Deprecated
     static <T> CriteriaException criteriaError(Function<T, CriteriaException> function, T input) {

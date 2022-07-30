@@ -186,20 +186,30 @@ abstract class CriteriaUtils {
      *
      * @return a unmodifiable map
      */
-    static Map<String, Selection> createSelectionMap(List<? extends SelectItem> selectItemList) {
+    static Map<String, Selection> createSelectionMap(final List<? extends SelectItem> selectItemList) {
 
-        final Map<String, Selection> selectionMap = new HashMap<>();
-        for (SelectItem item : selectItemList) {
+        final int selectItemSize = selectItemList.size();
 
-            if (item instanceof Selection) {
-                selectionMap.put(((Selection) item).alias(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
-            } else if (item instanceof SelectionGroup) {
-                for (Selection selection : ((SelectionGroup) item).selectionList()) {
-                    selectionMap.put(selection.alias(), selection); // if alias duplication then override.Be consistent with  statement executor.
+        final Map<String, Selection> selectionMap;
+
+        if (selectItemSize == 1 && selectItemList.get(0) instanceof Selection) {
+            final Selection selection = (Selection) selectItemList.get(0);
+            selectionMap = Collections.singletonMap(selection.alias(), selection);
+        } else {
+            final Map<String, Selection> map = new HashMap<>((int) (selectItemSize / 0.75F));
+            for (SelectItem item : selectItemList) {
+
+                if (item instanceof Selection) {
+                    map.put(((Selection) item).alias(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
+                } else if (item instanceof SelectionGroup) {
+                    for (Selection selection : ((SelectionGroup) item).selectionList()) {
+                        map.put(selection.alias(), selection); // if alias duplication then override.Be consistent with  statement executor.
+                    }
                 }
             }
+            selectionMap = Collections.unmodifiableMap(map);
         }
-        return Collections.unmodifiableMap(selectionMap);
+        return selectionMap;
     }
 
     static void assertSelectItemSizeMatch(RowSet left, RowSet right) {
@@ -589,8 +599,6 @@ abstract class CriteriaUtils {
                 , MappingType.class.getName(), value.getClass().getName());
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
-
-
 
 
 }

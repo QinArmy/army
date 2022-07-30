@@ -38,9 +38,10 @@ public class MySQLValuesUnitTests {
                         .bracket()
                         .asValues())
                 .bracket()
-                .orderBy(SQLs.ref("column_0"))
+                .orderBy(SQLs.ref("column_0"), SQLs.ref("column_1").desc())
                 .limit(3)
                 .asValues();
+
         printStmt(stmt);
 
     }
