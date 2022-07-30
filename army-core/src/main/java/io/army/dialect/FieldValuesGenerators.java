@@ -161,8 +161,8 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
         } else if (createTimeJavaType == ZonedDateTime.class) {
             now = ZonedDateTime.now(this.zoneIdSupplier.get());
         } else {
-            String m = String.format("%s not support java type[%s]", field, createTimeJavaType.getName());
-            throw new MetaException(m);
+            // FieldMeta no bug,never here
+            throw _Exceptions.dontSupportJavaType(field, createTimeJavaType);
         }
         wrapper.set(field, now);
 

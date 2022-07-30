@@ -21,13 +21,13 @@ import java.time.LocalTime;
 
 final class MySQLExecutor extends JdbcStmtExecutor {
 
-    static MySQLExecutor create(JdbcExecutorFactory factory, Connection conn) {
+    static MySQLExecutor create(JdbcLocalExecutorFactory factory, Connection conn) {
         return new MySQLExecutor(factory, conn);
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
-    private MySQLExecutor(JdbcExecutorFactory factory, Connection conn) {
+    private MySQLExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
         super(factory, conn);
     }
 

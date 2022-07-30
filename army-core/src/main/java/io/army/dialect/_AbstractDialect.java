@@ -336,7 +336,7 @@ public abstract class _AbstractDialect implements ArmyParser {
 
     @Override
     public final MappingEnv mappingEnv() {
-        return this.dialectEnv.mappingEnv();
+        return this.mappingEnv;
     }
 
     @Override
@@ -1228,12 +1228,12 @@ public abstract class _AbstractDialect implements ArmyParser {
         if (javaType == LocalDateTime.class) {
             updateTimeValue = LocalDateTime.now();
         } else if (javaType == OffsetDateTime.class) {
-            updateTimeValue = OffsetDateTime.now(this.mappingEnv().zoneId());
+            updateTimeValue = OffsetDateTime.now(this.mappingEnv.zoneId());
         } else if (javaType == ZonedDateTime.class) {
-            updateTimeValue = ZonedDateTime.now(this.mappingEnv().zoneId());
+            updateTimeValue = ZonedDateTime.now(this.mappingEnv.zoneId());
         } else {
-            String m = String.format("%s don't support java type[%s]", field, javaType);
-            throw new MetaException(m);
+            // FieldMeta no bug,never here
+            throw _Exceptions.dontSupportJavaType(field, javaType);
         }
         final boolean supportTableAlias;
         supportTableAlias = safeTableAlias != null && this.setClauseTableAlias();

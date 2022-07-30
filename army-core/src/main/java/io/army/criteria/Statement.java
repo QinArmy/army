@@ -35,6 +35,9 @@ public interface Statement {
 
     interface StatementMockSpec {
 
+        /**
+         * @param none nothing
+         */
         String mockAsString(Dialect dialect, Visible visible, boolean none);
 
         Stmt mockAsStmt(Dialect dialect, Visible visible);

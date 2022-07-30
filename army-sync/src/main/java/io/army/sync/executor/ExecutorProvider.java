@@ -1,7 +1,7 @@
 package io.army.sync.executor;
 
+import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.session.UnsupportedDataSourceTypeException;
 
 /**
  * <p>
@@ -9,7 +9,7 @@ import io.army.session.UnsupportedDataSourceTypeException;
  * This implementation of this interface must declared :
  * <pre>
  *      <code>
- *          public static {implementation class of ExecutorProvider} getInstance(){
+ *          public static {implementation class of ExecutorProvider} create(Object){
  *
  *          }
  *      </code>
@@ -18,13 +18,17 @@ import io.army.session.UnsupportedDataSourceTypeException;
  */
 public interface ExecutorProvider {
 
+    ServerMeta createServerMeta() throws DataAccessException;
+
+
     /**
-     * @param dataSource
-     * @param info
-     * @return
-     * @throws DataAccessException
-     * @throws UnsupportedDataSourceTypeException
+     * @throws UnsupportedOperationException
+     * @throws IllegalStateException
+     * @throws IllegalArgumentException
      */
-    ExecutorFactory createFactory(Object dataSource, ExecutorEnvironment info);
+    LocalExecutorFactory createLocalFactory(ExecutorEnvironment env);
+
+    RmExecutorFactory createRmFactory(ExecutorEnvironment env);
+
 
 }

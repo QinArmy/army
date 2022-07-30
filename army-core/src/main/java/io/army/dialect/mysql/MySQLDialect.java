@@ -36,9 +36,8 @@ public enum MySQLDialect implements Dialect {
 
 
     public static MySQLDialect from(final ServerMeta meta) {
-        if (meta.database() != Database.MySQL) {
-            throw new IllegalArgumentException();
-        }
+        assert meta.database() == Database.MySQL;
+
         final MySQLDialect dialect;
         switch (meta.major()) {
             case 5:

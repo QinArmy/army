@@ -8,7 +8,7 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.ExecutorEnvironment;
-import io.army.sync.executor.ExecutorFactory;
+import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.StmtExecutor;
 import io.army.util._Exceptions;
@@ -18,11 +18,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.ZoneOffset;
 
-final class JdbcExecutorFactory implements ExecutorFactory {
+final class JdbcLocalExecutorFactory implements LocalExecutorFactory {
 
-    static JdbcExecutorFactory create(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env
+    static JdbcLocalExecutorFactory create(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env
             , int methodFlag) {
-        return new JdbcExecutorFactory(dataSource, serverMeta, env, methodFlag);
+        return new JdbcLocalExecutorFactory(dataSource, serverMeta, env, methodFlag);
     }
 
     static final byte SET_OBJECT_METHOD = 1;
@@ -53,7 +53,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
     boolean closed;
 
-    private JdbcExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment executorEnv
+    private JdbcLocalExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment executorEnv
             , final int methodFlag) {
         this.dataSource = dataSource;
         this.serverMeta = serverMeta;
@@ -133,7 +133,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
 
 
     private static DataAccessException closedError() {
-        String m = String.format("%s have closed.", JdbcExecutorFactory.class.getName());
+        String m = String.format("%s have closed.", JdbcLocalExecutorFactory.class.getName());
         return new DataAccessException(m);
     }
 

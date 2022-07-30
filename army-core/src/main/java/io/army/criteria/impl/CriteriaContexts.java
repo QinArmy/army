@@ -134,7 +134,7 @@ abstract class CriteriaContexts {
     }
 
     static CriteriaContext otherPrimaryContext(@Nullable Object criteria) {
-        throw new UnsupportedOperationException();
+        return new OtherPrimaryContext(criteria);
     }
 
 
@@ -1101,6 +1101,16 @@ abstract class CriteriaContexts {
 
 
     }//ValuesContext
+
+
+    private static final class OtherPrimaryContext extends AbstractContext {
+
+        private OtherPrimaryContext(@Nullable Object criteria) {
+            super(null, criteria);
+        }
+
+
+    }//OtherPrimaryContext
 
 
     private static final class DerivedSelection extends OperationExpression

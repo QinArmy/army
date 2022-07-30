@@ -40,13 +40,13 @@ import java.util.function.Supplier;
 abstract class JdbcStmtExecutor implements StmtExecutor {
 
 
-    final JdbcExecutorFactory factory;
+    final JdbcLocalExecutorFactory factory;
 
     final Connection conn;
 
     Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
-    JdbcStmtExecutor(JdbcExecutorFactory factory, Connection conn) {
+    JdbcStmtExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
         this.factory = factory;
         this.conn = conn;
     }

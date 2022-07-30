@@ -131,7 +131,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             //2. create ExecutorFactory
             final ExecutorFactory executorFactory;
             executorFactory = getExecutorProvider(env)
-                    .createFactory(Objects.requireNonNull(this.dataSource), createFactoryInfo(env));
+                    .createLocalFactory(Objects.requireNonNull(this.dataSource), createFactoryInfo(env));
 
             final FactoryAdvice factoryAdvice;
             factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
@@ -399,7 +399,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
 
         try {
             final Method method;
-            method = providerClass.getMethod("getInstance");
+            method = providerClass.getMethod("create");
             final int modifiers;
             modifiers = method.getModifiers();
             final ExecutorProvider provider;

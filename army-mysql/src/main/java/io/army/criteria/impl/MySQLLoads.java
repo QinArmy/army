@@ -404,6 +404,14 @@ abstract class MySQLLoads {
 
         @Override
         public final VR rightParen() {
+            final List<_Expression> fieldVarList = this.fieldOrUserVarList;
+            if (fieldVarList == null) {
+                this.fieldOrUserVarList = Collections.emptyList();
+            } else if (fieldVarList instanceof ArrayList) {
+                this.fieldOrUserVarList = _CollectionUtils.unmodifiableList(fieldVarList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
             return (VR) this;
         }
 
@@ -581,6 +589,8 @@ abstract class MySQLLoads {
             if (fieldVarList == null) {
                 fieldVarList = new ArrayList<>();
                 this.fieldOrUserVarList = fieldVarList;
+            } else if (!(fieldVarList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             fieldVarList.add((ArmyExpression) columnOrVar);
         }
@@ -618,7 +628,7 @@ abstract class MySQLLoads {
             , MySQLLoad._LineStartingBySpec<C, T>
             , MySQLLoad._LinesTerminatedBySpec<C, T> {
 
-        private final ParentLoadDataStatement parentStmt;
+        private final SingleLoadDataStatement parentStmt;
 
         private NonParentPartitionClause(LoadDataInfileClause<C> clause, SimpleTableMeta<T> table) {
             super(clause, table);
@@ -764,7 +774,13 @@ abstract class MySQLLoads {
         public MySQLLoad._ChildLoadInfileClause<C, P> child(List<MySQLWords> modifierList) {
             final List<MySQLWords> list;
             list = MySQLUtils.asModifierList(this.criteriaContext, modifierList, MySQLUtils::loadDataModifier);
-            return new ChildLoadDataInfileClause<>(this.criteriaContext, new ParentLoadDataStatement(this), list);
+            return new ChildLoadDataInfileClause<>(this.criteriaContext, new SingleLoadDataStatement(this), list);
+        }
+
+        @Override
+        public MySQLLoad asLoadData() {
+            return new SingleLoadDataStatement(this)
+                    .asLoadData();
         }
 
 
@@ -778,7 +794,7 @@ abstract class MySQLLoads {
 
         private final CriteriaContext criteriaContext;
 
-        private final ParentLoadDataStatement parentStatement;
+        private final SingleLoadDataStatement parentStatement;
 
         private final List<MySQLWords> modifierList;
 
@@ -786,7 +802,7 @@ abstract class MySQLLoads {
 
         private StrategyOption strategyOption;
 
-        private ChildLoadDataInfileClause(CriteriaContext criteriaContext, ParentLoadDataStatement parentStatement
+        private ChildLoadDataInfileClause(CriteriaContext criteriaContext, SingleLoadDataStatement parentStatement
                 , List<MySQLWords> modifierList) {
             this.criteriaContext = criteriaContext;
             this.parentStatement = parentStatement;
@@ -868,8 +884,8 @@ abstract class MySQLLoads {
             if (table == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
-            if (table.parentMeta() != this.parentStatement.parentTable) {
-                String m = String.format("%s isn't child of %s", table, this.parentStatement.parentTable);
+            if (table.parentMeta() != this.parentStatement.table) {
+                String m = String.format("%s isn't child of %s", table, this.parentStatement.table);
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             }
             if (this.filePath == null) {
@@ -883,7 +899,10 @@ abstract class MySQLLoads {
 
 
     static abstract class MySQLLoadDataStatement implements _MySQLLoadData, Statement.StatementMockSpec
-            , DialectStatement {
+            , MySQLLoad, MySQLLoad._LoadDataSpec {
+
+
+        private final CriteriaContext criteriaContext;
 
         private final List<MySQLWords> modifierList;
 
@@ -918,10 +937,14 @@ abstract class MySQLLoads {
 
         private final List<_Pair<FieldMeta<?>, _Expression>> columItemPairList;
 
+        private Boolean prepared;
+
         private MySQLLoadDataStatement(PartitionClause<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause) {
+            this.criteriaContext = clause.criteriaContext;
             this.modifierList = clause.modifierList;
             this.fileName = clause.filePath;
             this.strategyOption = clause.strategyOption;
+
             this.partitionList = clause.partitionList();
 
             this.charsetName = clause.charsetName;
@@ -958,6 +981,32 @@ abstract class MySQLLoads {
 
 
         @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public final void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
+        }
+
+
+        @Override
+        public final MySQLLoad asLoadData() {
+            _Assert.nonPrepared(this.prepared);
+            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            this.prepared = Boolean.TRUE;
+            return this;
+        }
+
+        @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
             final DialectParser parser;
             parser = _MockDialects.from(dialect);
@@ -969,6 +1018,17 @@ abstract class MySQLLoads {
         @Override
         public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
             return _MockDialects.from(dialect).dialectStmt(this, visible);
+        }
+
+        @Override
+        public final String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
         }
 
         @Override
@@ -1058,139 +1118,41 @@ abstract class MySQLLoads {
     private static final class SingleLoadDataStatement extends MySQLLoadDataStatement
             implements MySQLLoad, _MySQLLoadData._SingleLoadData, MySQLLoad._LoadDataSpec {
 
-        private final CriteriaContext criteriaContext;
-
         private final SingleTableMeta<?> table;
 
 
-        private Boolean prepared;
-
         private SingleLoadDataStatement(NonParentPartitionClause<?, ?> clause) {
             super(clause);
-            this.criteriaContext = clause.criteriaContext;
             this.table = (SingleTableMeta<?>) clause.insertTable;
         }
 
-        @Override
-        public MySQLLoad asLoadData() {
-            _Assert.nonPrepared(this.prepared);
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.prepared = Boolean.TRUE;
-            return this;
+        private SingleLoadDataStatement(ParentPartitionClause<?, ?> clause) {
+            super(clause);
+            this.table = (SingleTableMeta<?>) clause.insertTable;
         }
 
-        @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
-        }
-
-        @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-        @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
-        }
 
         @Override
         public SingleTableMeta<?> table() {
             return this.table;
         }
 
-        @Override
-        public String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
-        }
 
     }//SingleLoadDataStatement
-
-
-    private static final class ParentLoadDataStatement extends MySQLLoadDataStatement
-            implements _MySQLLoadData._SingleLoadData {
-
-        private final ParentTableMeta<?> parentTable;
-
-        private ParentLoadDataStatement(final ParentPartitionClause<?, ?> clause) {
-            super(clause);
-            this.parentTable = (ParentTableMeta<?>) clause.insertTable;
-        }
-
-        @Override
-        public void prepared() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isPrepared() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void clear() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public SingleTableMeta<?> table() {
-            return this.parentTable;
-        }
-
-    }//ParentLoadDataStatement
 
 
     private static final class ChildLoadDataStatement extends MySQLLoadDataStatement
             implements MySQLLoad, _MySQLLoadData._ChildLoadData, MySQLLoad._LoadDataSpec {
 
-
-        private final CriteriaContext criteriaContext;
-        private final ParentLoadDataStatement parentStatement;
+        private final SingleLoadDataStatement parentStatement;
 
         private final ChildTableMeta<?> childTable;
 
-        private Boolean prepared;
-
         private ChildLoadDataStatement(NonParentPartitionClause<?, ?> clause) {
             super(clause);
-            this.criteriaContext = clause.criteriaContext;
             this.parentStatement = clause.parentStmt;
             assert this.parentStatement != null;
             this.childTable = (ChildTableMeta<?>) clause.insertTable;
-        }
-
-
-        @Override
-        public MySQLLoad asLoadData() {
-            _Assert.nonPrepared(this.prepared);
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
-            this.prepared = Boolean.TRUE;
-            return this;
-        }
-
-        @Override
-        public void prepared() {
-            _Assert.prepared(this.prepared);
-        }
-
-        @Override
-        public boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
-        }
-
-        @Override
-        public void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = Boolean.FALSE;
         }
 
 
@@ -1202,17 +1164,6 @@ abstract class MySQLLoads {
         @Override
         public _SingleLoadData parentLoadData() {
             return this.parentStatement;
-        }
-
-        @Override
-        public String toString() {
-            final String s;
-            if (this.isPrepared()) {
-                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
-            } else {
-                s = super.toString();
-            }
-            return s;
         }
 
 

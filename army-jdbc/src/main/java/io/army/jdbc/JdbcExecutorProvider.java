@@ -5,10 +5,15 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.UnsupportedDataSourceTypeException;
 import io.army.sync.executor.ExecutorEnvironment;
-import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.ExecutorProvider;
+import io.army.sync.executor.LocalExecutorFactory;
+import io.army.sync.executor.RmExecutorFactory;
+import io.army.util._ClassUtils;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
+import javax.sql.XAConnection;
+import javax.sql.XADataSource;
 import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.Objects;
@@ -16,22 +21,84 @@ import java.util.Objects;
 @SuppressWarnings("unused")
 public final class JdbcExecutorProvider implements ExecutorProvider {
 
-    public static JdbcExecutorProvider getInstance() {
-        return new JdbcExecutorProvider();
+    public static JdbcExecutorProvider create(Object dataSource) {
+        if (!(dataSource instanceof DataSource || dataSource instanceof XADataSource)) {
+            throw unsupportedDataSource(dataSource);
+        }
+        return new JdbcExecutorProvider((CommonDataSource) dataSource);
     }
 
-    private JdbcExecutorProvider() {
+
+    private final CommonDataSource dataSource;
+
+    private int methodFlag = 0;
+
+    private ServerMeta meta;
+
+    private JdbcExecutorProvider(CommonDataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
 
     @Override
-    public ExecutorFactory createFactory(final Object dataSource, final ExecutorEnvironment env) {
-        if (!(dataSource instanceof DataSource)) {
-            String m = String.format("dataSource isn't %s instance.", DataSource.class.getName());
-            throw new UnsupportedDataSourceTypeException(m);
+    public ServerMeta createServerMeta() throws DataAccessException {
+        final CommonDataSource dataSource = this.dataSource;
+
+        XAConnection xaConnection = null;
+        final ServerMeta meta;
+        try {
+            if (dataSource instanceof DataSource) {
+                meta = this.innerCreateServerMeta(((DataSource) dataSource).getConnection());
+            } else if (dataSource instanceof XADataSource) {
+                xaConnection = ((XADataSource) dataSource).getXAConnection();
+                meta = this.innerCreateServerMeta(xaConnection.getConnection());
+            } else {
+                throw unsupportedDataSource(dataSource);
+            }
+            return meta;
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        } catch (DataAccessException e) {
+            throw e;
+        } catch (Exception e) {
+            String m = String.format("get %s failure.", Connection.class.getName());
+            throw new DataAccessException(m, e);
+        } finally {
+            if (xaConnection != null) {
+                try {
+                    xaConnection.close();
+                } catch (SQLException e) {
+                    throw JdbcExceptions.wrap(e);
+                }
+            }
         }
-        final DataSource ds = (DataSource) dataSource;
-        try (Connection conn = ds.getConnection()) {
+    }
+
+    @Override
+    public LocalExecutorFactory createLocalFactory(final ExecutorEnvironment env) {
+        final CommonDataSource dataSource = this.dataSource;
+        if (!(dataSource instanceof DataSource)) {
+            String m = String.format("unsupported creating %s", LocalExecutorFactory.class.getName());
+            throw new UnsupportedOperationException(m);
+        }
+        final ServerMeta serverMeta = this.meta;
+        if (serverMeta == null) {
+            throw new IllegalStateException(String.format("Don't create %s", ServerMeta.class.getName()));
+        }
+        if (env.mappingEnv().serverMeta() != serverMeta) {
+            throw new IllegalArgumentException(String.format("%s not match.", ServerMeta.class.getName()));
+        }
+        return JdbcLocalExecutorFactory.create((DataSource) dataSource, serverMeta, env, this.methodFlag);
+    }
+
+    @Override
+    public RmExecutorFactory createRmFactory(ExecutorEnvironment env) {
+        return null;
+    }
+
+
+    private ServerMeta innerCreateServerMeta(final Connection connection) {
+        try (Connection conn = connection) {
             final ServerMeta serverMeta;
             serverMeta = getServerMeta(conn);
             int methodFlag = 0;
@@ -39,29 +106,24 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
                 final Class<?> clazz = statement.getClass();
 
                 if (definiteSetObjectMethod(clazz)) {
-                    methodFlag |= JdbcExecutorFactory.SET_OBJECT_METHOD;
+                    methodFlag |= JdbcLocalExecutorFactory.SET_OBJECT_METHOD;
                 }
                 if (definiteExecuteLargeUpdateMethod(clazz)) {
-                    methodFlag |= JdbcExecutorFactory.EXECUTE_LARGE_UPDATE_METHOD;
+                    methodFlag |= JdbcLocalExecutorFactory.EXECUTE_LARGE_UPDATE_METHOD;
                 }
                 if (definiteExecuteLargeBatchMethod(clazz)) {
-                    methodFlag |= JdbcExecutorFactory.EXECUTE_LARGE_BATCH_METHOD;
+                    methodFlag |= JdbcLocalExecutorFactory.EXECUTE_LARGE_BATCH_METHOD;
                 }
             }
-            final ExecutorFactory factory;
-            factory = JdbcExecutorFactory.create(ds, serverMeta, env, methodFlag);
-            return factory;
-        } catch (UnsupportedDataSourceTypeException e) {
-            throw e;
+            this.methodFlag = methodFlag;
+            return serverMeta;
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);
         } catch (Exception e) {
             String m = String.format("get server metadata occur error:%s", e.getMessage());
             throw new DataAccessException(m, e);
         }
-
     }
-
 
     private static ServerMeta getServerMeta(final Connection conn) throws SQLException {
         final DatabaseMetaData metaData;
@@ -134,6 +196,17 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
 
     static DataSource getPrimaryDataSource(DataSource dataSource) {
         return dataSource;
+    }
+
+
+    private static UnsupportedDataSourceTypeException unsupportedDataSource(Object dataSource) {
+        final String m;
+        m = String.format("%s support only %s or %s,but dataSource is %s."
+                , JdbcExecutorProvider.class.getName()
+                , DataSource.class.getName()
+                , XADataSource.class.getName()
+                , _ClassUtils.safeClassName(dataSource));
+        throw new UnsupportedDataSourceTypeException(m);
     }
 
 
