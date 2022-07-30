@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ColumnConsumer;
 import io.army.criteria.Expression;
 import io.army.criteria.RowConstructor;
 import io.army.criteria.impl.inner._Expression;
@@ -11,7 +10,6 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
 abstract class CriteriaSupports {
 
@@ -33,22 +31,13 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public ColumnConsumer accept(final Object value) {
-            return this.addColumn(CriteriaUtils.constantParam(this.criteriaContext, value));
-        }
-
-        @Override
-        public ColumnConsumer acceptLiteral(final Object value) {
+        public RowConstructor add(final Object value) {
             return this.addColumn(CriteriaUtils.constantLiteral(this.criteriaContext, value));
         }
 
-        @Override
-        public ColumnConsumer acceptExp(Supplier<? extends Expression> supplier) {
-            return this.addColumn(supplier.get());
-        }
 
         @Override
-        public ColumnConsumer row() {
+        public RowConstructor row() {
             final List<_Expression> columnList = this.columnList;
             List<List<_Expression>> rowList = this.rowList;
 
@@ -112,11 +101,14 @@ abstract class CriteriaSupports {
             return rowList;
         }
 
-        private ColumnConsumer addColumn(final @Nullable Expression value) {
+        private RowConstructor addColumn(final @Nullable Expression value) {
             final List<_Expression> columnList = this.columnList;
             if (columnList == null) {
                 String m = "Not found any row,please use row() method create new row.";
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            }
+            if (value instanceof ParamExpression) {
+                throw CriteriaContextStack.criteriaError(criteriaContext, _Exceptions::valuesStatementDontSupportParam);
             }
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.criteriaContext);

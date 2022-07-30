@@ -144,13 +144,25 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
 
     @Override
     public final V asValues() {
+        return this.asQuery();
+    }
+
+
+    @Override
+    final V internalAsRowSet(final boolean fromAsQueryMethod) {
+        if (!fromAsQueryMethod) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);//VALUES statement don't support
+        }
         if (this instanceof SubValues) {
             CriteriaContextStack.pop(this.criteriaContext);
         } else {
             CriteriaContextStack.clearContextStack(this.criteriaContext);
         }
-        return this.asQuery();
+        return this.onAsValues();
     }
+
+
+    abstract V onAsValues();
 
     abstract VR dynamicValuesEnd(List<List<_Expression>> rowList);
 

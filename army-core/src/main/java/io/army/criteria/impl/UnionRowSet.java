@@ -82,11 +82,10 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
 
     @Nullable
     public final Selection selection(String derivedFieldName) {
-        if (!(this instanceof SubQuery)) {
-            String m = String.format("this isn't %s instance.", SubQuery.class.getName());
-            throw new IllegalStateException(m);
+        if (!(this instanceof DerivedTable)) {
+            throw CriteriaUtils.unknownSelection(this.criteriaContext, derivedFieldName);
         }
-        return ((SubQuery) this.left).selection(derivedFieldName);
+        return ((DerivedTable) this.left).selection(derivedFieldName);
     }
 
     public final ParamMeta paramMeta() {

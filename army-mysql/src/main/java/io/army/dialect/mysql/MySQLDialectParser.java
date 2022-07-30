@@ -84,6 +84,9 @@ final class MySQLDialectParser extends MySQLParser {
         if (rowSet instanceof Query) {
             _MySQLConsultant.assertQuery((Query) rowSet);
         } else if (rowSet instanceof MySQLDqlValues) {
+            if (!this.asOf80) {
+                throw _Exceptions.unknownStatement(rowSet, this.dialect);
+            }
             _MySQLConsultant.assertValues((MySQLDqlValues) rowSet);
         } else {
             throw _Exceptions.unknownStatement(rowSet, this.dialect);
@@ -151,6 +154,9 @@ final class MySQLDialectParser extends MySQLParser {
         if (statement instanceof MySQLReplace) {
             stmt = this.parseInsert((_Insert) statement, visible);
         } else if (statement instanceof Values && statement instanceof MySQLDqlValues) {
+            if (!this.asOf80) {
+                throw _Exceptions.unknownStatement(statement, this.dialect);
+            }
             _MySQLConsultant.assertValues((MySQLDqlValues) statement);
             stmt = this.values((Values) statement, visible);
         } else if (statement instanceof MySQLLoad) {
@@ -729,7 +735,7 @@ final class MySQLDialectParser extends MySQLParser {
                 }
                 this.mysqlTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
             } else if (!asOf80) {
-                throw _Exceptions.dontSupportTableItem(tableItem, alias);
+                throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
             } else if (tableItem instanceof Cte) {
                 _MySQLConsultant.assertMySQLCte((Cte) tableItem);
                 sqlBuilder.append(_Constant.SPACE);
@@ -745,7 +751,7 @@ final class MySQLDialectParser extends MySQLParser {
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
             } else {
-                throw _Exceptions.dontSupportTableItem(tableItem, alias);
+                throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
             }
 
             switch (joinType) {

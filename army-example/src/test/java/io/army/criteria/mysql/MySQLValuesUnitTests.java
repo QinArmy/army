@@ -5,6 +5,7 @@ import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -37,6 +38,7 @@ public class MySQLValuesUnitTests {
                         .bracket()
                         .asValues())
                 .bracket()
+                .orderBy(SQLs.ref("column_0"))
                 .limit(3)
                 .asValues();
         printStmt(stmt);
@@ -50,8 +52,27 @@ public class MySQLValuesUnitTests {
                 .select(SQLs.derivedGroup("s"))
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
                         .asValues(), "s")
-//                .join(ChinaRegion_.T,"c").on(SQLs.ref("s","column_0")::equal,ChinaRegion_.id)
-//                .where(ChinaRegion_.id.equalLiteral(1))
+                .join(ChinaRegion_.T, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
+                .where(ChinaRegion_.id.equalLiteral(1))
+                .asQuery();
+
+        printStmt(stmt);
+
+    }
+
+    @Test
+    public void unionSubValues() {
+        Select stmt;
+        stmt = MySQLs.query()
+                .select(SQLs.derivedGroup("s"))
+                .from(() -> this.createSimpleValues(MySQLs::subValues)
+                        .bracket()
+                        .unionAll(() -> this.createSimpleValues(MySQLs::subValues)
+                                .bracket()
+                                .asValues())
+                        .asValues(), "s")
+                .join(ChinaRegion_.T, "c").on(SQLs.ref("s", "column_0")::equal, ChinaRegion_.id)
+                .where(ChinaRegion_.id.equalLiteral(1))
                 .asQuery();
 
         printStmt(stmt);
@@ -81,7 +102,7 @@ public class MySQLValuesUnitTests {
 
                 .row()
                 .leftParen(3, "卡拉肖克·玲", new BigDecimal("6666.88"), LocalDate.now().minusDays(3))
-                .comma(DayOfWeek.FRIDAY, SQLs.trueWord(), SQLs.literal(3).timesLiteral(3))
+                .comma(DayOfWeek.FRIDAY, SQLs.trueWord(), SQLs.literal(3).minusLiteral(3))
                 .rightParen()
 
                 .row()
@@ -97,10 +118,7 @@ public class MySQLValuesUnitTests {
     private void printStmt(final PrimaryStatement statement) {
         String sql;
         for (Dialect dialect : Dialect.values()) {
-            if (dialect.database != Database.MySQL) {
-                continue;
-            }
-            if (!(statement instanceof Values) && dialect.version() < Dialect.MySQL80.version()) {
+            if (dialect.database != Database.MySQL || dialect.version() < Dialect.MySQL80.version()) {
                 continue;
             }
             sql = statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);

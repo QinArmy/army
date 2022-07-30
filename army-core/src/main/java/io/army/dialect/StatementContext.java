@@ -82,6 +82,9 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
     @Override
     public final void appendParam(final SqlParam sqlParam) {
+        if (this instanceof _ValuesContext) {
+            throw _Exceptions.valuesStatementDontSupportParam();
+        }
         final ArrayList<SqlParam> paramList = this.paramConsumer.paramList;
         if (sqlParam instanceof SingleParam) {
             this.sqlBuilder.append(SPACE_PLACEHOLDER);
@@ -116,6 +119,9 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
     @Override
     public final void appendLiteral(final NamedLiteral namedLiteral) {
+        if (this instanceof _ValuesContext) {
+            throw new CriteriaException("Values statement don't support named literal.");
+        }
         final Function<String, Object> function = this.paramConsumer.function;
         if (!(this instanceof _InsertContext) || this instanceof _QueryInsertContext || function == null) {
             String m = String.format("%s don't support %s"

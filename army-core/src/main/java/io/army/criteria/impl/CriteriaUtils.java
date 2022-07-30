@@ -19,30 +19,6 @@ abstract class CriteriaUtils {
         throw new UnsupportedOperationException();
     }
 
-    static ArmyExpression constantParam(final CriteriaContext criteriaContext, final @Nullable Object value) {
-        if (value == null) {
-            throw CriteriaContextStack.nullPointer(criteriaContext);
-        }
-        if (value instanceof DataField) {
-            String m = "constant must be non-field";
-            throw CriteriaContextStack.criteriaError(criteriaContext, m);
-        }
-        final ArmyExpression expression;
-        if (value instanceof Expression) {
-            if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(criteriaContext);
-            }
-            expression = (ArmyExpression) value;
-        } else {
-            final MappingType type;
-            type = _MappingFactory.getDefaultIfMatch(value.getClass());
-            if (type == null) {
-                throw noDefaultMappingType(criteriaContext, value);
-            }
-            expression = (ArmyExpression) SQLs.param(type, value);
-        }
-        return expression;
-    }
 
     static ArmyExpression constantLiteral(final CriteriaContext criteriaContext, final @Nullable Object value) {
         if (value == null) {
@@ -54,6 +30,9 @@ abstract class CriteriaUtils {
         }
         final ArmyExpression expression;
         if (value instanceof Expression) {
+            if (value instanceof ParamExpression) {
+                throw CriteriaContextStack.criteriaError(criteriaContext, _Exceptions::valuesStatementDontSupportParam);
+            }
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(criteriaContext);
             }
@@ -599,11 +578,19 @@ abstract class CriteriaUtils {
     }
 
 
+    static CriteriaException unknownSelection(CriteriaContext context, String selectionAlias) {
+        String m = String.format("unknown %s[%s]", Selection.class.getName(), selectionAlias);
+        return CriteriaContextStack.criteriaError(context, m);
+    }
+
+
     private static CriteriaException noDefaultMappingType(CriteriaContext criteriaContext, final Object value) {
         String m = String.format("Not found default %s for %s."
                 , MappingType.class.getName(), value.getClass().getName());
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
+
+
 
 
 }

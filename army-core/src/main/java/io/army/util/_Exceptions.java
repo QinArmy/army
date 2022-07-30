@@ -94,12 +94,22 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s self-join", table));
     }
 
-    public static CriteriaException dontSupportTableItem(TableItem item, String alias) {
-        String m = String.format("Don't support %s %s alias %s .",
-                TableItem.class.getName(), _ClassUtils.safeClassName(item), alias);
+    public static CriteriaException dontSupportTableItem(TableItem item, String alias, @Nullable Dialect dialect) {
+        final String dialectText;
+        if (dialect == null) {
+            dialectText = "standard statement";
+        } else {
+            dialectText = dialect.toString();
+        }
+        String m = String.format("%s don't support %s %s alias %s .",
+                dialectText, TableItem.class.getName(), _ClassUtils.safeClassName(item), alias);
         return new CriteriaException(m);
     }
 
+    public static CriteriaException valuesStatementDontSupportParam() {
+        String m = "VALUES statement don't support parameter expression.";
+        return new CriteriaException(m);
+    }
 
     public static CriteriaException dontSupportLateralItem(TableItem item, String alias, @Nullable Dialect dialect) {
         String m = String.format("%s Don't support LATERAL %s alias %s ."

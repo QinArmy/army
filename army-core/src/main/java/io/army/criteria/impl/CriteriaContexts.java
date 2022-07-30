@@ -167,32 +167,29 @@ abstract class CriteriaContexts {
     }
 
 
-    private static CriteriaException invalidRef(String subQueryAlias, String fieldName) {
+    private static CriteriaException invalidRef(CriteriaContext context, String subQueryAlias, String fieldName) {
         String m = String.format("ref of %s.%s is invalid.", subQueryAlias, fieldName);
-        return new CriteriaException(m);
-    }
-
-    private static CriteriaException nonJoinable(String operation) {
-        String m = String.format("Non-joinable context don't support %s operation", operation);
-        return new CriteriaException(m);
-    }
-
-    private static CriteriaException notFoundCte(String name) {
-        String m = String.format("Not found the %s[%s]", Cte.class.getName(), name);
-        return new CriteriaException(m);
-    }
-
-    private static CriteriaException referenceCteSyntaxError(String cteName) {
-        String m = String.format("reference cte[%s] syntax error.", cteName);
-        return new CriteriaException(m);
-    }
-
-    private static CriteriaException unknownSelection(CriteriaContext context, String selectionAlias) {
-        String m = String.format("unknown %s[%s]", Selection.class.getName(), selectionAlias);
         return CriteriaContextStack.criteriaError(context, m);
     }
 
-    private static CriteriaException notFoundDerivedGroup(List<DerivedGroup> groupList) {
+
+    private static CriteriaException currentlyCannotRefSelection(CriteriaContext context, String selectionAlias) {
+        String m = String.format("currently,couldn't reference %s[%s],please check your syntax."
+                , Selection.class.getName(), selectionAlias);
+        throw CriteriaContextStack.criteriaError(context, m);
+    }
+
+    private static CriteriaException notFoundCte(CriteriaContext context, String name) {
+        String m = String.format("Not found the %s[%s]", Cte.class.getName(), name);
+        return CriteriaContextStack.criteriaError(context, m);
+    }
+
+    private static CriteriaException referenceCteSyntaxError(CriteriaContext context, String cteName) {
+        String m = String.format("reference cte[%s] syntax error.", cteName);
+        return CriteriaContextStack.criteriaError(context, m);
+    }
+
+    private static CriteriaException notFoundDerivedGroup(CriteriaContext context, List<DerivedGroup> groupList) {
         final StringBuilder builder = new StringBuilder()
                 .append("Not found ")
                 .append(DerivedGroup.class.getName())
@@ -206,15 +203,12 @@ abstract class CriteriaContexts {
             count++;
         }
         builder.append(']');
-        return new CriteriaException(builder.toString());
+        return CriteriaContextStack.criteriaError(context, builder.toString());
     }
 
-    private static CriteriaException unknownSelection(String selectionAlias) {
-        String m = String.format("unknown %s[%s]", Selection.class.getName(), selectionAlias);
-        return new CriteriaException(m);
-    }
 
-    private static CriteriaException notFoundDerivedField(Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
+    private static CriteriaException notFoundDerivedField(CriteriaContext context
+            , Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
         final StringBuilder builder = new StringBuilder()
                 .append("Not found derived field[");
         int count = 0;
@@ -233,33 +227,7 @@ abstract class CriteriaContexts {
             }
         }
         builder.append(']');
-        return new CriteriaException(builder.toString());
-    }
-
-    private static CriteriaException notFoundDerivedField(String derivedTable, String derivedFieldName) {
-        String m = String.format("Not found derived field[%s.%s]", derivedTable, derivedFieldName);
-        return new CriteriaException(m);
-    }
-
-    /**
-     * @return a unmodified map
-     */
-    static Map<String, Selection> createSelection(final List<? extends SelectItem> selectItemList) {
-        final Map<String, Selection> selectionMap = new HashMap<>();
-        //if alias duplication then override
-        for (SelectItem item : selectItemList) {
-            if (item instanceof Selection) {
-                selectionMap.put(((Selection) item).alias(), (Selection) item);
-                continue;
-            } else if (!(item instanceof SelectionGroup)) {
-                throw _Exceptions.unknownSelectItem(item);
-            }
-
-            for (Selection selection : ((SelectionGroup) item).selectionList()) {
-                selectionMap.put(selection.alias(), selection);
-            }
-        }
-        return _CollectionUtils.unmodifiableMap(selectionMap);
+        return CriteriaContextStack.criteriaError(context, builder.toString());
     }
 
 
@@ -354,14 +322,14 @@ abstract class CriteriaContexts {
             final CteItem cteItem;
             if (withClauseCteMap == null) {
                 if (outerContext == null) {
-                    throw notFoundCte(cteName);
+                    throw notFoundCte(this, cteName);
                 }
                 cteItem = outerContext.refCte(cteName);// get CteItem fro outer context
             } else if ((tempItem = withClauseCteMap.get(cteName)) != null) {
                 cteItem = tempItem;
             } else if (this.withClauseEnd) {
                 if (outerContext == null) {
-                    throw notFoundCte(cteName);
+                    throw notFoundCte(this, cteName);
                 }
                 cteItem = outerContext.refCte(cteName);
             } else {
@@ -449,7 +417,7 @@ abstract class CriteriaContexts {
                     refCte.actualCte = cteImpl;
                     refCteMap.remove(cteImpl.name);
                 } else {
-                    throw referenceCteSyntaxError(cteImpl.name);
+                    throw referenceCteSyntaxError(this, cteImpl.name);
                 }
 
             }
@@ -459,7 +427,7 @@ abstract class CriteriaContexts {
             }
             for (RefCte c : refCteMap.values()) {
                 if (outerContext == null) {
-                    throw notFoundCte(c.name);
+                    throw notFoundCte(this, c.name);
                 }
                 if (c.actualCte != null) {
                     //here,actualCte is from outer context.
@@ -483,7 +451,7 @@ abstract class CriteriaContexts {
                         continue;
                     }
                     if (outerContext == null) {
-                        throw notFoundCte(refCte.name);
+                        throw notFoundCte(this, refCte.name);
                     }
                     refCte.actualCte = (Cte) outerContext.refCte(refCte.name);
                 }
@@ -641,7 +609,7 @@ abstract class CriteriaContexts {
             //3. clear aliasToRefSelection
             final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefSelection;
             if (aliasToRefSelection != null && aliasToRefSelection.size() > 0) {
-                throw notFoundDerivedField(aliasToRefSelection);
+                throw notFoundDerivedField(this, aliasToRefSelection);
             }
             this.aliasToRefSelection = null;
 
@@ -667,7 +635,7 @@ abstract class CriteriaContexts {
                 groupList = context.groupList;
                 context.groupList = null;
                 if (groupList != null && groupList.size() > 0) {
-                    throw notFoundDerivedGroup(groupList);
+                    throw notFoundDerivedGroup(this, groupList);
                 }
 
             }
@@ -729,7 +697,7 @@ abstract class CriteriaContexts {
             for (RefDerivedField field : fieldMap.values()) {
                 selection = derivedTable.selection(field.fieldName);
                 if (selection == null) {
-                    throw invalidRef(alias, field.fieldName);
+                    throw invalidRef(this, alias, field.fieldName);
                 }
                 if (field.paramMeta.selection == null) {
                     field.paramMeta.selection = selection;
@@ -780,7 +748,7 @@ abstract class CriteriaContexts {
                         final Selection selection;
                         selection = derivedTable.selection(fieldName);
                         if (selection == null) {
-                            throw invalidRef(tableAlias, fieldName);
+                            throw invalidRef(this, tableAlias, fieldName);
                         }
                         return new DerivedSelection(tableAlias, selection);
                     });
@@ -937,22 +905,21 @@ abstract class CriteriaContexts {
             return refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
         }
 
+
         private RefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
                 final List<? extends SelectItem> selectItemList = this.selectItemList;
                 if (selectItemList == null) {
-                    String m = String.format("currently,couldn't reference %s,please check your syntax."
-                            , Selection.class.getName());
-                    throw new CriteriaException(m);
+                    throw currentlyCannotRefSelection(this, selectionAlias);
                 }
-                selectionMap = createSelection(selectItemList);
+                selectionMap = CriteriaUtils.createSelectionMap(selectItemList);
                 this.selectionMap = selectionMap;
             }
             final Selection selection;
             selection = selectionMap.get(selectionAlias);
             if (selection == null) {
-                throw unknownSelection(selectionAlias);
+                throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
             return new RefSelection(selection);
         }
@@ -1002,13 +969,13 @@ abstract class CriteriaContexts {
         private RefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
-                selectionMap = createSelection(this.selectItemList);
+                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList);
                 this.selectionMap = selectionMap;
             }
             final Selection selection;
             selection = selectionMap.get(selectionAlias);
             if (selection == null) {
-                throw unknownSelection(selectionAlias);
+                throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
             return new RefSelection(selection);
         }
@@ -1090,16 +1057,18 @@ abstract class CriteriaContexts {
             this.selectItemList = selectItemList;
         }
 
+
         @Override
         public Expression ref(final String selectionAlias) {
             Map<String, RefSelection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
                 selectionMap = this.createSelectionMap();
+                this.selectionMap = selectionMap;
             }
             final RefSelection selection;
             selection = selectionMap.get(selectionAlias);
             if (selection == null) {
-                throw unknownSelection(this, selectionAlias);
+                throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
             return selection;
         }

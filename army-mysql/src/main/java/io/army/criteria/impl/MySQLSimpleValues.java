@@ -117,9 +117,9 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
 
 
     @Override
-    final V internalAsRowSet(final boolean fromAsQueryMethod) {
+    final V onAsValues() {
         final List<List<_Expression>> rowList = this.rowList;
-        if (!fromAsQueryMethod || this.columnList != null || !(rowList instanceof ArrayList)) {
+        if (this.columnList != null || !(rowList instanceof ArrayList)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         this.rowList = _CollectionUtils.unmodifiableList(rowList);

@@ -858,7 +858,7 @@ public abstract class _AbstractDialect implements ArmyDialect {
                 }
                 this.standardTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
             } else {
-                throw _Exceptions.dontSupportTableItem(tableItem, block.alias());
+                throw _Exceptions.dontSupportTableItem(tableItem, block.alias(), null);
             }
 
             // on clause

@@ -1,7 +1,16 @@
 package io.army.criteria;
 
-public interface RowConstructor extends ColumnConsumer {
+/**
+ * <p>
+ * This interface representing ROW constructor of VALUES statement.
+ * </p>
+ *
+ * @since 1.0
+ */
+public interface RowConstructor {
 
-    ColumnConsumer row();
+    RowConstructor add(Object value);
+
+    RowConstructor row();
 
 }
