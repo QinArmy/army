@@ -4,6 +4,8 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.lang.Nullable;
 import io.army.util._Exceptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.Objects;
@@ -20,7 +22,7 @@ import java.util.function.Supplier;
  */
 abstract class CriteriaContextStack {
 
-    //  private static final Logger LOG = LoggerFactory.getLogger(CriteriaContextStack.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CriteriaContextStack.class);
 
     private CriteriaContextStack() {
         throw new UnsupportedOperationException();
@@ -31,7 +33,24 @@ abstract class CriteriaContextStack {
 
     static void setContextStack(CriteriaContext rootContext) {
         HOLDER.set(new ContextStack(rootContext));
-        // LOG.debug("setContextStack {},hash:{}",rootContext.getClass().getName(),System.identityHashCode(rootContext));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("setContextStack {},hash:{}", rootContext.getClass().getName()
+                    , System.identityHashCode(rootContext));
+        }
+    }
+
+    static void clearContextStack(final CriteriaContext rootContext) {
+        final Stack stack = HOLDER.get();
+        if (stack == null) {
+            throw noContextStack();
+        }
+        stack.clear(rootContext);
+        HOLDER.remove();
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("clearContextStack {},hash:{}", rootContext.getClass().getName()
+                    , System.identityHashCode(rootContext));
+        }
+
     }
 
     static CriteriaContext peek() {
@@ -49,7 +68,10 @@ abstract class CriteriaContextStack {
             throw noContextStack();
         }
         stack.pop(subContext);
-        // LOG.debug("pop {},hash:{}",subContext.getClass().getName(),System.identityHashCode(subContext));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("pop {},hash:{}", subContext.getClass().getName(), System.identityHashCode(subContext));
+        }
+
     }
 
     static void push(final CriteriaContext subContext) {
@@ -58,7 +80,9 @@ abstract class CriteriaContextStack {
             throw noContextStack();
         }
         stack.push(subContext);
-        // LOG.debug("push {},hash:{}",subContext.getClass().getName(),System.identityHashCode(subContext));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("push {},hash:{}", subContext.getClass().getName(), System.identityHashCode(subContext));
+        }
     }
 
     static CriteriaContext root() {
@@ -78,15 +102,6 @@ abstract class CriteriaContextStack {
         return stack.peek().criteria();
     }
 
-    static void clearContextStack(final CriteriaContext rootContext) {
-        final Stack stack = HOLDER.get();
-        if (stack == null) {
-            throw noContextStack();
-        }
-        stack.clear(rootContext);
-        HOLDER.remove();
-        // LOG.debug("clearContextStack {},hash:{}",rootContext.getClass().getName(),System.identityHashCode(rootContext));
-    }
 
     private static CriteriaException noContextStack() {
         String m;
@@ -113,7 +128,7 @@ abstract class CriteriaContextStack {
         }
     }
 
-        @Deprecated
+    @Deprecated
     static void assertFunctionExp(CriteriaContext criteriaContext, @Nullable Expression expression) {
         if (!(expression instanceof ArmyExpression)) {
             clearStackOnError(criteriaContext);

@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 
@@ -19,6 +20,8 @@ interface CriteriaContext {
     void selectList(List<? extends SelectItem> selectItemList);
 
     DerivedField ref(String derivedTable, String derivedFieldName);
+
+    <T> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field);
 
     DerivedField outerRef(String derivedTable, String derivedFieldName);
 

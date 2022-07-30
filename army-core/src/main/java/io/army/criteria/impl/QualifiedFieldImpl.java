@@ -15,57 +15,15 @@ import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
-import java.lang.ref.SoftReference;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 
 final class QualifiedFieldImpl<T> extends OperationField
         implements QualifiedField<T>, _Selection {
 
-    @SuppressWarnings("unchecked")
-    static <T> QualifiedField<T> reference(final String tableAlias, final FieldMeta<T> field) {
-        final ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>> fieldToQualified;
-        fieldToQualified = getFieldToQualified(tableAlias);
-
-        QualifiedFieldImpl<?> qualifiedField;
-        qualifiedField = fieldToQualified.get(field);
-        if (qualifiedField == null
-                || !qualifiedField.tableAlias.equals(tableAlias)
-                || qualifiedField.field != field) {
-            qualifiedField = new QualifiedFieldImpl<>(tableAlias, field);
-            fieldToQualified.put(field, qualifiedField);
-        }
-        return (QualifiedField<T>) qualifiedField;
+    static <T> QualifiedField<T> create(final String tableAlias, final FieldMeta<T> field) {
+        return new QualifiedFieldImpl<>(tableAlias, field);
     }
-
-
-    private static ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>> getFieldToQualified(final String tableAlias) {
-        SoftReference<ConcurrentMap<String, ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>>>> cacheReference;
-        cacheReference = QualifiedFieldImpl.cacheReference;
-
-        ConcurrentMap<String, ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>>> aliasToMap;
-        if (cacheReference == null || (aliasToMap = cacheReference.get()) == null) {
-            synchronized (QualifiedFieldImpl.class) {
-                cacheReference = QualifiedFieldImpl.cacheReference;
-                if (cacheReference == null || (aliasToMap = cacheReference.get()) == null) {
-                    aliasToMap = new ConcurrentHashMap<>();
-                    QualifiedFieldImpl.cacheReference = new SoftReference<>(aliasToMap);
-                }
-
-            }
-        }
-        return aliasToMap.computeIfAbsent(tableAlias, QualifiedFieldImpl::createFieldToQualifiedMap);
-    }
-
-
-    private static ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>> createFieldToQualifiedMap(final String alias) {
-        return new ConcurrentHashMap<>();
-    }
-
-    private static SoftReference<ConcurrentMap<String, ConcurrentMap<FieldMeta<?>, QualifiedFieldImpl<?>>>> cacheReference;
-
 
     private final String tableAlias;
 

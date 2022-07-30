@@ -7,6 +7,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
@@ -282,6 +283,11 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public <T> QualifiedField<T> qualifiedField(String tableAlias, FieldMeta<T> field) {
+            throw new CriteriaException("current context don't support qualifiedField(tableAlias,field)");
+        }
+
+        @Override
         public DerivedField outerRef(String derivedTable, String derivedFieldName) {
             throw new CriteriaException("current context don't support lateralRef(derivedTable,derivedFieldName)");
         }
@@ -474,6 +480,8 @@ abstract class CriteriaContexts {
 
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
+        private Map<String, Map<FieldMeta<?>, QualifiedField<?>>> qualifiedFieldMap;
+
         private JoinableContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
             super(outerContext, criteria);
         }
@@ -550,6 +558,21 @@ abstract class CriteriaContexts {
                 table = null;
             }
             return table;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final <T> QualifiedField<T> qualifiedField(final String tableAlias, final FieldMeta<T> field) {
+            if (!(this.aliasToBlock instanceof HashMap)) {
+                throw CriteriaContextStack.castCriteriaApi(this);
+            }
+            Map<String, Map<FieldMeta<?>, QualifiedField<?>>> qualifiedFieldMap = this.qualifiedFieldMap;
+            if (qualifiedFieldMap == null) {
+                qualifiedFieldMap = new HashMap<>();
+                this.qualifiedFieldMap = qualifiedFieldMap;
+            }
+            return (QualifiedField<T>) qualifiedFieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
+                    .computeIfAbsent(field, k -> QualifiedFieldImpl.create(tableAlias, field));
         }
 
         @Override
@@ -841,12 +864,21 @@ abstract class CriteriaContexts {
 
     private static class SimpleQueryContext extends JoinableContext {
 
+        /**
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         */
         private List<? extends SelectItem> selectItemList;
 
         private List<DerivedGroup> groupList;
 
+        /**
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         */
         private Map<String, Selection> selectionMap;
 
+        /**
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         */
         private Map<String, RefSelection> refSelectionMap;
 
         private boolean refOuterField;
@@ -936,7 +968,7 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public Expression ref(final String selectionAlias) {
+        public final Expression ref(final String selectionAlias) {
             return this.leftContext.ref(selectionAlias);
         }
 
@@ -1002,10 +1034,19 @@ abstract class CriteriaContexts {
 
     private static final class ValuesContext extends AbstractContext {
 
+        /**
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         */
         private List<? extends SelectItem> selectItemList;
 
+        /**
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         */
         private Map<String, Selection> selectionMap;
 
+        /**
+         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  UnionOperationContext#ref(String)}
+         */
         private Map<String, RefSelection> refSelectionMap;
 
         private ValuesContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {

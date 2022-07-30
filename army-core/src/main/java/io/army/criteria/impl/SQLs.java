@@ -629,7 +629,7 @@ public abstract class SQLs extends Functions {
      * </p>
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-        return QualifiedFieldImpl.reference(tableAlias, field);
+        return CriteriaContextStack.peek().qualifiedField(tableAlias, field);
     }
 
     public static DerivedField ref(String derivedTable, String derivedFieldName) {
@@ -641,6 +641,11 @@ public abstract class SQLs extends Functions {
     }
 
 
+    /**
+     * <p>
+     * Reference a {@link  Selection} of current statement after selection list end,eg: ORDER BY clause.
+     * </p>
+     */
     public static Expression ref(String selectionAlias) {
         return CriteriaContextStack.peek().ref(selectionAlias);
     }
