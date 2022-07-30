@@ -11,10 +11,14 @@ public interface ExecutorEnvironment {
 
     Map<FieldMeta<?>, FieldCodec> fieldCodecMap();
 
+
     ArmyEnvironment environment();
 
     boolean isReactive();
 
+    /**
+     * @return always same instance
+     */
     MappingEnv mappingEnv();
 
 }

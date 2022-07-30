@@ -2,10 +2,13 @@ package io.army.jdbc;
 
 import io.army.sqltype.MySqlType;
 import io.army.sqltype.SqlType;
+import io.army.sync.executor.LocalStmtExecutor;
+import io.army.sync.executor.RmStmtExecutor;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.XAConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -19,15 +22,25 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-final class MySQLExecutor extends JdbcStmtExecutor {
+abstract class MySQLExecutor extends JdbcExecutor {
 
-    static MySQLExecutor create(JdbcLocalExecutorFactory factory, Connection conn) {
-        return new MySQLExecutor(factory, conn);
+    static MySQLLocalExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+        return new MySQLLocalExecutor(factory, conn);
+    }
+
+    static MySQLRmExecutor rmExecutor(final JdbcRmExecutorFactory factory, final XAConnection xaConnection) {
+        try {
+            final Connection connection;
+            connection = xaConnection.getConnection();
+            return new MySQLRmExecutor(factory, xaConnection, connection);
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        }
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
-    private MySQLExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+    private MySQLExecutor(JdbcExecutorFactory factory, Connection conn) {
         super(factory, conn);
     }
 
@@ -240,6 +253,30 @@ final class MySQLExecutor extends JdbcStmtExecutor {
         }
         return value;
     }
+
+
+    private static final class MySQLLocalExecutor extends MySQLExecutor implements LocalStmtExecutor {
+
+        private MySQLLocalExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+            super(factory, conn);
+        }
+
+
+    }//MySQLLocalExecutor
+
+
+    private static final class MySQLRmExecutor extends MySQLExecutor implements RmStmtExecutor {
+
+        private final XAConnection xaConnection;
+
+
+        private MySQLRmExecutor(JdbcRmExecutorFactory factory, XAConnection xaConnection, Connection connection) {
+            super(factory, connection);
+            this.xaConnection = xaConnection;
+        }
+
+
+    }//MySQLRmExecutor
 
 
 }

@@ -1,171 +1,74 @@
 package io.army.jdbc;
 
-import io.army.codec.JsonCodec;
 import io.army.dialect.Database;
-import io.army.env.ArmyEnvironment;
-import io.army.env.SyncKey;
-import io.army.mapping.MappingEnv;
-import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.ExecutorEnvironment;
 import io.army.sync.executor.LocalExecutorFactory;
-import io.army.sync.executor.MetaExecutor;
-import io.army.sync.executor.StmtExecutor;
+import io.army.sync.executor.LocalStmtExecutor;
 import io.army.util._Exceptions;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.ZoneOffset;
+import java.util.function.BiFunction;
 
-final class JdbcLocalExecutorFactory implements LocalExecutorFactory {
+final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements LocalExecutorFactory {
 
-    static JdbcLocalExecutorFactory create(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment env
+    static JdbcLocalExecutorFactory create(DataSource dataSource, ExecutorEnvironment env
             , int methodFlag) {
-        return new JdbcLocalExecutorFactory(dataSource, serverMeta, env, methodFlag);
+        return new JdbcLocalExecutorFactory(dataSource, env, methodFlag);
     }
-
-    static final byte SET_OBJECT_METHOD = 1;
-
-    static final byte EXECUTE_LARGE_UPDATE_METHOD = 2;
-
-    static final byte EXECUTE_LARGE_BATCH_METHOD = 4;
 
 
     private final DataSource dataSource;
 
-    final ServerMeta serverMeta;
-
-    final Database database;
-
-    final ExecutorEnvironment executorEnv;
-
-    final ArmyEnvironment env;
-
-    final MappingEnv mapEnv;
-
-    final boolean useLargeUpdate;
-
-    final boolean useSetObjectMethod;
-
-    final boolean useExecuteLargeBatch;
+    private final BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> executorFunction;
 
 
-    boolean closed;
-
-    private JdbcLocalExecutorFactory(DataSource dataSource, ServerMeta serverMeta, ExecutorEnvironment executorEnv
+    private JdbcLocalExecutorFactory(final DataSource dataSource, final ExecutorEnvironment executorEnv
             , final int methodFlag) {
+        super(executorEnv, methodFlag);
         this.dataSource = dataSource;
-        this.serverMeta = serverMeta;
-        this.database = serverMeta.database();
-        this.executorEnv = executorEnv;
+        this.executorFunction = localFunction(this.serverMeta.database());
 
-        this.env = executorEnv.environment();
-        this.mapEnv = new JdbcMappingEnv(serverMeta, executorEnv);
-
-        if (this.env.getOrDefault(SyncKey.JDBC_FORBID_V18)) {
-            this.useLargeUpdate = false;
-            this.useSetObjectMethod = false;
-            this.useExecuteLargeBatch = false;
-        } else {
-            this.useLargeUpdate = (methodFlag & EXECUTE_LARGE_UPDATE_METHOD) != 0;
-            this.useSetObjectMethod = (methodFlag & SET_OBJECT_METHOD) != 0;
-            this.useExecuteLargeBatch = (methodFlag & EXECUTE_LARGE_BATCH_METHOD) != 0;
-        }
 
     }
 
-    @Override
-    public ServerMeta serverMeta() {
-        return this.serverMeta;
-    }
 
     @Override
-    public MappingEnv mappingEnvironment() {
-        return this.mapEnv;
-    }
-
-    @Override
-    public boolean supportSavePoints() {
-        return true;
-    }
-
-    @Override
-    public MetaExecutor createMetaExecutor() throws DataAccessException {
-        if (this.closed) {
-            throw closedError();
-        }
+    public LocalStmtExecutor createLocalStmtExecutor() throws DataAccessException {
+        this.assertFactoryOpen();
         try {
-            return JdbcMetaExecutor.create(this.dataSource.getConnection());
+            return this.executorFunction.apply(this, this.dataSource.getConnection());
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);
         }
     }
 
+
     @Override
-    public StmtExecutor createStmtExecutor() throws DataAccessException {
-        if (this.closed) {
-            throw closedError();
-        }
-        final Connection connection;
+    Connection getConnection() throws DataAccessException {
         try {
-            connection = this.dataSource.getConnection();
+            return this.dataSource.getConnection();
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);
         }
-        final StmtExecutor executor;
-        switch (this.database) {
+    }
+
+    private static BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> localFunction(final Database database) {
+        final BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> func;
+        switch (database) {
             case MySQL:
-                executor = MySQLExecutor.create(this, connection);
+                func = MySQLExecutor::localExecutor;
                 break;
             case PostgreSQL:
             case Oracle:
+            case H2:
             default:
-                throw _Exceptions.unexpectedEnum(this.database);
+                throw _Exceptions.unexpectedEnum(database);
         }
-        return executor;
+        return func;
     }
-
-    @Override
-    public void close() throws DataAccessException {
-        this.closed = true;
-    }
-
-
-    private static DataAccessException closedError() {
-        String m = String.format("%s have closed.", JdbcLocalExecutorFactory.class.getName());
-        return new DataAccessException(m);
-    }
-
-
-    private static final class JdbcMappingEnv implements MappingEnv {
-
-        private final ServerMeta serverMeta;
-
-        private JdbcMappingEnv(ServerMeta serverMeta, ExecutorEnvironment env) {
-            this.serverMeta = serverMeta;
-        }
-
-        @Override
-        public boolean isReactive() {
-            return false;
-        }
-
-        @Override
-        public ServerMeta serverMeta() {
-            return this.serverMeta;
-        }
-
-        @Override
-        public ZoneOffset zoneId() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public JsonCodec jsonCodec() {
-            throw new UnsupportedOperationException();
-        }
-    }//JdbcMappingEnvironment
 
 
 }

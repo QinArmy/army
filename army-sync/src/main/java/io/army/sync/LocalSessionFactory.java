@@ -8,6 +8,7 @@ import io.army.meta.ServerMeta;
 import io.army.proxy._SessionCacheFactory;
 import io.army.session.*;
 import io.army.sync.executor.ExecutorFactory;
+import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.StmtExecutor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -20,7 +21,7 @@ import java.util.Objects;
  */
 final class LocalSessionFactory extends _AbstractSessionFactory implements SessionFactory {
 
-    final ExecutorFactory executorFactory;
+    final LocalExecutorFactory executorFactory;
 
     final DialectParser dialect;
 
@@ -73,7 +74,7 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
 
     @Override
     public ServerMeta serverMeta() {
-        return this.executorFactory.serverMeta();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -205,7 +206,7 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
                 throw new CreateSessionException(m);
             }
             try {
-                this.stmtExecutor = this.sessionFactory.executorFactory.createStmtExecutor();
+                this.stmtExecutor = this.sessionFactory.executorFactory.createMetaExecutor();
             } catch (DataAccessException e) {
                 throw new CreateSessionException("create session occur error.", e);
             }

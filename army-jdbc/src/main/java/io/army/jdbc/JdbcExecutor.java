@@ -37,16 +37,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-abstract class JdbcStmtExecutor implements StmtExecutor {
+abstract class JdbcExecutor implements StmtExecutor {
 
 
-    final JdbcLocalExecutorFactory factory;
+    final JdbcExecutorFactory factory;
 
     final Connection conn;
 
     Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
-    JdbcStmtExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+    JdbcExecutor(JdbcExecutorFactory factory, Connection conn) {
         this.factory = factory;
         this.conn = conn;
     }
@@ -443,7 +443,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
             throws SQLException {
         final int size = paramGroup.size();
         final ServerMeta serverMeta = this.factory.serverMeta;
-        final MappingEnv mapEnv = this.factory.mapEnv;
+        final MappingEnv mappingEnv = this.factory.mappingEnv;
 
         SqlParam sqlParam;
         Object value;
@@ -467,7 +467,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
                     // bind null
                     statement.setNull(i + 1, Types.NULL);
                 } else {
-                    value = mappingType.beforeBind(sqlType, mapEnv, value);
+                    value = mappingType.beforeBind(sqlType, mappingEnv, value);
                     bind(statement, i + 1, sqlType, value);
                 }
             } else if (sqlParam instanceof MultiParam) {
@@ -476,7 +476,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
                         // bind null
                         statement.setNull(i + 1, Types.NULL);
                     } else {
-                        value = mappingType.beforeBind(sqlType, mapEnv, element);
+                        value = mappingType.beforeBind(sqlType, mappingEnv, element);
                         bind(statement, i + 1, sqlType, value);
                     }
                 }
@@ -504,7 +504,7 @@ abstract class JdbcStmtExecutor implements StmtExecutor {
         Object value;
         value = get(resultSet, selection.alias(), sqlType);
         if (value != null) {
-            value = mappingType.afterGet(sqlType, this.factory.mapEnv, value);
+            value = mappingType.afterGet(sqlType, this.factory.mappingEnv, value);
         }
         return value;
     }

@@ -10,6 +10,9 @@ public interface MappingEnv {
 
     boolean isReactive();
 
+    /**
+     * @return always same instance
+     */
     ServerMeta serverMeta();
 
     ZoneId zoneId();

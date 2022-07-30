@@ -1,6 +1,7 @@
 package io.army.jdbc;
 
 import io.army.dialect.Database;
+import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.UnsupportedDataSourceTypeException;
@@ -53,6 +54,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
                 xaConnection = ((XADataSource) dataSource).getXAConnection();
                 meta = this.innerCreateServerMeta(xaConnection.getConnection());
             } else {
+                //no bug,never here
                 throw unsupportedDataSource(dataSource);
             }
             return meta;
@@ -81,38 +83,39 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
             String m = String.format("unsupported creating %s", LocalExecutorFactory.class.getName());
             throw new UnsupportedOperationException(m);
         }
-        final ServerMeta serverMeta = this.meta;
-        if (serverMeta == null) {
-            throw new IllegalStateException(String.format("Don't create %s", ServerMeta.class.getName()));
-        }
-        if (env.mappingEnv().serverMeta() != serverMeta) {
-            throw new IllegalArgumentException(String.format("%s not match.", ServerMeta.class.getName()));
-        }
-        return JdbcLocalExecutorFactory.create((DataSource) dataSource, serverMeta, env, this.methodFlag);
+        this.validateServerMeta(env.mappingEnv());
+        return JdbcLocalExecutorFactory.create((DataSource) dataSource, env, (byte) this.methodFlag);
     }
 
     @Override
-    public RmExecutorFactory createRmFactory(ExecutorEnvironment env) {
-        return null;
+    public RmExecutorFactory createRmFactory(final ExecutorEnvironment env) {
+        final CommonDataSource dataSource = this.dataSource;
+        if (!(dataSource instanceof XADataSource)) {
+            String m = String.format("unsupported creating %s", RmExecutorFactory.class.getName());
+            throw new UnsupportedOperationException(m);
+        }
+
+        this.validateServerMeta(env.mappingEnv());
+        return JdbcRmExecutorFactory.create((XADataSource) dataSource, env, (byte) this.methodFlag);
     }
 
 
     private ServerMeta innerCreateServerMeta(final Connection connection) {
         try (Connection conn = connection) {
             final ServerMeta serverMeta;
-            serverMeta = getServerMeta(conn);
+            serverMeta = doCreateServerMeta(conn);
             int methodFlag = 0;
             try (PreparedStatement statement = conn.prepareStatement("SELECT 1 + ? AS armyJdbcTest")) {
                 final Class<?> clazz = statement.getClass();
 
                 if (definiteSetObjectMethod(clazz)) {
-                    methodFlag |= JdbcLocalExecutorFactory.SET_OBJECT_METHOD;
+                    methodFlag |= JdbcExecutorFactory.SET_OBJECT_METHOD;
                 }
                 if (definiteExecuteLargeUpdateMethod(clazz)) {
-                    methodFlag |= JdbcLocalExecutorFactory.EXECUTE_LARGE_UPDATE_METHOD;
+                    methodFlag |= JdbcExecutorFactory.EXECUTE_LARGE_UPDATE_METHOD;
                 }
                 if (definiteExecuteLargeBatchMethod(clazz)) {
-                    methodFlag |= JdbcLocalExecutorFactory.EXECUTE_LARGE_BATCH_METHOD;
+                    methodFlag |= JdbcExecutorFactory.EXECUTE_LARGE_BATCH_METHOD;
                 }
             }
             this.methodFlag = methodFlag;
@@ -125,7 +128,18 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         }
     }
 
-    private static ServerMeta getServerMeta(final Connection conn) throws SQLException {
+
+    private void validateServerMeta(final MappingEnv mappingEnv) {
+        final ServerMeta serverMeta = this.meta;
+        if (serverMeta == null) {
+            throw new IllegalStateException(String.format("Don't create %s", ServerMeta.class.getName()));
+        }
+        if (mappingEnv.serverMeta() != serverMeta) {
+            throw new IllegalArgumentException(String.format("%s not match.", ServerMeta.class.getName()));
+        }
+    }
+
+    private static ServerMeta doCreateServerMeta(final Connection conn) throws SQLException {
         final DatabaseMetaData metaData;
         metaData = conn.getMetaData();
 
