@@ -21,13 +21,13 @@ import java.util.Map;
 
 final class MultiUpdateContext extends MultiTableContext implements _MultiUpdateContext, DmlStmtParams {
 
-    static MultiUpdateContext create(_MultiUpdate statement, ArmyDialect dialect, Visible visible) {
+    static MultiUpdateContext create(_MultiUpdate statement, ArmyParser dialect, Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forUpdate(statement, dialect, visible);
         return new MultiUpdateContext(statement, tableContext, dialect, visible);
     }
 
-    static MultiUpdateContext forChild(_SingleUpdate stmt, ArmyDialect dialect, Visible visible) {
+    static MultiUpdateContext forChild(_SingleUpdate stmt, ArmyParser dialect, Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), dialect);
         return new MultiUpdateContext(stmt, tableContext, dialect, visible);
@@ -43,7 +43,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
     private List<DataField> conditionFieldList;
 
 
-    private MultiUpdateContext(_Update stmt, TableContext tableContext, ArmyDialect dialect, Visible visible) {
+    private MultiUpdateContext(_Update stmt, TableContext tableContext, ArmyParser dialect, Visible visible) {
         super(tableContext, dialect, visible);
         this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
         this.hasVersion = _DialectUtils.hasOptimistic(stmt.predicateList());
@@ -117,7 +117,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.identifier(field.fieldName(), sqlBuilder);
+            this.parser.identifier(field.fieldName(), sqlBuilder);
         } else if (dataField instanceof FieldMeta) {
             final FieldMeta<?> field = (FieldMeta<?>) dataField;
             final String safeTableAlias;
@@ -130,7 +130,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.safeObjectName(field, sqlBuilder);
+            this.parser.safeObjectName(field, sqlBuilder);
         } else if (dataField instanceof QualifiedField) {
             final QualifiedField<?> field = (QualifiedField<?>) dataField;
             final String tableAlias = field.tableAlias();
@@ -144,7 +144,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.safeObjectName(field, sqlBuilder);
+            this.parser.safeObjectName(field, sqlBuilder);
         } else {
             throw _Exceptions.immutableField(dataField);
         }
@@ -152,8 +152,8 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         switch (updateMode) {
             case ONLY_NULL:
             case ONLY_DEFAULT: {
-                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.dialect.supportOnlyDefault()) {
-                    throw _Exceptions.dontSupportOnlyDefault(this.dialect.dialectMode());
+                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.supportOnlyDefault()) {
+                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialectMode());
                 }
                 List<DataField> conditionFieldList = this.conditionFieldList;
                 if (conditionFieldList == null) {
@@ -175,7 +175,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         if (conditionFieldList == null || conditionFieldList.size() == 0) {
             return;
         }
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder;
         String safeTableAlias, objectName;
         UpdateMode updateMode;

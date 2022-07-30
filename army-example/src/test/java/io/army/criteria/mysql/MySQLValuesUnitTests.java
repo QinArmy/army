@@ -3,8 +3,7 @@ package io.army.criteria.mysql;
 import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,8 +117,8 @@ public class MySQLValuesUnitTests {
 
     private void printStmt(final PrimaryStatement statement) {
         String sql;
-        for (Dialect dialect : Dialect.values()) {
-            if (dialect.database != Database.MySQL || dialect.version() < Dialect.MySQL80.version()) {
+        for (MySQLDialect dialect : MySQLDialect.values()) {
+            if (dialect.version() < MySQLDialect.MySQL80.version()) {
                 continue;
             }
             sql = statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);

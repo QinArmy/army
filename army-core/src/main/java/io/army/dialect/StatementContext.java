@@ -25,7 +25,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
     static final String SPACE_PLACEHOLDER = " ?";
 
-    protected final ArmyDialect dialect;
+    protected final ArmyParser parser;
 
     protected final Visible visible;
 
@@ -33,8 +33,8 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
     private final ParamConsumer paramConsumer;
 
-    protected StatementContext(ArmyDialect dialect, Visible visible) {
-        this.dialect = dialect;
+    protected StatementContext(ArmyParser parser, Visible visible) {
+        this.parser = parser;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
         this.paramConsumer = new ParamConsumer(null);
@@ -45,12 +45,12 @@ abstract class StatementContext implements StmtContext, _StmtParams {
      * This Constructor is invoked the implementation of {@link  _ValueInsertContext}.
      * </p>
      */
-    protected StatementContext(ArmyDialect dialect, boolean nonQueryInsert, Visible visible) {
+    protected StatementContext(ArmyParser dialect, boolean nonQueryInsert, Visible visible) {
         if (!(this instanceof _InsertContext) || this instanceof _QueryInsertContext) {
             throw new IllegalStateException();
         }
 
-        this.dialect = dialect;
+        this.parser = dialect;
         this.visible = visible;
         this.sqlBuilder = new StringBuilder(128);
         if (nonQueryInsert) {
@@ -61,7 +61,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
     }
 
     protected StatementContext(StatementContext outerContext) {
-        this.dialect = outerContext.dialect;
+        this.parser = outerContext.parser;
         this.visible = outerContext.visible;
         this.sqlBuilder = outerContext.sqlBuilder;
         this.paramConsumer = outerContext.paramConsumer;
@@ -71,7 +71,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
     @Override
     public final DialectParser dialect() {
-        return this.dialect;
+        return this.parser;
     }
 
     @Override
@@ -141,7 +141,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
             sqlBuilder.append(_Constant.SPACE);
-            this.dialect.literal(namedLiteral.paramMeta(), value, sqlBuilder);
+            this.parser.literal(namedLiteral.paramMeta(), value, sqlBuilder);
         } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
             //no bug,never here
             throw new IllegalArgumentException();
@@ -149,7 +149,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
             throw _Exceptions.namedParamNotMatch((SqlValueParam.NamedMultiValue) namedLiteral, value);
         } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).valueSize()) {
 
-            final ArmyDialect dialect = this.dialect;
+            final ArmyParser dialect = this.parser;
             final ParamMeta paramMeta = namedLiteral.paramMeta();
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             int i = 0;

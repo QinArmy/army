@@ -40,7 +40,7 @@ public final class UnsignedLongType extends _ArmyNoInjectionMapping {
                 sqlType = MySqlType.BIGINT_UNSIGNED;
                 break;
             case PostgreSQL:
-            case Firebird:
+
             case Oracle:
             case H2:
             default:

@@ -1,7 +1,6 @@
 package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.dialect._DialectEnv;
 import io.army.dialect._DialectFactory;
 import io.army.util._Exceptions;
@@ -14,8 +13,8 @@ public abstract class _MySQLDialects extends _DialectFactory {
     }
 
     public static MySQLParser create(final _DialectEnv env) {
-        final Dialect targetDialect;
-        targetDialect = targetDialect(env, Database.MySQL);
+        final MySQLDialect targetDialect;
+        targetDialect = (MySQLDialect) targetDialect(env, Database.MySQL);
         final MySQLParser mySQL;
         switch (targetDialect) {
             case MySQL55:

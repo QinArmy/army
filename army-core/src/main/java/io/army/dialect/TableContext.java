@@ -42,7 +42,7 @@ final class TableContext {
     }
 
 
-    static TableContext forChild(final ChildTableMeta<?> table, final String tableAlias, final ArmyDialect dialect) {
+    static TableContext forChild(final ChildTableMeta<?> table, final String tableAlias, final ArmyParser dialect) {
         final Map<String, TableItem> aliasToTable = new HashMap<>(4);
         aliasToTable.put(tableAlias, table);
         final String parentAlias = _DialectUtils.parentAlias(tableAlias);
@@ -55,7 +55,7 @@ final class TableContext {
         return new TableContext(aliasToTable, tableToSafeAlias, null);
     }
 
-    static TableContext forUpdate(final _MultiUpdate stmt, final ArmyDialect dialect, final Visible visible) {
+    static TableContext forUpdate(final _MultiUpdate stmt, final ArmyParser dialect, final Visible visible) {
 
         Map<ChildTableMeta<?>, Boolean> childMap = null;
         for (_ItemPair pair : stmt.itemPairList()) {
@@ -80,7 +80,7 @@ final class TableContext {
     }
 
 
-    static TableContext forDelete(final _MultiDelete stmt, final ArmyDialect dialect, final Visible visible) {
+    static TableContext forDelete(final _MultiDelete stmt, final ArmyParser dialect, final Visible visible) {
         final List<_Pair<String, TableMeta<?>>> pairList;
         pairList = stmt.deleteTableList();
         final int pairSize = pairList.size();
@@ -107,7 +107,7 @@ final class TableContext {
     }
 
 
-    static TableContext forQuery(List<? extends _TableBlock> blockList, ArmyDialect dialect, final Visible visible) {
+    static TableContext forQuery(List<? extends _TableBlock> blockList, ArmyParser dialect, final Visible visible) {
         final Context context;
         context = new Context(dialect, null, visible, blockList.size());
         iterateTableReferences(blockList, context);
@@ -116,7 +116,7 @@ final class TableContext {
 
 
     /**
-     * @see #forUpdate(_MultiUpdate, ArmyDialect, Visible)
+     * @see #forUpdate(_MultiUpdate, ArmyParser, Visible)
      */
     @Nullable
     private static Map<ChildTableMeta<?>, Boolean> handleUpdateField(final DataField dataField
@@ -147,7 +147,7 @@ final class TableContext {
 
         final Map<TableMeta<?>, Boolean> selfJoinMap = context.selfJoinMap;
 
-        final ArmyDialect dialect = context.dialect;
+        final ArmyParser dialect = context.dialect;
         final Visible visible = context.visible;
 
         _TableBlock block, parentBlock;
@@ -347,7 +347,7 @@ final class TableContext {
 
     private static final class Context {
 
-        private final ArmyDialect dialect;
+        private final ArmyParser dialect;
 
         private final Visible visible;
 
@@ -361,7 +361,7 @@ final class TableContext {
 
         private final Map<String, String> childAliasToParentAlias;
 
-        private Context(ArmyDialect dialect, @Nullable Map<ChildTableMeta<?>, Boolean> childMap, Visible visible
+        private Context(ArmyParser dialect, @Nullable Map<ChildTableMeta<?>, Boolean> childMap, Visible visible
                 , int blockSize) {
             this.dialect = dialect;
             this.visible = visible;

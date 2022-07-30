@@ -78,7 +78,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         major = metaData.getDatabaseMajorVersion();
         minor = metaData.getDatabaseMinorVersion();
 
-        return new JdbcServerMeta(name, database, version, major, minor);
+        return ServerMeta.create(name, database, version, major, minor);
     }
 
 
@@ -134,97 +134,6 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
 
     static DataSource getPrimaryDataSource(DataSource dataSource) {
         return dataSource;
-    }
-
-
-    private static final class JdbcServerMeta implements ServerMeta {
-
-        private final String name;
-
-        private final Database database;
-
-        private final String version;
-
-        private final int major;
-
-        private final int minor;
-
-        private JdbcServerMeta(String name, Database database
-                , String version, int major, int minor) {
-            this.name = name;
-            this.database = database;
-            this.version = version;
-            this.major = major;
-
-            this.minor = minor;
-        }
-
-        @Override
-        public String name() {
-            return this.name;
-        }
-
-        @Override
-        public Database database() {
-            return this.database;
-        }
-
-        @Override
-        public String version() {
-            return this.version;
-        }
-
-        @Override
-        public int major() {
-            return this.major;
-        }
-
-        @Override
-        public int minor() {
-            return this.minor;
-        }
-
-        @Override
-        public boolean meetsMinimum(final int major, final int minor) {
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.version);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof ServerMeta) {
-                final ServerMeta v = (ServerMeta) obj;
-                match = this.name.equals(v.name()) && this.version.equals(v.version());
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        public String toString() {
-            return new StringBuilder()
-                    .append("name=")
-                    .append(this.name)
-                    .append("\ndatabase=")
-                    .append(this.database)
-                    .append("\nversion=")
-                    .append(this.version)
-                    .append("\nmajor=")
-                    .append(this.major)
-                    .append("\nminor=")
-                    .append(this.minor)
-                    .toString();
-        }
-
-
     }
 
 

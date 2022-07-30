@@ -52,7 +52,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      */
-    ValuesSyntaxInsertContext(ArmyDialect dialect, final _Insert._ValuesSyntaxInsert domainStmt, Visible visible) {
+    ValuesSyntaxInsertContext(ArmyParser dialect, final _Insert._ValuesSyntaxInsert domainStmt, Visible visible) {
         super(dialect, true, visible);
 
         final _Insert._ValuesSyntaxInsert nonChildStmt;
@@ -109,7 +109,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
      * </p>
      */
     ValuesSyntaxInsertContext(ValuesSyntaxInsertContext parentContext, _Insert._ValuesSyntaxInsert stmt
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         super(dialect, true, visible);
 
         assert stmt instanceof _Insert._ChildInsert;
@@ -156,7 +156,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
     public final void appendFieldList() {
         assert !this.columnListClauseEnd;
 
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_LEFT_PAREN);
 
@@ -207,7 +207,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         }
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE);
-        this.dialect.safeObjectName(field, sqlBuilder);
+        this.parser.safeObjectName(field, sqlBuilder);
 
     }
 
@@ -222,7 +222,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
                 .append(_Constant.SPACE_RETURNING)
                 .append(_Constant.SPACE);
 
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         //TODO for dialect table alias
         dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);

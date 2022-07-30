@@ -12,7 +12,7 @@ final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQu
     static SimpleSubQueryContext create(SubQuery subQuery, _SqlContext outerContext) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) subQuery).tableBlockList()
-                , (ArmyDialect) outerContext.dialect(), outerContext.visible());
+                , (ArmyParser) outerContext.dialect(), outerContext.visible());
         return new SimpleSubQueryContext(tableContext, outerContext);
     }
 
@@ -42,7 +42,7 @@ final class SimpleSubQueryContext extends MultiTableContext implements _SimpleQu
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.safeObjectName(field, sqlBuilder);
+            this.parser.safeObjectName(field, sqlBuilder);
         } else if (this.aliasToTable.containsValue(fieldTable)) {
             throw _Exceptions.selfJoinNonQualifiedField(field);
         } else {

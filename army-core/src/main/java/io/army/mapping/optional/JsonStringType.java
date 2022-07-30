@@ -37,7 +37,7 @@ public final class JsonStringType extends AbstractMappingType {
                 sqlDataType = PostgreType.JSON;
                 break;
             case Oracle:
-            case Firebird:
+
             case H2:
             default:
                 throw noMappingError(meta);

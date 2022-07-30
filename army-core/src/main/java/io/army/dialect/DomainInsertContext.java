@@ -31,17 +31,17 @@ import java.util.Map;
  */
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._DomainParams {
 
-    static DomainInsertContext forSingle(_Insert._DomainInsert insert, ArmyDialect dialect, Visible visible) {
+    static DomainInsertContext forSingle(_Insert._DomainInsert insert, ArmyParser dialect, Visible visible) {
         return new DomainInsertContext(dialect, insert, visible);
     }
 
-    static DomainInsertContext forParent(_Insert._ChildDomainInsert domainStmt, ArmyDialect dialect, Visible visible) {
+    static DomainInsertContext forParent(_Insert._ChildDomainInsert domainStmt, ArmyParser dialect, Visible visible) {
         return new DomainInsertContext(dialect, domainStmt, visible);
     }
 
 
     static DomainInsertContext forChild(DomainInsertContext parentContext, _Insert._ChildDomainInsert insert
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         return new DomainInsertContext(parentContext, insert, dialect, visible);
     }
 
@@ -53,7 +53,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     /**
      * create for {@link  SingleTableMeta}
      */
-    private DomainInsertContext(ArmyDialect dialect, _Insert._DomainInsert domainStmt, Visible visible) {
+    private DomainInsertContext(ArmyParser dialect, _Insert._DomainInsert domainStmt, Visible visible) {
         super(dialect, domainStmt, visible);
 
         this.domainList = domainStmt.domainList();
@@ -64,7 +64,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
      * create for {@link  ChildTableMeta}
      */
     private DomainInsertContext(DomainInsertContext parentContext, _Insert._ChildDomainInsert stmt
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         super(parentContext, stmt, dialect, visible);
 
         this.domainList = stmt.domainList();
@@ -84,7 +84,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         final int fieldSize = fieldList.size();
 
 
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
         final boolean preferLiteral = this.preferLiteral;
@@ -321,7 +321,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                 this.childDefaultMap = Collections.emptyMap();
             }
             this.accessor = ObjectAccessorFactory.forBean(this.domainTable.javaType());
-            this.readWrapper = new DomainReadWrapper(this, context.dialect.mappingEnv());
+            this.readWrapper = new DomainReadWrapper(this, context.parser.mappingEnv());
         }
 
         @Override

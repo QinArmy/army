@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Update;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -439,7 +439,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
 
 
     @Nullable
-    abstract Dialect dialect();
+    abstract MySQLDialect dialect();
 
 
     private SR addItemPair(final ItemPair pair) {

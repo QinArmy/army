@@ -6,7 +6,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
 import io.army.criteria.mysql.MySQL80Query;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -397,7 +397,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     public final String toString() {
         final String s;
         if (this instanceof Select && this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }

@@ -8,7 +8,7 @@ import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.criteria.mysql.MySQLWords;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
 import io.army.util.ArrayUtils;
@@ -326,7 +326,7 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
     public final String toString() {
         final String s;
         if (this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }

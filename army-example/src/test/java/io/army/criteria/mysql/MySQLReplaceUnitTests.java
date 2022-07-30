@@ -6,10 +6,9 @@ import io.army.criteria.ReplaceInsert;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.inner._Insert;
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.user.*;
 import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.PairStmt;
@@ -148,10 +147,8 @@ public class MySQLReplaceUnitTests {
         String sql;
         DialectParser parser;
         Stmt stmt;
-        for (Dialect dialect : Dialect.values()) {
-            if (dialect.database != Database.MySQL) {
-                continue;
-            }
+        for (MySQLDialect dialect : MySQLDialect.values()) {
+
             parser = _MockDialects.from(dialect);
             stmt = parser.dialectStmt(insert, Visible.ONLY_VISIBLE);
             sql = parser.printStmt(stmt, true);

@@ -3,8 +3,7 @@ package io.army.criteria.mysql;
 import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
-import io.army.dialect.Database;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.common.Criteria;
@@ -618,10 +617,7 @@ public class MySQLCriteriaUnitTests {
 
 
     private void printStmt(final PrimaryStatement statement) {
-        for (Dialect dialect : Dialect.values()) {
-            if (dialect.database != Database.MySQL) {
-                continue;
-            }
+        for (MySQLDialect dialect : MySQLDialect.values()) {
             LOG.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
         }
 

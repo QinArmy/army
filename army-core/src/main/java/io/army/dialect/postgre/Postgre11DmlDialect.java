@@ -1,6 +1,10 @@
 package io.army.dialect.postgre;
 
-import io.army.dialect.*;
+import io.army.dialect._AbstractDialect;
+import io.army.dialect._Constant;
+import io.army.dialect._DialectEnv;
+import io.army.dialect._SqlContext;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.DatabaseObject;
 import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
@@ -12,7 +16,7 @@ import java.util.Set;
 
 class Postgre11DmlDialect extends _AbstractDialect {
 
-    Postgre11DmlDialect(_DialectEnv environment, Dialect dialect) {
+    Postgre11DmlDialect(_DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
     }
 

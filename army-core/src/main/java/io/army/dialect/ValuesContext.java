@@ -14,7 +14,7 @@ import java.util.List;
 
 final class ValuesContext extends StatementContext implements _ValuesContext {
 
-    static ValuesContext create(_Values stmt, ArmyDialect dialect, Visible visible) {
+    static ValuesContext create(_Values stmt, ArmyParser dialect, Visible visible) {
         return new ValuesContext(stmt, dialect, visible);
     }
 
@@ -26,7 +26,7 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
     private final List<Selection> selectionList;
 
     @SuppressWarnings("unchecked")
-    private ValuesContext(_Values stmt, ArmyDialect dialect, Visible visible) {
+    private ValuesContext(_Values stmt, ArmyParser dialect, Visible visible) {
         super(dialect, visible);
 
         final List<? extends SelectItem> selectItemList;

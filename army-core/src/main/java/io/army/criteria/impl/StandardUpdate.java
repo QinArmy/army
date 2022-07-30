@@ -6,7 +6,7 @@ import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
@@ -59,7 +59,7 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
     public final String toString() {
         final String s;
         if (this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }
@@ -99,7 +99,7 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
     }
 
     @Override
-    final Dialect dialect() {
+    final MySQLDialect dialect() {
         // no dialect
         return null;
     }

@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.util._Exceptions;
 
 /**
@@ -108,7 +108,7 @@ abstract class StandardUnionQuery<C, Q extends Query> extends UnionRowSet<
     public final String toString() {
         final String s;
         if (this instanceof Select && this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }

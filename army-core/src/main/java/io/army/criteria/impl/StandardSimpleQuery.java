@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._StandardQuery;
 import io.army.criteria.impl.inner._TableBlock;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
@@ -137,7 +137,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     public final String toString() {
         final String s;
         if (this instanceof Select && this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }

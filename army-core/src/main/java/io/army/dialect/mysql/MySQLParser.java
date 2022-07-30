@@ -23,10 +23,7 @@ import java.util.Set;
 
 abstract class MySQLParser extends _AbstractDialect {
 
-    static MySQLParser standard(_DialectEnv environment, Dialect dialect) {
-        if (dialect.database != Database.MySQL) {
-            throw new IllegalArgumentException();
-        }
+    static MySQLParser standard(_DialectEnv environment, MySQLDialect dialect) {
         return new Standard(environment, dialect);
     }
 
@@ -35,9 +32,9 @@ abstract class MySQLParser extends _AbstractDialect {
 
     final boolean asOf80;
 
-    MySQLParser(_DialectEnv environment, Dialect dialect) {
+    MySQLParser(_DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
-        this.asOf80 = this.dialectMode().version() >= Dialect.MySQL80.version();
+        this.asOf80 = this.dialectMode().version() >= MySQLDialect.MySQL80.version();
     }
 
 
@@ -499,7 +496,7 @@ abstract class MySQLParser extends _AbstractDialect {
 
     private static final class Standard extends MySQLParser {
 
-        private Standard(_DialectEnv environment, Dialect dialect) {
+        private Standard(_DialectEnv environment, MySQLDialect dialect) {
             super(environment, dialect);
         }
 

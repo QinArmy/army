@@ -34,7 +34,7 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
     private final List<Selection> selectionList;
 
 
-    SingleDmlContext(_SingleDml dml, ArmyDialect dialect, Visible visible) {
+    SingleDmlContext(_SingleDml dml, ArmyParser dialect, Visible visible) {
         super(dialect, visible);
 
         this.table = dml.table();
@@ -58,15 +58,15 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
 
         this.table = dml.table();
         this.tableAlias = dml.tableAlias();
-        this.safeTableAlias = this.dialect.identifier(this.tableAlias);
+        this.safeTableAlias = this.parser.identifier(this.tableAlias);
 
         if (this.table instanceof ChildTableMeta) {
-            this.safeParentAlias = this.dialect.identifier(_DialectUtils.parentAlias(this.tableAlias));
+            this.safeParentAlias = this.parser.identifier(_DialectUtils.parentAlias(this.tableAlias));
         } else {
             this.safeParentAlias = null;
         }
         this.hasVersion = _DialectUtils.hasOptimistic(dml.predicateList());
-        this.supportAlias = !(this instanceof DeleteContext) || dialect.singleDeleteHasTableAlias();
+        this.supportAlias = !(this instanceof DeleteContext) || parser.singleDeleteHasTableAlias();
         this.selectionList = Collections.emptyList();
     }
 
@@ -104,10 +104,10 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
             if (this.supportAlias) {
                 sqlBuilder.append(this.safeTableAlias);
             } else {
-                this.dialect.safeObjectName(table, sqlBuilder);
+                this.parser.safeObjectName(table, sqlBuilder);
             }
             sqlBuilder.append(_Constant.POINT);
-            this.dialect.safeObjectName(field, sqlBuilder);
+            this.parser.safeObjectName(field, sqlBuilder);
         } else if (table instanceof ChildTableMeta && fieldTable == ((ChildTableMeta<?>) table).parentMeta()) {
             // parent table filed
             this.parentColumnFromSubQuery(field);
@@ -149,7 +149,7 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         final String safeParentAlias = this.safeParentAlias;
         assert safeParentAlias != null;
 
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         final ParentTableMeta<?> parentTable = (ParentTableMeta<?>) parentField.tableMeta();
         final StringBuilder sqlBuilder = this.sqlBuilder
                 //below sub query left bracket

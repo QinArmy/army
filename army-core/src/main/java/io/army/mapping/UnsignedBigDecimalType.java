@@ -37,7 +37,7 @@ public final class UnsignedBigDecimalType extends _ArmyNoInjectionMapping {
             case PostgreSQL:
                 sqlType = PostgreType.DECIMAL;
                 break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:

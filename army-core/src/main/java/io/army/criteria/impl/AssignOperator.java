@@ -20,13 +20,13 @@ enum AssignOperator {
 
 
     final void appendOperator(final Dialect dialect, final DataField field, final _SqlContext context) {
-        switch (dialect.database) {
+        switch (dialect.database()) {
             case MySQL:
             case PostgreSQL:
                 this.simpleOperator(field, context);
                 break;
             default:
-                throw _Exceptions.unexpectedEnum(dialect.database);
+                throw _Exceptions.unexpectedEnum(dialect.database());
         }
 
     }

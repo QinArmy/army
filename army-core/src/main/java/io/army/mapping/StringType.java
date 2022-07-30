@@ -52,7 +52,7 @@ public final class StringType extends AbstractMappingType {
             case Oracle:
                 sqlDataType = OracleDataType.VARCHAR2;
                 break;
-            case Firebird:
+
             case H2:
             default:
                 throw noMappingError(meta);

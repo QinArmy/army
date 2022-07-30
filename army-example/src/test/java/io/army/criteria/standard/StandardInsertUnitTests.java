@@ -3,6 +3,7 @@ package io.army.criteria.standard;
 import io.army.criteria.Insert;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.SQLs;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
 import org.slf4j.Logger;
@@ -145,12 +146,15 @@ public class StandardInsertUnitTests {
 
     private static void printStmt(final Insert insert) {
         String sql;
-        for (Dialect dialect : Dialect.values()) {
-            sql = insert.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
-            // sql = insert.toString();
-            //insert.mockAsStmt(dialect, Visible.ONLY_VISIBLE);
-            LOG.debug("{}:\n{}", dialect.name(), sql);
+        for (Database database : Database.values()) {
+            for (Dialect dialect : database.dialects()) {
+                sql = insert.mockAsString(dialect, Visible.ONLY_VISIBLE, true);
+                // sql = insert.toString();
+                //insert.mockAsStmt(dialect, Visible.ONLY_VISIBLE);
+                LOG.debug("{}:\n{}", dialect.name(), sql);
+            }
         }
+
 
     }
 

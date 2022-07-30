@@ -2,6 +2,7 @@ package io.army.criteria.standard;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.Person_;
@@ -348,8 +349,6 @@ public class StandardCriteriaUnitTests {
     }
 
 
-
-
     private List<ChinaProvince> createProvinceList() {
         List<ChinaProvince> domainList = new ArrayList<>();
         ChinaProvince p;
@@ -367,8 +366,10 @@ public class StandardCriteriaUnitTests {
 
 
     private static void printStmt(final PrimaryStatement statement) {
-        for (Dialect dialect : Dialect.values()) {
-            LOG.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+        for (Database database : Database.values()) {
+            for (Dialect dialect : database.dialects()) {
+                LOG.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true));
+            }
         }
 
     }

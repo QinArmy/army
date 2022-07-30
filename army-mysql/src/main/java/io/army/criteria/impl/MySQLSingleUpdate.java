@@ -8,7 +8,7 @@ import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.criteria.mysql.MySQLWords;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -381,7 +381,7 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     public final String toString() {
         final String s;
         if (this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }
@@ -526,8 +526,8 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
 
     @Override
-    final Dialect dialect() {
-        return Dialect.MySQL80;
+    final MySQLDialect dialect() {
+        return MySQLDialect.MySQL80;
     }
 
     private UR addIndexHint(MySQLIndexHint.Command command, final boolean orderBy, final List<String> indexNames) {

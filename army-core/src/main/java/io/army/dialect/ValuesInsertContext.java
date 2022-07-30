@@ -23,17 +23,17 @@ import java.util.function.Function;
 final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._ValueParams {
 
 
-    static ValuesInsertContext forSingle(_Insert._ValuesInsert stmt, ArmyDialect dialect, Visible visible) {
+    static ValuesInsertContext forSingle(_Insert._ValuesInsert stmt, ArmyParser dialect, Visible visible) {
         _DialectUtils.checkDefaultValueMap(stmt);
         return new ValuesInsertContext(stmt, dialect, visible);
     }
 
-    static ValuesInsertContext forParent(_Insert._ChildValuesInsert domainStmt, ArmyDialect dialect, Visible visible) {
+    static ValuesInsertContext forParent(_Insert._ChildValuesInsert domainStmt, ArmyParser dialect, Visible visible) {
         return new ValuesInsertContext(domainStmt, dialect, visible);
     }
 
     static ValuesInsertContext forChild(ValuesInsertContext parentContext, _Insert._ChildValuesInsert insert
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         return new ValuesInsertContext(parentContext, insert, dialect, visible);
     }
 
@@ -51,10 +51,10 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_Insert._ValuesInsert, ArmyDialect, Visible)
-     * @see #forParent(_Insert._ChildValuesInsert, ArmyDialect, Visible)
+     * @see #forSingle(_Insert._ValuesInsert, ArmyParser, Visible)
+     * @see #forParent(_Insert._ChildValuesInsert, ArmyParser, Visible)
      */
-    private ValuesInsertContext(_Insert._ValuesInsert domainStmt, ArmyDialect dialect, Visible visible) {
+    private ValuesInsertContext(_Insert._ValuesInsert domainStmt, ArmyParser dialect, Visible visible) {
         super(dialect, domainStmt, visible);
 
         if (domainStmt instanceof _Insert._ChildValuesInsert) {
@@ -83,10 +83,10 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(ValuesInsertContext, _Insert._ChildValuesInsert, ArmyDialect, Visible)
+     * @see #forChild(ValuesInsertContext, _Insert._ChildValuesInsert, ArmyParser, Visible)
      */
     private ValuesInsertContext(ValuesInsertContext parentContext, _Insert._ChildValuesInsert stmt
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         super(parentContext, stmt, dialect, visible);
 
         this.rowList = stmt.rowList();
@@ -109,7 +109,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         final int rowSize = rowValuesList.size();
         final int fieldSize = fieldList.size();
 
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
 
         final boolean migration = this.migration;
@@ -334,7 +334,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
         private ValuesRowWrapper(ValuesInsertContext context, _Insert._ValuesInsert domainStmt) {
-            super(domainStmt.table(), context.dialect.mappingEnv());
+            super(domainStmt.table(), context.parser.mappingEnv());
             this.nonChildRowList = context.rowList;
             if (domainStmt instanceof _Insert._ChildValuesInsert) {
                 final _Insert._ValuesInsert parentStmt = ((_Insert._ChildValuesInsert) domainStmt).parentStmt();

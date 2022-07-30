@@ -38,7 +38,7 @@ public final class UnsignedShortType extends _ArmyNoInjectionMapping {
             case PostgreSQL:
                 sqlType = PostgreType.INTEGER;
                 break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:

@@ -4,7 +4,7 @@ import io.army.criteria.Delete;
 import io.army.criteria.StandardStatement;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
@@ -84,7 +84,7 @@ abstract class StandardDelete<C, DR, WR, WA> extends SingleDelete<C, WR, WA, Del
     public final String toString() {
         final String s;
         if (this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }

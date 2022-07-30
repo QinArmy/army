@@ -20,7 +20,7 @@ public interface _SchemaComparer {
             case PostgreSQL:
             case Oracle:
             case H2:
-            case Firebird:
+
             default:
                 throw _Exceptions.unexpectedEnum(serverMeta.database());
         }

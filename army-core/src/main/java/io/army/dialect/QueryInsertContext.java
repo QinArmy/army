@@ -15,16 +15,16 @@ import java.util.List;
 
 final class QueryInsertContext extends StatementContext implements _QueryInsertContext {
 
-    static QueryInsertContext forSingle(_Insert._QueryInsert stmt, ArmyDialect dialect, Visible visible) {
+    static QueryInsertContext forSingle(_Insert._QueryInsert stmt, ArmyParser dialect, Visible visible) {
         return new QueryInsertContext(dialect, stmt, visible);
     }
 
-    static QueryInsertContext forParent(_Insert._ChildQueryInsert domainStmt, ArmyDialect dialect, Visible visible) {
+    static QueryInsertContext forParent(_Insert._ChildQueryInsert domainStmt, ArmyParser dialect, Visible visible) {
         return new QueryInsertContext(dialect, domainStmt, visible);
     }
 
     static QueryInsertContext forChild(QueryInsertContext parentContext, _Insert._ChildQueryInsert domainStmt
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         return new QueryInsertContext(parentContext, domainStmt, dialect, visible);
     }
 
@@ -48,10 +48,10 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_Insert._QueryInsert, ArmyDialect, Visible)
-     * @see #forParent(_Insert._ChildQueryInsert, ArmyDialect, Visible)
+     * @see #forSingle(_Insert._QueryInsert, ArmyParser, Visible)
+     * @see #forParent(_Insert._ChildQueryInsert, ArmyParser, Visible)
      */
-    private QueryInsertContext(ArmyDialect dialect, _Insert._QueryInsert domainStmt, Visible visible) {
+    private QueryInsertContext(ArmyParser dialect, _Insert._QueryInsert domainStmt, Visible visible) {
         super(dialect, visible);
 
         final _Insert._QueryInsert nonChildStmt;
@@ -77,10 +77,10 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(QueryInsertContext, _Insert._ChildQueryInsert, ArmyDialect, Visible)
+     * @see #forChild(QueryInsertContext, _Insert._ChildQueryInsert, ArmyParser, Visible)
      */
     private QueryInsertContext(QueryInsertContext parentContext, _Insert._ChildQueryInsert domainStmt
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         super(dialect, visible);
 
         this.insertTable = domainStmt.table();
@@ -123,14 +123,14 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
 
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE);
-        this.dialect.safeObjectName(field, sqlBuilder);
+        this.parser.safeObjectName(field, sqlBuilder);
     }
 
     @Override
     public void appendFieldList() {
         assert !this.columnListClauseEnd;
 
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_LEFT_PAREN);
 
@@ -155,7 +155,7 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
     public void appendSubQuery() {
         assert this.columnListClauseEnd && !this.queryClauseEnd;
 
-        this.dialect.subQueryOfQueryInsert(this, this.subQuery);
+        this.parser.subQueryOfQueryInsert(this, this.subQuery);
 
         this.queryClauseEnd = true;
 

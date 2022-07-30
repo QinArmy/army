@@ -23,17 +23,17 @@ import java.util.function.Predicate;
 final class AssignmentInsertContext extends StatementContext
         implements _AssignmentInsertContext, _InsertStmtParams._AssignmentParams {
 
-    static AssignmentInsertContext forSingle(_Insert._AssignmentInsert stmt, ArmyDialect dialect, Visible visible) {
+    static AssignmentInsertContext forSingle(_Insert._AssignmentInsert stmt, ArmyParser dialect, Visible visible) {
         assert !(stmt instanceof _Insert._ChildAssignmentInsert);
         return new AssignmentInsertContext(stmt, dialect, visible);
     }
 
-    static AssignmentInsertContext forParent(_Insert._ChildAssignmentInsert stmt, ArmyDialect dialect, Visible visible) {
+    static AssignmentInsertContext forParent(_Insert._ChildAssignmentInsert stmt, ArmyParser dialect, Visible visible) {
         return new AssignmentInsertContext(stmt, dialect, visible);
     }
 
     static AssignmentInsertContext forChild(AssignmentInsertContext parentContext, _Insert._ChildAssignmentInsert stmt
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         return new AssignmentInsertContext(parentContext, stmt, dialect, visible);
     }
 
@@ -70,10 +70,10 @@ final class AssignmentInsertContext extends StatementContext
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      *
-     * @see #forSingle(_Insert._AssignmentInsert, ArmyDialect, Visible)
-     * @see #forParent(_Insert._ChildAssignmentInsert, ArmyDialect, Visible)
+     * @see #forSingle(_Insert._AssignmentInsert, ArmyParser, Visible)
+     * @see #forParent(_Insert._ChildAssignmentInsert, ArmyParser, Visible)
      */
-    private AssignmentInsertContext(_Insert._AssignmentInsert domainStmt, ArmyDialect dialect, Visible visible) {
+    private AssignmentInsertContext(_Insert._AssignmentInsert domainStmt, ArmyParser dialect, Visible visible) {
         super(dialect, true, visible);
 
         final TableMeta<?> domainTable = domainStmt.table();
@@ -131,10 +131,10 @@ final class AssignmentInsertContext extends StatementContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      *
-     * @see #forChild(AssignmentInsertContext, _Insert._ChildAssignmentInsert, ArmyDialect, Visible)
+     * @see #forChild(AssignmentInsertContext, _Insert._ChildAssignmentInsert, ArmyParser, Visible)
      */
     private AssignmentInsertContext(AssignmentInsertContext parentContext, _Insert._ChildAssignmentInsert stmt
-            , ArmyDialect dialect, Visible visible) {
+            , ArmyParser dialect, Visible visible) {
         super(dialect, true, visible);
 
         this.insertTable = stmt.table();
@@ -177,7 +177,7 @@ final class AssignmentInsertContext extends StatementContext
     public void appendAssignmentClause() {
         assert !this.assignmentClauseEnd;
 
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
 
         final TableMeta<?> insertTable = this.insertTable;
 
@@ -253,7 +253,7 @@ final class AssignmentInsertContext extends StatementContext
         }
         final StringBuilder sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE);
-        this.dialect.safeObjectName(field, sqlBuilder);
+        this.parser.safeObjectName(field, sqlBuilder);
     }
 
 
@@ -295,7 +295,7 @@ final class AssignmentInsertContext extends StatementContext
     private void appendArmyManageFields() {
         assert !this.migration;
 
-        final ArmyDialect dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         final StringBuilder sqlBuilder = this.sqlBuilder;
 
         final Map<FieldMeta<?>, Object> generatedMap = this.rowWrapper.generatedMap;
@@ -440,7 +440,7 @@ final class AssignmentInsertContext extends StatementContext
         private DelayIdParam delayIdParam;
 
         private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
-            super(domainStmt.table(), context.dialect.mappingEnv());
+            super(domainStmt.table(), context.parser.mappingEnv());
 
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
                 this.nonChildPairMap = ((_Insert._ChildAssignmentInsert) domainStmt).parentStmt().pairMap();

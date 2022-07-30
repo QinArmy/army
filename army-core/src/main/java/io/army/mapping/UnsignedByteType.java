@@ -39,7 +39,7 @@ public final class UnsignedByteType extends _ArmyNoInjectionMapping {
             case PostgreSQL:
                 sqlType = PostgreType.SMALLINT;
                 break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:
@@ -63,7 +63,7 @@ public final class UnsignedByteType extends _ArmyNoInjectionMapping {
                 }
             }
             break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:

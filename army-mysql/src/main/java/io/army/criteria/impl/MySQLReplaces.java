@@ -9,7 +9,7 @@ import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLWords;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
@@ -297,7 +297,7 @@ abstract class MySQLReplaces extends InsertSupport {
         public final String toString() {
             final String s;
             if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();
             }
@@ -967,7 +967,7 @@ abstract class MySQLReplaces extends InsertSupport {
         public final String toString() {
             final String s;
             if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();
             }
@@ -1254,7 +1254,7 @@ abstract class MySQLReplaces extends InsertSupport {
         public final String toString() {
             final String s;
             if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();
             }

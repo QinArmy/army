@@ -1,9 +1,10 @@
 package io.army.mapping;
 
 import io.army.codec.JsonCodec;
+import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 
 public interface MappingEnv {
 
@@ -11,8 +12,13 @@ public interface MappingEnv {
 
     ServerMeta serverMeta();
 
-    ZoneOffset zoneOffset();
+    ZoneId zoneId();
 
     JsonCodec jsonCodec();
+
+
+    static MappingEnv create(boolean reactive, ServerMeta serverMeta, @Nullable ZoneId zoneId, JsonCodec jsonCodec) {
+        return MappingEnvImpl.create(reactive, serverMeta, zoneId, jsonCodec);
+    }
 
 }

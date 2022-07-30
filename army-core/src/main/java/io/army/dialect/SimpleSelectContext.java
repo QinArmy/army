@@ -10,7 +10,7 @@ import java.util.List;
 final class SimpleSelectContext extends MultiTableContext implements _SimpleQueryContext, _SelectContext {
 
 
-    static SimpleSelectContext create(Select select, ArmyDialect dialect, Visible visible) {
+    static SimpleSelectContext create(Select select, ArmyParser dialect, Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), dialect, visible);
         return new SimpleSelectContext(select, tableContext, dialect, visible);
@@ -19,13 +19,13 @@ final class SimpleSelectContext extends MultiTableContext implements _SimpleQuer
     static SimpleSelectContext create(Select select, _SelectContext outerContext) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) select).tableBlockList()
-                , (ArmyDialect) outerContext.dialect(), outerContext.visible());
+                , (ArmyParser) outerContext.dialect(), outerContext.visible());
         return new SimpleSelectContext(select, tableContext, outerContext);
     }
 
     private final List<Selection> selectionList;
 
-    private SimpleSelectContext(Select select, TableContext tableContext, ArmyDialect dialect, Visible visible) {
+    private SimpleSelectContext(Select select, TableContext tableContext, ArmyParser dialect, Visible visible) {
         super(tableContext, dialect, visible);
         this.selectionList = _DialectUtils.flatSelectItem(((_Query) select).selectItemList());
     }

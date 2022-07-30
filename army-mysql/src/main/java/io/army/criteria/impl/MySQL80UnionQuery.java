@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLQuery;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.util._Exceptions;
 
 /**
@@ -137,7 +137,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
     public final String toString() {
         final String s;
         if (this instanceof Select && this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }

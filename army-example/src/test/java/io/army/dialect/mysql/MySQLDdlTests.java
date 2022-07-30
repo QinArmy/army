@@ -2,7 +2,6 @@ package io.army.dialect.mysql;
 
 
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.dialect._AbstractDialect;
 import io.army.dialect._MockDialects;
 import io.army.example.pill.domain.User_;
@@ -24,7 +23,7 @@ public class MySQLDdlTests {
     public void createTable() {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
-        for (Dialect dialect : Dialect.values()) {
+        for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
@@ -55,7 +54,7 @@ public class MySQLDdlTests {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
         final TableMeta<?> table = User_.T;
-        for (Dialect dialect : Dialect.values()) {
+        for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
@@ -82,7 +81,7 @@ public class MySQLDdlTests {
     public void modifyColumn() {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
-        for (Dialect dialect : Dialect.values()) {
+        for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
@@ -117,7 +116,7 @@ public class MySQLDdlTests {
         final List<String> sqlList = new ArrayList<>();
         MySQLDdl ddl;
         final TableMeta<?> table = User_.T;
-        for (Dialect dialect : Dialect.values()) {
+        for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
@@ -141,10 +140,10 @@ public class MySQLDdlTests {
 
     @Test
     public void changeIndex() {
-        final EnumMap<Dialect, List<String>> sqlMap = new EnumMap<>(Dialect.class);
+        final EnumMap<MySQLDialect, List<String>> sqlMap = new EnumMap<>(MySQLDialect.class);
         MySQLDdl ddl;
         final TableMeta<?> table = User_.T;
-        for (Dialect dialect : Dialect.values()) {
+        for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
@@ -165,7 +164,7 @@ public class MySQLDdlTests {
 
         }
 
-        for (Map.Entry<Dialect, List<String>> e : sqlMap.entrySet()) {
+        for (Map.Entry<MySQLDialect, List<String>> e : sqlMap.entrySet()) {
             LOG.debug("dialect : {}", e.getKey());
             for (String sql : e.getValue()) {
                 LOG.debug(sql);
@@ -177,10 +176,10 @@ public class MySQLDdlTests {
 
     @Test
     public void dropIndex() {
-        final EnumMap<Dialect, List<String>> sqlMap = new EnumMap<>(Dialect.class);
+        final EnumMap<MySQLDialect, List<String>> sqlMap = new EnumMap<>(MySQLDialect.class);
         MySQLDdl ddl;
         final TableMeta<?> table = User_.T;
-        for (Dialect dialect : Dialect.values()) {
+        for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
@@ -201,7 +200,7 @@ public class MySQLDdlTests {
 
         }
 
-        for (Map.Entry<Dialect, List<String>> e : sqlMap.entrySet()) {
+        for (Map.Entry<MySQLDialect, List<String>> e : sqlMap.entrySet()) {
             LOG.debug("dialect : {}", e.getKey());
             for (String sql : e.getValue()) {
                 LOG.debug(sql);

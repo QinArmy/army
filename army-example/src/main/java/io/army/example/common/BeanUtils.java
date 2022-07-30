@@ -1,6 +1,6 @@
 package io.army.example.common;
 
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -19,7 +19,7 @@ public abstract class BeanUtils {
         final Environment env = cxt.getEnvironment();
         String beanName = null;
         if (!env.acceptsProfiles(Profiles.of(STANDARD))) {
-            for (Dialect dialect : Dialect.values()) {
+            for (MySQLDialect dialect : MySQLDialect.values()) {
                 if (env.acceptsProfiles(Profiles.of(dialect.name()))) {
                     beanName = String.format(nameFormat, dialect.name());
                     break;

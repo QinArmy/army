@@ -67,7 +67,7 @@ public final class YearType extends _ArmyNoInjectionMapping {
                 value = nonNull;
             }
             break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:

@@ -119,9 +119,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
                 executor = MySQLExecutor.create(this, connection);
                 break;
             case PostgreSQL:
-            case H2:
             case Oracle:
-            case Firebird:
             default:
                 throw _Exceptions.unexpectedEnum(this.database);
         }
@@ -159,7 +157,7 @@ final class JdbcExecutorFactory implements ExecutorFactory {
         }
 
         @Override
-        public ZoneOffset zoneOffset() {
+        public ZoneOffset zoneId() {
             throw new UnsupportedOperationException();
         }
 

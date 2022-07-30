@@ -34,7 +34,7 @@ public final class ByteType extends _ArmyNoInjectionMapping {
             case PostgreSQL:
                 sqlType = PostgreType.SMALLINT;
                 break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:

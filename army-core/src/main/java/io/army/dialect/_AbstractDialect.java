@@ -19,7 +19,6 @@ import io.army.util._StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.*;
@@ -37,10 +36,14 @@ import java.util.function.Consumer;
  *
  * @since 1.0
  */
-public abstract class _AbstractDialect implements ArmyDialect {
+public abstract class _AbstractDialect implements ArmyParser {
 
 
     public final _DialectEnv dialectEnv;
+
+    protected final MappingEnv mappingEnv;
+
+    protected final ServerMeta serverMeta;
 
     /**
      * a unmodified set
@@ -52,22 +55,26 @@ public abstract class _AbstractDialect implements ArmyDialect {
     protected final boolean identifierCaseSensitivity;
 
     protected final Dialect dialect;
-
-    private final ZoneId envZoneId;
     private final FieldValueGenerator generator;
 
     protected _AbstractDialect(final _DialectEnv dialectEnv, final Dialect dialect) {
+        assert dialect instanceof Enum;
+
         this.dialectEnv = dialectEnv;
+        this.mappingEnv = dialectEnv.mappingEnv();
+        this.serverMeta = this.mappingEnv.serverMeta();
         this.dialect = dialect;
+
+        assert dialect.database() == this.serverMeta.database();
+
         this.identifierQuote = identifierQuote();
         this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
 
         this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(dialectEnv.serverMeta()));
-        this.envZoneId = dialectEnv.envZoneId();
         if (dialectEnv instanceof _MockDialects) {
-            this.generator = FieldValuesGenerators.mock(this::getEnvZoneId);
+            this.generator = FieldValuesGenerators.mock(this.mappingEnv::zoneId);
         } else {
-            this.generator = FieldValuesGenerators.create(this::getEnvZoneId, dialectEnv.fieldGeneratorMap());
+            this.generator = FieldValuesGenerators.create(this.mappingEnv::zoneId, dialectEnv.fieldGeneratorMap());
         }
     }
 
@@ -467,11 +474,6 @@ public abstract class _AbstractDialect implements ArmyDialect {
 
     protected Stmt standardChildDelete(_SingleDelete delete, Visible visible) {
         throw new UnsupportedOperationException();
-    }
-
-    protected final ZoneId getEnvZoneId() {
-        final ZoneId zoneId = this.envZoneId;
-        return zoneId == null ? ZoneId.systemDefault() : zoneId;
     }
 
 
@@ -1226,9 +1228,9 @@ public abstract class _AbstractDialect implements ArmyDialect {
         if (javaType == LocalDateTime.class) {
             updateTimeValue = LocalDateTime.now();
         } else if (javaType == OffsetDateTime.class) {
-            updateTimeValue = OffsetDateTime.now(this.getEnvZoneId());
+            updateTimeValue = OffsetDateTime.now(this.mappingEnv().zoneId());
         } else if (javaType == ZonedDateTime.class) {
-            updateTimeValue = ZonedDateTime.now(this.getEnvZoneId());
+            updateTimeValue = ZonedDateTime.now(this.mappingEnv().zoneId());
         } else {
             String m = String.format("%s don't support java type[%s]", field, javaType);
             throw new MetaException(m);

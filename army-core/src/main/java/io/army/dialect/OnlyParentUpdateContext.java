@@ -21,7 +21,7 @@ import java.util.List;
 final class OnlyParentUpdateContext extends StatementContext implements DmlContext, _SingleUpdateContext
         , DmlStmtParams {
 
-    static OnlyParentUpdateContext create(_SingleUpdate update, ArmyDialect dialect, Visible visible) {
+    static OnlyParentUpdateContext create(_SingleUpdate update, ArmyParser dialect, Visible visible) {
         return new OnlyParentUpdateContext(update, dialect, visible);
     }
 
@@ -38,7 +38,7 @@ final class OnlyParentUpdateContext extends StatementContext implements DmlConte
     private List<TableField> conditionFieldList;
 
 
-    private OnlyParentUpdateContext(_SingleUpdate update, ArmyDialect dialect, Visible visible) {
+    private OnlyParentUpdateContext(_SingleUpdate update, ArmyParser dialect, Visible visible) {
         super(dialect, visible);
 
         this.table = ((ChildTableMeta<?>) update.table());
@@ -88,7 +88,7 @@ final class OnlyParentUpdateContext extends StatementContext implements DmlConte
                 .append(this.safeTableAlias)
                 .append(_Constant.POINT);
 
-        this.dialect.safeObjectName(field, sqlBuilder);
+        this.parser.safeObjectName(field, sqlBuilder);
 
     }
 
@@ -122,13 +122,13 @@ final class OnlyParentUpdateContext extends StatementContext implements DmlConte
                 .append(_Constant.SPACE)
                 .append(this.safeTableAlias)
                 .append(_Constant.POINT);
-        this.dialect.safeObjectName(field, sqlBuilder);
+        this.parser.safeObjectName(field, sqlBuilder);
 
         switch (updateMode) {
             case ONLY_NULL:
             case ONLY_DEFAULT: {
-                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.dialect.supportOnlyDefault()) {
-                    throw _Exceptions.dontSupportOnlyDefault(this.dialect.dialectMode());
+                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.supportOnlyDefault()) {
+                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialectMode());
                 }
                 List<TableField> conditionFieldList = this.conditionFieldList;
                 if (conditionFieldList == null) {

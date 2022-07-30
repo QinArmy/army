@@ -9,6 +9,7 @@ import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.stmt.Stmt;
@@ -1104,7 +1105,7 @@ abstract class MySQLLoads {
         public String toString() {
             final String s;
             if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();
             }
@@ -1207,7 +1208,7 @@ abstract class MySQLLoads {
         public String toString() {
             final String s;
             if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+                s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();
             }

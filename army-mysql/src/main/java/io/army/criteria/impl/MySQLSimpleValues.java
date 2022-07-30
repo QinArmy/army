@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.mysql.MySQLDqlValues;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -102,7 +102,7 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
     public final String toString() {
         final String s;
         if (this instanceof Values && this.isPrepared()) {
-            s = this.mockAsString(Dialect.MySQL80, Visible.ONLY_VISIBLE, true);
+            s = this.mockAsString(MySQLDialect.MySQL80, Visible.ONLY_VISIBLE, true);
         } else {
             s = super.toString();
         }

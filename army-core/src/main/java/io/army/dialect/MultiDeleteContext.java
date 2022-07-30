@@ -17,14 +17,14 @@ import java.util.Map;
 
 final class MultiDeleteContext extends MultiTableContext implements _MultiDeleteContext, DmlStmtParams {
 
-    static MultiDeleteContext create(_MultiDelete stmt, ArmyDialect dialect, Visible visible) {
+    static MultiDeleteContext create(_MultiDelete stmt, ArmyParser dialect, Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forDelete(stmt, dialect, visible);
 
         return new MultiDeleteContext(stmt, tableContext, dialect, visible);
     }
 
-    static MultiDeleteContext forChild(_SingleDelete stmt, ArmyDialect dialect, Visible visible) {
+    static MultiDeleteContext forChild(_SingleDelete stmt, ArmyParser dialect, Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forChild((ChildTableMeta<?>) stmt.table(), stmt.tableAlias(), dialect);
         return new MultiDeleteContext(stmt, tableContext, dialect, visible);
@@ -35,7 +35,7 @@ final class MultiDeleteContext extends MultiTableContext implements _MultiDelete
     private final boolean hasVersion;
 
 
-    private MultiDeleteContext(_Delete delete, TableContext tableContext, ArmyDialect dialect, Visible visible) {
+    private MultiDeleteContext(_Delete delete, TableContext tableContext, ArmyParser dialect, Visible visible) {
         super(tableContext, dialect, visible);
         this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
         this.hasVersion = _DialectUtils.hasOptimistic(delete.predicateList());

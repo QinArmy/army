@@ -23,9 +23,7 @@ public abstract class _DialectFactory {
                 dialect = _MySQLDialectFactory.createDialect(environment);
                 break;
             case PostgreSQL:
-            case Firebird:
             case Oracle:
-            case H2:
             default:
                 throw _Exceptions.unexpectedEnum(database);
         }
@@ -79,12 +77,12 @@ public abstract class _DialectFactory {
             throw new IllegalArgumentException(m);
         }
         final Dialect serverDialect;
-        serverDialect = Dialect.from(meta);
+        serverDialect = Database.from(meta);
         Dialect targetDialect;
         targetDialect = environment.environment().get(ArmyKey.DIALECT);
         if (targetDialect == null) {
-            targetDialect = Dialect.from(meta);
-        } else if (targetDialect.database != serverDialect.database) {
+            targetDialect = Database.from(meta);
+        } else if (targetDialect.database() != serverDialect.database()) {
             throw _Exceptions.dialectDatabaseNotMatch(targetDialect, meta);
         } else if (targetDialect.version() > serverDialect.version()) {
             throw _Exceptions.dialectVersionNotCompatibility(targetDialect, meta);

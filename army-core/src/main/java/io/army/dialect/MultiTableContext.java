@@ -21,7 +21,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
     Map<String, String> aliasToSafeAlias;
 
 
-    MultiTableContext(TableContext tableContext, ArmyDialect dialect, Visible visible) {
+    MultiTableContext(TableContext tableContext, ArmyParser dialect, Visible visible) {
         super(dialect, visible);
         this.aliasToTable = tableContext.aliasToTable;
         this.tableToSafeAlias = tableContext.tableToSafeAlias;
@@ -56,7 +56,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
                     .append(_Constant.POINT);
-            this.dialect.safeObjectName(field, sqlBuilder);
+            this.parser.safeObjectName(field, sqlBuilder);
         } else if (this.aliasToTable.containsValue(fieldTable)) {
             throw _Exceptions.selfJoinNonQualifiedField(field);
         } else if (this instanceof _SubQueryContext) {
@@ -76,7 +76,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
         safeAlias = this.tableToSafeAlias.get(table);
         if (safeAlias == null) {
             // table self-join
-            safeAlias = getAliasToSafeAlias().computeIfAbsent(alias, this.dialect::identifier);
+            safeAlias = getAliasToSafeAlias().computeIfAbsent(alias, this.parser::identifier);
         }
         return safeAlias;
     }
@@ -86,7 +86,7 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
         if (this.aliasToTable.get(alias) == null) {
             throw _Exceptions.unknownTableAlias(alias);
         }
-        return this.getAliasToSafeAlias().computeIfAbsent(alias, this.dialect::identifier);
+        return this.getAliasToSafeAlias().computeIfAbsent(alias, this.parser::identifier);
     }
 
     @Override
@@ -149,14 +149,14 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
         safeTableAlias = this.tableToSafeAlias.get(field.tableMeta());
         if (safeTableAlias == null) {
             //  self-join
-            safeTableAlias = getAliasToSafeAlias().computeIfAbsent(tableAlias, this.dialect::identifier);
+            safeTableAlias = getAliasToSafeAlias().computeIfAbsent(tableAlias, this.parser::identifier);
         }
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE)
                 .append(safeTableAlias)
                 .append(_Constant.POINT);
-        this.dialect.safeObjectName(field, sqlBuilder);
+        this.parser.safeObjectName(field, sqlBuilder);
     }
 
 

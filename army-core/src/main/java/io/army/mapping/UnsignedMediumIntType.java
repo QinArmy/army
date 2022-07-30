@@ -37,7 +37,7 @@ public final class UnsignedMediumIntType extends _ArmyNoInjectionMapping {
             case PostgreSQL:
                 sqlType = PostgreType.INTEGER;
                 break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:

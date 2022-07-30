@@ -5,7 +5,7 @@ import io.army.criteria.StandardStatement;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.dialect.Dialect;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 
@@ -156,7 +156,7 @@ abstract class StandardInserts extends InsertSupport {
         public final String toString() {
             final String s;
             if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+                s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();
             }
@@ -587,7 +587,7 @@ abstract class StandardInserts extends InsertSupport {
         public final String toString() {
             final String s;
             if (this.isPrepared()) {
-                s = this.mockAsString(Dialect.MySQL57, Visible.ONLY_VISIBLE, true);
+                s = this.mockAsString(MySQLDialect.MySQL57, Visible.ONLY_VISIBLE, true);
             } else {
                 s = super.toString();
             }

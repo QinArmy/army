@@ -38,7 +38,7 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
             case PostgreSQL:
                 sqlType = PostgreType.BIGINT;
                 break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:
@@ -67,7 +67,7 @@ public final class UnsignedIntegerType extends _ArmyNoInjectionMapping {
                 }
             }
             break;
-            case Firebird:
+
             case Oracle:
             case H2:
             default:

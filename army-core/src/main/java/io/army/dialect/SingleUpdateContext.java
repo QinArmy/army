@@ -17,7 +17,7 @@ import java.util.List;
 
 final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdateContext, DmlStmtParams {
 
-    static SingleUpdateContext create(_SingleUpdate stmt, ArmyDialect dialect, Visible visible) {
+    static SingleUpdateContext create(_SingleUpdate stmt, ArmyParser dialect, Visible visible) {
         return new SingleUpdateContext(stmt, dialect, visible);
     }
 
@@ -28,7 +28,7 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
 
     private List<TableField> conditionFieldList;
 
-    private SingleUpdateContext(_SingleUpdate stmt, ArmyDialect dialect, Visible visible) {
+    private SingleUpdateContext(_SingleUpdate stmt, ArmyParser dialect, Visible visible) {
         super(stmt, dialect, visible);
     }
 
@@ -62,13 +62,13 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
                 .append(_Constant.SPACE)
                 .append(this.safeTableAlias)
                 .append(_Constant.POINT);
-        this.dialect.safeObjectName(field, sqlBuilder);
+        this.parser.safeObjectName(field, sqlBuilder);
 
         switch (updateMode) {
             case ONLY_NULL:
             case ONLY_DEFAULT: {
-                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.dialect.supportOnlyDefault()) {
-                    throw _Exceptions.dontSupportOnlyDefault(this.dialect.dialectMode());
+                if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.supportOnlyDefault()) {
+                    throw _Exceptions.dontSupportOnlyDefault(this.parser.dialectMode());
                 }
                 List<TableField> conditionFieldList = this.conditionFieldList;
                 if (conditionFieldList == null) {

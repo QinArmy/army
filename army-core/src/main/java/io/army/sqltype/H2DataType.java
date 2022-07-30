@@ -13,7 +13,7 @@ public enum H2DataType implements SqlType {
 
     @Override
     public final Database database() {
-        return Database.H2;
+        throw new UnsupportedOperationException();
     }
 
 

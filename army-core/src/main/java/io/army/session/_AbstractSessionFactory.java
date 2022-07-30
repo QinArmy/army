@@ -104,16 +104,9 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         return this.env;
     }
 
-    @Nullable
-    @Override
-    public final ZoneId envZoneId() {
-        return this.zoneId;
-    }
-
     @Override
     public final ZoneId zoneId() {
-        final ZoneId zoneOffset = this.zoneId;
-        return zoneOffset == null ? ZoneId.systemDefault() : zoneOffset;
+        return this.mappingEnv().zoneId();
     }
 
     @Override
