@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-abstract class MySQLParser extends _AbstractDialect {
+abstract class MySQLParser extends _AbstractDialectParser {
 
     static MySQLParser standard(DialectEnv environment, MySQLDialect dialect) {
         return new Standard(environment, dialect);

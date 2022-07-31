@@ -15,11 +15,11 @@ public abstract class _DdlDialect implements DdlDialect {
 
     protected final List<String> errorMsgList = new ArrayList<>();
 
-    protected final _AbstractDialect dialect;
+    protected final _AbstractDialectParser dialect;
 
     protected final ServerMeta serverMeta;
 
-    protected _DdlDialect(_AbstractDialect dialect) {
+    protected _DdlDialect(_AbstractDialectParser dialect) {
         this.dialect = dialect;
         this.serverMeta = dialect.serverMeta;
     }
@@ -35,7 +35,7 @@ public abstract class _DdlDialect implements DdlDialect {
         if (size == 0) {
             return;
         }
-        final _AbstractDialect dialect = this.dialect;
+        final _AbstractDialectParser dialect = this.dialect;
         final StringBuilder builder = new StringBuilder(size * 10);
         builder.append("DROP TABLE IF EXISTS ");
         for (int i = 0; i < size; i++) {
@@ -49,7 +49,7 @@ public abstract class _DdlDialect implements DdlDialect {
 
     @Override
     public final <T> void createTable(final TableMeta<T> table, List<String> sqlList) {
-        final _AbstractDialect dialect = this.dialect;
+        final _AbstractDialectParser dialect = this.dialect;
         final StringBuilder builder = new StringBuilder(128)
                 .append("CREATE TABLE IF NOT EXISTS ");
 
@@ -81,7 +81,7 @@ public abstract class _DdlDialect implements DdlDialect {
         }
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
-        final _AbstractDialect dialect = this.dialect;
+        final _AbstractDialectParser dialect = this.dialect;
 
         TableMeta<?> table = null;
         for (int i = 0; i < fieldSize; i++) {
@@ -299,7 +299,7 @@ public abstract class _DdlDialect implements DdlDialect {
 
 
     private <T> void index(final TableMeta<T> table, final StringBuilder builder) {
-        final _AbstractDialect dialect = this.dialect;
+        final _AbstractDialectParser dialect = this.dialect;
         for (IndexMeta<T> index : table.indexList()) {
 
 

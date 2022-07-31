@@ -13,14 +13,20 @@ import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
+import io.army.mapping.StringType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
+import io.army.stmt.Stmts;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -472,11 +478,6 @@ final class MySQLDialectParser extends MySQLParser {
     /*-----------------------below private method-----------------------*/
 
 
-    private Stmt loadData(final MySQLLoad loadData, final Visible visible) {
-        throw new UnsupportedOperationException();
-    }
-
-
     private void hintClause(List<Hint> hintList, final StringBuilder sqlBuilder, final _SqlContext context) {
         if (hintList.size() == 0) {
             return;
@@ -577,6 +578,24 @@ final class MySQLDialectParser extends MySQLParser {
 
             }
         }
+    }
+
+    /**
+     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     */
+    private void loadDataModifier(final List<MySQLWords> modifierList, final StringBuilder sqlBuilder) {
+        for (MySQLWords modifier : modifierList) {
+            switch (modifier) {
+                case LOW_PRIORITY:
+                case CONCURRENT:
+                case LOCAL:
+                    sqlBuilder.append(modifier.words);
+                    break;
+                default:
+                    throw new CriteriaException(String.format("%s LOAD DATA don't support %s", this.dialect, modifier));
+            }
+        }
+
     }
 
 
@@ -995,6 +1014,219 @@ final class MySQLDialectParser extends MySQLParser {
             }
             sqlBuilder.append(_Constant.AT_CHAR);
             this.identifier(intoList.get(i), sqlBuilder);
+        }
+
+    }
+
+
+    /**
+     * @see #dialectStmt(DialectStatement, Visible)
+     */
+    private Stmt loadData(final MySQLLoad loadData, final Visible visible) {
+        final Stmt stmt;
+        if (loadData instanceof _MySQLLoadData._ChildLoadData) {
+            final _MySQLLoadData._SingleLoadData parentLoad;
+            parentLoad = ((_MySQLLoadData._ChildLoadData) loadData).parentLoadData();
+            final SimpleStmt parentStmt, childStmt;
+
+            parentStmt = this.simpleLoadData(parentLoad, visible);
+            childStmt = this.simpleLoadData((_MySQLLoadData._ChildLoadData) loadData, visible);
+            stmt = Stmts.pair(parentStmt, childStmt);
+        } else {
+            stmt = this.simpleLoadData((_MySQLLoadData) loadData, visible);
+        }
+        return stmt;
+    }
+
+    /**
+     * @see #loadData(MySQLLoad, Visible)
+     */
+    private SimpleStmt simpleLoadData(final _MySQLLoadData loadData, final Visible visible) {
+        final TableMeta<?> insertTable;
+        insertTable = loadData.table();
+
+        final _OtherDmlContext context;
+        context = this.createOtherDmlContext(insertTable::isField, visible);
+
+        //1. LOAD DATA keywords
+        final StringBuilder sqlBuilder = context.sqlBuilder()
+                .append("LOAD DATA");
+        //2. modifiers
+        this.loadDataModifier(loadData.modifierList(), sqlBuilder);
+
+        //3. INFILE clause
+        this.loadDataInfileClause(loadData.fileName(), sqlBuilder);
+
+        //4. REPLACE / IGNORE
+        final SQLWords strategyOption;
+        strategyOption = loadData.strategyOption();
+        if (strategyOption != null) {
+            sqlBuilder.append(strategyOption.render());
+        }
+        //5. INTO TABLE clause
+        sqlBuilder.append(" INTO TABLE ");
+        this.safeObjectName(insertTable, sqlBuilder);
+
+        //6. PARTITION clause
+        this.partitionClause(loadData.partitionList(), sqlBuilder);
+        //7. CHARACTER SET
+        final String charsetName;
+        charsetName = loadData.charsetName();
+        if (charsetName != null) {
+            if (!Pattern.compile("[\\w\\d_]+").matcher(charsetName).matches()) {
+                String m = String.format("charset_name[%s] error.", charsetName);
+                throw new CriteriaException(m);
+            }
+            sqlBuilder.append(" CHARACTER SET '")
+                    .append(charsetName)
+                    .append(_Constant.QUOTE);
+        }
+
+        //8. FIELDS | COLUMNS clause
+        final Boolean fieldKeyword;
+        if ((fieldKeyword = loadData.fieldsKeyWord()) != null) {
+            this.loadDataFieldsColumnsClause(loadData, fieldKeyword, context);
+        }
+
+        //9. LINES clause
+        if (loadData.linesClause()) {
+            this.loadDataLinesClause(loadData, context);
+        }
+
+        //10. IGNORE clause
+        final Long ignoreRows;
+        if ((ignoreRows = loadData.ignoreRows()) != null) {
+            assert ignoreRows > -1;
+            sqlBuilder.append(" IGNORE ")
+                    .append(ignoreRows)
+                    .append(" ROWS");
+        }
+
+        //11. col_name_or_user_var
+        this.loadDataColumnOrVarListClause(loadData.columnOrUserVarList(), context);
+
+        //12. SET column pair clause
+        this.loadDataSetColumnPairClause(loadData.columItemPairList(), context);
+
+        return context.build();
+    }
+
+    /**
+     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     */
+    private void loadDataInfileClause(final Path path, final StringBuilder sqlBuilder) {
+        if (Files.notExists(path)) {
+            String m = String.format("%s don't exists,couldn't execute MySQL LOAD DATA.", path.toAbsolutePath());
+            throw new CriteriaException(m);
+        }
+        if (!Files.isReadable(path)) {
+            String m = String.format("%s isn't readable,couldn't execute MySQL LOAD DATA.", path.toAbsolutePath());
+            throw new CriteriaException(m);
+        }
+        sqlBuilder.append(" INFILE '")
+                .append(path.toAbsolutePath())//TODO handle
+                .append(_Constant.QUOTE);
+    }
+
+    /**
+     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     */
+    private void loadDataFieldsColumnsClause(final _MySQLLoadData loadData, final boolean fieldKeywords
+            , final _OtherDmlContext context) {
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        //1. FIELDS / COLUMNS keywords
+        if (fieldKeywords) {
+            sqlBuilder.append(" FIELDS");
+        } else {
+            sqlBuilder.append(" COLUMNS");
+        }
+        //2. TERMINATED BY
+        final String terminatedString;
+        if ((terminatedString = loadData.columnTerminatedBy()) != null) {
+            sqlBuilder.append(" TERMINATED BY ");
+            this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
+        }
+        //3. ENCLOSED BY
+        final Character enclosedChar;
+        if ((enclosedChar = loadData.columnEnclosedBy()) != null) {
+            if (loadData.columnOptionallyEnclosed()) {
+                sqlBuilder.append(" OPTIONALLY");
+            }
+            sqlBuilder.append(" ENCLOSED BY ");
+            this.literal(StringType.INSTANCE, enclosedChar.toString(), sqlBuilder);//TODO check correct
+        }
+        //4. ESCAPED BY
+        final Character escapedChar;
+        if ((escapedChar = loadData.columnEscapedBy()) != null) {
+            sqlBuilder.append(" ESCAPED BY ");
+            this.literal(StringType.INSTANCE, escapedChar.toString(), sqlBuilder);//TODO check correct
+        }
+
+    }
+
+    /**
+     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     */
+    private void loadDataLinesClause(final _MySQLLoadData loadData, final _OtherDmlContext context) {
+        final StringBuilder sqlBuilder = context.sqlBuilder();
+        //1. LINES keywords
+        sqlBuilder.append(" LINES");
+        final String startingString, terminatedString;
+        //2. STARTING BY clause
+        if ((startingString = loadData.linesStartingBy()) != null) {
+            sqlBuilder.append(" STARTING BY ");
+        }
+        //3. TERMINATED BY clause
+        if ((terminatedString = loadData.linesTerminatedBy()) != null) {
+            sqlBuilder.append(" TERMINATED BY ");
+            this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
+        }
+        assert startingString != null || terminatedString != null;
+    }
+
+    /**
+     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     */
+    private void loadDataColumnOrVarListClause(final List<_Expression> columnOrVarList, final _OtherDmlContext context) {
+        final int columnOrVarSize;
+        if ((columnOrVarSize = columnOrVarList.size()) > 0) {
+            final StringBuilder sqlBuilder = context.sqlBuilder();
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            for (int i = 0; i < columnOrVarSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                columnOrVarList.get(i).appendSql(context);
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+    }
+
+    /**
+     * @see #simpleLoadData(_MySQLLoadData, Visible)
+     */
+    private void loadDataSetColumnPairClause(final List<_Pair<FieldMeta<?>, _Expression>> columnPairList
+            , final _OtherDmlContext context) {
+
+        final int columnPairSize;
+        if ((columnPairSize = columnPairList.size()) > 0) {
+            final StringBuilder sqlBuilder = context.sqlBuilder();
+
+            sqlBuilder.append(_Constant.SPACE_SET);
+
+            _Pair<FieldMeta<?>, _Expression> pair;
+            for (int i = 0; i < columnPairSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                pair = columnPairList.get(i);
+
+                context.appendField(pair.first);
+                sqlBuilder.append(_Constant.SPACE_EQUAL);
+                pair.second.appendSql(context);
+
+            }
+
         }
 
     }

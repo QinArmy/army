@@ -23,6 +23,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 
 /**
@@ -36,7 +37,7 @@ import java.util.function.Consumer;
  *
  * @since 1.0
  */
-public abstract class _AbstractDialect implements ArmyParser {
+public abstract class _AbstractDialectParser implements ArmyParser {
 
 
     public final DialectEnv dialectEnv;
@@ -57,7 +58,7 @@ public abstract class _AbstractDialect implements ArmyParser {
     protected final Dialect dialect;
     private final FieldValueGenerator generator;
 
-    protected _AbstractDialect(final DialectEnv dialectEnv, final Dialect dialect) {
+    protected _AbstractDialectParser(final DialectEnv dialectEnv, final Dialect dialect) {
         assert dialect instanceof Enum;
 
         this.dialectEnv = dialectEnv;
@@ -364,7 +365,7 @@ public abstract class _AbstractDialect implements ArmyParser {
 
     @Override
     public final String printStmt(final Stmt stmt, final boolean beautify) {
-        return beautify ? stmt.printSql(this::beautifySql) : stmt.printSql(_AbstractDialect::nonBeautifySql);
+        return beautify ? stmt.printSql(this::beautifySql) : stmt.printSql(_AbstractDialectParser::nonBeautifySql);
     }
 
 
@@ -487,6 +488,11 @@ public abstract class _AbstractDialect implements ArmyParser {
 
     protected final _MultiDeleteContext createMultiDeleteContext(final _SingleDelete stmt, final Visible visible) {
         return MultiDeleteContext.forChild(stmt, this, visible);
+    }
+
+    protected final _OtherDmlContext createOtherDmlContext(final Predicate<FieldMeta<?>> predicate
+            , final Visible visible) {
+        return OtherDmlContext.create(this, predicate, visible);
     }
 
     /**

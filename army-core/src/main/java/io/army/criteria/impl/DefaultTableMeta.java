@@ -279,7 +279,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
 
     private final List<IndexMeta<T>> indexMetaList;
 
-     final PrimaryFieldMeta<T> primaryField;
+    final PrimaryFieldMeta<T> primaryField;
 
 
     private final List<FieldMeta<?>> generatorChain;
@@ -422,6 +422,11 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
     @Override
     public final FieldMeta<T> tryGetField(String fieldName) {
         return this.fieldNameToFields.get(fieldName);
+    }
+
+    @Override
+    public final boolean isField(final FieldMeta<?> field) {
+        return field.tableMeta() == this;
     }
 
     @Override

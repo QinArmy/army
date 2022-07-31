@@ -10,6 +10,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
+import io.army.meta.TableMeta;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -24,6 +25,7 @@ public interface _MySQLLoadData extends _Statement, _DialectStatement {
     @Nullable
     SQLWords strategyOption();
 
+    TableMeta<?> table();
 
     List<String> partitionList();
 
