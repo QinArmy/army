@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
+import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -15,7 +16,11 @@ import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
+import io.army.util._TimeUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -185,38 +190,89 @@ abstract class MySQLParser extends _AbstractDialectParser {
 
         final SqlType sqlType;
         final MappingType mappingType;
-        if (paramMeta instanceof MappingType) {
+        if (paramMeta instanceof MappingType) { //TODO validate non-field codec
             mappingType = (MappingType) paramMeta;
         } else {
             mappingType = paramMeta.mappingType();
         }
         sqlType = mappingType.map(this.serverMeta);
-        final String literal;
+
+        final Object valueAfterConvert;
+        if (sqlType == MySqlType.DATETIME
+                && this.asOf80
+                && (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime)) {
+            valueAfterConvert = nonNull;
+        } else {
+            valueAfterConvert = mappingType.beforeBind(sqlType, this.mappingEnv, nonNull);
+        }
         switch ((MySqlType) sqlType) {
             case INT:
-                literal = MySQLLiterals.integer(sqlType, nonNull);
-                break;
-            case BIGINT:
-                literal = MySQLLiterals.bigInt(sqlType, nonNull);
-                break;
-            case DECIMAL:
-                literal = MySQLLiterals.decimal(sqlType, nonNull);
-                break;
-            case BOOLEAN:
-                literal = MySQLLiterals.booleanLiteral(sqlType, nonNull);
-                break;
-            case DATETIME:
-                literal = MySQLLiterals.datetime(sqlType, paramMeta, nonNull);
-                break;
-            case DATE:
-                literal = MySQLLiterals.date(sqlType, nonNull);
-                break;
-            case TIME:
-                literal = MySQLLiterals.time(sqlType, paramMeta, nonNull);
-                break;
-            case YEAR:
-                literal = MySQLLiterals.year(sqlType, nonNull);
-                break;
+            case YEAR: {
+                if (!(valueAfterConvert instanceof Integer)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(valueAfterConvert);
+            }
+            break;
+            case BIGINT: {
+                if (!(valueAfterConvert instanceof Long || valueAfterConvert instanceof BigInteger)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(valueAfterConvert);
+            }
+            break;
+            case DECIMAL: {
+                if (!(valueAfterConvert instanceof BigDecimal)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(valueAfterConvert);
+            }
+            break;
+            case BOOLEAN: {
+                if (!(valueAfterConvert instanceof Boolean)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(((Boolean) valueAfterConvert) ? BooleanType.TRUE : BooleanType.FALSE);
+            }
+            break;
+            case DATETIME: {
+                final String timeText;
+                if (!this.asOf80) {
+                    if (!((valueAfterConvert instanceof LocalDateTime))) {
+                        throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                    }
+                    timeText = _TimeUtils.format((LocalDateTime) valueAfterConvert, paramMeta);
+                } else if (nonNull instanceof OffsetDateTime) {
+                    timeText = _TimeUtils.format((OffsetDateTime) nonNull, paramMeta);
+                } else if (nonNull instanceof ZonedDateTime) {
+                    timeText = _TimeUtils.format(((ZonedDateTime) nonNull).toOffsetDateTime(), paramMeta);
+                } else {
+                    //above no bug,never here
+                    throw new IllegalStateException("convert error");
+                }
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(timeText)
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case DATE: {
+                if (!(valueAfterConvert instanceof LocalDate)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(valueAfterConvert)
+                        .append(_Constant.QUOTE);
+            }
+            break;
+            case TIME: {
+                if (!(valueAfterConvert instanceof LocalTime)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(_TimeUtils.format((LocalTime) valueAfterConvert, paramMeta))
+                        .append(_Constant.QUOTE);
+            }
+            break;
             case CHAR:
             case VARCHAR:
             case TINYTEXT:

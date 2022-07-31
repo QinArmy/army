@@ -30,88 +30,87 @@ public abstract class _Literals {
         return (Boolean) nonNull ? BooleanType.TRUE : BooleanType.FALSE;
     }
 
-    public static String tinyInt(final SqlType sqlType, final Object nonNull) {
-        return doInteger(sqlType, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE);
+    public static int tinyInt(final SqlType sqlType, final Object nonNull) {
+        return toInteger(sqlType, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE);
     }
 
-    public static String smallInt(final SqlType sqlType, final Object nonNull) {
-        return doInteger(sqlType, nonNull, Short.MIN_VALUE, Short.MAX_VALUE);
+    public static int smallInt(final SqlType sqlType, final Object nonNull) {
+        return toInteger(sqlType, nonNull, Short.MIN_VALUE, Short.MAX_VALUE);
     }
 
-    public static String mediumInt(final SqlType sqlType, final Object nonNull) {
-        return doInteger(sqlType, nonNull, -0x7FFF_FF - 1, 0x7FFF_FF);
+    public static int mediumInt(final SqlType sqlType, final Object nonNull) {
+        return toInteger(sqlType, nonNull, -0x7FFF_FF - 1, 0x7FFF_FF);
     }
 
-    public static String integer(final SqlType sqlType, final Object nonNull) {
-        final String literal;
+    public static int integer(final SqlType sqlType, final Object nonNull) {
+        final int value;
         if (nonNull instanceof CodeEnum) {
             Class<?> enumClass = nonNull.getClass();
-            while (enumClass.isAnonymousClass()) {
+            if (enumClass.isAnonymousClass()) {
                 enumClass = enumClass.getSuperclass();
             }
-            CodeEnumType.getCodeMap(enumClass);
-            literal = Integer.toString(((CodeEnum) nonNull).code());
+            CodeEnumType.getCodeMap(enumClass);//check code mapping
+            value = ((CodeEnum) nonNull).code();
         } else {
-            literal = doInteger(sqlType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            value = toInteger(sqlType, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE);
+
         }
-        return literal;
+        return value;
     }
 
-    private static String doInteger(final SqlType sqlType, final Object nonNull
+    private static int toInteger(final SqlType sqlType, final Object nonNull
             , final int minValue, final int maxValue) {
-        final String literal;
-        if (nonNull instanceof Integer
-                || nonNull instanceof Short
+        final int value;
+        if (nonNull instanceof Integer) {
+            value = (Integer) nonNull;
+        } else if (nonNull instanceof Short
                 || nonNull instanceof Byte) {
-            final int v = ((Number) nonNull).intValue();
-            if (v < minValue || v > maxValue) {
-                throw _Exceptions.valueOutRange(sqlType, nonNull);
-            }
-            literal = nonNull.toString();
+            value = ((Number) nonNull).intValue();
         } else if (nonNull instanceof Long) {
             final long v = (Long) nonNull;
             if (v < minValue || v > maxValue) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
-            literal = nonNull.toString();
+            value = (int) v;
         } else if (nonNull instanceof BigDecimal) {
             final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
             if (v.scale() != 0 || v.compareTo(BigDecimal.valueOf(maxValue)) > 0
                     || v.compareTo(BigDecimal.valueOf(minValue)) < 0) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
-            literal = v.toPlainString();
+            value = v.intValue();
         } else if (nonNull instanceof BigInteger) {
             final BigInteger v = (BigInteger) nonNull;
             if (v.compareTo(BigInteger.valueOf(maxValue)) > 0 || v.compareTo(BigInteger.valueOf(minValue)) < 0) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
-            literal = nonNull.toString();
+            value = v.intValue();
         } else if (nonNull instanceof String) {
             final String v = (String) nonNull;
             try {
-                final int value = Integer.parseInt(v);
-                if (value < minValue || value > maxValue) {
-                    throw _Exceptions.valueOutRange(sqlType, nonNull);
-                }
+                value = Integer.parseInt(v);
             } catch (NumberFormatException e) {
                 throw _Exceptions.valueOutRange(sqlType, nonNull);
             }
-            literal = v;
         } else {
             throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
         }
-        return literal;
+
+        if (value < minValue || value > maxValue) {
+            throw _Exceptions.valueOutRange(sqlType, nonNull);
+        }
+        return value;
     }
 
 
-    public static String bigInt(final SqlType sqlType, final Object nonNull) {
-        final String literal;
-        if (nonNull instanceof Long
-                || nonNull instanceof Integer
+    public static long bigInt(final SqlType sqlType, final Object nonNull) {
+        final long value;
+        if (nonNull instanceof Long) {
+            value = (Long) nonNull;
+        } else if (nonNull instanceof Integer
                 || nonNull instanceof Short
                 || nonNull instanceof Byte) {
-            literal = nonNull.toString();
+            value =
         } else if (nonNull instanceof BigDecimal) {
             final BigDecimal v = ((BigDecimal) nonNull).stripTrailingZeros();
             if (v.scale() != 0 || v.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0

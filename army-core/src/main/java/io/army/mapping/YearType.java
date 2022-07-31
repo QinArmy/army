@@ -52,9 +52,9 @@ public final class YearType extends _ArmyNoInjectionMapping {
         switch (sqlType.database()) {
             case MySQL: {
                 if (nonNull instanceof Year) {
-                    value = nonNull;
+                    value = ((Year) nonNull).getValue();
                 } else if (nonNull instanceof Integer || nonNull instanceof Short) {
-                    value = Year.of(((Number) nonNull).intValue());
+                    value = ((Number) nonNull).intValue();
                 } else {
                     throw outRangeOfSqlType(sqlType, nonNull);
                 }

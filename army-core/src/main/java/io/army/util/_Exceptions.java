@@ -14,6 +14,8 @@ import io.army.dialect.Dialect;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.mapping.MappingTypeException;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.*;
@@ -50,6 +52,13 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new ArmyException(String.format("Unexpected %s type[%s]", Statement.class.getName(), statement));
     }
 
+
+    public static MappingTypeException beforeBindMethod(SqlType sqlType, MappingType mappingType
+            , @Nullable Object returnValue) {
+        String m = String.format("%s beforeBind() method return type %s and %s type not match."
+                , mappingType.getClass().getName(), _ClassUtils.safeClassName(returnValue), sqlType);
+        return new MappingTypeException(m);
+    }
 
     public static TransactionTimeOutException timeout(int timeout, long restMills) {
         String m;

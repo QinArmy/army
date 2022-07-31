@@ -1123,9 +1123,8 @@ final class MySQLDialectParser extends MySQLParser {
             String m = String.format("%s isn't readable,couldn't execute MySQL LOAD DATA.", path.toAbsolutePath());
             throw new CriteriaException(m);
         }
-        sqlBuilder.append(" INFILE '")
-                .append(path.toAbsolutePath())//TODO handle
-                .append(_Constant.QUOTE);
+        sqlBuilder.append(" INFILE ");
+        this.literal(StringType.INSTANCE, path.toAbsolutePath().toString(), sqlBuilder);
     }
 
     /**
@@ -1175,13 +1174,13 @@ final class MySQLDialectParser extends MySQLParser {
         //2. STARTING BY clause
         if ((startingString = loadData.linesStartingBy()) != null) {
             sqlBuilder.append(" STARTING BY ");
+            this.literal(StringType.INSTANCE, startingString, sqlBuilder);//TODO check correct
         }
         //3. TERMINATED BY clause
         if ((terminatedString = loadData.linesTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
             this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
         }
-        assert startingString != null || terminatedString != null;
     }
 
     /**
