@@ -6,13 +6,11 @@ import io.army.codec.FieldCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.env.ArmyEnvironment;
-import io.army.env.ArmyKey;
 import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 
@@ -23,9 +21,6 @@ public abstract class FactoryBuilderSupport {
     protected ArmyEnvironment environment;
 
     protected Collection<FieldCodec> fieldCodecs;
-
-
-    protected int tableCountPerDatabase = 1;
 
     protected SchemaMeta schemaMeta = _SchemaMetaFactory.getSchema("", "");
     protected Function<ArmyException, RuntimeException> exceptionFunction;
@@ -38,8 +33,6 @@ public abstract class FactoryBuilderSupport {
 
     protected List<String> packagesToScan;
 
-    protected ZoneOffset zoneOffset;
-
     protected DdlMode ddlMode;
 
 
@@ -48,15 +41,7 @@ public abstract class FactoryBuilderSupport {
     Map<Class<?>, TableMeta<?>> tableMap;
 
 
-    protected final void initializingZoneOffset(ArmyEnvironment env) {
-        final String offsetId;
-        offsetId = env.get(ArmyKey.ZONE_OFFSET_ID);
-        if (offsetId == null) {
-            this.zoneOffset = null;
-        } else {
-            this.zoneOffset = ZoneOffset.of(offsetId);
-        }
-    }
+
 
 
     protected final void scanSchema() {
@@ -159,14 +144,14 @@ public abstract class FactoryBuilderSupport {
 
 
         @Override
-        public void beforeInitialize(GenericSessionFactory sessionFactory) {
+        public void beforeInitialize(SessionFactory sessionFactory) {
             for (FactoryAdvice factoryAdvice : this.adviceList) {
                 factoryAdvice.beforeInitialize(sessionFactory);
             }
         }
 
         @Override
-        public void afterInitialize(GenericSessionFactory sessionFactory) {
+        public void afterInitialize(SessionFactory sessionFactory) {
             for (FactoryAdvice factoryAdvice : this.adviceList) {
                 factoryAdvice.afterInitialize(sessionFactory);
             }

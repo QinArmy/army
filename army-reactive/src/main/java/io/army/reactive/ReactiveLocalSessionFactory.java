@@ -5,17 +5,18 @@ import io.army.session.SessionException;
 import io.army.session._AbstractSessionFactory;
 import reactor.core.publisher.Mono;
 
+import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class is a implementation of {@link SessionFactory}
  */
-final class LocalSessionFactory extends _AbstractSessionFactory implements SessionFactory {
+final class ReactiveLocalSessionFactory extends _AbstractSessionFactory implements SessionFactory {
 
 
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
 
-    LocalSessionFactory(LocalSessionFactoryBuilder builder) {
+    ReactiveLocalSessionFactory(LocalSessionFactoryBuilder builder) {
         super(builder);
     }
 
@@ -25,6 +26,10 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
         return null;
     }
 
+    @Override
+    public ZoneId zoneId() {
+        return null;
+    }
 
     @Override
     public boolean supportSavePoints() {
@@ -41,7 +46,7 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
 
 
     @Override
-    public boolean factoryClosed() {
+    public boolean isClosed() {
         return this.factoryClosed.get();
     }
 
@@ -59,12 +64,12 @@ final class LocalSessionFactory extends _AbstractSessionFactory implements Sessi
 
     static final class LocalSessionBuilder implements SessionFactory.SessionBuilder {
 
-        private final LocalSessionFactory sessionFactory;
+        private final ReactiveLocalSessionFactory sessionFactory;
 
 
         boolean readOnly;
 
-        private LocalSessionBuilder(LocalSessionFactory sessionFactory) {
+        private LocalSessionBuilder(ReactiveLocalSessionFactory sessionFactory) {
             this.sessionFactory = sessionFactory;
         }
 

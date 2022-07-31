@@ -21,7 +21,7 @@ public abstract class _DdlDialect implements DdlDialect {
 
     protected _DdlDialect(_AbstractDialect dialect) {
         this.dialect = dialect;
-        this.serverMeta = dialect.dialectEnv.serverMeta();
+        this.serverMeta = dialect.serverMeta;
     }
 
     @Override

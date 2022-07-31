@@ -2,7 +2,7 @@ package io.army.jdbc;
 
 import io.army.dialect.Database;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.ExecutorEnvironment;
+import io.army.sync.executor.ExecutorEnv;
 import io.army.sync.executor.RmExecutorFactory;
 import io.army.sync.executor.RmStmtExecutor;
 import io.army.util._Exceptions;
@@ -15,7 +15,7 @@ import java.util.function.BiFunction;
 
 final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecutorFactory {
 
-    static JdbcRmExecutorFactory create(XADataSource dataSource, ExecutorEnvironment executorEnv
+    static JdbcRmExecutorFactory create(XADataSource dataSource, ExecutorEnv executorEnv
             , int methodFlag) {
         return new JdbcRmExecutorFactory(dataSource, executorEnv, methodFlag);
     }
@@ -25,7 +25,7 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
 
     private final BiFunction<JdbcRmExecutorFactory, XAConnection, RmStmtExecutor> executorFunction;
 
-    private JdbcRmExecutorFactory(XADataSource dataSource, ExecutorEnvironment executorEnv, int methodFlag) {
+    private JdbcRmExecutorFactory(XADataSource dataSource, ExecutorEnv executorEnv, int methodFlag) {
         super(executorEnv, methodFlag);
         this.dataSource = dataSource;
         this.executorFunction = rmFunction(this.serverMeta.database());

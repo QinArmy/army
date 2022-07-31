@@ -18,7 +18,7 @@ public interface GenericSession {
 
     String name();
 
-    GenericSessionFactory sessionFactory();
+    SessionFactory sessionFactory();
 
     /**
      * @throws IllegalArgumentException throw,when not found {@link TableMeta}.

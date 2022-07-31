@@ -3,7 +3,7 @@ package io.army.tx;
 import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 
-public abstract class _AbstractGenericTransaction implements GenericTransaction {
+public abstract class _AbstractGenericTransaction implements Transaction {
 
     protected final Isolation isolation;
 

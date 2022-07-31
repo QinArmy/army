@@ -5,8 +5,8 @@ import io.army.env.ArmyEnvironment;
 import io.army.env.SpringArmyEnvironment;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
-import io.army.sync.FactoryBuilder;
-import io.army.sync.SessionFactory;
+import io.army.sync.LocalFactoryBuilder;
+import io.army.sync.LocalSessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -18,13 +18,13 @@ import javax.sql.DataSource;
 import java.util.List;
 
 /**
- * {@link FactoryBean} that creates Army {@link SessionFactory}. This is the usual
+ * {@link FactoryBean} that creates Army {@link LocalSessionFactory}. This is the usual
  * way to set up a shared Army SessionFactory in a Spring application context; the
  * SessionFactory can then be passed to data access objects via dependency injection.
  *
  * @since 1.0
  */
-public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
+public class LocalSessionFactoryBean implements FactoryBean<LocalSessionFactory>
         , InitializingBean, ApplicationContextAware, DisposableBean {
 
     private String catalog = "";
@@ -45,7 +45,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
 
     private String fieldGeneratorFactoryBean;
 
-    private SessionFactory sessionFactory;
+    private LocalSessionFactory sessionFactory;
 
     private ApplicationContext applicationContext;
 
@@ -59,7 +59,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
     public void afterPropertiesSet() {
 
 
-        this.sessionFactory = FactoryBuilder.builder()
+        this.sessionFactory = LocalFactoryBuilder.builder()
                 .name(this.factoryName)
                 .datasource(this.getDataSource())
                 .packagesToScan(this.packageList)
@@ -77,18 +77,18 @@ public class LocalSessionFactoryBean implements FactoryBean<SessionFactory>
     }
 
     @Override
-    public SessionFactory getObject() {
+    public LocalSessionFactory getObject() {
         return this.sessionFactory;
     }
 
     @Override
     public Class<?> getObjectType() {
-        return SessionFactory.class;
+        return LocalSessionFactory.class;
     }
 
     @Override
     public void destroy() {
-        final SessionFactory sessionFactory = this.sessionFactory;
+        final LocalSessionFactory sessionFactory = this.sessionFactory;
         if (sessionFactory != null) {
             sessionFactory.close();
         }

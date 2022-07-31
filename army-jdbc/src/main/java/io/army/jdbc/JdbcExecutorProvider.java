@@ -5,7 +5,7 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.UnsupportedDataSourceTypeException;
-import io.army.sync.executor.ExecutorEnvironment;
+import io.army.sync.executor.ExecutorEnv;
 import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.RmExecutorFactory;
@@ -57,6 +57,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
                 //no bug,never here
                 throw unsupportedDataSource(dataSource);
             }
+            this.meta = meta;
             return meta;
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);
@@ -77,7 +78,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
     }
 
     @Override
-    public LocalExecutorFactory createLocalFactory(final ExecutorEnvironment env) {
+    public LocalExecutorFactory createLocalFactory(final ExecutorEnv env) {
         final CommonDataSource dataSource = this.dataSource;
         if (!(dataSource instanceof DataSource)) {
             String m = String.format("unsupported creating %s", LocalExecutorFactory.class.getName());
@@ -88,7 +89,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
     }
 
     @Override
-    public RmExecutorFactory createRmFactory(final ExecutorEnvironment env) {
+    public RmExecutorFactory createRmFactory(final ExecutorEnv env) {
         final CommonDataSource dataSource = this.dataSource;
         if (!(dataSource instanceof XADataSource)) {
             String m = String.format("unsupported creating %s", RmExecutorFactory.class.getName());

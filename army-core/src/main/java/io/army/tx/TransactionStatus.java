@@ -1,12 +1,9 @@
 package io.army.tx;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 /**
  * Enum representing the status in which Transaction is running.
  *
- * @see GenericTransaction#status()
+ * @see Transaction#status()
  * @since 1.0
  */
 public enum TransactionStatus {
@@ -51,12 +48,6 @@ public enum TransactionStatus {
      */
     ROLLING_BACK;
 
-
-
-    public static final Set<TransactionStatus> END_STATUS_SET = EnumSet.of(
-            COMMITTED,
-            ROLLED_BACK
-    );
 
 
 

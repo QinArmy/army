@@ -1,10 +1,9 @@
 package io.army.reactive;
 
-import io.army.tx.GenericTransaction;
 import io.army.tx.TransactionException;
 import reactor.core.publisher.Mono;
 
-public interface Transaction extends GenericTransaction {
+public interface Transaction extends io.army.tx.Transaction {
 
     @Override
     Session session();

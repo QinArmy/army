@@ -7,23 +7,23 @@ import io.army.codec.FieldCodec;
 import io.army.codec.JsonCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
+import io.army.dialect.DialectEnv;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingEnv;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
+import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.session.DdlMode;
 import io.army.session.FactoryBuilderSupport;
 import io.army.session.SessionFactoryException;
-import io.army.sync.executor.ExecutorEnvironment;
-import io.army.sync.executor.ExecutorFactory;
-import io.army.sync.executor.ExecutorProvider;
-import io.army.sync.executor.MetaExecutor;
+import io.army.sync.executor.*;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -33,11 +33,10 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 
-final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements FactoryBuilder {
+final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements LocalFactoryBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LocalSessionFactoryBuilder.class);
 
@@ -45,13 +44,14 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
 
     private Object dataSource;
 
-    ExecutorFactory executorFactory;
+    LocalExecutorFactory executorFactory;
 
     SessionContext sessionContext;
 
+    DialectEnv dialectEnv;
 
     @Override
-    public FactoryBuilder name(String sessionFactoryName) {
+    public LocalFactoryBuilder name(String sessionFactoryName) {
         if (!_StringUtils.hasText(sessionFactoryName)) {
             throw new IllegalArgumentException("sessionFactoryName must have text.");
         }
@@ -60,100 +60,125 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
     @Override
-    public FactoryBuilder schema(String catalog, String schema) {
+    public LocalFactoryBuilder schema(String catalog, String schema) {
         this.schemaMeta = _SchemaMetaFactory.getSchema(catalog, schema);
         return this;
     }
 
     @Override
-    public FactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
+    public LocalFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
         this.fieldCodecs = fieldCodecs;
         return this;
     }
 
     @Override
-    public FactoryBuilder environment(ArmyEnvironment environment) {
+    public LocalFactoryBuilder environment(ArmyEnvironment environment) {
         this.environment = environment;
         return this;
     }
 
 
     @Override
-    public FactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices) {
+    public LocalFactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices) {
         this.factoryAdvices = factoryAdvices;
         return this;
     }
 
     @Override
-    public FactoryBuilder exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction) {
+    public LocalFactoryBuilder exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction) {
         this.exceptionFunction = exceptionFunction;
         return this;
     }
 
     @Override
-    public FactoryBuilder domainAdvice(Map<TableMeta<?>, DomainAdvice> domainAdviceMap) {
+    public LocalFactoryBuilder domainAdvice(Map<TableMeta<?>, DomainAdvice> domainAdviceMap) {
         this.domainAdviceMap = Objects.requireNonNull(domainAdviceMap);
         return this;
     }
 
     @Override
-    public FactoryBuilder fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory) {
+    public LocalFactoryBuilder fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory) {
         this.fieldGeneratorFactory = factory;
         return this;
     }
 
     @Override
-    public FactoryBuilder datasource(Object dataSource) {
+    public LocalFactoryBuilder datasource(Object dataSource) {
         this.dataSource = dataSource;
         return this;
     }
 
     @Override
-    public FactoryBuilder packagesToScan(List<String> packageList) {
+    public LocalFactoryBuilder packagesToScan(List<String> packageList) {
         this.packagesToScan = _CollectionUtils.asUnmodifiableList(packageList);
         return this;
     }
 
     @Override
-    public FactoryBuilder currentSessionContext(SessionContext context) {
+    public LocalFactoryBuilder currentSessionContext(SessionContext context) {
         this.sessionContext = context;
         return this;
     }
 
     @Override
-    public SessionFactory build() throws SessionFactoryException {
+    public LocalSessionFactory build() throws SessionFactoryException {
 
         try {
             final ArmyEnvironment env = Objects.requireNonNull(this.environment);
             //1. scan table meta
             this.scanSchema();
 
-            //2. create ExecutorFactory
-            final ExecutorFactory executorFactory;
-            executorFactory = getExecutorProvider(env)
-                    .createLocalFactory(Objects.requireNonNull(this.dataSource), createFactoryInfo(env));
+            //2. create ExecutorProvider
+            final ExecutorProvider executorProvider;
+            executorProvider = createExecutorProvider(env, Objects.requireNonNull(this.dataSource));
+            //3. create ServerMeta
+            final ServerMeta serverMeta;
+            serverMeta = executorProvider.createServerMeta();
+
+            //4. create MappingEnv
+            final MappingEnv mappingEnv;
+            mappingEnv = MappingEnv.create(false, serverMeta, env.get(ArmyKey.ZONE_ID), new MockJsonCodec());
+
+            //5. create ExecutorEnv
+            final String factoryName = Objects.requireNonNull(this.name);
+            final ExecutorEnv executorEnv;
+            executorEnv = createExecutorEnv(factoryName, env, mappingEnv);
+            //6. create LocalExecutorFactory
+            final LocalExecutorFactory executorFactory;
+            executorFactory = executorProvider.createLocalFactory(executorEnv);
 
             final FactoryAdvice factoryAdvice;
             factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
-            //3. invoke beforeInstance
+            //7. invoke beforeInstance
             if (factoryAdvice != null) {
-                factoryAdvice.beforeInstance(executorFactory.serverMeta(), env);
+                factoryAdvice.beforeInstance(serverMeta, env);
             }
-            //4. create SessionFactoryImpl instance
+            //8. create DialectEnv
+            this.dialectEnv = DialectEnv.builder()
+                    .factoryName(factoryName)
+                    .environment(env)
+                    .fieldGeneratorMap(Collections.emptyMap())//TODO
+                    .mappingEnv(mappingEnv)
+                    .build();
+
+            //9. create SessionFactoryImpl instance
             this.executorFactory = executorFactory;
             this.ddlMode = env.getOrDefault(ArmyKey.DDL_MODE);
-            initializingZoneOffset(env);
-            final LocalSessionFactory sessionFactory;
-            sessionFactory = new LocalSessionFactory(this);
+            final SyncLocalSessionFactory sessionFactory;
+            sessionFactory = new SyncLocalSessionFactory(this);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Created {}[{}]", SessionFactory.class.getName(), sessionFactory.name());
+                LOG.debug("Created {}[{}]", LocalSessionFactory.class.getName(), sessionFactory.name());
             }
-            //5. invoke beforeInitialize
+            assert factoryName.equals(sessionFactory.name());
+            assert sessionFactory.executorFactory == executorFactory;
+            assert sessionFactory.mappingEnv == mappingEnv;
+
+            //9. invoke beforeInitialize
             if (factoryAdvice != null) {
                 factoryAdvice.beforeInitialize(sessionFactory);
             }
 
-            //6. invoke initializingFactory
+            //10. invoke initializingFactory
             initializingFactory(sessionFactory);
 
             //7. invoke afterInitialize
@@ -170,16 +195,15 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
 
-    private ExecutorEnvironment createFactoryInfo(ArmyEnvironment env) {
+    private ExecutorEnv createExecutorEnv(String factoryName, ArmyEnvironment env, MappingEnv mappingEnv) {
         final Map<FieldMeta<?>, FieldCodec> codecMap;
         codecMap = createCodecMap();
-        return new FactoryInfoImpl(codecMap, env);
+        return new LocalExecutorEnvironment(factoryName, codecMap, env, mappingEnv);
     }
 
 
     /**
      * @return a modified map
-     * @see #createFactoryInfo(ArmyEnvironment)
      */
     private Map<FieldMeta<?>, FieldCodec> createCodecMap() {
         final Collection<FieldCodec> codecs = this.fieldCodecs;
@@ -215,12 +239,11 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     /**
      * @see #build()
      */
-    private void initializingFactory(LocalSessionFactory sessionFactory) throws SessionFactoryException {
+    private void initializingFactory(SyncLocalSessionFactory sessionFactory) throws SessionFactoryException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing {}", sessionFactory);
         }
 
-        final ArmyEnvironment env = sessionFactory.environment();
         // initializing schema
         final DdlMode ddlMode;
         ddlMode = this.ddlMode;
@@ -230,7 +253,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
                 break;
             case VALIDATE:
             case UPDATE:
-            case DROP_CREATE:
+            case DROP_CREATE://TODO detail
                 initializingSchema(sessionFactory, ddlMode);
                 break;
             default:
@@ -240,13 +263,13 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
     /**
-     * @see #initializingFactory(LocalSessionFactory)
+     * @see #initializingFactory(SyncLocalSessionFactory)
      */
-    private static void initializingSchema(final LocalSessionFactory sessionFactory, final DdlMode ddlMode) {
+    private static void initializingSchema(final SyncLocalSessionFactory sessionFactory, final DdlMode ddlMode) {
 
         final String msgPrefix;
         msgPrefix = String.format("Initializing schema of %s[%s],%s[%s]"
-                , SessionFactory.class.getName(), sessionFactory.name()
+                , LocalSessionFactory.class.getName(), sessionFactory.name()
                 , DdlMode.class.getName(), ddlMode);
         LOG.info(msgPrefix);
         final long startTime;
@@ -294,7 +317,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
                 case DROP_CREATE: {
                     //create ddl
                     final List<String> ddlList;
-                    ddlList = sessionFactory.dialect.schemaDdl(schemaResult);
+                    ddlList = sessionFactory.dialectParser.schemaDdl(schemaResult);
                     metaExecutor.executeDdl(ddlList);
                 }
                 break;
@@ -304,7 +327,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             LOG.info("{},cost {} ms.", msgPrefix, System.currentTimeMillis() - startTime);
         } catch (DataAccessException e) {
             String m = String.format("%s[%s] schema initializing failure."
-                    , SessionFactory.class.getName(), sessionFactory.name());
+                    , LocalSessionFactory.class.getName(), sessionFactory.name());
             throw new SessionFactoryException(m, e);
         }
 
@@ -312,12 +335,12 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
     /**
-     * @see #initializingSchema(LocalSessionFactory, DdlMode)
+     * @see #initializingSchema(SyncLocalSessionFactory, DdlMode)
      */
-    private static void validateSchema(LocalSessionFactory sessionFactory, _SchemaResult schemaResult) {
+    private static void validateSchema(SyncLocalSessionFactory sessionFactory, _SchemaResult schemaResult) {
 
         final StringBuilder builder = new StringBuilder()
-                .append(SessionFactory.class.getName())
+                .append(LocalSessionFactory.class.getName())
                 .append('[')
                 .append(sessionFactory.name())
                 .append("] validate failure.\n");
@@ -380,57 +403,67 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
 
-    private static ExecutorProvider getExecutorProvider(final ArmyEnvironment env) {
+    private static ExecutorProvider createExecutorProvider(final ArmyEnvironment env, final Object dataSource) {
 
         final Class<?> providerClass;
         final String className = env.getOrDefault(SyncKey.EXECUTOR_PROVIDER);
         try {
             providerClass = Class.forName(className);
         } catch (Exception e) {
-            String m = String.format("Load class %s occur error.", ExecutorProvider.class.getName());
+            String m = String.format("Load class %s %s occur error.", ExecutorProvider.class.getName(), className);
             throw new SessionFactoryException(m, e);
         }
 
         if (!ExecutorProvider.class.isAssignableFrom(providerClass)) {
             String m = String.format("%s value[%s] isn' the implementation of %s ."
-                    , SyncKey.EXECUTOR_PROVIDER, providerClass.getName(), ExecutorProvider.class.getName());
+                    , SyncKey.EXECUTOR_PROVIDER, className, ExecutorProvider.class.getName());
             throw new SessionFactoryException(m);
         }
 
+        final String methodName = "create";
         try {
+
             final Method method;
-            method = providerClass.getMethod("create");
+            method = providerClass.getMethod(methodName, Object.class);
             final int modifiers;
             modifiers = method.getModifiers();
-            final ExecutorProvider provider;
-            if (Modifier.isPublic(modifiers)
+            if (!(Modifier.isPublic(modifiers)
                     && Modifier.isStatic(modifiers)
-                    && method.getReturnType() == providerClass) {
-                provider = (ExecutorProvider) method.invoke(null);
-                if (provider == null) {
-                    String m = String.format("%s getInstance return null.", providerClass.getName());
-                    throw new NullPointerException(m);
-                }
-            } else {
-                String m = String.format("%s not declared getInstance method.", providerClass.getName());
+                    && method.getReturnType() == providerClass)) {
+                String m;
+                m = String.format("%s not declared %s(Object) method.", methodName, providerClass.getName());
                 throw new SessionFactoryException(m);
+
+            }
+            final ExecutorProvider provider;
+            provider = (ExecutorProvider) method.invoke(null, dataSource);
+            if (provider == null) {
+                String m = String.format("%s %s return null.", methodName, providerClass.getName());
+                throw new NullPointerException(m);
             }
             return provider;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            String m = String.format("%s getInstance invoke error:%s", providerClass.getName(), e.getMessage());
+            String m = String.format("%s %s invoke error:%s", methodName, providerClass.getName(), e.getMessage());
             throw new SessionFactoryException(e, m);
         }
 
     }
 
 
-    private static final class FactoryInfoImpl implements ExecutorEnvironment {
+    private static final class LocalExecutorEnvironment implements ExecutorEnv {
+
+        private final String factoryName;
 
         private final Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
         private final ArmyEnvironment environment;
 
-        private FactoryInfoImpl(Map<FieldMeta<?>, FieldCodec> fieldCodecMap, ArmyEnvironment environment) {
+        private final MappingEnv mappingEnv;
+
+        private LocalExecutorEnvironment(String factoryName, Map<FieldMeta<?>, FieldCodec> fieldCodecMap
+                , ArmyEnvironment environment, MappingEnv mappingEnv) {
+
+            this.factoryName = factoryName;
             final Map<FieldMeta<?>, FieldCodec> emptyMap = Collections.emptyMap();
             if (fieldCodecMap == emptyMap) {
                 this.fieldCodecMap = emptyMap;
@@ -438,6 +471,12 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
                 this.fieldCodecMap = Collections.unmodifiableMap(fieldCodecMap);
             }
             this.environment = environment;
+            this.mappingEnv = mappingEnv;
+        }
+
+        @Override
+        public String factoryName() {
+            return this.factoryName;
         }
 
         @Override
@@ -451,27 +490,32 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
         }
 
         @Override
-        public boolean inBeanContainer() {
-            return this.environment.getClass().getName().equals("io.army.env.SpringArmyEnvironment");
+        public MappingEnv mappingEnv() {
+            return this.mappingEnv;
         }
 
         @Override
-        public ZoneOffset zoneOffset() {
+        public String toString() {
+            return String.format("%s hash:%s,factory:%s[%s]", ExecutorEnv.class.getName()
+                    , System.identityHashCode(this), LocalSessionFactory.class.getName(), this.factoryName);
+        }
+
+
+    }//LocalExecutorEnvironment
+
+
+    private static final class MockJsonCodec implements JsonCodec {
+        @Override
+        public String encode(Object obj) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public JsonCodec jsonCodec() {
+        public Object decode(String json) {
             throw new UnsupportedOperationException();
         }
 
-        @Override
-        public boolean isReactive() {
-            //always false
-            return false;
-        }
-
-    }//FactoryInfoImpl
+    }//MockJsonCodec
 
 
 }

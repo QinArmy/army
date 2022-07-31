@@ -5,7 +5,7 @@ import io.army.env.SyncKey;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.ExecutorEnvironment;
+import io.army.sync.executor.ExecutorEnv;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.MetaExecutor;
 
@@ -18,7 +18,7 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
     static final byte EXECUTE_LARGE_BATCH_METHOD = 4;
 
 
-    final ExecutorEnvironment executorEnv;
+    final ExecutorEnv executorEnv;
 
     final MappingEnv mappingEnv;
 
@@ -34,7 +34,7 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
 
     private boolean closed;
 
-    JdbcExecutorFactory(final ExecutorEnvironment executorEnv, final int methodFlag) {
+    JdbcExecutorFactory(final ExecutorEnv executorEnv, final int methodFlag) {
         this.executorEnv = executorEnv;
         this.mappingEnv = executorEnv.mappingEnv();
         this.serverMeta = this.mappingEnv.serverMeta();

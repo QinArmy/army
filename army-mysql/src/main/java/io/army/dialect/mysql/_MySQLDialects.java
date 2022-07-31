@@ -1,7 +1,7 @@
 package io.army.dialect.mysql;
 
 import io.army.dialect.Database;
-import io.army.dialect._DialectEnv;
+import io.army.dialect.DialectEnv;
 import io.army.dialect._DialectFactory;
 import io.army.util._Exceptions;
 
@@ -12,7 +12,7 @@ public abstract class _MySQLDialects extends _DialectFactory {
         throw new UnsupportedOperationException();
     }
 
-    public static MySQLParser create(final _DialectEnv env) {
+    public static MySQLParser create(final DialectEnv env) {
         final MySQLDialect targetDialect;
         targetDialect = (MySQLDialect) targetDialect(env, Database.MySQL);
         final MySQLParser mySQL;

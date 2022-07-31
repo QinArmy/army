@@ -2,7 +2,7 @@ package io.army.proxy;
 
 
 import io.army.meta.TableMeta;
-import io.army.session.GenericSessionFactory;
+import io.army.session.SessionFactory;
 
 public interface _SessionCacheFactory {
 
@@ -12,7 +12,7 @@ public interface _SessionCacheFactory {
     _SessionCache createCache();
 
 
-    static _SessionCacheFactory create(GenericSessionFactory sessionFactory) {
+    static _SessionCacheFactory create(SessionFactory sessionFactory) {
         return SessionCacheFactory.create(sessionFactory);
     }
 

@@ -1,18 +1,16 @@
 package io.army.session;
 
 import io.army.ArmyException;
-import io.army.dialect._DialectEnv;
+import io.army.dialect.DialectParser;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
-import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
-import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.Stmt;
 import io.army.util._Assert;
+import org.slf4j.Logger;
 
-import java.time.ZoneId;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,9 +22,9 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-public abstract class _AbstractSessionFactory implements GenericSessionFactory, _DialectEnv {
+public abstract class _AbstractSessionFactory implements SessionFactory {
 
-    private static final ConcurrentMap<String, Boolean> FACTORY_MAP = new ConcurrentHashMap<>(3);
+    protected static final ConcurrentMap<String, Boolean> FACTORY_MAP = new ConcurrentHashMap<>(3);
 
     protected final String name;
 
@@ -38,53 +36,41 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
     protected final Function<ArmyException, RuntimeException> exceptionFunction;
 
-    protected final SubQueryInsertMode subQueryInsertMode;
+    protected final QueryInsertMode subQueryInsertMode;
 
     protected final boolean readonly;
 
-    protected final ZoneId zoneId;
-
     public final boolean uniqueCache;
 
-    public final boolean sqlLogDynamic;
-
-
-    private final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap;
+    private final boolean sqlLogDynamic;
 
     private final boolean sqlLogShow;
 
-    private final boolean sqlLogFormat;
+    private final boolean sqlLogBeautify;
 
-    public final boolean sqlLogDebug;
+    private final boolean sqlLogDebug;
 
 
     protected _AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
-        final ArmyEnvironment env = support.environment;
-        assert env != null;
+        final ArmyEnvironment env = Objects.requireNonNull(support.environment);
 
-        if (FACTORY_MAP.putIfAbsent(name, Boolean.TRUE) != null) {
+        if (FACTORY_MAP.containsKey(name)) {
             throw new SessionFactoryException(String.format("factory name[%s] duplication", name));
         }
         this.name = name;
         this.env = env;
         this.schemaMeta = Objects.requireNonNull(support.schemaMeta);
         this.tableMap = Objects.requireNonNull(support.tableMap);
-        this.exceptionFunction = exceptionFunction(support.exceptionFunction);
 
+        this.exceptionFunction = exceptionFunction(support.exceptionFunction);
         this.subQueryInsertMode = env.getOrDefault(ArmyKey.SUBQUERY_INSERT_MODE);
         this.readonly = env.getOrDefault(ArmyKey.READ_ONLY);
-
-        this.zoneId = support.zoneOffset;
-        this.fieldGeneratorMap = support.generatorMap;
-
-        final DdlMode ddlMode = support.ddlMode;
-        assert ddlMode != null;
-        this.uniqueCache = ddlMode != DdlMode.NONE;
+        this.uniqueCache = Objects.requireNonNull(support.ddlMode) != DdlMode.NONE;
 
         this.sqlLogDynamic = env.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
         this.sqlLogShow = env.getOrDefault(ArmyKey.SQL_LOG_SHOW);
-        this.sqlLogFormat = env.getOrDefault(ArmyKey.SQL_LOG_FORMAT);
+        this.sqlLogBeautify = env.getOrDefault(ArmyKey.SQL_LOG_BEAUTIFY);
         this.sqlLogDebug = env.getOrDefault(ArmyKey.SQL_LOG_DEBUG);
     }
 
@@ -104,24 +90,10 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
         return this.env;
     }
 
-    @Override
-    public final ZoneId zoneId() {
-        return this.mappingEnv().zoneId();
-    }
-
-    @Override
-    public final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap() {
-        return this.fieldGeneratorMap;
-    }
 
     @Override
     public final SchemaMeta schemaMeta() {
         return this.schemaMeta;
-    }
-
-    @Override
-    public MappingEnv mappingEnv() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -132,7 +104,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public final <T> TableMeta<T> tableMeta(Class<T> domainClass) {
+    public final <T> TableMeta<T> getTable(Class<T> domainClass) {
         return (TableMeta<T>) this.tableMap.get(domainClass);
     }
 
@@ -148,7 +120,7 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
 
     @Override
-    public boolean factoryClosed() {
+    public boolean isClosed() {
         return false;
     }
 
@@ -164,33 +136,28 @@ public abstract class _AbstractSessionFactory implements GenericSessionFactory, 
 
 
     @Nullable
-    public final Function<String, String> getSqlFormatter() {
-        final Function<String, String> function;
+    protected final void printSqlLog(final DialectParser parser, final Stmt stmt, final Logger factoryLogger) {
+        String sqlLog = null;
+        boolean debugLevel = false;
         if (this.sqlLogDynamic) {
-            if (!this.env.getOrDefault(ArmyKey.SQL_LOG_SHOW)) {
-                function = null;
-            } else if (this.env.getOrDefault(ArmyKey.SQL_LOG_FORMAT)) {
-                function = this::formatSql;
-            } else {
-                function = this::noFormatSql;
+            final ArmyEnvironment env = this.env;
+            if (env.getOrDefault(ArmyKey.SQL_LOG_SHOW)) {
+                sqlLog = parser.printStmt(stmt, env.getOrDefault(ArmyKey.SQL_LOG_BEAUTIFY));
+                debugLevel = env.getOrDefault(ArmyKey.SQL_LOG_DEBUG);
             }
-        } else if (!this.sqlLogShow) {
-            function = null;
-        } else if (this.sqlLogFormat) {
-            function = this::formatSql;
-        } else {
-            function = this::noFormatSql;
+        } else if (this.sqlLogShow) {
+            sqlLog = parser.printStmt(stmt, this.sqlLogBeautify);
+            debugLevel = this.sqlLogDebug;
         }
-        return function;
-    }
 
+        if (sqlLog != null) {
+            if (debugLevel) {
+                factoryLogger.debug(sqlLog);
+            } else {
+                factoryLogger.info(sqlLog);
+            }
+        }
 
-    private String formatSql(String sql) {
-        return sql;
-    }
-
-    private String noFormatSql(String sql) {
-        return sql;
     }
 
 

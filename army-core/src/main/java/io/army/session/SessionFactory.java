@@ -11,7 +11,7 @@ import java.time.ZoneId;
 import java.util.Map;
 import java.util.function.Function;
 
-public interface GenericSessionFactory {
+public interface SessionFactory {
 
     String name();
 
@@ -26,7 +26,7 @@ public interface GenericSessionFactory {
     Map<Class<?>, TableMeta<?>> tableMap();
 
     @Nullable
-    <T> TableMeta<T> tableMeta(Class<T> domainClass);
+    <T> TableMeta<T> getTable(Class<T> domainClass);
 
 
     boolean supportSavePoints();
@@ -36,7 +36,7 @@ public interface GenericSessionFactory {
      *
      * @return True if this factory is already closed; false otherwise.
      */
-    boolean factoryClosed();
+    boolean isClosed();
 
     boolean readonly();
 

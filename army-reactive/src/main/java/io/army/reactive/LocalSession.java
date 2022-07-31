@@ -30,7 +30,7 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
 
     private final AtomicReference<Transaction> sessionTransaction = new AtomicReference<>(null);
 
-    LocalSession(LocalSessionFactory.LocalSessionBuilder builder) {
+    LocalSession(ReactiveLocalSessionFactory.LocalSessionBuilder builder) {
         this.readonly = builder.readOnly;
     }
 

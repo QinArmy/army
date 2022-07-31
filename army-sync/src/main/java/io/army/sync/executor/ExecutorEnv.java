@@ -7,14 +7,14 @@ import io.army.meta.FieldMeta;
 
 import java.util.Map;
 
-public interface ExecutorEnvironment {
+public interface ExecutorEnv {
+
+    String factoryName();
 
     Map<FieldMeta<?>, FieldCodec> fieldCodecMap();
 
 
     ArmyEnvironment environment();
-
-    boolean isReactive();
 
     /**
      * @return always same instance

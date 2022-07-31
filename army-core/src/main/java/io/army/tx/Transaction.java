@@ -4,7 +4,7 @@ package io.army.tx;
 import io.army.lang.Nullable;
 import io.army.session.GenericSession;
 
-public interface GenericTransaction {
+public interface Transaction {
 
     GenericSession session();
 

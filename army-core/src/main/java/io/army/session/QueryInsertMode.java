@@ -1,6 +1,6 @@
 package io.army.session;
 
-public enum SubQueryInsertMode {
+public enum QueryInsertMode {
 
     SUPPORT,
     ONLY_MIGRATION,

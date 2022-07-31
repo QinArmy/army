@@ -5,7 +5,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
-import io.army.session.GenericSessionFactory;
+import io.army.session.SessionFactory;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.implementation.MethodDelegation;
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentMap;
 
 final class SessionCacheFactory implements _SessionCacheFactory {
 
-    static SessionCacheFactory create(GenericSessionFactory sessionFactory) {
+    static SessionCacheFactory create(SessionFactory sessionFactory) {
         return new SessionCacheFactory(sessionFactory);
     }
 
@@ -28,13 +28,13 @@ final class SessionCacheFactory implements _SessionCacheFactory {
 
     private final ConcurrentMap<Class<?>, Class<?>> proxyClassMap = new ConcurrentHashMap<>();
 
-    final GenericSessionFactory sessionFactory;
+    final SessionFactory sessionFactory;
 
     final boolean uniqueCache;
 
     private final ByteBuddy byteBuddy;
 
-    private SessionCacheFactory(GenericSessionFactory sessionFactory) {
+    private SessionCacheFactory(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
         this.byteBuddy = new ByteBuddy();
         this.uniqueCache = sessionFactory.uniqueCache();

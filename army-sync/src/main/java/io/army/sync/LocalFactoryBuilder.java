@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public interface FactoryBuilder {
+public interface LocalFactoryBuilder {
 
     /**
      * <p>
@@ -24,28 +24,28 @@ public interface FactoryBuilder {
      *
      * @param sessionFactoryName non-empty
      */
-    FactoryBuilder name(String sessionFactoryName);
+    LocalFactoryBuilder name(String sessionFactoryName);
 
     /**
      * <p>
      * Required.
      * </p>
      */
-    FactoryBuilder environment(ArmyEnvironment environment);
+    LocalFactoryBuilder environment(ArmyEnvironment environment);
 
     /**
      * <p>
      * Required.
      * </p>
      */
-    FactoryBuilder datasource(Object dataSource);
+    LocalFactoryBuilder datasource(Object dataSource);
 
     /**
      * <p>
      * Required.
      * </p>
      */
-    FactoryBuilder packagesToScan(List<String> packageList);
+    LocalFactoryBuilder packagesToScan(List<String> packageList);
 
     /**
      * <p>
@@ -55,52 +55,52 @@ public interface FactoryBuilder {
      * @param catalog catalog or empty
      * @param schema  schema or empty
      */
-    FactoryBuilder schema(String catalog, String schema);
+    LocalFactoryBuilder schema(String catalog, String schema);
 
     /**
      * <p>
      * Optional.
      * </p>
      */
-    FactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
+    LocalFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs);
 
     /**
      * <p>
      * Optional.
      * </p>
      */
-    FactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices);
+    LocalFactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices);
 
     /**
      * <p>
      * Optional.
      * </p>
      */
-    FactoryBuilder exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction);
+    LocalFactoryBuilder exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction);
 
     /**
      * <p>
      * Optional.
      * </p>
      */
-    FactoryBuilder domainAdvice(Map<TableMeta<?>, DomainAdvice> domainAdviceMap);
+    LocalFactoryBuilder domainAdvice(Map<TableMeta<?>, DomainAdvice> domainAdviceMap);
 
     /**
      * <p>
      * Optional.
      * </p>
      */
-    FactoryBuilder fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory);
+    LocalFactoryBuilder fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory);
 
 
     /**
      * (optional)
      */
-    FactoryBuilder currentSessionContext(SessionContext context);
+    LocalFactoryBuilder currentSessionContext(SessionContext context);
 
-    SessionFactory build() throws SessionFactoryException;
+    LocalSessionFactory build() throws SessionFactoryException;
 
-    static FactoryBuilder builder() {
+    static LocalFactoryBuilder builder() {
         return new LocalSessionFactoryBuilder();
     }
 

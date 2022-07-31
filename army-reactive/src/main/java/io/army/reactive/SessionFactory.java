@@ -1,10 +1,9 @@
 package io.army.reactive;
 
-import io.army.session.GenericSessionFactory;
 import io.army.session.SessionException;
 import reactor.core.publisher.Mono;
 
-public interface SessionFactory extends GenericSessionFactory {
+public interface SessionFactory extends io.army.session.SessionFactory {
 
 
     SessionBuilder builder();

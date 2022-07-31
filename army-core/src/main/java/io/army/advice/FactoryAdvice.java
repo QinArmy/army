@@ -2,7 +2,7 @@ package io.army.advice;
 
 import io.army.env.ArmyEnvironment;
 import io.army.meta.ServerMeta;
-import io.army.session.GenericSessionFactory;
+import io.army.session.SessionFactory;
 
 public interface FactoryAdvice {
 
@@ -10,7 +10,7 @@ public interface FactoryAdvice {
 
     void beforeInstance(ServerMeta serverMeta, ArmyEnvironment environment);
 
-    void beforeInitialize(GenericSessionFactory sessionFactory);
+    void beforeInitialize(SessionFactory sessionFactory);
 
-    void afterInitialize(GenericSessionFactory sessionFactory);
+    void afterInitialize(SessionFactory sessionFactory);
 }

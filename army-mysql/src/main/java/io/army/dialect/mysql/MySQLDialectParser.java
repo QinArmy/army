@@ -35,7 +35,7 @@ import java.util.*;
  */
 final class MySQLDialectParser extends MySQLParser {
 
-    static MySQLDialectParser create(_DialectEnv environment, @Nullable MySQLDialect dialect) {
+    static MySQLDialectParser create(DialectEnv environment, @Nullable MySQLDialect dialect) {
         assert dialect != null;
         return new MySQLDialectParser(environment, dialect);
     }
@@ -53,7 +53,7 @@ final class MySQLDialectParser extends MySQLParser {
     private static final String SPACE_ON_DUPLICATE_KEY_UPDATE = " ON DUPLICATE KEY UPDATE";
 
 
-    private MySQLDialectParser(_DialectEnv environment, MySQLDialect dialect) {
+    private MySQLDialectParser(DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
 
     }

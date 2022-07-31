@@ -39,7 +39,7 @@ import java.util.function.Consumer;
 public abstract class _AbstractDialect implements ArmyParser {
 
 
-    public final _DialectEnv dialectEnv;
+    public final DialectEnv dialectEnv;
 
     protected final MappingEnv mappingEnv;
 
@@ -57,7 +57,7 @@ public abstract class _AbstractDialect implements ArmyParser {
     protected final Dialect dialect;
     private final FieldValueGenerator generator;
 
-    protected _AbstractDialect(final _DialectEnv dialectEnv, final Dialect dialect) {
+    protected _AbstractDialect(final DialectEnv dialectEnv, final Dialect dialect) {
         assert dialect instanceof Enum;
 
         this.dialectEnv = dialectEnv;
@@ -70,7 +70,7 @@ public abstract class _AbstractDialect implements ArmyParser {
         this.identifierQuote = identifierQuote();
         this.identifierCaseSensitivity = this.isIdentifierCaseSensitivity();
 
-        this.keyWordSet = Collections.unmodifiableSet(createKeyWordSet(dialectEnv.serverMeta()));
+        this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet(this.serverMeta));
         if (dialectEnv instanceof _MockDialects) {
             this.generator = FieldValuesGenerators.mock(this.mappingEnv::zoneId);
         } else {

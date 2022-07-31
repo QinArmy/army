@@ -26,7 +26,7 @@ Army 拥有以下几个特性:
 * 逻辑删除(visible 字段)
 * 不支持联合主键
 * 不支持复杂映射
-* io.army.sync.SessionFactory 可设置为 read-only 模式
+* io.army.sync.LocalSessionFactory 可设置为 read-only 模式
 
 Army 以下强制规则:
 

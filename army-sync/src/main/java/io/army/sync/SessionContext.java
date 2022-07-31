@@ -18,7 +18,7 @@ import java.util.function.Function;
  */
 public interface SessionContext {
 
-    SessionFactory sessionFactory();
+    LocalSessionFactory sessionFactory();
 
     boolean hasCurrentSession();
 

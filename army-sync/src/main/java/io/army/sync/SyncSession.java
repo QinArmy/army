@@ -19,14 +19,14 @@ import java.util.function.Supplier;
  * <p>
  * This interface is base interface of below interface:
  *     <ul>
- *         <li>{@link Session}</li>
+ *         <li>{@link LocalSession}</li>
  *     </ul>
  * </p>
  */
 public interface SyncSession extends GenericSession {
 
     @Override
-    SessionFactory sessionFactory();
+    LocalSessionFactory sessionFactory();
 
     /**
      * @param <R> representing select result Java Type.

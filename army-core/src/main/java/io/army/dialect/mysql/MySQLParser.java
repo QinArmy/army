@@ -23,7 +23,7 @@ import java.util.Set;
 
 abstract class MySQLParser extends _AbstractDialect {
 
-    static MySQLParser standard(_DialectEnv environment, MySQLDialect dialect) {
+    static MySQLParser standard(DialectEnv environment, MySQLDialect dialect) {
         return new Standard(environment, dialect);
     }
 
@@ -32,7 +32,7 @@ abstract class MySQLParser extends _AbstractDialect {
 
     final boolean asOf80;
 
-    MySQLParser(_DialectEnv environment, MySQLDialect dialect) {
+    MySQLParser(DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
         this.asOf80 = this.dialectMode().version() >= MySQLDialect.MySQL80.version();
     }
@@ -190,7 +190,7 @@ abstract class MySQLParser extends _AbstractDialect {
         } else {
             mappingType = paramMeta.mappingType();
         }
-        sqlType = mappingType.map(this.dialectEnv.serverMeta());
+        sqlType = mappingType.map(this.serverMeta);
         final String literal;
         switch ((MySqlType) sqlType) {
             case INT:
@@ -496,7 +496,7 @@ abstract class MySQLParser extends _AbstractDialect {
 
     private static final class Standard extends MySQLParser {
 
-        private Standard(_DialectEnv environment, MySQLDialect dialect) {
+        private Standard(DialectEnv environment, MySQLDialect dialect) {
             super(environment, dialect);
         }
 

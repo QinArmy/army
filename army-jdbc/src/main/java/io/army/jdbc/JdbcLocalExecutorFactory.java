@@ -2,7 +2,7 @@ package io.army.jdbc;
 
 import io.army.dialect.Database;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.ExecutorEnvironment;
+import io.army.sync.executor.ExecutorEnv;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.LocalStmtExecutor;
 import io.army.util._Exceptions;
@@ -14,7 +14,7 @@ import java.util.function.BiFunction;
 
 final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements LocalExecutorFactory {
 
-    static JdbcLocalExecutorFactory create(DataSource dataSource, ExecutorEnvironment env
+    static JdbcLocalExecutorFactory create(DataSource dataSource, ExecutorEnv env
             , int methodFlag) {
         return new JdbcLocalExecutorFactory(dataSource, env, methodFlag);
     }
@@ -25,7 +25,7 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
     private final BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> executorFunction;
 
 
-    private JdbcLocalExecutorFactory(final DataSource dataSource, final ExecutorEnvironment executorEnv
+    private JdbcLocalExecutorFactory(final DataSource dataSource, final ExecutorEnv executorEnv
             , final int methodFlag) {
         super(executorEnv, methodFlag);
         this.dataSource = dataSource;

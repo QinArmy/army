@@ -617,12 +617,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new DataAccessException(m);
     }
 
-    public static IllegalArgumentException tableDontBelongOf(TableMeta<?> table, GenericSessionFactory sessionFactory) {
+    public static IllegalArgumentException tableDontBelongOf(TableMeta<?> table, SessionFactory sessionFactory) {
         String m = String.format("%s isn't belong of %s", table, sessionFactory);
         return new IllegalArgumentException(m);
     }
 
-    public static SessionException dontSupportUniqueCache(GenericSessionFactory sessionFactory) {
+    public static SessionException dontSupportUniqueCache(SessionFactory sessionFactory) {
         String m = String.format("%s don't support unique cache,because config %s is %s."
                 , sessionFactory, ArmyKey.DDL_MODE.name, DdlMode.NONE);
         return new SessionUsageException(m);

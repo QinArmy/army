@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class _MockDialects implements _DialectEnv {
+public abstract class _MockDialects implements DialectEnv {
 
     private static final ConcurrentMap<Dialect, DialectParser> DIALECT_MAP = new ConcurrentHashMap<>();
 
@@ -35,12 +35,10 @@ public abstract class _MockDialects implements _DialectEnv {
         this.serverMeta = mappingEnv.serverMeta();
     }
 
-
     @Override
-    public final ServerMeta serverMeta() {
-        return this.serverMeta;
+    public String factoryName() {
+        return "mock factory";
     }
-
 
     @Override
     public final Map<FieldMeta<?>, FieldGenerator> fieldGeneratorMap() {
