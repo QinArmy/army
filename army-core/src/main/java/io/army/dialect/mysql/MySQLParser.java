@@ -186,7 +186,8 @@ abstract class MySQLParser extends _AbstractDialectParser {
     }
 
     @Override
-    public final StringBuilder literal(final ParamMeta paramMeta, final Object nonNull, final StringBuilder sqlBuilder) {
+    public final StringBuilder literal(final ParamMeta paramMeta, final Object nonNull, final boolean pattern
+            , final StringBuilder sqlBuilder) {
 
         final SqlType sqlType;
         final MappingType mappingType;
@@ -207,6 +208,9 @@ abstract class MySQLParser extends _AbstractDialectParser {
         }
         switch ((MySqlType) sqlType) {
             case INT:
+            case SMALLINT_UNSIGNED:
+            case MEDIUMINT:
+            case MEDIUMINT_UNSIGNED:
             case YEAR: {
                 if (!(valueAfterConvert instanceof Integer)) {
                     throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
@@ -214,14 +218,16 @@ abstract class MySQLParser extends _AbstractDialectParser {
                 sqlBuilder.append(valueAfterConvert);
             }
             break;
-            case BIGINT: {
-                if (!(valueAfterConvert instanceof Long || valueAfterConvert instanceof BigInteger)) {
+            case BIGINT:
+            case INT_UNSIGNED: {
+                if (!(valueAfterConvert instanceof Long)) {
                     throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
                 }
                 sqlBuilder.append(valueAfterConvert);
             }
             break;
-            case DECIMAL: {
+            case DECIMAL:
+            case DECIMAL_UNSIGNED: {
                 if (!(valueAfterConvert instanceof BigDecimal)) {
                     throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
                 }
@@ -237,18 +243,16 @@ abstract class MySQLParser extends _AbstractDialectParser {
             break;
             case DATETIME: {
                 final String timeText;
-                if (!this.asOf80) {
-                    if (!((valueAfterConvert instanceof LocalDateTime))) {
-                        throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
-                    }
+                if (valueAfterConvert instanceof LocalDateTime) {
                     timeText = _TimeUtils.format((LocalDateTime) valueAfterConvert, paramMeta);
+                } else if (!this.asOf80) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
                 } else if (nonNull instanceof OffsetDateTime) {
                     timeText = _TimeUtils.format((OffsetDateTime) nonNull, paramMeta);
                 } else if (nonNull instanceof ZonedDateTime) {
                     timeText = _TimeUtils.format(((ZonedDateTime) nonNull).toOffsetDateTime(), paramMeta);
                 } else {
-                    //above no bug,never here
-                    throw new IllegalStateException("convert error");
+                    throw _Exceptions.outRangeOfSqlType(MySqlType.DATETIME, nonNull);
                 }
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(timeText)
@@ -279,73 +283,78 @@ abstract class MySQLParser extends _AbstractDialectParser {
             case TEXT:
             case MEDIUMTEXT:
             case LONGTEXT:
-                literal = MySQLLiterals.text(sqlType, nonNull);
-                break;
             case JSON:
-                literal = MySQLLiterals.text(sqlType, this.dialectEnv.mappingEnv().jsonCodec().encode(nonNull));
-                break;
+            case ENUM:
+            case SET: {
+                if (!(valueAfterConvert instanceof String)) { //TODO LongString
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                MySQLLiterals.mysqlEscapes((String) valueAfterConvert, pattern, sqlBuilder);
+            }
+            break;
             case BINARY:
             case VARBINARY:
             case TINYBLOB:
             case BLOB:
             case MEDIUMBLOB:
-            case LONGBLOB:
-                literal = MySQLLiterals.binary(sqlType, nonNull);
-                break;
-            case ENUM:
-                literal = MySQLLiterals.enumLiteral(sqlType, nonNull);
-                break;
-            case BIT:
-                literal = MySQLLiterals.bit(sqlType, nonNull);
-                break;
-            case DOUBLE:
-                literal = MySQLLiterals.doubleLiteral(sqlType, nonNull);
-                break;
-            case FLOAT:
-                literal = MySQLLiterals.floatLiteral(sqlType, nonNull);
-                break;
-            case TINYINT:
-                literal = MySQLLiterals.tinyInt(sqlType, nonNull);
-                break;
+            case LONGBLOB: {
+                if (!(valueAfterConvert instanceof byte[])) { //TODO LongBinary
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append("0x")
+                        .append(_Literals.hexEscapes((byte[]) valueAfterConvert));
+            }
+            break;
+            case BIT: {
+                if (!(valueAfterConvert instanceof Long)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(Long.toBinaryString((Long) valueAfterConvert));
+            }
+            break;
+            case DOUBLE: {
+                if (!(valueAfterConvert instanceof Double)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(valueAfterConvert);
+            }
+            break;
+            case FLOAT: {
+                if (!(valueAfterConvert instanceof Float)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(valueAfterConvert);
+            }
+            break;
+            case TINYINT: {
+                if (!(valueAfterConvert instanceof Byte)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(valueAfterConvert);
+            }
+            break;
             case SMALLINT:
-                literal = MySQLLiterals.smallInt(sqlType, nonNull);
-                break;
-            case MEDIUMINT:
-                literal = MySQLLiterals.mediumInt(sqlType, nonNull);
-                break;
-            case BIGINT_UNSIGNED:
-                literal = MySQLLiterals.unsignedLBigInt(sqlType, nonNull);
-                break;
-            case DECIMAL_UNSIGNED:
-                literal = MySQLLiterals.unsignedDecimal(sqlType, nonNull);
-                break;
-            case INT_UNSIGNED:
-                literal = MySQLLiterals.unsignedInt(sqlType, nonNull);
-                break;
-            case MEDIUMINT_UNSIGNED:
-                literal = MySQLLiterals.unsignedMediumInt(sqlType, nonNull);
-                break;
-            case SMALLINT_UNSIGNED:
-                literal = MySQLLiterals.unsignedSmallInt(sqlType, nonNull);
-                break;
-            case TINYINT_UNSIGNED:
-                literal = MySQLLiterals.unsignedTinyInt(sqlType, nonNull);
-                break;
-            case SET:
-                literal = MySQLLiterals.setType(sqlType, nonNull);
-                break;
-            case POINT:
-            case LINESTRING:
-            case POLYGON:
-            case MULTIPOINT:
-            case MULTIPOLYGON:
-            case MULTILINESTRING:
-            case GEOMETRYCOLLECTION:
+            case TINYINT_UNSIGNED: {
+                if (!(valueAfterConvert instanceof Short)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(valueAfterConvert);
+            }
+            break;
+            case BIGINT_UNSIGNED: {
+                if (!(valueAfterConvert instanceof BigInteger)) {
+                    throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
+                }
+                sqlBuilder.append(valueAfterConvert);
+            }
+            break;
+            case GEOMETRY://TODO
                 throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
             default:
                 throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
         }
-        return sqlBuilder.append(literal);
+
+        return sqlBuilder;
     }
 
     @Override

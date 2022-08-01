@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.meta.ParamMeta;
 import io.army.schema._SchemaResult;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
@@ -44,13 +43,6 @@ public interface DialectParser {
         throw new UnsupportedOperationException();
     }
 
-
-    /**
-     * <p>
-     * Append  literal
-     * </p>
-     */
-    StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
 
 
     default StringBuilder identifier(String identifier, StringBuilder builder) {

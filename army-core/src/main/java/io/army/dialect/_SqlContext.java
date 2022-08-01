@@ -5,6 +5,7 @@ import io.army.criteria.QualifiedField;
 import io.army.criteria.SqlParam;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
+import io.army.meta.ParamMeta;
 
 /**
  * <p>
@@ -62,6 +63,10 @@ public interface _SqlContext {
      * </p>
      */
     void appendParam(SqlParam sqlParam);
+
+    void appendLiteral(ParamMeta paramMeta, Object nonNull);
+
+    void appendPattern(String pattern);
 
     void appendLiteral(NamedLiteral namedLiteral);
 

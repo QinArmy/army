@@ -159,7 +159,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
                 } else if ((value = accessor.get(currentDomain, field.fieldName())) != null) {
                     if (preferLiteral && field.mappingType() instanceof _ArmyNoInjectionMapping) {//TODO field codec
                         sqlBuilder.append(_Constant.SPACE);
-                        dialect.literal(field, value, sqlBuilder);
+                        dialect.literal(field, value, false, sqlBuilder);
                     } else {
                         this.appendParam(SingleParam.build(field, value));
                     }

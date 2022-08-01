@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.NamedLiteral;
 import io.army.criteria.SqlValueParam;
-import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -51,7 +50,6 @@ abstract class LiteralExpression extends OperationExpression {
 
         final int size = valueList.size();
         assert size > 0;
-        final DialectParser parser = context.dialect();
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
@@ -62,7 +60,7 @@ abstract class LiteralExpression extends OperationExpression {
             } else {
                 sqlBuilder.append(_Constant.SPACE);
             }
-            parser.literal(paramMeta, valueList.get(i), sqlBuilder);//TODO codec field
+            context.appendLiteral(paramMeta, valueList.get(i));
         }
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
@@ -109,13 +107,11 @@ abstract class LiteralExpression extends OperationExpression {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder = context.sqlBuilder();
             final Object value = this.value;
             if (value == null) {
-                sqlBuilder.append(_Constant.SPACE_NULL);
+                context.sqlBuilder().append(_Constant.SPACE_NULL);
             } else {
-                sqlBuilder.append(_Constant.SPACE);//TODO codec field
-                context.dialect().literal(this.paramMeta, value, sqlBuilder);
+                context.appendLiteral(this.paramMeta, value);
             }
 
         }

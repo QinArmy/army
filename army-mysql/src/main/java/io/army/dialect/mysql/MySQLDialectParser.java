@@ -1124,7 +1124,7 @@ final class MySQLDialectParser extends MySQLParser {
             throw new CriteriaException(m);
         }
         sqlBuilder.append(" INFILE ");
-        this.literal(StringType.INSTANCE, path.toAbsolutePath().toString(), sqlBuilder);
+        this.literal(StringType.INSTANCE, path.toAbsolutePath().toString(), false, sqlBuilder);
     }
 
     /**
@@ -1143,7 +1143,7 @@ final class MySQLDialectParser extends MySQLParser {
         final String terminatedString;
         if ((terminatedString = loadData.columnTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
-            this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, terminatedString, false, sqlBuilder);//TODO check correct
         }
         //3. ENCLOSED BY
         final Character enclosedChar;
@@ -1152,13 +1152,13 @@ final class MySQLDialectParser extends MySQLParser {
                 sqlBuilder.append(" OPTIONALLY");
             }
             sqlBuilder.append(" ENCLOSED BY ");
-            this.literal(StringType.INSTANCE, enclosedChar.toString(), sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, enclosedChar.toString(), false, sqlBuilder);//TODO check correct
         }
         //4. ESCAPED BY
         final Character escapedChar;
         if ((escapedChar = loadData.columnEscapedBy()) != null) {
             sqlBuilder.append(" ESCAPED BY ");
-            this.literal(StringType.INSTANCE, escapedChar.toString(), sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, escapedChar.toString(), false, sqlBuilder);//TODO check correct
         }
 
     }
@@ -1174,12 +1174,12 @@ final class MySQLDialectParser extends MySQLParser {
         //2. STARTING BY clause
         if ((startingString = loadData.linesStartingBy()) != null) {
             sqlBuilder.append(" STARTING BY ");
-            this.literal(StringType.INSTANCE, startingString, sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, startingString, false, sqlBuilder);//TODO check correct
         }
         //3. TERMINATED BY clause
         if ((terminatedString = loadData.linesTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
-            this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, terminatedString, false, sqlBuilder);//TODO check correct
         }
     }
 

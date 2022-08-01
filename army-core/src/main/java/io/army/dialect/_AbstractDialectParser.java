@@ -1095,10 +1095,8 @@ public abstract class _AbstractDialectParser implements ArmyParser {
             }
             sqlBuilder.append(_Constant.POINT);
             this.safeObjectName(field, sqlBuilder)
-                    .append(_Constant.SPACE_EQUAL);
-
-            sqlBuilder.append(_Constant.SPACE);
-            this.literal(field.mappingType(), visibleValue, sqlBuilder);
+                    .append(_Constant.SPACE_EQUAL_SPACE);
+            this.literal(field.mappingType(), visibleValue, false, sqlBuilder);
         }
 
     }
@@ -1255,7 +1253,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         if ((context instanceof _InsertContext && ((_InsertContext) context).isPreferLiteral())
                 || !context.hasParam()) {
             sqlBuilder.append(_Constant.SPACE);
-            this.literal(field, updateTimeValue, sqlBuilder);
+            this.literal(field, updateTimeValue, false, sqlBuilder);
         } else {
             context.appendParam(SingleParam.build(field, updateTimeValue));
         }

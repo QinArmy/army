@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
+import io.army.mapping.StringType;
 import io.army.meta.ParamMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
@@ -116,6 +117,19 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
     }
 
+    @Override
+    public final void appendLiteral(final ParamMeta paramMeta, final Object nonNull) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
+        this.parser.literal(paramMeta, nonNull, false, sqlBuilder);
+    }
+
+    @Override
+    public final void appendPattern(final String pattern) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
+        this.parser.literal(StringType.INSTANCE, pattern, true, sqlBuilder);
+    }
 
     @Override
     public final void appendLiteral(final NamedLiteral namedLiteral) {
@@ -141,7 +155,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
             sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.paramMeta(), value, sqlBuilder);
+            this.parser.literal(namedLiteral.paramMeta(), value, false, sqlBuilder);
         } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
             //no bug,never here
             throw new IllegalArgumentException();
@@ -149,7 +163,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
             throw _Exceptions.namedParamNotMatch((SqlValueParam.NamedMultiValue) namedLiteral, value);
         } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).valueSize()) {
 
-            final ArmyParser dialect = this.parser;
+            final ArmyParser parser = this.parser;
             final ParamMeta paramMeta = namedLiteral.paramMeta();
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             int i = 0;
@@ -159,7 +173,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
                 } else {
                     sqlBuilder.append(_Constant.SPACE);
                 }
-                dialect.literal(paramMeta, v, sqlBuilder);//TODO codec field
+                parser.literal(paramMeta, v, false, sqlBuilder);//TODO codec field
                 i++;
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

@@ -39,7 +39,8 @@ class Postgre11DmlDialect extends _AbstractDialectParser {
     }
 
     @Override
-    public StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder) {
+    public StringBuilder literal(ParamMeta paramMeta, Object nonNull, boolean pattern
+            , StringBuilder sqlBuilder) {
         return null;
     }
 
