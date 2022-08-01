@@ -114,7 +114,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _PartitionJoinClause<C, Q extends Query> extends _PartitionClause2<C, _AsJoinClause<C, Q>> {
+    interface _PartitionJoinClause<C, Q extends Query> extends _PartitionClause<C, _AsJoinClause<C, Q>> {
 
     }
 
@@ -228,7 +228,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _PartitionOnClause<C, Q extends Query> extends _PartitionClause2<C, _AsOnClause<C, Q>> {
+    interface _PartitionOnClause<C, Q extends Query> extends _PartitionClause<C, _AsOnClause<C, Q>> {
 
     }
 

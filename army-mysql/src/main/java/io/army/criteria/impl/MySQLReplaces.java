@@ -2,11 +2,11 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Hint;
 import io.army.criteria.ReplaceInsert;
+import io.army.criteria.Statement;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
-import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.mysql.MySQLDialect;
@@ -161,8 +161,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._DomainColumnListSpec<C, T>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._DomainColumnListSpec<C, T>> partition() {
+            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -222,8 +222,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._DomainParentColumnsSpec<C, P>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._DomainParentColumnsSpec<C, P>> partition() {
+            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -452,8 +452,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._ValueColumnListSpec<C, T>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._ValueColumnListSpec<C, T>> partition() {
+            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -521,8 +521,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._ValueParentColumnsSpec<C, P>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._ValueParentColumnsSpec<C, P>> partition() {
+            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -808,8 +808,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentReplaceSetClause<C, T>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._AssignmentReplaceSetClause<C, T>> partition() {
+            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -860,8 +860,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._AssignmentParentReplaceSetClause<C, P>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._AssignmentParentReplaceSetClause<C, P>> partition() {
+            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -1082,8 +1082,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryColumnListClause<C, T>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._QueryColumnListClause<C, T>> partition() {
+            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -1139,8 +1139,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public MySQLQuery._PartitionLeftParenClause<C, MySQLReplace._QueryParentColumnsClause<C, P>> partition() {
-            return new MySQLPartitionClause<>(this.criteriaContext, this::partitionEnd);
+        public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._QueryParentColumnsClause<C, P>> partition() {
+            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
         }
 
         @Override

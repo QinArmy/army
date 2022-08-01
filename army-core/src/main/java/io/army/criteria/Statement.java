@@ -496,6 +496,72 @@ public interface Statement {
     }
 
 
+    interface _CommaStringDualSpec<PR> extends Statement._RightParenClause<PR> {
+
+        Statement._RightParenClause<PR> comma(String string);
+
+        _CommaStringDualSpec<PR> comma(String string1, String string2);
+    }
+
+    interface _CommaStringQuadraSpec<PR> extends Statement._RightParenClause<PR> {
+
+        Statement._RightParenClause<PR> comma(String string);
+
+        Statement._RightParenClause<PR> comma(String string1, String string2);
+
+        Statement._RightParenClause<PR> comma(String string1, String string2, String string3);
+
+        _CommaStringQuadraSpec<PR> comma(String string1, String string2, String string3, String string4);
+
+    }
+
+    interface _LeftParenStringDualClause<PR> {
+
+        Statement._RightParenClause<PR> leftParen(String string);
+
+        _CommaStringDualSpec<PR> leftParen(String string1, String string2);
+
+
+    }
+
+    interface _LeftParenStringDynamicClause<C, RR> {
+
+        Statement._RightParenClause<RR> leftParen(Consumer<Consumer<String>> consumer);
+
+        Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<String>> consumer);
+    }
+
+    interface _LeftParenStringDynamicOptionalClause<C, RR> {
+
+        Statement._RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer);
+
+        Statement._RightParenClause<RR> leftParenIf(BiConsumer<C, Consumer<String>> consumer);
+    }
+
+
+    interface _LeftParenStringDualSpec<C, RR> extends _LeftParenStringDualClause<RR>, _LeftParenStringDynamicClause<C, RR> {
+
+    }
+
+    interface _LeftParenStringDualOptionalSpec<C, RR> extends _LeftParenStringDualSpec<C, RR>
+            , _LeftParenStringDynamicOptionalClause<C, RR> {
+
+    }
+
+
+    interface _LeftParenStringQuadraSpec<C, RR> extends _LeftParenStringDualSpec<C, RR> {
+
+        _CommaStringQuadraSpec<RR> leftParen(String string1, String string2, String string3, String string4);
+
+    }
+
+    interface _LeftParenStringQuadraOptionalSpec<C, RR> extends _LeftParenStringQuadraSpec<C, RR>
+            , _LeftParenStringDynamicOptionalClause<C, RR> {
+
+
+    }
+
+
     /**
      * <p>
      * This interface representing any sql clause.

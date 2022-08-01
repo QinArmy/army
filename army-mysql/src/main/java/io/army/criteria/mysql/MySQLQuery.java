@@ -91,47 +91,35 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _PartitionCommaDualClause<PR> extends Statement._RightParenClause<PR> {
-
-        Statement._RightParenClause<PR> comma(String partitionName);
-
-        _PartitionCommaDualClause<PR> comma(String partitionName1, String partitionName2);
-    }
-
-    interface _PartitionCommaQuadraClause<PR> extends Statement._RightParenClause<PR> {
-
-        Statement._RightParenClause<PR> comma(String partitionName);
-
-        Statement._RightParenClause<PR> comma(String partitionName1, String partitionName2);
-
-        Statement._RightParenClause<PR> comma(String partitionName1, String partitionName2, String partitionName3);
-
-        _PartitionCommaQuadraClause<PR> comma(String partitionName1, String partitionName2, String partitionName3, String partitionName4);
-
-    }
-
-    interface _PartitionLeftParenClause<C, PR> {
-
-        Statement._RightParenClause<PR> leftParen(String partitionName);
-
-        _PartitionCommaDualClause<PR> leftParen(String partitionName1, String partitionName2);
-
-        _PartitionCommaQuadraClause<PR> leftParen(String partitionName1, String partitionName2, String partitionName3, String partitionName4);
-
-        Statement._RightParenClause<PR> leftParen(Consumer<Consumer<String>> consumer);
-
-        Statement._RightParenClause<PR> leftParen(BiConsumer<C, Consumer<String>> consumer);
-
-        Statement._RightParenClause<PR> leftParenIf(Consumer<Consumer<String>> consumer);
-
-        Statement._RightParenClause<PR> leftParenIf(BiConsumer<C, Consumer<String>> consumer);
-
-    }
-
-
     interface _PartitionClause<C, PR> {
 
-        _PartitionLeftParenClause<C, PR> partition();
+        _LeftParenStringQuadraOptionalSpec<C, PR> partition();
+
+    }
+
+
+    interface _UserIndexClause<C, RR> {
+
+
+    }
+
+
+    interface _IndexForJoinSpec<C, RR> extends Statement._LeftParenStringDualOptionalSpec<C, RR> {
+
+        Statement._LeftParenStringDualOptionalSpec<C, RR> forJoin();
+
+    }
+
+    interface _IndexForOrderBySpec<C, RR> extends Statement._LeftParenStringDualOptionalSpec<C, RR> {
+
+        Statement._LeftParenStringDualOptionalSpec<C, RR> forOrderBy();
+
+    }
+
+
+    interface _IndexPurposeBySpec<C, RR> extends _IndexForJoinSpec<C, RR>, _IndexForOrderBySpec<C, RR> {
+
+        Statement._LeftParenStringDualOptionalSpec<C, RR> forGroupBy();
 
     }
 
@@ -164,6 +152,11 @@ public interface MySQLQuery extends Query, DialectStatement {
         PR ifPartition(Consumer<Consumer<String>> consumer);
 
         PR ifPartition(BiConsumer<C, Consumer<String>> consumer);
+
+    }
+
+
+    interface _UserIndexClause<C, RR> {
 
     }
 
