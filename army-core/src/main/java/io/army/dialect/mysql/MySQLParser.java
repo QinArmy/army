@@ -186,7 +186,7 @@ abstract class MySQLParser extends _AbstractDialectParser {
     }
 
     @Override
-    public final StringBuilder literal(final ParamMeta paramMeta, final Object nonNull, final boolean pattern
+    public final StringBuilder literal(final ParamMeta paramMeta, final Object nonNull
             , final StringBuilder sqlBuilder) {
 
         final SqlType sqlType;
@@ -289,7 +289,7 @@ abstract class MySQLParser extends _AbstractDialectParser {
                 if (!(valueAfterConvert instanceof String)) { //TODO LongString
                     throw _Exceptions.beforeBindMethod(sqlType, mappingType, valueAfterConvert);
                 }
-                MySQLLiterals.mysqlEscapes((String) valueAfterConvert, pattern, sqlBuilder);
+                MySQLLiterals.mysqlEscapes((String) valueAfterConvert, sqlBuilder);
             }
             break;
             case BINARY:

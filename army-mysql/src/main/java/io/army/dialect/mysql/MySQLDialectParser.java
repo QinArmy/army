@@ -156,6 +156,7 @@ final class MySQLDialectParser extends MySQLParser {
         statement.prepared();
         final Stmt stmt;
         if (statement instanceof MySQLReplace) {
+            _MySQLConsultant.assertReplace((MySQLReplace) statement);
             stmt = this.parseInsert((_Insert) statement, visible);
         } else if (statement instanceof Values && statement instanceof MySQLDqlValues) {
             if (!this.asOf80) {
@@ -164,6 +165,7 @@ final class MySQLDialectParser extends MySQLParser {
             _MySQLConsultant.assertValues((MySQLDqlValues) statement);
             stmt = this.values((Values) statement, visible);
         } else if (statement instanceof MySQLLoad) {
+            _MySQLConsultant.assertMySQLLoad((MySQLLoad) statement);
             stmt = this.loadData((MySQLLoad) statement, visible);
         } else {
             throw _Exceptions.dontSupportDialectStatement(statement, this.dialect);
@@ -1124,7 +1126,7 @@ final class MySQLDialectParser extends MySQLParser {
             throw new CriteriaException(m);
         }
         sqlBuilder.append(" INFILE ");
-        this.literal(StringType.INSTANCE, path.toAbsolutePath().toString(), false, sqlBuilder);
+        this.literal(StringType.INSTANCE, path.toAbsolutePath().toString(), sqlBuilder);
     }
 
     /**
@@ -1143,7 +1145,7 @@ final class MySQLDialectParser extends MySQLParser {
         final String terminatedString;
         if ((terminatedString = loadData.columnTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
-            this.literal(StringType.INSTANCE, terminatedString, false, sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
         }
         //3. ENCLOSED BY
         final Character enclosedChar;
@@ -1152,13 +1154,13 @@ final class MySQLDialectParser extends MySQLParser {
                 sqlBuilder.append(" OPTIONALLY");
             }
             sqlBuilder.append(" ENCLOSED BY ");
-            this.literal(StringType.INSTANCE, enclosedChar.toString(), false, sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, enclosedChar.toString(), sqlBuilder);//TODO check correct
         }
         //4. ESCAPED BY
         final Character escapedChar;
         if ((escapedChar = loadData.columnEscapedBy()) != null) {
             sqlBuilder.append(" ESCAPED BY ");
-            this.literal(StringType.INSTANCE, escapedChar.toString(), false, sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, escapedChar.toString(), sqlBuilder);//TODO check correct
         }
 
     }
@@ -1174,12 +1176,12 @@ final class MySQLDialectParser extends MySQLParser {
         //2. STARTING BY clause
         if ((startingString = loadData.linesStartingBy()) != null) {
             sqlBuilder.append(" STARTING BY ");
-            this.literal(StringType.INSTANCE, startingString, false, sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, startingString, sqlBuilder);//TODO check correct
         }
         //3. TERMINATED BY clause
         if ((terminatedString = loadData.linesTerminatedBy()) != null) {
             sqlBuilder.append(" TERMINATED BY ");
-            this.literal(StringType.INSTANCE, terminatedString, false, sqlBuilder);//TODO check correct
+            this.literal(StringType.INSTANCE, terminatedString, sqlBuilder);//TODO check correct
         }
     }
 

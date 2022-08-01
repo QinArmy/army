@@ -121,14 +121,14 @@ abstract class StatementContext implements StmtContext, _StmtParams {
     public final void appendLiteral(final ParamMeta paramMeta, final Object nonNull) {
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
-        this.parser.literal(paramMeta, nonNull, false, sqlBuilder);
+        this.parser.literal(paramMeta, nonNull, sqlBuilder);
     }
 
     @Override
     public final void appendPattern(final String pattern) {
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
-        this.parser.literal(StringType.INSTANCE, pattern, true, sqlBuilder);
+        this.parser.literal(StringType.INSTANCE, pattern, sqlBuilder);
     }
 
     @Override
@@ -155,7 +155,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
             sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.paramMeta(), value, false, sqlBuilder);
+            this.parser.literal(namedLiteral.paramMeta(), value, sqlBuilder);
         } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
             //no bug,never here
             throw new IllegalArgumentException();
@@ -173,7 +173,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
                 } else {
                     sqlBuilder.append(_Constant.SPACE);
                 }
-                parser.literal(paramMeta, v, false, sqlBuilder);//TODO codec field
+                parser.literal(paramMeta, v, sqlBuilder);//TODO codec field
                 i++;
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

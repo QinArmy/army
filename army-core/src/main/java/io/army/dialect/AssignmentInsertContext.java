@@ -347,7 +347,7 @@ final class AssignmentInsertContext extends StatementContext
                 }
             } else if (preferLiteral && field.mappingType() instanceof _ArmyNoInjectionMapping) {// TODO field codec
                 sqlBuilder.append(_Constant.SPACE);
-                dialect.literal(field, value, false, sqlBuilder);
+                dialect.literal(field, value, sqlBuilder);
             } else {
                 this.appendParam(SingleParam.build(field, value));
             }

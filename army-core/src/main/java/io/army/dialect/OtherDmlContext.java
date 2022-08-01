@@ -24,9 +24,7 @@ final class OtherDmlContext extends StatementContext implements _OtherDmlContext
 
     @Override
     public void appendField(final String tableAlias, final FieldMeta<?> field) {
-        if (!this.predicate.test(field)) {
-            throw _Exceptions.unknownColumn(tableAlias, field);
-        }
+        throw _Exceptions.unknownColumn(tableAlias, field);
     }
 
     @Override
@@ -34,6 +32,9 @@ final class OtherDmlContext extends StatementContext implements _OtherDmlContext
         if (!this.predicate.test(field)) {
             throw _Exceptions.unknownColumn(field);
         }
+        final StringBuilder sqlBuilder = this.sqlBuilder
+                .append(_Constant.SPACE);
+        this.parser.safeObjectName(field, sqlBuilder);
     }
 
 

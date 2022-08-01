@@ -53,7 +53,7 @@ interface ArmyParser extends DialectParser {
      * Append  literal
      * </p>
      */
-    StringBuilder literal(ParamMeta paramMeta, Object nonNull, boolean pattern, StringBuilder sqlBuilder);
+    StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
 
 
     MappingEnv mappingEnv();
