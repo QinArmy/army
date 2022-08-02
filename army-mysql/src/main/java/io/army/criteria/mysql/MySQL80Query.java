@@ -114,72 +114,12 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _PartitionJoinClause<C, Q extends Query> extends _PartitionClause<C, _AsJoinClause<C, Q>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing AS clause after key word 'FROM' for MySQL 8.0
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _AsJoinClause<C, Q extends Query> extends _AsClause<_IndexHintJoinSpec<C, Q>> {
+    interface _PartitionJoinClause<C, Q extends Query> extends _PartitionClause<C, _AsClause<>> {
 
     }
 
 
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>{@link _IndexHintClause} for MySQL 8.0</li>
-     *          <li>the composite {@link _JoinSpec}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _IndexHintJoinSpec<C, Q extends Query>
-            extends _IndexHintClause<C, _IndexPurposeJoin80Clause<C, Q>, _IndexHintJoinSpec<C, Q>>
-            , _JoinSpec<C, Q> {
 
-    }
-
-
-    /**
-     * <p>
-     * This interface representing index hint clause after key word 'FOR' for MySQL 8.0
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _IndexPurposeJoin80Clause<C, Q extends Query>
-            extends _IndexPurposeClause<C, _IndexHintJoinSpec<C, Q>> {
-
-    }
 
 
     /**

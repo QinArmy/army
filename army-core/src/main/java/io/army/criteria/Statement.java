@@ -160,11 +160,9 @@ public interface Statement {
         OR on(Function<Object, IPredicate> operator1, DataField operandField1
                 , Function<Object, IPredicate> operator2, DataField operandField2);
 
-        OR on(Function<C, List<IPredicate>> function);
+        OR on(Consumer<Consumer<IPredicate>> consumer);
 
-        OR on(Supplier<List<IPredicate>> supplier);
-
-        OR on(Consumer<List<IPredicate>> consumer);
+        OR on(BiConsumer<C, Consumer<IPredicate>> consumer);
 
     }
 

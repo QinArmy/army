@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.RowConstructor;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
 import io.army.util._CollectionUtils;
@@ -10,11 +11,25 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 abstract class CriteriaSupports {
 
-    private CriteriaSupports() {
+    CriteriaSupports() {
         throw new UnsupportedOperationException();
+    }
+
+
+    static <C, RR> Statement._LeftParenStringQuadraOptionalSpec<C, RR> stringQuadra(CriteriaContext criteriaContext
+            , Function<List<String>, RR> function) {
+        return new ParenStringConsumerClause<>(criteriaContext, function);
+    }
+
+    static <C, RR> Statement._LeftParenStringDualOptionalSpec<C, RR> stringDual(CriteriaContext criteriaContext
+            , Function<List<String>, RR> function) {
+        return new ParenStringConsumerClause<>(criteriaContext, function);
     }
 
 
@@ -118,6 +133,158 @@ abstract class CriteriaSupports {
         }
 
     }//RowConstructorImpl
+
+
+    static class ParenStringConsumerClause<C, RR>
+            implements Statement._LeftParenStringQuadraOptionalSpec<C, RR>
+            , Statement._LeftParenStringDualOptionalSpec<C, RR>
+            , Statement._CommaStringDualSpec<RR>
+            , Statement._CommaStringQuadraSpec<RR> {
+
+        final CriteriaContext criteriaContext;
+
+        private final Function<List<String>, RR> function;
+
+        private List<String> stringList;
+
+        private boolean optionalClause;
+
+
+        /**
+         * <p>
+         * private constructor for {@link  #stringQuadra(CriteriaContext, Function)}
+         * </p>
+         */
+        private ParenStringConsumerClause(CriteriaContext criteriaContext, Function<List<String>, RR> function) {
+            this.criteriaContext = criteriaContext;
+            this.function = function;
+        }
+
+        /**
+         * <p>
+         * package constructor for sub class
+         * </p>
+         */
+        ParenStringConsumerClause(CriteriaContext criteriaContext) {
+            assert this.getClass() != ParenStringConsumerClause.class;
+            this.criteriaContext = criteriaContext;
+            this.function = this::stringConsumerEnd;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParen(String string) {
+            this.optionalClause = false;
+            return this.comma(string);
+        }
+
+        @Override
+        public final Statement._CommaStringDualSpec<RR> leftParen(String string1, String string2) {
+            this.optionalClause = false;
+            this.comma(string1);
+            this.comma(string2);
+            return this;
+        }
+
+        @Override
+        public final Statement._CommaStringQuadraSpec<RR> leftParen(String string1, String string2, String string3, String string4) {
+            this.optionalClause = false;
+            this.comma(string1);
+            this.comma(string2);
+            this.comma(string3);
+            this.comma(string4);
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<String>> consumer) {
+            this.optionalClause = false;
+            consumer.accept(this::comma);
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<String>> consumer) {
+            this.optionalClause = false;
+            consumer.accept(this.criteriaContext.criteria(), this::comma);
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer) {
+            this.optionalClause = true;
+            consumer.accept(this::comma);
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
+            this.optionalClause = true;
+            consumer.accept(this.criteriaContext.criteria(), this::comma);
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> comma(String string) {
+            List<String> stringList = this.stringList;
+            if (stringList == null) {
+                stringList = new ArrayList<>();
+                this.stringList = stringList;
+            } else if (!(stringList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            stringList.add(string);
+            return this;
+        }
+
+        @Override
+        public final Statement._CommaStringDualSpec<RR> comma(String string1, String string2) {
+            this.comma(string1);
+            this.comma(string2);
+            return this;
+        }
+
+
+        @Override
+        public final Statement._RightParenClause<RR> comma(String string1, String string2, String string3) {
+            this.comma(string1);
+            this.comma(string2);
+            this.comma(string3);
+            return this;
+        }
+
+        @Override
+        public final Statement._CommaStringQuadraSpec<RR> comma(String string1, String string2, String string3, String string4) {
+            this.comma(string1);
+            this.comma(string2);
+            this.comma(string3);
+            this.comma(string4);
+            return this;
+        }
+
+        @Override
+        public final RR rightParen() {
+            List<String> stringList = this.stringList;
+            if (stringList instanceof ArrayList) {
+                stringList = _CollectionUtils.unmodifiableList(stringList);
+            } else if (stringList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            } else if (this.optionalClause) {
+                stringList = Collections.emptyList();
+            } else {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "You don't add any string item");
+            }
+            //clear below for reuse this instance
+            this.stringList = null;
+            this.optionalClause = false;
+            return this.function.apply(stringList);
+        }
+
+        RR stringConsumerEnd(List<String> stringList) {
+            throw new UnsupportedOperationException();
+        }
+
+
+    }//ParenStringConsumerClause
 
 
 }

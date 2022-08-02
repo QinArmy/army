@@ -1,20 +1,18 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.DataField;
-import io.army.criteria.IPredicate;
-import io.army.criteria.Statement;
-import io.army.criteria.TableItem;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClause<C, OR> {
 
@@ -31,7 +29,7 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
     @Override
     public final OR on(IPredicate predicate) {
         if (this.predicateList != null) {
-            throw _Exceptions.castCriteriaApi();
+            throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
         }
         this.predicateList = Collections.singletonList((_Predicate) predicate);
         return this.stmt;
@@ -40,7 +38,7 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
     @Override
     public final OR on(IPredicate predicate1, IPredicate predicate2) {
         if (this.predicateList != null) {
-            throw _Exceptions.castCriteriaApi();
+            throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
         }
         this.predicateList = ArrayUtils.asUnmodifiableList(
                 (OperationPredicate) predicate1,
@@ -51,16 +49,19 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
 
     @Override
     public final OR on(Function<Object, IPredicate> operator, DataField operandField) {
-        final IPredicate predicate;
-        predicate = operator.apply(operandField);
-        assert predicate != null;
-        this.predicateList = Collections.singletonList((OperationPredicate) predicate);
+        if (this.predicateList != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
+        }
+        this.predicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
         return this.stmt;
     }
 
     @Override
     public final OR on(Function<Object, IPredicate> operator1, DataField operandField1
             , Function<Object, IPredicate> operator2, DataField operandField2) {
+        if (this.predicateList != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
+        }
         this.predicateList = ArrayUtils.asUnmodifiableList(
                 (OperationPredicate) operator1.apply(operandField1),
                 (OperationPredicate) operator2.apply(operandField2)
@@ -69,32 +70,24 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
     }
 
     @Override
-    public final OR on(Function<C, List<IPredicate>> function) {
-        if (this.predicateList != null) {
-            throw _Exceptions.castCriteriaApi();
+    public final OR on(Consumer<Consumer<IPredicate>> consumer) {
+        consumer.accept(this::addPredicate);
+        final List<_Predicate> predicateList = this.predicateList;
+        if (predicateList == null) {
+            throw predicateListIsEmpty();
         }
-        this.predicateList = CriteriaUtils.asPredicateList(function.apply(this.getCriteria())
-                , _Exceptions::predicateListIsEmpty);
+        this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
         return this.stmt;
     }
 
     @Override
-    public final OR on(Supplier<List<IPredicate>> supplier) {
-        if (this.predicateList != null) {
-            throw _Exceptions.castCriteriaApi();
+    public final OR on(BiConsumer<C, Consumer<IPredicate>> consumer) {
+        consumer.accept(this.getCriteria(), this::addPredicate);
+        final List<_Predicate> predicateList = this.predicateList;
+        if (predicateList == null) {
+            throw predicateListIsEmpty();
         }
-        this.predicateList = CriteriaUtils.asPredicateList(supplier.get(), _Exceptions::predicateListIsEmpty);
-        return this.stmt;
-    }
-
-    @Override
-    public final OR on(Consumer<List<IPredicate>> consumer) {
-        if (this.predicateList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        final List<IPredicate> list = new ArrayList<>();
-        consumer.accept(list);
-        this.predicateList = CriteriaUtils.asPredicateList(list, _Exceptions::predicateListIsEmpty);
+        this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
         return this.stmt;
     }
 
@@ -112,6 +105,26 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
     @SuppressWarnings("unchecked")
     final C getCriteria() {
         return ((CriteriaSpec<C>) this.stmt).getCriteria();
+    }
+
+    private CriteriaContext getCriteriaContext() {
+        return ((CriteriaContextSpec) this.stmt).getCriteriaContext();
+    }
+
+    private void addPredicate(final IPredicate predicate) {
+        List<_Predicate> predicateList = this.predicateList;
+        if (predicateList == null) {
+            predicateList = new ArrayList<>();
+            this.predicateList = predicateList;
+        } else if (!(predicateList instanceof ArrayList)) {
+            throw _Exceptions.castCriteriaApi();//TODO CriteriaContextStack
+        }
+        predicateList.add((OperationPredicate) predicate);
+
+    }
+
+    private CriteriaException predicateListIsEmpty() {
+        return CriteriaContextStack.criteriaError(this.getCriteriaContext(), _Exceptions::predicateListIsEmpty);
     }
 
 

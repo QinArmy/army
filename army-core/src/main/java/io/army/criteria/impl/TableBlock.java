@@ -25,6 +25,12 @@ abstract class TableBlock implements _TableBlock {
 
     }
 
+    TableBlock(BlockParams params) {
+        this.joinType = params.joinType();
+        this.tableItem = params.tableItem();
+        this.alias = params.alias();
+    }
+
     @Override
     public final TableItem tableItem() {
         return this.tableItem;
@@ -53,7 +59,7 @@ abstract class TableBlock implements _TableBlock {
 
     static class NoOnTableBlock extends TableBlock {
 
-        public NoOnTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        NoOnTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
             super(joinType, tableItem, alias);
             switch (joinType) {
                 case NONE:
@@ -65,12 +71,36 @@ abstract class TableBlock implements _TableBlock {
 
         }
 
+        NoOnTableBlock(BlockParams params) {
+            super(params);
+            switch (this.joinType) {
+                case NONE:
+                case CROSS_JOIN:
+                    break;
+                default:
+                    throw _Exceptions.castCriteriaApi();
+            }
+
+        }
+
+
         @Override
         public final List<_Predicate> predicateList() {
             return Collections.emptyList();
         }
 
     }//NoOnTableBlock
+
+
+    interface BlockParams {
+
+        _JoinType joinType();
+
+        TableItem tableItem();
+
+        String alias();
+
+    }
 
 
 }

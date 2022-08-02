@@ -98,12 +98,6 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
-    interface _UserIndexClause<C, RR> {
-
-
-    }
-
-
     interface _IndexForJoinSpec<C, RR> extends Statement._LeftParenStringDualOptionalSpec<C, RR> {
 
         Statement._LeftParenStringDualOptionalSpec<C, RR> forJoin();
@@ -120,6 +114,35 @@ public interface MySQLQuery extends Query, DialectStatement {
     interface _IndexPurposeBySpec<C, RR> extends _IndexForJoinSpec<C, RR>, _IndexForOrderBySpec<C, RR> {
 
         Statement._LeftParenStringDualOptionalSpec<C, RR> forGroupBy();
+
+    }
+
+    interface _SingleDmlIndexHintClause<C, RR> {
+
+        _IndexForOrderBySpec<C, RR> useIndex();
+
+        _IndexForOrderBySpec<C, RR> ignoreIndex();
+
+        _IndexForOrderBySpec<C, RR> forceIndex();
+
+    }
+
+    interface _MultiDmlIndexHintClause<C, RR> {
+
+        _IndexForJoinSpec<C, RR> useIndex();
+
+        _IndexForJoinSpec<C, RR> ignoreIndex();
+
+        _IndexForJoinSpec<C, RR> forceIndex();
+    }
+
+    interface _QueryUseIndexClause<C, RR> {
+
+        _IndexPurposeBySpec<C, RR> useIndex();
+
+        _IndexPurposeBySpec<C, RR> ignoreIndex();
+
+        _IndexPurposeBySpec<C, RR> forceIndex();
 
     }
 

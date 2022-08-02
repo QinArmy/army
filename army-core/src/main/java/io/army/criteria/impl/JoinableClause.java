@@ -17,10 +17,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -711,17 +708,12 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
 
         @Override
-        public final FS on(Function<C, List<IPredicate>> function) {
+        public final FS on(Consumer<Consumer<IPredicate>> consumer) {
             return (FS) this;
         }
 
         @Override
-        public final FS on(Supplier<List<IPredicate>> supplier) {
-            return (FS) this;
-        }
-
-        @Override
-        public final FS on(Consumer<List<IPredicate>> consumer) {
+        public final FS on(BiConsumer<C, Consumer<IPredicate>> consumer) {
             return (FS) this;
         }
 
@@ -813,27 +805,26 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
             return (FS) this;
         }
 
+
         @Override
-        public final FS on(Function<C, List<IPredicate>> function) {
-            this.assertForOn();
-            this.predicateList = CriteriaUtils.asPredicateList(function.apply(this.criteria)
-                    , _Exceptions::predicateListIsEmpty);
+        public final FS on(Consumer<Consumer<IPredicate>> consumer) {
+            consumer.accept(this::addPredicate);
+            final List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null) {
+                throw _Exceptions.predicateListIsEmpty();//TODO
+            }
+            this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
             return (FS) this;
         }
 
         @Override
-        public final FS on(Supplier<List<IPredicate>> supplier) {
-            this.assertForOn();
-            this.predicateList = CriteriaUtils.asPredicateList(supplier.get(), _Exceptions::predicateListIsEmpty);
-            return (FS) this;
-        }
-
-        @Override
-        public final FS on(Consumer<List<IPredicate>> consumer) {
-            this.assertForOn();
-            final List<IPredicate> list = new ArrayList<>();
-            consumer.accept(list);
-            this.predicateList = CriteriaUtils.asPredicateList(list, _Exceptions::predicateListIsEmpty);
+        public final FS on(BiConsumer<C, Consumer<IPredicate>> consumer) {
+            consumer.accept(this.criteria, this::addPredicate);
+            final List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null) {
+                throw _Exceptions.predicateListIsEmpty();//TODO
+            }
+            this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
             return (FS) this;
         }
 
@@ -869,6 +860,18 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
                     throw _Exceptions.unexpectedEnum(this.joinType);
 
             }
+        }
+
+        private void addPredicate(final IPredicate predicate) {
+            List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null) {
+                predicateList = new ArrayList<>();
+                this.predicateList = predicateList;
+            } else if (!(predicateList instanceof ArrayList)) {
+                throw _Exceptions.castCriteriaApi();//TODO CriteriaContextStack
+            }
+            predicateList.add((OperationPredicate) predicate);
+
         }
 
 

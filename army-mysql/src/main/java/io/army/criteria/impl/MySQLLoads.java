@@ -247,7 +247,7 @@ abstract class MySQLLoads {
 
         @Override
         public final Statement._LeftParenStringQuadraOptionalSpec<C, PR> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
 

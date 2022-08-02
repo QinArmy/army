@@ -472,7 +472,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._DomainColumnListSpec<C, T>> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
 
@@ -550,7 +550,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._DomainParentColumnsSpec<C, P>> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -1011,7 +1011,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._ValueColumnListSpec<C, T>> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -1116,7 +1116,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._ValueParentColumnsSpec<C, P>> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -1428,7 +1428,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._MySQLAssignmentSetClause<C, T>> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
 
@@ -1523,7 +1523,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._AssignmentParentSetClause<C, P>> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
@@ -1858,7 +1858,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._QueryColumnListClause<C, T>> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
 
@@ -1932,7 +1932,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._QueryParentColumnListClause<C, P>> partition() {
-            return MySQLPartitionClause.partition(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
