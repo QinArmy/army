@@ -94,7 +94,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _FromSpec<C, Q extends Query>
-            extends _FromClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>>
+            extends _FromClause<C, _QueryUseIndexJoinSpec<C, Q>, _JoinSpec<C, Q>>
             , _DialectFromClause<_PartitionJoinClause<C, Q>>, _FromCteClause<_JoinSpec<C, Q>>
             , _UnionSpec<C, Q>, _IntoSpec<C, Q> {
 
@@ -114,12 +114,15 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _PartitionJoinClause<C, Q extends Query> extends _PartitionClause<C, _AsClause<>> {
+    interface _PartitionJoinClause<C, Q extends Query>
+            extends _PartitionClause<C, _AsClause<_QueryUseIndexJoinSpec<C, Q>>> {
 
     }
 
+    interface _QueryUseIndexJoinSpec<C, Q extends Query> extends _QueryUseIndexClause<C, _QueryUseIndexJoinSpec<C, Q>>
+            , _JoinSpec<C, Q> {
 
-
+    }
 
 
     /**
@@ -144,9 +147,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _JoinSpec<C, Q extends Query> extends _MySQLJoinClause<C, _IndexHintOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>>
+    interface _JoinSpec<C, Q extends Query> extends _MySQLJoinClause<C, _QueryUseIndexOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>>
             , _MySQLJoinCteClause<_OnClause<C, _JoinSpec<C, Q>>>, _CrossJoinCteClause<_JoinSpec<C, Q>>
-            , _CrossJoinClause<C, _IndexHintJoinSpec<C, Q>, _JoinSpec<C, Q>>
+            , _CrossJoinClause<C, _QueryUseIndexJoinSpec<C, Q>, _JoinSpec<C, Q>>
             , _MySQLDialectJoinClause<C, _PartitionOnClause<C, Q>>
             , _DialectCrossJoinClause<C, _PartitionJoinClause<C, Q>>
             , _WhereSpec<C, Q> {
@@ -168,33 +171,16 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _PartitionOnClause<C, Q extends Query> extends _PartitionClause<C, _AsOnClause<C, Q>> {
+    interface _PartitionOnClause<C, Q extends Query> extends _PartitionClause<C, _AsClause<_QueryUseIndexOnSpec<C, Q>>> {
 
     }
 
-    /**
-     * <p>
-     * This interface representing AS clause after key word 'JOIN'(non-cross join) for MySQL 8.0
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _AsOnClause<C, Q extends Query> extends _AsClause<_IndexHintOnSpec<C, Q>> {
-
-    }
 
     /**
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _IndexHintClause} </li>
+     *          <li>{@link _QueryUseIndexClause} </li>
      *          <li>the composite {@link _OnClause}</li>
      *     </ul>
      * </p>
@@ -208,26 +194,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _IndexHintOnSpec<C, Q extends Query>
-            extends _IndexHintClause<C, _IndexPurposeOnClause<C, Q>, _IndexHintOnSpec<C, Q>>
+    interface _QueryUseIndexOnSpec<C, Q extends Query>
+            extends _QueryUseIndexClause<C, _QueryUseIndexOnSpec<C, Q>>
             , _OnClause<C, _JoinSpec<C, Q>> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing index hint clause for MySQL 8.0.
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
-     * @since 1.0
-     */
-    interface _IndexPurposeOnClause<C, Q extends Query> extends _IndexPurposeClause<C, _IndexHintOnSpec<C, Q>> {
 
     }
 

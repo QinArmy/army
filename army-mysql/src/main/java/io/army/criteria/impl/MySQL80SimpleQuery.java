@@ -38,11 +38,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         Q,
         MySQL80Query._Select80Clause<C, Q>,      //WE
         MySQL80Query._FromSpec<C, Q>,// SR
-        MySQL80Query._IndexHintJoinSpec<C, Q>, //FT
+        MySQL80Query._QueryUseIndexJoinSpec<C, Q>, //FT
         MySQL80Query._JoinSpec<C, Q>,          //FS
         MySQL80Query._PartitionJoinClause<C, Q>, //FP
-        MySQL80Query._IndexPurposeJoin80Clause<C, Q>,//IR
-        MySQL80Query._IndexHintOnSpec<C, Q>,    //JT
+        MySQL80Query._QueryUseIndexOnSpec<C, Q>,    //JT
         Statement._OnClause<C, MySQL80Query._JoinSpec<C, Q>>, //JS
         MySQL80Query._PartitionOnClause<C, Q>,   //JP
         MySQL80Query._GroupBySpec<C, Q>,       //WR
@@ -54,11 +53,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         MySQL80Query._UnionOrderBySpec<C, Q>, //UR
         MySQL80Query._WithSpec<C, Q>>       //SP
         implements _MySQL80Query, MySQL80Query._WithSpec<C, Q>, MySQL80Query._FromSpec<C, Q>
-        , MySQL80Query._IndexHintJoinSpec<C, Q>, MySQL80Query._IndexPurposeJoin80Clause<C, Q>
+        , MySQL80Query._QueryUseIndexJoinSpec<C, Q>, MySQL80Query._WindowCommaSpec<C, Q>
         , MySQL80Query._JoinSpec<C, Q>, MySQL80Query._WhereAndSpec<C, Q>, MySQL80Query._HavingSpec<C, Q>
         , MySQL80Query._GroupByWithRollupSpec<C, Q>, MySQL80Query._OrderByWithRollupSpec<C, Q>
-        , MySQL80Query._LockOfSpec<C, Q>, MySQL80Query._LockLockOptionSpec<C, Q>
-        , MySQL80Query._WindowCommaSpec<C, Q> {
+        , MySQL80Query._LockOfSpec<C, Q>, MySQL80Query._LockLockOptionSpec<C, Q> {
 
 
     static <C> _WithSpec<C, Select> simpleSelect(@Nullable C criteria) {
@@ -125,7 +123,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private MySQLLockOption lockOption;
 
-    private MySQL80Query._IndexHintOnSpec<C, Q> noActionIndexHintOnClause;
+    private _QueryUseIndexOnSpec<C, Q> noActionIndexHintOnClause;
 
     private MySQL80Query._PartitionJoinClause<C, Q> noActionPartitionJoinClause;
 
@@ -134,6 +132,22 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private MySQL80SimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
+    }
+
+
+    @Override
+    public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> useIndex() {
+        return null;
+    }
+
+    @Override
+    public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> ignoreIndex() {
+        return null;
+    }
+
+    @Override
+    public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> forceIndex() {
+        return null;
     }
 
     /**
@@ -596,8 +610,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return SimpleWindow.isIllegalWindow(window, this.criteriaContext);
     }
 
-    private MySQL80Query._IndexHintOnSpec<C, Q> getNoActionIndexHintOnClause() {
-        MySQL80Query._IndexHintOnSpec<C, Q> noActionClause = this.noActionIndexHintOnClause;
+    private _QueryUseIndexOnSpec<C, Q> getNoActionIndexHintOnClause() {
+        _QueryUseIndexOnSpec<C, Q> noActionClause = this.noActionIndexHintOnClause;
         if (noActionClause == null) {
             noActionClause = new NoActionIndexHintOnClause<>(this);
             this.noActionIndexHintOnClause = noActionClause;
@@ -831,8 +845,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     private static final class IndexHintOnBlock<C, Q extends Query> extends MySQLIndexHintOnBlock<
             C,
             _IndexPurposeOnClause<C, Q>,
-            _IndexHintOnSpec<C, Q>,
-            _JoinSpec<C, Q>> implements _IndexHintOnSpec<C, Q>
+            _QueryUseIndexOnSpec<C, Q>,
+            _JoinSpec<C, Q>> implements _QueryUseIndexOnSpec<C, Q>
             , _IndexPurposeOnClause<C, Q> {
 
 
@@ -866,7 +880,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
         @Override
-        public _IndexHintOnSpec<C, Q> as(final String alias) {
+        public _QueryUseIndexOnSpec<C, Q> as(final String alias) {
             Objects.requireNonNull(alias);
             final IndexHintOnBlock<C, Q> hintOnBlock;
             final List<String> partitionList = this.partitionList;
@@ -889,9 +903,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             extends MySQLNoActionIndexHintOnClause<
             C,
             _IndexPurposeOnClause<C, Q>,
-            _IndexHintOnSpec<C, Q>,
+            _QueryUseIndexOnSpec<C, Q>,
             _JoinSpec<C, Q>>
-            implements MySQL80Query._IndexHintOnSpec<C, Q>, MySQL80Query._IndexPurposeOnClause<C, Q> {
+            implements _QueryUseIndexOnSpec<C, Q>, MySQL80Query._IndexPurposeOnClause<C, Q> {
 
         private NoActionIndexHintOnClause(_JoinSpec<C, Q> stmt) {
             super(stmt);
@@ -921,14 +935,14 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             extends MySQLNoActionPartitionClause<C, MySQL80Query._AsOnClause<C, Q>>
             implements MySQL80Query._PartitionOnClause<C, Q>, MySQL80Query._AsOnClause<C, Q> {
 
-        private final Supplier<MySQL80Query._IndexHintOnSpec<C, Q>> supplier;
+        private final Supplier<_QueryUseIndexOnSpec<C, Q>> supplier;
 
-        private NoActionPartitionOnClause(Supplier<_IndexHintOnSpec<C, Q>> supplier) {
+        private NoActionPartitionOnClause(Supplier<_QueryUseIndexOnSpec<C, Q>> supplier) {
             this.supplier = supplier;
         }
 
         @Override
-        public _IndexHintOnSpec<C, Q> as(String alias) {
+        public _QueryUseIndexOnSpec<C, Q> as(String alias) {
             return this.supplier.get();
         }
 
