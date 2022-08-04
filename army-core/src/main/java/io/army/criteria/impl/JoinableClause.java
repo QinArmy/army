@@ -92,25 +92,6 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), alias);
     }
 
-    @Override
-    public final JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJoinTable(predicate, _JoinType.LEFT_JOIN, table);
-    }
-
-    @Override
-    public final JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifJoinTable(predicate, _JoinType.LEFT_JOIN, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifLeftJoin(Supplier<T> supplier, String alias) {
-        return this.ifJoinItem(_JoinType.LEFT_JOIN, supplier.get(), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifLeftJoin(Function<C, T> function, String alias) {
-        return this.ifJoinItem(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
-    }
 
     @Override
     public final JP join(TableMeta<?> table) {
@@ -142,27 +123,6 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, SQLs.refCte(cteName), alias);
     }
 
-
-    @Override
-    public final JP ifJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJoinTable(predicate, _JoinType.JOIN, table);
-    }
-
-    @Override
-    public final JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifJoinTable(predicate, _JoinType.JOIN, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifJoin(Supplier<T> supplier, String alias) {
-        return this.ifJoinItem(_JoinType.JOIN, supplier.get(), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifJoin(Function<C, T> function, String alias) {
-        return this.ifJoinItem(_JoinType.JOIN, function.apply(this.criteria), alias);
-    }
-
     @Override
     public final JP rightJoin(TableMeta<?> table) {
         return (JP) this.clauseSupplier.createClause(_JoinType.RIGHT_JOIN, table);
@@ -191,26 +151,6 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     @Override
     public final JS rightJoin(String cteName, String alias) {
         return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), alias);
-    }
-
-    @Override
-    public final JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJoinTable(predicate, _JoinType.RIGHT_JOIN, table);
-    }
-
-    @Override
-    public final JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifJoinTable(predicate, _JoinType.RIGHT_JOIN, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias) {
-        return this.ifJoinItem(_JoinType.RIGHT_JOIN, supplier.get(), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias) {
-        return this.ifJoinItem(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
     }
 
     @Override
@@ -245,26 +185,6 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
 
     @Override
-    public final JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJoinTable(predicate, _JoinType.FULL_JOIN, table);
-    }
-
-    @Override
-    public final JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifJoinTable(predicate, _JoinType.FULL_JOIN, table, tableAlias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias) {
-        return this.ifJoinItem(_JoinType.FULL_JOIN, supplier.get(), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifFullJoin(Function<C, T> function, String alias) {
-        return this.ifJoinItem(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
-    }
-
-    @Override
     public final JP straightJoin(TableMeta<?> table) {
         return (JP) this.clauseSupplier.createClause(_JoinType.STRAIGHT_JOIN, table);
     }
@@ -292,12 +212,6 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     @Override
     public final JS straightJoin(String cteName, String alias) {
         return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), alias);
-    }
-
-
-    @Override
-    public final JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table) {
-        return this.ifJoinTable(predicate, _JoinType.STRAIGHT_JOIN, table);
     }
 
     @Override
@@ -392,42 +306,6 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         }
         return (FS) clause;
     }
-
-    @Override
-    public final FP ifCrossJoin(Predicate<C> predicate, TableMeta<?> table) {
-        final Object clause;
-        if (predicate.test(this.criteria)) {
-            clause = this.crossJoin(table);
-        } else {
-            clause = this.clauseSupplier.getNoActionClauseBeforeAs(_JoinType.CROSS_JOIN);
-            this.crossJoinEvent(false);
-        }
-        return (FP) clause;
-    }
-
-    @Override
-    public final FT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        final FT clause;
-        if (predicate.test(this.criteria)) {
-            clause = this.crossJoin(table, tableAlias);
-        } else {
-            clause = (FT) this.clauseSupplier.getNoActionClause(_JoinType.CROSS_JOIN);
-            this.crossJoinEvent(false);
-        }
-        return clause;
-    }
-
-
-    @Override
-    public final <T extends TableItem> FS ifCrossJoin(Supplier<T> supplier, String alias) {
-        return this.doIfCrossJoin(supplier.get(), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> FS ifCrossJoin(Function<C, T> function, String alias) {
-        return this.doIfCrossJoin(function.apply(this.criteria), alias);
-    }
-
 
     @Override
     public final C getCriteria() {

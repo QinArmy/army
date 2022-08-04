@@ -155,19 +155,12 @@ public interface DialectStatement extends Statement {
 
         JP leftJoin(TableMeta<?> table);
 
-        JP ifLeftJoin(Predicate<C> predicate, TableMeta<?> table);
-
         JP join(TableMeta<?> table);
-
-        JP ifJoin(Predicate<C> predicate, TableMeta<?> table);
 
         JP rightJoin(TableMeta<?> table);
 
-        JP ifRightJoin(Predicate<C> predicate, TableMeta<?> table);
-
         JP fullJoin(TableMeta<?> table);
 
-        JP ifFullJoin(Predicate<C> predicate, TableMeta<?> table);
     }
 
     /**
@@ -188,7 +181,6 @@ public interface DialectStatement extends Statement {
 
         JP straightJoin(TableMeta<?> table);
 
-        JP ifStraightJoin(Predicate<C> predicate, TableMeta<?> table);
     }
 
 
@@ -210,7 +202,6 @@ public interface DialectStatement extends Statement {
 
         FP crossJoin(TableMeta<?> table);
 
-        FP ifCrossJoin(Predicate<C> predicate, TableMeta<?> table);
 
     }
 
@@ -334,24 +325,6 @@ public interface DialectStatement extends Statement {
 
     }
 
-    /**
-     * <p>
-     * This interface representing dialect single delete clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <DP> next clause java type
-     * @since 1.0
-     */
-    interface _DialectSingleDeleteClause<DP> {
-
-        DP deleteFrom(SingleTableMeta<?> table);
-
-    }
 
     /**
      * <p>
@@ -372,24 +345,7 @@ public interface DialectStatement extends Statement {
 
     }
 
-    /**
-     * <p>
-     * This interface representing dialect FROM clause for single-table DELETE syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>/
-     *
-     * @param <DP> next clause java type
-     * @since 1.0
-     */
-    interface _DialectSingleDeleteFromClause<DP> {
 
-        DP from(SingleTableMeta<?> table);
-
-    }
 
 
 }

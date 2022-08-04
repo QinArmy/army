@@ -38,8 +38,6 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, JT, JS, 
 
     private List<String> intoVarList;
 
-    private boolean fromOrCrossValid = true;
-
     MySQLSimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
@@ -118,11 +116,6 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, JT, JS, 
     @Override
     void onClear() {
         this.intoVarList = null;
-    }
-
-    @Override
-    final void crossJoinEvent(boolean success) {
-        this.fromOrCrossValid = success;
     }
 
     @Override

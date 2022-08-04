@@ -27,9 +27,8 @@ abstract class CriteriaSupports {
         return new ParenStringConsumerClause<>(criteriaContext, function);
     }
 
-    static <C, RR> Statement._LeftParenStringDualOptionalSpec<C, RR> stringDual(CriteriaContext criteriaContext
-            , Function<List<String>, RR> function) {
-        return new ParenStringConsumerClause<>(criteriaContext, function);
+    static <C, RR> Statement._LeftParenStringQuadraOptionalSpec<C, RR> noActionStringQuadra(RR clause) {
+        return new NoActionParenStringConsumerClause<>(clause);
     }
 
 
@@ -285,6 +284,96 @@ abstract class CriteriaSupports {
 
 
     }//ParenStringConsumerClause
+
+    static class NoActionParenStringConsumerClause<C, RR>
+            implements Statement._LeftParenStringQuadraOptionalSpec<C, RR>
+            , Statement._LeftParenStringDualOptionalSpec<C, RR>
+            , Statement._CommaStringDualSpec<RR>
+            , Statement._CommaStringQuadraSpec<RR> {
+
+        private final RR clause;
+
+        NoActionParenStringConsumerClause(RR clause) {
+            this.clause = clause;
+        }
+
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParen(String string) {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public final Statement._CommaStringDualSpec<RR> leftParen(String string1, String string2) {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public final Statement._CommaStringQuadraSpec<RR> leftParen(String string1, String string2, String string3, String string4) {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<String>> consumer) {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<String>> consumer) {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer) {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
+            //no-op
+            return this;
+        }
+
+
+        @Override
+        public final Statement._RightParenClause<RR> comma(String string) {
+            //no-op
+            return this;
+        }
+
+
+        @Override
+        public final Statement._CommaStringDualSpec<RR> comma(String string1, String string2) {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<RR> comma(String string1, String string2, String string3) {
+            //no-op
+            return this;
+        }
+
+        @Override
+        public final Statement._CommaStringQuadraSpec<RR> comma(String string1, String string2, String string3, String string4) {
+            //no-op
+            return this;
+        }
+
+
+        @Override
+        public final RR rightParen() {
+            return this.clause;
+        }
+
+
+    }//NoActionParenStringConsumerClause
 
 
 }

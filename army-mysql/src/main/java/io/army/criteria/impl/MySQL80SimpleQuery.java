@@ -129,6 +129,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private MySQL80Query._PartitionOnClause<C, Q> noActionPartitionOnClause;
 
+    private MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
+
 
     private MySQL80SimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
@@ -137,17 +139,31 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> useIndex() {
-        return null;
+        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
+        if (noOnBlock == null) {
+
+        } else if (this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return noOnBlock.useIndexClause().useIndex();
     }
 
     @Override
     public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> ignoreIndex() {
-        return null;
+        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
+        if (this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return noOnBlock.useIndexClause().ignoreIndex();
     }
 
     @Override
     public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> forceIndex() {
-        return null;
+        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
+        if (this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return noOnBlock.useIndexClause().forceIndex();
     }
 
     /**
@@ -440,6 +456,13 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
         this.recursive = recursive;
         this.cteList = cteList;
+    }
+
+    @Override
+    final void crossJoinEvent(boolean success) {
+        if (!success) {
+            this.noOnBlock = null; // clear
+        }
     }
 
 
@@ -806,60 +829,30 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     private static final class PartitionJoinClause<C, Q extends Query>
-            extends MySQLPartitionClause2<C, _AsJoinClause<C, Q>>
-            implements _PartitionJoinClause<C, Q>, _AsJoinClause<C, Q> {
+            extends MySQLSupports.PartitionAsClause<C, _QueryUseIndexJoinSpec<C, Q>>
+            implements MySQL80Query._PartitionJoinClause<C, Q> {
 
-        private final _JoinType joinType;
-
-        private final TableMeta<?> table;
 
         private final MySQL80SimpleQuery<C, Q> query;
 
+
         private PartitionJoinClause(_JoinType joinType, TableMeta<?> table, MySQL80SimpleQuery<C, Q> query) {
-            super(query.criteria);
-            this.joinType = joinType;
-            this.table = table;
+            super(query.criteriaContext, joinType, table);
             this.query = query;
         }
 
         @Override
-        public _IndexHintJoinSpec<C, Q> as(final String alias) {
-            Objects.requireNonNull(alias);
-            final List<String> partitionList = this.partitionList;
-            final MySQLNoOnBlock block;
-            if (partitionList == null) {
-                block = new MySQLNoOnBlock(this.joinType, this.table, alias);
-            } else {
-                block = new MySQLNoOnBlock(this.joinType, this.table, alias, partitionList);
-            }
-            this.query.criteriaContext.onAddBlock(block);
-            if (this.joinType == _JoinType.CROSS_JOIN) {
-                this.query.crossJoinEvent(true);
-            }
+        _QueryUseIndexJoinSpec<C, Q> asEnd(final MySQLSupports.MySQLBlockParams params) {
+            final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
+            noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(params, this.query);
+
+            this.query.criteriaContext.onAddBlock(noOnBlock);
+            this.query.noOnBlock = noOnBlock;
             return this.query;
         }
 
-    }//PartitionJoinImpl
 
-
-    private static final class IndexHintOnBlock<C, Q extends Query> extends MySQLIndexHintOnBlock<
-            C,
-            _IndexPurposeOnClause<C, Q>,
-            _QueryUseIndexOnSpec<C, Q>,
-            _JoinSpec<C, Q>> implements _QueryUseIndexOnSpec<C, Q>
-            , _IndexPurposeOnClause<C, Q> {
-
-
-        private IndexHintOnBlock(_JoinType joinType, TableMeta<?> item, String alias, _JoinSpec<C, Q> query) {
-            super(joinType, item, alias, query);
-        }
-
-        private IndexHintOnBlock(_JoinType joinType, TableMeta<?> item, String alias, List<String> partitionList
-                , _JoinSpec<C, Q> query) {
-            super(joinType, item, alias, partitionList, query);
-        }
-
-    }//IndexHintOnBlock
+    }//PartitionJoinClause
 
 
     private static final class PartitionOnClause<C, Q extends Query>

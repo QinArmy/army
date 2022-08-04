@@ -23,13 +23,6 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
-    static <C, AR> MySQLQuery._PartitionClause<C, Statement._AsClause<AR>> partitionAs(
-            CriteriaContext criteriaContext, _JoinType joinType, TableMeta<?> table
-            , Function<MySQLBlockParams, AR> function) {
-        return new PartitionAsClause<>(criteriaContext, joinType, table, function);
-    }
-
-
     interface MySQLBlockParams extends TableBlock.BlockParams {
 
         List<String> partitionList();
@@ -37,17 +30,22 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
-    static final class MySQLNoOnBlock extends TableBlock.NoOnTableBlock
+    static final class MySQLNoOnBlock<C, RR> extends TableBlock.NoOnTableBlock
             implements _MySQLTableBlock {
 
 
-        private List<? extends _IndexHint> indexHintList;
-
         private final List<String> partitionList;
 
-        private MySQLNoOnBlock(MySQLBlockParams params) {
+        private final RR stmt;
+
+        private MySQLQuery._QueryUseIndexClause<C, RR> indexClause;
+
+        private List<MySQLIndexHint> indexHintList;
+
+        MySQLNoOnBlock(MySQLBlockParams params, RR stmt) {
             super(params);
             this.partitionList = params.partitionList();
+            this.stmt = stmt;
         }
 
         @Override
@@ -57,7 +55,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public List<? extends _IndexHint> indexHintList() {
-            List<? extends _IndexHint> indexHintList = this.indexHintList;
+            List<MySQLIndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = Collections.emptyList();
                 this.indexHintList = indexHintList;
@@ -68,13 +66,31 @@ abstract class MySQLSupports extends CriteriaSupports {
             return indexHintList;
         }
 
-        // static MySQLQuery._QueryUseIndexClause<C, RR>
+        MySQLQuery._QueryUseIndexClause<C, RR> useIndexClause() {
+            MySQLQuery._QueryUseIndexClause<C, RR> indexClause = this.indexClause;
+            if (indexClause == null) {
+                final CriteriaContext context;
+                context = ((CriteriaContextSpec) this.stmt).getCriteriaContext();
+                indexClause = new IndexHintClause<>(context, this::addIndexHint);
+                this.indexClause = indexClause;
+            }
+            return indexClause;
+        }
+
+        private RR addIndexHint(final MySQLIndexHint indexHint) {
+            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            if (indexHintList == null) {
+                indexHintList = new ArrayList<>();
+            }
+            indexHintList.add(indexHint);
+            return this.stmt;
+        }
 
 
     }//MySQLNoOnBlock
 
 
-    private static final class PartitionAsClause<C, AR> implements Statement._AsClause<AR>, MySQLBlockParams
+    static abstract class PartitionAsClause<C, AR> implements Statement._AsClause<AR>, MySQLBlockParams
             , MySQLQuery._PartitionClause<C, Statement._AsClause<AR>> {
 
         private final CriteriaContext criteriaContext;
@@ -83,64 +99,64 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private final TableMeta<?> table;
 
-        private final Function<MySQLBlockParams, AR> function;
 
         private List<String> partitionList;
 
         private String tableAlias;
 
-        private PartitionAsClause(CriteriaContext criteriaContext, _JoinType joinType, TableMeta<?> table
-                , Function<MySQLBlockParams, AR> function) {
+        PartitionAsClause(CriteriaContext criteriaContext, _JoinType joinType, TableMeta<?> table) {
             this.criteriaContext = criteriaContext;
             this.joinType = joinType;
             this.table = table;
-            this.function = function;
         }
 
         @Override
-        public Statement._LeftParenStringQuadraOptionalSpec<C, Statement._AsClause<AR>> partition() {
-            if (this.partitionList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
+        public final Statement._LeftParenStringQuadraOptionalSpec<C, Statement._AsClause<AR>> partition() {
             return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
         }
 
         @Override
-        public AR as(final String alias) {
+        public final AR as(final String alias) {
             if (!_StringUtils.hasText(alias)) {
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, "table alias must be non-empty.");
             }
-            if (this.tableAlias != null) {
+            if (this.tableAlias != null || this.partitionList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.tableAlias = alias;
-            return function.apply(this);
+            return this.asEnd(this);
         }
 
 
         @Override
-        public _JoinType joinType() {
+        public final _JoinType joinType() {
             return this.joinType;
         }
 
         @Override
-        public TableItem tableItem() {
+        public final TableItem tableItem() {
             return this.table;
         }
 
         @Override
-        public String alias() {
-            return this.tableAlias;
+        public final String alias() {
+            final String tableAlias = this.tableAlias;
+            if (tableAlias == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return tableAlias;
         }
 
         @Override
-        public List<String> partitionList() {
+        public final List<String> partitionList() {
             final List<String> partitionList = this.partitionList;
             if (partitionList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return partitionList;
         }
+
+        abstract AR asEnd(MySQLBlockParams params);
 
 
         private Statement._AsClause<AR> partitionEnd(List<String> partitionList) {
@@ -152,6 +168,9 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
     }//PartitionAsClause
+
+
+    private static final class NoActionPartitionAsClause<C, AR>
 
 
     private static final class IndexHintClause<C, RR> extends CriteriaSupports.ParenStringConsumerClause<C, RR>

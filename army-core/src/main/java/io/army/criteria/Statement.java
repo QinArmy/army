@@ -191,23 +191,11 @@ public interface Statement {
 
         <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias);
 
-        JT ifLeftJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS ifLeftJoin(Supplier<T> supplier, String alias);
-
-        <T extends TableItem> JS ifLeftJoin(Function<C, T> function, String alias);
-
         JT join(TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JS join(Function<C, T> function, String alias);
 
         <T extends TableItem> JS join(Supplier<T> supplier, String alias);
-
-        JT ifJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS ifJoin(Supplier<T> supplier, String alias);
-
-        <T extends TableItem> JS ifJoin(Function<C, T> function, String alias);
 
         JT rightJoin(TableMeta<?> table, String tableAlias);
 
@@ -215,23 +203,11 @@ public interface Statement {
 
         <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias);
 
-        JT ifRightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS ifRightJoin(Supplier<T> supplier, String alias);
-
-        <T extends TableItem> JS ifRightJoin(Function<C, T> function, String alias);
-
         JT fullJoin(TableMeta<?> table, String tableAlias);
 
         <T extends TableItem> JS fullJoin(Function<C, T> function, String alias);
 
         <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias);
-
-        JT ifFullJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> JS ifFullJoin(Supplier<T> supplier, String alias);
-
-        <T extends TableItem> JS ifFullJoin(Function<C, T> function, String alias);
 
     }
 
@@ -258,12 +234,6 @@ public interface Statement {
         <T extends TableItem> FS crossJoin(Function<C, T> function, String alias);
 
         <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias);
-
-        FT ifCrossJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
-
-        <T extends TableItem> FS ifCrossJoin(Function<C, T> function, String alias);
-
-        <T extends TableItem> FS ifCrossJoin(Supplier<T> supplier, String alias);
 
     }
 
