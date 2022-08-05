@@ -4,7 +4,10 @@ import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface DialectStatement extends Statement {
 
@@ -129,11 +132,46 @@ public interface DialectStatement extends Statement {
 
         <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias);
 
-        JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias);
+    }
 
-        <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias);
+
+    interface _JoinLateralClause<C, JS> {
+
+        <T extends TableItem> JS leftJoinLateral(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> JS leftJoinLateral(Function<C, T> function, String alias);
+
+        <T extends TableItem> JS joinLateral(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> JS joinLateral(Function<C, T> function, String alias);
+
+        <T extends TableItem> JS rightJoinLateral(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> JS rightJoinLateral(Function<C, T> function, String alias);
+
+        <T extends TableItem> JS fullJoinLateral(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> JS fullJoinLateral(Function<C, T> function, String alias);
+
+
+    }
+
+    interface _CrossJoinLateralClause<C, FS> {
+
+        <T extends TableItem> FS crossJoinLateral(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> FS crossJoinLateral(Function<C, T> function, String alias);
+
+    }
+
+
+    interface _StraightJoinLateralClause<C, JS> {
+
+        <T extends TableItem> JS straightJoinLateral(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> JS straightJoinLateral(Function<C, T> function, String alias);
+
 
     }
 
@@ -177,9 +215,17 @@ public interface DialectStatement extends Statement {
      * @see _DialectJoinClause
      * @since 1.0
      */
-    interface _DialectStraightJoinClause<C, JP> {
+    interface _DialectStraightJoinClause<JP> {
 
         JP straightJoin(TableMeta<?> table);
+
+    }
+
+    interface _DialectIfStraightJoinClause<C, FJ> {
+
+        <B extends JoinItemBlock> FJ ifStraightJoin(Supplier<B> supplier);
+
+        <B extends JoinItemBlock> FJ ifStraightJoin(Function<C, B> function);
 
     }
 
@@ -198,7 +244,7 @@ public interface DialectStatement extends Statement {
      * @see _DialectFromClause
      * @since 1.0
      */
-    interface _DialectCrossJoinClause<C, FP> {
+    interface _DialectCrossJoinClause<FP> {
 
         FP crossJoin(TableMeta<?> table);
 
@@ -245,6 +291,7 @@ public interface DialectStatement extends Statement {
         FS crossJoin(String cteName, String alias);
 
     }
+
 
     /**
      * <p>

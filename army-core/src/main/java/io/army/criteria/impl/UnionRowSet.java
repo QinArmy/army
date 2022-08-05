@@ -3,12 +3,14 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._PartRowSet;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.ParamMeta;
+import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -21,7 +23,7 @@ import java.util.List;
  * @since 1.0
  */
 abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
-        extends PartRowSet<C, Q, Void, Void, Void, Void, Void, Void, UR, OR, LR, SP>
+        extends PartRowSet<C, Q, Void, Void, Void, Void, Void, Void, Void, UR, OR, LR, SP>
         implements _UnionRowSet {
 
     final Q left;
@@ -129,9 +131,40 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
 
 
     @Override
-    final void crossJoinEvent(boolean success) {
-        throw _Exceptions.castCriteriaApi();
+    final Void createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
+
+    @Override
+    final Void createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    @Override
+    final Void creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    @Override
+    final _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    @Override
+    final Void createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    @Override
+    final Void createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    @Override
+    final Void createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
 
     interface BracketRowSet {
 

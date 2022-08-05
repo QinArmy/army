@@ -56,6 +56,11 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
 
+    interface _StandardJoinClause<C, Q extends Query, FS, JS>
+            extends Statement._JoinClause<C, JS, JS>, Statement._CrossJoinClause<C, FS, FS> {
+
+    }
+
     /**
      * <p>
      * This interface representing the composite of below:

@@ -17,12 +17,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, LR, SP>
-        extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
+abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, OR, LR, SP>
+        extends JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         implements CriteriaContextSpec, _PartRowSet, Statement._OrderByClause<C, OR>, Query._LimitClause<C, LR>
         , Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>, RowSet._RowSetSpec<Q>, _SelfDescribed {
 
-    final CriteriaContext criteriaContext;
 
     private List<ArmySortItem> orderByList;
 
@@ -35,12 +34,10 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, JT, JS, JP, UR, OR, L
 
     PartRowSet(CriteriaContext criteriaContext, ClauseSupplier suppler) {
         super(suppler, criteriaContext.criteria());
-        this.criteriaContext = criteriaContext;
     }
 
     PartRowSet(CriteriaContext criteriaContext) {
-        super(criteriaContext.criteria());
-        this.criteriaContext = criteriaContext;
+        super(criteriaContext);
     }
 
     @Override

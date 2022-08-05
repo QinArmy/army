@@ -27,8 +27,8 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends PartRowSet<C, Q, FT, FS, FP, JT, JS, JP, UR, OR, LR, SP>
+abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends PartRowSet<C, Q, FT, FS, FP, FJ, JT, JS, JP, UR, OR, LR, SP>
         implements Statement._QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
         , Query._HavingClause<C, HR>, _Query, Statement._FromClause<C, FT, FS>, DialectStatement._DialectFromClause<FP>
         , DialectStatement._DialectSelectClause<C, W, SR>, DialectStatement._FromCteClause<FS>, Query._QuerySpec<Q>

@@ -30,6 +30,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         StandardQuery._JoinSpec<C, Q>,// FT
         StandardQuery._JoinSpec<C, Q>,// FS
         Void,                               // FP
+        StandardQuery._JoinSpec<C, Q>,     // FJ
         Statement._OnClause<C, StandardQuery._JoinSpec<C, Q>>, // JT
         Statement._OnClause<C, StandardQuery._JoinSpec<C, Q>>, // JS
         Void,                               // JP

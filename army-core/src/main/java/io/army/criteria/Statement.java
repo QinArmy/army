@@ -238,6 +238,31 @@ public interface Statement {
     }
 
 
+    interface _IfJoinClause<C, FJ> {
+
+        <B extends JoinItemBlock> FJ ifLeftJoin(Supplier<B> supplier);
+
+        <B extends JoinItemBlock> FJ ifLeftJoin(Function<C, B> function);
+
+        <B extends JoinItemBlock> FJ ifJoin(Supplier<B> supplier);
+
+        <B extends JoinItemBlock> FJ ifJoin(Function<C, B> function);
+
+        <B extends JoinItemBlock> FJ ifRightJoin(Supplier<B> supplier);
+
+        <B extends JoinItemBlock> FJ ifRightJoin(Function<C, B> function);
+
+        <B extends JoinItemBlock> FJ ifFullJoin(Supplier<B> supplier);
+
+        <B extends JoinItemBlock> FJ ifFullJoin(Function<C, B> function);
+
+        <B extends CrossItemBlock> FJ ifCrossJoin(Supplier<B> supplier);
+
+        <B extends CrossItemBlock> FJ ifCrossJoin(Function<C, B> function);
+
+    }
+
+
     /**
      * <p>
      * This interface representing a left bracket clause after key word 'FROM' or key word 'JOIN'.

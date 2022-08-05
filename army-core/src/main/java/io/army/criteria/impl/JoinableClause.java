@@ -17,7 +17,10 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -32,19 +35,24 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
+abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         implements Statement._JoinClause<C, JT, JS>, Statement._CrossJoinClause<C, FT, FS>
         , DialectStatement._StraightJoinClause<C, JT, JS>, DialectStatement._DialectJoinClause<C, JP>
-        , DialectStatement._DialectStraightJoinClause<C, JP>, DialectStatement._DialectCrossJoinClause<C, FP>
+        , DialectStatement._DialectStraightJoinClause<JP>, DialectStatement._DialectCrossJoinClause<FP>
         , DialectStatement._JoinCteClause<JS>, DialectStatement._StraightJoinCteClause<JS>
-        , DialectStatement._CrossJoinCteClause<FS>, CriteriaSpec<C>
-        , Statement.StatementMockSpec {
+        , DialectStatement._JoinLateralClause<C, JS>, DialectStatement._CrossJoinLateralClause<C, FS>
+        , DialectStatement._StraightJoinLateralClause<C, JS>, Statement._IfJoinClause<C, FJ>
+        , DialectStatement._CrossJoinCteClause<FS>, DialectStatement._DialectIfStraightJoinClause<C, FJ>
+        , CriteriaSpec<C>, Statement.StatementMockSpec {
 
-    final ClauseSupplier clauseSupplier;
+    ClauseSupplier clauseSupplier;
+
+    final CriteriaContext criteriaContext;
 
     final C criteria;
 
     JoinableClause(ClauseSupplier clauseSupplier, @Nullable C criteria) {
+        this.criteriaContext = null;
         this.clauseSupplier = clauseSupplier;
         this.criteria = criteria;
     }
@@ -53,8 +61,14 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         if (!(this instanceof ClauseSupplier)) {
             throw new IllegalStateException();
         }
+        this.criteriaContext = null;
         this.clauseSupplier = (ClauseSupplier) this;
         this.criteria = criteria;
+    }
+
+    JoinableClause(CriteriaContext criteriaContext) {
+        this.criteriaContext = criteriaContext;
+        this.criteria = criteriaContext.criteria();
     }
 
 
@@ -63,248 +77,438 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
 
     @Override
     public final JP leftJoin(TableMeta<?> table) {
-        return (JP) this.clauseSupplier.createClause(_JoinType.LEFT_JOIN, table);
+        return this.createTableClause(_JoinType.LEFT_JOIN, null, table);
     }
 
     @Override
     public final JT leftJoin(TableMeta<?> table, String tableAlias) {
-        return (JT) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, table, tableAlias);
+        final JT blockClause;
+        blockClause = this.createTableBlock(_JoinType.LEFT_JOIN, null, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
 
     @Override
     public final <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, supplier.get(), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.LEFT_JOIN, null, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS leftJoin(Function<C, T> function, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, function.apply(this.criteria), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.LEFT_JOIN, null, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS leftJoin(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), "");
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.LEFT_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS leftJoin(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.LEFT_JOIN, SQLs.refCte(cteName), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.LEFT_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
 
     @Override
+    public final <T extends TableItem> JS leftJoinLateral(Supplier<T> supplier, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.LEFT_JOIN, ItemWord.LATERAL, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+    @Override
+    public final <T extends TableItem> JS leftJoinLateral(Function<C, T> function, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.LEFT_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+    @Override
     public final JP join(TableMeta<?> table) {
-        return (JP) this.clauseSupplier.createClause(_JoinType.JOIN, table);
+        return this.createTableClause(_JoinType.JOIN, null, table);
     }
 
     @Override
     public final JT join(TableMeta<?> table, String tableAlias) {
-        return (JT) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, table, tableAlias);
+        final JT blockClause;
+        blockClause = this.createTableBlock(_JoinType.JOIN, null, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS join(Supplier<T> supplier, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, supplier.get(), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.JOIN, null, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS join(Function<C, T> function, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, function.apply(this.criteria), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.JOIN, null, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS join(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, SQLs.refCte(cteName), "");
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.JOIN, null, this.criteriaContext.refCte(cteName), "");
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS join(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.JOIN, SQLs.refCte(cteName), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+
+    @Override
+    public final <T extends TableItem> JS joinLateral(Supplier<T> supplier, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.JOIN, ItemWord.LATERAL, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+    @Override
+    public final <T extends TableItem> JS joinLateral(Function<C, T> function, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JP rightJoin(TableMeta<?> table) {
-        return (JP) this.clauseSupplier.createClause(_JoinType.RIGHT_JOIN, table);
+        return this.createTableClause(_JoinType.RIGHT_JOIN, null, table);
     }
 
     @Override
     public final JT rightJoin(TableMeta<?> table, String tableAlias) {
-        return (JT) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, table, tableAlias);
+        final JT blockClause;
+        blockClause = this.createTableBlock(_JoinType.RIGHT_JOIN, null, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, supplier.get(), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.RIGHT_JOIN, null, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS rightJoin(Function<C, T> function, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, function.apply(this.criteria), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.RIGHT_JOIN, null, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS rightJoin(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), "");
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.RIGHT_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS rightJoin(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.RIGHT_JOIN, SQLs.refCte(cteName), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.RIGHT_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+    @Override
+    public final <T extends TableItem> JS rightJoinLateral(Supplier<T> supplier, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.RIGHT_JOIN, ItemWord.LATERAL, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+    @Override
+    public final <T extends TableItem> JS rightJoinLateral(Function<C, T> function, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.RIGHT_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JP fullJoin(TableMeta<?> table) {
-        return (JP) this.clauseSupplier.createClause(_JoinType.FULL_JOIN, table);
+        return this.createTableClause(_JoinType.FULL_JOIN, null, table);
     }
 
     @Override
     public final JT fullJoin(TableMeta<?> table, String tableAlias) {
-        return (JT) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, table, tableAlias);
+        final JT blockClause;
+        blockClause = this.createTableBlock(_JoinType.FULL_JOIN, null, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, supplier.get(), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.FULL_JOIN, null, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS fullJoin(Function<C, T> function, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, function.apply(this.criteria), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.FULL_JOIN, null, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS fullJoin(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, SQLs.refCte(cteName), "");
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.FULL_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS fullJoin(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.FULL_JOIN, SQLs.refCte(cteName), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.FULL_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
 
     @Override
+    public final <T extends TableItem> JS fullJoinLateral(Supplier<T> supplier, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.FULL_JOIN, ItemWord.LATERAL, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+    @Override
+    public final <T extends TableItem> JS fullJoinLateral(Function<C, T> function, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.FULL_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+    @Override
     public final JP straightJoin(TableMeta<?> table) {
-        return (JP) this.clauseSupplier.createClause(_JoinType.STRAIGHT_JOIN, table);
+        return this.createTableClause(_JoinType.STRAIGHT_JOIN, null, table);
     }
 
     @Override
     public final JT straightJoin(TableMeta<?> table, String tableAlias) {
-        return (JT) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, table, tableAlias);
+        final JT blockClause;
+        blockClause = this.createTableBlock(_JoinType.STRAIGHT_JOIN, null, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.STRAIGHT_JOIN, null, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.STRAIGHT_JOIN, null, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS straightJoin(String cteName) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), "");
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.STRAIGHT_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final JS straightJoin(String cteName, String alias) {
-        return (JS) this.clauseSupplier.createAndAddBlock(_JoinType.STRAIGHT_JOIN, SQLs.refCte(cteName), alias);
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.STRAIGHT_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+
+    @Override
+    public final <T extends TableItem> JS straightJoinLateral(Supplier<T> supplier, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.STRAIGHT_JOIN, ItemWord.LATERAL, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
-    public final JT ifStraightJoin(Predicate<C> predicate, TableMeta<?> table, String tableAlias) {
-        return this.ifJoinTable(predicate, _JoinType.STRAIGHT_JOIN, table, tableAlias);
+    public final <T extends TableItem> JS straightJoinLateral(Function<C, T> function, String alias) {
+        final JS blockClause;
+        blockClause = this.createItemBlock(_JoinType.STRAIGHT_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
-
-    @Override
-    public final <T extends TableItem> JS ifStraightJoin(Supplier<T> supplier, String alias) {
-        return this.ifJoinItem(_JoinType.STRAIGHT_JOIN, supplier.get(), alias);
-    }
-
-    @Override
-    public final <T extends TableItem> JS ifStraightJoin(Function<C, T> function, String alias) {
-        return this.ifJoinItem(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria), alias);
-    }
-
 
     @Override
     public final FP crossJoin(TableMeta<?> table) {
-        final FP clause;
-        clause = (FP) this.clauseSupplier.createClause(_JoinType.CROSS_JOIN, table);
-        if (this instanceof Statement) {
-            this.crossJoinEvent(true);
-        }//nested join couldn't invoking crossJoinEvent(true),because throw CriteriaException
-        return clause;
+        return this.createNoOnTableClause(_JoinType.CROSS_JOIN, null, table);
     }
 
     @Override
     public final FT crossJoin(TableMeta<?> table, String tableAlias) {
-        final _TableBlock block;
-        block = this.clauseSupplier.createAndAddBlock(_JoinType.CROSS_JOIN, table, tableAlias);
-        final Object clause;
-        if (block instanceof JoinableClause) {
-            //here nested join items,//nested join couldn't invoking crossJoinEvent(true),because throw CriteriaException
-            clause = block;
-        } else {
-            this.crossJoinEvent(true);
-            clause = this;
-        }
-        return (FT) clause;
+        final FT blockClause;
+        blockClause = this.createNoOnTableBlock(_JoinType.CROSS_JOIN, null, table, tableAlias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
 
     @Override
     public final <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias) {
-        final _TableBlock block;
-        block = this.clauseSupplier.createAndAddBlock(_JoinType.CROSS_JOIN, supplier.get(), alias);
-        final Object clause;
-        if (block instanceof JoinableClause) {
-            //here nested join items,//nested join couldn't invoking crossJoinEvent(true),because throw CriteriaException
-            clause = block;
-        } else {
-            this.crossJoinEvent(true);
-            clause = this;
-        }
-        return (FS) clause;
+        final FS blockClause;
+        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
 
     @Override
     public final <T extends TableItem> FS crossJoin(Function<C, T> function, String alias) {
-        final _TableBlock block;
-        block = this.clauseSupplier.createAndAddBlock(_JoinType.CROSS_JOIN, function.apply(this.criteria), alias);
-        final Object clause;
-        if (block instanceof JoinableClause) {
-            //here nested join items,//nested join couldn't invoking crossJoinEvent(true),because throw CriteriaException
-            clause = block;
-        } else {
-            this.crossJoinEvent(true);
-            clause = this;
-        }
-        return (FS) clause;
+        final FS blockClause;
+        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final FS crossJoin(String cteName) {
-        return this.crossJoin(cteName, "");
+        final FS blockClause;
+        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
     }
 
     @Override
     public final FS crossJoin(String cteName, String alias) {
-        final _TableBlock block;
-        block = this.clauseSupplier.createAndAddBlock(_JoinType.CROSS_JOIN, SQLs.refCte(cteName), alias);
-        final Object clause;
-        if (block instanceof JoinableClause) {
-            //here nested join items,//nested join couldn't invoking crossJoinEvent(true),because throw CriteriaException
-            clause = block;
-        } else {
-            this.crossJoinEvent(true);
-            clause = this;
-        }
-        return (FS) clause;
+        final FS blockClause;
+        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+
+    @Override
+    public final <T extends TableItem> FS crossJoinLateral(Supplier<T> supplier, String alias) {
+        final FS blockClause;
+        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, ItemWord.LATERAL, supplier.get(), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+    @Override
+    public final <T extends TableItem> FS crossJoinLateral(Function<C, T> function, String alias) {
+        final FS blockClause;
+        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
+        return blockClause;
+    }
+
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifLeftJoin(Supplier<B> supplier) {
+        return this.innerCreateBlockForDynamic(_JoinType.LEFT_JOIN, supplier.get());
+    }
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifLeftJoin(Function<C, B> function) {
+        return this.innerCreateBlockForDynamic(_JoinType.LEFT_JOIN, function.apply(this.criteria));
+    }
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifJoin(Supplier<B> supplier) {
+        return this.innerCreateBlockForDynamic(_JoinType.JOIN, supplier.get());
+    }
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifJoin(Function<C, B> function) {
+        return this.innerCreateBlockForDynamic(_JoinType.JOIN, function.apply(this.criteria));
+    }
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifRightJoin(Supplier<B> supplier) {
+        return this.innerCreateBlockForDynamic(_JoinType.RIGHT_JOIN, supplier.get());
+    }
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifRightJoin(Function<C, B> function) {
+        return this.innerCreateBlockForDynamic(_JoinType.RIGHT_JOIN, function.apply(this.criteria));
+    }
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifFullJoin(Supplier<B> supplier) {
+        return this.innerCreateBlockForDynamic(_JoinType.FULL_JOIN, supplier.get());
+    }
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifFullJoin(Function<C, B> function) {
+        return this.innerCreateBlockForDynamic(_JoinType.FULL_JOIN, function.apply(this.criteria));
+    }
+
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifStraightJoin(Supplier<B> supplier) {
+        return this.innerCreateBlockForDynamic(_JoinType.STRAIGHT_JOIN, supplier.get());
+    }
+
+    @Override
+    public final <B extends JoinItemBlock> FJ ifStraightJoin(Function<C, B> function) {
+        return this.innerCreateBlockForDynamic(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria));
+    }
+
+    @Override
+    public final <B extends CrossItemBlock> FJ ifCrossJoin(Supplier<B> supplier) {
+        return this.innerCreateBlockForDynamic(_JoinType.CROSS_JOIN, supplier.get());
+    }
+
+    @Override
+    public final <B extends CrossItemBlock> FJ ifCrossJoin(Function<C, B> function) {
+        return this.innerCreateBlockForDynamic(_JoinType.CROSS_JOIN, function.apply(this.criteria));
     }
 
     @Override
@@ -349,59 +553,52 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
         return stmt;
     }
 
-    abstract void crossJoinEvent(boolean success);
+    void crossJoinEvent(boolean success) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
 
+    FP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
 
-    private JP ifJoinTable(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table) {
-        final Object clause;
-        if (predicate.test(this.criteria)) {
-            clause = this.clauseSupplier.createClause(joinType, table);
-        } else {
-            clause = this.clauseSupplier.getNoActionClauseBeforeAs(joinType);
-        }
-        return (JP) clause;
+    FT createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    FS creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
 
-    private JT ifJoinTable(Predicate<C> predicate, _JoinType joinType, TableMeta<?> table, String tableAlias) {
-        final Object clause;
-        if (predicate.test(this.criteria)) {
-            clause = this.clauseSupplier.createAndAddBlock(joinType, table, tableAlias);
-        } else {
-            clause = this.clauseSupplier.getNoActionClause(joinType);
-        }
-        return (JT) clause;
+    JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
 
-    private JS ifJoinItem(_JoinType joinType, @Nullable TableItem item, String alias) {
-        final Object clause;
-        if (item == null) {
-            clause = this.clauseSupplier.getNoActionClause(joinType);
-        } else {
-            clause = this.clauseSupplier.createAndAddBlock(joinType, item, alias);
-        }
-        return (JS) clause;
+    JT createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
-    private FS doIfCrossJoin(@Nullable TableItem item, String alias) {
-        final FS clause;
-        if (item == null) {
-            clause = (FS) this.clauseSupplier.getNoActionClause(_JoinType.CROSS_JOIN);
-            this.crossJoinEvent(false);
-        } else {
-            final _TableBlock block;
-            block = this.clauseSupplier.createAndAddBlock(_JoinType.CROSS_JOIN, item, alias);
-            if (block instanceof JoinableClause) {
-                //here nested join items,//nested join couldn't invoking crossJoinEvent(true),because throw CriteriaException
-                clause = (FS) block;
-            } else {
-                this.crossJoinEvent(true);
-                clause = (FS) this;
-            }
-        }
-        return clause;
+    JS createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
+
+
+    private FJ innerCreateBlockForDynamic(final _JoinType joinType, final @Nullable Object block) {
+        if (block == null) {
+            return (FJ) this;
+        }
+        if (!(block instanceof DynamicBlock)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        this.criteriaContext.onAddBlock(this.createBlockForDynamic(joinType, (DynamicBlock) block));
+        return (FJ) this;
+    }
+
 
     static ClauseSupplier voidClauseSuppler() {
         return VoidClauseSuppler.INSTANCE;
@@ -511,7 +708,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
             if (this.blockList.size() != 0) {
                 throw _Exceptions.castCriteriaApi();
             }
-            return (LS) this.createAndAddBlock(_JoinType.NONE, SQLs.refCte(cteName), "");
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -519,7 +716,7 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
             if (this.blockList.size() != 0) {
                 throw _Exceptions.castCriteriaApi();
             }
-            return (LS) this.createAndAddBlock(_JoinType.NONE, SQLs.refCte(cteName), alias);
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -555,8 +752,8 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     }//LeftBracketNestedItem
 
 
-    static abstract class NoActionOnOrJoinBlock<C, FT, FS, FP, JT, JS, JP>
-            extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
+    static abstract class NoActionOnOrJoinBlock<C, FT, FS, FP, FJ, JT, JS, JP>
+            extends JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
             implements Statement._OnClause<C, FS>, Statement._RightParenClause<NestedItems> {
 
 
@@ -609,8 +806,8 @@ abstract class JoinableClause<C, FT, FS, FP, JT, JS, JP>
     }//NoActionOnOrJoinBlock
 
 
-    static abstract class OnOrJoinBlock<C, FT, FS, FP, JT, JS, JP>
-            extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
+    static abstract class OnOrJoinBlock<C, FT, FS, FP, FJ, JT, JS, JP>
+            extends JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
             implements Statement._OnClause<C, FS>, _TableBlock, Statement._RightParenClause<NestedItems> {
 
         final _JoinType joinType;
