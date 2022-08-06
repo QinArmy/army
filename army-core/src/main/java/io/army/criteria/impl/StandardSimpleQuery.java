@@ -100,7 +100,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         final LockMode lockMode;
         lockMode = function.apply(this.criteria);
         if (lockMode == null) {
-            throw new NullPointerException();
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
         }
         this.lockMode = lockMode;
         return this;
@@ -108,29 +108,19 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     @Override
     public final _UnionSpec<C, Q> ifLock(@Nullable LockMode lockMode) {
-        if (lockMode != null) {
-            this.lockMode = lockMode;
-        }
+        this.lockMode = lockMode;
         return this;
     }
 
     @Override
     public final _UnionSpec<C, Q> ifLock(Supplier<LockMode> supplier) {
-        final LockMode lockMode;
-        lockMode = supplier.get();
-        if (lockMode != null) {
-            this.lockMode = lockMode;
-        }
+        this.lockMode = supplier.get();
         return this;
     }
 
     @Override
     public final _UnionSpec<C, Q> ifLock(Function<C, LockMode> function) {
-        final LockMode lockMode;
-        lockMode = function.apply(this.criteria);
-        if (lockMode != null) {
-            this.lockMode = lockMode;
-        }
+        this.lockMode = function.apply(this.criteria);
         return this;
     }
 
@@ -147,14 +137,53 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final _StandardSelectClause<C, Q> asUnionAndRowSet(final UnionType unionType) {
-        return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return new TableBlock.NoOnTableBlock(joinType, table, alias);
+    }
+
+    @Override
+    final _TableBlock creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
+    }
+
+    @Override
+    final _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
+        //TODO
+        return super.createBlockForDynamic(joinType, block);
     }
 
 
     @Override
-    final void crossJoinEvent(boolean success) {
+    final _OnClause<C, _JoinSpec<C, Q>> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return new OnClauseTableBlock<>(joinType, table, tableAlias, this);
+    }
+
+    @Override
+    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+    }
+
+
+    @Override
+    final void onOrderBy() {
         //no-op
+    }
+
+    @Override
+    final _StandardSelectClause<C, Q> asUnionAndRowSet(final UnionType unionType) {
+        return StandardSimpleQuery.unionAndQuery(this.asQuery(), unionType);
     }
 
 
@@ -195,68 +224,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         //standard statement don't hints
         throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
-
-    @Override
-    public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {
-        final _TableBlock tableBlock;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN:
-                tableBlock = new TableBlock.NoOnTableBlock(joinType, item, alias);
-                break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-                tableBlock = new OnClauseTableBlock<>(joinType, item, alias, this);
-                break;
-            case STRAIGHT_JOIN:
-                throw _Exceptions.castCriteriaApi();
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
-        }
-        this.criteriaContext.onAddBlock(tableBlock);
-        return tableBlock;
-    }
-
-    @Override
-    public final Object createClause(_JoinType joinType, TableMeta<?> table) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
-    @Override
-    public final Object getNoActionClause(final _JoinType joinType) {
-        final Object noActionClause;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN:
-                noActionClause = this;
-                break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN: {
-                NoActionOnClause<C, StandardQuery._JoinSpec<C, Q>> clause = this.noActionOnClause;
-                if (clause == null) {
-                    clause = new NoActionOnClause<>(this);
-                    this.noActionOnClause = clause;
-                }
-                noActionClause = clause;
-            }
-            break;
-            case STRAIGHT_JOIN:
-                throw _Exceptions.castCriteriaApi();
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
-        }
-        return noActionClause;
-    }
-
-    @Override
-    public final Object getNoActionClauseBeforeAs(_JoinType joinType) {
-        throw _Exceptions.castCriteriaApi();
-    }
-
 
     @Override
     public final LockMode lockMode() {

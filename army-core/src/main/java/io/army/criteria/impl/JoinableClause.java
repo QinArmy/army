@@ -37,12 +37,12 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         implements Statement._JoinClause<C, JT, JS>, Statement._CrossJoinClause<C, FT, FS>
-        , DialectStatement._StraightJoinClause<C, JT, JS>, DialectStatement._DialectJoinClause<C, JP>
+        , DialectStatement._StraightJoinClause<C, JT, JS>, DialectStatement._DialectJoinClause<JP>
         , DialectStatement._DialectStraightJoinClause<JP>, DialectStatement._DialectCrossJoinClause<FP>
         , DialectStatement._JoinCteClause<JS>, DialectStatement._StraightJoinCteClause<JS>
         , DialectStatement._JoinLateralClause<C, JS>, DialectStatement._CrossJoinLateralClause<C, FS>
         , DialectStatement._StraightJoinLateralClause<C, JS>, Statement._IfJoinClause<C, FJ>
-        , DialectStatement._CrossJoinCteClause<FS>, DialectStatement._DialectIfStraightJoinClause<C, FJ>
+        , DialectStatement._CrossJoinCteClause<FS>, DialectStatement._IfStraightJoinClause<C, FJ>
         , CriteriaSpec<C>, Statement.StatementMockSpec {
 
     ClauseSupplier clauseSupplier;
@@ -392,61 +392,61 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
     @Override
     public final FT crossJoin(TableMeta<?> table, String tableAlias) {
-        final FT blockClause;
-        blockClause = this.createNoOnTableBlock(_JoinType.CROSS_JOIN, null, table, tableAlias);
-        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
-        return blockClause;
+        final _TableBlock block;
+        block = this.createNoOnTableBlock(_JoinType.CROSS_JOIN, null, table, tableAlias);
+        this.criteriaContext.onAddBlock(block);
+        return (FT) this;
     }
 
 
     @Override
     public final <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias) {
-        final FS blockClause;
-        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
-        return blockClause;
+        final _TableBlock block;
+        block = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, supplier.get(), alias);
+        this.criteriaContext.onAddBlock(block);
+        return (FS) this;
     }
 
 
     @Override
     public final <T extends TableItem> FS crossJoin(Function<C, T> function, String alias) {
-        final FS blockClause;
-        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
-        return blockClause;
+        final _TableBlock block;
+        block = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock(block);
+        return (FS) this;
     }
 
     @Override
     public final FS crossJoin(String cteName) {
-        final FS blockClause;
-        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.criteriaContext.refCte(cteName), "");
-        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
-        return blockClause;
+        final _TableBlock block;
+        block = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        this.criteriaContext.onAddBlock(block);
+        return (FS) this;
     }
 
     @Override
     public final FS crossJoin(String cteName, String alias) {
-        final FS blockClause;
-        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.criteriaContext.refCte(cteName), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
-        return blockClause;
+        final _TableBlock block;
+        block = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        this.criteriaContext.onAddBlock(block);
+        return (FS) this;
     }
 
 
     @Override
     public final <T extends TableItem> FS crossJoinLateral(Supplier<T> supplier, String alias) {
-        final FS blockClause;
-        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, ItemWord.LATERAL, supplier.get(), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
-        return blockClause;
+        final _TableBlock block;
+        block = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, ItemWord.LATERAL, supplier.get(), alias);
+        this.criteriaContext.onAddBlock(block);
+        return (FS) this;
     }
 
     @Override
     public final <T extends TableItem> FS crossJoinLateral(Function<C, T> function, String alias) {
-        final FS blockClause;
-        blockClause = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock((_TableBlock) blockClause);
-        return blockClause;
+        final _TableBlock block;
+        block = this.creatNoOnItemBlock(_JoinType.CROSS_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock(block);
+        return (FS) this;
     }
 
 
@@ -553,6 +553,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         return stmt;
     }
 
+    @Deprecated
     void crossJoinEvent(boolean success) {
         throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
@@ -561,11 +562,11 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
-    FT createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+    _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
-    FS creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    _TableBlock creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
         throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
@@ -606,13 +607,21 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
     interface ClauseSupplier {
 
-        _TableBlock createAndAddBlock(_JoinType joinType, TableItem item, String alias);
+        default _TableBlock createAndAddBlock(_JoinType joinType, TableItem item, String alias) {
+            throw new UnsupportedOperationException();
+        }
 
-        Object createClause(_JoinType joinType, TableMeta<?> table);
+        default Object createClause(_JoinType joinType, TableMeta<?> table) {
+            throw new UnsupportedOperationException();
+        }
 
-        Object getNoActionClause(_JoinType joinType);
+        default Object getNoActionClause(_JoinType joinType) {
+            throw new UnsupportedOperationException();
+        }
 
-        Object getNoActionClauseBeforeAs(_JoinType joinType);
+        default Object getNoActionClauseBeforeAs(_JoinType joinType) {
+            throw new UnsupportedOperationException();
+        }
 
     }
 

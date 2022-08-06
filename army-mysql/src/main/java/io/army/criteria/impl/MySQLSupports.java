@@ -42,6 +42,12 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private List<MySQLIndexHint> indexHintList;
 
+        MySQLNoOnBlock(_JoinType joinType, TableItem tableItem, String alias, RR stmt) {
+            super(joinType, tableItem, alias);
+            this.partitionList = Collections.emptyList();
+            this.stmt = stmt;
+        }
+
         MySQLNoOnBlock(MySQLBlockParams params, RR stmt) {
             super(params);
             this.partitionList = params.partitionList();
@@ -66,7 +72,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             return indexHintList;
         }
 
-        MySQLQuery._QueryUseIndexClause<C, RR> useIndexClause() {
+        MySQLQuery._QueryUseIndexClause<C, RR> getUseIndexClause() {
             MySQLQuery._QueryUseIndexClause<C, RR> indexClause = this.indexClause;
             if (indexClause == null) {
                 final CriteriaContext context;
@@ -88,6 +94,94 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     }//MySQLNoOnBlock
+
+
+    /**
+     * <p>
+     * sub class must implements RR .
+     * </p>
+     *
+     * @param <RR> sub interface of {@link  io.army.criteria.Statement._OnClause}
+     * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
+     */
+    static abstract class MySQLOnBlock<C, RR, OR> extends OnClauseTableBlock<C, OR>
+            implements _MySQLTableBlock, MySQLQuery._QueryUseIndexClause<C, RR> {
+
+        private final List<String> partitionList;
+
+        private List<MySQLIndexHint> indexHintList;
+
+        private MySQLQuery._QueryUseIndexClause<C, RR> useIndexClause;
+
+
+        MySQLOnBlock(_JoinType joinType, TableItem tableItem, String alias, OR stmt) {
+            super(joinType, tableItem, alias, stmt);
+            this.partitionList = Collections.emptyList();
+        }
+
+        MySQLOnBlock(MySQLBlockParams params, OR stmt) {
+            super(params, stmt);
+            this.partitionList = params.partitionList();
+        }
+
+
+        @Override
+        public final MySQLQuery._IndexPurposeBySpec<C, RR> useIndex() {
+            return this.getUseIndexClause().useIndex();
+        }
+
+        @Override
+        public final MySQLQuery._IndexPurposeBySpec<C, RR> ignoreIndex() {
+            return this.getUseIndexClause().ignoreIndex();
+        }
+
+        @Override
+        public final MySQLQuery._IndexPurposeBySpec<C, RR> forceIndex() {
+            return this.getUseIndexClause().forceIndex();
+        }
+
+        @Override
+        public final List<String> partitionList() {
+            return this.partitionList;
+        }
+
+        @Override
+        public final List<? extends _IndexHint> indexHintList() {
+            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            if (indexHintList instanceof ArrayList) {
+                indexHintList = _CollectionUtils.unmodifiableList(indexHintList);
+                this.indexHintList = indexHintList;
+            } else if (indexHintList == null) {
+                indexHintList = Collections.emptyList();
+                this.indexHintList = indexHintList;
+            }
+            return indexHintList;
+        }
+
+
+        private MySQLQuery._QueryUseIndexClause<C, RR> getUseIndexClause() {
+            MySQLQuery._QueryUseIndexClause<C, RR> useIndexClause = this.useIndexClause;
+            if (useIndexClause == null) {
+                useIndexClause = new IndexHintClause<>(this.getCriteriaContext(), this::addIndexHint);
+                this.useIndexClause = useIndexClause;
+            }
+            return useIndexClause;
+        }
+
+        @SuppressWarnings("unchecked")
+        private RR addIndexHint(final MySQLIndexHint indexHint) {
+            List<MySQLIndexHint> indexHintList = this.indexHintList;
+            if (indexHintList == null) {
+                indexHintList = new ArrayList<>();
+            } else if (!(indexHintList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
+            }
+            indexHintList.add(indexHint);
+            return (RR) this;
+        }
+
+
+    }//MySQLOnBlock
 
 
     static abstract class PartitionAsClause<C, AR> implements Statement._AsClause<AR>, MySQLBlockParams
@@ -168,9 +262,6 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
     }//PartitionAsClause
-
-
-    private static final class NoActionPartitionAsClause<C, AR>
 
 
     private static final class IndexHintClause<C, RR> extends CriteriaSupports.ParenStringConsumerClause<C, RR>

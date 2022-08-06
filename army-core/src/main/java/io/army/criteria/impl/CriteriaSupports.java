@@ -27,10 +27,6 @@ abstract class CriteriaSupports {
         return new ParenStringConsumerClause<>(criteriaContext, function);
     }
 
-    static <C, RR> Statement._LeftParenStringQuadraOptionalSpec<C, RR> noActionStringQuadra(RR clause) {
-        return new NoActionParenStringConsumerClause<>(clause);
-    }
-
 
     static final class RowConstructorImpl implements RowConstructor {
 

@@ -31,8 +31,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends WithCteSimpleQuery<C, Q, SubQuery, WE, MySQLWords, SR, FT, FS, FP, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends WithCteSimpleQuery<C, Q, SubQuery, WE, MySQLWords, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
         implements _MySQLQuery, MySQLQuery._IntoSpec<C, Q> {
 
 

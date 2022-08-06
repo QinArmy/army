@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import java.util.Collections;
 import java.util.List;
 
+@Deprecated
 final class MySQLNoOnBlock extends TableBlock.NoOnTableBlock implements _MySQLTableBlock {
 
 

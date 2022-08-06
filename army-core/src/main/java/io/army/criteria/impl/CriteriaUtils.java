@@ -20,6 +20,11 @@ abstract class CriteriaUtils {
     }
 
 
+    static CriteriaContext getCriteriaContext(final Object statement) {
+        return ((CriteriaContextSpec) statement).getCriteriaContext();
+    }
+
+
     static ArmyExpression constantLiteral(final CriteriaContext criteriaContext, final @Nullable Object value) {
         if (value == null) {
             throw CriteriaContextStack.nullPointer(criteriaContext);

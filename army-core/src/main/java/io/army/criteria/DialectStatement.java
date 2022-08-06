@@ -189,7 +189,7 @@ public interface DialectStatement extends Statement {
      * @param <JP> next clause java type
      * @since 1.0
      */
-    interface _DialectJoinClause<C, JP> {
+    interface _DialectJoinClause<JP> {
 
         JP leftJoin(TableMeta<?> table);
 
@@ -221,7 +221,7 @@ public interface DialectStatement extends Statement {
 
     }
 
-    interface _DialectIfStraightJoinClause<C, FJ> {
+    interface _IfStraightJoinClause<C, FJ> {
 
         <B extends JoinItemBlock> FJ ifStraightJoin(Supplier<B> supplier);
 

@@ -157,6 +157,14 @@ public interface Statement {
 
         OR on(Function<Object, IPredicate> operator, DataField operandField);
 
+        OR on(Function<Object, IPredicate> operator, Supplier<?> operandSupplier);
+
+        OR on(Function<Object, IPredicate> operator, Function<String, Object> function, String keyName);
+
+        OR on(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier);
+
+        OR on(BiFunction<Object, Object, IPredicate> operator, Function<String, Object> function, String firstKey, String secondKey);
+
         OR on(Function<Object, IPredicate> operator1, DataField operandField1
                 , Function<Object, IPredicate> operator2, DataField operandField2);
 

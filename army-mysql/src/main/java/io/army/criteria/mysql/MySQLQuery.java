@@ -54,7 +54,18 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <JS> next clause java type
      * @since 1.0
      */
-    interface _MySQLJoinClause<C, JT, JS> extends _JoinClause<C, JT, JS>, _StraightJoinClause<C, JT, JS> {
+    interface _MySQLJoinClause<C, JT, JS> extends Statement._JoinClause<C, JT, JS>
+            , DialectStatement._StraightJoinClause<C, JT, JS>
+            , DialectStatement._JoinCteClause<JS>
+            , DialectStatement._StraightJoinCteClause<JS>
+            , DialectStatement._JoinLateralClause<C, JS>
+            , DialectStatement._StraightJoinLateralClause<C, JS> {
+
+    }
+
+
+    interface _MySQLIfJoinClause<C, FS> extends Statement._IfJoinClause<C, FS>
+            , DialectStatement._IfStraightJoinClause<C, FS> {
 
     }
 
@@ -70,23 +81,14 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <JP> next clause java type
      * @since 1.0
      */
-    interface _MySQLDialectJoinClause<C, JP> extends _DialectJoinClause<C, JP>, _DialectStraightJoinClause<C, JP> {
+    interface _MySQLDialectJoinClause<JP> extends DialectStatement._DialectJoinClause<JP>
+            , DialectStatement._DialectStraightJoinClause<JP> {
 
     }
 
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *         <li>{@link _JoinCteClause }</li>
-     *         <li>{@link  _StraightJoinCteClause}</li>
-     *     </ul>
-     * </p>
-     *
-     * @param <JS> next clause java type
-     * @since 1.0
-     */
-    interface _MySQLJoinCteClause<JS> extends _JoinCteClause<JS>, _StraightJoinCteClause<JS> {
+    interface _MySQLCrossJoinClause<C, FT, FS> extends Statement._CrossJoinClause<C, FT, FS>
+            , DialectStatement._CrossJoinCteClause<FS>
+            , DialectStatement._CrossJoinLateralClause<C, FS> {
 
     }
 

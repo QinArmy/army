@@ -130,8 +130,7 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link _MySQLJoinClause}</li>
-     *          <li>{@link _MySQLJoinCteClause}</li>
-     *          <li>{@link _CrossJoinCteClause}</li>
+     *          <li>{@link _MySQLCrossJoinClause}</li>
      *          <li>{@link _MySQLDialectJoinClause}</li>
      *          <li>{@link _DialectCrossJoinClause}</li>
      *          <li>the composite {@link _WhereSpec}</li>
@@ -148,10 +147,10 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _JoinSpec<C, Q extends Query> extends _MySQLJoinClause<C, _QueryUseIndexOnSpec<C, Q>, _OnClause<C, _JoinSpec<C, Q>>>
-            , _MySQLJoinCteClause<_OnClause<C, _JoinSpec<C, Q>>>, _CrossJoinCteClause<_JoinSpec<C, Q>>
-            , _CrossJoinClause<C, _QueryUseIndexJoinSpec<C, Q>, _JoinSpec<C, Q>>
-            , _MySQLDialectJoinClause<C, _PartitionOnClause<C, Q>>
-            , _DialectCrossJoinClause<C, _PartitionJoinClause<C, Q>>
+            , _MySQLCrossJoinClause<C, _QueryUseIndexJoinSpec<C, Q>, _JoinSpec<C, Q>>
+            , _MySQLIfJoinClause<C, _JoinSpec<C, Q>>
+            , _MySQLDialectJoinClause<_PartitionOnClause<C, Q>>
+            , _DialectCrossJoinClause<_PartitionJoinClause<C, Q>>
             , _WhereSpec<C, Q> {
 
     }
@@ -723,7 +722,6 @@ public interface MySQL80Query extends MySQLQuery {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link _MySQLJoinClause}</li>
-     *          <li>{@link _MySQLJoinCteClause}</li>
      *          <li>{@link _CrossJoinCteClause}</li>
      *          <li>{@link _CrossJoinClause}</li>
      *          <li>{@link _MySQLDialectJoinClause}</li>
@@ -741,10 +739,9 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _NestedJoinSpec<C> extends _MySQLJoinClause<C, _NestedIndexHintOnSpec<C>, _NestedOnSpec<C>>
-            , _MySQLJoinCteClause<_NestedOnSpec<C>>, _CrossJoinCteClause<_NestedJoinSpec<C>>
             , _CrossJoinClause<C, _NestedIndexHintJoinSpec<C>, _NestedJoinSpec<C>>
-            , _MySQLDialectJoinClause<C, _NestedPartitionOnClause<C>>
-            , _DialectCrossJoinClause<C, _NestedPartitionJoinClause<C>>
+            , _MySQLDialectJoinClause<_NestedPartitionOnClause<C>>
+            , _DialectCrossJoinClause<_NestedPartitionJoinClause<C>>
             , _RightParenClause<NestedItems> {
 
 

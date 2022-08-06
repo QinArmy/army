@@ -136,12 +136,12 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     }
 
     @Override
-    final Void createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
     @Override
-    final Void creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    final _TableBlock creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
         throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 

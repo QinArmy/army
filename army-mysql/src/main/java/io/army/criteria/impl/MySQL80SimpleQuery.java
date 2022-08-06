@@ -14,7 +14,10 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -41,6 +44,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         MySQL80Query._QueryUseIndexJoinSpec<C, Q>, //FT
         MySQL80Query._JoinSpec<C, Q>,          //FS
         MySQL80Query._PartitionJoinClause<C, Q>, //FP
+        MySQL80Query._JoinSpec<C, Q>,          //FJ
         MySQL80Query._QueryUseIndexOnSpec<C, Q>,    //JT
         Statement._OnClause<C, MySQL80Query._JoinSpec<C, Q>>, //JS
         MySQL80Query._PartitionOnClause<C, Q>,   //JP
@@ -56,7 +60,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         , MySQL80Query._QueryUseIndexJoinSpec<C, Q>, MySQL80Query._WindowCommaSpec<C, Q>
         , MySQL80Query._JoinSpec<C, Q>, MySQL80Query._WhereAndSpec<C, Q>, MySQL80Query._HavingSpec<C, Q>
         , MySQL80Query._GroupByWithRollupSpec<C, Q>, MySQL80Query._OrderByWithRollupSpec<C, Q>
-        , MySQL80Query._LockOfSpec<C, Q>, MySQL80Query._LockLockOptionSpec<C, Q> {
+        , MySQL80Query._LockOfSpec<C, Q>, MySQL80Query._LockLockOptionSpec<C, Q>
+        , MySQL80Query {
 
 
     static <C> _WithSpec<C, Select> simpleSelect(@Nullable C criteria) {
@@ -123,12 +128,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private MySQLLockOption lockOption;
 
-    private _QueryUseIndexOnSpec<C, Q> noActionIndexHintOnClause;
-
-    private MySQL80Query._PartitionJoinClause<C, Q> noActionPartitionJoinClause;
-
-    private MySQL80Query._PartitionOnClause<C, Q> noActionPartitionOnClause;
-
     private MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
 
 
@@ -139,32 +138,19 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> useIndex() {
-        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
-        if (noOnBlock == null) {
-
-        } else if (this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
-        return noOnBlock.useIndexClause().useIndex();
+        return this.getUserIndexClause().useIndex();
     }
 
     @Override
     public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> ignoreIndex() {
-        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
-        if (this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
-        return noOnBlock.useIndexClause().ignoreIndex();
+        return this.getUserIndexClause().ignoreIndex();
     }
 
     @Override
     public final _IndexPurposeBySpec<C, _QueryUseIndexJoinSpec<C, Q>> forceIndex() {
-        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
-        if (this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
-        return noOnBlock.useIndexClause().forceIndex();
+        return this.getUserIndexClause().forceIndex();
     }
+
 
     /**
      * @see #onOrderBy()
@@ -512,134 +498,86 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return this.lockOption;
     }
 
-    /*################################## blow ClauseSupplier method ##################################*/
+    /*################################## blow JoinableClause method ##################################*/
 
     @Override
-    public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {
-        Objects.requireNonNull(item);
-        final _TableBlock block;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN: {
-                if (item instanceof TableMeta) {
-                    block = new MySQLNoOnBlock(joinType, item, alias);
-                } else {
-                    block = new TableBlock.NoOnTableBlock(joinType, item, alias);
-                }
-            }
-            break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-            case STRAIGHT_JOIN: {
-                if (item instanceof TableMeta) {
-                    block = new IndexHintOnBlock<>(joinType, (TableMeta<?>) item, alias, this);
-                } else {
-                    block = new OnClauseTableBlock<>(joinType, item, alias, this);
-                }
-            }
-            break;
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
+    final _PartitionJoinClause<C, Q> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        this.criteriaContext.onAddBlock(block);
-        return block;
+        return new PartitionJoinClause<>(joinType, table, this);
     }
 
     @Override
-    public final Object createClause(final _JoinType joinType, final TableMeta<?> table) {
-        final Object clause;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN: {
-                clause = new PartitionJoinClause<>(joinType, table, this);
-            }
-            break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-            case STRAIGHT_JOIN: {
-                clause = new PartitionOnClause<>(joinType, table, this);
-            }
-            break;
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
+    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        return clause;
+        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
+        noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(joinType, table, alias, this);
+        this.noOnBlock = noOnBlock; //update current no on block
+        return noOnBlock;
     }
 
     @Override
-    public final Object getNoActionClause(final _JoinType joinType) {
-        final Object clause;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN:
-                clause = this;
-                break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-            case STRAIGHT_JOIN:
-                clause = this.getNoActionIndexHintOnClause();
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
+    final _TableBlock creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        if (!(itemWord == null || itemWord == ItemWord.LATERAL)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        return clause;
+        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
+        noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(joinType, tableItem, alias, this);
+        this.noOnBlock = noOnBlock; //update current no on block
+        return noOnBlock;
     }
 
     @Override
-    public final Object getNoActionClauseBeforeAs(_JoinType joinType) {
-        final Object clause;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN: {
-                MySQL80Query._PartitionJoinClause<C, Q> noActionClause = this.noActionPartitionJoinClause;
-                if (noActionClause == null) {
-                    noActionClause = new NoActionPartitionJoinClause<>(this);
-                    this.noActionPartitionJoinClause = noActionClause;
-                }
-                clause = noActionClause;
-            }
-            break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-            case STRAIGHT_JOIN: {
-                MySQL80Query._PartitionOnClause<C, Q> noActionClause = this.noActionPartitionOnClause;
-                if (noActionClause == null) {
-                    noActionClause = new NoActionPartitionOnClause<>(this::getNoActionIndexHintOnClause);
-                    this.noActionPartitionOnClause = noActionClause;
-                }
-                clause = noActionClause;
-
-            }
-            break;
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
-        }
-        return clause;
+    final _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
+    @Override
+    final _PartitionOnClause<C, Q> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return new PartitionOnClause<>(joinType, table, this);
+    }
+
+    @Override
+    final _QueryUseIndexOnSpec<C, Q> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return new OnTableBlock<>(joinType, table, tableAlias, this);
+    }
+
+    @Override
+    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        if (!(itemWord == null || itemWord == ItemWord.LATERAL)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+    }
 
 
     /*################################## blow private method ##################################*/
 
-    private boolean isIllegalWindow(Window window) {
-        return SimpleWindow.isIllegalWindow(window, this.criteriaContext);
+    /**
+     * @see #useIndex()
+     * @see #ignoreIndex()
+     * @see #forceIndex()
+     */
+    private _QueryUseIndexClause<C, _QueryUseIndexJoinSpec<C, Q>> getUserIndexClause() {
+        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
+        if (noOnBlock == null || this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return noOnBlock.getUseIndexClause();
     }
 
-    private _QueryUseIndexOnSpec<C, Q> getNoActionIndexHintOnClause() {
-        _QueryUseIndexOnSpec<C, Q> noActionClause = this.noActionIndexHintOnClause;
-        if (noActionClause == null) {
-            noActionClause = new NoActionIndexHintOnClause<>(this);
-            this.noActionIndexHintOnClause = noActionClause;
-        }
-        return noActionClause;
+    private boolean isIllegalWindow(Window window) {
+        return SimpleWindow.isIllegalWindow(window, this.criteriaContext);
     }
 
 
@@ -847,7 +785,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(params, this.query);
 
             this.query.criteriaContext.onAddBlock(noOnBlock);
-            this.query.noOnBlock = noOnBlock;
+            this.query.noOnBlock = noOnBlock; //update current noOnBlock
             return this.query;
         }
 
@@ -856,90 +794,43 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     private static final class PartitionOnClause<C, Q extends Query>
-            extends MySQLPartitionClause2<C, _AsOnClause<C, Q>>
-            implements _AsOnClause<C, Q>, _PartitionOnClause<C, Q> {
+            extends MySQLSupports.PartitionAsClause<C, _QueryUseIndexOnSpec<C, Q>>
+            implements MySQL80Query._PartitionOnClause<C, Q> {
 
-        private final _JoinType joinType;
-
-        private final TableMeta<?> table;
 
         private final MySQL80SimpleQuery<C, Q> query;
 
         private PartitionOnClause(_JoinType joinType, TableMeta<?> table, MySQL80SimpleQuery<C, Q> query) {
-            super(query.criteria);
-            this.joinType = joinType;
-            this.table = table;
+            super(query.criteriaContext, joinType, table);
             this.query = query;
         }
 
         @Override
-        public _QueryUseIndexOnSpec<C, Q> as(final String alias) {
-            Objects.requireNonNull(alias);
-            final IndexHintOnBlock<C, Q> hintOnBlock;
-            final List<String> partitionList = this.partitionList;
-            if (partitionList == null) {
-                hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, this.query);
-            } else {
-                hintOnBlock = new IndexHintOnBlock<>(this.joinType, this.table, alias, partitionList, this.query);
-            }
-            this.query.criteriaContext.onAddBlock(hintOnBlock);
-            if (this.joinType == _JoinType.CROSS_JOIN) {
-                this.query.crossJoinEvent(true);
-            }
-            return hintOnBlock;
+        _QueryUseIndexOnSpec<C, Q> asEnd(final MySQLSupports.MySQLBlockParams params) {
+            final OnTableBlock<C, Q> block;
+            block = new OnTableBlock<>(params, this.query);
+            this.query.criteriaContext.onAddBlock(block);
+            return block;
         }
 
 
-    }//PartitionOnBlock
+    }//PartitionOnClause
 
-    private static final class NoActionIndexHintOnClause<C, Q extends Query>
-            extends MySQLNoActionIndexHintOnClause<
-            C,
-            _IndexPurposeOnClause<C, Q>,
-            _QueryUseIndexOnSpec<C, Q>,
-            _JoinSpec<C, Q>>
-            implements _QueryUseIndexOnSpec<C, Q>, MySQL80Query._IndexPurposeOnClause<C, Q> {
 
-        private NoActionIndexHintOnClause(_JoinSpec<C, Q> stmt) {
-            super(stmt);
+    private static final class OnTableBlock<C, Q extends Query>
+            extends MySQLSupports.MySQLOnBlock<C, _QueryUseIndexOnSpec<C, Q>, _JoinSpec<C, Q>>
+            implements _QueryUseIndexOnSpec<C, Q> {
+
+        private OnTableBlock(_JoinType joinType, TableItem tableItem, String alias, _JoinSpec<C, Q> stmt) {
+            super(joinType, tableItem, alias, stmt);
         }
 
-    }//NoActionIndexHintOnClause
-
-
-    private static final class NoActionPartitionJoinClause<C, Q extends Query>
-            extends MySQLNoActionPartitionClause<C, MySQL80Query._AsJoinClause<C, Q>>
-            implements MySQL80Query._PartitionJoinClause<C, Q>, MySQL80Query._AsJoinClause<C, Q> {
-
-        private final _IndexHintJoinSpec<C, Q> clause;
-
-        private NoActionPartitionJoinClause(_IndexHintJoinSpec<C, Q> clause) {
-            this.clause = clause;
+        private OnTableBlock(MySQLSupports.MySQLBlockParams params, _JoinSpec<C, Q> stmt) {
+            super(params, stmt);
         }
 
-        @Override
-        public _IndexHintJoinSpec<C, Q> as(String alias) {
-            return this.clause;
-        }
 
-    }//NoActionPartitionJoinClause
-
-    private static final class NoActionPartitionOnClause<C, Q extends Query>
-            extends MySQLNoActionPartitionClause<C, MySQL80Query._AsOnClause<C, Q>>
-            implements MySQL80Query._PartitionOnClause<C, Q>, MySQL80Query._AsOnClause<C, Q> {
-
-        private final Supplier<_QueryUseIndexOnSpec<C, Q>> supplier;
-
-        private NoActionPartitionOnClause(Supplier<_QueryUseIndexOnSpec<C, Q>> supplier) {
-            this.supplier = supplier;
-        }
-
-        @Override
-        public _QueryUseIndexOnSpec<C, Q> as(String alias) {
-            return this.supplier.get();
-        }
-
-    }//NoActionPartitionJoinClause
+    }//OnTableBlock
 
 
 }
