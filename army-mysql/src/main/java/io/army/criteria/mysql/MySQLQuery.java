@@ -1,6 +1,7 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.DialectStatement;
+import io.army.criteria.NestedItems;
 import io.army.criteria.Query;
 import io.army.criteria.Statement;
 
@@ -499,6 +500,172 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @since 1.0
      */
     interface _IntoSpec<C, Q extends Query> extends _IntoClause<C, _QuerySpec<Q>>, _QuerySpec<Q> {
+
+    }
+
+
+    /*-------------------below nested item interface -------------------*/
+
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _IndexHintClause}</li>
+     *          <li>the composite {@link _NestedJoinSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _NestedUseIndexJoinSpec<C>
+            extends MySQLQuery._QueryUseIndexClause<C, _NestedUseIndexJoinSpec<C>>
+            , _NestedJoinClause<C> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _OnClause}</li>
+     *          <li>the composite {@link _NestedJoinSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _NestedOnSpec<C> extends _OnClause<C, _NestedJoinSpec<C>>, _NestedJoinSpec<C> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _IndexHintClause}</li>
+     *          <li>the composite {@link _NestedOnSpec}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _NestedUseIndexOnSpec<C>
+            extends MySQLQuery._QueryUseIndexClause<C, _NestedUseIndexOnSpec<C>>
+            , _NestedOnSpec<C> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing nested partition clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _NestedPartitionOnClause<C> extends _PartitionClause<C, _AsClause<_NestedUseIndexOnSpec<C>>> {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing nested partition clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _NestedPartitionJoinClause<C>
+            extends _PartitionClause<C, _AsClause<_NestedUseIndexJoinSpec<C>>> {
+
+    }
+
+
+    interface _NestedJoinClause<C> extends _MySQLJoinClause<C, _NestedUseIndexOnSpec<C>, _NestedOnSpec<C>>
+            , _MySQLCrossJoinClause<C, _NestedUseIndexJoinSpec<C>, _NestedJoinSpec<C>>
+            , _MySQLIfJoinClause<C, _NestedJoinSpec<C>>
+            , _MySQLDialectJoinClause<_NestedPartitionOnClause<C>>
+            , _DialectCrossJoinClause<_NestedPartitionJoinClause<C>> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing the composite of below:
+     *     <ul>
+     *          <li>{@link _MySQLJoinClause}</li>
+     *          <li>{@link _CrossJoinCteClause}</li>
+     *          <li>{@link _CrossJoinClause}</li>
+     *          <li>{@link _MySQLDialectJoinClause}</li>
+     *          <li>{@link _DialectCrossJoinClause}</li>
+     *          <li> {@link _RightParenClause}</li>
+     *     </ul>
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _NestedJoinSpec<C> extends _NestedJoinClause<C>
+            , _RightParenClause<NestedItems> {
+
+
+    }
+
+
+    /**
+     * <p>
+     * This interface representing nested LEFT BRACKET clause.
+     * </p>
+     * <p>
+     * <strong>Note:</strong><br/>
+     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
+     * ,because army don't guarantee compatibility to future distribution.
+     * </p>
+     *
+     * @param <C> criteria object java type
+     * @since 1.0
+     */
+    interface _NestedLeftParenClause<C>
+            extends _LeftParenClause<C, _NestedUseIndexJoinSpec<C>, _NestedJoinSpec<C>>
+            , DialectStatement._DialectLeftParenClause<_NestedPartitionJoinClause<C>>
+            , DialectStatement._LeftParenCteClause<_NestedJoinSpec<C>>
+            , DialectStatement._LeftParenLateralClause<C, _NestedJoinSpec<C>> {
 
     }
 

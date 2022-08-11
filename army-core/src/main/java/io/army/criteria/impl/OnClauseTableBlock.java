@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._DialectTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
@@ -10,7 +11,9 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClause<C, OR> {
 
@@ -56,50 +59,6 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
             throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
         }
         this.predicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
-        return this.stmt;
-    }
-
-    @Override
-    public final OR on(Function<Object, IPredicate> operator, Supplier<?> operandSupplier) {
-        if (this.predicateList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
-        }
-        final OperationPredicate predicate;
-        predicate = (OperationPredicate) operator.apply(operandSupplier.get());
-        this.predicateList = Collections.singletonList(predicate);
-        return this.stmt;
-    }
-
-    @Override
-    public final OR on(Function<Object, IPredicate> operator, Function<String, Object> function, String keyName) {
-        if (this.predicateList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
-        }
-        final OperationPredicate predicate;
-        predicate = (OperationPredicate) operator.apply(function.apply(keyName));
-        this.predicateList = Collections.singletonList(predicate);
-        return this.stmt;
-    }
-
-    @Override
-    public final OR on(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstSupplier, Supplier<?> secondSupplier) {
-        if (this.predicateList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
-        }
-        final OperationPredicate predicate;
-        predicate = (OperationPredicate) operator.apply(firstSupplier.get(), secondSupplier.get());
-        this.predicateList = Collections.singletonList(predicate);
-        return this.stmt;
-    }
-
-    @Override
-    public final OR on(BiFunction<Object, Object, IPredicate> operator, Function<String, Object> function, String firstKey, String secondKey) {
-        if (this.predicateList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.getCriteriaContext());
-        }
-        final OperationPredicate predicate;
-        predicate = (OperationPredicate) operator.apply(function.apply(firstKey), function.apply(secondKey));
-        this.predicateList = Collections.singletonList(predicate);
         return this.stmt;
     }
 
@@ -177,6 +136,29 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
         return CriteriaContextStack.criteriaError(this.getCriteriaContext()
                 , _Exceptions::predicateListIsEmpty);
     }
+
+
+    static class OnItemTableBlock<C, OR> extends OnClauseTableBlock<C, OR> implements _DialectTableBlock {
+
+        private final ItemWord itemWord;
+
+        OnItemTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias, OR stmt) {
+            super(joinType, tableItem, alias, stmt);
+            this.itemWord = itemWord;
+        }
+
+        OnItemTableBlock(TableBlock.DialectBlockParams params, OR stmt) {
+            super(params, stmt);
+            this.itemWord = params.itemWord();
+        }
+
+        @Override
+        public final SQLWords itemWord() {
+            return this.itemWord;
+        }
+
+
+    }//OnItemTableBlock
 
 
 }

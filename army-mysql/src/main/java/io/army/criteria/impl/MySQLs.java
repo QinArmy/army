@@ -301,11 +301,11 @@ public abstract class MySQLs extends MySQLSyntax {
         return SimpleWindow.standard(windowName, criteriaContext);
     }
 
-    public static MySQL80Query._NestedLeftBracketClause<Void> nestedItems() {
+    public static MySQLQuery._NestedLeftParenClause<Void> nestedItems() {
         return MySQLNestedItems.create(null);
     }
 
-    public static <C> MySQL80Query._NestedLeftBracketClause<C> nestedItems(C criteria) {
+    public static <C> MySQLQuery._NestedLeftParenClause<C> nestedItems(C criteria) {
         Objects.requireNonNull(criteria);
         return MySQLNestedItems.create(criteria);
     }

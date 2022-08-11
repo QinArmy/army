@@ -32,7 +32,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         implements Statement._QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
         , Query._HavingClause<C, HR>, _Query, Statement._FromClause<C, FT, FS>, DialectStatement._DialectFromClause<FP>
         , DialectStatement._DialectSelectClause<C, W, SR>, DialectStatement._FromCteClause<FS>, Query._QuerySpec<Q>
-        , JoinableClause.ClauseSupplier {
+        , JoinableClause.ClauseCreator<FP, JT, JS, JP> {
 
     private List<Hint> hintList;
 
@@ -172,37 +172,43 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     /*################################## blow FromSpec method ##################################*/
     @Override
     public final FP from(TableMeta<?> table) {
-        return (FP) this.clauseSupplier.createClause(_JoinType.NONE, table);
+        return this.createNoOnTableClause(_JoinType.NONE, null, table);
     }
 
     @Override
     public final FT from(TableMeta<?> table, String tableAlias) {
-        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, table, tableAlias);
+        this.criteriaContext.onAddBlock(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
         return (FT) this;
     }
 
     @Override
     public final FS from(String cteName) {
-        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, this.criteriaContext.refCte(cteName), "");
+        final _TableBlock block;
+        block = this.createNoOnItemBlock(_JoinType.NONE, null, this.criteriaContext.refCte(cteName), "");
+        this.criteriaContext.onAddBlock(block);
         return (FS) this;
     }
 
     @Override
     public final FS from(String cteName, String alias) {
-        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, this.criteriaContext.refCte(cteName), alias);
+        final _TableBlock block;
+        block = this.createNoOnItemBlock(_JoinType.NONE, null, this.criteriaContext.refCte(cteName), alias);
+        this.criteriaContext.onAddBlock(block);
         return (FS) this;
     }
 
     @Override
     public final <T extends TableItem> FS from(Supplier<T> supplier, String alias) {
-        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, supplier.get(), alias);
+        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
         return (FS) this;
     }
 
 
     @Override
     public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
-        this.clauseSupplier.createAndAddBlock(_JoinType.NONE, function.apply(this.criteria), alias);
+        final _TableBlock block;
+        block = this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock(block);
         return (FS) this;
     }
 

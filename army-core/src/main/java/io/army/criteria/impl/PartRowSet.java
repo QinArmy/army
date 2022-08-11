@@ -19,8 +19,8 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, OR, LR, SP>
         extends JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
-        implements CriteriaContextSpec, _PartRowSet, Statement._OrderByClause<C, OR>, Query._LimitClause<C, LR>
-        , Query._QueryUnionClause<C, UR, SP>, CriteriaSpec<C>, RowSet._RowSetSpec<Q>, _SelfDescribed {
+        implements _PartRowSet, Statement._OrderByClause<C, OR>, Query._LimitClause<C, LR>
+        , Query._QueryUnionClause<C, UR, SP>, RowSet._RowSetSpec<Q>, _SelfDescribed {
 
 
     private List<ArmySortItem> orderByList;
@@ -32,17 +32,13 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     private Boolean prepared;
 
 
-    PartRowSet(CriteriaContext criteriaContext, ClauseSupplier suppler) {
-        super(suppler, criteriaContext.criteria());
-    }
-
     PartRowSet(CriteriaContext criteriaContext) {
         super(criteriaContext);
     }
 
-    @Override
-    public final CriteriaContext getCriteriaContext() {
-        return this.criteriaContext;
+
+    PartRowSet(CriteriaContext criteriaContext, ClauseCreator<FP, JT, JS, JP> clauseCreator) {
+        super(criteriaContext, clauseCreator);
     }
 
     @Override

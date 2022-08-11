@@ -501,7 +501,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     /*################################## blow JoinableClause method ##################################*/
 
     @Override
-    final _PartitionJoinClause<C, Q> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+    public final _PartitionJoinClause<C, Q> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -509,35 +509,32 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+    public final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
-        noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(joinType, table, alias, this);
+        noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, this);
         this.noOnBlock = noOnBlock; //update current no on block
         return noOnBlock;
     }
 
     @Override
-    final _TableBlock creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
-        if (!(itemWord == null || itemWord == ItemWord.LATERAL)) {
+    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
-        noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(joinType, tableItem, alias, this);
-        this.noOnBlock = noOnBlock; //update current no on block
-        return noOnBlock;
+        return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
     }
 
     @Override
-    final _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
+    public final _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    final _PartitionOnClause<C, Q> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+    public final _PartitionOnClause<C, Q> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -545,19 +542,19 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final _QueryUseIndexOnSpec<C, Q> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
+    public final _QueryUseIndexOnSpec<C, Q> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        return new OnTableBlock<>(joinType, table, tableAlias, this);
+        return new OnTableBlock<>(joinType, null, table, tableAlias, this);
     }
 
     @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
         if (!(itemWord == null || itemWord == ItemWord.LATERAL)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
+        return new OnTableBlock<>(joinType, itemWord, tableItem, alias, this);
     }
 
 
@@ -821,8 +818,9 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             extends MySQLSupports.MySQLOnBlock<C, _QueryUseIndexOnSpec<C, Q>, _JoinSpec<C, Q>>
             implements _QueryUseIndexOnSpec<C, Q> {
 
-        private OnTableBlock(_JoinType joinType, TableItem tableItem, String alias, _JoinSpec<C, Q> stmt) {
-            super(joinType, tableItem, alias, stmt);
+        private OnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem
+                , String alias, _JoinSpec<C, Q> stmt) {
+            super(joinType, itemWord, tableItem, alias, stmt);
         }
 
         private OnTableBlock(MySQLSupports.MySQLBlockParams params, _JoinSpec<C, Q> stmt) {

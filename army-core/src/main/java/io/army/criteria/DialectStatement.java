@@ -328,7 +328,7 @@ public interface DialectStatement extends Statement {
      * @param <LP> next clause java type
      * @since 1.0
      */
-    interface _DialectLeftBracketClause<LP> {
+    interface _DialectLeftParenClause<LP> {
 
         LP leftBracket(TableMeta<?> table);
     }
@@ -343,14 +343,22 @@ public interface DialectStatement extends Statement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <LS> same with the LS of {@link _LeftBracketClause}
+     * @param <LS> same with the LS of {@link _LeftParenClause}
      * @since 1.0
      */
-    interface _LeftBracketCteClause<LS> {
+    interface _LeftParenCteClause<LS> {
 
         LS leftBracket(String cteName);
 
         LS leftBracket(String cteName, String alias);
+    }
+
+    interface _LeftParenLateralClause<C, LS> {
+
+        <T extends TableItem> LS leftBracketLateral(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> LS leftBracketLateral(Function<C, T> function, String alias);
+
     }
 
     /**

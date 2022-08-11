@@ -6,6 +6,7 @@ import io.army.criteria.TableItem;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQLQuery;
+import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._StringUtils;
@@ -22,17 +23,21 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }
 
+    static <C, RR> MySQLQuery._QueryUseIndexClause<C, RR> indexHintClause(CriteriaContext context
+            , Function<MySQLIndexHint, RR> function) {
+        return new IndexHintClause<>(context, function);
+    }
 
-    interface MySQLBlockParams extends TableBlock.BlockParams {
+
+    interface MySQLBlockParams extends TableBlock.DialectBlockParams {
 
         List<String> partitionList();
 
     }
 
 
-    static final class MySQLNoOnBlock<C, RR> extends TableBlock.NoOnTableBlock
+    static final class MySQLNoOnBlock<C, RR> extends TableBlock.DialectNoOnTableBlock
             implements _MySQLTableBlock {
-
 
         private final List<String> partitionList;
 
@@ -42,8 +47,9 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private List<MySQLIndexHint> indexHintList;
 
-        MySQLNoOnBlock(_JoinType joinType, TableItem tableItem, String alias, RR stmt) {
-            super(joinType, tableItem, alias);
+
+        MySQLNoOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias, RR stmt) {
+            super(joinType, itemWord, tableItem, alias);
             this.partitionList = Collections.emptyList();
             this.stmt = stmt;
         }
@@ -87,6 +93,9 @@ abstract class MySQLSupports extends CriteriaSupports {
             List<MySQLIndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
                 indexHintList = new ArrayList<>();
+                this.indexHintList = indexHintList;
+            } else if (!(indexHintList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.stmt));
             }
             indexHintList.add(indexHint);
             return this.stmt;
@@ -104,7 +113,7 @@ abstract class MySQLSupports extends CriteriaSupports {
      * @param <RR> sub interface of {@link  io.army.criteria.Statement._OnClause}
      * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
      */
-    static abstract class MySQLOnBlock<C, RR, OR> extends OnClauseTableBlock<C, OR>
+    static abstract class MySQLOnBlock<C, RR, OR> extends OnClauseTableBlock.OnItemTableBlock<C, OR>
             implements _MySQLTableBlock, MySQLQuery._QueryUseIndexClause<C, RR> {
 
         private final List<String> partitionList;
@@ -114,8 +123,8 @@ abstract class MySQLSupports extends CriteriaSupports {
         private MySQLQuery._QueryUseIndexClause<C, RR> useIndexClause;
 
 
-        MySQLOnBlock(_JoinType joinType, TableItem tableItem, String alias, OR stmt) {
-            super(joinType, tableItem, alias, stmt);
+        MySQLOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias, OR stmt) {
+            super(joinType, itemWord, tableItem, alias, stmt);
             this.partitionList = Collections.emptyList();
         }
 
@@ -189,14 +198,14 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private final CriteriaContext criteriaContext;
 
-        private final _JoinType joinType;
+        final _JoinType joinType;
 
-        private final TableMeta<?> table;
+        final TableMeta<?> table;
 
 
         private List<String> partitionList;
 
-        private String tableAlias;
+        String tableAlias;
 
         PartitionAsClause(CriteriaContext criteriaContext, _JoinType joinType, TableMeta<?> table) {
             this.criteriaContext = criteriaContext;
@@ -230,6 +239,12 @@ abstract class MySQLSupports extends CriteriaSupports {
         @Override
         public final TableItem tableItem() {
             return this.table;
+        }
+
+        @Override
+        public final ItemWord itemWord() {
+            //null,currently,MySQL table don't support LATERAL
+            return null;
         }
 
         @Override

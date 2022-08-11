@@ -598,6 +598,11 @@ abstract class CriteriaUtils {
         return CriteriaContextStack.criteriaError(context, m);
     }
 
+    static CriteriaException criteriaNotMatch(CriteriaContext criteriaContext) {
+        String m = "criteria not match.";
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
+    }
+
 
     private static CriteriaException noDefaultMappingType(CriteriaContext criteriaContext, final Object value) {
         String m = String.format("Not found default %s for %s."

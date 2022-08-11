@@ -1,8 +1,11 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.SQLWords;
 import io.army.criteria.TableItem;
+import io.army.criteria.impl.inner._DialectTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
@@ -91,6 +94,28 @@ abstract class TableBlock implements _TableBlock {
 
     }//NoOnTableBlock
 
+    static class DialectNoOnTableBlock extends NoOnTableBlock implements _DialectTableBlock {
+
+        private final ItemWord itemWord;
+
+        DialectNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+            super(joinType, tableItem, alias);
+            this.itemWord = itemWord;
+        }
+
+        DialectNoOnTableBlock(DialectBlockParams params) {
+            super(params);
+            this.itemWord = params.itemWord();
+        }
+
+        @Override
+        public final SQLWords itemWord() {
+            return this.itemWord;
+        }
+
+
+    }//DialectNoOnTableBlock
+
 
     interface BlockParams {
 
@@ -99,6 +124,13 @@ abstract class TableBlock implements _TableBlock {
         TableItem tableItem();
 
         String alias();
+
+    }
+
+    interface DialectBlockParams extends BlockParams {
+
+        @Nullable
+        ItemWord itemWord();
 
     }
 
