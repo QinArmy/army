@@ -786,6 +786,16 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         this.onClear();
     }
 
+    @Override
+    public FP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    @Override
+    public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
     final boolean hasGroupBy() {
         final List<ArmySortItem> groupByList = this.groupByList;
         return groupByList != null && groupByList.size() > 0;

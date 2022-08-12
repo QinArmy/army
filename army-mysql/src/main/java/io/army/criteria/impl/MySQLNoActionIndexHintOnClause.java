@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+@Deprecated
 
 @SuppressWarnings("unchecked")
 abstract class MySQLNoActionIndexHintOnClause<C, IR, IC, OR> extends NoActionOnClause<C, OR>

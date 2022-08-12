@@ -240,25 +240,25 @@ public interface Statement {
 
     interface _IfJoinClause<C, FJ> {
 
-        <B extends JoinItemBlock> FJ ifLeftJoin(Supplier<B> supplier);
+        <B extends JoinItemBlock<C>> FJ ifLeftJoin(Supplier<B> supplier);
 
-        <B extends JoinItemBlock> FJ ifLeftJoin(Function<C, B> function);
+        <B extends JoinItemBlock<C>> FJ ifLeftJoin(Function<C, B> function);
 
-        <B extends JoinItemBlock> FJ ifJoin(Supplier<B> supplier);
+        <B extends JoinItemBlock<C>> FJ ifJoin(Supplier<B> supplier);
 
-        <B extends JoinItemBlock> FJ ifJoin(Function<C, B> function);
+        <B extends JoinItemBlock<C>> FJ ifJoin(Function<C, B> function);
 
-        <B extends JoinItemBlock> FJ ifRightJoin(Supplier<B> supplier);
+        <B extends JoinItemBlock<C>> FJ ifRightJoin(Supplier<B> supplier);
 
-        <B extends JoinItemBlock> FJ ifRightJoin(Function<C, B> function);
+        <B extends JoinItemBlock<C>> FJ ifRightJoin(Function<C, B> function);
 
-        <B extends JoinItemBlock> FJ ifFullJoin(Supplier<B> supplier);
+        <B extends JoinItemBlock<C>> FJ ifFullJoin(Supplier<B> supplier);
 
-        <B extends JoinItemBlock> FJ ifFullJoin(Function<C, B> function);
+        <B extends JoinItemBlock<C>> FJ ifFullJoin(Function<C, B> function);
 
-        <B extends CrossItemBlock> FJ ifCrossJoin(Supplier<B> supplier);
+        <B extends ItemBlock<C>> FJ ifCrossJoin(Supplier<B> supplier);
 
-        <B extends CrossItemBlock> FJ ifCrossJoin(Function<C, B> function);
+        <B extends ItemBlock<C>> FJ ifCrossJoin(Function<C, B> function);
 
     }
 
@@ -280,11 +280,11 @@ public interface Statement {
      */
     interface _LeftParenClause<C, LT, LS> {
 
-        LT leftBracket(TableMeta<?> table, String tableAlias);
+        LT leftParen(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> LS leftBracket(Supplier<T> supplier, String alias);
+        <T extends TableItem> LS leftParen(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> LS leftBracket(Function<C, T> function, String alias);
+        <T extends TableItem> LS leftParen(Function<C, T> function, String alias);
 
     }
 

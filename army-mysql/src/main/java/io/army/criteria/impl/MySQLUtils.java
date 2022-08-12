@@ -1,13 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
-import io.army.criteria.Statement;
-import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLWords;
-import io.army.dialect.Database;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
-import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,23 +14,8 @@ abstract class MySQLUtils extends CriteriaUtils {
     private MySQLUtils() {
     }
 
-    static MySQLDialect defaultDialect(Statement statement) {
-        return statement instanceof _MySQLWithClause ? MySQLDialect.MySQL80 : MySQLDialect.MySQL57;
-    }
 
-    static void validateDialect(Statement statement, MySQLDialect dialect) {
-        if (dialect.database() != Database.MySQL) {
-            throw _Exceptions.stmtDontSupportDialect(dialect);
-        }
-        if (statement instanceof _MySQLWithClause && dialect.version() < MySQLDialect.MySQL80.version()) {
-            throw _Exceptions.stmtDontSupportDialect(dialect);
-        }
-    }
-
-
-
-
-
+    @Deprecated
     static List<String> asStringList(final @Nullable List<String> partitionList, Supplier<CriteriaException> supplier) {
         if (partitionList == null) {
             throw CriteriaContextStack.criteriaError(supplier);

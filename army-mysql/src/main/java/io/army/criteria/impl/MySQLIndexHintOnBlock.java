@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class MySQLIndexHintOnBlock<C, IR, IC, OR> extends OnClauseTableBlock<C, OR>
         implements MySQLQuery._IndexHintClause<C, IR, IC>, MySQLQuery._IndexPurposeClause<C, IC>

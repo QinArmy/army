@@ -5,6 +5,8 @@ import io.army.criteria.mysql.MySQLQuery;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery._PartitionClause2<C, PR> {
 
@@ -33,10 +35,12 @@ abstract class MySQLNoActionPartitionClause<C, PR> implements MySQLQuery._Partit
     public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
         return (PR) this;
     }
+
     @Override
     public final PR ifPartition(Consumer<Consumer<String>> consumer) {
         return (PR) this;
     }
+
     @Override
     public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
         return (PR) this;

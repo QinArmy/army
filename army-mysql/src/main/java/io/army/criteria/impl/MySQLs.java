@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.mysql.*;
+import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -120,41 +121,21 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static MySQL80Query._WithSpec<Void, SubQuery> subQuery() {
-        return MySQL80SimpleQuery.subQuery(false, null);
-    }
-
-    public static MySQL80Query._WithSpec<Void, SubQuery> lateralSubQuery() {
-        return MySQL80SimpleQuery.subQuery(true, null);
+        return MySQL80SimpleQuery.subQuery(null);
     }
 
     public static <C> MySQL80Query._WithSpec<C, SubQuery> subQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.subQuery(false, criteria);
+        return MySQL80SimpleQuery.subQuery(criteria);
     }
-
-    public static <C> MySQL80Query._WithSpec<C, SubQuery> lateralSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.subQuery(true, criteria);
-    }
-
 
     public static MySQL80Query._WithSpec<Void, ScalarExpression> scalarSubQuery() {
-        return MySQL80SimpleQuery.scalarSubQuery(false, null);
+        return MySQL80SimpleQuery.scalarSubQuery(null);
     }
-
-    public static MySQL80Query._WithSpec<Void, ScalarExpression> lateralScalarSubQuery() {
-        return MySQL80SimpleQuery.scalarSubQuery(true, null);
-    }
-
 
     public static <C> MySQL80Query._WithSpec<C, ScalarExpression> scalarSubQuery(C criteria) {
         Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.scalarSubQuery(false, criteria);
-    }
-
-    public static <C> MySQL80Query._WithSpec<C, ScalarExpression> lateralScalarSubQuery(C criteria) {
-        Objects.requireNonNull(criteria);
-        return MySQL80SimpleQuery.scalarSubQuery(true, criteria);
+        return MySQL80SimpleQuery.scalarSubQuery(criteria);
     }
 
 
@@ -301,13 +282,49 @@ public abstract class MySQLs extends MySQLSyntax {
         return SimpleWindow.standard(windowName, criteriaContext);
     }
 
-    public static MySQLQuery._NestedLeftParenClause<Void> nestedItems() {
+    public static MySQLQuery._MySQLNestedLeftParenClause<Void> nestedItems() {
         return MySQLNestedItems.create(null);
     }
 
-    public static <C> MySQLQuery._NestedLeftParenClause<C> nestedItems(C criteria) {
-        Objects.requireNonNull(criteria);
+    public static <C> MySQLQuery._MySQLNestedLeftParenClause<C> nestedItems(C criteria) {
+        CriteriaContextStack.assertNonNull(criteria);
         return MySQLNestedItems.create(criteria);
+    }
+
+    public static MySQLQuery._IfPartitionAsClause<Void> block(TableMeta<?> table) {
+        return MySQLSupports.block(null, table);
+    }
+
+    public static <C> MySQLQuery._IfPartitionAsClause<C> block(C criteria, TableMeta<?> table) {
+        CriteriaContextStack.assertNonNull(criteria);
+        return MySQLSupports.block(criteria, table);
+    }
+
+    public static MySQLQuery._IfUseIndexOnSpec<Void> block(TableMeta<?> table, String tableAlias) {
+        return MySQLSupports.block(null, table, tableAlias);
+    }
+
+    public static <C> MySQLQuery._IfUseIndexOnSpec<C> block(C criteria, TableMeta<?> table, String tableAlias) {
+        CriteriaContextStack.assertNonNull(criteria);
+        return MySQLSupports.block(criteria, table, tableAlias);
+    }
+
+    public static MySQLQuery._IfUseIndexOnSpec<Void> block(SubQuery subQuery, String alias) {
+        return MySQLSupports.block(null, null, subQuery, alias);
+    }
+
+    public static <C> MySQLQuery._IfUseIndexOnSpec<C> block(C criteria, SubQuery subQuery, String alias) {
+        CriteriaContextStack.assertNonNull(criteria);
+        return MySQLSupports.block(criteria, null, subQuery, alias);
+    }
+
+    public static MySQLQuery._IfUseIndexOnSpec<Void> lateralBlock(SubQuery subQuery, String alias) {
+        return MySQLSupports.block(null, ItemWord.LATERAL, subQuery, alias);
+    }
+
+    public static <C> MySQLQuery._IfUseIndexOnSpec<C> lateralBlock(C criteria, SubQuery subQuery, String alias) {
+        CriteriaContextStack.assertNonNull(criteria);
+        return MySQLSupports.block(criteria, ItemWord.LATERAL, subQuery, alias);
     }
 
 

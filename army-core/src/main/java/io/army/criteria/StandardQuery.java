@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 public interface StandardQuery extends Query, StandardStatement {
 
 
-
     /**
      * <p>
      * This interface representing the composite of below:
@@ -335,8 +334,30 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
 
+    /*-------------------below nested join interface -------------------*/
+
+    interface _NestedOnSpec<C> extends Statement._OnClause<C, _NestedJoinSpec<C>>, _NestedJoinSpec<C> {
+
+    }
+
+    interface _NestedJoinSpec<C> extends Statement._JoinClause<C, _NestedOnSpec<C>, _NestedOnSpec<C>>
+            , Statement._CrossJoinClause<C, _NestedJoinSpec<C>, _NestedJoinSpec<C>>
+            , Statement._IfJoinClause<C, _NestedJoinSpec<C>>
+            , Statement._RightParenClause<NestedItems> {
+
+    }
+
+    interface _StandardNestedLeftParenClause<C>
+            extends Statement._LeftParenClause<C, _NestedJoinSpec<C>, _NestedJoinSpec<C>> {
+
+    }
 
 
+    /*-------------------below if join clause interface -------------------*/
+
+    interface _IfOnClause<C> extends Statement._OnClause<C, JoinItemBlock<C>>, ItemBlock<C> {
+
+    }
 
 
 }

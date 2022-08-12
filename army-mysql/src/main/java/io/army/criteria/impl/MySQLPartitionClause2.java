@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@Deprecated
 @SuppressWarnings("unchecked")
 abstract class MySQLPartitionClause2<C, PR> implements MySQLQuery._PartitionClause2<C, PR> {
 
@@ -64,6 +65,7 @@ abstract class MySQLPartitionClause2<C, PR> implements MySQLQuery._PartitionClau
         this.partitionList = _CollectionUtils.unmodifiableList(partitionList);
         return (PR) this;
     }
+
     @Override
     public final PR ifPartition(Consumer<Consumer<String>> consumer) {
         final List<String> partitionList = new ArrayList<>();
@@ -73,6 +75,7 @@ abstract class MySQLPartitionClause2<C, PR> implements MySQLQuery._PartitionClau
         }
         return (PR) this;
     }
+
     @Override
     public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
         final List<String> partitionList = new ArrayList<>();

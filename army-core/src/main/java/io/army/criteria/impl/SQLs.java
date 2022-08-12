@@ -682,6 +682,33 @@ public abstract class SQLs extends Functions {
         return CriteriaContextStack.peek().refCte(cteName);
     }
 
+    public static StandardQuery._StandardNestedLeftParenClause<Void> nestedItems() {
+        return StandardNestedItems.create(null);
+    }
+
+    public static <C> StandardQuery._StandardNestedLeftParenClause<C> nestedItems(C criteria) {
+        Objects.requireNonNull(criteria);
+        return StandardNestedItems.create(criteria);
+    }
+
+    public static StandardQuery._IfOnClause<Void> block(TableMeta<?> table, String tableAlias) {
+        return DynamicBlock.standard(null, table, tableAlias);
+    }
+
+    public static <C> StandardQuery._IfOnClause<C> block(C criteria, TableMeta<?> table, String tableAlias) {
+        Objects.requireNonNull(criteria);
+        return DynamicBlock.standard(criteria, table, tableAlias);
+    }
+
+
+    public static StandardQuery._IfOnClause<Void> block(SubQuery subQuery, String tableAlias) {
+        return DynamicBlock.standard(null, subQuery, tableAlias);
+    }
+
+    public static <C> StandardQuery._IfOnClause<C> block(C criteria, SubQuery subQuery, String tableAlias) {
+        Objects.requireNonNull(criteria);
+        return DynamicBlock.standard(null, subQuery, tableAlias);
+    }
 
     public static <T> SelectionGroup group(TableMeta<T> table, String alias) {
         return SelectionGroups.singleGroup(table, alias);

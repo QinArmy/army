@@ -12,6 +12,7 @@ import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -494,63 +495,63 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifLeftJoin(Supplier<B> supplier) {
+    public final <B extends JoinItemBlock<C>> FJ ifLeftJoin(Supplier<B> supplier) {
         return this.innerCreateBlockForDynamic(_JoinType.LEFT_JOIN, supplier.get());
     }
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifLeftJoin(Function<C, B> function) {
+    public final <B extends JoinItemBlock<C>> FJ ifLeftJoin(Function<C, B> function) {
         return this.innerCreateBlockForDynamic(_JoinType.LEFT_JOIN, function.apply(this.criteria));
     }
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifJoin(Supplier<B> supplier) {
+    public final <B extends JoinItemBlock<C>> FJ ifJoin(Supplier<B> supplier) {
         return this.innerCreateBlockForDynamic(_JoinType.JOIN, supplier.get());
     }
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifJoin(Function<C, B> function) {
+    public final <B extends JoinItemBlock<C>> FJ ifJoin(Function<C, B> function) {
         return this.innerCreateBlockForDynamic(_JoinType.JOIN, function.apply(this.criteria));
     }
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifRightJoin(Supplier<B> supplier) {
+    public final <B extends JoinItemBlock<C>> FJ ifRightJoin(Supplier<B> supplier) {
         return this.innerCreateBlockForDynamic(_JoinType.RIGHT_JOIN, supplier.get());
     }
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifRightJoin(Function<C, B> function) {
+    public final <B extends JoinItemBlock<C>> FJ ifRightJoin(Function<C, B> function) {
         return this.innerCreateBlockForDynamic(_JoinType.RIGHT_JOIN, function.apply(this.criteria));
     }
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifFullJoin(Supplier<B> supplier) {
+    public final <B extends JoinItemBlock<C>> FJ ifFullJoin(Supplier<B> supplier) {
         return this.innerCreateBlockForDynamic(_JoinType.FULL_JOIN, supplier.get());
     }
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifFullJoin(Function<C, B> function) {
+    public final <B extends JoinItemBlock<C>> FJ ifFullJoin(Function<C, B> function) {
         return this.innerCreateBlockForDynamic(_JoinType.FULL_JOIN, function.apply(this.criteria));
     }
 
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifStraightJoin(Supplier<B> supplier) {
+    public final <B extends JoinItemBlock<C>> FJ ifStraightJoin(Supplier<B> supplier) {
         return this.innerCreateBlockForDynamic(_JoinType.STRAIGHT_JOIN, supplier.get());
     }
 
     @Override
-    public final <B extends JoinItemBlock> FJ ifStraightJoin(Function<C, B> function) {
+    public final <B extends JoinItemBlock<C>> FJ ifStraightJoin(Function<C, B> function) {
         return this.innerCreateBlockForDynamic(_JoinType.STRAIGHT_JOIN, function.apply(this.criteria));
     }
 
     @Override
-    public final <B extends CrossItemBlock> FJ ifCrossJoin(Supplier<B> supplier) {
+    public final <B extends ItemBlock<C>> FJ ifCrossJoin(Supplier<B> supplier) {
         return this.innerCreateBlockForDynamic(_JoinType.CROSS_JOIN, supplier.get());
     }
 
     @Override
-    public final <B extends CrossItemBlock> FJ ifCrossJoin(Function<C, B> function) {
+    public final <B extends ItemBlock<C>> FJ ifCrossJoin(Function<C, B> function) {
         return this.innerCreateBlockForDynamic(_JoinType.CROSS_JOIN, function.apply(this.criteria));
     }
 
@@ -597,14 +598,21 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
 
-    private FJ innerCreateBlockForDynamic(final _JoinType joinType, final @Nullable Object block) {
+    private FJ innerCreateBlockForDynamic(final _JoinType joinType, final @Nullable ItemBlock<C> block) {
         if (block == null) {
             return (FJ) this;
         }
         if (!(block instanceof DynamicBlock)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        this.blockConsumer.accept(this.clauseCreator.createBlockForDynamic(joinType, (DynamicBlock) block));
+        final DynamicBlock<?> dynamicBlock = (DynamicBlock<?>) block;
+        if (dynamicBlock.criteriaContext != this.criteriaContext) {
+            throw CriteriaUtils.criteriaContextNotMatch(this.criteriaContext);
+        }
+        if (dynamicBlock.hasOnClause() == (joinType == _JoinType.CROSS_JOIN)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        this.blockConsumer.accept(this.clauseCreator.createDynamicBlock(joinType, dynamicBlock));
         return (FJ) this;
     }
 
@@ -617,7 +625,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
         _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias);
 
-        _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block);
+        _TableBlock createDynamicBlock(_JoinType joinType, DynamicBlock<?> block);
 
         JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table);
 
@@ -653,7 +661,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
+        public _TableBlock createDynamicBlock(_JoinType joinType, DynamicBlock<?> block) {
             throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
         }
 
@@ -712,7 +720,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final LP leftBracket(TableMeta<?> table) {
+        public final LP leftParen(TableMeta<?> table) {
             if (this.blockList.size() != 0) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -720,7 +728,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final LT leftBracket(TableMeta<?> table, String tableAlias) {
+        public final LT leftParen(TableMeta<?> table, String tableAlias) {
             final _TableBlock block;
             block = this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias);
             this.addFirstBlock(block);
@@ -728,7 +736,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final <T extends TableItem> LS leftBracket(Supplier<T> supplier, String alias) {
+        public final <T extends TableItem> LS leftParen(Supplier<T> supplier, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias);
             this.addFirstBlock(block);
@@ -736,7 +744,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final <T extends TableItem> LS leftBracket(Function<C, T> function, String alias) {
+        public final <T extends TableItem> LS leftParen(Function<C, T> function, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria), alias);
             this.addFirstBlock(block);
@@ -744,7 +752,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final <T extends TableItem> LS leftBracketLateral(Supplier<T> supplier, String alias) {
+        public final <T extends TableItem> LS leftParenLateral(Supplier<T> supplier, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, supplier.get(), alias);
             this.addFirstBlock(block);
@@ -752,7 +760,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final <T extends TableItem> LS leftBracketLateral(Function<C, T> function, String alias) {
+        public final <T extends TableItem> LS leftParenLateral(Function<C, T> function, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, function.apply(this.criteria), alias);
             this.addFirstBlock(block);
@@ -760,7 +768,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final LS leftBracket(String cteName) {
+        public final LS leftParen(String cteName) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, null, this.criteriaContext.refCte(cteName), "");
             this.addFirstBlock(block);
@@ -768,11 +776,21 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final LS leftBracket(String cteName, String alias) {
+        public final LS leftParen(String cteName, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, null, this.criteriaContext.refCte(cteName), alias);
             this.addFirstBlock(block);
             return (LS) this;
+        }
+
+        @Override
+        public LP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+
+        @Override
+        public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
 
         @Override
@@ -948,7 +966,9 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
         private FJ endOnClause() {
             final List<_Predicate> predicateList = this.predicateList;
-            if (!(predicateList instanceof ArrayList)) {
+            if (predicateList == null) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::predicateListIsEmpty);
+            } else if (!(predicateList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.predicateList = _CollectionUtils.unmodifiableList(predicateList);

@@ -82,15 +82,16 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     private LockMode lockMode;
 
-    private NoActionOnClause<C, StandardQuery._JoinSpec<C, Q>> noActionOnClause;
+   private StandardSimpleQuery(CriteriaContext criteriaContext) {
+       super(criteriaContext);
 
-    StandardSimpleQuery(CriteriaContext criteriaContext) {
-        super(criteriaContext);
-
-    }
+   }
 
     @Override
-    public final _UnionSpec<C, Q> lock(LockMode lockMode) {
+    public final _UnionSpec<C, Q> lock(@Nullable LockMode lockMode) {
+        if (lockMode == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
         this.lockMode = lockMode;
         return this;
     }
@@ -137,7 +138,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
 
     @Override
-    final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+    public final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -145,7 +146,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final _TableBlock creatNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -153,14 +154,12 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
-        //TODO
-        return super.createBlockForDynamic(joinType, block);
+    public final _TableBlock createDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
+        return CriteriaUtils.createStandardDynamicBlock(joinType, block);
     }
 
-
     @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
+    public final _OnClause<C, _JoinSpec<C, Q>> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -168,18 +167,13 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         return new OnClauseTableBlock<>(joinType, tableItem, alias, this);
     }
 
-
-    @Override
-    final void onOrderBy() {
-        //no-op
-    }
 
     @Override
     final _StandardSelectClause<C, Q> asUnionAndRowSet(final UnionType unionType) {
@@ -229,7 +223,6 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     public final LockMode lockMode() {
         return this.lockMode;
     }
-
 
 
 

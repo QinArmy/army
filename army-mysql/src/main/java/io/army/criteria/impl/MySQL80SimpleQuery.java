@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
@@ -68,29 +67,13 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return new SimpleSelect<>(CriteriaContexts.primaryQueryContext(criteria));
     }
 
-    static <C> _WithSpec<C, SubQuery> subQuery(final boolean lateral, final @Nullable C criteria) {
-        final CriteriaContext context;
-        context = CriteriaContexts.subQueryContext(criteria);
-        final _WithSpec<C, SubQuery> with80Spec;
-        if (lateral) {
-            with80Spec = new LateralSimpleSubQuery<>(context);
-        } else {
-            with80Spec = new SimpleSubQuery<>(context);
-        }
-        return with80Spec;
+    static <C> _WithSpec<C, SubQuery> subQuery(final @Nullable C criteria) {
+        return new SimpleSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
 
-    static <C> _WithSpec<C, ScalarExpression> scalarSubQuery(final boolean lateral, final @Nullable C criteria) {
-        final CriteriaContext context;
-        context = CriteriaContexts.subQueryContext(criteria);
-        final _WithSpec<C, ScalarExpression> with80Spec;
-        if (lateral) {
-            with80Spec = new LateralSimpleScalarQuery<>(context);
-        } else {
-            with80Spec = new SimpleScalarQuery<>(context);
-        }
-        return with80Spec;
+    static <C> _WithSpec<C, ScalarExpression> scalarSubQuery(final @Nullable C criteria) {
+        return new SimpleScalarQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
 
@@ -444,13 +427,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         this.cteList = cteList;
     }
 
-    @Override
-    final void crossJoinEvent(boolean success) {
-        if (!success) {
-            this.noOnBlock = null; // clear
-        }
-    }
-
 
     /*################################## blow _MySQL80Query method ##################################*/
 
@@ -524,14 +500,14 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        return new TableBlock.NoOnTableBlock(joinType, tableItem, alias);
+        return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
     }
 
     @Override
-    public final _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
-        //TODO
-        throw new UnsupportedOperationException();
+    public final _TableBlock createDynamicBlock(_JoinType joinType, DynamicBlock<?> block) {
+        return MySQLSupports.createDynamicBlock(joinType, block);
     }
+
 
     @Override
     public final _PartitionOnClause<C, Q> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
@@ -667,15 +643,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     }//SimpleSubQuery
 
-    private static final class LateralSimpleSubQuery<C> extends SimpleSubQuery<C, SubQuery>
-            implements _LateralSubQuery {
-
-        private LateralSimpleSubQuery(CriteriaContext criteriaContext) {
-            super(criteriaContext);
-        }
-
-    }//LateralSimpleSubQuery
-
 
     private static class SimpleScalarQuery<C> extends SimpleSubQuery<C, ScalarExpression>
             implements ScalarSubQuery {
@@ -685,15 +652,6 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         }
 
     }//SimpleScalarQuery
-
-    private static final class LateralSimpleScalarQuery<C> extends SimpleScalarQuery<C>
-            implements _LateralSubQuery {
-
-        private LateralSimpleScalarQuery(CriteriaContext criteriaContext) {
-            super(criteriaContext);
-        }
-
-    }//LateralSimpleScalarQuery
 
 
     private static abstract class UnionAndQuery<C, Q extends Query> extends MySQL80SimpleQuery<C, Q>
@@ -778,12 +736,14 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         @Override
         _QueryUseIndexJoinSpec<C, Q> asEnd(final MySQLSupports.MySQLBlockParams params) {
-            final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
-            noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(params, this.query);
+            final MySQL80SimpleQuery<C, Q> query = this.query;
 
-            this.query.criteriaContext.onAddBlock(noOnBlock);
-            this.query.noOnBlock = noOnBlock; //update current noOnBlock
-            return this.query;
+            final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock;
+            noOnBlock = new MySQLSupports.MySQLNoOnBlock<>(params, query);
+
+            query.criteriaContext.onAddBlock(noOnBlock);
+            query.noOnBlock = noOnBlock; //update current noOnBlock
+            return query;
         }
 
 
@@ -804,9 +764,11 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
         @Override
         _QueryUseIndexOnSpec<C, Q> asEnd(final MySQLSupports.MySQLBlockParams params) {
+            final MySQL80SimpleQuery<C, Q> query = this.query;
+
             final OnTableBlock<C, Q> block;
-            block = new OnTableBlock<>(params, this.query);
-            this.query.criteriaContext.onAddBlock(block);
+            block = new OnTableBlock<>(params, query);
+            query.criteriaContext.onAddBlock(block);
             return block;
         }
 

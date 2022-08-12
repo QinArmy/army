@@ -36,7 +36,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
         MySQLQuery._NestedUseIndexOnSpec<C>,
         MySQLQuery._NestedOnSpec<C>,
         MySQLQuery._NestedPartitionOnClause<C>>
-        implements MySQLQuery._NestedLeftParenClause<C>
+        implements MySQLQuery._MySQLNestedLeftParenClause<C>
         , MySQLQuery._NestedUseIndexJoinSpec<C> {
 
     static <C> MySQLNestedItems<C> create(final @Nullable C criteria) {
@@ -101,9 +101,8 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     }
 
     @Override
-    public _TableBlock createBlockForDynamic(_JoinType joinType, DynamicBlock block) {
-        //TODO
-        throw new UnsupportedOperationException();
+    public _TableBlock createDynamicBlock(_JoinType joinType, DynamicBlock<?> block) {
+        return MySQLSupports.createDynamicBlock(joinType, block);
     }
 
     @Override

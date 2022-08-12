@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
@@ -603,6 +604,11 @@ abstract class CriteriaUtils {
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
+    static CriteriaException criteriaContextNotMatch(CriteriaContext criteriaContext) {
+        String m = "criteria context not match.";
+        return CriteriaContextStack.criteriaError(criteriaContext, m);
+    }
+
 
     private static CriteriaException noDefaultMappingType(CriteriaContext criteriaContext, final Object value) {
         String m = String.format("Not found default %s for %s."
@@ -611,4 +617,11 @@ abstract class CriteriaUtils {
     }
 
 
+    static _TableBlock createStandardDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
+        if (!(block instanceof DynamicBlock.StandardDynamicBlock)) {
+            String m = "not standard dynamic block";
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+        }
+        return new TableBlock.DynamicTableBlock(joinType, block);
+    }
 }

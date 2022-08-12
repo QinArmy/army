@@ -1,9 +1,6 @@
 package io.army.criteria.mysql;
 
-import io.army.criteria.DialectStatement;
-import io.army.criteria.NestedItems;
-import io.army.criteria.Query;
-import io.army.criteria.Statement;
+import io.army.criteria.*;
 
 import java.util.List;
 import java.util.function.*;
@@ -661,11 +658,26 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _NestedLeftParenClause<C>
+    interface _MySQLNestedLeftParenClause<C>
             extends _LeftParenClause<C, _NestedUseIndexJoinSpec<C>, _NestedJoinSpec<C>>
             , DialectStatement._DialectLeftParenClause<_NestedPartitionJoinClause<C>>
             , DialectStatement._LeftParenCteClause<_NestedJoinSpec<C>>
             , DialectStatement._LeftParenLateralClause<C, _NestedJoinSpec<C>> {
+
+    }
+
+    /*-------------------below if join clause interface -------------------*/
+
+
+    interface _IfOnClause<C> extends Statement._OnClause<C, JoinItemBlock<C>>, ItemBlock<C> {
+
+    }
+
+    interface _IfUseIndexOnSpec<C> extends _QueryUseIndexClause<C, _IfUseIndexOnSpec<C>>, _IfOnClause<C> {
+
+    }
+
+    interface _IfPartitionAsClause<C> extends _PartitionClause<C, Statement._AsClause<_IfUseIndexOnSpec<C>>> {
 
     }
 

@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public interface JoinItemBlock {
+public interface JoinItemBlock<C> extends ItemBlock<C> {
 
 
 }

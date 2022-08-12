@@ -223,9 +223,9 @@ public interface DialectStatement extends Statement {
 
     interface _IfStraightJoinClause<C, FJ> {
 
-        <B extends JoinItemBlock> FJ ifStraightJoin(Supplier<B> supplier);
+        <B extends JoinItemBlock<C>> FJ ifStraightJoin(Supplier<B> supplier);
 
-        <B extends JoinItemBlock> FJ ifStraightJoin(Function<C, B> function);
+        <B extends JoinItemBlock<C>> FJ ifStraightJoin(Function<C, B> function);
 
     }
 
@@ -330,7 +330,7 @@ public interface DialectStatement extends Statement {
      */
     interface _DialectLeftParenClause<LP> {
 
-        LP leftBracket(TableMeta<?> table);
+        LP leftParen(TableMeta<?> table);
     }
 
     /**
@@ -348,16 +348,16 @@ public interface DialectStatement extends Statement {
      */
     interface _LeftParenCteClause<LS> {
 
-        LS leftBracket(String cteName);
+        LS leftParen(String cteName);
 
-        LS leftBracket(String cteName, String alias);
+        LS leftParen(String cteName, String alias);
     }
 
     interface _LeftParenLateralClause<C, LS> {
 
-        <T extends TableItem> LS leftBracketLateral(Supplier<T> supplier, String alias);
+        <T extends TableItem> LS leftParenLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> LS leftBracketLateral(Function<C, T> function, String alias);
+        <T extends TableItem> LS leftParenLateral(Function<C, T> function, String alias);
 
     }
 

@@ -102,6 +102,15 @@ abstract class CriteriaContextStack {
         return stack.peek().criteria();
     }
 
+    static <C> CriteriaContext getCurrentContext(final @Nullable C criteria) {
+        final CriteriaContext currentContext;
+        currentContext = CriteriaContextStack.peek();
+        if (criteria != currentContext.criteria()) {
+            throw CriteriaUtils.criteriaNotMatch(currentContext);
+        }
+        return currentContext;
+    }
+
 
     private static CriteriaException noContextStack() {
         String m;
@@ -121,9 +130,9 @@ abstract class CriteriaContextStack {
     }
 
 
-    @Deprecated
     static void assertNonNull(@Nullable Object obj) {
         if (obj == null) {
+            clearStackOnError(CriteriaContextStack.peek());
             throw new NullPointerException();
         }
     }
