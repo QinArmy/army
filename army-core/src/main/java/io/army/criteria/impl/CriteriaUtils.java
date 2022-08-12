@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._PartRowSet;
-import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
@@ -12,7 +11,10 @@ import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 abstract class CriteriaUtils {
 
@@ -340,30 +342,6 @@ abstract class CriteriaUtils {
     }
 
 
-    static List<_Predicate> asPredicateList(final @Nullable List<IPredicate> predicateList
-            , final @Nullable Supplier<CriteriaException> supplier) {
-        final int size;
-        if (predicateList == null || (size = predicateList.size()) == 0) {
-            if (supplier != null) {
-                throw supplier.get();
-            }
-            return Collections.emptyList();
-        }
-
-        List<_Predicate> list;
-        if (size == 1) {
-            list = Collections.singletonList((OperationPredicate) predicateList.get(0));
-        } else {
-            list = new ArrayList<>(size);
-            for (IPredicate predicate : predicateList) {
-                list.add((OperationPredicate) predicate);
-            }
-            list = Collections.unmodifiableList(list);
-        }
-        return list;
-    }
-
-
     static <E extends Expression> List<_Expression> asExpressionList(final List<E> expressionList) {
         final int size = expressionList.size();
         List<_Expression> expList;
@@ -435,12 +413,6 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableList(wrapperList);
     }
 
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    static <C> C getCriteria(final Query query) {
-        return ((CriteriaSpec<C>) query).getCriteria();
-    }
 
     static List<Window> asWindowList(final @Nullable List<Window> list, final Predicate<Window> predicate) {
         final int size;
@@ -555,11 +527,6 @@ abstract class CriteriaUtils {
         return mySqlHintList;
     }
 
-    static CriteriaException nestedItemsNotMatch(NestedItems nestedItems, Enum<?> target) {
-        String m = String.format("%s %s and %s not match", NestedItems.class.getName()
-                , _ClassUtils.safeClassName(nestedItems), target);
-        return new CriteriaException(m);
-    }
 
     static CriteriaException illegalHint(@Nullable Hint hint) {
         String m = String.format("Hint %s is illegal."
@@ -568,10 +535,6 @@ abstract class CriteriaUtils {
     }
 
 
-    private static CriteriaException modifierSyntaxError(SQLWords.Modifier modifier) {
-        String m = String.format("modifier syntax error,%s isn't support.", modifier);
-        throw new CriteriaException(m);
-    }
 
     private static CriteriaException illegalWindow(Window window) {
         String m = String.format("window %s is illegal", _ClassUtils.safeClassName(window));
@@ -620,8 +583,10 @@ abstract class CriteriaUtils {
     static _TableBlock createStandardDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
         if (!(block instanceof DynamicBlock.StandardDynamicBlock)) {
             String m = "not standard dynamic block";
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            throw CriteriaContextStack.criteriaError(block.criteriaContext, m);
         }
         return new TableBlock.DynamicTableBlock(joinType, block);
     }
+
+
 }

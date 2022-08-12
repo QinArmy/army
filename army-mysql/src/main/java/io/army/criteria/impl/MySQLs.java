@@ -300,22 +300,13 @@ public abstract class MySQLs extends MySQLSyntax {
         return MySQLSupports.block(criteria, table);
     }
 
-    public static MySQLQuery._IfUseIndexOnSpec<Void> block(TableMeta<?> table, String tableAlias) {
-        return MySQLSupports.block(null, table, tableAlias);
+    public static MySQLQuery._IfUseIndexOnSpec<Void> block(TableItem tableItem, String alias) {
+        return MySQLSupports.block(null, null, tableItem, alias);
     }
 
-    public static <C> MySQLQuery._IfUseIndexOnSpec<C> block(C criteria, TableMeta<?> table, String tableAlias) {
+    public static <C> MySQLQuery._IfUseIndexOnSpec<C> block(C criteria, TableItem tableItem, String alias) {
         CriteriaContextStack.assertNonNull(criteria);
-        return MySQLSupports.block(criteria, table, tableAlias);
-    }
-
-    public static MySQLQuery._IfUseIndexOnSpec<Void> block(SubQuery subQuery, String alias) {
-        return MySQLSupports.block(null, null, subQuery, alias);
-    }
-
-    public static <C> MySQLQuery._IfUseIndexOnSpec<C> block(C criteria, SubQuery subQuery, String alias) {
-        CriteriaContextStack.assertNonNull(criteria);
-        return MySQLSupports.block(criteria, null, subQuery, alias);
+        return MySQLSupports.block(criteria, null, tableItem, alias);
     }
 
     public static MySQLQuery._IfUseIndexOnSpec<Void> lateralBlock(SubQuery subQuery, String alias) {

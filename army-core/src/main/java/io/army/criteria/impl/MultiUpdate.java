@@ -14,9 +14,9 @@ import java.util.List;
  *
  * @since 1.0
  */
-abstract class MultiUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
-        extends JoinableUpdate<C, F, SR, FT, FS, FP, JT, JS, JP, WR, WA, U>
-        implements _MultiUpdate, JoinableClause.ClauseSupplier {
+abstract class MultiUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
+        extends JoinableUpdate<C, F, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U>
+        implements _MultiUpdate {
 
     final CriteriaContext criteriaContext;
 

@@ -60,7 +60,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         , MySQL80Query._JoinSpec<C, Q>, MySQL80Query._WhereAndSpec<C, Q>, MySQL80Query._HavingSpec<C, Q>
         , MySQL80Query._GroupByWithRollupSpec<C, Q>, MySQL80Query._OrderByWithRollupSpec<C, Q>
         , MySQL80Query._LockOfSpec<C, Q>, MySQL80Query._LockLockOptionSpec<C, Q>
-        , MySQL80Query {
+        , MySQL80Query, PartRowSet.OrderByEventListener {
 
 
     static <C> _WithSpec<C, Select> simpleSelect(@Nullable C criteria) {
@@ -355,9 +355,8 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return this;
     }
 
-
     @Override
-    final void onOrderBy() {
+    public final void orderByEvent() {
         if (this.groupByWithRollup == null) {
             this.groupByWithRollup = Boolean.FALSE;
         }
@@ -426,6 +425,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         this.recursive = recursive;
         this.cteList = cteList;
     }
+
 
 
     /*################################## blow _MySQL80Query method ##################################*/

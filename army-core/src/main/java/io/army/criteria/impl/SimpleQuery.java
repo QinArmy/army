@@ -15,7 +15,6 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.*;
 
 
@@ -27,9 +26,9 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, GR, HR, OR, LR, UR, SP>
         extends PartRowSet<C, Q, FT, FS, FP, FJ, JT, JS, JP, UR, OR, LR, SP>
-        implements Statement._QueryWhereClause<C, WR, AR>, Statement._WhereAndClause<C, AR>, Query._GroupClause<C, GR>
+        implements Statement._QueryWhereClause<C, WR, WA>, Statement._WhereAndClause<C, WA>, Query._GroupClause<C, GR>
         , Query._HavingClause<C, HR>, _Query, Statement._FromClause<C, FT, FS>, DialectStatement._DialectFromClause<FP>
         , DialectStatement._DialectSelectClause<C, W, SR>, DialectStatement._FromCteClause<FS>, Query._QuerySpec<Q>
         , JoinableClause.ClauseCreator<FP, JT, JS, JP> {
@@ -212,278 +211,242 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         return (FS) this;
     }
 
+
     @Override
-    public final WR where(Supplier<List<IPredicate>> supplier) {
-        this.predicateList = CriteriaUtils.asPredicateList(supplier.get(), _Exceptions::predicateListIsEmpty);
+    public final WR where(Consumer<Consumer<IPredicate>> consumer) {
+        consumer.accept(this::and);
+        if (this.predicateList == null) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::predicateListIsEmpty);
+        }
         return (WR) this;
     }
 
     @Override
-    public final WR where(Function<C, List<IPredicate>> function) {
-        this.predicateList = CriteriaUtils.asPredicateList(function.apply(this.criteria)
-                , _Exceptions::predicateListIsEmpty);
+    public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
+        consumer.accept(this.criteria, this::and);
+        if (this.predicateList == null) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::predicateListIsEmpty);
+        }
         return (WR) this;
     }
 
     @Override
-    public final WR where(Consumer<List<IPredicate>> consumer) {
-        final List<IPredicate> predicateList = new ArrayList<>();
-        consumer.accept(predicateList);
-        this.predicateList = CriteriaUtils.asPredicateList(predicateList, _Exceptions::predicateListIsEmpty);
-        return (WR) this;
-    }
-
-    @Override
-    public final AR where(IPredicate predicate) {
+    public final WA where(IPredicate predicate) {
         return this.and(predicate);
     }
 
     @Override
-    public final AR where(Function<Object, IPredicate> operator, DataField operand) {
+    public final WA where(Supplier<IPredicate> supplier) {
+        return this.and(supplier.get());
+    }
+
+    @Override
+    public final WA where(Function<C, IPredicate> function) {
+        return this.and(function.apply(this.criteria));
+    }
+
+    @Override
+    public final WA where(Function<Object, IPredicate> operator, DataField operand) {
         return this.and(operator.apply(operand));
     }
 
     @Override
-    public final AR where(Function<Object, IPredicate> operator, Supplier<?> operand) {
+    public final WA where(Function<Object, IPredicate> operator, Supplier<?> operand) {
         return this.and(operator.apply(operand.get()));
     }
 
     @Override
-    public final AR where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+    public final WA where(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
         return this.and(operator.apply(operand.apply(keyName)));
     }
 
     @Override
-    public final AR where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+    public final WA where(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
             , Supplier<?> secondOperand) {
         return this.and(operator.apply(firstOperand.get(), secondOperand.get()));
     }
 
     @Override
-    public final AR where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+    public final WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
             , String firstKey, String secondKey) {
         return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
     }
 
     @Override
-    public final AR whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
+    public final WA whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
         return this.ifNonNullAnd(operator, operand);
     }
 
     @Override
-    public final AR whereIfNonNull(@Nullable BiFunction<Object, Object, IPredicate> operator
-            , @Nullable Object firstOperand, @Nullable Object secondOperand) {
-        return this.ifNonNullAnd(operator, firstOperand, secondOperand);
-    }
-
-    @Override
-    public final AR whereIfNonNull(@Nullable Function<Object, ? extends Expression> firstOperator
-            , @Nullable Object firstOperand, BiFunction<Expression, Object, IPredicate> secondOperator
-            , Object secondOperand) {
-        return this.ifNonNullAnd(firstOperator, firstOperand, secondOperator, secondOperand);
-    }
-
-    @Override
-    public final AR whereIf(Supplier<IPredicate> supplier) {
+    public final WA whereIf(Supplier<IPredicate> supplier) {
         return this.ifAnd(supplier);
     }
 
     @Override
-    public final AR whereIf(Function<C, IPredicate> function) {
+    public final WA whereIf(Function<C, IPredicate> function) {
         return this.ifAnd(function);
     }
 
     @Override
-    public final AR whereIf(Function<Object, IPredicate> operator, Supplier<?> operand) {
+    public final WA whereIf(Function<Object, IPredicate> operator, Supplier<?> operand) {
         return this.ifAnd(operator, operand);
     }
 
     @Override
-    public final AR whereIf(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+    public final WA whereIf(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
         return this.ifAnd(operator, operand, keyName);
     }
 
     @Override
-    public final AR whereIf(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+    public final WA whereIf(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
             , Supplier<?> secondOperand) {
         return this.ifAnd(operator, firstOperand, secondOperand);
     }
 
     @Override
-    public final AR whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+    public final WA whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
             , String firstKey, String secondKey) {
         return this.ifAnd(operator, operand, firstKey, secondKey);
     }
 
-    @Override
-    public final AR whereIf(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
-            , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand) {
-        return this.ifAnd(firstOperator, firstOperand, secondOperator, secondOperand);
-    }
 
     @Override
-    public final WR ifWhere(Supplier<List<IPredicate>> supplier) {
-        final List<IPredicate> predicateList;
-        predicateList = supplier.get();
-        if (predicateList != null && predicateList.size() > 0) {
-            this.predicateList = CriteriaUtils.asPredicateList(predicateList, null);
-        }
+    public final WR ifWhere(Consumer<Consumer<IPredicate>> consumer) {
+        consumer.accept(this::and);
         return (WR) this;
     }
 
     @Override
-    public final WR ifWhere(Function<C, List<IPredicate>> function) {
-        final List<IPredicate> predicateList;
-        predicateList = function.apply(this.criteria);
-        if (predicateList != null && predicateList.size() > 0) {
-            this.predicateList = CriteriaUtils.asPredicateList(predicateList, null);
-        }
+    public final WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer) {
+        consumer.accept(this.criteria, this::and);
         return (WR) this;
     }
 
-
     @Override
-    public final AR and(IPredicate predicate) {
-        Objects.requireNonNull(predicate);
+    public final WA and(final @Nullable IPredicate predicate) {
+        if (predicate == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
         List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null) {
             predicateList = new ArrayList<>();
             this.predicateList = predicateList;
+        } else if (!(predicateList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
-    public final AR and(Supplier<IPredicate> supplier) {
+    public final WA and(Supplier<IPredicate> supplier) {
         return this.and(supplier.get());
     }
 
     @Override
-    public final AR and(Function<C, IPredicate> function) {
+    public final WA and(Function<C, IPredicate> function) {
         return this.and(function.apply(this.criteria));
     }
 
     @Override
-    public final AR and(Function<Object, IPredicate> operator, DataField operand) {
+    public final WA and(Function<Object, IPredicate> operator, DataField operand) {
         return this.and(operator.apply(operand));
     }
 
     @Override
-    public final AR and(Function<Object, IPredicate> operator, Supplier<?> operand) {
+    public final WA and(Function<Object, IPredicate> operator, Supplier<?> operand) {
         return this.and(operator.apply(operand.get()));
     }
 
     @Override
-    public final AR and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+    public final WA and(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
         return this.and(operator.apply(operand.apply(keyName)));
     }
 
     @Override
-    public final AR and(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+    public final WA and(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
             , Supplier<?> secondOperand) {
         return this.and(operator.apply(firstOperand.get(), secondOperand.get()));
     }
 
     @Override
-    public final AR and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+    public final WA and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
             , String firstKey, String secondKey) {
         return this.and(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
     }
 
     @Override
-    public final AR ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
+    public final WA ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
         if (operator != null && operand != null) {
             this.and(operator.apply(operand));
         }
-        return (AR) this;
+        return (WA) this;
     }
 
-    @Override
-    public final AR ifNonNullAnd(@Nullable BiFunction<Object, Object, IPredicate> operator
-            , @Nullable Object firstOperand, @Nullable Object secondOperand) {
-        if (operator != null && firstOperand != null && secondOperand != null) {
-            this.and(operator.apply(firstOperand, secondOperand));
-        }
-        return (AR) this;
-    }
 
     @Override
-    public final AR ifNonNullAnd(@Nullable Function<Object, ? extends Expression> firstOperator
-            , @Nullable Object firstOperand, BiFunction<Expression, Object, IPredicate> secondOperator
-            , Object secondOperand) {
-        if (firstOperator != null && firstOperand != null) {
-            final Expression expression;
-            expression = firstOperator.apply(firstOperand);
-            assert expression != null;
-            this.and(secondOperator.apply(expression, secondOperator));
-        }
-        return (AR) this;
-    }
-
-    @Override
-    public final AR ifAnd(Supplier<IPredicate> supplier) {
+    public final WA ifAnd(Supplier<IPredicate> supplier) {
         final IPredicate predicate;
         predicate = supplier.get();
         if (predicate != null) {
             this.and(predicate);
         }
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
-    public final AR ifAnd(Function<C, IPredicate> function) {
+    public final WA ifAnd(Function<C, IPredicate> function) {
         final IPredicate predicate;
         predicate = function.apply(this.criteria);
         if (predicate != null) {
             this.and(predicate);
         }
-        return (AR) this;
+        return (WA) this;
     }
 
 
     @Override
-    public final AR ifAnd(Function<Object, IPredicate> operator, Supplier<?> operand) {
+    public final WA ifAnd(Function<Object, IPredicate> operator, Supplier<?> operand) {
         final Object paramOrExp;
         paramOrExp = operand.get();
         if (paramOrExp != null) {
             this.and(operator.apply(paramOrExp));
         }
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
-    public final AR ifAnd(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
+    public final WA ifAnd(Function<Object, IPredicate> operator, Function<String, ?> operand, String keyName) {
         final Object paramOrExp;
         paramOrExp = operand.apply(keyName);
         if (paramOrExp != null) {
             this.and(operator.apply(paramOrExp));
         }
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
-    public final AR ifAnd(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
+    public final WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand
             , Supplier<?> secondOperand) {
         final Object first, second;
         if ((first = firstOperand.get()) != null && (second = secondOperand.get()) != null) {
             this.and(operator.apply(first, second));
         }
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
-    public final AR ifAnd(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
+    public final WA ifAnd(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand
             , String firstKey, String secondKey) {
         final Object first, second;
         if ((first = operand.apply(firstKey)) != null && (second = operand.apply(secondKey)) != null) {
             this.and(operator.apply(first, second));
         }
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
-    public final AR ifAnd(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
+    public final WA ifAnd(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
             , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand) {
         final Object firstValue;
         firstValue = firstOperand.get();
@@ -493,7 +456,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             assert expression != null;
             this.and(secondOperator.apply(expression, secondOperand));
         }
-        return (AR) this;
+        return (WA) this;
     }
 
     @Override
@@ -521,125 +484,172 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         return (GR) this;
     }
 
+
     @Override
-    public final <S extends SortItem> GR groupBy(Supplier<List<S>> supplier) {
-        this.groupByList = CriteriaUtils.asSortItemList(supplier.get());
-        return (GR) this;
+    public final GR groupBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::addGroupByItem);
+        return this.endGroupBy(false);
     }
 
     @Override
-    public final <S extends SortItem> GR groupBy(Function<C, List<S>> function) {
-        this.groupByList = CriteriaUtils.asSortItemList(function.apply(this.criteria));
-        return (GR) this;
+    public final GR groupBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        consumer.accept(this.criteria, this::addGroupByItem);
+        return this.endGroupBy(false);
     }
 
     @Override
-    public final GR groupBy(Consumer<List<SortItem>> consumer) {
-        final List<SortItem> sortItemList = new ArrayList<>();
-        consumer.accept(sortItemList);
-        this.groupByList = CriteriaUtils.asSortItemList(sortItemList);
-        return (GR) this;
-    }
-
-    @Override
-    public final <S extends SortItem> GR ifGroupBy(Supplier<List<S>> supplier) {
-        final List<S> sortItemList;
-        sortItemList = supplier.get();
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.groupByList = CriteriaUtils.asSortItemList(sortItemList);
+    public final GR ifGroupBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
+        final Object value;
+        if ((value = operand.get()) != null) {
+            this.groupBy(operator.apply(value));
         }
         return (GR) this;
     }
 
     @Override
-    public final <S extends SortItem> GR ifGroupBy(Function<C, List<S>> function) {
-        final List<S> sortItemList;
-        sortItemList = function.apply(this.criteria);
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.groupByList = CriteriaUtils.asSortItemList(sortItemList);
+    public final GR ifGroupBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+        final Object value;
+        if ((value = operand.apply(operandKey)) != null) {
+            this.groupBy(operator.apply(value));
         }
         return (GR) this;
     }
 
     @Override
-    public final HR having(IPredicate predicate) {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        if (groupByList != null && groupByList.size() > 0) {
+    public final GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
+        final Object firstValue, secondValue;
+        if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperator.get()) != null) {
+            this.groupBy(operator.apply(firstValue, secondValue));
+        }
+        return (GR) this;
+    }
+
+    @Override
+    public final GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+        final Object firstValue, secondValue;
+        if ((firstValue = operand.apply(firstKey)) != null && (secondValue = operand.apply(secondKey)) != null) {
+            this.groupBy(operator.apply(firstValue, secondValue));
+        }
+        return (GR) this;
+    }
+
+    @Override
+    public final GR ifGroupBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::addGroupByItem);
+        return this.endGroupBy(true);
+    }
+
+    @Override
+    public final GR ifGroupBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        consumer.accept(this.criteria, this::addGroupByItem);
+        return this.endGroupBy(true);
+    }
+
+    @Override
+    public final HR having(final @Nullable IPredicate predicate) {
+        if (this.groupByList != null) {
+            if (predicate == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
             this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
         return (HR) this;
     }
 
     @Override
-    public final HR having(IPredicate predicate1, IPredicate predicate2) {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        if (groupByList != null && groupByList.size() > 0) {
-            this.havingList = ArrayUtils.asUnmodifiableList((OperationPredicate) predicate1
-                    , (OperationPredicate) predicate2);
-        }
-        return (HR) this;
-    }
-
-    @Override
-    public final HR having(Supplier<List<IPredicate>> supplier) {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        if (groupByList != null && groupByList.size() > 0) {
-            this.havingList = CriteriaUtils.asPredicateList(supplier.get(), _Exceptions::havingIsEmpty);
-        }
-        return (HR) this;
-    }
-
-    @Override
-    public final HR having(Function<C, List<IPredicate>> function) {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        if (groupByList != null && groupByList.size() > 0) {
-            this.havingList = CriteriaUtils.asPredicateList(function.apply(this.criteria), _Exceptions::havingIsEmpty);
-        }
-        return (HR) this;
-    }
-
-    @Override
-    public final HR having(Consumer<List<IPredicate>> consumer) {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        if (groupByList != null && groupByList.size() > 0) {
-            final List<IPredicate> havingList = new ArrayList<>();
-            consumer.accept(havingList);
-            this.havingList = CriteriaUtils.asPredicateList(havingList, _Exceptions::havingIsEmpty);
-        }
-        return (HR) this;
-    }
-
-    @Override
-    public final HR ifHaving(@Nullable IPredicate predicate) {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        if (groupByList != null && groupByList.size() > 0 && predicate != null) {
-            this.havingList = Collections.singletonList((OperationPredicate) predicate);
-        }
-        return (HR) this;
-    }
-
-    @Override
-    public final HR ifHaving(Supplier<List<IPredicate>> supplier) {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        if (groupByList != null && groupByList.size() > 0) {
-            final List<IPredicate> list;
-            list = supplier.get();
-            if (list != null && list.size() > 0) {
-                this.havingList = CriteriaUtils.asPredicateList(list, null);
+    public final HR having(final @Nullable IPredicate predicate1, final @Nullable IPredicate predicate2) {
+        if (this.groupByList != null) {
+            if (predicate1 == null || predicate2 == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
+            this.havingList = ArrayUtils.asUnmodifiableList(
+                    (OperationPredicate) predicate1
+                    , (OperationPredicate) predicate2
+            );
         }
         return (HR) this;
     }
 
     @Override
-    public final HR ifHaving(Function<C, List<IPredicate>> function) {
-        final List<ArmySortItem> groupByList = this.groupByList;
-        if (groupByList != null && groupByList.size() > 0) {
-            final List<IPredicate> list;
-            list = function.apply(this.criteria);
-            if (list != null && list.size() > 0) {
-                this.havingList = CriteriaUtils.asPredicateList(list, null);
-            }
+    public final HR having(Supplier<IPredicate> supplier) {
+        if (this.groupByList != null) {
+            this.having(supplier.get());
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(Function<C, IPredicate> function) {
+        if (this.groupByList != null) {
+            this.having(function.apply(this.criteria));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(Function<Object, IPredicate> operator, Supplier<?> operand) {
+        if (this.groupByList != null) {
+            this.having(operator.apply(operand.get()));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(Function<Object, IPredicate> operator, Function<String, ?> operand, String operandKey) {
+        if (this.groupByList != null) {
+            this.having(operator.apply(operand.apply(operandKey)));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
+        if (this.groupByList != null) {
+            this.having(operator.apply(firstOperand.get(), secondOperand.get()));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+        if (this.groupByList != null) {
+            this.having(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(Consumer<Consumer<IPredicate>> consumer) {
+        if (this.groupByList != null) {
+            consumer.accept(this::addHavingPredicate);
+            this.endHaving(false);
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(BiConsumer<C, Consumer<IPredicate>> consumer) {
+        if (this.groupByList != null) {
+            consumer.accept(this.criteria, this::addHavingPredicate);
+            this.endHaving(false);
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public HR ifHaving(Consumer<Consumer<IPredicate>> consumer) {
+        if (this.groupByList != null) {
+            consumer.accept(this::addHavingPredicate);
+            this.endHaving(true);
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR ifHaving(BiConsumer<C, Consumer<IPredicate>> consumer) {
+        if (this.groupByList != null) {
+            consumer.accept(this.criteria, this::addHavingPredicate);
+            this.endHaving(true);
         }
         return (HR) this;
     }
@@ -676,8 +686,11 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public final List<_Predicate> predicateList() {
-        prepared();
-        return this.predicateList;
+        final List<_Predicate> predicateList = this.predicateList;
+        if (predicateList == null || predicateList instanceof ArrayList) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return predicateList;
     }
 
     @Override
@@ -692,7 +705,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     public final Selection selection() {
         if (!(this instanceof ScalarSubQuery)) {
-            throw _Exceptions.castCriteriaApi();
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         return (Selection) this.selectItemList().get(0);
     }
@@ -743,11 +756,10 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         }
 
         // group by and having
-        final List<? extends SortItem> groupByList = this.groupByList;
-        if (groupByList == null || groupByList.size() == 0) {
+        if (this.groupByList == null) {
             this.groupByList = Collections.emptyList();
-            this.hintList = Collections.emptyList();
-        } else if (_CollectionUtils.isEmpty(this.havingList)) {
+            this.havingList = Collections.emptyList();
+        } else if (this.havingList == null) {
             this.havingList = Collections.emptyList();
         }
         return this.onAsQuery(fromAsQueryMethod);
@@ -852,6 +864,68 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         this.selectItemList = selectItemList;
         this.criteriaContext.selectList(selectItemList);
         return (SR) this;
+    }
+
+
+    private void addGroupByItem(final @Nullable SortItem sortItem) {
+        if (sortItem == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
+        List<ArmySortItem> itemList = this.groupByList;
+        if (itemList == null) {
+            itemList = new ArrayList<>();
+            this.groupByList = itemList;
+        } else if (!(itemList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        itemList.add((ArmySortItem) sortItem);
+    }
+
+    private GR endGroupBy(final boolean optional) {
+        final List<ArmySortItem> itemList = this.groupByList;
+        if (itemList == null) {
+            if (!optional) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "group by clause is empty");
+            }
+            //null,no-op
+        } else if (itemList instanceof ArrayList) {
+            this.groupByList = _CollectionUtils.unmodifiableList(itemList);
+        } else {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return (GR) this;
+    }
+
+    private void addHavingPredicate(final @Nullable IPredicate predicate) {
+        if (predicate == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
+        List<_Predicate> predicateList = this.havingList;
+        if (predicateList == null) {
+            predicateList = new ArrayList<>();
+            this.havingList = predicateList;
+        } else if (!(predicateList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+
+        predicateList.add((OperationPredicate) predicate);
+    }
+
+    private void endHaving(final boolean optional) {
+        final List<_Predicate> predicateList = this.havingList;
+        if (this.groupByList == null) {
+            this.havingList = Collections.emptyList();
+        } else if (predicateList == null) {
+            if (!optional) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "having clause is empty");
+            }
+            this.havingList = Collections.emptyList();
+        } else if (predicateList instanceof ArrayList) {
+            this.havingList = _CollectionUtils.unmodifiableList(predicateList);
+        } else {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+
     }
 
 

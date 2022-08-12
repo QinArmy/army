@@ -3,11 +3,7 @@ package io.army.criteria;
 
 import io.army.lang.Nullable;
 
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -66,15 +62,22 @@ public interface Query extends RowSet {
 
         GR groupBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
 
-        <S extends SortItem> GR groupBy(Supplier<List<S>> supplier);
+        GR groupBy(Consumer<Consumer<SortItem>> consumer);
 
-        <S extends SortItem> GR groupBy(Function<C, List<S>> function);
+        GR groupBy(BiConsumer<C, Consumer<SortItem>> consumer);
 
-        GR groupBy(Consumer<List<SortItem>> consumer);
+        GR ifGroupBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand);
 
-        <S extends SortItem> GR ifGroupBy(Supplier<List<S>> supplier);
+        GR ifGroupBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey);
 
-        <S extends SortItem> GR ifGroupBy(Function<C, List<S>> function);
+        GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator);
+
+        GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
+        GR ifGroupBy(Consumer<Consumer<SortItem>> consumer);
+
+        GR ifGroupBy(BiConsumer<C, Consumer<SortItem>> consumer);
+
     }
 
 
@@ -84,17 +87,25 @@ public interface Query extends RowSet {
 
         HR having(IPredicate predicate1, IPredicate predicate2);
 
-        HR having(Supplier<List<IPredicate>> supplier);
+        HR having(Supplier<IPredicate> supplier);
 
-        HR having(Function<C, List<IPredicate>> function);
+        HR having(Function<C, IPredicate> function);
 
-        HR having(Consumer<List<IPredicate>> consumer);
+        HR having(Function<Object, IPredicate> operator, Supplier<?> operand);
 
-        HR ifHaving(@Nullable IPredicate predicate);
+        HR having(Function<Object, IPredicate> operator, Function<String, ?> operand, String operandKey);
 
-        HR ifHaving(Supplier<List<IPredicate>> supplier);
+        HR having(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
-        HR ifHaving(Function<C, List<IPredicate>> function);
+        HR having(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
+        HR having(Consumer<Consumer<IPredicate>> consumer);
+
+        HR having(BiConsumer<C, Consumer<IPredicate>> consumer);
+
+        HR ifHaving(Consumer<Consumer<IPredicate>> consumer);
+
+        HR ifHaving(BiConsumer<C, Consumer<IPredicate>> consumer);
 
     }
 

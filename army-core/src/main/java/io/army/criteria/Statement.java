@@ -305,13 +305,15 @@ public interface Statement {
      */
     interface _WhereClause<C, WR, WA> {
 
-        WR where(Supplier<List<IPredicate>> supplier);
+        WR where(Consumer<Consumer<IPredicate>> consumer);
 
-        WR where(Function<C, List<IPredicate>> function);
-
-        WR where(Consumer<List<IPredicate>> consumer);
+        WR where(BiConsumer<C, Consumer<IPredicate>> consumer);
 
         WA where(IPredicate predicate);
+
+        WA where(Supplier<IPredicate> supplier);
+
+        WA where(Function<C, IPredicate> function);
 
         WA where(Function<Object, IPredicate> operator, DataField operand);
 
@@ -325,11 +327,6 @@ public interface Statement {
 
         WA whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand);
 
-        WA whereIfNonNull(@Nullable BiFunction<Object, Object, IPredicate> operator, @Nullable Object firstOperand, @Nullable Object secondOperand);
-
-        WA whereIfNonNull(@Nullable Function<Object, ? extends Expression> firstOperator, @Nullable Object firstOperand
-                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
-
         WA whereIf(Supplier<IPredicate> supplier);
 
         WA whereIf(Function<C, IPredicate> function);
@@ -342,8 +339,6 @@ public interface Statement {
 
         WA whereIf(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
 
-        WA whereIf(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
-                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
 
     }
 
@@ -363,9 +358,9 @@ public interface Statement {
      */
     interface _QueryWhereClause<C, WR, WA> extends _WhereClause<C, WR, WA> {
 
-        WR ifWhere(Supplier<List<IPredicate>> supplier);
+        WR ifWhere(Consumer<Consumer<IPredicate>> consumer);
 
-        WR ifWhere(Function<C, List<IPredicate>> function);
+        WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer);
     }
 
 
@@ -401,11 +396,6 @@ public interface Statement {
         WA and(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
 
         WA ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand);
-
-        WA ifNonNullAnd(@Nullable BiFunction<Object, Object, IPredicate> operator, @Nullable Object firstOperand, @Nullable Object secondOperand);
-
-        WA ifNonNullAnd(@Nullable Function<Object, ? extends Expression> firstOperator, @Nullable Object firstOperand
-                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
 
         WA ifAnd(Supplier<IPredicate> supplier);
 
@@ -445,15 +435,21 @@ public interface Statement {
 
         OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
 
-        <S extends SortItem> OR orderBy(Function<C, List<S>> function);
+        OR orderBy(Consumer<Consumer<SortItem>> consumer);
 
-        <S extends SortItem> OR orderBy(Supplier<List<S>> supplier);
+        OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer);
 
-        OR orderBy(Consumer<List<SortItem>> consumer);
+        OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand);
 
-        <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier);
+        OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey);
 
-        <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function);
+        OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator);
+
+        OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey);
+
+        OR ifOrderBy(Consumer<Consumer<SortItem>> consumer);
+
+        OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer);
 
     }
 

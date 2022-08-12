@@ -33,11 +33,11 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, IR, JT, JS, JP, WR, WA>
-        extends WithCteMultiUpdate<C, SubQuery, WE, TableField, SR, UT, US, UP, JT, JS, JP, WR, WA, Update>
+        extends WithCteMultiUpdate<C, SubQuery, WE, TableField, SR, UT, US, UP, JS, JT, JS, JP, WR, WA, Update>
         implements MySQLUpdate.MultiUpdateClause<C, UT, US, UP>, MySQLQuery._IndexHintClause<C, IR, UT>
         , MySQLQuery._IndexForJoinClause<C, UT>, MySQLQuery._MySQLJoinClause<C, JT, JS>
-        , Statement._CrossJoinClause<C, UT, US>, MySQLQuery._MySQLDialectJoinClause<C, JP>
-        , DialectStatement._DialectCrossJoinClause<C, UP>, _MySQLMultiUpdate, _MySQLWithClause
+        , Statement._CrossJoinClause<C, UT, US>, MySQLQuery._MySQLDialectJoinClause<JP>
+        , DialectStatement._DialectCrossJoinClause<UP>, _MySQLMultiUpdate, _MySQLWithClause
         , MySQLUpdate, Update._UpdateSpec {
 
 

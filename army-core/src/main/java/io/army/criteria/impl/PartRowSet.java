@@ -11,10 +11,7 @@ import io.army.util._CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 @SuppressWarnings("unchecked")
 abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, OR, LR, SP>
@@ -148,7 +145,9 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     @Override
     public final OR orderBy(SortItem sortItem) {
         this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
-        this.onOrderBy();
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).orderByEvent();
+        }
         return (OR) this;
     }
 
@@ -158,7 +157,9 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
                 (ArmySortItem) sortItem1,
                 (ArmySortItem) sortItem2
         );
-        this.onOrderBy();
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).orderByEvent();
+        }
         return (OR) this;
     }
 
@@ -169,53 +170,82 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
                 (ArmySortItem) sortItem2,
                 (ArmySortItem) sortItem3
         );
-        this.onOrderBy();
-        return (OR) this;
-    }
-
-    @Override
-    public final <S extends SortItem> OR orderBy(Function<C, List<S>> function) {
-        this.orderByList = CriteriaUtils.asSortItemList(function.apply(this.criteria));
-        this.onOrderBy();
-        return (OR) this;
-    }
-
-    @Override
-    public final <S extends SortItem> OR orderBy(Supplier<List<S>> supplier) {
-        this.orderByList = CriteriaUtils.asSortItemList(supplier.get());
-        this.onOrderBy();
-        return (OR) this;
-    }
-
-    @Override
-    public final OR orderBy(Consumer<List<SortItem>> consumer) {
-        final List<SortItem> sortItemList = new ArrayList<>();
-        consumer.accept(sortItemList);
-        this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
-        this.onOrderBy();
-        return (OR) this;
-    }
-
-    @Override
-    public final <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier) {
-        final List<S> sortItemList;
-        sortItemList = supplier.get();
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).orderByEvent();
         }
-        this.onOrderBy();
         return (OR) this;
     }
 
     @Override
-    public final <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function) {
-        final List<S> sortItemList;
-        sortItemList = function.apply(this.criteria);
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
+    public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::addOrderByItem);
+        return this.endOrderBy(false);
+    }
+
+    @Override
+    public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        consumer.accept(this.criteria, this::addOrderByItem);
+        return this.endOrderBy(false);
+    }
+
+    @Override
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
+        final Object value;
+        if ((value = operand.get()) != null) {
+            this.orderBy(operator.apply(value));
         }
-        this.onOrderBy();
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).orderByEvent();
+        }
         return (OR) this;
+    }
+
+    @Override
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+        final Object value;
+        if ((value = operand.apply(operandKey)) != null) {
+            this.orderBy(operator.apply(value));
+        }
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).orderByEvent();
+        }
+        return (OR) this;
+    }
+
+    @Override
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
+        final Object firstValue, secondValue;
+        if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperator.get()) != null) {
+            this.orderBy(operator.apply(firstValue, secondValue));
+        }
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).orderByEvent();
+        }
+        return (OR) this;
+    }
+
+    @Override
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+        final Object firstValue, secondValue;
+        if ((firstValue = operand.apply(firstKey)) != null && (secondValue = operand.apply(secondKey)) != null) {
+            this.orderBy(operator.apply(firstValue, secondValue));
+        }
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).orderByEvent();
+        }
+        return (OR) this;
+    }
+
+    @Override
+    public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::addOrderByItem);
+        return this.endOrderBy(true);
+    }
+
+    @Override
+    public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        consumer.accept(this.criteria, this::addOrderByItem);
+        return this.endOrderBy(true);
     }
 
     @Override
@@ -386,12 +416,8 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
 
 
     final boolean hasOrderBy() {
-        return !_CollectionUtils.isEmpty(this.orderByList);
-    }
-
-
-    void onOrderBy() {
-
+        final List<ArmySortItem> itemList = this.orderByList;
+        return itemList != null && itemList.size() > 0;
     }
 
 
@@ -442,18 +468,42 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
         return u;
     }
 
-
-    private static CriteriaException supplierReturnError(Object value) {
-        String m = String.format("%s return %s ,but it isn't %s or %s ."
-                , Supplier.class.getName(), value, Long.class.getName(), Integer.class.getName());
-        return new CriteriaException(m);
+    private void addOrderByItem(final @Nullable SortItem sortItem) {
+        if (sortItem == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
+        List<ArmySortItem> itemList = this.orderByList;
+        if (itemList == null) {
+            itemList = new ArrayList<>();
+            this.orderByList = itemList;
+        } else if (!(itemList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        itemList.add((ArmySortItem) sortItem);
     }
 
-    private static CriteriaException functionReturnError(Object value) {
-        String m = String.format("%s return %s ,but it isn't %s or %s ."
-                , Function.class.getName(), value, Long.class.getName(), Integer.class.getName());
-        return new CriteriaException(m);
+    /**
+     * @see #orderBy(Consumer)
+     * @see #orderBy(BiConsumer)
+     */
+    private OR endOrderBy(final boolean optional) {
+        final List<ArmySortItem> itemList = this.orderByList;
+        if (itemList == null) {
+            if (!optional) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "order by clause is empty.");
+            }
+            this.orderByList = Collections.emptyList();
+        } else if (itemList instanceof ArrayList) {
+            this.orderByList = _CollectionUtils.unmodifiableList(itemList);
+        } else {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).orderByEvent();
+        }
+        return (OR) this;
     }
+
 
     private static IllegalStateException asQueryMethodError() {
         return new IllegalStateException("onAsQuery(boolean) error");
@@ -480,6 +530,12 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
         RowSet leftRowSet();
 
         UnionType unionType();
+
+    }
+
+    interface OrderByEventListener {
+
+        void orderByEvent();
 
     }
 

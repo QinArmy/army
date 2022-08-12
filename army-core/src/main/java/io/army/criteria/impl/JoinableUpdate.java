@@ -26,8 +26,8 @@ import java.util.function.*;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
-        extends DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
+abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
+        extends DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         implements DmlStatement.DmlUpdate, DmlStatement._DmlUpdateSpec<U>
         , Update._SimpleSetClause<C, F, SR>, Update._BatchSetClause<C, F, SR>
         , _Update {
@@ -45,8 +45,11 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
 
     private Boolean prepared;
 
-    JoinableUpdate(ClauseSupplier clauseSupplier, CriteriaContext criteriaContext) {
-        super(clauseSupplier, criteriaContext.criteria());
+
+    JoinableUpdate(CriteriaContext criteriaContext) {
+        super(criteriaContext);
+        assert this instanceof MultiUpdate;
+
         this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
         this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();
@@ -58,8 +61,10 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, JT, JS, JP
         }
     }
 
-    JoinableUpdate(CriteriaContext criteriaContext) {
-        super(criteriaContext.criteria());
+    JoinableUpdate(CriteriaContext criteriaContext, ClauseCreator<FP, JT, JS, JP> clauseCreator) {
+        super(criteriaContext, clauseCreator);
+        assert this instanceof SingleUpdate;
+
         this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
         this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();

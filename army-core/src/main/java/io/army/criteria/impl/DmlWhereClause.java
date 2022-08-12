@@ -12,11 +12,7 @@ import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -26,53 +22,55 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
-        extends JoinableClause<C, FT, FS, FP, JT, JS, JP>
+abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
+        extends JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         implements Statement, Statement._WhereClause<C, WR, WA>, Statement._WhereAndClause<C, WA>, _Dml {
 
 
     private List<_Predicate> predicateList = new ArrayList<>();
 
-    DmlWhereClause(ClauseSupplier clauseSupplier, @Nullable C criteria) {
-        super(clauseSupplier, criteria);
+    DmlWhereClause(CriteriaContext criteriaContext) {
+        super(criteriaContext);
     }
 
-    DmlWhereClause(@Nullable C criteria) {
-        super(criteria);
-    }
-
-
-    @Override
-    public final WR where(Function<C, List<IPredicate>> function) {
-        return this.addPredicateList(function.apply(this.criteria));
+    DmlWhereClause(CriteriaContext criteriaContext, ClauseCreator<FP, JT, JS, JP> clauseCreator) {
+        super(criteriaContext, clauseCreator);
     }
 
     @Override
-    public final WR where(Supplier<List<IPredicate>> supplier) {
-        return this.addPredicateList(supplier.get());
+    public final WR where(Consumer<Consumer<IPredicate>> consumer) {
+        consumer.accept(this::addPredicate);
+        return (WR) this;
     }
 
     @Override
-    public final WR where(Consumer<List<IPredicate>> consumer) {
-        final List<IPredicate> list = new ArrayList<>();
-        consumer.accept(list);
-        return this.addPredicateList(list);
+    public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
+        consumer.accept(this.criteria, this::addPredicate);
+        return (WR) this;
     }
 
     @Override
-    public final WA where(IPredicate predicate) {
-        Objects.requireNonNull(predicate);
+    public final WA where(@Nullable IPredicate predicate) {
+        if (predicate == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
         this.predicateList.add((OperationPredicate) predicate);
         return (WA) this;
+    }
+
+    @Override
+    public final WA where(Supplier<IPredicate> supplier) {
+        return this.where(supplier.get());
+    }
+
+    @Override
+    public final WA where(Function<C, IPredicate> function) {
+        return this.where(function.apply(this.criteria));
     }
 
     @Override
     public final WA where(Function<Object, IPredicate> operator, DataField operand) {
-        final IPredicate predicate;
-        predicate = operator.apply(operand);
-        assert predicate != null;
-        this.predicateList.add((OperationPredicate) predicate);
-        return (WA) this;
+        return this.and(operator.apply(operand));
     }
 
     @Override
@@ -100,20 +98,6 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     @Override
     public final WA whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
         return this.ifNonNullAnd(operator, operand);
-    }
-
-    @Override
-    public final WA whereIfNonNull(@Nullable BiFunction<Object, Object, IPredicate> operator
-            , @Nullable Object firstOperand
-            , @Nullable Object secondOperand) {
-        return this.ifNonNullAnd(operator, firstOperand, secondOperand);
-    }
-
-    @Override
-    public final WA whereIfNonNull(@Nullable Function<Object, ? extends Expression> firstOperator
-            , @Nullable Object firstOperand, BiFunction<Expression, Object, IPredicate> secondOperator
-            , Object secondOperand) {
-        return this.ifNonNullAnd(firstOperator, firstOperand, secondOperator, secondOperand);
     }
 
     @Override
@@ -149,14 +133,10 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final WA whereIf(Function<Object, ? extends Expression> firstOperator, Supplier<?> firstOperand
-            , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand) {
-        return this.ifAnd(firstOperator, firstOperand, secondOperator, secondOperand);
-    }
-
-    @Override
-    public final WA and(IPredicate predicate) {
-        Objects.requireNonNull(predicate);
+    public final WA and(@Nullable IPredicate predicate) {
+        if (predicate == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
         this.predicateList.add((OperationPredicate) predicate);
         return (WA) this;
     }
@@ -173,11 +153,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
 
     @Override
     public final WA and(Function<Object, IPredicate> operator, DataField operand) {
-        final IPredicate predicate;
-        predicate = operator.apply(operand);
-        assert predicate != null;
-        this.predicateList.add((OperationPredicate) predicate);
-        return (WA) this;
+        return this.and(operator.apply(operand));
     }
 
     @Override
@@ -205,43 +181,10 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     @Override
     public final WA ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand) {
         if (operator != null && operand != null) {
-            final IPredicate predicate;
-            predicate = operator.apply(operand);
-            assert predicate != null;
-            this.predicateList.add((OperationPredicate) predicate);
+            this.and(operator.apply(operand));
         }
         return (WA) this;
     }
-
-    @Override
-    public final WA ifNonNullAnd(@Nullable Function<Object, ? extends Expression> firstOperator
-            , @Nullable Object firstOperand, BiFunction<Expression, Object, IPredicate> secondOperator
-            , Object secondOperand) {
-        if (firstOperator != null && firstOperand != null) {
-            final Expression expression;
-            expression = firstOperator.apply(firstOperand);
-            assert expression != null;
-
-            final IPredicate predicate;
-            predicate = secondOperator.apply(expression, secondOperand);
-            assert predicate != null;
-            this.predicateList.add((OperationPredicate) predicate);
-        }
-        return (WA) this;
-    }
-
-    @Override
-    public final WA ifNonNullAnd(@Nullable BiFunction<Object, Object, IPredicate> operator
-            , @Nullable Object firstOperand, @Nullable Object secondOperand) {
-        if (operator != null && firstOperand != null && secondOperand != null) {
-            final IPredicate predicate;
-            predicate = operator.apply(firstOperand, secondOperand);
-            assert predicate != null;
-            this.predicateList.add((OperationPredicate) predicate);
-        }
-        return (WA) this;
-    }
-
 
     @Override
     public final WA ifAnd(Supplier<IPredicate> supplier) {
@@ -268,10 +211,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         final Object paramOrExp;
         paramOrExp = operand.get();
         if (paramOrExp != null) {
-            final IPredicate predicate;
-            predicate = operator.apply(paramOrExp);
-            assert predicate != null;
-            this.predicateList.add((OperationPredicate) predicate);
+            this.and(operator.apply(paramOrExp));
         }
         return (WA) this;
     }
@@ -281,10 +221,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         final Object paramOrExp;
         paramOrExp = operand.apply(keyName);
         if (paramOrExp != null) {
-            final IPredicate predicate;
-            predicate = operator.apply(paramOrExp);
-            assert predicate != null;
-            this.predicateList.add((OperationPredicate) predicate);
+            this.and(operator.apply(paramOrExp));
         }
         return (WA) this;
     }
@@ -294,10 +231,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
             , Supplier<?> secondOperand) {
         final Object first, second;
         if ((first = firstOperand.get()) != null && (second = secondOperand.get()) != null) {
-            final IPredicate predicate;
-            predicate = operator.apply(first, second);
-            assert predicate != null;
-            this.predicateList.add((OperationPredicate) predicate);
+            this.and(operator.apply(first, second));
         }
         return (WA) this;
     }
@@ -308,10 +242,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
             , String firstKey, String secondKey) {
         final Object first, second;
         if ((first = operand.apply(firstKey)) != null && (second = operand.apply(secondKey)) != null) {
-            final IPredicate predicate;
-            predicate = operator.apply(first, second);
-            assert predicate != null;
-            this.predicateList.add((OperationPredicate) predicate);
+            this.and(operator.apply(first, second));
         }
         return (WA) this;
     }
@@ -324,26 +255,29 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
         if (firstValue != null) {
             final Expression expression;
             expression = firstOperator.apply(firstValue);
-            assert expression != null;
-
-            final IPredicate predicate;
-            predicate = secondOperator.apply(expression, secondOperand);
-            assert predicate != null;
-            this.predicateList.add((OperationPredicate) predicate);
+            if (expression == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            this.and(secondOperator.apply(expression, secondOperand));
         }
         return (WA) this;
     }
 
     @Override
     public final List<_Predicate> predicateList() {
-        this.prepared();
-        return this.predicateList;
+        final List<_Predicate> predicateList = this.predicateList;
+        if (predicateList == null || predicateList instanceof ArrayList) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return predicateList;
     }
 
     final void asDmlStatement() {
         final List<_Predicate> predicates = this.predicateList;
         if (predicates == null || predicates.size() == 0) {
-            throw _Exceptions.dmlNoWhereClause();
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::dmlNoWhereClause);
+        } else if (!(predicates instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         this.predicateList = _CollectionUtils.unmodifiableList(predicates);
     }
@@ -353,15 +287,12 @@ abstract class DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
     }
 
 
-    private WR addPredicateList(final @Nullable List<IPredicate> predicates) {
-        if (predicates == null || predicates.size() == 0) {
-            throw _Exceptions.dmlNoWhereClause();
-        }
+    private void addPredicate(final IPredicate predicate) {
         final List<_Predicate> predicateList = this.predicateList;
-        for (IPredicate predicate : predicates) {
-            predicateList.add((OperationPredicate) predicate);
+        if (!(predicateList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        return (WR) this;
+        predicateList.add((OperationPredicate) predicate);
     }
 
 

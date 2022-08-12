@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.SQLWords;
-import io.army.criteria.Statement;
-import io.army.criteria.SubQuery;
-import io.army.criteria.TableItem;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
@@ -36,13 +33,13 @@ abstract class MySQLSupports extends CriteriaSupports {
         return new IfPartitionAsClause<>(CriteriaContextStack.getCurrentContext(criteria), table);
     }
 
-    static <C> MySQLQuery._IfUseIndexOnSpec<C> block(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
-        return new MySQLDynamicBlock<>(criteria, null, table, tableAlias);
-    }
-
     static <C> MySQLQuery._IfUseIndexOnSpec<C> block(@Nullable C criteria, @Nullable ItemWord itemWord
-            , SubQuery subQuery, String alias) {
-        return new MySQLDynamicBlock<>(criteria, itemWord, subQuery, alias);
+            , TableItem tableItem, String alias) {
+        if (!(tableItem instanceof TableMeta || tableItem instanceof SubQuery || tableItem instanceof CteItem)) {
+            String m = "currently,MySQL support TableMeta or SubQuery or CteItem";
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        }
+        return new MySQLDynamicBlock<>(criteria, itemWord, tableItem, alias);
     }
 
     static _TableBlock createDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {

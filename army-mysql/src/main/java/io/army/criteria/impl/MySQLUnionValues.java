@@ -124,10 +124,6 @@ abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowS
     }
 
 
-    @Override
-    final void onOrderBy() {
-        //no-op
-    }
 
     @Override
     public final String toString() {

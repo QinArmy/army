@@ -21,6 +21,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         Void,
         Void,
         Void,
+        Void,
         UR,
         OR,
         LR,
@@ -35,7 +36,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
 
 
     SimpleValues(CriteriaContext criteriaContext) {
-        super(criteriaContext, JoinableClause.voidClauseSuppler());
+        super(criteriaContext, JoinableClause.voidClauseCreator());
 
         if (this instanceof SubValues) {
             CriteriaContextStack.push(this.criteriaContext);
@@ -171,10 +172,6 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
     abstract List<_Expression> getCurrentRow();
 
 
-    @Override
-    final void onOrderBy() {
-        //no-op
-    }
 
     @Override
     final Void asUnionAndRowSet(UnionType unionType) {
