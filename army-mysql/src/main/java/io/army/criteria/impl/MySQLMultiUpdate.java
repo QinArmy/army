@@ -15,7 +15,6 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -208,7 +207,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
 
     @Override
     final void doOnAsUpdate() {
-        this.command = null;
         if (this.cteList == null) {
             this.cteList = Collections.emptyList();
         }
@@ -219,7 +217,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
             this.modifierList = Collections.emptyList();
         }
 
-        this.noActionOnClause = null;
+        this.noOnBlock = null;
 
         if (this instanceof BatchUpdate && ((BatchUpdate<C>) this).paramList == null) {
             throw _Exceptions.batchParamEmpty();
@@ -354,7 +352,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
             if (itemWord != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            return new SimpleOnTableBlock<>(joinType, null, table, tableAlias, this);
+            return new SimpleOnTableBlock<>(joinType, table, tableAlias, this);
         }
 
         @Override
@@ -429,17 +427,23 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
 
         @Override
         public _BatchMultiPartitionJoinClause<C> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-            return super.createNoOnTableClause(joinType, itemWord, table);
+            if (itemWord != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return new BatchPartitionJoinClause<>(joinType, table, this);
         }
 
         @Override
         public _BatchMultiPartitionOnClause<C> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-            return super.createTableClause(joinType, itemWord, table);
+            if (itemWord != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return new BatchPartitionOnClause<>(joinType, table, this);
         }
 
         @Override
         public _BatchMultiIndexHintOnSpec<C> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
-            return null;
+            return new BatchOnTableBlock<>(joinType, table, tableAlias, this);
         }
 
         @Override
@@ -506,9 +510,9 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
             extends MySQLSupports.MySQLOnBlock<C, _MultiIndexHintOnSpec<C>, _MultiJoinSpec<C>>
             implements MySQLUpdate._MultiIndexHintOnSpec<C> {
 
-        private SimpleOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem
+        private SimpleOnTableBlock(_JoinType joinType, TableMeta<?> table
                 , String alias, _MultiJoinSpec<C> stmt) {
-            super(joinType, itemWord, tableItem, alias, stmt);
+            super(joinType, null, table, alias, stmt);
         }
 
         private SimpleOnTableBlock(MySQLSupports.MySQLBlockParams params, _MultiJoinSpec<C> stmt) {
@@ -518,198 +522,73 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     } //SimpleOnTableBlock
 
 
-    private static final class SimpleNoActionIndexHintOnClause<C> extends MySQLNoActionIndexHintOnClause<
-            C,
-            _IndexForJoinOnClause<C>,
-            _MultiIndexHintOnSpec<C>,
-            _MultiJoinSpec<C>>
-            implements _MultiIndexHintOnSpec<C>, _IndexForJoinOnClause<C> {
-
-        private SimpleNoActionIndexHintOnClause(_MultiJoinSpec<C> update) {
-            super(update);
-        }
-
-    }// SimpleNoActionIndexHintOnBlock
-
-    private static final class SimpleNoActionPartitionJoinClause<C> extends MySQLNoActionPartitionClause<
-            C,
-            _AsClause<_MultiIndexHintJoinSpec<C>>>
-            implements MySQLUpdate._MultiPartitionJoinClause<C>, _AsClause<_MultiIndexHintJoinSpec<C>> {
-
-        private final _MultiIndexHintJoinSpec<C> spec;
-
-        private SimpleNoActionPartitionJoinClause(_MultiIndexHintJoinSpec<C> spec) {
-            this.spec = spec;
-        }
-
-        @Override
-        public _MultiIndexHintJoinSpec<C> as(String alias) {
-            return this.spec;
-        }
-
-    }// SimpleNoActionPartitionJoinClause
-
-
-    private static final class SimpleNoActionPartitionOnClause<C> extends MySQLNoActionPartitionClause<
-            C,
-            _AsClause<_MultiIndexHintOnSpec<C>>>
-            implements _MultiPartitionOnClause<C>, _AsClause<_MultiIndexHintOnSpec<C>> {
-
-        private final Supplier<?> supplier;
-
-
-        private SimpleNoActionPartitionOnClause(Supplier<?> supplier) {
-            this.supplier = supplier;
-        }
-
-        @Override
-        public _MultiIndexHintOnSpec<C> as(String alias) {
-            return (_MultiIndexHintOnSpec<C>) this.supplier.get();
-        }
-
-    }// SimpleNoActionPartitionOnClause
-
-
-    private static final class BatchIndexHintOnBlock<C> extends MySQLIndexHintOnBlock<
-            C,
-            MySQLUpdate._BatchIndexForJoinOnClause<C>,
-            MySQLUpdate._BatchMultiIndexHintOnSpec<C>,
-            MySQLUpdate._BatchMultiJoinSpec<C>>
-            implements MySQLUpdate._BatchMultiIndexHintOnSpec<C>, MySQLUpdate._BatchIndexForJoinOnClause<C> {
-
-        private BatchIndexHintOnBlock(_JoinType joinType, TableMeta<?> table
-                , String alias, _BatchMultiJoinSpec<C> stmt) {
-            super(joinType, table, alias, stmt);
-        }
-
-        private BatchIndexHintOnBlock(_JoinType joinType, TableMeta<?> table
-                , String alias, List<String> partitionList
-                , _BatchMultiJoinSpec<C> stmt) {
-            super(joinType, table, alias, partitionList, stmt);
-        }
-
-    }//BatchIndexHintOnBlock
-
-
     private static final class BatchPartitionJoinClause<C>
-            extends MySQLPartitionClause2<C, _AsClause<_BatchMultiIndexHintJoinSpec<C>>>
-            implements _BatchMultiPartitionJoinClause<C>, _AsClause<_BatchMultiIndexHintJoinSpec<C>> {
+            extends MySQLSupports.PartitionAsClause<C, _BatchMultiIndexHintJoinSpec<C>>
+            implements MySQLUpdate._BatchMultiPartitionJoinClause<C> {
 
-        private final _JoinType joinType;
 
-        private final TableMeta<?> table;
+        private final BatchUpdate<C> stmt;
 
-        private final BatchUpdate<C> update;
-
-        private BatchPartitionJoinClause(_JoinType joinType, TableMeta<?> table, BatchUpdate<C> update) {
-            super(update.criteria);
-            this.joinType = joinType;
-            this.table = table;
-            this.update = update;
+        private BatchPartitionJoinClause(_JoinType joinType, TableMeta<?> table, BatchUpdate<C> stmt) {
+            super(stmt.criteriaContext, joinType, table);
+            this.stmt = stmt;
         }
 
         @Override
-        public _BatchMultiIndexHintJoinSpec<C> as(String alias) {
-            Objects.requireNonNull(alias);
-            final List<String> partitionList = this.partitionList;
-            final _TableBlock block;
-            if (partitionList == null) {
-                block = new MySQLNoOnBlock(this.joinType, this.table, alias);
-            } else {
-                block = new MySQLNoOnBlock(this.joinType, this.table, alias, partitionList);
-            }
-            this.update.criteriaContext.onAddBlock(block);
-            if (this.joinType == _JoinType.CROSS_JOIN) {
-                this.update.crossJoinEvent(true);
-            }
-            return this.update;
+        _BatchMultiIndexHintJoinSpec<C> asEnd(final MySQLSupports.MySQLBlockParams params) {
+            final BatchUpdate<C> stmt = this.stmt;
+
+            final MySQLSupports.MySQLNoOnBlock<C, _BatchMultiIndexHintJoinSpec<C>> block;
+            block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
+            ((MySQLMultiUpdate<C, ?, ?, _BatchMultiIndexHintJoinSpec<C>, ?, ?, ?, ?, ?, ?, ?>) stmt).noOnBlock = block;
+            stmt.criteriaContext.onAddBlock(block);
+            return stmt;
         }
+
+
     }// BatchPartitionJoinClause
 
 
     private static final class BatchPartitionOnClause<C>
-            extends MySQLPartitionClause2<C, _AsClause<_BatchMultiIndexHintOnSpec<C>>>
-            implements _AsClause<_BatchMultiIndexHintOnSpec<C>>
-            , _BatchMultiPartitionOnClause<C> {
+            extends MySQLSupports.PartitionAsClause<C, _BatchMultiIndexHintOnSpec<C>>
+            implements _BatchMultiPartitionOnClause<C> {
 
-        private final _JoinType joinType;
 
-        private final TableMeta<?> table;
+        private final BatchUpdate<C> stmt;
 
-        private final BatchUpdate<C> update;
-
-        private BatchPartitionOnClause(_JoinType joinType, TableMeta<?> table, BatchUpdate<C> update) {
-            super(update.criteria);
-            this.update = update;
-            this.joinType = joinType;
-            this.table = table;
+        private BatchPartitionOnClause(_JoinType joinType, TableMeta<?> table, BatchUpdate<C> stmt) {
+            super(stmt.criteriaContext, joinType, table);
+            this.stmt = stmt;
         }
 
         @Override
-        public _BatchMultiIndexHintOnSpec<C> as(final String tableAlias) {
-            Objects.requireNonNull(tableAlias);
-            final List<String> partitionList = this.partitionList;
-            final BatchIndexHintOnBlock<C> block;
-            if (partitionList == null) {
-                block = new BatchIndexHintOnBlock<>(this.joinType, this.table, tableAlias, this.update);
-            } else {
-                block = new BatchIndexHintOnBlock<>(this.joinType, this.table, tableAlias
-                        , partitionList, this.update);
-            }
-            this.update.criteriaContext.onAddBlock(block);
+        _BatchMultiIndexHintOnSpec<C> asEnd(final MySQLSupports.MySQLBlockParams params) {
+            final BatchUpdate<C> stmt = this.stmt;
+            final BatchOnTableBlock<C> block;
+            block = new BatchOnTableBlock<>(params, stmt);
+            stmt.criteriaContext.onAddBlock(block);
             return block;
         }
 
 
     }// BatchPartitionOnBlock
 
+    private static final class BatchOnTableBlock<C>
+            extends MySQLSupports.MySQLOnBlock<C, _BatchMultiIndexHintOnSpec<C>, _BatchMultiJoinSpec<C>>
+            implements MySQLUpdate._BatchMultiIndexHintOnSpec<C> {
 
-    private static final class BatchNoActionIndexHintOnClause<C> extends MySQLNoActionIndexHintOnClause<
-            C,
-            MySQLUpdate._BatchIndexForJoinOnClause<C>,
-            MySQLUpdate._BatchMultiIndexHintOnSpec<C>,
-            MySQLUpdate._BatchMultiJoinSpec<C>>
-            implements _BatchMultiIndexHintOnSpec<C>, _BatchIndexForJoinOnClause<C> {
-
-        private BatchNoActionIndexHintOnClause(_BatchMultiJoinSpec<C> update) {
-            super(update);
+        private BatchOnTableBlock(_JoinType joinType, TableMeta<?> table
+                , String alias, _BatchMultiJoinSpec<C> stmt) {
+            super(joinType, null, table, alias, stmt);
         }
 
-    }// BatchNoActionIndexHintOnClause
-
-    private static final class BatchNoActionPartitionJoinClause<C> extends MySQLNoActionPartitionClause<
-            C, _AsClause<_BatchMultiIndexHintJoinSpec<C>>>
-            implements _BatchMultiPartitionJoinClause<C>, _AsClause<_BatchMultiIndexHintJoinSpec<C>> {
-
-        private final _BatchMultiIndexHintJoinSpec<C> spec;
-
-        private BatchNoActionPartitionJoinClause(_BatchMultiIndexHintJoinSpec<C> spec) {
-            this.spec = spec;
+        private BatchOnTableBlock(MySQLSupports.MySQLBlockParams params, _BatchMultiJoinSpec<C> stmt) {
+            super(params, stmt);
         }
 
-        @Override
-        public _BatchMultiIndexHintJoinSpec<C> as(String alias) {
-            return this.spec;
-        }
 
-    }//BatchNoActionPartitionJoinClause
+    } //SimpleOnTableBlock
 
-
-    private static final class BatchNoActionPartitionOnClause<C> extends MySQLNoActionPartitionClause<
-            C, _AsClause<_BatchMultiIndexHintOnSpec<C>>>
-            implements _BatchMultiPartitionOnClause<C>, _AsClause<_BatchMultiIndexHintOnSpec<C>> {
-
-        private final Supplier<?> supplier;
-
-        private BatchNoActionPartitionOnClause(Supplier<?> supplier) {
-            this.supplier = supplier;
-        }
-
-        @Override
-        public _BatchMultiIndexHintOnSpec<C> as(String tableAlias) {
-            return (_BatchMultiIndexHintOnSpec<C>) this.supplier.get();
-        }
-    }//BatchNoActionPartitionOnClause
 
 
 }

@@ -18,9 +18,13 @@ abstract class MySQLUtils extends CriteriaUtils {
 
 
     static void assertItemWord(CriteriaContext criteriaContext, @Nullable ItemWord itemWord, TableItem tableItem) {
-        if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
+        if (itemWord == ItemWord.LATERAL && !(tableItem instanceof SubQuery)) {
+            String m = "MySQL LATERAL support only %s" + SubQuery.class.getName();
+            throw CriteriaContextStack.criteriaError(criteriaContext, m);
+        } else if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(criteriaContext);
         }
+
     }
 
     @Deprecated
