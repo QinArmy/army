@@ -24,7 +24,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     }
 
-    static <C, RR> MySQLQuery._QueryUseIndexClause<C, RR> indexHintClause(CriteriaContext context
+    static <C, RR> MySQLQuery._QueryIndexHintClause<C, RR> indexHintClause(CriteriaContext context
             , Function<MySQLIndexHint, RR> function) {
         return new IndexHintClause<>(context, function);
     }
@@ -69,7 +69,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private final RR stmt;
 
-        private MySQLQuery._QueryUseIndexClause<C, RR> indexClause;
+        private MySQLQuery._QueryIndexHintClause<C, RR> indexClause;
 
         private List<MySQLIndexHint> indexHintList;
 
@@ -104,8 +104,8 @@ abstract class MySQLSupports extends CriteriaSupports {
             return indexHintList;
         }
 
-        MySQLQuery._QueryUseIndexClause<C, RR> getUseIndexClause() {
-            MySQLQuery._QueryUseIndexClause<C, RR> indexClause = this.indexClause;
+        MySQLQuery._QueryIndexHintClause<C, RR> getUseIndexClause() {
+            MySQLQuery._QueryIndexHintClause<C, RR> indexClause = this.indexClause;
             if (indexClause == null) {
                 final CriteriaContext context;
                 context = ((CriteriaContextSpec) this.stmt).getCriteriaContext();
@@ -140,13 +140,13 @@ abstract class MySQLSupports extends CriteriaSupports {
      * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
      */
     static abstract class MySQLOnBlock<C, RR, OR> extends OnClauseTableBlock.OnItemTableBlock<C, OR>
-            implements _MySQLTableBlock, MySQLQuery._QueryUseIndexClause<C, RR> {
+            implements _MySQLTableBlock, MySQLQuery._QueryIndexHintClause<C, RR> {
 
         private final List<String> partitionList;
 
         private List<MySQLIndexHint> indexHintList;
 
-        private MySQLQuery._QueryUseIndexClause<C, RR> useIndexClause;
+        private MySQLQuery._QueryIndexHintClause<C, RR> useIndexClause;
 
 
         MySQLOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias, OR stmt) {
@@ -194,8 +194,8 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
 
-        private MySQLQuery._QueryUseIndexClause<C, RR> getUseIndexClause() {
-            MySQLQuery._QueryUseIndexClause<C, RR> useIndexClause = this.useIndexClause;
+        private MySQLQuery._QueryIndexHintClause<C, RR> getUseIndexClause() {
+            MySQLQuery._QueryIndexHintClause<C, RR> useIndexClause = this.useIndexClause;
             if (useIndexClause == null) {
                 useIndexClause = new IndexHintClause<>(this.getCriteriaContext(), this::addIndexHint);
                 this.useIndexClause = useIndexClause;
@@ -313,7 +313,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private List<MySQLIndexHint> indexHintList;
 
-        private MySQLQuery._QueryUseIndexClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause;
+        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause;
 
         private MySQLDynamicBlock(@Nullable C criteria, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
             super(criteria, tableItem, alias);
@@ -344,8 +344,8 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
 
-        private MySQLQuery._QueryUseIndexClause<C, MySQLQuery._IfUseIndexOnSpec<C>> getUseIndexClause() {
-            MySQLQuery._QueryUseIndexClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause = this.useIndexClause;
+        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> getUseIndexClause() {
+            MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause = this.useIndexClause;
             if (useIndexClause == null) {
                 useIndexClause = new IndexHintClause<>(this.criteriaContext, this::addIndexHint);
                 this.useIndexClause = useIndexClause;
@@ -406,7 +406,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     private static final class IndexHintClause<C, RR> extends CriteriaSupports.ParenStringConsumerClause<C, RR>
-            implements MySQLQuery._IndexPurposeBySpec<C, RR>, MySQLQuery._QueryUseIndexClause<C, RR> {
+            implements MySQLQuery._IndexPurposeBySpec<C, RR>, MySQLQuery._QueryIndexHintClause<C, RR> {
 
         private final Function<MySQLIndexHint, RR> function;
 

@@ -4,6 +4,8 @@ import io.army.criteria.DataField;
 import io.army.criteria.DmlStatement;
 import io.army.criteria.impl.inner._MultiUpdate;
 import io.army.criteria.impl.inner._TableBlock;
+import io.army.lang.Nullable;
+import io.army.meta.TableMeta;
 
 import java.util.List;
 
@@ -16,7 +18,7 @@ import java.util.List;
  */
 abstract class MultiUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
         extends JoinableUpdate<C, F, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U>
-        implements _MultiUpdate {
+        implements _MultiUpdate, JoinableClause.ClauseCreator<FP, JT, JS, JP> {
 
     final CriteriaContext criteriaContext;
 
@@ -47,6 +49,16 @@ abstract class MultiUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, J
 
     void doOnAsUpdate() {
 
+    }
+
+    @Override
+    public FP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+    }
+
+    @Override
+    public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
+        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
     }
 
 

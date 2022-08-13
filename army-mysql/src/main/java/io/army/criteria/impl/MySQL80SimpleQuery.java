@@ -136,14 +136,14 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
 
     /**
-     * @see #onOrderBy()
+     * @see #orderByEvent()
      */
     @Override
     public final _HavingSpec<C, Q> withRollup() {
         if (this.groupByWithRollup == null) {
-            this.groupByWithRollup = this.hasGroupBy();
+            this.groupByWithRollup = Boolean.TRUE;
         } else {
-            this.orderByWithRollup = this.hasOrderBy();
+            this.orderByWithRollup = true;
         }
         return this;
     }
@@ -541,7 +541,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
      * @see #ignoreIndex()
      * @see #forceIndex()
      */
-    private _QueryUseIndexClause<C, _QueryUseIndexJoinSpec<C, Q>> getUserIndexClause() {
+    private _QueryIndexHintClause<C, _QueryUseIndexJoinSpec<C, Q>> getUserIndexClause() {
         final MySQLSupports.MySQLNoOnBlock<C, _QueryUseIndexJoinSpec<C, Q>> noOnBlock = this.noOnBlock;
         if (noOnBlock == null || this.criteriaContext.lastTableBlockWithoutOnClause() != noOnBlock) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);

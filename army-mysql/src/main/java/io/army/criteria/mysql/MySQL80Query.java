@@ -118,7 +118,7 @@ public interface MySQL80Query extends MySQLQuery {
 
     }
 
-    interface _QueryUseIndexJoinSpec<C, Q extends Query> extends _QueryUseIndexClause<C, _QueryUseIndexJoinSpec<C, Q>>
+    interface _QueryUseIndexJoinSpec<C, Q extends Query> extends _QueryIndexHintClause<C, _QueryUseIndexJoinSpec<C, Q>>
             , _JoinSpec<C, Q> {
 
     }
@@ -178,7 +178,7 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _QueryUseIndexClause} </li>
+     *          <li>{@link _QueryIndexHintClause} </li>
      *          <li>the composite {@link _OnClause}</li>
      *     </ul>
      * </p>
@@ -193,7 +193,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @since 1.0
      */
     interface _QueryUseIndexOnSpec<C, Q extends Query>
-            extends _QueryUseIndexClause<C, _QueryUseIndexOnSpec<C, Q>>
+            extends _QueryIndexHintClause<C, _QueryUseIndexOnSpec<C, Q>>
             , _OnClause<C, _JoinSpec<C, Q>> {
 
     }

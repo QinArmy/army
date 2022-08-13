@@ -117,31 +117,54 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _SingleDmlIndexHintClause<C, RR> {
 
+    interface _IndexHintClause<C, RR> {
+
+        Statement._LeftParenStringDualOptionalSpec<C, RR> useIndex();
+
+        Statement._LeftParenStringDualOptionalSpec<C, RR> ignoreIndex();
+
+        Statement._LeftParenStringDualOptionalSpec<C, RR> forceIndex();
+    }
+
+
+    interface _IndexHintForJoinClause<C, RR> extends _IndexHintClause<C, RR> {
+
+        @Override
+        _IndexForJoinSpec<C, RR> useIndex();
+
+        @Override
+        _IndexForJoinSpec<C, RR> ignoreIndex();
+
+        @Override
+        _IndexForJoinSpec<C, RR> forceIndex();
+
+    }
+
+
+    interface _IndexHintForOrderByClause<C, RR> extends _IndexHintClause<C, RR> {
+
+        @Override
         _IndexForOrderBySpec<C, RR> useIndex();
 
+        @Override
         _IndexForOrderBySpec<C, RR> ignoreIndex();
 
+        @Override
         _IndexForOrderBySpec<C, RR> forceIndex();
 
     }
 
-    interface _MultiDmlIndexHintClause<C, RR> {
 
-        _IndexForJoinSpec<C, RR> useIndex();
+    interface _QueryIndexHintClause<C, RR> extends _IndexHintForJoinClause<C, RR>, _IndexHintForOrderByClause<C, RR> {
 
-        _IndexForJoinSpec<C, RR> ignoreIndex();
-
-        _IndexForJoinSpec<C, RR> forceIndex();
-    }
-
-    interface _QueryUseIndexClause<C, RR> {
-
+        @Override
         _IndexPurposeBySpec<C, RR> useIndex();
 
+        @Override
         _IndexPurposeBySpec<C, RR> ignoreIndex();
 
+        @Override
         _IndexPurposeBySpec<C, RR> forceIndex();
 
     }
@@ -160,6 +183,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
+    @Deprecated
     interface _PartitionClause2<C, PR> {
 
         PR partition(String partitionName);
@@ -179,61 +203,12 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
+    @Deprecated
     interface _UserIndexClause<C, RR> {
 
     }
 
 
-    /**
-     * <p>
-     * This interface representing index hint clause in MySQL.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type
-     * @since 1.0
-     */
-    interface _IndexHintClause<C, IR, IC> {
-
-        IR useIndex();
-
-        IR ignoreIndex();
-
-        IR forceIndex();
-
-        IR ifUseIndex(Predicate<C> predicate);
-
-        IR ifIgnoreIndex(Predicate<C> predicate);
-
-        IR ifForceIndex(Predicate<C> predicate);
-
-        IC useIndex(List<String> indexList);
-
-        IC ignoreIndex(List<String> indexList);
-
-        IC forceIndex(List<String> indexList);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IC ifUseIndex(Function<C, List<String>> function);
-
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IC ifIgnoreIndex(Function<C, List<String>> function);
-
-        /**
-         * @return clause , clause no action if predicate return false.
-         */
-        IC ifForceIndex(Function<C, List<String>> function);
-
-    }
 
     /**
      * <p>
@@ -522,7 +497,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @since 1.0
      */
     interface _NestedUseIndexJoinSpec<C>
-            extends MySQLQuery._QueryUseIndexClause<C, _NestedUseIndexJoinSpec<C>>
+            extends _QueryIndexHintClause<C, _NestedUseIndexJoinSpec<C>>
             , _NestedJoinClause<C> {
 
     }
@@ -567,7 +542,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @since 1.0
      */
     interface _NestedUseIndexOnSpec<C>
-            extends MySQLQuery._QueryUseIndexClause<C, _NestedUseIndexOnSpec<C>>
+            extends _QueryIndexHintClause<C, _NestedUseIndexOnSpec<C>>
             , _NestedOnSpec<C> {
 
     }
@@ -673,7 +648,7 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
-    interface _IfUseIndexOnSpec<C> extends _QueryUseIndexClause<C, _IfUseIndexOnSpec<C>>, _IfOnClause<C> {
+    interface _IfUseIndexOnSpec<C> extends _QueryIndexHintClause<C, _IfUseIndexOnSpec<C>>, _IfOnClause<C> {
 
     }
 

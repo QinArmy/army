@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.SubQuery;
+import io.army.criteria.TableItem;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.lang.Nullable;
 
@@ -14,6 +16,12 @@ abstract class MySQLUtils extends CriteriaUtils {
     private MySQLUtils() {
     }
 
+
+    static void assertItemWord(CriteriaContext criteriaContext, @Nullable ItemWord itemWord, TableItem tableItem) {
+        if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
+            throw CriteriaContextStack.castCriteriaApi(criteriaContext);
+        }
+    }
 
     @Deprecated
     static List<String> asStringList(final @Nullable List<String> partitionList, Supplier<CriteriaException> supplier) {

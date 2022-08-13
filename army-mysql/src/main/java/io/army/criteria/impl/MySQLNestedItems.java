@@ -130,7 +130,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     }
 
 
-    private MySQLQuery._QueryUseIndexClause<C, MySQLQuery._NestedUseIndexJoinSpec<C>> getUseIndexClause() {
+    private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._NestedUseIndexJoinSpec<C>> getUseIndexClause() {
         final MySQLSupports.MySQLNoOnBlock<C, MySQLQuery._NestedUseIndexJoinSpec<C>> noOnBlock = this.noOnBlock;
         if (this.getFirstBlock() != noOnBlock) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
@@ -206,7 +206,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
 
         private List<MySQLIndexHint> indexHintList;
 
-        private MySQLQuery._QueryUseIndexClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> useIndexClause;
+        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> useIndexClause;
 
         private TableOnClauseBlock(MySQLNestedItems<C> clause, _JoinType joinType, @Nullable ItemWord itemWord
                 , TableItem tableItem, String alias) {
@@ -235,8 +235,8 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
         }
 
 
-        private MySQLQuery._QueryUseIndexClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> getUseIndexClause() {
-            MySQLQuery._QueryUseIndexClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> useIndexClause = this.useIndexClause;
+        private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> getUseIndexClause() {
+            MySQLQuery._QueryIndexHintClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> useIndexClause = this.useIndexClause;
             if (useIndexClause == null) {
                 useIndexClause = MySQLSupports.indexHintClause(this.criteriaContext, this::addIndexHint);
                 this.useIndexClause = useIndexClause;

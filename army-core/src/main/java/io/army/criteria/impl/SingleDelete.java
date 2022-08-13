@@ -13,16 +13,14 @@ import io.army.util._Assert;
  * @since 1.0
  */
 abstract class SingleDelete<C, WR, WA, D extends DmlStatement.DmlDelete>
-        extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, WR, WA>
+        extends DmlWhereClause<C, Void, Void, Void, Void, Void, Void, Void, WR, WA>
         implements DmlStatement._DmlDeleteSpec<D>, _SingleDelete, DmlStatement.DmlDelete {
 
-    final CriteriaContext criteriaContext;
 
     private Boolean prepared;
 
     SingleDelete(CriteriaContext criteriaContext) {
-        super(JoinableClause.voidClauseSuppler(), criteriaContext.criteria());
-        this.criteriaContext = criteriaContext;
+        super(criteriaContext, JoinableClause.voidClauseCreator());
         if (this instanceof SubStatement) {
             CriteriaContextStack.push(this.criteriaContext);
         } else {
@@ -73,10 +71,6 @@ abstract class SingleDelete<C, WR, WA, D extends DmlStatement.DmlDelete>
 
     }
 
-    @Override
-    final void crossJoinEvent(boolean success) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-    }
 
 
 }
