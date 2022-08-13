@@ -12,16 +12,11 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
 import io.army.util.ArrayUtils;
-import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -33,11 +28,11 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
+abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
         extends WithCteSingleDelete<C, SubQuery, WE, WR, WA, Delete>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
-        , MySQLQuery._PartitionClause2<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DS>
-        , MySQLDelete._SingleDeleteFromClause<DS>, _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
+        , MySQLQuery._PartitionClause<C, PR>, _MySQLSingleDelete, MySQLDelete._MySQLSingleDeleteClause<C, DT>
+        , MySQLDelete._SingleDeleteFromClause<DT>, _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
 
 
     static <C> _WithAndSingleDeleteSpec<C> simple(@Nullable C criteria) {
@@ -73,98 +68,39 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
 
 
     @Override
-    public final _SingleDeleteFromClause<DS> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
         return this;
     }
 
     @Override
-    public final _SingleDeleteFromClause<DS> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
         return this;
     }
 
     @Override
-    public final DS deleteFrom(SingleTableMeta<?> table, String alias) {
-        if (this.table != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
+    public final DT deleteFrom(SingleTableMeta<?> table, String alias) {
         this.table = table;
         this.alias = alias;
-        return (DS) this;
+        return (DT) this;
     }
 
     @Override
-    public final DS from(SingleTableMeta<?> table, String alias) {
-        if (this.table != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
+    public final DT from(SingleTableMeta<?> table, String alias) {
         this.table = table;
         this.alias = alias;
-        return (DS) this;
+        return (DT) this;
     }
 
     @Override
-    public final PR partition(String partitionName) {
-        this.partitionList = Collections.singletonList(partitionName);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(String partitionName1, String partitionNam2) {
-        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(String partitionName1, String partitionNam2, String partitionNam3) {
-        this.partitionList = ArrayUtils.asUnmodifiableList(partitionName1, partitionNam2, partitionNam3);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(Consumer<Consumer<String>> consumer) {
-        final List<String> list = new ArrayList<>();
-        consumer.accept(list::add);
-        if (list.size() == 0) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-        }
-        this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partition(BiConsumer<C, Consumer<String>> consumer) {
-        final List<String> list = new ArrayList<>();
-        consumer.accept(this.criteria, list::add);
-        if (list.size() == 0) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, MySQLUtils::partitionListIsEmpty);
-        }
-        this.partitionList = MySQLUtils.asStringList(list, MySQLUtils::partitionListIsEmpty);
-        return (PR) this;
+    public final _LeftParenStringQuadraOptionalSpec<C, PR> partition() {
+        return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
     }
 
 
-    @Override
-    public final PR ifPartition(Consumer<Consumer<String>> consumer) {
-        final List<String> list = new ArrayList<>();
-        consumer.accept(list::add);
-        if (list.size() > 0) {
-            this.partitionList = _CollectionUtils.unmodifiableList(list);
-        }
-        return (PR) this;
-    }
-    @Override
-    public final PR ifPartition(BiConsumer<C, Consumer<String>> consumer) {
-        final List<String> list = new ArrayList<>();
-        consumer.accept(this.criteria, list::add);
-        if (list.size() > 0) {
-            this.partitionList = _CollectionUtils.unmodifiableList(list);
-        }
-        return (PR) this;
-    }
     @Override
     public final OR orderBy(SortItem sortItem) {
         this.orderByList = Collections.singletonList((ArmySortItem) sortItem);
@@ -191,43 +127,51 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
     }
 
     @Override
-    public final <S extends SortItem> OR orderBy(Function<C, List<S>> function) {
-        this.orderByList = MySQLUtils.asSortItemList(function.apply(this.criteria));
-        return (OR) this;
+    public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .orderBy(consumer);
     }
 
     @Override
-    public final <S extends SortItem> OR orderBy(Supplier<List<S>> supplier) {
-        this.orderByList = MySQLUtils.asSortItemList(supplier.get());
-        return (OR) this;
+    public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .orderBy(consumer);
     }
 
     @Override
-    public final OR orderBy(Consumer<List<SortItem>> consumer) {
-        final List<SortItem> sortItemList = new ArrayList<>();
-        consumer.accept(sortItemList);
-        this.orderByList = MySQLUtils.asSortItemList(sortItemList);
-        return (OR) this;
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand);
     }
 
     @Override
-    public final <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier) {
-        final List<S> sortItemList;
-        sortItemList = supplier.get();
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.orderByList = MySQLUtils.asSortItemList(sortItemList);
-        }
-        return (OR) this;
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand, operandKey);
     }
 
     @Override
-    public final <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function) {
-        final List<S> sortItemList;
-        sortItemList = function.apply(this.criteria);
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.orderByList = MySQLUtils.asSortItemList(sortItemList);
-        }
-        return (OR) this;
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, firstOperand, secondOperator);
+    }
+
+    @Override
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand, firstKey, secondKey);
+    }
+
+    @Override
+    public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(consumer);
+    }
+
+    @Override
+    public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(consumer);
     }
 
     @Override
@@ -384,6 +328,26 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
         }
     }
 
+    /**
+     * @see #partition()
+     */
+    private PR partitionEnd(List<String> partitionList) {
+        if (this.partitionList == null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        this.partitionList = partitionList;
+        return (PR) this;
+    }
+
+
+    private OR orderByEnd(List<ArmySortItem> itemList) {
+        if (this.orderByList != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        this.orderByList = itemList;
+        return (OR) this;
+    }
+
 
     /*################################## blow inner class ##################################*/
 
@@ -397,7 +361,7 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
             MySQLDelete._LimitSpec<C>,
             Delete._DeleteSpec>
             implements MySQLDelete._WithAndSingleDeleteSpec<C>, MySQLDelete._SinglePartitionSpec<C>
-            , MySQLDelete._SingleWhereAndSpec<C>, MySQLDelete._OrderBySpec<C> {
+            , MySQLDelete._SingleWhereAndSpec<C> {
 
         private SimpleDelete(@Nullable C criteria) {
             super(criteria);
@@ -417,7 +381,7 @@ abstract class MySQLSingleDelete<C, WE, DS, PR, WR, WA, OR, LR>
             MySQLDelete._BatchLimitSpec<C>,
             Statement._BatchParamClause<C, Delete._DeleteSpec>>
             implements MySQLDelete._BatchWithAndSingleDeleteSpec<C>, MySQLDelete._BatchSinglePartitionSpec<C>
-            , MySQLDelete._BatchSingleWhereAndSpec<C>, MySQLDelete._BatchOrderBySpec<C>, _BatchDml {
+            , MySQLDelete._BatchSingleWhereAndSpec<C>, _BatchDml {
 
         private List<?> paramList;
 

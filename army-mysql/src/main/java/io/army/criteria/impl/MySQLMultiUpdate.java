@@ -274,7 +274,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     @Override
     public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
         MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
-        return new MySQLSupports.MySQLNoOnBlock<>(joinType, itemWord, tableItem, alias, (US) this);
+        return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
     }
 
     @Override

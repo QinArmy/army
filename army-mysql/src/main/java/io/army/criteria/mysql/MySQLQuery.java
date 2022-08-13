@@ -38,6 +38,21 @@ public interface MySQLQuery extends Query, DialectStatement {
     }
 
 
+    interface _MySQLFromLateralClause<C, FS> {
+
+        <T extends SubQuery> FS fromLateral(Supplier<T> supplier, String alias);
+
+        <T extends SubQuery> FS fromLateral(Function<C, T> function, String alias);
+    }
+
+
+    interface _MySQLFromClause<C, FT, FS> extends Statement._FromClause<C, FT, FS>
+            , DialectStatement._FromCteClause<FS>
+            , _MySQLFromLateralClause<C, FS> {
+
+    }
+
+
     /**
      * <p>
      * This interface representing the composite of below:

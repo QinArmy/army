@@ -8,11 +8,13 @@ import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
+import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
+import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -30,11 +32,11 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
-        extends WithCteMultiDelete<C, SubQuery, WE, DS, DS, DP, JS, JS, JP, WR, WA, Delete>
-        implements _MySQLMultiDelete, MySQLDelete._MultiDeleteClause<C, DS, DP>
-        , MySQLDelete._MultiDeleteFromClause<C, DS, DP>, MySQLDelete._MultiDeleteUsingClause<C, DS, DP>
-        , _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
+abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JS, JP, WR, WA>
+        extends WithCteMultiDelete<C, SubQuery, WE, DT, DS, DP, DS, JS, JS, JP, WR, WA, Delete>
+        implements _MySQLMultiDelete, MySQLDelete._MultiDeleteClause<C, DT, DS, DP>
+        , MySQLDelete._MultiDeleteFromClause<C, DT, DS, DP>, MySQLDelete._MultiDeleteUsingClause<C, DT, DS, DP>
+        , MySQLQuery._IndexHintForJoinClause<C, DT>, _MySQLWithClause, MySQLDelete, Delete._DeleteSpec {
 
 
     static <C> _WithAndMultiDeleteSpec<C> simple(@Nullable C criteria) {
@@ -59,11 +61,8 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
 
     private List<_Pair<String, TableMeta<?>>> deleteTablePairList;
 
-    _OnClause<C, DS> noActionOnClause;
 
-    Object noActionPartitionJoinClause;
-
-    Object noActionPartitionOnClause;
+    private MySQLSupports.MySQLNoOnBlock<C, DT> noOnBlock;
 
     private MySQLMultiDelete(@Nullable C criteria) {
         super(CriteriaContexts.primaryMultiDmlContext(criteria));
@@ -71,150 +70,180 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
 
 
     @Override
-    public final _MultiDeleteFromClause<C, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
-            , List<String> tableAliasList) {
-        if (this.tableAliasList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
+    public final _MultiDeleteFromClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
-        this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
-        this.usingSyntax = false;
+        this.tableAliasList = _CollectionUtils.asUnmodifiableList(tableAliasList);
         return this;
     }
 
     @Override
-    public final _MultiDeleteFromClause<C, DS, DP> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
-            , List<String> tableAliasList) {
-        if (this.tableAliasList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
-        this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
-        this.usingSyntax = false;
-        return this;
-    }
-
-    @Override
-    public final _MultiDeleteFromClause<C, DS, DP> delete(List<String> tableAliasList) {
-        if (this.tableAliasList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
-        this.usingSyntax = false;
-        return this;
-    }
-
-    @Override
-    public final _MultiDeleteFromClause<C, DS, DP> delete(String tableAlias1, String tableAlias2) {
-        this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
-        this.usingSyntax = false;
-        return this;
-    }
-
-    @Override
-    public final _MultiDeleteUsingClause<C, DS, DP> deleteFrom(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
-            , List<String> tableAliasList) {
-        if (this.tableAliasList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
+    public final _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
-        this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
-        this.usingSyntax = true;
+        return new FromTableAliasClause<>(this::fromAliasEnd);
+    }
+
+    @Override
+    public final _MultiDeleteFromClause<C, DT, DS, DP> delete(List<String> tableAliasList) {
+        this.tableAliasList = _CollectionUtils.asUnmodifiableList(tableAliasList);
         return this;
     }
 
     @Override
-    public final _MultiDeleteUsingClause<C, DS, DP> deleteFrom(Function<C, List<Hint>> hints, List<MySQLWords> modifiers
-            , List<String> tableAliasList) {
-        if (this.tableAliasList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
-        this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
-        this.usingSyntax = true;
-        return this;
-    }
-
-    @Override
-    public final _MultiDeleteUsingClause<C, DS, DP> deleteFrom(List<String> tableAliasList) {
-        if (this.tableAliasList != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.tableAliasList = MySQLUtils.asStringList(tableAliasList, this::tableAliasListIsEmpty);
-        this.usingSyntax = true;
-        return this;
-    }
-
-    @Override
-    public final _MultiDeleteUsingClause<C, DS, DP> deleteFrom(String tableAlias1, String tableAlias2) {
+    public final _MultiDeleteFromClause<C, DT, DS, DP> delete(String tableAlias1, String tableAlias2) {
         this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
-        this.usingSyntax = true;
         return this;
     }
 
     @Override
-    public final DS from(TableMeta<?> table, String alias) {
-        return (DS) this.createAndAddBlock(_JoinType.NONE, table, alias);
+    public final _MultiDeleteUsingClause<C, DT, DS, DP> deleteFrom(List<String> tableAliasList) {
+        this.tableAliasList = _CollectionUtils.asUnmodifiableList(tableAliasList);
+        return this;
     }
 
     @Override
-    public final DP from(TableMeta<?> table) {
-        return (DP) this.createClause(_JoinType.NONE, table);
+    public final _MultiDeleteUsingClause<C, DT, DS, DP> deleteFrom(String tableAlias1, String tableAlias2) {
+        this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
+        return this;
     }
 
+    @Override
+    public final DT from(TableMeta<?> table, String tableAlias) {
+        this.criteriaContext.onAddBlock(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
+        return (DT) this;
+    }
 
     @Override
     public final <T extends TableItem> DS from(Supplier<T> supplier, String alias) {
-        return (DS) this.createAndAddBlock(_JoinType.NONE, supplier.get(), alias);
+        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
+        return (DS) this;
     }
 
     @Override
     public final <T extends TableItem> DS from(Function<C, T> function, String alias) {
-        return (DS) this.createAndAddBlock(_JoinType.NONE, function.apply(this.criteria), alias);
+        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria)
+                , alias));
+        return (DS) this;
     }
 
     @Override
     public final DS from(String cteName) {
-        return (DS) this.createAndAddBlock(_JoinType.NONE, this.criteriaContext.refCte(cteName), "");
+        final CriteriaContext context = this.criteriaContext;
+        context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, context.refCte(cteName), ""));
+        return (DS) this;
     }
 
     @Override
     public final DS from(String cteName, String alias) {
-        return (DS) this.createAndAddBlock(_JoinType.NONE, this.criteriaContext.refCte(cteName), alias);
+        final CriteriaContext context = this.criteriaContext;
+        context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, context.refCte(cteName), alias));
+        return (DS) this;
     }
 
     @Override
-    public final DS using(TableMeta<?> table, String alias) {
+    public final <T extends SubQuery> DS fromLateral(Supplier<T> supplier, String alias) {
+        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, supplier.get()
+                , alias));
+        return (DS) this;
+    }
+
+    @Override
+    public final <T extends SubQuery> DS fromLateral(Function<C, T> function, String alias) {
+        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL
+                , function.apply(this.criteria), alias));
+        return (DS) this;
+    }
+
+    @Override
+    public final DP from(TableMeta<?> table) {
+        return this.createNoOnTableClause(_JoinType.NONE, null, table);
+    }
+
+    @Override
+    public final DT using(TableMeta<?> table, String alias) {
+        this.usingSyntax = true;
         return this.from(table, alias);
     }
 
     @Override
-    public final DP using(TableMeta<?> table) {
-        return this.from(table);
-    }
-
-    @Override
     public final <T extends TableItem> DS using(Supplier<T> supplier, String alias) {
+        this.usingSyntax = true;
         return this.from(supplier, alias);
     }
 
     @Override
     public final <T extends TableItem> DS using(Function<C, T> function, String alias) {
+        this.usingSyntax = true;
         return this.from(function, alias);
     }
 
     @Override
+    public final <T extends SubQuery> DS usingLateral(Supplier<T> supplier, String alias) {
+        this.usingSyntax = true;
+        return this.fromLateral(supplier, alias);
+    }
+
+    @Override
+    public final <T extends SubQuery> DS usingLateral(Function<C, T> function, String alias) {
+        this.usingSyntax = true;
+        return this.fromLateral(function, alias);
+    }
+
+    @Override
     public final DS using(String cteName) {
+        this.usingSyntax = true;
         return this.from(cteName);
     }
 
     @Override
     public final DS using(String cteName, String alias) {
+        this.usingSyntax = true;
         return this.from(cteName, alias);
+    }
+
+    @Override
+    public final DP using(TableMeta<?> table) {
+        this.usingSyntax = true;
+        return this.from(table);
+    }
+
+
+    @Override
+    public final MySQLQuery._IndexForJoinSpec<C, DT> useIndex() {
+        return this.getIndexHintClause().useIndex();
+    }
+
+    @Override
+    public final MySQLQuery._IndexForJoinSpec<C, DT> ignoreIndex() {
+        return this.getIndexHintClause().ignoreIndex();
+    }
+
+    @Override
+    public final MySQLQuery._IndexForJoinSpec<C, DT> forceIndex() {
+        return this.getIndexHintClause().forceIndex();
+    }
+
+    @Override
+    public final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
+        if (itemWord != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        final MySQLSupports.MySQLNoOnBlock<C, DT> block;
+        block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (DT) this);
+        this.noOnBlock = block;
+        return block;
+    }
+
+    @Override
+    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
+        return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
+    }
+
+    @Override
+    public final _TableBlock createDynamicBlock(_JoinType joinType, DynamicBlock<?> block) {
+        return MySQLSupports.createDynamicBlock(joinType, block);
     }
 
 
@@ -246,8 +275,11 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
 
     @Override
     public final List<_Pair<String, TableMeta<?>>> deleteTableList() {
-        prepared();
-        return this.deleteTablePairList;
+        final List<_Pair<String, TableMeta<?>>> pairList = this.deleteTablePairList;
+        if (pairList == null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return pairList;
     }
 
     @Override
@@ -261,135 +293,12 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         return s;
     }
 
-    @Override
-    public final _TableBlock createAndAddBlock(final _JoinType joinType, final TableItem item, final String alias) {
-        final _TableBlock block;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN:
-                block = new TableBlock.NoOnTableBlock(joinType, item, alias);
-                break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-            case STRAIGHT_JOIN:
-                block = new OnClauseTableBlock<>(joinType, item, alias, this);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
-        }
-        this.criteriaContext.onAddBlock(block);
-        return block;
-    }
-
-    @Override
-    public final Object createClause(final _JoinType joinType, final TableMeta<?> table) {
-        final Object clause;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN: {
-                if (this instanceof SimpleDelete) {
-                    clause = new SimplePartitionJoinClause<>(joinType, table, (SimpleDelete<C>) this);
-                } else if (this instanceof BatchDelete) {
-                    clause = new BatchPartitionJoinClause<>(joinType, table, (BatchDelete<C>) this);
-                } else {
-                    throw new IllegalStateException();
-                }
-            }
-            break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-            case STRAIGHT_JOIN: {
-                if (this instanceof SimpleDelete) {
-                    clause = new SimplePartitionOnClause<>(joinType, table, (SimpleDelete<C>) this);
-                } else if (this instanceof BatchDelete) {
-                    clause = new BatchPartitionOnClause<>(joinType, table, (BatchDelete<C>) this);
-                } else {
-                    throw new IllegalStateException();
-                }
-            }
-            break;
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
-        }
-        return clause;
-    }
-
-    @Override
-    public final Object getNoActionClause(final _JoinType joinType) {
-        final Object noActionClause;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN:
-                noActionClause = this;
-                break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-            case STRAIGHT_JOIN:
-                noActionClause = this.getNoActionOnClause();
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
-        }
-        return noActionClause;
-    }
-
-    @Override
-    public final Object getNoActionClauseBeforeAs(final _JoinType joinType) {
-        final Object noActionClause;
-        switch (joinType) {
-            case NONE:
-            case CROSS_JOIN: {
-                Object clause = this.noActionPartitionJoinClause;
-                if (clause == null) {
-                    if (this instanceof SimpleDelete) {
-                        clause = new SimpleNoActionPartitionJoinClause<>((_MultiJoinSpec<C>) this);
-                    } else if (this instanceof BatchDelete) {
-                        clause = new BatchNoActionPartitionJoinClause<>((_BatchMultiJoinSpec<C>) this);
-                    } else {
-                        throw new IllegalStateException();
-                    }
-                    this.noActionPartitionJoinClause = clause;
-                }
-                noActionClause = clause;
-            }
-            break;
-            case LEFT_JOIN:
-            case JOIN:
-            case RIGHT_JOIN:
-            case FULL_JOIN:
-            case STRAIGHT_JOIN: {
-                Object clause = this.noActionPartitionOnClause;
-                if (clause == null) {
-                    if (this instanceof SimpleDelete) {
-                        clause = new SimpleNoActionPartitionOnClause<>(this::getNoActionOnClause);
-                    } else if (this instanceof BatchDelete) {
-                        clause = new BatchNoActionPartitionOnBlock<>(this::getNoActionOnClause);
-                    } else {
-                        throw new IllegalStateException();
-                    }
-                    this.noActionPartitionOnClause = clause;
-                }
-                noActionClause = clause;
-            }
-            break;
-            default:
-                throw _Exceptions.unexpectedEnum(joinType);
-        }
-        return noActionClause;
-    }
-
 
     @Override
     final void validateBeforeClearContext() {
         final List<String> tableAliasList = this.tableAliasList;
-        if (tableAliasList == null) {
-            throw _Exceptions.castCriteriaApi();
+        if (tableAliasList == null || tableAliasList.size() == 0) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, "table alias list must non-empty.");
         }
         List<_Pair<String, TableMeta<?>>> pairList;
         TableMeta<?> table;
@@ -429,13 +338,7 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         if (this.modifierList == null) {
             this.modifierList = Collections.emptyList();
         }
-        final List<String> tableAliasList = this.tableAliasList;
-        if (tableAliasList == null || tableAliasList.size() == 0) {
-            throw new CriteriaException("tableAliasList must not empty in multi-table delete clause.");
-        }
-        this.noActionOnClause = null;
-        this.noActionPartitionJoinClause = null;
-        this.noActionPartitionOnClause = null;
+
         if (this instanceof BatchDelete && ((BatchDelete<C>) this).paramList == null) {
             throw _Exceptions.batchParamEmpty();
         }
@@ -454,20 +357,6 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
 
     }
 
-    @Override
-    final void crossJoinEvent(boolean success) {
-        //no-op
-    }
-
-
-    final _OnClause<C, DS> getNoActionOnClause() {
-        _OnClause<C, DS> clause = this.noActionOnClause;
-        if (clause == null) {
-            clause = new NoActionOnClause<>((DS) this);
-            this.noActionOnClause = clause;
-        }
-        return clause;
-    }
 
     @Override
     final void doWithCte(boolean recursive, List<Cte> cteList) {
@@ -475,9 +364,17 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         this.cteList = cteList;
     }
 
+    private _MultiDeleteUsingClause<C, DT, DS, DP> fromAliasEnd(List<String> tableAliasList) {
+        this.tableAliasList = tableAliasList;
+        return this;
+    }
 
-    private CriteriaException tableAliasListIsEmpty() {
-        return new CriteriaException("table alias list must not empty");
+    private MySQLQuery._IndexHintForJoinClause<C, DT> getIndexHintClause() {
+        final MySQLSupports.MySQLNoOnBlock<C, DT> block = this.noOnBlock;
+        if (block == null || this.criteriaContext.lastTableBlockWithoutOnClause() != block) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return block.getUseIndexClause();
     }
 
 
@@ -785,6 +682,29 @@ abstract class MySQLMultiDelete<C, WE, DS, DP, JS, JP, WR, WA>
         }
 
     }//PartitionOnBlock
+
+
+    private static final class FromTableAliasClause<C, DT, DS, DP>
+            implements _MultiDeleteFromAliasClause<C, DT, DS, DP> {
+
+        private Function<List<String>, _MultiDeleteUsingClause<C, DT, DS, DP>> function;
+
+        private FromTableAliasClause(Function<List<String>, _MultiDeleteUsingClause<C, DT, DS, DP>> function) {
+            this.function = function;
+        }
+
+        @Override
+        public _MultiDeleteUsingClause<C, DT, DS, DP> from(List<String> tableAliasList) {
+            return this.function.apply(_CollectionUtils.asUnmodifiableList(tableAliasList));
+        }
+
+        @Override
+        public _MultiDeleteUsingClause<C, DT, DS, DP> from(String tableAlias1, String tableAlias2) {
+            return this.function.apply(ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2));
+        }
+
+
+    }//FromTableAliasClause
 
 
 }

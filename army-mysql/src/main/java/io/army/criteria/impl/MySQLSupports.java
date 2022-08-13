@@ -15,6 +15,7 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 abstract class MySQLSupports extends CriteriaSupports {
@@ -52,6 +53,11 @@ abstract class MySQLSupports extends CriteriaSupports {
             throw CriteriaContextStack.castCriteriaApi(block.criteriaContext);
         }
         return tableBlock;
+    }
+
+    static <C, AR> MySQLQuery._PartitionClause<C, Statement._AsClause<AR>> partition(CriteriaContext criteriaContext
+            , BiFunction<List<String>, String, AR> function) {
+        return new SinglePartitionClause<>(criteriaContext, function);
     }
 
 
@@ -514,6 +520,46 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     }//IfPartitionAsClause
+
+
+    private static final class SinglePartitionClause<C, AR>
+            implements MySQLQuery._PartitionClause<C, Statement._AsClause<AR>>
+            , Statement._AsClause<AR> {
+
+        private final CriteriaContext criteriaContext;
+
+        private final BiFunction<List<String>, String, AR> function;
+
+        private List<String> partitionList;
+
+        private SinglePartitionClause(CriteriaContext criteriaContext, BiFunction<List<String>, String, AR> function) {
+            this.criteriaContext = criteriaContext;
+            this.function = function;
+        }
+
+        @Override
+        public Statement._LeftParenStringQuadraOptionalSpec<C, Statement._AsClause<AR>> partition() {
+            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+        }
+
+        @Override
+        public AR as(final String alias) {
+            final List<String> partitionList = this.partitionList;
+            if (partitionList == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            if (!_StringUtils.hasText(alias)) {
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, "alias no text");
+            }
+            return this.function.apply(partitionList, alias);
+        }
+
+        private Statement._AsClause<AR> partitionEnd(List<String> partitionList) {
+            this.partitionList = partitionList;
+            return this;
+        }
+
+    }//SinglePartitionClause
 
 
 }

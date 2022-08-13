@@ -497,9 +497,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
-        if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
+        MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
         return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
     }
 
@@ -527,9 +525,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     @Override
     public final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
-        if (!(itemWord == null || itemWord == ItemWord.LATERAL)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
+        MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
         return new OnTableBlock<>(joinType, itemWord, tableItem, alias, this);
     }
 

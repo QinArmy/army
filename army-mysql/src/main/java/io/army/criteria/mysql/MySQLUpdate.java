@@ -29,18 +29,17 @@ public interface MySQLUpdate extends Update {
      * </p>
      *
      * @param <UT> next clause java type
-     * @param <UP> next clause java type
      * @since 1.0
      */
-    interface _SingleUpdateClause<C, UT, UP> {
+    interface _SingleUpdateClause<C, UT> {
 
-        UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        MySQLQuery._PartitionClause<C, _AsClause<UT>> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table);
 
         UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
                 , TableMeta<?> table, String tableAlias);
 
-        UP update(TableMeta<?> table);
+        MySQLQuery._PartitionClause<C, _AsClause<UT>> update(TableMeta<?> table);
 
         UT update(TableMeta<?> table, String tableAlias);
 
@@ -176,49 +175,10 @@ public interface MySQLUpdate extends Update {
 
     /**
      * <p>
-     * This interface representing PARTITION clause for  single-table UPDATE syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type.
-     * @since 1.0
-     */
-    interface _SinglePartitionClause<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<_SingleIndexHintSpec<C>>> {
-
-    }
-
-
-    /**
-     * <p>
-     * This interface representing single-table UPDATE clause for MySQL 5.7 syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type.
-     * @since 1.0
-     */
-    interface _SingleUpdate57Clause<C>
-            extends _SingleUpdateClause<C, _SingleIndexHintSpec<C>, _SinglePartitionClause<C>> {
-
-
-    }
-
-
-    /**
-     * <p>
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link DialectStatement._WithCteClause}</li>
-     *          <li>method {@link MySQLUpdate._SingleUpdate57Clause}</li>
+     *          <li>method {@link _SingleUpdateClause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -230,8 +190,9 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _SingleWithAndUpdateSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _SingleUpdate57Clause<C>>
-            , _SingleUpdate57Clause<C> {
+    interface _SingleWithAndUpdateSpec<C>
+            extends DialectStatement._WithCteClause<C, SubQuery, _SingleUpdateClause<C, _SingleIndexHintSpec<C>>>
+            , _SingleUpdateClause<C, _SingleIndexHintSpec<C>> {
 
     }
 
@@ -366,49 +327,13 @@ public interface MySQLUpdate extends Update {
 
     }
 
-    /**
-     * <p>
-     * This interface representing PARTITION clause for batch single-table UPDATE.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type.
-     * @since 1.0
-     */
-    interface _BatchSinglePartitionClause<C>
-            extends MySQLQuery._PartitionClause<C, _AsClause<_BatchSingleIndexHintSpec<C>>> {
-
-    }
-
-
-    /**
-     * <p>
-     * This interface representing batch single-table UPDATE clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <C> criteria object java type.
-     * @since 1.0
-     */
-    interface _BatchSingleUpdateClause<C>
-            extends _SingleUpdateClause<C, _BatchSingleIndexHintSpec<C>, _BatchSinglePartitionClause<C>> {
-
-    }
 
     /**
      * <p>
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link DialectStatement._WithCteClause}</li>
-     *          <li>method {@link _BatchSingleUpdateClause}</li>
+     *          <li>method {@link _SingleUpdateClause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -421,8 +346,8 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _BatchSingleWithAndUpdateSpec<C>
-            extends DialectStatement._WithCteClause<C, SubQuery, _BatchSingleUpdateClause<C>>
-            , _BatchSingleUpdateClause<C> {
+            extends DialectStatement._WithCteClause<C, SubQuery, _SingleUpdateClause<C, _BatchSingleIndexHintSpec<C>>>
+            , _SingleUpdateClause<C, _BatchSingleIndexHintSpec<C>> {
 
     }
 

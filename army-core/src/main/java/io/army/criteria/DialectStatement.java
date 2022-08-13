@@ -108,6 +108,14 @@ public interface DialectStatement extends Statement {
 
     }
 
+    interface _FromLateralClause<C, FS> {
+
+        <T extends TableItem> FS fromLateral(Supplier<T> supplier, String alias);
+
+        <T extends TableItem> FS fromLateral(Function<C, T> function, String alias);
+
+    }
+
     /**
      * <p>
      * This interface representing STRAIGHT JOIN clause

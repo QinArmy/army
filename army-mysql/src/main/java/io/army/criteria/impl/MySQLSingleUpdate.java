@@ -18,10 +18,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -29,11 +26,11 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
+abstract class MySQLSingleUpdate<C, WE, UT, SR, WR, WA, OR, LR>
         extends WithCteSingleUpdate<C, SubQuery, WE, TableField, SR, WR, WA, Update>
         implements Statement._OrderByClause<C, OR>, MySQLUpdate._RowCountLimitClause<C, LR>
-        , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<C, UR, UP>, MySQLQuery._IndexHintClause<C, IR, UR>
-        , MySQLQuery._IndexForOrderByClause<C, UR>, _MySQLWithClause, MySQLUpdate, Update._UpdateSpec {
+        , _MySQLSingleUpdate, MySQLUpdate._SingleUpdateClause<C, UT>, MySQLQuery._IndexHintForOrderByClause<C, UT>
+        , _MySQLWithClause, MySQLUpdate, Update._UpdateSpec {
 
     static <C> _SingleWithAndUpdateSpec<C> simple(@Nullable C criteria) {
         return new SimpleUpdate<>(criteria);
@@ -60,41 +57,26 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
     private List<MySQLIndexHint> indexHintList;
 
-    private MySQLIndexHint.Command command;
-
     private List<ArmySortItem> orderByList;
 
     private long rowCount;
 
+    private MySQLQuery._IndexHintForOrderByClause<C, UT> indexHintClause;
+
     private MySQLSingleUpdate(@Nullable C criteria) {
         super(CriteriaContexts.primarySingleDmlContext(criteria));
-        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override
-    public final UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table) {
-        if (this.table != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
+    public final MySQLQuery._PartitionClause<C, _AsClause<UT>> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
         this.table = table;
-        return this.createPartitionClause();
+        return MySQLSupports.partition(this.criteriaContext, this::asClauseEnd);
     }
 
     @Override
-    public final UP update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table) {
-        if (this.table != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
-        this.table = table;
-        return this.createPartitionClause();
-    }
-
-    @Override
-    public final UR update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+    public final UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
             , TableMeta<?> table, String tableAlias) {
         if (this.table != null) {
             throw _Exceptions.castCriteriaApi();
@@ -103,165 +85,39 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
         this.table = table;
         this.tableAlias = tableAlias;
-        return (UR) this;
+        return (UT) this;
+    }
+
+
+    @Override
+    public final MySQLQuery._PartitionClause<C, _AsClause<UT>> update(TableMeta<?> table) {
+        this.table = table;
+        return MySQLSupports.partition(this.criteriaContext, this::asClauseEnd);
     }
 
     @Override
-    public final UR update(Function<C, List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table
-            , String tableAlias) {
-        if (this.table != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
+    public final UT update(TableMeta<?> table, String tableAlias) {
         this.table = table;
         this.tableAlias = tableAlias;
-        return (UR) this;
-    }
-
-    @Override
-    public final UP update(TableMeta<?> table) {
-        this.table = table;
-        return this.createPartitionClause();
-    }
-
-    @Override
-    public final UR update(TableMeta<?> table, String tableAlias) {
-        this.table = table;
-        this.tableAlias = tableAlias;
-        return (UR) this;
+        return (UT) this;
     }
 
 
     /*################################## blow IndexHintClause method ##################################*/
 
     @Override
-    public final IR useIndex() {
-        this.command = MySQLIndexHint.Command.USE_INDEX;
-        return (IR) this;
+    public final MySQLQuery._IndexForOrderBySpec<C, UT> useIndex() {
+        return this.getIndexHintClause().useIndex();
     }
 
     @Override
-    public final IR ignoreIndex() {
-        this.command = MySQLIndexHint.Command.IGNORE_INDEX;
-        return (IR) this;
+    public final MySQLQuery._IndexForOrderBySpec<C, UT> ignoreIndex() {
+        return this.getIndexHintClause().ignoreIndex();
     }
 
     @Override
-    public final IR forceIndex() {
-        this.command = MySQLIndexHint.Command.FORCE_INDEX;
-        return (IR) this;
-    }
-
-    @Override
-    public final IR ifUseIndex(Predicate<C> predicate) {
-        if (predicate.test(this.criteria)) {
-            this.command = MySQLIndexHint.Command.USE_INDEX;
-        } else {
-            this.command = null;
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final IR ifIgnoreIndex(Predicate<C> predicate) {
-        if (predicate.test(this.criteria)) {
-            this.command = MySQLIndexHint.Command.IGNORE_INDEX;
-        } else {
-            this.command = null;
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final IR ifForceIndex(Predicate<C> predicate) {
-        if (predicate.test(this.criteria)) {
-            this.command = MySQLIndexHint.Command.FORCE_INDEX;
-        } else {
-            this.command = null;
-        }
-        return (IR) this;
-    }
-
-    @Override
-    public final UR useIndex(List<String> indexList) {
-        if (this.command != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        return this.addIndexHint(MySQLIndexHint.Command.USE_INDEX, false, indexList);
-    }
-
-    @Override
-    public final UR ignoreIndex(List<String> indexList) {
-        if (this.command != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        return this.addIndexHint(MySQLIndexHint.Command.IGNORE_INDEX, false, indexList);
-    }
-
-    @Override
-    public final UR forceIndex(List<String> indexList) {
-        if (this.command != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        return this.addIndexHint(MySQLIndexHint.Command.FORCE_INDEX, false, indexList);
-    }
-
-    @Override
-    public final UR ifUseIndex(Function<C, List<String>> function) {
-        final List<String> indexList;
-        indexList = function.apply(this.criteria);
-        if (indexList != null && indexList.size() > 0) {
-            this.addIndexHint(MySQLIndexHint.Command.USE_INDEX, false, indexList);
-        }
-        return (UR) this;
-    }
-
-    @Override
-    public final UR ifIgnoreIndex(Function<C, List<String>> function) {
-        final List<String> indexList;
-        indexList = function.apply(this.criteria);
-        if (indexList != null && indexList.size() > 0) {
-            this.addIndexHint(MySQLIndexHint.Command.IGNORE_INDEX, false, indexList);
-        }
-        return (UR) this;
-    }
-
-    @Override
-    public final UR ifForceIndex(Function<C, List<String>> function) {
-        final List<String> indexList;
-        indexList = function.apply(this.criteria);
-        if (indexList != null && indexList.size() > 0) {
-            this.addIndexHint(MySQLIndexHint.Command.FORCE_INDEX, false, indexList);
-        }
-        return (UR) this;
-    }
-
-
-    /*################################## blow IndexOrderByClause method ##################################*/
-
-    @Override
-    public final UR forOrderBy(List<String> indexList) {
-        final MySQLIndexHint.Command command = this.command;
-        if (command != null) {
-            this.command = null;
-            this.addIndexHint(command, true, indexList);
-        }
-        return (UR) this;
-    }
-
-    @Override
-    public final UR forOrderBy(Function<C, List<String>> function) {
-        final MySQLIndexHint.Command command = this.command;
-        if (command != null) {
-            this.command = null;
-            final List<String> list;
-            list = function.apply(this.criteria);
-            if (list != null && list.size() > 0) {
-                this.addIndexHint(command, true, list);
-            }
-        }
-        return (UR) this;
+    public final MySQLQuery._IndexForOrderBySpec<C, UT> forceIndex() {
+        return this.getIndexHintClause().forceIndex();
     }
 
 
@@ -294,44 +150,66 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public final <S extends SortItem> OR orderBy(Function<C, List<S>> function) {
-        this.orderByList = MySQLUtils.asSortItemList(function.apply(this.criteria));
-        return (OR) this;
+    public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::addOrderByItem);
+        return this.endOrderByClause(true);
     }
 
     @Override
-    public final <S extends SortItem> OR orderBy(Supplier<List<S>> supplier) {
-        this.orderByList = MySQLUtils.asSortItemList(supplier.get());
-        return (OR) this;
+    public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        consumer.accept(this.criteria, this::addOrderByItem);
+        return this.endOrderByClause(true);
     }
 
     @Override
-    public final OR orderBy(Consumer<List<SortItem>> consumer) {
-        final List<SortItem> sortItemList = new ArrayList<>();
-        consumer.accept(sortItemList);
-        this.orderByList = MySQLUtils.asSortItemList(sortItemList);
-        return (OR) this;
-    }
-
-    @Override
-    public final <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier) {
-        final List<S> sortItemList;
-        sortItemList = supplier.get();
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.orderByList = MySQLUtils.asSortItemList(sortItemList);
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
+        final Object value;
+        if ((value = operand.get()) != null) {
+            this.orderByList = Collections.singletonList((ArmySortItem) operator.apply(value));
         }
         return (OR) this;
     }
 
     @Override
-    public final <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function) {
-        final List<S> sortItemList;
-        sortItemList = function.apply(this.criteria);
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.orderByList = MySQLUtils.asSortItemList(sortItemList);
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+        final Object value;
+        if ((value = operand.apply(operandKey)) != null) {
+            this.orderByList = Collections.singletonList((ArmySortItem) operator.apply(value));
         }
         return (OR) this;
     }
+
+    @Override
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
+        final Object firstValue, secondValue;
+        if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperator.get()) != null) {
+            this.orderByList = Collections.singletonList((ArmySortItem) operator.apply(firstValue, secondValue));
+        }
+        return (OR) this;
+    }
+
+    @Override
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+        final Object firstValue, secondValue;
+        if ((firstValue = operand.apply(firstKey)) != null && (secondValue = operand.apply(secondKey)) != null) {
+            this.orderByList = Collections.singletonList((ArmySortItem) operator.apply(firstValue, secondValue));
+        }
+        return (OR) this;
+    }
+
+    @Override
+    public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::addOrderByItem);
+        return this.endOrderByClause(false);
+    }
+
+    @Override
+    public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        consumer.accept(this.criteria, this::addOrderByItem);
+        return this.endOrderByClause(false);
+    }
+
+
     /*################################## blow LimitClause method ##################################*/
 
     @Override
@@ -376,7 +254,6 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         return (LR) this;
     }
 
-
     @Override
     public final String toString() {
         final String s;
@@ -388,22 +265,11 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         return s;
     }
 
-    abstract UP createPartitionClause();
-
-    final UR afterAs(@Nullable String tableAlias, @Nullable List<String> partitionList) {
-        assert tableAlias != null;
-        if (this.table == null || this.tableAlias != null) {
-            throw _Exceptions.castCriteriaApi();
-        }
-        this.tableAlias = tableAlias;
-        this.partitionList = partitionList;
-        return (UR) this;
-    }
 
     @Override
     final void doWithCte(boolean recursive, List<Cte> cteList) {
         if (this.cteList != null) {
-            throw _Exceptions.castCriteriaApi();
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         this.recursive = recursive;
         this.cteList = cteList;
@@ -415,7 +281,6 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         if (this.table == null || this.tableAlias == null) {
             throw _Exceptions.castCriteriaApi();
         }
-        this.command = null;
         if (this.cteList == null) {
             this.cteList = Collections.emptyList();
         }
@@ -428,12 +293,14 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         if (this.partitionList == null) {
             this.partitionList = Collections.emptyList();
         }
+
         final List<MySQLIndexHint> indexHintList = this.indexHintList;
-        if (indexHintList == null || indexHintList.size() == 0) {
+        if (indexHintList == null) {
             this.indexHintList = Collections.emptyList();
         } else {
             this.indexHintList = _CollectionUtils.unmodifiableList(indexHintList);
         }
+
         if (this.orderByList == null) {
             this.orderByList = Collections.emptyList();
         }
@@ -484,8 +351,11 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
     @Override
     public final TableMeta<?> table() {
-        prepared();
-        return this.table;
+        final TableMeta<?> table = this.table;
+        if (table == null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return table;
     }
 
     @Override
@@ -500,8 +370,11 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
 
     @Override
     public final List<? extends _IndexHint> indexHintList() {
-        prepared();
-        return this.indexHintList;
+        final List<MySQLIndexHint> indexHintList = this.indexHintList;
+        if (indexHintList == null || indexHintList instanceof ArrayList) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return indexHintList;
     }
 
     @Override
@@ -530,66 +403,92 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
         return MySQLDialect.MySQL80;
     }
 
-    private UR addIndexHint(MySQLIndexHint.Command command, final boolean orderBy, final List<String> indexNames) {
-        if (indexNames.size() == 0) {
-            throw MySQLUtils.indexListIsEmpty();
+
+    private UT asClauseEnd(List<String> partitionList, String tableAlias) {
+        this.partitionList = partitionList;
+        this.tableAlias = tableAlias;
+        return (UT) this;
+    }
+
+    private MySQLQuery._IndexHintForOrderByClause<C, UT> getIndexHintClause() {
+        MySQLQuery._IndexHintForOrderByClause<C, UT> indexHintClause = this.indexHintClause;
+        if (indexHintClause == null) {
+            indexHintClause = MySQLSupports.indexHintClause(this.criteriaContext, this::addIndexHint);
+            this.indexHintClause = indexHintClause;
         }
+        return indexHintClause;
+    }
+
+    private UT addIndexHint(final MySQLIndexHint indexHint) {
         List<MySQLIndexHint> indexHintList = this.indexHintList;
         if (indexHintList == null) {
             indexHintList = new ArrayList<>();
             this.indexHintList = indexHintList;
         }
-        final MySQLIndexHint.Purpose purpose;
-        if (orderBy) {
-            purpose = MySQLIndexHint.Purpose.FOR_ORDER_BY;
-        } else {
-            purpose = null;
+        indexHintList.add(indexHint);
+        return (UT) this;
+    }
+
+    private void addOrderByItem(@Nullable SortItem sortItem) {
+        if (sortItem == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
         }
-        indexHintList.add(new MySQLIndexHint(command, purpose, indexNames));
-        return (UR) this;
+        List<ArmySortItem> itemList = this.orderByList;
+        if (itemList == null) {
+            this.orderByList = itemList = new ArrayList<>();
+        } else if (!(itemList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        itemList.add((ArmySortItem) sortItem);
+    }
+
+    private OR endOrderByClause(final boolean required) {
+        final List<ArmySortItem> itemList = this.orderByList;
+        if (itemList == null) {
+            if (required) {
+                throw CriteriaUtils.orderByIsEmpty(this.criteriaContext);
+            }
+            this.orderByList = Collections.emptyList();
+        } else if (itemList instanceof ArrayList) {
+            this.orderByList = _CollectionUtils.unmodifiableList(itemList);
+        } else {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        return (OR) this;
     }
 
 
     private static final class SimpleUpdate<C> extends MySQLSingleUpdate<
             C,
-            MySQLUpdate._SingleUpdate57Clause<C>,       // WE
+            MySQLUpdate._SingleUpdateClause<C, _SingleIndexHintSpec<C>>,       // WE
             MySQLUpdate._SingleIndexHintSpec<C>,        //UR
-            MySQLUpdate._SinglePartitionClause<C>,      //UP
-            MySQLUpdate._IndexForOrderBy57Clause<C>,    //IR
             MySQLUpdate._SingleWhereSpec<C>,            //SR
             MySQLUpdate._OrderBySpec<C>,                //WR
             MySQLUpdate._SingleWhereAndSpec<C>,         //WA
             MySQLUpdate._LimitSpec<C>,                  //OR
             _UpdateSpec>                                //LR
             implements _SingleWithAndUpdateSpec<C>, _SingleIndexHintSpec<C>
-            , _SingleWhereSpec<C>, _SingleWhereAndSpec<C>
-            , _OrderBySpec<C>, _IndexForOrderBy57Clause<C> {
+            , _SingleWhereSpec<C>, _SingleWhereAndSpec<C> {
 
         private SimpleUpdate(@Nullable C criteria) {
             super(criteria);
         }
 
-        @Override
-        _SinglePartitionClause<C> createPartitionClause() {
-            return new SimplePartitionClause<>(this);
-        }
 
     } // SimpleUpdate
 
     private static final class BatchUpdate<C> extends MySQLSingleUpdate<
             C,
-            MySQLUpdate._BatchSingleUpdateClause<C>,        // WE
+            MySQLUpdate._SingleUpdateClause<C, _BatchSingleIndexHintSpec<C>>,        // WE
             MySQLUpdate._BatchSingleIndexHintSpec<C>,       //UR
-            MySQLUpdate._BatchSinglePartitionClause<C>,     //UP
-            MySQLUpdate._BatchIndexForOrderByClause<C>,     //IR
             MySQLUpdate._BatchSingleWhereSpec<C>,           //SR
             MySQLUpdate._BatchOrderBySpec<C>,               //WR
             MySQLUpdate._BatchSingleWhereAndSpec<C>,        //WA
             MySQLUpdate._BatchLimitSpec<C>,                 //OR
             Statement._BatchParamClause<C, _UpdateSpec>>    //LR
             implements _BatchSingleWithAndUpdateSpec<C>, _BatchSingleIndexHintSpec<C>
-            , _BatchIndexForOrderByClause<C>, _BatchSingleWhereSpec<C>, _BatchSingleWhereAndSpec<C>
-            , _BatchOrderBySpec<C>, _BatchParamClause<C, _UpdateSpec>, _BatchDml {
+            , _BatchSingleWhereSpec<C>, _BatchSingleWhereAndSpec<C>
+            , _BatchDml {
 
         private List<?> paramList;
 
@@ -626,49 +525,8 @@ abstract class MySQLSingleUpdate<C, WE, UR, UP, IR, SR, WR, WA, OR, LR>
             return this.paramList;
         }
 
-        @Override
-        _BatchSinglePartitionClause<C> createPartitionClause() {
-            return new BatchPartitionClause<>(this);
-        }
-
     }//BatchUpdate
 
-
-    private static final class SimplePartitionClause<C>
-            extends MySQLPartitionClause2<C, _AsClause<_SingleIndexHintSpec<C>>>
-            implements _AsClause<_SingleIndexHintSpec<C>>, MySQLUpdate._SinglePartitionClause<C> {
-
-        private final SimpleUpdate<C> stmt;
-
-        public SimplePartitionClause(SimpleUpdate<C> stmt) {
-            super(stmt.criteria);
-            this.stmt = stmt;
-        }
-
-        @Override
-        public _SingleIndexHintSpec<C> as(final String alias) {
-            return this.stmt.afterAs(alias, this.partitionList);
-        }
-
-    }//SimplePartitionClause
-
-    private static final class BatchPartitionClause<C>
-            extends MySQLPartitionClause2<C, _AsClause<_BatchSingleIndexHintSpec<C>>>
-            implements _AsClause<_BatchSingleIndexHintSpec<C>>, MySQLUpdate._BatchSinglePartitionClause<C> {
-
-        private final BatchUpdate<C> stmt;
-
-        private BatchPartitionClause(BatchUpdate<C> stmt) {
-            super(stmt.criteria);
-            this.stmt = stmt;
-        }
-
-        @Override
-        public _BatchSingleIndexHintSpec<C> as(final String alias) {
-            return this.stmt.afterAs(alias, this.partitionList);
-        }
-
-    }//BatchPartitionClause
 
 
 }

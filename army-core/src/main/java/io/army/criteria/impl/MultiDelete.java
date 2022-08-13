@@ -14,12 +14,11 @@ import java.util.List;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA, D extends DmlStatement.DmlDelete>
-        extends DmlWhereClause<C, FT, FS, FP, JT, JS, JP, WR, WA>
+abstract class MultiDelete<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA, D extends DmlStatement.DmlDelete>
+        extends DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
         implements DmlStatement.DmlDelete, DmlStatement._DmlDeleteSpec<D>
-        , _MultiDelete, JoinableClause.ClauseSupplier {
+        , _MultiDelete, JoinableClause.ClauseCreator<FP, JT, JS, JP> {
 
-    final CriteriaContext criteriaContext;
 
     private Boolean prepared;
 
@@ -27,13 +26,7 @@ abstract class MultiDelete<C, FT, FS, FP, JT, JS, JP, WR, WA, D extends DmlState
 
 
     MultiDelete(CriteriaContext criteriaContext) {
-        super(criteriaContext.criteria());
-        this.criteriaContext = criteriaContext;
-        if (this instanceof SubStatement) {
-            CriteriaContextStack.push(this.criteriaContext);
-        } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
-        }
+        super(criteriaContext);
     }
 
     @Override

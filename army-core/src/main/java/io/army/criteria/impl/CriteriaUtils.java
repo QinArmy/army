@@ -528,12 +528,20 @@ abstract class CriteriaUtils {
     }
 
 
+    static _TableBlock createStandardDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
+        if (!(block instanceof DynamicBlock.StandardDynamicBlock)) {
+            String m = "not standard dynamic block";
+            throw CriteriaContextStack.criteriaError(block.criteriaContext, m);
+        }
+        return new TableBlock.DynamicTableBlock(joinType, block);
+    }
+
+
     static CriteriaException illegalHint(@Nullable Hint hint) {
         String m = String.format("Hint %s is illegal."
                 , _ClassUtils.safeClassName(hint));
         return new CriteriaException(m);
     }
-
 
 
     private static CriteriaException illegalWindow(Window window) {
@@ -579,13 +587,8 @@ abstract class CriteriaUtils {
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
-
-    static _TableBlock createStandardDynamicBlock(final _JoinType joinType, final DynamicBlock<?> block) {
-        if (!(block instanceof DynamicBlock.StandardDynamicBlock)) {
-            String m = "not standard dynamic block";
-            throw CriteriaContextStack.criteriaError(block.criteriaContext, m);
-        }
-        return new TableBlock.DynamicTableBlock(joinType, block);
+    static CriteriaException orderByIsEmpty(CriteriaContext criteriaContext) {
+        return CriteriaContextStack.criteriaError(criteriaContext, "you don't add any item");
     }
 
 

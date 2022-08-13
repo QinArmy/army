@@ -2,18 +2,18 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.RowConstructor;
+import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
+import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 abstract class CriteriaSupports {
 
@@ -25,6 +25,11 @@ abstract class CriteriaSupports {
     static <C, RR> Statement._LeftParenStringQuadraOptionalSpec<C, RR> stringQuadra(CriteriaContext criteriaContext
             , Function<List<String>, RR> function) {
         return new ParenStringConsumerClause<>(criteriaContext, function);
+    }
+
+    static <C, OR> Statement._OrderByClause<C, OR> orderByClause(CriteriaContext criteriaContext
+            , Function<List<ArmySortItem>, OR> function) {
+        return new OrderByClause<>(criteriaContext, function);
     }
 
 
@@ -370,6 +375,150 @@ abstract class CriteriaSupports {
 
 
     }//NoActionParenStringConsumerClause
+
+
+    private static final class OrderByClause<C, OR> implements Statement._OrderByClause<C, OR> {
+
+        private final CriteriaContext criteriaContext;
+
+        private final Function<List<ArmySortItem>, OR> function;
+
+        private List<ArmySortItem> orderByList;
+
+        private OrderByClause(CriteriaContext criteriaContext, Function<List<ArmySortItem>, OR> function) {
+            this.criteriaContext = criteriaContext;
+            this.function = function;
+        }
+
+        @Override
+        public OR orderBy(SortItem sortItem) {
+            return this.function.apply(Collections.singletonList((ArmySortItem) sortItem));
+        }
+
+        @Override
+        public OR orderBy(SortItem sortItem1, SortItem sortItem2) {
+            final List<ArmySortItem> itemList;
+            itemList = ArrayUtils.asUnmodifiableList(
+                    (ArmySortItem) sortItem1,
+                    (ArmySortItem) sortItem2
+            );
+            return this.function.apply(itemList);
+        }
+
+        @Override
+        public OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
+            final List<ArmySortItem> itemList;
+            itemList = ArrayUtils.asUnmodifiableList(
+                    (ArmySortItem) sortItem1,
+                    (ArmySortItem) sortItem2,
+                    (ArmySortItem) sortItem3
+            );
+            return this.function.apply(itemList);
+        }
+
+        @Override
+        public OR orderBy(Consumer<Consumer<SortItem>> consumer) {
+            consumer.accept(this::addOrderByItem);
+            return this.endOrderByClause(true);
+        }
+
+        @Override
+        public OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+            consumer.accept(this.criteriaContext.criteria(), this::addOrderByItem);
+            return this.endOrderByClause(true);
+        }
+
+        @Override
+        public OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
+            final List<ArmySortItem> itemList;
+            final Object value;
+            if ((value = operand.get()) == null) {
+                itemList = Collections.emptyList();
+            } else {
+                itemList = Collections.singletonList((ArmySortItem) operator.apply(value));
+            }
+            return this.function.apply(itemList);
+        }
+
+        @Override
+        public OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+            final List<ArmySortItem> itemList;
+            final Object value;
+            if ((value = operand.apply(operandKey)) == null) {
+                itemList = Collections.emptyList();
+            } else {
+                itemList = Collections.singletonList((ArmySortItem) operator.apply(value));
+            }
+            return this.function.apply(itemList);
+        }
+
+        @Override
+        public OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
+            final List<ArmySortItem> itemList;
+            final Object firstValue, secondValue;
+            if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperator.get()) != null) {
+                itemList = Collections.singletonList((ArmySortItem) operator.apply(firstValue, secondValue));
+            } else {
+                itemList = Collections.emptyList();
+            }
+            return this.function.apply(itemList);
+        }
+
+        @Override
+        public OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+            final List<ArmySortItem> itemList;
+            final Object firstValue, secondValue;
+            if ((firstValue = operand.apply(firstKey)) != null && (secondValue = operand.apply(secondKey)) != null) {
+                itemList = Collections.singletonList((ArmySortItem) operator.apply(firstValue, secondValue));
+            } else {
+                itemList = Collections.emptyList();
+            }
+            return this.function.apply(itemList);
+        }
+
+        @Override
+        public OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+            consumer.accept(this::addOrderByItem);
+            return this.endOrderByClause(false);
+        }
+
+        @Override
+        public OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+            consumer.accept(this.criteriaContext.criteria(), this::addOrderByItem);
+            return this.endOrderByClause(false);
+        }
+
+        private void addOrderByItem(@Nullable SortItem sortItem) {
+            if (sortItem == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            List<ArmySortItem> itemList = this.orderByList;
+            if (itemList == null) {
+                this.orderByList = itemList = new ArrayList<>();
+            } else if (!(itemList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            itemList.add((ArmySortItem) sortItem);
+        }
+
+        private OR endOrderByClause(final boolean required) {
+            List<ArmySortItem> itemList = this.orderByList;
+            if (itemList == null) {
+                if (required) {
+                    throw CriteriaUtils.orderByIsEmpty(this.criteriaContext);
+                }
+                itemList = Collections.emptyList();
+            } else if (itemList instanceof ArrayList) {
+                itemList = _CollectionUtils.unmodifiableList(itemList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.orderByList = null;
+            return this.function.apply(itemList);
+        }
+
+
+    }//OrderByClause
 
 
 }
