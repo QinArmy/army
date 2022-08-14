@@ -15,7 +15,10 @@ import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class StandardCriteriaUnitTests {
 
@@ -153,7 +156,7 @@ public class StandardCriteriaUnitTests {
         stmt = SQLs.query()
                 .select(SQLs.group(User_.T, "u"))
                 .from(User_.T, "u")
-                .ifGroupBy(Collections::emptyList)
+                .groupBy(User_.userType)
                 .having(User_.userType.equal(UserType.PERSON))// group by is empty ,so having clause no action
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
@@ -174,7 +177,7 @@ public class StandardCriteriaUnitTests {
                 .where(Person_.id.equal("1"))
                 .and(User_.nickName.equal("脉兽秀秀"))
                 //.and(User_.visible.equal(false))
-                .ifGroupBy(Collections::emptyList)
+                .groupBy(Person_.birthday)
                 .having(User_.userType.equal(UserType.PERSON))
                 .orderBy(Person_.id.desc())
                 .limit(0, 10)
@@ -195,7 +198,7 @@ public class StandardCriteriaUnitTests {
                 .where(User_.id.equal("1"))
                 .and(User_.nickName.equal("脉兽秀秀"))
                 //.and(User_.visible.equal(false))
-                .ifGroupBy(Collections::emptyList)
+                .groupBy(User_.userType)
                 .having(User_.userType.equal(UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
@@ -208,7 +211,7 @@ public class StandardCriteriaUnitTests {
                 .where(User_.id.equal("2"))
                 .and(User_.nickName.equal("远浪舰长"))
                 //.and(User_.visible.equal(false))
-                .ifGroupBy(Collections::emptyList)
+                .groupBy(User_.userType)
                 .having(User_.userType.equal(UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)
@@ -221,7 +224,7 @@ public class StandardCriteriaUnitTests {
                 .where(User_.id.equal("3"))
                 .and(User_.nickName.equal("蛮大人"))
                 //.and(User_.visible.equal(false))
-                .ifGroupBy(Collections::emptyList)
+                .groupBy(User_.userType)
                 .having(User_.userType.equal(UserType.PERSON))
                 .orderBy(User_.id.desc())
                 .limit(0, 10)

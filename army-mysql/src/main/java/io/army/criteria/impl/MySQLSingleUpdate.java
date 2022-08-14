@@ -272,12 +272,6 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         return false;
     }
 
-    @Override
-    final boolean isSupportMultiTableUpdate() {
-        //false, this is single-table update
-        return false;
-    }
-
     /*################################## blow _MySQLSingleUpdate method ##################################*/
 
     @Override

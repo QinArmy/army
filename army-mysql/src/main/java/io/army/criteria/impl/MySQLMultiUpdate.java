@@ -243,12 +243,6 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    final boolean isSupportMultiTableUpdate() {
-        // true ,this is multi-table update
-        return true;
-    }
-
-    @Override
     final MySQLDialect dialect() {
         return MySQLDialect.MySQL80;
     }

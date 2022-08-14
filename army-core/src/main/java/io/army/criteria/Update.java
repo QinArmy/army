@@ -3,6 +3,9 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
+import io.army.meta.ComplexTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.function.*;
@@ -10,19 +13,12 @@ import java.util.function.*;
 /**
  * @since 1.0
  */
-@SuppressWarnings("unused")
 public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
 
     interface _UpdateSpec extends DmlStatement._DmlUpdateSpec<Update> {
 
     }
-
-    interface StandardUpdateClause<UR> {
-
-        UR update(TableMeta<?> table, String tableAlias);
-    }
-
 
     /**
      * @param <C>  java type of criteria object
@@ -94,11 +90,15 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
         SR ifSet(F field, BiFunction<DataField, Object, ItemPair> operator, Function<String, ?> function, String keyName);
 
+        SR ifNonNullSet(F field, BiFunction<DataField, Object, ItemPair> operator, @Nullable Object operand);
+
         SR ifSetLiteral(F field, Supplier<?> supplier);
 
         SR ifSetLiteral(F field, Function<String, ?> function, String keyName);
 
         SR ifSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<?> supplier);
+
+        SR ifNonNullSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, @Nullable Object operand);
 
         SR ifSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ?> function);
 
@@ -139,56 +139,68 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
     }
 
 
-    interface StandardUpdateSpec<C> extends Update.StandardUpdateClause<Update.StandardSetSpec<C>> {
+    interface _StandardWhereAndSpec<C> extends _WhereAndClause<C, _StandardWhereAndSpec<C>>, _UpdateSpec {
+
+    }
+
+    interface _StandardWhereSpec<C, F extends TableField> extends _StandardSetClause<C, F>
+            , _WhereClause<C, _UpdateSpec, _StandardWhereAndSpec<C>> {
 
 
     }
 
-    interface StandardSetSpec<C> extends _SimpleSetClause<C, TableField, StandardWhereSpec<C>> {
+    interface _StandardSetClause<C, F extends TableField> extends _SimpleSetClause<C, F, _StandardWhereSpec<C, F>> {
 
     }
 
+    interface _StandardSingleUpdateClause<C> {
 
-    interface StandardWhereSpec<C> extends StandardSetSpec<C>
-            , _WhereClause<C, _UpdateSpec, StandardWhereAndSpec<C>> {
+        <T> _StandardSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
 
-
-    }
-
-    interface StandardWhereAndSpec<C> extends _WhereAndClause<C, StandardWhereAndSpec<C>>, _UpdateSpec {
+        <P> _StandardSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
 
     }
 
+    interface _StandardDomainUpdateClause<C> {
+
+        _StandardSetClause<C, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
+
+    }
 
 
     /*################################## blow batch update interface ##################################*/
 
-    interface StandardBatchUpdateSpec<C> extends Update.StandardUpdateClause<Update.StandardBatchSetSpec<C>> {
-
-    }
-
-
-    interface StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, StandardBatchWhereAndSpec<C>>
+    interface _StandardBatchWhereAndSpec<C> extends _WhereAndClause<C, _StandardBatchWhereAndSpec<C>>
             , _BatchParamClause<C, _UpdateSpec> {
 
     }
 
-    interface StandardBatchSetSpec<C> extends _BatchSetClause<C, TableField, StandardBatchWhereSpec<C>> {
-
-
-    }
-
-    interface StandardBatchWhereSpec<C> extends StandardBatchSetSpec<C>
-            , _WhereClause<C, _BatchParamClause<C, _UpdateSpec>, StandardBatchWhereAndSpec<C>>
+    interface _StandardBatchWhereSpec<C, F extends TableField> extends _StandardBatchSetClause<C, F>
+            , _WhereClause<C, _BatchParamClause<C, _UpdateSpec>, _StandardBatchWhereAndSpec<C>>
             , _BatchParamClause<C, _UpdateSpec> {
 
     }
 
 
+    interface _StandardBatchSetClause<C, F extends TableField>
+            extends _BatchSetClause<C, F, _StandardBatchWhereSpec<C, F>> {
 
 
+    }
 
-    /*################################## blow batch multi-table update api  ##################################*/
+    interface _StandardBatchSingleUpdateClause<C> {
+
+        <T> _StandardBatchSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias);
+
+        <P> _StandardBatchSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias);
+
+    }
+
+    interface _StandardBatchDomainUpdateClause<C> {
+
+        _StandardBatchSetClause<C, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
+
+    }
 
 
 }

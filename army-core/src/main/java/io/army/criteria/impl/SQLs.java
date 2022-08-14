@@ -65,17 +65,30 @@ public abstract class SQLs extends Functions {
         return StandardInserts.rowSetInsert(criteria);
     }
 
-    public static Update.StandardUpdateSpec<Void> domainUpdate() {
-        return StandardUpdate.simple(null);
+    public static Update._StandardDomainUpdateClause<Void> domainUpdate() {
+        return StandardUpdate.simpleDomain(null);
     }
 
     /**
      * @param criteria a object instance, map or bean
      * @param <C>      criteria java type used to create dynamic update and sub query
      */
-    public static <C> Update.StandardUpdateSpec<C> domainUpdate(C criteria) {
+    public static <C> Update._StandardDomainUpdateClause<C> domainUpdate(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardUpdate.simple(criteria);
+        return StandardUpdate.simpleDomain(criteria);
+    }
+
+    public static Update._StandardSingleUpdateClause<Void> singleUpdate() {
+        return StandardUpdate.simpleSingle(null);
+    }
+
+    /**
+     * @param criteria a object instance, map or bean
+     * @param <C>      criteria java type used to create dynamic update and sub query
+     */
+    public static <C> Update._StandardSingleUpdateClause<C> singleUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return StandardUpdate.simpleSingle(criteria);
     }
 
 
@@ -91,8 +104,8 @@ public abstract class SQLs extends Functions {
      * @see #nullableNamedParam(DataField)
      * @see #nullableNamedParam(ParamMeta, String)
      */
-    public static Update.StandardBatchUpdateSpec<Void> batchDomainUpdate() {
-        return StandardUpdate.batch(null);
+    public static Update._StandardBatchDomainUpdateClause<Void> batchDomainUpdate() {
+        return StandardUpdate.batchDomain(null);
     }
 
     /**
@@ -109,9 +122,44 @@ public abstract class SQLs extends Functions {
      * @see #nullableNamedParam(DataField)
      * @see #nullableNamedParam(ParamMeta, String)
      */
-    public static <C> Update.StandardBatchUpdateSpec<C> batchDomainUpdate(C criteria) {
+    public static <C> Update._StandardBatchDomainUpdateClause<C> batchDomainUpdate(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardUpdate.batch(criteria);
+        return StandardUpdate.batchDomain(criteria);
+    }
+
+    /**
+     * <p>
+     * Batch domain update
+     * </p>
+     *
+     * @see #namedParam(DataField)
+     * @see #namedParam(ParamMeta, String)
+     * @see #namedParams(DataField, int)
+     * @see #namedParams(ParamMeta, String, int)
+     * @see #nullableNamedParam(DataField)
+     * @see #nullableNamedParam(ParamMeta, String)
+     */
+    public static Update._StandardBatchSingleUpdateClause<Void> batchSingleUpdate() {
+        return StandardUpdate.batchSingle(null);
+    }
+
+    /**
+     * <p>
+     * Batch domain update
+     * </p>
+     *
+     * @param criteria a criteria object , map or bean
+     * @param <C>      criteria java type used to create dynamic batch update and sub query
+     * @see #namedParam(DataField)
+     * @see #namedParam(ParamMeta, String)
+     * @see #namedParams(DataField, int)
+     * @see #namedParams(ParamMeta, String, int)
+     * @see #nullableNamedParam(DataField)
+     * @see #nullableNamedParam(ParamMeta, String)
+     */
+    public static <C> Update._StandardBatchSingleUpdateClause<C> batchSingleUpdate(C criteria) {
+        Objects.requireNonNull(criteria);
+        return StandardUpdate.batchSingle(criteria);
     }
 
     public static Delete.StandardDeleteSpec<Void> domainDelete() {
@@ -193,9 +241,25 @@ public abstract class SQLs extends Functions {
      * @param value {@link Expression} or parameter
      */
     static Expression _nonNullParam(final Expression type, final @Nullable Object value) {
+        final Expression resultExpression;
         if (value == null) {
-            throw _Exceptions.expressionIsNull();
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), _Exceptions::expressionIsNull);
+        } else if (value instanceof Expression) {
+            resultExpression = (Expression) value;
+        } else if (type instanceof TableField) {
+            resultExpression = ParamExpression.single((TableField) type, value);
+        } else {
+            resultExpression = ParamExpression.single(type.paramMeta(), value);
         }
+        return resultExpression;
+    }
+
+    /**
+     * package method that is used by army developer.
+     *
+     * @param value {@link Expression} or parameter
+     */
+    static Expression _nullableParam(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
         if (value instanceof Expression) {
             resultExpression = (Expression) value;
@@ -212,24 +276,8 @@ public abstract class SQLs extends Functions {
      *
      * @param value {@link Expression} or parameter
      */
-    static ArmyExpression _nullableParam(final Expression type, final @Nullable Object value) {
-        final Expression resultExpression;
-        if (value instanceof Expression) {
-            resultExpression = (Expression) value;
-        } else if (type instanceof TableField) {
-            resultExpression = ParamExpression.single((TableField) type, value);
-        } else {
-            resultExpression = ParamExpression.single(type.paramMeta(), value);
-        }
-        return (ArmyExpression) resultExpression;
-    }
-
-    /**
-     * package method that is used by army developer.
-     *
-     * @param value {@link Expression} or parameter
-     */
-    static ArmyExpression _nullableParam(final @Nullable Object value) {
+    @Deprecated
+    static Expression _nullableParam(final @Nullable Object value) {
         final Expression expression;
         if (value == null) {
             expression = StringTypeNull.INSTANCE;
@@ -238,7 +286,7 @@ public abstract class SQLs extends Functions {
         } else {
             expression = SQLs.param(value);
         }
-        return (ArmyExpression) expression;
+        return expression;
     }
 
     /**
@@ -249,8 +297,11 @@ public abstract class SQLs extends Functions {
     static ArmyExpression _nonNullExp(final @Nullable Object exp) {
         final Expression expression;
         if (exp == null) {
-            throw _Exceptions.expressionIsNull();
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), _Exceptions::expressionIsNull);
         } else if (exp instanceof Expression) {
+            if (!(exp instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(CriteriaContextStack.peek());
+            }
             expression = (Expression) exp;
         } else {
             expression = SQLs.param(exp);
@@ -261,19 +312,18 @@ public abstract class SQLs extends Functions {
     /**
      * package method that is used by army developer.
      */
-    static ArmyExpression _nonNullLiteral(final Expression type, final @Nullable Object value) {
-        if (value == null) {
-            throw _Exceptions.expressionIsNull();
-        }
+    static Expression _nonNullLiteral(final Expression type, final @Nullable Object value) {
         final Expression resultExpression;
-        if (value instanceof Expression) {
+        if (value == null) {
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), _Exceptions::expressionIsNull);
+        } else if (value instanceof Expression) {
             resultExpression = (Expression) value;
         } else if (type instanceof TableField) {
             resultExpression = LiteralExpression.single((TableField) type, value);
         } else {
             resultExpression = LiteralExpression.single(type.paramMeta(), value);
         }
-        return (ArmyExpression) resultExpression;
+        return resultExpression;
     }
 
     /**
@@ -392,6 +442,17 @@ public abstract class SQLs extends Functions {
         return ParamExpression.namedNullableSingle(paramMeta, name);
     }
 
+    static Expression _nullableNamedParam(DataField field, String name) {
+        final ParamMeta paramMeta;
+        if (field instanceof TableField) {
+            paramMeta = (TableField) field;
+        } else {
+            paramMeta = field.paramMeta();
+        }
+        return ParamExpression.namedNullableSingle(paramMeta, name);
+    }
+
+
     /**
      * <p>
      * Create nullable named parameter expression for batch update(or delete)
@@ -423,6 +484,17 @@ public abstract class SQLs extends Functions {
     public static Expression namedParam(ParamMeta paramMeta, String name) {
         return ParamExpression.namedNonNullSingle(paramMeta, name);
     }
+
+    static Expression _namedParam(DataField field, String name) {
+        final ParamMeta paramMeta;
+        if (field instanceof TableField) {
+            paramMeta = (TableField) field;
+        } else {
+            paramMeta = field.paramMeta();
+        }
+        return ParamExpression.namedNonNullSingle(paramMeta, name);
+    }
+
 
     /**
      * <p>
@@ -502,7 +574,7 @@ public abstract class SQLs extends Functions {
      * @see Update._SetClause#setPairs(BiConsumer)
      * @see Update._SetClause#setPairs(Consumer)
      */
-    static _ItemPair _itemPair(final DataField field, final @Nullable AssignOperator operator
+    static ArmyItemPair _itemPair(final DataField field, final @Nullable AssignOperator operator
             , final @Nullable Object value) {
         if (operator != null && value == null) {
             throw _Exceptions.expressionIsNull();
@@ -532,7 +604,7 @@ public abstract class SQLs extends Functions {
         } else {
             valueExp = SQLs.param(field.paramMeta(), value);
         }
-        final _ItemPair itemPair;
+        final ArmyItemPair itemPair;
         if (operator == null) {
             itemPair = new FieldItemPair(field, (ArmyExpression) valueExp);
         } else {

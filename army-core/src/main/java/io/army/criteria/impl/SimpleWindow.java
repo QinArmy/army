@@ -15,10 +15,7 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -242,43 +239,51 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
     @Override
-    public final <S extends SortItem> OR orderBy(Function<C, List<S>> function) {
-        this.orderByList = CriteriaUtils.asSortItemList(function.apply(this.criteriaContext.criteria()));
-        return (OR) this;
+    public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .orderBy(consumer);
     }
 
     @Override
-    public final <S extends SortItem> OR orderBy(Supplier<List<S>> supplier) {
-        this.orderByList = CriteriaUtils.asSortItemList(supplier.get());
-        return (OR) this;
+    public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .orderBy(consumer);
     }
 
     @Override
-    public final OR orderBy(Consumer<List<SortItem>> consumer) {
-        final List<SortItem> sortItemList = new ArrayList<>();
-        consumer.accept(sortItemList);
-        this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
-        return (OR) this;
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand);
     }
 
     @Override
-    public final <S extends SortItem> OR ifOrderBy(Supplier<List<S>> supplier) {
-        final List<S> sortItemList;
-        sortItemList = supplier.get();
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
-        }
-        return (OR) this;
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand, operandKey);
     }
 
     @Override
-    public final <S extends SortItem> OR ifOrderBy(Function<C, List<S>> function) {
-        final List<S> sortItemList;
-        sortItemList = function.apply(this.criteriaContext.criteria());
-        if (sortItemList != null && sortItemList.size() > 0) {
-            this.orderByList = CriteriaUtils.asSortItemList(sortItemList);
-        }
-        return (OR) this;
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, firstOperand, secondOperand);
+    }
+
+    @Override
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand, firstKey, secondKey);
+    }
+
+    @Override
+    public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(consumer);
+    }
+
+    @Override
+    public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(consumer);
     }
 
     @Override
@@ -594,6 +599,14 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         } else {
             this.frameEndBound = bound;
         }
+    }
+
+    private OR orderByEnd(final List<ArmySortItem> itemList) {
+        if (this.orderByList != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        this.orderByList = itemList;
+        return (OR) this;
     }
 
 

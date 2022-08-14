@@ -2,12 +2,16 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._ItemPair;
+import io.army.criteria.impl.inner._MultiUpdate;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Update;
-import io.army.dialect.mysql.MySQLDialect;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
+import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -37,8 +41,6 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
     private final boolean supportRowLeftItem;
 
-    private final boolean supportMultiTableUpdate;
-
     private List<_ItemPair> itemPairList;
 
     private List<_ItemPair> childItemPairList;
@@ -52,7 +54,6 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
         this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
-        this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();
 
         if (this instanceof SubStatement) {
             CriteriaContextStack.push(criteriaContext);
@@ -67,7 +68,6 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
         this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
-        this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();
         //single update no CriteriaContextStack operation
     }
 
@@ -88,106 +88,100 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
     @Override
     public final SR setExp(final F field, final Expression value) {
-        return this.addItemPair(SQLs._itemExpPair(field, value));
+        return this.addFieldAndExp(field, null, value);
     }
 
     @Override
     public final SR setExp(F field, Supplier<? extends Expression> supplier) {
-        return this.addItemPair(SQLs._itemExpPair(field, supplier.get()));
+        return this.addFieldAndExp(field, null, supplier.get());
     }
 
     @Override
     public final SR setExp(F field, Function<C, ? extends Expression> function) {
-        return this.addItemPair(SQLs._itemExpPair(field, function.apply(this.criteria)));
+        return this.addFieldAndExp(field, null, function.apply(this.criteria));
     }
 
     @Override
     public final SR ifSetExp(F field, Supplier<? extends Expression> supplier) {
-        final Expression value;
-        value = supplier.get();
-        if (value != null) {
-            this.addItemPair(SQLs._itemExpPair(field, value));
+        final Expression exp;
+        exp = supplier.get();
+        if (exp != null) {
+            this.addFieldAndExp(field, null, exp);
         }
         return (SR) this;
     }
 
     @Override
     public final SR ifSetExp(F field, Function<C, ? extends Expression> function) {
-        final Expression value;
-        value = function.apply(this.criteria);
-        if (value != null) {
-            this.addItemPair(SQLs._itemExpPair(field, value));
+        final Expression exp;
+        exp = function.apply(this.criteria);
+        if (exp != null) {
+            this.addFieldAndExp(field, null, exp);
         }
         return (SR) this;
     }
 
     @Override
     public final SR setDefault(F field) {
-        return this.addItemPair(SQLs._itemExpPair(field, SQLs.defaultWord()));
+        return this.addFieldAndExp(field, null, SQLs.defaultWord());
     }
 
     @Override
     public final SR setNull(F field) {
-        return this.addItemPair(SQLs._itemExpPair(field, SQLs.nullWord()));
+        return this.addFieldAndExp(field, null, SQLs.nullWord());
     }
 
     /*################################## blow _SimpleSetClause method ##################################*/
 
     @Override
     public final SR set(F field, @Nullable Object value) {
-        return this.addItemPair(SQLs.itemPair(field, value));
+        return this.addFieldAndExp(field, null, SQLs._nullableParam(field, value));
     }
 
 
     @Override
     public final SR setLiteral(F field, @Nullable Object value) {
-        return this.addItemPair(SQLs._itemExpPair(field, SQLs._nullableLiteral(field, value)));
+        return this.addFieldAndExp(field, null, SQLs._nullableLiteral(field, value));
     }
 
     @Override
     public final SR setPlus(F field, Object value) {
-        return this.addItemPair(SQLs._itemPair(field, AssignOperator.PLUS_EQUAL, value));
+        return this.addFieldAndExp(field, SQLs::plusEqual, SQLs._nonNullParam(field, value));
     }
 
     @Override
     public final SR setMinus(F field, Object value) {
-        return this.addItemPair(SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, value));
+        return this.addFieldAndExp(field, SQLs::minusEqual, SQLs._nonNullParam(field, value));
     }
 
     @Override
     public final SR setPlusLiteral(F field, Object value) {
-        return this.addItemPair(SQLs._itemPair(field, AssignOperator.PLUS_EQUAL, SQLs._nonNullLiteral(field, value)));
+        return this.addFieldAndExp(field, SQLs::plusEqual, SQLs._nonNullLiteral(field, value));
     }
 
     @Override
     public final SR setMinusLiteral(F field, Object value) {
-        return this.addItemPair(SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, SQLs._nonNullLiteral(field, value)));
+        return this.addFieldAndExp(field, SQLs::minusEqual, SQLs._nonNullLiteral(field, value));
     }
 
     @Override
     public final SR set(F field, BiFunction<DataField, Object, ItemPair> operator, Object value) {
-        return this.addItemPair(operator.apply(field, value));
+        return this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
     }
 
     @Override
     public final SR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Supplier<? extends Expression> supplier) {
-        final Expression value;
-        value = supplier.get();
-        assert value != null;
-        return this.addItemPair(operator.apply(field, value));
+        return this.addFieldAndExp(field, operator, supplier.get());
     }
 
     @Override
     public final SR setExp(F field, BiFunction<DataField, Object, ItemPair> operator, Function<C, ? extends Expression> function) {
-        final Expression value;
-        value = function.apply(this.criteria);
-        assert value != null;
-        return this.addItemPair(operator.apply(field, value));
+        return this.addFieldAndExp(field, operator, function.apply(this.criteria));
     }
 
     @Override
     public final SR setLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, Object value) {
-        return this.addItemPair(operator.apply(field, SQLs._nonNullLiteral(field, value)));
+        return this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
     }
 
     @Override
@@ -195,7 +189,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = supplier.get();
         if (value != null) {
-            this.addItemPair(SQLs.itemPair(field, value));
+            this.addFieldAndExp(field, null, SQLs._nonNullParam(field, value));
         }
         return (SR) this;
     }
@@ -205,7 +199,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.addItemPair(SQLs.itemPair(field, value));
+            this.addFieldAndExp(field, null, SQLs._nonNullParam(field, value));
         }
         return (SR) this;
     }
@@ -215,7 +209,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = supplier.get();
         if (value != null) {
-            this.addItemPair(operator.apply(field, value));
+            this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
         }
         return (SR) this;
     }
@@ -225,7 +219,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = function.apply(this.criteria);
         if (value != null) {
-            this.addItemPair(operator.apply(field, value));
+            this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
         }
         return (SR) this;
     }
@@ -235,7 +229,15 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.addItemPair(operator.apply(field, value));
+            this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifNonNullSet(F field, BiFunction<DataField, Object, ItemPair> operator, @Nullable Object operand) {
+        if (operand != null) {
+            this.addFieldAndExp(field, operator, SQLs._nonNullParam(field, operand));
         }
         return (SR) this;
     }
@@ -245,7 +247,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = supplier.get();
         if (value != null) {
-            this.addItemPair(SQLs._itemExpPair(field, SQLs._nonNullLiteral(field, value)));
+            this.addFieldAndExp(field, null, SQLs._nonNullLiteral(field, value));
         }
         return (SR) this;
     }
@@ -255,7 +257,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.addItemPair(SQLs._itemExpPair(field, SQLs._nonNullLiteral(field, value)));
+            this.addFieldAndExp(field, null, SQLs._nonNullLiteral(field, value));
         }
         return (SR) this;
     }
@@ -265,7 +267,16 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = supplier.get();
         if (value != null) {
-            this.addItemPair(operator.apply(field, SQLs._nonNullLiteral(field, value)));
+            this.addFieldAndExp(field, operator, SQLs._nonNullLiteral(field, value));
+        }
+        return (SR) this;
+    }
+
+
+    @Override
+    public final SR ifNonNullSetLiteral(F field, BiFunction<DataField, Object, ItemPair> operator, @Nullable Object operand) {
+        if (operand != null) {
+            this.addFieldAndExp(field, operator, SQLs._nonNullLiteral(field, operand));
         }
         return (SR) this;
     }
@@ -275,7 +286,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = function.apply(this.criteria);
         if (value != null) {
-            this.addItemPair(operator.apply(field, SQLs._nonNullLiteral(field, value)));
+            this.addFieldAndExp(field, operator, SQLs._nonNullLiteral(field, value));
         }
         return (SR) this;
     }
@@ -285,7 +296,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         final Object value;
         value = function.apply(keyName);
         if (value != null) {
-            this.addItemPair(operator.apply(field, SQLs._nonNullLiteral(field, value)));
+            this.addFieldAndExp(field, operator, SQLs._nonNullLiteral(field, value));
         }
         return (SR) this;
     }
@@ -295,42 +306,42 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
     @Override
     public final SR set(F field) {
-        return this.addItemPair(SQLs._itemExpPair(field, SQLs.namedParam(field)));
+        return this.addFieldAndExp(field, null, SQLs.namedParam(field));
     }
 
     @Override
     public final SR setNullable(F field) {
-        return this.addItemPair(SQLs._itemExpPair(field, SQLs.nullableNamedParam(field)));
+        return this.addFieldAndExp(field, null, SQLs.nullableNamedParam(field));
     }
 
     @Override
     public final SR setNamed(F field, String parameterName) {
-        return this.addItemPair(SQLs._itemExpPair(field, SQLs.namedParam(field.paramMeta(), parameterName)));
+        return this.addFieldAndExp(field, null, SQLs._namedParam(field, parameterName));
     }
 
     @Override
     public final SR setNullableNamed(F field, String parameterName) {
-        return this.addItemPair(SQLs._itemExpPair(field, SQLs.nullableNamedParam(field.paramMeta(), parameterName)));
+        return this.addFieldAndExp(field, null, SQLs._nullableNamedParam(field, parameterName));
     }
 
     @Override
     public final SR setPlus(F field) {
-        return this.addItemPair(SQLs._itemPair(field, AssignOperator.PLUS_EQUAL, SQLs.namedParam(field)));
+        return this.addFieldAndExp(field, SQLs::plusEqual, SQLs.namedParam(field));
     }
 
     @Override
     public final SR setMinus(F field) {
-        return this.addItemPair(SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, SQLs.namedParam(field)));
+        return this.addFieldAndExp(field, SQLs::minusEqual, SQLs.namedParam(field));
     }
 
     @Override
     public final SR set(F field, BiFunction<DataField, Object, ItemPair> operator) {
-        return this.addItemPair(operator.apply(field, SQLs.namedParam(field)));
+        return this.addFieldAndExp(field, operator, SQLs.namedParam(field));
     }
 
     @Override
     public final SR setNamed(F field, BiFunction<DataField, Object, ItemPair> operator, String parameterName) {
-        return this.addItemPair(operator.apply(field, SQLs.namedParam(field.paramMeta(), parameterName)));
+        return this.addFieldAndExp(field, operator, SQLs._namedParam(field, parameterName));
     }
 
     @Override
@@ -435,25 +446,60 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
 
     abstract boolean isSupportRowLeftItem();
 
-    abstract boolean isSupportMultiTableUpdate();
-
 
     @Nullable
-    abstract MySQLDialect dialect();
+    abstract Dialect dialect();
+
+
+    private SR addFieldAndExp(final F field, final @Nullable BiFunction<DataField, Object, ItemPair> operator
+            , final @Nullable Expression operand) {
+        if (operand == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
+        if (!(operand instanceof ArmyExpression)) {
+            throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+        }
+        final ItemPair itemPair;
+        if (operator == null) {
+            itemPair = SQLs._itemPair(field, null, operand);
+        } else {
+            itemPair = operator.apply(field, operand);
+            if (!(itemPair instanceof SQLs.ArmyItemPair)) {
+                throw illegalItemPair(itemPair);
+            }
+        }
+
+        if (this instanceof _MultiUpdate) {
+            this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
+        } else if (!(field instanceof FieldMeta)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        } else if (this instanceof _SingleUpdate) {
+            if (((FieldMeta<?>) field).tableMeta() instanceof ChildTableMeta) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
+        } else if (!(this instanceof _Update._DomainUpdate)) {
+            //no bug,never here
+            throw new IllegalStateException("unknown update statement");
+        } else if (((FieldMeta<?>) field).tableMeta() instanceof ChildTableMeta) {
+            this.doAddChildItemPair((SQLs.ArmyItemPair) itemPair);
+        } else {
+            this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
+        }
+        return (SR) this;
+    }
 
 
     private SR addItemPair(final ItemPair pair) {
         if (!(pair instanceof SQLs.ArmyItemPair)) {
-            throw new CriteriaException(String.format("Illegal %s", ItemPair.class.getName()));
+            throw illegalItemPair(pair);
         }
-
         if (pair instanceof SQLs.FieldItemPair) {
             final DataField field = ((SQLs.FieldItemPair) pair).field;
-            if (this.supportMultiTableUpdate) {
+            if (this instanceof _MultiUpdate) {
                 this.doAddItemPair((SQLs.ArmyItemPair) pair);
-            } else if (!(field instanceof TableField)) {
-                // no derived field,because don't support multi-table update
-                throw _Exceptions.immutableField(field);
+            } else if (!(field instanceof FieldMeta)) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             } else if (((TableField) field).tableMeta() instanceof ChildTableMeta) {
                 this.doAddChildItemPair((SQLs.ArmyItemPair) pair);
             } else {
@@ -463,8 +509,9 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             //no bug,never here
             throw new IllegalStateException("unknown ItemPair");
         } else if (!this.supportRowLeftItem) {
-            throw _Exceptions.dontSupportRowLeftItem(this.dialect());
-        } else if (this.supportMultiTableUpdate || !isChildTable((SQLs.RowItemPair) pair)) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::dontSupportRowLeftItem
+                    , this.dialect());
+        } else if (this instanceof _MultiUpdate || !isChildTable((SQLs.RowItemPair) pair)) {
             this.doAddItemPair((SQLs.ArmyItemPair) pair);
         } else {
             this.doAddChildItemPair((SQLs.ArmyItemPair) pair);
@@ -473,11 +520,12 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
     }
 
     private void doAddChildItemPair(final SQLs.ArmyItemPair pair) {
-        assert !this.supportMultiTableUpdate;
         List<_ItemPair> childItemPairList = this.childItemPairList;
         if (childItemPairList == null) {
             childItemPairList = new ArrayList<>();
             this.childItemPairList = childItemPairList;
+        } else if (!(childItemPairList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         childItemPairList.add(pair);
     }
@@ -487,8 +535,15 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         if (itemPairList == null) {
             itemPairList = new ArrayList<>();
             this.itemPairList = itemPairList;
+        } else if (!(childItemPairList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         itemPairList.add(pair);
+    }
+
+    private CriteriaException illegalItemPair(@Nullable ItemPair itemPair) {
+        String m = String.format("%s Illegal %s", _ClassUtils.safeClassName(itemPair), ItemPair.class.getName());
+        throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
     }
 
     private static boolean isChildTable(final SQLs.RowItemPair pair) {

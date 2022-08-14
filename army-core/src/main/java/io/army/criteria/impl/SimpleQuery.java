@@ -383,6 +383,14 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         return (WA) this;
     }
 
+    @Override
+    public final WA ifNonNullAnd(Function<Object, ? extends Expression> firstOperator, @Nullable Object firstOperand
+            , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand) {
+        if (firstOperand != null) {
+            this.and(secondOperator.apply(firstOperator.apply(firstOperand), secondOperand));
+        }
+        return (WA) this;
+    }
 
     @Override
     public final WA ifAnd(Supplier<IPredicate> supplier) {

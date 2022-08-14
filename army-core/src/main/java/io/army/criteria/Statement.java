@@ -397,6 +397,9 @@ public interface Statement {
 
         WA ifNonNullAnd(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand);
 
+        WA ifNonNullAnd(Function<Object, ? extends Expression> firstOperator, @Nullable Object firstOperand
+                , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
+
         WA ifAnd(Supplier<IPredicate> supplier);
 
         WA ifAnd(Function<C, IPredicate> function);

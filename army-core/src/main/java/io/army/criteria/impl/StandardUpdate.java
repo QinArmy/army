@@ -6,8 +6,12 @@ import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._SingleUpdate;
+import io.army.criteria.impl.inner._Update;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
+import io.army.meta.ComplexTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -22,38 +26,36 @@ import java.util.function.Supplier;
  * @param <C> criteria object java type
  * @since 1.0
  */
-@SuppressWarnings("unchecked")
-abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableField, SR, WR, WA, Update>
-        implements Update.StandardUpdateClause<UR>, _SingleUpdate, Update._UpdateSpec, StandardStatement
-        , Update {
 
-    static <C> StandardUpdateSpec<C> simple(@Nullable C criteria) {
-        return new SimpleUpdate<>(criteria);
+abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends SingleUpdate<C, F, SR, WR, WA, Update>
+        implements _SingleUpdate, Update._UpdateSpec, StandardStatement, Update {
+
+    static <C> _StandardSingleUpdateClause<C> simpleSingle(@Nullable C criteria) {
+        return new SimpleUpdateClause<>(criteria);
     }
 
-    static <C> StandardBatchUpdateSpec<C> batch(@Nullable C criteria) {
-        return new BatchUpdate<>(criteria);
+    static <C> _StandardBatchSingleUpdateClause<C> batchSingle(@Nullable C criteria) {
+        return new BatchUpdateClause<>(criteria);
     }
 
-    private TableMeta<?> table;
+    static <C> _StandardDomainUpdateClause<C> simpleDomain(@Nullable C criteria) {
+        return new SimpleDomainUpdateClause<>(criteria);
+    }
 
-    private String tableAlias;
+    static <C> _StandardBatchDomainUpdateClause<C> batchDomain(@Nullable C criteria) {
+        return new BatchDomainUpdateClause<>(criteria);
+    }
+
+    private final TableMeta<?> table;
+
+    private final String tableAlias;
 
 
-    private StandardUpdate(@Nullable C criteria) {
+    private StandardUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
         super(CriteriaContexts.primarySingleDmlContext(criteria));
-    }
-
-    @Override
-    public final UR update(TableMeta<?> table, String tableAlias) {
-        if (this.table != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
         this.table = table;
         this.tableAlias = tableAlias;
-        return (UR) this;
     }
-
 
     @Override
     public final String toString() {
@@ -71,16 +73,15 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
         if (this.table == null || this.tableAlias == null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        if (this instanceof BatchUpdate && ((BatchUpdate<C>) this).paramList == null) {
+        if (this instanceof BatchUpdate && ((BatchUpdate<C, F>) this).paramList == null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
     }
 
     @Override
     final void onClear() {
-        this.tableAlias = null;
         if (this instanceof BatchUpdate) {
-            ((BatchUpdate<C>) this).paramList = null;
+            ((BatchUpdate<C, F>) this).paramList = null;
         }
 
     }
@@ -91,13 +92,6 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
         // false ,standard don't support row left item
         return false;
     }
-
-    @Override
-    final boolean isSupportMultiTableUpdate() {
-        // false ,standard don't support multi-table update
-        return false;
-    }
-
     @Override
     final MySQLDialect dialect() {
         // no dialect
@@ -123,20 +117,30 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
      * @param <C> criteria object java type
      * @since 1.0
      */
-    private static final class SimpleUpdate<C> extends StandardUpdate<
+    private static class SimpleUpdate<C, F extends TableField> extends StandardUpdate<
             C,
-            Update.StandardSetSpec<C>,
-            Update.StandardWhereSpec<C>,
+            F,
+            _StandardWhereSpec<C, F>,
             _UpdateSpec,
-            Update.StandardWhereAndSpec<C>> implements Update.StandardUpdateSpec<C>, Update.StandardWhereAndSpec<C>
-            , Update.StandardWhereSpec<C> {
+            _StandardWhereAndSpec<C>>
+            implements _StandardWhereAndSpec<C>, _StandardWhereSpec<C, F> {
 
-        private SimpleUpdate(@Nullable C criteria) {
-            super(criteria);
+        private SimpleUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
+            super(criteria, table, tableAlias);
         }
 
 
     }//SimpleUpdate
+
+    private static class SimpleDomainUpdate<C> extends SimpleUpdate<C, FieldMeta<?>>
+            implements _Update._DomainUpdate {
+
+        private SimpleDomainUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
+            super(criteria, table, tableAlias);
+        }
+
+
+    }//SimpleDomainUpdate
 
 
     /**
@@ -147,52 +151,138 @@ abstract class StandardUpdate<C, UR, SR, WR, WA> extends SingleUpdate<C, TableFi
      * @param <C> criteria object java type
      * @since 1.0
      */
-    private static final class BatchUpdate<C> extends StandardUpdate<
+    private static class BatchUpdate<C, F extends TableField> extends StandardUpdate<
             C,
-            Update.StandardBatchSetSpec<C>,
-            Update.StandardBatchWhereSpec<C>,
+            F,
+            _StandardBatchWhereSpec<C, F>,
             _BatchParamClause<C, _UpdateSpec>,
-            Update.StandardBatchWhereAndSpec<C>> implements Update.StandardBatchUpdateSpec<C>
-            , Update.StandardBatchWhereSpec<C>, Update.StandardBatchWhereAndSpec<C>
+            _StandardBatchWhereAndSpec<C>>
+            implements _StandardBatchWhereSpec<C, F>, _StandardBatchWhereAndSpec<C>
             , _BatchParamClause<C, _UpdateSpec>, _BatchDml {
 
         private List<?> paramList;
 
-        private BatchUpdate(@Nullable C criteria) {
-            super(criteria);
+        private BatchUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
+            super(criteria, table, tableAlias);
         }
 
         @Override
-        public <P> _UpdateSpec paramList(List<P> paramList) {
+        public final <P> _UpdateSpec paramList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(paramList);
             return this;
         }
 
         @Override
-        public <P> _UpdateSpec paramList(Supplier<List<P>> supplier) {
+        public final <P> _UpdateSpec paramList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(supplier.get());
             return this;
         }
 
         @Override
-        public <P> _UpdateSpec paramList(Function<C, List<P>> function) {
+        public final <P> _UpdateSpec paramList(Function<C, List<P>> function) {
             this.paramList = CriteriaUtils.paramList(function.apply(this.criteria));
             return this;
         }
 
         @Override
-        public _UpdateSpec paramList(Function<String, ?> function, String keyName) {
+        public final _UpdateSpec paramList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList((List<?>) function.apply(keyName));
             return this;
         }
 
         @Override
-        public List<?> paramList() {
+        public final List<?> paramList() {
             return this.paramList;
         }
 
 
     }//BatchUpdate
+
+
+    private static final class BatchDomainUpdate<C> extends BatchUpdate<C, FieldMeta<?>>
+            implements _Update._DomainUpdate {
+
+        private BatchDomainUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
+            super(criteria, table, tableAlias);
+        }
+
+    }//BatchDomainUpdate
+
+
+    private static final class SimpleUpdateClause<C> implements _StandardSingleUpdateClause<C> {
+
+        private final C criteria;
+
+        private SimpleUpdateClause(@Nullable C criteria) {
+            this.criteria = criteria;
+        }
+
+        @Override
+        public <T> _StandardSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
+            return new SimpleUpdate<>(this.criteria, table, tableAlias);
+        }
+
+        @Override
+        public <P> _StandardSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
+            return new SimpleUpdate<>(this.criteria, table, tableAlias);
+        }
+
+    }//SimpleUpdateClause
+
+    private static final class SimpleDomainUpdateClause<C> implements Update._StandardDomainUpdateClause<C> {
+
+        private final C criteria;
+
+        private SimpleDomainUpdateClause(@Nullable C criteria) {
+            this.criteria = criteria;
+        }
+
+
+        @Override
+        public _StandardSetClause<C, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
+            return new SimpleDomainUpdate<>(this.criteria, table, tableAlias);
+        }
+
+
+    }//SimpleDomainUpdateClause
+
+
+    private static final class BatchUpdateClause<C> implements _StandardBatchSingleUpdateClause<C> {
+
+        private final C criteria;
+
+        private BatchUpdateClause(@Nullable C criteria) {
+            this.criteria = criteria;
+        }
+
+        @Override
+        public <T> _StandardBatchSetClause<C, FieldMeta<T>> update(SingleTableMeta<T> table, String tableAlias) {
+            return new BatchUpdate<>(this.criteria, table, tableAlias);
+        }
+
+        @Override
+        public <P> _StandardBatchSetClause<C, FieldMeta<P>> update(ComplexTableMeta<P, ?> table, String tableAlias) {
+            return new BatchUpdate<>(this.criteria, table, tableAlias);
+        }
+
+    }//BatchUpdateClause
+
+
+    private static final class BatchDomainUpdateClause<C> implements Update._StandardBatchDomainUpdateClause<C> {
+
+        private final C criteria;
+
+        private BatchDomainUpdateClause(@Nullable C criteria) {
+            this.criteria = criteria;
+        }
+
+        @Override
+        public _StandardBatchSetClause<C, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
+            return new BatchDomainUpdate<>(this.criteria, table, tableAlias);
+        }
+
+
+    }//BatchDomainUpdateClause
 
 
 }
