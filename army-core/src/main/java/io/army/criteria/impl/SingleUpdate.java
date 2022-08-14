@@ -18,6 +18,7 @@ abstract class SingleUpdate<C, F extends DataField, SR, WR, WA, U extends DmlSta
 
     SingleUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext, JoinableClause.voidClauseCreator());
+
     }
 
 

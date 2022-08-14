@@ -6,7 +6,8 @@ import io.army.meta.ServerMeta;
 
 public enum PostgreDialect implements Dialect {
 
-    POSTGRE8(8);
+    // POSTGRE8(8)
+    ;
 
 
     private final byte version;

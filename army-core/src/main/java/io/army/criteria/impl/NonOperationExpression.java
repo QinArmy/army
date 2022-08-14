@@ -12,8 +12,6 @@ import java.util.function.Supplier;
  *     <ul>
  *         <li>{@link SQLs.DefaultWord}</li>
  *         <li>{@link SQLs.NullWord}</li>
- *         <li>{@link MultiParamExpression}</li>
- *         <li>{@link ParamExpression.NullExpression}</li>
  *     </ul>
  * </p>
  */
@@ -35,10 +33,10 @@ abstract class NonOperationExpression implements ArmyExpression {
     @Override
     public final boolean isNullValue() {
         final boolean nullable;
-        if (this instanceof SqlValueParam.SingleValue) {
+        if (this instanceof SqlValueParam.SingleNonNamedValue) {
             nullable = ((SqlValueParam.SingleNonNamedValue) this).value() == null;
         } else {
-            nullable = this instanceof SQLs.NullWord;
+            nullable = false;
         }
         return nullable;
     }

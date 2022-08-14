@@ -7,7 +7,6 @@ import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.Person_;
 import io.army.example.pill.domain.User_;
-import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.UserType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,134 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StandardCriteriaUnitTests {
+public class StandardQueryUnitTests {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StandardCriteriaUnitTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StandardQueryUnitTests.class);
 
-
-    @Test
-    public void updateParent() {
-        final BigDecimal addGdp = new BigDecimal("888.8");
-        final Map<String, Object> map = new HashMap<>();
-        map.put("firstId", (byte) 1);
-        map.put("secondId", "3");
-
-        final Update stmt;
-        stmt = SQLs.domainUpdate()
-                .update(ChinaRegion_.T, "c")
-                .set(ChinaRegion_.name, "武侠江湖")
-                .setPlus(ChinaRegion_.regionGdp, addGdp)
-                .where(ChinaRegion_.id::between, map::get, "firstId", "secondId")
-                .and(ChinaRegion_.name.equal("江湖"))
-                .and(ChinaRegion_.regionGdp.plus(addGdp).greatEqualLiteral(BigDecimal.ZERO))
-                .asUpdate();
-
-        printStmt(stmt);
-    }
-
-    @Test
-    public void updateChild() {
-        final BigDecimal addGdp = new BigDecimal("888.8");
-        final Update stmt;
-        stmt = SQLs.domainUpdate()
-                .update(ChinaProvince_.T, "p")
-                .set(ChinaProvince_.name, "武侠江湖")
-                .setPlusLiteral(ChinaProvince_.regionGdp, addGdp)
-                .set(ChinaProvince_.provincialCapital, "光明顶")
-                .set(ChinaProvince_.governor, "张无忌")
-                .where(ChinaProvince_.id.equalLiteral(1))
-                .and(ChinaProvince_.name.equal("江湖"))
-                .and(ChinaProvince_.regionGdp.plus(addGdp).greatEqual(BigDecimal.ZERO))
-                .and(ChinaProvince_.governor.equal("阳顶天").or(list -> {
-                    list.add(ChinaProvince_.governor.equal("石教主"));
-                    list.add(ChinaProvince_.governor.equal("钟教主").and(ChinaProvince_.governor.equal("老钟")));
-                    list.add(ChinaProvince_.governor.equal("方腊"));
-                }))
-                .asUpdate();
-
-        printStmt(stmt);
-
-    }
-
-    @Test
-    public void batchUpdateParent() {
-        final Update stmt;
-        stmt = SQLs.batchDomainUpdate()
-                .update(ChinaProvince_.T, "p")
-                .setPlus(ChinaProvince_.regionGdp)
-                .set(ChinaProvince_.governor)
-                .where(ChinaProvince_.id.equalNamed())
-                .and(ChinaProvince_.regionGdp.plusNamed().greatEqual(BigDecimal.ZERO))
-                .and(ChinaProvince_.version.equal(0))
-                .paramList(this::createProvinceList)
-                .asUpdate();
-
-        printStmt(stmt);
-
-    }
-
-
-    /**
-     * @see io.army.annotation.UpdateMode
-     */
-    @Test
-    public void updateParentWithOnlyNullMode() {
-        final Update stmt;
-        stmt = SQLs.domainUpdate()
-                .update(User_.T, "u")
-                .set(User_.identityType, IdentityType.PERSON)
-                .set(User_.identityId, 888)
-                .set(User_.nickName, "令狐冲")
-                .where(User_.id.equal(1))
-                .and(User_.nickName.equal("zoro"))
-                .asUpdate();
-
-        printStmt(stmt);
-    }
-
-    @Test
-    public void deleteParent() {
-        final Delete stmt;
-        stmt = SQLs.domainDelete()
-                .deleteFrom(ChinaRegion_.T, "r")
-                .where(ChinaRegion_.id.equal(1))
-                .and(ChinaRegion_.name.equal("马鱼腮角"))
-                .and(ChinaProvince_.version.equal(2))
-                .asDelete();
-
-        printStmt(stmt);
-
-    }
-
-    @Test
-    public void deleteChild() {
-        final Delete stmt;
-        stmt = SQLs.domainDelete()
-                .deleteFrom(ChinaProvince_.T, "p")
-                .where(ChinaProvince_.id.equal(1))
-                .and(ChinaProvince_.name.equal("江南省"))
-                .and(ChinaProvince_.governor.equal("无名"))
-                .and(ChinaProvince_.version.equal(2))
-                .asDelete();
-
-        printStmt(stmt);
-    }
-
-    @Test
-    public void batchDeleteChild() {
-        final Delete stmt;
-        stmt = SQLs.batchDomainDelete()
-                .deleteFrom(ChinaProvince_.T, "p")
-                .where(ChinaProvince_.id.equalNamed())
-                .and(ChinaProvince_.name.equalNamed())
-                .and(ChinaProvince_.governor.equalNamed())
-                .and(ChinaProvince_.regionGdp.plusNamed().lessThan("6666.66"))
-                .and(ChinaProvince_.version.equal(2))
-                .paramList(this::createProvinceList)
-                .asDelete();
-
-        printStmt(stmt);
-    }
 
     @Test
     public void simpleSingleSelect() {

@@ -6,7 +6,8 @@ import io.army.meta.ServerMeta;
 
 public enum OracleDialect implements Dialect {
 
-    ORACLE10(10);
+    // ORACLE10(10)
+    ;
 
 
     private final byte version;

@@ -5,8 +5,7 @@ import io.army.criteria.TableField;
 import io.army.criteria.Update;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._BatchDml;
-import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.criteria.impl.inner._Update;
+import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
@@ -28,7 +27,7 @@ import java.util.function.Supplier;
  */
 
 abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends SingleUpdate<C, F, SR, WR, WA, Update>
-        implements _SingleUpdate, Update._UpdateSpec, StandardStatement, Update {
+        implements Update._UpdateSpec, StandardStatement, Update {
 
     static <C> _StandardSingleUpdateClause<C> simpleSingle(@Nullable C criteria) {
         return new SimpleUpdateClause<>(criteria);
@@ -55,6 +54,8 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
         super(CriteriaContexts.primarySingleDmlContext(criteria));
         this.table = table;
         this.tableAlias = tableAlias;
+
+        CriteriaContextStack.setContextStack(this.criteriaContext);
     }
 
     @Override
@@ -133,7 +134,7 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
     }//SimpleUpdate
 
     private static class SimpleDomainUpdate<C> extends SimpleUpdate<C, FieldMeta<?>>
-            implements _Update._DomainUpdate {
+            implements _DomainUpdate {
 
         private SimpleDomainUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
             super(criteria, table, tableAlias);
@@ -200,7 +201,7 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
 
 
     private static final class BatchDomainUpdate<C> extends BatchUpdate<C, FieldMeta<?>>
-            implements _Update._DomainUpdate {
+            implements _DomainUpdate {
 
         private BatchDomainUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
             super(criteria, table, tableAlias);

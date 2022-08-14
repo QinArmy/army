@@ -1,7 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.meta.TableMeta;
-
 import java.util.List;
 
 public interface _Update extends _Statement {
@@ -18,15 +16,6 @@ public interface _Update extends _Statement {
     List<_ItemPair> childItemPairList();
 
     List<_Predicate> predicateList();
-
-
-    interface _DomainUpdate extends _Update {
-
-        String tableAlias();
-
-        TableMeta<?> table();
-
-    }
 
 
 }

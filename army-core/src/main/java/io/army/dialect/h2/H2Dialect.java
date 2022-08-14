@@ -6,7 +6,8 @@ import io.army.meta.ServerMeta;
 
 public enum H2Dialect implements Dialect {
 
-    H214(14);
+    // H214(14)
+    ;
 
 
     private final byte version;

@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._ItemPair;
-import io.army.criteria.impl.inner._MultiUpdate;
-import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.criteria.impl.inner._Update;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -473,24 +470,26 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
         } else if (!(field instanceof FieldMeta)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        } else if (this instanceof _DomainUpdate) {
+            if (((FieldMeta<?>) field).tableMeta() instanceof ChildTableMeta) {
+                this.doAddChildItemPair((SQLs.ArmyItemPair) itemPair);
+            } else {
+                this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
+            }
         } else if (this instanceof _SingleUpdate) {
             if (((FieldMeta<?>) field).tableMeta() instanceof ChildTableMeta) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
-        } else if (!(this instanceof _Update._DomainUpdate)) {
+        } else {
             //no bug,never here
             throw new IllegalStateException("unknown update statement");
-        } else if (((FieldMeta<?>) field).tableMeta() instanceof ChildTableMeta) {
-            this.doAddChildItemPair((SQLs.ArmyItemPair) itemPair);
-        } else {
-            this.doAddItemPair((SQLs.ArmyItemPair) itemPair);
         }
         return (SR) this;
     }
 
 
-    private SR addItemPair(final ItemPair pair) {
+    private void addItemPair(final ItemPair pair) {
         if (!(pair instanceof SQLs.ArmyItemPair)) {
             throw illegalItemPair(pair);
         }
@@ -499,9 +498,20 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
             if (this instanceof _MultiUpdate) {
                 this.doAddItemPair((SQLs.ArmyItemPair) pair);
             } else if (!(field instanceof FieldMeta)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                String m = "not multi-table update support only %s" + FieldMeta.class.getName();
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            } else if (this instanceof _DomainUpdate) {
+                if (((TableField) field).tableMeta() instanceof ChildTableMeta) {
+                    this.doAddChildItemPair((SQLs.ArmyItemPair) pair);
+                } else {
+                    this.doAddItemPair((SQLs.ArmyItemPair) pair);
+                }
+            } else if (!(this instanceof _SingleUpdate)) {
+                //no bug,never here
+                throw new IllegalStateException("unknown update statement");
             } else if (((TableField) field).tableMeta() instanceof ChildTableMeta) {
-                this.doAddChildItemPair((SQLs.ArmyItemPair) pair);
+                String m = "single update don't support child field";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             } else {
                 this.doAddItemPair((SQLs.ArmyItemPair) pair);
             }
@@ -516,7 +526,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         } else {
             this.doAddChildItemPair((SQLs.ArmyItemPair) pair);
         }
-        return (SR) this;
+
     }
 
     private void doAddChildItemPair(final SQLs.ArmyItemPair pair) {
@@ -535,7 +545,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         if (itemPairList == null) {
             itemPairList = new ArrayList<>();
             this.itemPairList = itemPairList;
-        } else if (!(childItemPairList instanceof ArrayList)) {
+        } else if (!(itemPairList instanceof ArrayList)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         itemPairList.add(pair);
