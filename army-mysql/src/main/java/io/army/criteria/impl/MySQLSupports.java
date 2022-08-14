@@ -226,7 +226,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     static abstract class PartitionAsClause<C, AR> implements Statement._AsClause<AR>, MySQLBlockParams
-            , MySQLQuery._PartitionClause<C, Statement._AsClause<AR>> {
+            , MySQLQuery._PartitionAndAsClause<C, AR> {
 
         private final CriteriaContext criteriaContext;
 

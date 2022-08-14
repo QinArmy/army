@@ -68,12 +68,7 @@ abstract class JoinableUpdate<C, F extends DataField, SR, FT, FS, FP, FJ, JT, JS
         this.criteriaContext = criteriaContext;
         this.supportRowLeftItem = this.isSupportRowLeftItem();
         this.supportMultiTableUpdate = this.isSupportMultiTableUpdate();
-
-        if (this instanceof SubStatement) {
-            CriteriaContextStack.push(criteriaContext);
-        } else {
-            CriteriaContextStack.setContextStack(criteriaContext);
-        }
+        //single update no CriteriaContextStack operation
     }
 
     /*################################## blow SetClause method ##################################*/

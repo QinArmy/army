@@ -443,7 +443,7 @@ public interface Statement {
 
         OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey);
 
-        OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator);
+        OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
         OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey);
 

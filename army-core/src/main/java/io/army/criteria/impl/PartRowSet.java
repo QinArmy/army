@@ -213,9 +213,9 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     }
 
     @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
         final Object firstValue, secondValue;
-        if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperator.get()) != null) {
+        if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
             this.orderBy(operator.apply(firstValue, secondValue));
         }
         if (this instanceof OrderByEventListener) {

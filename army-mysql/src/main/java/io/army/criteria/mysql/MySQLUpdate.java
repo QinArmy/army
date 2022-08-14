@@ -1,6 +1,9 @@
 package io.army.criteria.mysql;
 
 import io.army.criteria.*;
+import io.army.meta.ComplexTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
 import java.util.List;
@@ -16,34 +19,6 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 public interface MySQLUpdate extends Update {
-
-
-    /**
-     * <p>
-     * This interface representing single-table UPDATE clause for MySQL syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <UT> next clause java type
-     * @since 1.0
-     */
-    interface _SingleUpdateClause<C, UT> {
-
-        MySQLQuery._PartitionClause<C, _AsClause<UT>> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
-                , TableMeta<?> table);
-
-        UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
-                , TableMeta<?> table, String tableAlias);
-
-        MySQLQuery._PartitionClause<C, _AsClause<UT>> update(TableMeta<?> table);
-
-        UT update(TableMeta<?> table, String tableAlias);
-
-    }
 
 
     /**
@@ -128,8 +103,8 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _SingleWhereSpec<C> extends _WhereClause<C, _OrderBySpec<C>, _SingleWhereAndSpec<C>>
-            , _SingleSet57Clause<C> {
+    interface _SingleWhereSpec<C, T> extends _WhereClause<C, _OrderBySpec<C>, _SingleWhereAndSpec<C>>
+            , _SingleSet57Clause<C, T> {
 
     }
 
@@ -146,7 +121,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _SingleSet57Clause<C> extends _SimpleSetClause<C, TableField, _SingleWhereSpec<C>> {
+    interface _SingleSet57Clause<C, T> extends _SimpleSetClause<C, FieldMeta<T>, _SingleWhereSpec<C, T>> {
 
     }
 
@@ -167,8 +142,36 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _SingleIndexHintSpec<C> extends MySQLQuery._IndexHintForOrderByClause<C, _SingleIndexHintSpec<C>>
-            , _SingleSet57Clause<C> {
+    interface _SingleIndexHintSpec<C, T> extends MySQLQuery._IndexHintForOrderByClause<C, _SingleIndexHintSpec<C, T>>
+            , _SingleSet57Clause<C, T> {
+
+    }
+
+    interface _SinglePartitionClause<C, T> extends MySQLQuery._PartitionAndAsClause<C, _SingleIndexHintSpec<C, T>> {
+
+    }
+
+    interface _SingleUpdate57Clause<C> {
+
+        <T> _SinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , SingleTableMeta<T> table);
+
+        <T> _SingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , SingleTableMeta<T> table, String tableAlias);
+
+        <P> _SinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , ComplexTableMeta<P, ?> table);
+
+        <P> _SingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , ComplexTableMeta<P, ?> table, String tableAlias);
+
+        <T> _SinglePartitionClause<C, T> update(SingleTableMeta<T> table);
+
+        <T> _SingleIndexHintSpec<C, T> update(SingleTableMeta<T> table, String tableAlias);
+
+        <P> _SinglePartitionClause<C, P> update(ComplexTableMeta<P, ?> table);
+
+        <P> _SingleIndexHintSpec<C, P> update(ComplexTableMeta<P, ?> table, String tableAlias);
 
     }
 
@@ -178,7 +181,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link DialectStatement._WithCteClause}</li>
-     *          <li>method {@link _SingleUpdateClause}</li>
+     *          <li>method {@link _SingleUpdate57Clause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -191,8 +194,8 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _SingleWithAndUpdateSpec<C>
-            extends DialectStatement._WithCteClause<C, SubQuery, _SingleUpdateClause<C, _SingleIndexHintSpec<C>>>
-            , _SingleUpdateClause<C, _SingleIndexHintSpec<C>> {
+            extends DialectStatement._WithCteClause<C, SubQuery, _SingleUpdate57Clause<C>>
+            , _SingleUpdate57Clause<C> {
 
     }
 
@@ -282,7 +285,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchSingleWhereSpec<C> extends _BatchSingleSetClause<C>
+    interface _BatchSingleWhereSpec<C, T> extends _BatchSingleSetClause<C, T>
             , _WhereClause<C, _BatchOrderBySpec<C>, _BatchSingleWhereAndSpec<C>> {
 
     }
@@ -301,7 +304,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type.
      * @since 1.0
      */
-    interface _BatchSingleSetClause<C> extends _BatchSetClause<C, TableField, _BatchSingleWhereSpec<C>> {
+    interface _BatchSingleSetClause<C, T> extends _BatchSetClause<C, FieldMeta<T>, _BatchSingleWhereSpec<C, T>> {
 
     }
 
@@ -322,8 +325,38 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchSingleIndexHintSpec<C> extends MySQLQuery._IndexHintForOrderByClause<C, _BatchSingleIndexHintSpec<C>>
-            , _BatchSingleSetClause<C> {
+    interface _BatchSingleIndexHintSpec<C, T>
+            extends MySQLQuery._IndexHintForOrderByClause<C, _BatchSingleIndexHintSpec<C, T>>
+            , _BatchSingleSetClause<C, T> {
+
+    }
+
+    interface _BatchSinglePartitionClause<C, T>
+            extends MySQLQuery._PartitionAndAsClause<C, _BatchSingleIndexHintSpec<C, T>> {
+
+    }
+
+    interface _BatchSingleUpdate57Clause<C> {
+
+        <T> _BatchSinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , SingleTableMeta<T> table);
+
+        <T> _BatchSingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , SingleTableMeta<T> table, String tableAlias);
+
+        <P> _BatchSinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , ComplexTableMeta<P, ?> table);
+
+        <P> _BatchSingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+                , ComplexTableMeta<P, ?> table, String tableAlias);
+
+        <T> _BatchSinglePartitionClause<C, T> update(SingleTableMeta<T> table);
+
+        <T> _BatchSingleIndexHintSpec<C, T> update(SingleTableMeta<T> table, String tableAlias);
+
+        <P> _BatchSinglePartitionClause<C, P> update(ComplexTableMeta<P, ?> table);
+
+        <P> _BatchSingleIndexHintSpec<C, P> update(ComplexTableMeta<P, ?> table, String tableAlias);
 
     }
 
@@ -333,7 +366,7 @@ public interface MySQLUpdate extends Update {
      * This interface representing the composite of below:
      *     <ul>
      *          <li>{@link DialectStatement._WithCteClause}</li>
-     *          <li>method {@link _SingleUpdateClause}</li>
+     *          <li>method {@link _BatchSingleUpdate57Clause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -346,8 +379,8 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _BatchSingleWithAndUpdateSpec<C>
-            extends DialectStatement._WithCteClause<C, SubQuery, _SingleUpdateClause<C, _BatchSingleIndexHintSpec<C>>>
-            , _SingleUpdateClause<C, _BatchSingleIndexHintSpec<C>> {
+            extends DialectStatement._WithCteClause<C, SubQuery, _BatchSingleUpdate57Clause<C>>
+            , _BatchSingleUpdate57Clause<C> {
 
     }
 

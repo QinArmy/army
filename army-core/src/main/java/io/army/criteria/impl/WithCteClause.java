@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.Cte;
+import io.army.criteria.DialectStatement;
+import io.army.criteria.SubStatement;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -10,12 +12,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-abstract class WithCteSingleUpdate<C, SS extends SubStatement, WE, F extends DataField, SR, WR, WA, U extends DmlStatement.DmlUpdate>
-        extends SingleUpdate<C, F, SR, WR, WA, U>
+abstract class WithCteClause<C, SS extends SubStatement, WE>
         implements DialectStatement._WithCteClause<C, SS, WE> {
 
-    WithCteSingleUpdate(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+    final CriteriaContext criteriaContext;
+
+    WithCteClause(CriteriaContext criteriaContext) {
+        this.criteriaContext = criteriaContext;
     }
 
 
@@ -27,7 +30,7 @@ abstract class WithCteSingleUpdate<C, SS extends SubStatement, WE, F extends Dat
 
     @Override
     public final WE with(String cteName, Function<C, ? extends SS> function) {
-        CriteriaUtils.withClause(false, SQLs.cte(cteName, function.apply(this.criteria))
+        CriteriaUtils.withClause(false, SQLs.cte(cteName, function.apply(this.criteriaContext.criteria()))
                 , this.criteriaContext, this::doWithCte);
         return (WE) this;
     }
@@ -64,7 +67,7 @@ abstract class WithCteSingleUpdate<C, SS extends SubStatement, WE, F extends Dat
 
     @Override
     public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
-        CriteriaUtils.withClause(true, SQLs.cte(cteName, function.apply(this.criteria))
+        CriteriaUtils.withClause(true, SQLs.cte(cteName, function.apply(this.criteriaContext.criteria()))
                 , this.criteriaContext, this::doWithCte);
         return (WE) this;
     }

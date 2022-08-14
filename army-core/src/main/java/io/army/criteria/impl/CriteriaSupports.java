@@ -453,10 +453,10 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
+        public OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
             final List<ArmySortItem> itemList;
             final Object firstValue, secondValue;
-            if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperator.get()) != null) {
+            if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
                 itemList = Collections.singletonList((ArmySortItem) operator.apply(firstValue, secondValue));
             } else {
                 itemList = Collections.emptyList();

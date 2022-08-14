@@ -112,6 +112,10 @@ public interface MySQLQuery extends Query, DialectStatement {
 
     }
 
+    interface _PartitionAndAsClause<C, AR> extends _PartitionClause<C, Statement._AsClause<AR>> {
+
+    }
+
 
     interface _IndexForJoinSpec<C, RR> extends Statement._LeftParenStringDualOptionalSpec<C, RR> {
 

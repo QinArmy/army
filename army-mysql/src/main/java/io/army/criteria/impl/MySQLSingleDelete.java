@@ -151,9 +151,9 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
     }
 
     @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
         return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, firstOperand, secondOperator);
+                .ifOrderBy(operator, firstOperand, secondOperand);
     }
 
     @Override

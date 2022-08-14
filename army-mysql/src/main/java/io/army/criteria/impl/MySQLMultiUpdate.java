@@ -300,6 +300,12 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         return noOnBlock.getUseIndexClause();
     }
 
+    final void updateNoOnBlock(final MySQLSupports.MySQLNoOnBlock<C, UT> block) {
+        if (this.noOnBlock != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        this.noOnBlock = block;
+    }
 
 
     /*################################## blow inner class  ##################################*/
@@ -472,7 +478,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
 
             final MySQLSupports.MySQLNoOnBlock<C, _MultiIndexHintJoinSpec<C>> block;
             block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
-            ((MySQLMultiUpdate<C, ?, ?, _MultiIndexHintJoinSpec<C>, ?, ?, ?, ?, ?, ?, ?>) stmt).noOnBlock = block;
+            stmt.updateNoOnBlock(block);
             stmt.criteriaContext.onAddBlock(block);
             return stmt;
         }
@@ -540,7 +546,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
 
             final MySQLSupports.MySQLNoOnBlock<C, _BatchMultiIndexHintJoinSpec<C>> block;
             block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
-            ((MySQLMultiUpdate<C, ?, ?, _BatchMultiIndexHintJoinSpec<C>, ?, ?, ?, ?, ?, ?, ?>) stmt).noOnBlock = block;
+            stmt.updateNoOnBlock(block);
             stmt.criteriaContext.onAddBlock(block);
             return stmt;
         }

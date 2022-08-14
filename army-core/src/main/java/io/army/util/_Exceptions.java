@@ -672,6 +672,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException tableAliasIsEmpty() {
+        return new CriteriaException("table alias must non-empty.");
+    }
+
     public static ObjectAccessException nonWritableProperty(Object target, String propertyName) {
         String m = String.format("%s property[%s] isn't writable.", target, propertyName);
         return new ObjectAccessException(m);
