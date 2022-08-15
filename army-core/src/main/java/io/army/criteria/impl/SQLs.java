@@ -276,15 +276,14 @@ public abstract class SQLs extends Functions {
      *
      * @param value {@link Expression} or parameter
      */
-    @Deprecated
-    static Expression _nullableParam(final @Nullable Object value) {
-        final Expression expression;
+    static ArmyExpression _funcParam(final @Nullable Object value) {
+        final ArmyExpression expression;
         if (value == null) {
-            expression = StringTypeNull.INSTANCE;
+            expression = NullWord.INSTANCE;
         } else if (value instanceof Expression) {
-            expression = (Expression) value;
+            expression = (ArmyExpression) value;
         } else {
-            expression = SQLs.param(value);
+            expression = (ArmyExpression) SQLs.param(value);
         }
         return expression;
     }
@@ -915,7 +914,7 @@ public abstract class SQLs extends Functions {
 
     }// NullWord
 
-    private static final class BooleanWord extends OperationExpression {
+    static final class BooleanWord extends OperationExpression {
 
         private static final BooleanWord TRUE = new BooleanWord(true);
 

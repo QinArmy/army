@@ -596,8 +596,7 @@ public interface Expression extends SelectionSpec, TypeInfer, SortItem, SetRight
 
     Expression leftShiftExp(Supplier<? extends Expression> supplier);
 
-    Expression asType(Class<?> convertType);
-
+    @Override
     Expression asType(ParamMeta paramMeta);
 
     Expression bracket();

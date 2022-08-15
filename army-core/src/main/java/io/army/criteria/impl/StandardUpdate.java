@@ -133,10 +133,10 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
 
     }//SimpleUpdate
 
-    private static class SimpleDomainUpdate<C> extends SimpleUpdate<C, FieldMeta<?>>
+    private static class SimpleDomainUpdate<C, T> extends SimpleUpdate<C, FieldMeta<? super T>>
             implements _DomainUpdate {
 
-        private SimpleDomainUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
+        private SimpleDomainUpdate(@Nullable C criteria, TableMeta<T> table, String tableAlias) {
             super(criteria, table, tableAlias);
         }
 
@@ -200,10 +200,10 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
     }//BatchUpdate
 
 
-    private static final class BatchDomainUpdate<C> extends BatchUpdate<C, FieldMeta<?>>
+    private static final class BatchDomainUpdate<C, T> extends BatchUpdate<C, FieldMeta<? super T>>
             implements _DomainUpdate {
 
-        private BatchDomainUpdate(@Nullable C criteria, TableMeta<?> table, String tableAlias) {
+        private BatchDomainUpdate(@Nullable C criteria, TableMeta<T> table, String tableAlias) {
             super(criteria, table, tableAlias);
         }
 
@@ -240,7 +240,7 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
 
 
         @Override
-        public _StandardSetClause<C, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
+        public <T> _StandardSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
             return new SimpleDomainUpdate<>(this.criteria, table, tableAlias);
         }
 
@@ -277,8 +277,9 @@ abstract class StandardUpdate<C, F extends TableField, SR, WR, WA> extends Singl
             this.criteria = criteria;
         }
 
+
         @Override
-        public _StandardBatchSetClause<C, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
+        public <T> _StandardBatchSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias) {
             return new BatchDomainUpdate<>(this.criteria, table, tableAlias);
         }
 

@@ -228,6 +228,20 @@ abstract class CriteriaContexts {
         return CriteriaContextStack.criteriaError(context, builder.toString());
     }
 
+    private static CriteriaException unknownWindows(CriteriaContext context, Map<String, Boolean> refWindowNameMap) {
+        final StringBuilder builder = new StringBuilder()
+                .append("unknown windows:");
+        int index = 0;
+        for (String windowName : refWindowNameMap.keySet()) {
+            if (index > 0) {
+                builder.append(_Constant.SPACE_COMMA_SPACE);
+            }
+            builder.append(windowName);
+            index++;
+        }
+        return CriteriaContextStack.criteriaError(context, builder.toString());
+    }
+
 
     private static abstract class AbstractContext implements CriteriaContext, CriteriaContext.OuterContextSpec {
 
@@ -271,6 +285,16 @@ abstract class CriteriaContexts {
         @Override
         public boolean isExistWindow(String windowName) {
             throw CriteriaContextStack.criteriaError(this, "current context don't support isExistWindow(windowName)");
+        }
+
+        @Override
+        public void onAddWindow(String windowName) {
+            throw CriteriaContextStack.criteriaError(this, "current context don't support registerRefWindow(windowName)");
+        }
+
+        @Override
+        public void onRefWindow(String windowName) {
+            throw CriteriaContextStack.criteriaError(this, "current context don't support onRefWindow(windowName)");
         }
 
         @Override
@@ -657,7 +681,12 @@ abstract class CriteriaContexts {
                 if (groupList != null && groupList.size() > 0) {
                     throw notFoundDerivedGroup(this, groupList);
                 }
-
+                final Map<String, Boolean> refWindowNameMap = context.refWindowNameMap;
+                if (refWindowNameMap != null && refWindowNameMap.size() > 0) {
+                    throw unknownWindows(this, refWindowNameMap);
+                }
+                context.refWindowNameMap = null;
+                context.windowNameMap = null;
             }
             return blockList;
         }
@@ -891,6 +920,10 @@ abstract class CriteriaContexts {
          */
         private Map<String, RefSelection> refSelectionMap;
 
+        private Map<String, Boolean> windowNameMap;
+
+        private Map<String, Boolean> refWindowNameMap;
+
         private boolean refOuterField;
 
         private SimpleQueryContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
@@ -935,6 +968,36 @@ abstract class CriteriaContexts {
             return refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
         }
 
+        @Override
+        public final boolean isExistWindow(final String windowName) {
+            final Map<String, Boolean> windowNameMap = this.windowNameMap;
+            return windowNameMap != null && windowNameMap.containsKey(windowName);
+        }
+
+        @Override
+        public final void onAddWindow(final String windowName) {
+            Map<String, Boolean> windowNameMap = this.windowNameMap;
+            if (windowNameMap == null) {
+                this.windowNameMap = windowNameMap = new HashMap<>();
+            }
+            if (windowNameMap.putIfAbsent(windowName, Boolean.TRUE) != null) {
+                String m = String.format("window[%s] duplication.", windowName);
+                throw CriteriaContextStack.criteriaError(this, m);
+            }
+            final Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
+            if (refWindowNameMap != null) {
+                refWindowNameMap.remove(windowName);
+            }
+        }
+
+        @Override
+        public final void onRefWindow(final String windowName) {
+            Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
+            if (refWindowNameMap == null) {
+                this.refWindowNameMap = refWindowNameMap = new HashMap<>();
+            }
+            refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
+        }
 
         private RefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;

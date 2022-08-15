@@ -1,8 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.Distinct;
+import io.army.criteria.FuncExpression;
 import io.army.criteria.Hint;
 import io.army.criteria.mysql.HintStrategy;
+import io.army.criteria.mysql.MySQLWindowFunc;
 import io.army.lang.Nullable;
+import io.army.mapping.DoubleType;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -292,6 +296,17 @@ abstract class MySQLSyntax extends Syntax {
      */
     public static Hint qbName(String name) {
         return MySQLHints.qbName(name);
+    }
+
+
+    /*-------------------below Aggregate Function  -------------------*/
+
+    public static MySQLWindowFunc._AggregateOverSpec avg(@Nullable Object exp) {
+        return MySQLFunctions.aggregateWindowFunc("AVG", exp, DoubleType.INSTANCE);
+    }
+
+    public static FuncExpression avg(@Nullable Distinct distinct, @Nullable Object exp) {
+        return MySQLFunctions.avg(distinct, exp);
     }
 
 

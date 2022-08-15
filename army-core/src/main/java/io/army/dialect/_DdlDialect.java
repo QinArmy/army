@@ -156,11 +156,11 @@ public abstract class _DdlDialect implements DdlDialect {
             }
             builder.append(_Constant.LEFT_PAREN)
                     .append(precision)
-                    .append(_Constant.RIGHT_BRACKET);
+                    .append(_Constant.RIGHT_PAREN);
         } else {
             builder.append(_Constant.LEFT_PAREN)
                     .append(defaultValue)
-                    .append(_Constant.RIGHT_BRACKET);
+                    .append(_Constant.RIGHT_PAREN);
         }
 
     }
@@ -178,7 +178,7 @@ public abstract class _DdlDialect implements DdlDialect {
             }
             builder.append(_Constant.LEFT_PAREN)
                     .append(scale)
-                    .append(_Constant.RIGHT_BRACKET);
+                    .append(_Constant.RIGHT_PAREN);
         }
     }
 
@@ -266,7 +266,7 @@ public abstract class _DdlDialect implements DdlDialect {
                     stack = new LinkedList<>();
                 }
                 stack.push(Boolean.TRUE);
-            } else if (ch == _Constant.RIGHT_BRACKET) {
+            } else if (ch == _Constant.RIGHT_PAREN) {
                 if (stack == null || stack.size() == 0) {
                     // error
                     this.errorMsgList.add(String.format("%s default value ')' not match.", field));
@@ -372,7 +372,7 @@ public abstract class _DdlDialect implements DdlDialect {
                 builder.append(_Constant.COMMA)
                         .append(scale);
             }
-            builder.append(_Constant.RIGHT_BRACKET);
+            builder.append(_Constant.RIGHT_PAREN);
         }
 
     }

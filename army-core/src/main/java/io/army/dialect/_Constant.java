@@ -100,6 +100,10 @@ public interface _Constant {
 
     String SPACE_ROWS = " ROWS";
 
+    String SPACE_OVER_LEFT_PAREN = " OVER(";
+
+    String SPACE_OVER = " OVER";
+
     String SPACE_IS_NULL = " IS NULL";
 
     String SPACE_RETURNING = " RETURNING";
@@ -130,7 +134,7 @@ public interface _Constant {
 
     char LEFT_PAREN = '(';
 
-    char RIGHT_BRACKET = ')';
+    char RIGHT_PAREN = ')';
 
     char SPACE = ' ';
 

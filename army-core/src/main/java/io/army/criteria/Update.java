@@ -163,7 +163,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     interface _StandardDomainUpdateClause<C> {
 
-        _StandardSetClause<C, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
+      <T> _StandardSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
 
     }
 
@@ -198,7 +198,7 @@ public interface Update extends NarrowDmlStatement, DmlStatement.DmlUpdate {
 
     interface _StandardBatchDomainUpdateClause<C> {
 
-        _StandardBatchSetClause<C, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
+        <T> _StandardBatchSetClause<C, FieldMeta<? super T>> update(TableMeta<T> table, String tableAlias);
 
     }
 

@@ -1,10 +1,6 @@
 package io.army.criteria;
 
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -34,13 +30,13 @@ public interface Window {
 
         WR window(String windowName);
 
-        WB window(Supplier<List<Window>> supplier);
+        WB window(Consumer<Consumer<Window>> consumer);
 
-        WB window(Function<C, List<Window>> function);
+        WB window(BiConsumer<C, Consumer<Window>> consumer);
 
-        WB ifWindow(Supplier<List<Window>> supplier);
+        WB ifWindow(Consumer<Consumer<Window>> consumer);
 
-        WB ifWindow(Function<C, List<Window>> function);
+        WB ifWindow(BiConsumer<C, Consumer<Window>> consumer);
 
     }
 
@@ -83,7 +79,7 @@ public interface Window {
 
     /**
      * <p>
-     * This interface representing LEFT BRACKET clause in WINDOW clause.
+     * This interface representing LEFT PAREN clause in WINDOW clause.
      * </p>
      * <p>
      * <strong>Note:</strong><br/>
@@ -95,7 +91,7 @@ public interface Window {
      * @param <NR> next clause java type
      * @since 1.0
      */
-    interface _LeftBracketClause<C, NR> {
+    interface _LeftParenNameClause<C, NR> {
 
         NR leftParen();
 
@@ -133,15 +129,13 @@ public interface Window {
 
         PR partitionBy(Expression exp1, Expression exp2, Expression exp3);
 
-        <E extends Expression> PR partitionBy(Function<C, List<E>> function);
+        <E extends Expression> PR partitionBy(Consumer<Consumer<E>> consumer);
 
-        <E extends Expression> PR partitionBy(Supplier<List<E>> supplier);
+        <E extends Expression> PR partitionBy(BiConsumer<C, Consumer<E>> consumer);
 
-        PR partitionBy(Consumer<List<Expression>> consumer);
+        <E extends Expression> PR ifPartitionBy(Consumer<Consumer<E>> consumer);
 
-        <E extends Expression> PR ifPartitionBy(Supplier<List<E>> supplier);
-
-        <E extends Expression> PR ifPartitionBy(Function<C, List<E>> function);
+        <E extends Expression> PR ifPartitionBy(BiConsumer<C, Consumer<E>> consumer);
 
     }
 
@@ -296,6 +290,12 @@ public interface Window {
     }
 
 
+    interface _OverClause {
+
+        SelectionSpec over(String windowName);
+    }
+
+
     /**
      * <p>
      * This interface representing AS clause in WINDOW clause for simple window.
@@ -310,7 +310,7 @@ public interface Window {
      * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimpleAsClause<C, R> extends _AsClause<_SimpleLeftBracketClause<C, R>> {
+    interface _SimpleAsClause<C, R> extends _AsClause<_SimpleLeftParenClause<C, R>> {
 
 
     }
@@ -329,8 +329,8 @@ public interface Window {
      * @param <R> {@link Statement._RightParenClause#rightParen()} return java type
      * @since 1.0
      */
-    interface _SimpleLeftBracketClause<C, R>
-            extends _LeftBracketClause<C, _SimplePartitionBySpec<C, R>> {
+    interface _SimpleLeftParenClause<C, R>
+            extends _LeftParenNameClause<C, _SimplePartitionBySpec<C, R>> {
 
     }
 
@@ -577,6 +577,12 @@ public interface Window {
          */
         @Override
         Statement._RightParenClause<R> following();
+
+    }
+
+
+    interface _SimpleOverLestParenSpec extends Window._SimpleLeftParenClause<Void, SelectionSpec>
+            , SelectionSpec {
 
     }
 

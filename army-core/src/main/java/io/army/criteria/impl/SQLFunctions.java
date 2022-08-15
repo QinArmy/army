@@ -1,21 +1,28 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
+import io.army.criteria.*;
+import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.dialect.DialectParser;
+import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 
 import java.util.List;
 
 abstract class SQLFunctions extends OperationExpression implements Expression {
 
+    SQLFunctions() {
+    }
 
     static Expression noArgumentFunc(String name, MappingType returnType) {
         // return new NoArgumentFunc<>(name, returnType);
         return null;
     }
 
-    static Expression oneArgumentFunc(String name, MappingType returnType, Expression one) {
-        // return new OneArgumentFunc<>(name, returnType, (_Expression) one);
-        return null;
+    static FuncExpression oneArgumentFunc(String name, @Nullable Object exp, MappingType returnType) {
+        return new OneArgFunc(name, SQLs._funcParam(exp), returnType);
     }
 
     static Expression twoArgumentFunc(String name, MappingType returnType, Expression one
@@ -30,196 +37,293 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return null;
     }
 
-//
-//    private final String name;
-//
-//    protected final MappingType returnType;
-//
-//    private SQLFunctions(String name, MappingType returnType) {
-//        this.name = name;
-//        this.returnType = returnType;
-//    }
-//
-//    @Override
-//    public final MappingType mappingType() {
-//        return returnType;
-//    }
-//
-//
-//    @Override
-//    public final void appendSql(_SqlContext context) {
-//        StringBuilder builder = context.sqlBuilder()
-//                .append(" ")
-//                .append(this.name)
-//                .append("(");
-//        doAppendArgument(context);
-//        builder.append(")");
-//    }
-//
-//    @Override
-//    public final boolean containsSubQuery() {
-//        return false;
-//    }
-//
-//    @Override
-//    public final ParamMeta paramMeta() {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    @Override
-//    public final String toString() {
-//        return String.format("%s(%s)", name, argumentToString());
-//    }
-//
-//    protected abstract void doAppendArgument(_SqlContext context);
-//
-//    protected abstract String argumentToString();
-//
-//    /*################################## blow static class  ##################################*/
-//
-//    private static final class NoArgumentFunc extends SQLFunctions {
-//
-//        NoArgumentFunc(String name, MappingType returnType) {
-//            super(name, returnType);
-//        }
-//
-//        @Override
-//        protected void doAppendArgument(_SqlContext context) {
-//
-//        }
-//
-//        @Override
-//        protected String argumentToString() {
-//            return "";
-//        }
-//
-//    }
-//
-//    static final class OneArgumentFunc extends SQLFunctions {
-//
-//        private final _Expression one;
-//
-//        private final List<MappingType> argumentTypeList;
-//
-//        private OneArgumentFunc(String name, MappingType returnType, _Expression one) {
-//            super(name, returnType);
-//            this.one = one;
-//            this.argumentTypeList = Collections.singletonList(one.mappingType());
-//        }
-//
-//        @Override
-//        protected void doAppendArgument(_SqlContext context) {
-//
-//        }
-//
-//        @Override
-//        protected String argumentToString() {
-//            return one.toString();
-//        }
-//
-//    }
-//
-//    static class TwoArgumentFunc extends SQLFunctions {
-//
-//        private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", "");
-//
-//        private final List<String> format;
-//
-//        private final _Expression one;
-//
-//        private final _Expression two;
-//
-//        private final List<MappingType> argumentTypeList;
-//
-//        private TwoArgumentFunc(String name, MappingType returnType, List<String> format, _Expression one
-//                , _Expression two) {
-//            super(name, returnType);
-//            _Assert.isTrue(format.size() >= 3, "");
-//            this.format = format;
-//            this.one = one;
-//            this.two = two;
-//
-//            List<MappingType> typeList = new ArrayList<>(2);
-//            typeList.add(one.mappingType());
-//            typeList.add(two.mappingType());
-//            this.argumentTypeList = Collections.unmodifiableList(typeList);
-//        }
-//
-//        private TwoArgumentFunc(String name, MappingType returnType, _Expression one, _Expression two) {
-//            this(name, returnType, FORMAT_LIST, one, two);
-//        }
-//
-//        @Override
-//        protected void doAppendArgument(_SqlContext context) {
-//            StringBuilder builder = context.sqlBuilder();
-//            builder.append(format.get(0));
-//            one.appendSql(context);
-//            builder.append(format.get(1));
-//            two.appendSql(context);
-//            builder.append(format.get(2));
-//        }
-//
-//        @Override
-//        protected String argumentToString() {
-//            return format.get(0) + one + format.get(1) + two + format.get(2);
-//        }
-//
-//    }
-//
-//    static final class ThreeArgumentFunc extends SQLFunctions {
-//
-//        private static final List<String> FORMAT_LIST = ArrayUtils.asUnmodifiableList("", ",", ",", "");
-//
-//        private final List<String> format;
-//
-//        private final _Expression one;
-//
-//        private final _Expression two;
-//
-//        protected final _Expression three;
-//
-//        private final List<MappingType> argumentTypeList;
-//
-//        ThreeArgumentFunc(String name, MappingType returnType, List<String> format, Expression one
-//                , Expression two, Expression three) {
-//            super(name, returnType);
-//            _Assert.isTrue(format.size() >= 4, "showSQL error");
-//            this.format = format;
-//            this.one = (_Expression) one;
-//            this.two = (_Expression) two;
-//            this.three = (_Expression) three;
-//
-//            List<MappingType> typeList = new ArrayList<>(3);
-//            typeList.add(one.mappingType());
-//            typeList.add(two.mappingType());
-//            typeList.add(three.mappingType());
-//            this.argumentTypeList = Collections.unmodifiableList(typeList);
-//        }
-//
-//        ThreeArgumentFunc(String name, MappingType returnType, Expression one
-//                , Expression two, Expression three) {
-//            this(name, returnType, FORMAT_LIST, one, two, three);
-//        }
-//
-//
-//        @Override
-//        protected void doAppendArgument(_SqlContext context) {
-//            StringBuilder builder = context.sqlBuilder();
-//            builder.append(format.get(0));
-//            one.appendSql(context);
-//            builder.append(format.get(1));
-//            two.appendSql(context);
-//            builder.append(format.get(2));
-//            three.appendSql(context);
-//            builder.append(format.get(3));
-//        }
-//
-//        @Override
-//        protected String argumentToString() {
-//            return format.get(0) + one + format.get(1) + two + format.get(2) + three + format.get(3);
-//        }
-//
-//    }
+
+    interface FunctionSpec extends _SelfDescribed {
+
+
+        MappingType returnType();
+
+    }
+
+    interface WinFuncSpec extends FunctionSpec, CriteriaContextSpec {
+
+        void appendFunc(_SqlContext context);
+    }
+
+
+    static abstract class WindowFuncClause implements WinFuncSpec
+            , SelectionSpec
+            , Window._OverClause {
+
+        final CriteriaContext criteriaContext;
+        final String name;
+
+        private MappingType returnType;
+
+        private String existingWindowName;
+
+        WindowFuncClause(String name, ParamMeta returnType) {
+            this.criteriaContext = CriteriaContextStack.peek();
+            this.name = name;
+            this.returnType = returnType.mappingType();
+        }
+
+        @Override
+        public final CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
+
+        @Override
+        public final SelectionSpec asType(ParamMeta paramMeta) {
+            if (this.existingWindowName == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            if (paramMeta instanceof MappingType) {
+                this.returnType = (MappingType) paramMeta;
+            } else {
+                this.returnType = paramMeta.mappingType();
+            }
+            return this;
+        }
+
+        @Override
+        public final Selection as(String alias) {
+            return Selections.forFunc(this, alias);
+        }
+
+        @Override
+        public final MappingType returnType() {
+            return this.returnType;
+        }
+
+        @Override
+        public final SelectionSpec over(final String windowName) {
+            if (this.existingWindowName != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.criteriaContext.onRefWindow(windowName);
+            this.existingWindowName = windowName;
+            return this;
+        }
+
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            final String existingWindowName = this.existingWindowName;
+            if (existingWindowName == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            final StringBuilder sqlBuilder = context.sqlBuilder();
+            final DialectParser parser = context.dialect();
+            //1. function
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(this.name) // function name
+                    .append(_Constant.LEFT_PAREN);
+
+            this.appendArguments(context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+            //2. OVER clause
+            sqlBuilder.append(_Constant.SPACE_OVER_LEFT_PAREN);
+            parser.identifier(existingWindowName, sqlBuilder);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
+        @Override
+        public final void appendFunc(final _SqlContext context) {
+            if (this.existingWindowName != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name) // function name
+                    .append(_Constant.LEFT_PAREN);
+
+            this.appendArguments(context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+        @Override
+        public final String toString() {
+            return super.toString();
+        }
+
+        abstract void appendArguments(final _SqlContext context);
+
+        abstract void argumentToString(StringBuilder builder);
+
+    }//WindowFuncClause
+
+
+    static abstract class AggregateWindowFunc extends OperationExpression
+            implements Window._OverClause
+            , FuncExpression
+            , WinFuncSpec {
+
+        final CriteriaContext criteriaContext;
+
+        final String name;
+
+        private final MappingType returnType;
+
+        private String existingWindowName;
+
+        AggregateWindowFunc(String name, ParamMeta returnType) {
+            this.criteriaContext = CriteriaContextStack.peek();
+            this.name = name;
+            this.returnType = returnType.mappingType();
+        }
+
+        @Override
+        public final CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
+
+        @Override
+        public final String name() {
+            return this.name;
+        }
+
+        @Override
+        public final ParamMeta paramMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public final SelectionSpec over(final String windowName) {
+            if (this.existingWindowName != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.criteriaContext.onRefWindow(windowName);
+            this.existingWindowName = windowName;
+            return this;
+        }
+
+
+        @Override
+        public final MappingType returnType() {
+            return this.returnType;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final String existingWindowName;
+            if ((existingWindowName = this.existingWindowName) == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            //1. function
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name) // function name
+                    .append(_Constant.LEFT_PAREN);
+
+            this.appendArguments(context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+            //2. OVER clause
+            sqlBuilder.append(_Constant.SPACE_OVER_LEFT_PAREN);
+            context.dialect().identifier(existingWindowName, sqlBuilder);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+        @Override
+        public final void appendFunc(final _SqlContext context) {
+            if (this.existingWindowName != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            //1. function
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name) // function name
+                    .append(_Constant.LEFT_PAREN);
+
+            this.appendArguments(context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
+        @Override
+        public final String toString() {
+            return super.toString();
+        }
+
+        abstract void appendArguments(_SqlContext context);
+
+        abstract void argumentToString(StringBuilder builder);
+
+    }//AggregateOverClause
+
+
+    static abstract class FunctionExpression extends OperationExpression implements FuncExpression
+            , FunctionSpec {
+
+        private final String name;
+
+        private final MappingType returnType;
+
+        FunctionExpression(String name, MappingType returnType) {
+            this.name = name;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public final String name() {
+            return this.name;
+        }
+
+        @Override
+        public final ParamMeta paramMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public final MappingType returnType() {
+            return this.returnType;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name) // function name
+                    .append(_Constant.LEFT_PAREN);
+
+            this.appendArguments(context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+        abstract void appendArguments(final _SqlContext context);
+
+        abstract void argumentsToString(StringBuilder builder);
+
+    }//FunctionExpression
+
+    private static final class OneArgFunc extends FunctionExpression implements FuncExpression {
+
+        private final ArmyExpression argument;
+
+        private OneArgFunc(String name, ArmyExpression argument, MappingType returnType) {
+            super(name, returnType);
+            this.argument = argument;
+        }
+
+        @Override
+        void appendArguments(final _SqlContext context) {
+            this.argument.appendSql(context);
+        }
+
+        @Override
+        void argumentsToString(final StringBuilder builder) {
+            builder.append(this.argument);
+        }
+
+
+    }//OneArgFunc
 
 
 }

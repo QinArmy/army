@@ -27,7 +27,7 @@ abstract class NonOperationExpression implements ArmyExpression {
         if (!(this instanceof SqlParam)) {
             throw unsupportedOperation();
         }
-        return new ExpressionSelection(this, alias);
+        return Selections.forExp(this, alias);
     }
 
     @Override
@@ -737,13 +737,11 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression asType(Class<?> convertType) {
-        throw unsupportedOperation();
-    }
-
-    @Override
     public final Expression asType(ParamMeta paramMeta) {
-        throw unsupportedOperation();
+        if (!(this instanceof SQLs.NullWord)) {
+            throw unsupportedOperation();
+        }
+        return CastExpression.cast(this, paramMeta);
     }
 
     @Override

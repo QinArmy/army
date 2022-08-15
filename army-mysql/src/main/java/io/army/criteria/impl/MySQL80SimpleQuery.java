@@ -17,10 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 
 /**
@@ -159,7 +156,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     @Override
     public final Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>> window(final String windowName) {
         if (!_StringUtils.hasText(windowName)) {
-            throw _Exceptions.namedWindowNoText();
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::namedWindowNoText);
         }
         final Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>> window;
         window = SimpleWindow.standard(windowName, this);
@@ -173,37 +170,31 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return window;
     }
 
+
     @Override
-    public final _OrderBySpec<C, Q> window(Supplier<List<Window>> supplier) {
-        this.windowList = MySQLUtils.asWindowList(supplier.get(), this::isIllegalWindow);
-        return this;
+    public final _OrderBySpec<C, Q> window(Consumer<Consumer<Window>> consumer) {
+        consumer.accept(this::addWindow);
+        return this.endWindowClause(true);
     }
 
     @Override
-    public final _OrderBySpec<C, Q> window(Function<C, List<Window>> function) {
-        this.windowList = MySQLUtils.asWindowList(function.apply(this.criteria), this::isIllegalWindow);
-        return this;
+    public final _OrderBySpec<C, Q> window(BiConsumer<C, Consumer<Window>> consumer) {
+        consumer.accept(this.criteria, this::addWindow);
+        return this.endWindowClause(true);
     }
 
     @Override
-    public final _OrderBySpec<C, Q> ifWindow(Supplier<List<Window>> supplier) {
-        final List<Window> windowList;
-        windowList = supplier.get();
-        if (windowList != null && windowList.size() > 0) {
-            this.windowList = MySQLUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
-        }
-        return this;
+    public final _OrderBySpec<C, Q> ifWindow(Consumer<Consumer<Window>> consumer) {
+        consumer.accept(this::addWindow);
+        return this.endWindowClause(false);
     }
 
     @Override
-    public final _OrderBySpec<C, Q> ifWindow(Function<C, List<Window>> function) {
-        final List<Window> windowList;
-        windowList = function.apply(this.criteria);
-        if (windowList != null && windowList.size() > 0) {
-            this.windowList = MySQLUtils.asWindowList(windowList, SimpleWindow::isIllegalWindow);
-        }
-        return this;
+    public final _OrderBySpec<C, Q> ifWindow(BiConsumer<C, Consumer<Window>> consumer) {
+        consumer.accept(this.criteria, this::addWindow);
+        return this.endWindowClause(false);
     }
+
 
     @Override
     public final Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>> comma(final String windowName) {
@@ -545,8 +536,35 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
         return noOnBlock.getUseIndexClause();
     }
 
-    private boolean isIllegalWindow(Window window) {
-        return SimpleWindow.isIllegalWindow(window, this.criteriaContext);
+
+    private void addWindow(final @Nullable Window window) {
+        if (window == null) {
+            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+        }
+        if (SimpleWindow.isIllegalWindow(window, this.criteriaContext)) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, "Not MySQL window");
+        }
+        List<Window> windowList = this.windowList;
+        if (windowList == null) {
+            this.windowList = windowList = new ArrayList<>();
+        } else if (!(windowList instanceof ArrayList)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        }
+        windowList.add(window);
+    }
+
+    private _OrderBySpec<C, Q> endWindowClause(final boolean required) {
+        final List<Window> windowList = this.windowList;
+        if (windowList instanceof ArrayList) {
+            this.windowList = _CollectionUtils.unmodifiableList(windowList);
+        } else if (windowList != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        } else if (required) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::windowListIsEmpty);
+        } else {
+            this.windowList = Collections.emptyList();
+        }
+        return this;
     }
 
 

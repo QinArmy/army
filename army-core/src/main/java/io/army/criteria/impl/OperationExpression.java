@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.mapping._MappingFactory;
 import io.army.meta.ParamMeta;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -26,11 +25,13 @@ abstract class OperationExpression implements ArmyExpression {
     public final Selection as(final String alias) {
         final Selection selection;
         if (this instanceof TableField) {
-            selection = FieldSelectionImpl.create((TableField) this, alias);
+            selection = Selections.forField((TableField) this, alias);
         } else if (this instanceof DerivedField) {
             selection = CriteriaContexts.createDerivedSelection((DerivedField) this, alias);
+        } else if (this instanceof FuncExpression) {
+            selection = Selections.forFunc((SQLFunctions.FunctionSpec) this, alias);
         } else {
-            selection = new ExpressionSelection(this, alias);
+            selection = Selections.forExp(this, alias);
         }
         return selection;
     }
@@ -822,11 +823,6 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final Expression leftShiftExp(Supplier<? extends Expression> supplier) {
         return DualExpression.create(this, DualOperator.LEFT_SHIFT, supplier.get());
-    }
-
-    @Override
-    public final Expression asType(Class<?> convertType) {
-        return CastExpression.cast(this, _MappingFactory.getDefault(convertType));
     }
 
     @Override

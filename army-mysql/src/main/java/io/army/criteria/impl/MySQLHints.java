@@ -187,7 +187,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     .append(_Constant.LEFT_PAREN);
             final String queryBlockName = this.queryBlockName;
             if (queryBlockName == null) {
-                builder.append(_Constant.RIGHT_BRACKET);
+                builder.append(_Constant.RIGHT_PAREN);
             } else {
                 builder.append(_Constant.SPACE_AT);
                 context.dialect().identifier(queryBlockName, builder);
@@ -497,7 +497,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
 
             final Long millis = this.millis;
             if (millis == null) {
-                builder.append(_Constant.RIGHT_BRACKET);
+                builder.append(_Constant.RIGHT_PAREN);
             } else {
                 builder.append(_Constant.SPACE)
                         .append(millis)
