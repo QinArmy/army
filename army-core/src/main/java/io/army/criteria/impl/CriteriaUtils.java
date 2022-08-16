@@ -311,7 +311,7 @@ abstract class CriteriaUtils {
         return rowCount;
     }
 
-    static int standardModifier(final Distinct distinct) {
+    static int standardModifier(final SQLModifier distinct) {
         final int level;
         switch (distinct) {
             case DISTINCT:

@@ -48,7 +48,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return null;
     }
 
-    static FuncExpression oneArgumentFunc(String name, @Nullable Object exp, MappingType returnType) {
+    @Deprecated
+    static FuncExpression oneArgumentFunc(String name, @Nullable SQLWords option, @Nullable Object exp, MappingType returnType) {
         return new OneArgFunc(name, funcParam(exp), returnType);
     }
 
@@ -66,7 +67,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     static FuncExpression oneArgOptionFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, @Nullable Clause clause, ParamMeta returnType) {
-        return new OneArgOptionFunc(name, option, funcParam(expr), clause, returnType);
+        return new OneArgOptionFunc(name, option, SQLFunctions.funcParam(expr), clause, returnType);
     }
 
 
@@ -167,7 +168,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         WindowFuncClause(String name, ParamMeta returnType) {
             this.criteriaContext = CriteriaContextStack.peek();
             this.name = name;
-            this.returnType = returnType.mappingType();
+            this.returnType = returnType;
         }
 
         @Override
@@ -176,9 +177,17 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final SelectionSpec asType(final ParamMeta paramMeta) {
+        public final ParamMeta paramMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public final SelectionSpec asType(final @Nullable ParamMeta paramMeta) {
             if (this.existingWindowName == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            if (paramMeta == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
             this.returnType = paramMeta;
             return this;

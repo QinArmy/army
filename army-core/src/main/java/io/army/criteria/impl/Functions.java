@@ -1,10 +1,11 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.mapping._MappingFactory;
+import io.army.criteria.FuncExpression;
+import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -35,154 +36,167 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/mathematical-functions.html#function_abs">
      * MySQL ABS function</a>
      */
-    public static Expression abs(Expression x) {
-        return SQLFunctions.oneArgumentFunc("ABS", x.paramMeta().mappingType(), x);
+    public static FuncExpression abs(Object expr) {
+        final ArmyExpression expression;
+        expression = SQLFunctions.funcParam(expr);
+        return SQLFunctions.oneArgOptionFunc("ABS", null, expression, null, expression.paramMeta());
     }
 
     public static Expression acos(Expression x) {
-        return SQLFunctions.oneArgumentFunc("ACOS", _MappingFactory.getDefault(Double.class), x);
+        throw new UnsupportedOperationException();
     }
 
 
     public static Expression asin(Expression x) {
-        return SQLFunctions.oneArgumentFunc("ASIN", _MappingFactory.getDefault(Double.class), x);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression atan(Expression x) {
-        return SQLFunctions.oneArgumentFunc("ATAN", _MappingFactory.getDefault(Double.class), x);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression atan(Expression one, Expression two) {
-        return SQLFunctions.twoArgumentFunc("ATAN", _MappingFactory.getDefault(Double.class), one, two);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression cell(Expression x) {
-        return SQLFunctions.oneArgumentFunc("CELL", _MappingFactory.getDefault(Integer.class), x);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression cellAsLong(Expression x) {
-        return SQLFunctions.oneArgumentFunc("CELL", _MappingFactory.getDefault(Long.class), x);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression conv(Expression number, int fromBase, int toBase) {
-//        return new SQLFunctions.ThreeArgumentFunc<>("CONV", _MappingFactory.getMapping(String.class), number
-//                , literal(fromBase), literal(toBase));
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public static Expression cos(Expression x) {
-        return SQLFunctions.oneArgumentFunc("COS", _MappingFactory.getDefault(Double.class), x);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression cot(Expression x) {
-        return SQLFunctions.oneArgumentFunc("COT", _MappingFactory.getDefault(Double.class), x);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression crc32(Expression expression) {
-        return SQLFunctions.oneArgumentFunc("CRC32", _MappingFactory.getDefault(Long.class), expression);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression degrees(Expression radian) {
-        return SQLFunctions.oneArgumentFunc("DEGREES", _MappingFactory.getDefault(Double.class), radian);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @see #ln(Expression)
      */
     public static Expression exp(Expression index) {
-        return SQLFunctions.oneArgumentFunc("EXP", _MappingFactory.getDefault(Double.class), index);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression floor(Expression number) {
-        return SQLFunctions.oneArgumentFunc("FLOOR", _MappingFactory.getDefault(Integer.class), number);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression floorAsLong(Expression number) {
-        return SQLFunctions.oneArgumentFunc("FLOOR", _MappingFactory.getDefault(Long.class), number);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression format(Expression number, Expression decimal) {
-        return SQLFunctions.twoArgumentFunc("FORMAT", _MappingFactory.getDefault(String.class), number, decimal);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression format(Expression number, int decimal) {
-        return SQLFunctions.twoArgumentFunc("FORMAT", _MappingFactory.getDefault(String.class)
-                , number, SQLs.literal(decimal));
+        throw new UnsupportedOperationException();
     }
 
     public static Expression hex(Expression number) {
-        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getDefault(String.class), number);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression hex(Number number) {
-        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getDefault(String.class), SQLs.literal(number));
+        throw new UnsupportedOperationException();
     }
 
     public static Expression hex(String numberText) {
-        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getDefault(String.class), SQLs.literal(numberText));
+        throw new UnsupportedOperationException();
     }
 
     public static Expression hexForText(Expression numberText) {
-        return SQLFunctions.oneArgumentFunc("HEX", _MappingFactory.getDefault(String.class), numberText);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @see #exp(Expression)
      */
     public static Expression ln(Expression power) {
-        return SQLFunctions.oneArgumentFunc("LN", _MappingFactory.getDefault(Double.class), power);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @see #ln(Expression)
      */
     public static Expression log(Expression power) {
-        return SQLFunctions.oneArgumentFunc("LOG", _MappingFactory.getDefault(Double.class), power);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression log(Expression bottomNumber
             , Expression power) {
-        return SQLFunctions.twoArgumentFunc("LOG", _MappingFactory.getDefault(Double.class), bottomNumber, power);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @see #ln(Expression)
      */
     public static Expression log2(Expression power) {
-        return log(SQLs.literal(2), power);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @see #ln(Expression)
      */
     public static Expression log10(Expression power) {
-        return log(SQLs.literal(10), power);
+        throw new UnsupportedOperationException();
     }
 
     public static Expression mod(Expression dividend
             , Expression divisor) {
-        return SQLFunctions.twoArgumentFunc("MOD", dividend.paramMeta().mappingType(), dividend, divisor);
+        throw new UnsupportedOperationException();
     }
 
 
     public static Expression pi() {
-        return SQLFunctions.noArgumentFunc("PI", _MappingFactory.getDefault(Double.class));
+        throw new UnsupportedOperationException();
     }
 
 
     /*################################## blow date time function method ##################################*/
 
     public static Expression now() {
-        return SQLFunctions.noArgumentFunc("NOW", _MappingFactory.getDefault(LocalDateTime.class));
+        throw new UnsupportedOperationException();
     }
 
     public static Expression currentDate() {
-        return SQLFunctions.noArgumentFunc("CURRENT_DATE", _MappingFactory.getDefault(LocalDate.class));
+        throw new UnsupportedOperationException();
     }
 
     /*################################## blow static inner class  ##################################*/
 
 
+    /*-------------------below package method -------------------*/
 
+    static ParamMeta _returnType(final ArmyExpression keyExpr, final ArmyExpression valueExpr
+            , BiFunction<MappingType, MappingType, MappingType> function) {
+        final ParamMeta keyType, valueType;
+        keyType = keyExpr.paramMeta();
+        valueType = valueExpr.paramMeta();
+        final ParamMeta returnType;
+        if (keyType instanceof ParamMeta.Delay || valueType instanceof ParamMeta.Delay) {
+            returnType = CriteriaSupports.delayParamMeta(keyType, valueType, function);
+        } else {
+            returnType = function.apply(keyType.mappingType(), valueType.mappingType());
+        }
+        return returnType;
+    }
 
 }

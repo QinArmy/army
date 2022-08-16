@@ -1525,15 +1525,15 @@ public abstract class _AbstractDialectParser implements ArmyParser {
                 break;
             case 1: {
                 final SQLWords modifier = modifierList.get(0);
-                if (!(modifier instanceof Distinct)) {
-                    String m = String.format("Standard query api support only %s", Distinct.class.getName());
+                if (!(modifier instanceof SQLModifier)) {
+                    String m = String.format("Standard query api support only %s", SQLModifier.class.getName());
                     throw new CriteriaException(m);
                 }
-                builder.append(((Distinct) modifier).keyWords);
+                builder.append(((SQLModifier) modifier).keyWords);
             }
             break;
             default:
-                String m = String.format("Standard query api support only %s", Distinct.class.getName());
+                String m = String.format("Standard query api support only %s", SQLModifier.class.getName());
                 throw new CriteriaException(m);
         }
 

@@ -43,6 +43,11 @@ abstract class CriteriaSupports {
         return new DelayParamMetaWrapper(paramMeta, function);
     }
 
+    static ParamMeta delayParamMeta(ParamMeta paramMeta1, ParamMeta paramMeta2
+            , BiFunction<MappingType, MappingType, MappingType> function) {
+        return new BiDelayParamMetaWrapper(paramMeta1, paramMeta2, function);
+    }
+
 
     static final class RowConstructorImpl implements RowConstructor {
 
@@ -570,6 +575,40 @@ abstract class CriteriaSupports {
 
 
     }//DelayParamMetaWrapper
+
+    private static final class BiDelayParamMetaWrapper implements ParamMeta.Delay {
+
+        private final ParamMeta paramMeta1;
+
+        private final ParamMeta paramMeta2;
+
+        private final BiFunction<MappingType, MappingType, MappingType> function;
+
+        private BiDelayParamMetaWrapper(ParamMeta paramMeta1, ParamMeta paramMeta2
+                , BiFunction<MappingType, MappingType, MappingType> function) {
+            this.paramMeta1 = paramMeta1;
+            this.paramMeta2 = paramMeta2;
+            this.function = function;
+        }
+
+        @Override
+        public MappingType mappingType() {
+            return this.function.apply(this.paramMeta1.mappingType(), this.paramMeta2.mappingType());
+        }
+
+        @Override
+        public boolean isPrepared() {
+            boolean prepared1 = true, prepared2 = true;
+            if (this.paramMeta1 instanceof ParamMeta.Delay) {
+                prepared1 = ((Delay) this.paramMeta1).isPrepared();
+            } else if (this.paramMeta2 instanceof ParamMeta.Delay) {
+                prepared2 = ((Delay) this.paramMeta2).isPrepared();
+            }
+            return prepared1 && prepared2;
+        }
+
+
+    }//BiDelayParamMetaWrapper
 
 
 }

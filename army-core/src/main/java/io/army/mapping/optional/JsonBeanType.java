@@ -1,44 +1,37 @@
 package io.army.mapping.optional;
 
-
 import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-import java.util.List;
+public final class JsonBeanType extends AbstractMappingType {
 
-public final class JsonListType extends AbstractMappingType {
-
-    public static JsonListType from(MappingType elementType) {
+    public static JsonBeanType from(Class<?> javaType) {
         throw new UnsupportedOperationException();
     }
 
-    private JsonListType() {
+    private JsonBeanType() {
     }
 
     @Override
     public Class<?> javaType() {
-        return List.class;
+        return null;
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        //TODO
-        throw new UnsupportedOperationException();
+    public SqlType map(ServerMeta meta) {
+        return null;
     }
 
     @Override
     public Object beforeBind(SqlType sqlType, MappingEnv env, Object nonNull) {
-        //TODO
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public Object afterGet(SqlType sqlType, MappingEnv env, Object nonNull) {
-        //TODO
-        throw new UnsupportedOperationException();
+        return null;
     }
 
 

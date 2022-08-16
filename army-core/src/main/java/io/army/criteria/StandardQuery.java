@@ -329,7 +329,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _StandardSelectClause<C, Q extends Query>
-            extends Query.SelectClause<C, Distinct, _StandardFromSpec<C, Q>> {
+            extends Query.SelectClause<C, SQLModifier, _StandardFromSpec<C, Q>> {
 
     }
 

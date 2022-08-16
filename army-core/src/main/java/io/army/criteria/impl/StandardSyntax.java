@@ -7,12 +7,12 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-abstract class Syntax extends Functions {
+abstract class StandardSyntax extends Functions {
 
     /**
      * package constructor
      */
-    Syntax() {
+    StandardSyntax() {
     }
 
 

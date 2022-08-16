@@ -23,18 +23,22 @@ abstract class MySQLFunctions extends SQLFunctions {
     private MySQLFunctions() {
     }
 
+    static MySQLSyntax._OverSpec noArgWindowFunc(String name, ParamMeta returnType) {
+        return new NoArgWindowFunc(name, returnType);
+    }
 
     static MySQLSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable Object exp, ParamMeta returnType) {
         return new OneArgAggregateWindowFunc(name, null, SQLFunctions.funcParam(exp), returnType);
     }
 
-    static MySQLSyntax._AggregateOverSpec optionAggregateWindowFunc(String name, @Nullable SQLWords option
+    static MySQLSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable SQLWords option
             , @Nullable Object exp, ParamMeta returnType) {
-        if (option != null && exp == null) {
-            String m = String.format("function %s option[%s] but expr is null.", name, option);
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
-        }
         return new OneArgAggregateWindowFunc(name, option, SQLFunctions.funcParam(exp), returnType);
+    }
+
+    static MySQLSyntax._AggregateOverSpec safeMultiArgAggregateWindowFunc(String name, @Nullable SQLWords option
+            , List<ArmyExpression> argList, @Nullable Clause clause, ParamMeta returnType) {
+        return new MultiArgAggregateWindowFunc(name, option, argList, clause, returnType);
     }
 
     static MySQLSyntax._AggregateOverSpec multiArgAggregateWindowFunc(String name, @Nullable SQLWords option
@@ -70,6 +74,25 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     }//WindowFunc
 
+    private static final class NoArgWindowFunc extends MySQLFunctions.WindowFunc {
+
+        private NoArgWindowFunc(String name, ParamMeta returnType) {
+            super(name, returnType);
+        }
+
+        @Override
+        void appendArguments(_SqlContext context) {
+            //no argument, no-op
+        }
+
+        @Override
+        void argumentToString(StringBuilder builder) {
+            //no argument, no-op
+        }
+
+
+    }//NoArgWindowFunc
+
 
     private static final class OneArgWindowFunc extends MySQLFunctions.WindowFunc {
 
@@ -89,6 +112,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         void argumentToString(final StringBuilder builder) {
             builder.append(this.argument);
         }
+
 
     }//OneArgumentWindowFunc
 

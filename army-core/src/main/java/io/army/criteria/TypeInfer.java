@@ -7,9 +7,4 @@ public interface TypeInfer {
     ParamMeta paramMeta();
 
 
-    interface DelayTypeInfer extends TypeInfer {
-
-        boolean isPrepared();
-    }
-
 }

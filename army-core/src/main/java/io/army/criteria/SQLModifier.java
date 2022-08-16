@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public enum Distinct implements SQLWords {
+public enum SQLModifier implements SQLWords {
 
     ALL(" ALL"),
     DISTINCT(" DISTINCT"),
@@ -8,7 +8,7 @@ public enum Distinct implements SQLWords {
 
     public final String keyWords;
 
-    Distinct(String keyWords) {
+    SQLModifier(String keyWords) {
         this.keyWords = keyWords;
     }
 
@@ -20,7 +20,7 @@ public enum Distinct implements SQLWords {
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", Distinct.class.getName(), this.name());
+        return String.format("%s.%s", SQLModifier.class.getName(), this.name());
     }
 
 
