@@ -71,7 +71,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
 
     @Override
-    public final DialectParser dialect() {
+    public final DialectParser parser() {
         return this.parser;
     }
 

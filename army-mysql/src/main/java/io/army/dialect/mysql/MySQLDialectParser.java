@@ -101,7 +101,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void valueSyntaxInsert(final _ValueInsertContext context, final _Insert._ValuesSyntaxInsert stmt) {
-        assert context.dialect() == this;
+        assert context.parser() == this;
         //1. append insert common part
         this.appendInsertCommonPart(context, (_MySQLInsert) stmt);
         //2. column list
@@ -119,7 +119,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void assignmentInsert(final _AssignmentInsertContext context, final _Insert._AssignmentInsert stmt) {
-        assert context.dialect() == this;
+        assert context.parser() == this;
         //1. append insert common part
         this.appendInsertCommonPart(context, (_MySQLInsert) stmt);
         //2. append assignment clause
@@ -135,7 +135,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void queryInsert(final _QueryInsertContext context, final _Insert._QueryInsert stmt) {
-        assert context.dialect() == this;
+        assert context.parser() == this;
         final _MySQLInsert._MySQQueryInsert insert = (_MySQLInsert._MySQQueryInsert) stmt;
         //1. append insert common part
         this.appendInsertCommonPart(context, insert);
@@ -176,7 +176,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void dialectSimpleQuery(final _Query query, final _SimpleQueryContext context) {
-        if (context.dialect() != this) {
+        if (context.parser() != this) {
             throw illegalDialect();
         }
         final _MySQL80Query stmt = (_MySQL80Query) query;
@@ -259,7 +259,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void dialectSimpleValues(final _ValuesContext context, final _Values values) {
-        assert context.dialect() == this;
+        assert context.parser() == this;
         //1. VALUES keyword
         context.sqlBuilder().append(_Constant.VALUES);
         //2. row_constructor_list
@@ -277,7 +277,7 @@ final class MySQLDialectParser extends MySQLParser {
     @Override
     protected void dialectSingleUpdate(final _SingleUpdate update, final _SingleUpdateContext context) {
         final _MySQLSingleUpdate stmt = (_MySQLSingleUpdate) update;
-        if (context.dialect() != this) {
+        if (context.parser() != this) {
             throw illegalDialect();
         }
         final StringBuilder sqlBuilder = context.sqlBuilder();
@@ -339,7 +339,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void dialectMultiUpdate(final _MultiUpdate update, final _MultiUpdateContext context) {
-        if (context.dialect() != this) {
+        if (context.parser() != this) {
             throw illegalDialect();
         }
         final _MySQLMultiUpdate stmt = (_MySQLMultiUpdate) update;
@@ -371,7 +371,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void dialectSingleDelete(final _SingleDelete delete, final _SingleDeleteContext context) {
-        if (context.dialect() != this) {
+        if (context.parser() != this) {
             throw illegalDialect();
         }
         final _MySQLSingleDelete stmt = (_MySQLSingleDelete) delete;
@@ -434,7 +434,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     @Override
     protected void dialectMultiDelete(final _MultiDelete delete, final _MultiDeleteContext context) {
-        if (context.dialect() != this) {
+        if (context.parser() != this) {
             throw illegalDialect();
         }
         final _MySQLMultiDelete stmt = (_MySQLMultiDelete) delete;

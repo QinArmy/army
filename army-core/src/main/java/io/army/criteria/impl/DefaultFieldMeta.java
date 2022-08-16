@@ -426,7 +426,7 @@ abstract class DefaultFieldMeta<T> extends OperationField implements FieldMeta<T
         sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_AS_SPACE);
 
-        context.dialect().identifier(this.fieldName, sqlBuilder);
+        context.parser().identifier(this.fieldName, sqlBuilder);
     }
 
     @Override

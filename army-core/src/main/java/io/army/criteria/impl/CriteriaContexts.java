@@ -1215,7 +1215,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSelection(final _SqlContext context) {
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
 
             final String safeFieldName = dialect.identifier(this.selection.alias());
 
@@ -1232,7 +1232,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
@@ -1271,18 +1271,19 @@ abstract class CriteriaContexts {
     }//DerivedSelection
 
 
-    private static final class RefDerivedField extends OperationExpression implements DerivedField, _Selection {
+    private static final class RefDerivedField extends OperationExpression
+            implements DerivedField, _Selection {
 
         final String tableName;
 
         final String fieldName;
 
-        final DelayParamMeta paramMeta;
+        final DelaySelection paramMeta;
 
         private RefDerivedField(String tableName, String fieldName) {
             this.tableName = tableName;
             this.fieldName = fieldName;
-            this.paramMeta = new DelayParamMeta();
+            this.paramMeta = new DelaySelection();
         }
 
         @Override
@@ -1314,10 +1315,9 @@ abstract class CriteriaContexts {
             return this.paramMeta;
         }
 
-
         @Override
         public void appendSelection(final _SqlContext context) {
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
 
             final String safeFieldName = dialect.identifier(this.fieldName);
             final StringBuilder builder;
@@ -1333,7 +1333,7 @@ abstract class CriteriaContexts {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
             final StringBuilder builder;
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
@@ -1353,7 +1353,7 @@ abstract class CriteriaContexts {
     }//DerivedFieldImpl
 
 
-    private static final class DelayParamMeta implements ParamMeta {
+    private static final class DelaySelection implements ParamMeta.Delay {
 
         private Selection selection;
 
@@ -1366,7 +1366,12 @@ abstract class CriteriaContexts {
             return selection.paramMeta().mappingType();
         }
 
-    }
+        @Override
+        public boolean isPrepared() {
+            return this.selection != null;
+        }
+
+    }//DelaySelection
 
     /**
      * @see UnionQueryContext#ref(String)
@@ -1390,7 +1395,7 @@ abstract class CriteriaContexts {
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            context.dialect()
+            context.parser()
                     .identifier(this.selection.alias(), builder);
         }
 
@@ -1433,7 +1438,7 @@ abstract class CriteriaContexts {
             builder = context.sqlBuilder()
                     .append(_Constant.SPACE_AS_SPACE);
 
-            context.dialect()
+            context.parser()
                     .identifier(this.alias, builder);
         }
 

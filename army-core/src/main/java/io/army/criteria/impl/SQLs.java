@@ -274,23 +274,6 @@ public abstract class SQLs extends Functions {
     /**
      * package method that is used by army developer.
      *
-     * @param value {@link Expression} or parameter
-     */
-    static ArmyExpression _funcParam(final @Nullable Object value) {
-        final ArmyExpression expression;
-        if (value == null) {
-            expression = NullWord.INSTANCE;
-        } else if (value instanceof Expression) {
-            expression = (ArmyExpression) value;
-        } else {
-            expression = (ArmyExpression) SQLs.param(value);
-        }
-        return expression;
-    }
-
-    /**
-     * package method that is used by army developer.
-     *
      * @param exp {@link Expression} or parameter
      */
     static ArmyExpression _nonNullExp(final @Nullable Object exp) {
@@ -556,6 +539,10 @@ public abstract class SQLs extends Functions {
 
     public static Expression namedLiterals(ParamMeta paramMeta, String name, int size) {
         return LiteralExpression.namedMulti(paramMeta, name, size);
+    }
+
+    static Expression star() {
+        return StarLiteral.INSTANCE;
     }
 
 
@@ -914,6 +901,27 @@ public abstract class SQLs extends Functions {
 
     }// NullWord
 
+
+    private static final class StarLiteral extends NonOperationExpression {
+
+        private static final StarLiteral INSTANCE = new StarLiteral();
+
+        private StarLiteral() {
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            throw unsupportedOperation();
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(" *");
+        }
+
+
+    }//StarLiteral
+
     static final class BooleanWord extends OperationExpression {
 
         private static final BooleanWord TRUE = new BooleanWord(true);
@@ -986,7 +994,7 @@ public abstract class SQLs extends Functions {
             //2. append operator
             if (this instanceof OperatorItemPair) {
                 ((OperatorItemPair) this).operator
-                        .appendOperator(context.dialect().dialectMode(), field, context);
+                        .appendOperator(context.parser().dialectMode(), field, context);
             } else {
                 context.sqlBuilder()
                         .append(_Constant.SPACE_EQUAL);
@@ -1084,7 +1092,7 @@ public abstract class SQLs extends Functions {
             sqlBuilder.append(_Constant.SPACE_EQUAL);
 
             //5. append sub query
-            context.dialect().rowSet((SubQuery) this.right, context);
+            context.parser().rowSet((SubQuery) this.right, context);
 
         }
 

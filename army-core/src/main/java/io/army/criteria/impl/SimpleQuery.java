@@ -728,7 +728,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         if (!(this instanceof SubQuery)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        context.dialect().rowSet(this, context);
+        context.parser().rowSet(this, context);
     }
 
 

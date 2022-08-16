@@ -54,7 +54,7 @@ final class SubQueryPredicate extends OperationPredicate {
                 .append(this.operator.signText)
                 .append(this.subQueryOperator.rendered());
 
-        context.dialect().rowSet(this.subQuery, context);
+        context.parser().rowSet(this.subQuery, context);
     }
 
     @Override

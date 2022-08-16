@@ -73,7 +73,7 @@ public interface Window {
      */
     interface _CommaClause<CR> {
 
-        CR comma(String window);
+        CR comma(String windowName);
     }
 
 
@@ -149,7 +149,7 @@ public interface Window {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      *
-     * @param <FR> next clause java type
+     * @param <FR> next clause java type,sub interface of {@link _FrameBetweenClause }
      * @param <FC> next clause java type
      */
     interface _FrameUnitsClause<C, FR, FC> {

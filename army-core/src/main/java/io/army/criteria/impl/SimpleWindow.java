@@ -7,7 +7,6 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 import io.army.util.*;
 
@@ -129,11 +128,15 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
     @Override
-    public final LR leftParen(String existingWindowName) {
-        if (!this.criteriaContext.isExistWindow(existingWindowName)) {
-            throw _Exceptions.windowNotExists(existingWindowName);
+    public final LR leftParen(String windowName) {
+        if (this.refWindowName != null) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        } else if (this instanceof SQLFunctions.WinFuncSpec) {
+            this.criteriaContext.onRefWindow(windowName);
+        } else if (!this.criteriaContext.isExistWindow(windowName)) {
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::windowNotExists, windowName);
         }
-        this.refWindowName = existingWindowName;
+        this.refWindowName = windowName;
         return (LR) this;
     }
 
@@ -144,7 +147,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final LR leftParen(Function<C, String> function) {
-        return this.leftParen(function.apply(this.criteriaContext.criteria()));
+        return this.leftParen(function.apply(this.criteria));
     }
 
     @Override
@@ -160,7 +163,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final LR leftParenIf(Function<C, String> function) {
         final String windowName;
-        windowName = function.apply(this.criteriaContext.criteria());
+        windowName = function.apply(this.criteria);
         if (windowName != null) {
             this.leftParen(windowName);
         }
@@ -251,11 +254,13 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        if (this.criteria == null) {
-            throw CriteriaUtils.voidCriteria(this.criteriaContext, BiConsumer.class);
+        final Statement._OrderByClause<C, OR> clause;
+        if (this instanceof SQLFunctions.WinFuncSpec) {
+            clause = CriteriaSupports.voidOrderByClause(this.criteriaContext, this::orderByEnd);
+        } else {
+            clause = CriteriaSupports.orderByClause(this.criteriaContext, this::orderByEnd);
         }
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .orderBy(consumer);
+        return clause.orderBy(consumer);
     }
 
     @Override
@@ -290,11 +295,13 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        if (this.criteria == null) {
-            throw CriteriaUtils.voidCriteria(this.criteriaContext, BiConsumer.class);
+        final Statement._OrderByClause<C, OR> clause;
+        if (this instanceof SQLFunctions.WinFuncSpec) {
+            clause = CriteriaSupports.voidOrderByClause(this.criteriaContext, this::orderByEnd);
+        } else {
+            clause = CriteriaSupports.orderByClause(this.criteriaContext, this::orderByEnd);
         }
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(consumer);
+        return clause.ifOrderBy(consumer);
     }
 
     @Override
@@ -313,24 +320,24 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final FR ifRows(Predicate<C> predicate) {
-        if (this.criteria == null) {
-            throw CriteriaUtils.voidCriteria(this.criteriaContext, Predicate.class);
-        }
         if (predicate.test(this.criteria)) {
             this.frameUnits = FrameUnits.ROWS;
             this.betweenExtent = Boolean.TRUE;
+        } else {
+            this.frameUnits = null;
+            this.betweenExtent = null;
         }
         return (FR) this;
     }
 
     @Override
     public final FR ifRange(Predicate<C> predicate) {
-        if (this.criteria == null) {
-            throw CriteriaUtils.voidCriteria(this.criteriaContext, Predicate.class);
-        }
         if (predicate.test(this.criteria)) {
             this.frameUnits = FrameUnits.RANGE;
             this.betweenExtent = Boolean.TRUE;
+        } else {
+            this.frameUnits = null;
+            this.betweenExtent = null;
         }
         return (FR) this;
     }
@@ -358,9 +365,6 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final FC rowsExp(Function<C, ?> function) {
-        if (this.criteria == null) {
-            throw CriteriaUtils.voidCriteria(this.criteriaContext, Function.class);
-        }
         return this.rows(function.apply(this.criteria));
     }
 
@@ -376,7 +380,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final FC rangeExp(Function<C, ?> function) {
-        return this.range(function.apply(this.criteriaContext.criteria()));
+        return this.range(function.apply(this.criteria));
     }
 
     @Override
@@ -397,7 +401,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final FC ifRows(Function<C, ?> supplier) {
         final Object exp;
-        exp = supplier.apply(this.criteriaContext.criteria());
+        exp = supplier.apply(this.criteria);
         if (exp != null) {
             this.rows(exp);
         }
@@ -417,7 +421,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final FC ifRange(Function<C, ?> supplier) {
         final Object exp;
-        exp = supplier.apply(this.criteriaContext.criteria());
+        exp = supplier.apply(this.criteria);
         if (exp != null) {
             this.range(exp);
         }
@@ -426,10 +430,8 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final BR between() {
-        if (this.frameUnits != null) {
-            if (this.betweenExtent != Boolean.TRUE) {
-                throw _Exceptions.castCriteriaApi();
-            }
+        if (this.frameUnits != null && this.betweenExtent != Boolean.TRUE) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         return (BR) this;
     }
@@ -438,7 +440,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     public final BC between(Object expression) {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE) {
-                throw _Exceptions.castCriteriaApi();
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.frameStartExp = SQLs._nonNullExp(expression);
         }
@@ -452,7 +454,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final BC betweenExp(Function<C, ?> function) {
-        return this.between(function.apply(this.criteriaContext.criteria()));
+        return this.between(function.apply(this.criteria));
     }
 
     @Override
@@ -462,10 +464,8 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final FC and() {
-        if (this.frameUnits != null) {
-            if (this.betweenExtent != Boolean.TRUE || this.frameStartBound == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
+        if (this.frameUnits != null && (this.betweenExtent != Boolean.TRUE || this.frameStartBound == null)) {
+            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
         return (FC) this;
     }
@@ -474,7 +474,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     public final NC and(Object expression) {
         if (this.frameUnits != null) {
             if (this.betweenExtent != Boolean.TRUE || this.frameStartBound == null) {
-                throw _Exceptions.castCriteriaApi();
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             this.frameEndExp = SQLs._nonNullExp(expression);
         }
@@ -488,7 +488,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     @Override
     public final NC andExp(Function<C, ?> function) {
-        return this.and(function.apply(this.criteriaContext.criteria()));
+        return this.and(function.apply(this.criteria));
     }
 
     @Override
@@ -499,23 +499,19 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     @Override
     public final R rightParen() {
         _Assert.nonPrepared(this.prepared);
-        if (this.refWindowName == null
-                && this.partitionByList == null
-                && this.orderByList == null
-                && this.frameUnits == null) {
-            throw _Exceptions.castCriteriaApi();
-        }
         this.prepared = Boolean.TRUE;
         return this.stmt;
     }
 
     @Override
     public final void appendSql(final _SqlContext context) {
+        _Assert.prepared(this.prepared);
+
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
-        final DialectParser dialect = context.dialect();
+        final DialectParser dialect = context.parser();
 
-        //1.window name
+        //1.window name or window function
         final String windowName = this.windowName;
         if (windowName == null) {
             ((SQLFunctions.WinFuncSpec) this).appendFunc(context);
@@ -537,6 +533,8 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         final List<_Expression> partitionByList = this.partitionByList;
         if (partitionByList != null) {
             final int size = partitionByList.size();
+            assert size > 0;
+            sqlBuilder.append(_Constant.SPACE_PARTITION_BY);
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -548,6 +546,8 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         final List<ArmySortItem> orderByList = this.orderByList;
         if (orderByList != null) {
             final int size = orderByList.size();
+            assert size > 0;
+            sqlBuilder.append(_Constant.SPACE_ORDER_BY);
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -560,7 +560,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
         if (frameUnits != null) {
             final Boolean betweenExtent = this.betweenExtent;
             if (betweenExtent == null) {
-                throw _Exceptions.castCriteriaApi();
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             sqlBuilder.append(frameUnits.keyWords);
             if (betweenExtent) {
@@ -665,21 +665,21 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
 
-    private static void appendFrameBound(final @Nullable _Expression expression, final FrameBound bound
+    private void appendFrameBound(final @Nullable _Expression expression, final FrameBound bound
             , final _SqlContext context, final StringBuilder sqlBuilder) {
         switch (bound) {
             case CURRENT_ROW:
             case UNBOUNDED_PRECEDING:
             case UNBOUNDED_FOLLOWING: {
                 if (expression != null) {
-                    throw _Exceptions.castCriteriaApi();
+                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
                 }
             }
             break;
             case PRECEDING:
             case FOLLOWING: {
                 if (expression == null) {
-                    throw _Exceptions.castCriteriaApi();
+                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
                 }
                 expression.appendSql(context);
             }
@@ -744,7 +744,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
 
     private static class StandardSimpleWindow<C, R> extends SimpleWindow<
             C,
-            _SimpleLeftParenClause<C, R>,      //AR
+            Window._SimpleLeftParenClause<C, R>,      //AR
             Window._SimplePartitionBySpec<C, R>,        //LR
             Window._SimpleOrderBySpec<C, R>,            //PR,
             Window._SimpleFrameUnitsSpec<C, R>,         //OR
@@ -756,11 +756,11 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             Statement._Clause,                                //MA
             Statement._Clause,                                //MB
             R>                                               //R
-            implements Window._SimpleAsClause<C, R>, _SimpleLeftParenClause<C, R>
+            implements Window._SimpleAsClause<C, R>, Window._SimpleLeftParenClause<C, R>
             , Window._SimplePartitionBySpec<C, R>, Window._SimpleFrameBetweenClause<C, R>,
             Window._SimpleFrameEndNonExpBoundClause<R>, Window._SimpleFrameNonExpBoundClause<C, R>
             , Window._SimpleFrameExpBoundClause<C, R>, Window._SimpleFrameEndExpBoundClause<R>
-            , Window._SimpleFrameBetweenAndClause<C, R> {
+            , Window._SimpleFrameBetweenAndClause<C, R>, Window {
 
         private StandardSimpleWindow(@Nullable String windowName, CriteriaContext criteriaContext) {
             super(windowName, criteriaContext);
@@ -807,7 +807,7 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     private static class StandardSimpleWindowSpec extends StandardSimpleWindow<Void, SelectionSpec>
             implements SelectionSpec, SQLFunctions.WinFuncSpec, Window._SimpleOverLestParenSpec {
 
-        private MappingType returnType;
+        private ParamMeta returnType;
 
         private final SQLFunctions.WinFuncSpec windowFunc;
 
@@ -826,14 +826,17 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
             if (this.returnType != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            this.returnType = paramMeta.mappingType();
+            this.returnType = paramMeta;
             return this;
         }
 
         @Override
-        public final MappingType returnType() {
-            final MappingType returnType = this.returnType;
-            return returnType == null ? this.windowFunc.returnType() : returnType;
+        public final ParamMeta paramMeta() {
+            ParamMeta returnType = this.returnType;
+            if (returnType == null) {
+                returnType = this.windowFunc.paramMeta();
+            }
+            return returnType;
         }
 
         @Override

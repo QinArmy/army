@@ -190,7 +190,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                 builder.append(_Constant.RIGHT_PAREN);
             } else {
                 builder.append(_Constant.SPACE_AT);
-                context.dialect().identifier(queryBlockName, builder);
+                context.parser().identifier(queryBlockName, builder);
                 builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
@@ -243,7 +243,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
                 dialect.identifier(queryBlockName, builder);
@@ -322,7 +322,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
                 dialect.identifier(queryBlockName, builder);
@@ -403,7 +403,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
                 dialect.identifier(queryBlockName, builder);
@@ -455,7 +455,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     .append(_Constant.LEFT_PAREN);
 
             final String queryBlockName = this.queryBlockName;
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
             if (queryBlockName != null) {
                 builder.append(_Constant.SPACE_AT);
                 dialect.identifier(queryBlockName, builder);

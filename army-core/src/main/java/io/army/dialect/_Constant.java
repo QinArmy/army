@@ -104,6 +104,8 @@ public interface _Constant {
 
     String SPACE_OVER = " OVER";
 
+    String SPACE_PARTITION_BY = " PARTITION BY";
+
     String SPACE_IS_NULL = " IS NULL";
 
     String SPACE_RETURNING = " RETURNING";
@@ -111,6 +113,8 @@ public interface _Constant {
     String SPACE_ONLY = " ONLY";
 
     String SPACE_COMMA = " ,";
+
+    String SPACE_SEPARATOR = " SEPARATOR";
 
     String SPACE_COMMA_SPACE = " , ";
 

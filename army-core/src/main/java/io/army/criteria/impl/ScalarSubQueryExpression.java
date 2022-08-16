@@ -55,7 +55,7 @@ final class ScalarSubQueryExpression extends OperationExpression implements Scal
 
     @Override
     public void appendSql(final _SqlContext context) {
-        context.dialect().rowSet(this.subQuery, context);
+        context.parser().rowSet(this.subQuery, context);
     }
 
 

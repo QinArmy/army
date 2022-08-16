@@ -68,7 +68,7 @@ final class QualifiedFieldImpl<T> extends OperationField
         sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_AS_SPACE);
 
-        context.dialect().identifier(this.field.fieldName, sqlBuilder);
+        context.parser().identifier(this.field.fieldName, sqlBuilder);
     }
 
     @Override

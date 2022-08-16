@@ -46,7 +46,7 @@ public interface _SqlContext {
      */
     void appendField(FieldMeta<?> field);
 
-    DialectParser dialect();
+    DialectParser parser();
 
     StringBuilder sqlBuilder();
 

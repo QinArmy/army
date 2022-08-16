@@ -46,10 +46,10 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
             } else {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            context.dialect().rowSet(this.left, context);
+            context.parser().rowSet(this.left, context);
             builder.append(_Constant.SPACE_RIGHT_PAREN);
         } else if (this instanceof RowSetWithUnion) {
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
             dialect.rowSet(this.left, context);
 
             context.sqlBuilder()

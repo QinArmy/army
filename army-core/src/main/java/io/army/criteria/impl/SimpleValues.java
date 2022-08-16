@@ -139,7 +139,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         if (!(this instanceof SubValues)) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
-        context.dialect().rowSet(this, context);
+        context.parser().rowSet(this, context);
     }
 
 

@@ -20,4 +20,10 @@ public interface ParamMeta extends Meta {
 
     MappingType mappingType();
 
+    interface Delay extends ParamMeta {
+
+        boolean isPrepared();
+    }
+
+
 }

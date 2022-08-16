@@ -9,7 +9,6 @@ import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParamMeta;
 
@@ -71,7 +70,7 @@ abstract class Selections implements _Selection {
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE_AS_SPACE);
 
-            context.dialect().identifier(this.alias, sqlBuilder);
+            context.parser().identifier(this.alias, sqlBuilder);
         }
 
         @Override
@@ -125,7 +124,7 @@ abstract class Selections implements _Selection {
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE_AS_SPACE);
 
-            context.dialect().identifier(this.alias, sqlBuilder);
+            context.parser().identifier(this.alias, sqlBuilder);
         }
 
         @Override
@@ -183,18 +182,24 @@ abstract class Selections implements _Selection {
 
         private final String alias;
 
-        private final MappingType returnType;
+        private final ParamMeta returnType;
 
         private FuncSelection(SQLFunctions.FunctionSpec func, String alias) {
             super(alias);
             this.func = func;
             this.alias = alias;
-            this.returnType = func.returnType();
+            this.returnType = func.paramMeta();
         }
 
         @Override
         public ParamMeta paramMeta() {
-            return this.returnType;
+            ParamMeta paramMeta = this.returnType;
+            if (paramMeta instanceof TableField) {
+                // FuncSelection couldn't return io.army.criteria.TableField ,avoid to statement executor
+                // decode selection .
+                paramMeta = paramMeta.mappingType();
+            }
+            return paramMeta;
         }
 
         @Override
@@ -205,7 +210,7 @@ abstract class Selections implements _Selection {
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE_AS_SPACE);
 
-            context.dialect().identifier(this.alias, sqlBuilder);
+            context.parser().identifier(this.alias, sqlBuilder);
         }
 
         @Override

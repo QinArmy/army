@@ -19,7 +19,7 @@ final class SimpleSelectContext extends MultiTableContext implements _SimpleQuer
     static SimpleSelectContext create(Select select, _SelectContext outerContext) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) select).tableBlockList()
-                , (ArmyParser) outerContext.dialect(), outerContext.visible());
+                , (ArmyParser) outerContext.parser(), outerContext.visible());
         return new SimpleSelectContext(select, tableContext, outerContext);
     }
 

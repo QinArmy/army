@@ -283,7 +283,7 @@ abstract class SelectionGroups {
             }
             final StringBuilder builder = context.sqlBuilder();
 
-            final DialectParser dialect = context.dialect();
+            final DialectParser dialect = context.parser();
             final String safeAlias = dialect.identifier(this.derivedAlias);
             final int size = selectionList.size();
             Selection selection;

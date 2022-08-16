@@ -128,7 +128,7 @@ public abstract class _DialectUtils {
     static void standardInertIntoTable(final _ValueInsertContext context) {
         final StringBuilder sqlBuilder = context.sqlBuilder();
         sqlBuilder.append(_Constant.INSERT_INTO_SPACE);
-        ((ArmyParser) context.dialect()).safeObjectName(context.insertTable(), sqlBuilder);
+        ((ArmyParser) context.parser()).safeObjectName(context.insertTable(), sqlBuilder);
     }
 
     static void appendConditionFields(final _SingleUpdateContext context
@@ -137,7 +137,7 @@ public abstract class _DialectUtils {
             return;
         }
         final String safeTableAlias = context.safeTableAlias();
-        final ArmyParser dialect = (ArmyParser) context.dialect();
+        final ArmyParser dialect = (ArmyParser) context.parser();
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         String safeColumnName;

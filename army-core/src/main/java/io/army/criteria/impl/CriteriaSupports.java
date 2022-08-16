@@ -6,6 +6,8 @@ import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.meta.ParamMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -30,6 +32,15 @@ abstract class CriteriaSupports {
     static <C, OR> Statement._OrderByClause<C, OR> orderByClause(CriteriaContext criteriaContext
             , Function<List<ArmySortItem>, OR> function) {
         return new OrderByClause<>(criteriaContext, function);
+    }
+
+    static <C, OR> Statement._OrderByClause<C, OR> voidOrderByClause(CriteriaContext criteriaContext
+            , Function<List<ArmySortItem>, OR> function) {
+        return new OrderByClause<>(function, criteriaContext);
+    }
+
+    static ParamMeta delayParamMeta(ParamMeta.Delay paramMeta, Function<MappingType, MappingType> function) {
+        return new DelayParamMetaWrapper(paramMeta, function);
     }
 
 
@@ -381,11 +392,26 @@ abstract class CriteriaSupports {
 
         private final CriteriaContext criteriaContext;
 
+        private final C criteria;
+
         private final Function<List<ArmySortItem>, OR> function;
 
         private List<ArmySortItem> orderByList;
 
+        /**
+         * @see #orderByClause(CriteriaContext, Function)
+         */
         private OrderByClause(CriteriaContext criteriaContext, Function<List<ArmySortItem>, OR> function) {
+            this.criteriaContext = criteriaContext;
+            this.criteria = criteriaContext.criteria();
+            this.function = function;
+        }
+
+        /**
+         * @see #voidOrderByClause(CriteriaContext, Function)
+         */
+        private OrderByClause(Function<List<ArmySortItem>, OR> function, CriteriaContext criteriaContext) {
+            this.criteria = null;
             this.criteriaContext = criteriaContext;
             this.function = function;
         }
@@ -424,7 +450,7 @@ abstract class CriteriaSupports {
 
         @Override
         public OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-            consumer.accept(this.criteriaContext.criteria(), this::addOrderByItem);
+            consumer.accept(this.criteria, this::addOrderByItem);
             return this.endOrderByClause(true);
         }
 
@@ -484,7 +510,7 @@ abstract class CriteriaSupports {
 
         @Override
         public OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-            consumer.accept(this.criteriaContext.criteria(), this::addOrderByItem);
+            consumer.accept(this.criteria, this::addOrderByItem);
             return this.endOrderByClause(false);
         }
 
@@ -519,6 +545,31 @@ abstract class CriteriaSupports {
 
 
     }//OrderByClause
+
+
+    private static final class DelayParamMetaWrapper implements ParamMeta.Delay {
+
+        private final Delay paramMeta;
+
+        private final Function<MappingType, MappingType> function;
+
+        private DelayParamMetaWrapper(Delay paramMeta, Function<MappingType, MappingType> function) {
+            this.paramMeta = paramMeta;
+            this.function = function;
+        }
+
+        @Override
+        public MappingType mappingType() {
+            return this.function.apply(this.paramMeta.mappingType());
+        }
+
+        @Override
+        public boolean isPrepared() {
+            return this.paramMeta.isPrepared();
+        }
+
+
+    }//DelayParamMetaWrapper
 
 
 }

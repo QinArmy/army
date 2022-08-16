@@ -6,9 +6,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.*;
@@ -178,74 +176,50 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
 
     @Override
     public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
-        consumer.accept(this::addOrderByItem);
-        return this.endOrderBy(false);
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .orderBy(consumer);
     }
 
     @Override
     public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        consumer.accept(this.criteria, this::addOrderByItem);
-        return this.endOrderBy(false);
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .orderBy(consumer);
     }
 
     @Override
     public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
-        final Object value;
-        if ((value = operand.get()) != null) {
-            this.orderBy(operator.apply(value));
-        }
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).orderByEvent();
-        }
-        return (OR) this;
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand);
     }
 
     @Override
     public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
-        final Object value;
-        if ((value = operand.apply(operandKey)) != null) {
-            this.orderBy(operator.apply(value));
-        }
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).orderByEvent();
-        }
-        return (OR) this;
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand, operandKey);
     }
 
     @Override
     public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
-        final Object firstValue, secondValue;
-        if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
-            this.orderBy(operator.apply(firstValue, secondValue));
-        }
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).orderByEvent();
-        }
-        return (OR) this;
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, firstOperand, secondOperand);
     }
 
     @Override
     public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
-        final Object firstValue, secondValue;
-        if ((firstValue = operand.apply(firstKey)) != null && (secondValue = operand.apply(secondKey)) != null) {
-            this.orderBy(operator.apply(firstValue, secondValue));
-        }
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).orderByEvent();
-        }
-        return (OR) this;
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand, firstKey, secondKey);
     }
 
     @Override
     public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
-        consumer.accept(this::addOrderByItem);
-        return this.endOrderBy(true);
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(consumer);
     }
 
     @Override
     public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        consumer.accept(this.criteria, this::addOrderByItem);
-        return this.endOrderBy(true);
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(consumer);
     }
 
     @Override
@@ -415,12 +389,6 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     }
 
 
-    final boolean hasOrderBy() {
-        final List<ArmySortItem> itemList = this.orderByList;
-        return itemList != null && itemList.size() > 0;
-    }
-
-
     abstract Q internalAsRowSet(boolean fromAsQueryMethod);
 
     abstract UR createBracketQuery(RowSet rowSet);
@@ -463,41 +431,14 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
         } else if (right.isPrepared()) {
             u = this.createUnionRowSet(this.asQuery(), unionType, right);
         } else {
-            throw new CriteriaException("Right RowSet non-prepared.");
+            throw CriteriaContextStack.criteriaError(this.criteriaContext, "Right RowSet non-prepared.");
         }
         return u;
     }
 
-    private void addOrderByItem(final @Nullable SortItem sortItem) {
-        if (sortItem == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
-        }
-        List<ArmySortItem> itemList = this.orderByList;
-        if (itemList == null) {
-            itemList = new ArrayList<>();
-            this.orderByList = itemList;
-        } else if (!(itemList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
-        itemList.add((ArmySortItem) sortItem);
-    }
 
-    /**
-     * @see #orderBy(Consumer)
-     * @see #orderBy(BiConsumer)
-     */
-    private OR endOrderBy(final boolean optional) {
-        final List<ArmySortItem> itemList = this.orderByList;
-        if (itemList == null) {
-            if (!optional) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "order by clause is empty.");
-            }
-            this.orderByList = Collections.emptyList();
-        } else if (itemList instanceof ArrayList) {
-            this.orderByList = _CollectionUtils.unmodifiableList(itemList);
-        } else {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-        }
+    private OR orderByEnd(final List<ArmySortItem> itemList) {
+        this.orderByList = itemList;
         if (this instanceof OrderByEventListener) {
             ((OrderByEventListener) this).orderByEvent();
         }

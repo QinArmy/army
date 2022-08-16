@@ -591,9 +591,9 @@ abstract class CriteriaUtils {
         return CriteriaContextStack.criteriaError(criteriaContext, "you don't add any item");
     }
 
-    static CriteriaException voidCriteria(CriteriaContext criteriaContext, Class<?> funcClass) {
-        String m = String.format("void criteria don't support %s", funcClass.getName());
-        return CriteriaContextStack.criteriaError(criteriaContext, m);
+    static CriteriaException funcArgError(String funcName, @Nullable Object errorArg) {
+        String m = String.format("%s don't support %s", funcName, errorArg);
+        throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
     }
 
 
