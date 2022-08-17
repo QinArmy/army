@@ -27,6 +27,21 @@ abstract class MySQLFunctions extends SQLFunctions {
         return new NoArgWindowFunc(name, returnType);
     }
 
+    static MySQLSyntax._OverSpec oneArgWindowFunc(String name, @Nullable SQLWords option
+            , @Nullable Object expr, ParamMeta returnType) {
+        return new OneArgWindowFunc(name, option, SQLFunctions.funcParam(expr), returnType);
+    }
+
+    static MySQLSyntax._OverSpec safeMultiArgWindowFunc(String name, @Nullable SQLWords option
+            , List<ArmyExpression> argList, ParamMeta returnType) {
+        return new MultiArgWindowFunc(name, option, argList, returnType);
+    }
+
+    static MySQLSyntax._OverSpec multiArgWindowFunc(String name, @Nullable SQLWords option
+            , List<?> argList, ParamMeta returnType) {
+        return new MultiArgWindowFunc(name, option, SQLFunctions.funcParamList(argList), returnType);
+    }
+
     static MySQLSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable Object exp, ParamMeta returnType) {
         return new OneArgAggregateWindowFunc(name, null, SQLFunctions.funcParam(exp), returnType);
     }
@@ -96,25 +111,62 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     private static final class OneArgWindowFunc extends MySQLFunctions.WindowFunc {
 
+        private final SQLWords option;
+
         private final ArmyExpression argument;
 
-        private OneArgWindowFunc(String name, ArmyExpression argument, ParamMeta returnType) {
+        private OneArgWindowFunc(String name, @Nullable SQLWords option, ArmyExpression argument, ParamMeta returnType) {
             super(name, returnType);
+            this.option = option;
             this.argument = argument;
         }
 
         @Override
         void appendArguments(final _SqlContext context) {
+            final SQLWords option = this.option;
+            if (option != null) {
+                context.sqlBuilder().append(option.render());
+            }
             this.argument.appendSql(context);
         }
 
         @Override
         void argumentToString(final StringBuilder builder) {
+            final SQLWords option = this.option;
+            if (option != null) {
+                builder.append(option.render());
+            }
             builder.append(this.argument);
         }
 
 
     }//OneArgumentWindowFunc
+
+    private static final class MultiArgWindowFunc extends MySQLFunctions.WindowFunc {
+
+        private final SQLWords option;
+
+        private final List<ArmyExpression> argumentList;
+
+        private MultiArgWindowFunc(String name, @Nullable SQLWords option, List<ArmyExpression> argumentList
+                , ParamMeta returnType) {
+            super(name, returnType);
+            this.option = option;
+            this.argumentList = _CollectionUtils.unmodifiableList(argumentList);
+        }
+
+        @Override
+        void appendArguments(final _SqlContext context) {
+            SQLFunctions.appendArguments(this.option, this.argumentList, null, context);
+        }
+
+        @Override
+        void argumentToString(final StringBuilder builder) {
+            SQLFunctions.argumentsToString(this.option, this.argumentList, null, builder);
+        }
+
+
+    }//MultiArgWindowFunc
 
     private static abstract class MySQLAggregateWindowFunc extends SQLFunctions.AggregateWindowFunc
             implements MySQLSyntax._AggregateOverSpec {

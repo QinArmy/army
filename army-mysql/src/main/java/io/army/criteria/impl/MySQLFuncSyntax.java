@@ -499,6 +499,146 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         return _denseRank(IntegerType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec firstValue(final Object expr) {
+        return _nonNullArgWindowFunc("FIRST_VALUE", expr);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec lastValue(final Object expr) {
+        return _nonNullArgWindowFunc("LAST_VALUE", expr);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @see #lag(Object, Object, boolean)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec lag(final Object expr) {
+        return _lagOrLead("LAG", expr, null, false);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr       non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param n          nullable,probably is below:
+     *                   <ul>
+     *                       <li>null</li>
+     *                       <li>{@link Long} type</li>
+     *                       <li>{@link Integer} type</li>
+     *                       <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                       <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                   </ul>
+     * @param useDefault if n is non-nul and useDefault is true,output sql key word {@code DEFAULT}
+     * @see #lag(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec lag(final Object expr, final @Nullable Object n, final boolean useDefault) {
+        return _lagOrLead("LAG", expr, n, useDefault);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @see #lag(Object, Object, boolean)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec lead(final Object expr) {
+        return _lagOrLead("LEAD", expr, null, false);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr       non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param n          nullable,probably is below:
+     *                   <ul>
+     *                       <li>null</li>
+     *                       <li>{@link Long} type</li>
+     *                       <li>{@link Integer} type</li>
+     *                       <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                       <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                   </ul>
+     * @param useDefault if n is non-nul and useDefault is true,output sql key word {@code DEFAULT}
+     * @see #lag(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec lead(final Object expr, final @Nullable Object n, final boolean useDefault) {
+        return _lagOrLead("LEAD", expr, n, useDefault);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param n    non-null,probably is below:
+     *             <ul>
+     *                 <li>{@link Long} type</li>
+     *                 <li>{@link Integer} type</li>
+     *                 <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *             </ul>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
+     */
+    public static _OverSpec nthValue(final Object expr, final Object n) {
+
+        final String funcName = "NTH_VALUE";
+
+        final ArmyExpression expression, nExp;
+        expression = SQLFunctions.funcParam(expr);
+        if (expr instanceof SQLs.NullWord) {
+            throw CriteriaUtils.funcArgError(funcName, expr);
+        }
+
+        final ParamMeta nType;
+        nExp = SQLFunctions.funcParam(n);
+        nType = nExp.paramMeta();
+
+        if (!(nExp instanceof ParamExpression.SingleParamExpression
+                || nExp instanceof LiteralExpression.SingleLiteralExpression)) {
+            throw CriteriaUtils.funcArgError(funcName, n);
+        } else if (nExp.isNullValue()) {
+            throw CriteriaUtils.funcArgError(funcName, n);
+        } else if (!(nType instanceof LongType || nType instanceof IntegerType)) {
+            throw CriteriaUtils.funcArgError(funcName, n);
+        }
+
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(expression, nExp);
+        return MySQLFunctions.safeMultiArgWindowFunc(funcName, null, argList, expression.paramMeta());
+    }
+
+
+
+
 
 
     /*-------------------below private method -------------------*/
@@ -745,6 +885,91 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     private static _OverSpec _denseRank(MappingType returnType) {
         return MySQLFunctions.noArgWindowFunc("DENSE_RANK", returnType);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param funcName   LAG or LEAD
+     * @param expr       non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param n          nullable,probably is below:
+     *                   <ul>
+     *                       <li>null</li>
+     *                       <li>{@link Long} type</li>
+     *                       <li>{@link Integer} type</li>
+     *                       <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                       <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                   </ul>
+     * @param useDefault if n is non-nul and useDefault is true,output sql key word {@code DEFAULT}
+     * @see #lag(Object)
+     * @see #lag(Object, Object, boolean)
+     * @see #lead(Object)
+     * @see #lead(Object, Object, boolean)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    private static _OverSpec _lagOrLead(final String funcName, final Object expr
+            , final @Nullable Object n, final boolean useDefault) {
+
+        assert funcName.equals("LAG") || funcName.equals("LEAD");
+
+        final ArmyExpression expression;
+        expression = SQLFunctions.funcParam(expr);
+        if (expr instanceof SQLs.NullWord) {
+            throw CriteriaUtils.funcArgError(funcName, expr);
+        }
+
+        final ArmyExpression nExp;
+        final ParamMeta nType;
+        if (n == null) {
+            nExp = null;
+            nType = null;
+        } else {
+            nExp = SQLFunctions.funcParam(n);
+            nType = nExp.paramMeta();
+        }
+
+        final _OverSpec overSpec;
+        if (nExp == null) {
+            overSpec = MySQLFunctions.oneArgWindowFunc(funcName, null, expression, expression.paramMeta());
+        } else if (!(nExp instanceof ParamExpression.SingleParamExpression
+                || nExp instanceof LiteralExpression.SingleLiteralExpression)) {
+            throw CriteriaUtils.funcArgError(funcName, n);
+        } else if (nExp.isNullValue()) {
+            throw CriteriaUtils.funcArgError(funcName, n);
+        } else if (!(nType instanceof LongType || nType instanceof IntegerType)) {
+            throw CriteriaUtils.funcArgError(funcName, n);
+        } else if (useDefault) {
+            final List<ArmyExpression> argList;
+            argList = Arrays.asList(expression, nExp, (ArmyExpression) SQLs.defaultWord());
+            overSpec = MySQLFunctions.safeMultiArgWindowFunc(funcName, null, argList, expression.paramMeta());
+        } else {
+            final List<ArmyExpression> argList;
+            argList = Arrays.asList(expression, nExp);
+            overSpec = MySQLFunctions.safeMultiArgWindowFunc(funcName, null, argList, expression.paramMeta());
+        }
+        return overSpec;
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @see #firstValue(Object)
+     * @see #lastValue(Object)
+     */
+    private static _OverSpec _nonNullArgWindowFunc(final String funcName, final Object expr) {
+        final ArmyExpression expression;
+        expression = SQLFunctions.funcParam(expr);
+        if (expr instanceof SQLs.NullWord) {
+            throw CriteriaUtils.funcArgError(funcName, expr);
+        }
+        return MySQLFunctions.oneArgWindowFunc(funcName, null, expression, expression.paramMeta());
     }
 
 

@@ -58,17 +58,17 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
     }
 
 
-    private static final class SingleParamExpression extends ParamExpression
-            implements SingleParam, SqlValueParam.SingleNonNamedValue {
+     static final class SingleParamExpression extends ParamExpression
+             implements SingleParam, SqlValueParam.SingleNonNamedValue {
 
-        private final Object value;
+         private final Object value;
 
-        private SingleParamExpression(ParamMeta paramMeta, @Nullable Object value) {
-            super(paramMeta);
-            this.value = value;
-        }
+         private SingleParamExpression(ParamMeta paramMeta, @Nullable Object value) {
+             super(paramMeta);
+             this.value = value;
+         }
 
-        @Override
+         @Override
         public Object value() {
             return this.value;
         }

@@ -95,17 +95,17 @@ abstract class LiteralExpression extends OperationExpression {
     }
 
 
-    private static final class SingleLiteralExpression extends LiteralExpression
-            implements SqlValueParam.SingleNonNamedValue {
+     static final class SingleLiteralExpression extends LiteralExpression
+             implements SqlValueParam.SingleNonNamedValue {
 
-        private final Object value;
+         private final Object value;
 
-        private SingleLiteralExpression(ParamMeta paramMeta, @Nullable Object value) {
-            super(paramMeta);
-            this.value = value;
-        }
+         private SingleLiteralExpression(ParamMeta paramMeta, @Nullable Object value) {
+             super(paramMeta);
+             this.value = value;
+         }
 
-        @Override
+         @Override
         public void appendSql(final _SqlContext context) {
             final Object value = this.value;
             if (value == null) {
