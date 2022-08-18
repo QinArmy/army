@@ -23,40 +23,46 @@ abstract class MySQLFunctions extends SQLFunctions {
     private MySQLFunctions() {
     }
 
-    static MySQLSyntax._OverSpec noArgWindowFunc(String name, ParamMeta returnType) {
+    static MySQLFuncSyntax._OverSpec noArgWindowFunc(String name, ParamMeta returnType) {
         return new NoArgWindowFunc(name, returnType);
     }
 
-    static MySQLSyntax._OverSpec oneArgWindowFunc(String name, @Nullable SQLWords option
+    static MySQLFuncSyntax._OverSpec oneArgWindowFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, ParamMeta returnType) {
         return new OneArgWindowFunc(name, option, SQLFunctions.funcParam(expr), returnType);
     }
 
-    static MySQLSyntax._OverSpec safeMultiArgWindowFunc(String name, @Nullable SQLWords option
+    static MySQLFuncSyntax._OverSpec safeMultiArgWindowFunc(String name, @Nullable SQLWords option
             , List<ArmyExpression> argList, ParamMeta returnType) {
         return new MultiArgWindowFunc(name, option, argList, returnType);
     }
 
-    static MySQLSyntax._OverSpec multiArgWindowFunc(String name, @Nullable SQLWords option
+    static MySQLFuncSyntax._FromFirstLastSpec safeMultiArgFromFirstWindowFunc(String name, @Nullable SQLWords option
+            , List<ArmyExpression> argList, ParamMeta returnType) {
+        return new FromFirstLastMultiArgWindowFunc(name, option, argList, returnType);
+    }
+
+    static MySQLFuncSyntax._OverSpec multiArgWindowFunc(String name, @Nullable SQLWords option
             , List<?> argList, ParamMeta returnType) {
         return new MultiArgWindowFunc(name, option, SQLFunctions.funcParamList(argList), returnType);
     }
 
-    static MySQLSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable Object exp, ParamMeta returnType) {
+    static MySQLFuncSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable Object exp, ParamMeta returnType) {
         return new OneArgAggregateWindowFunc(name, null, SQLFunctions.funcParam(exp), returnType);
     }
 
-    static MySQLSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable SQLWords option
+    static MySQLFuncSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable SQLWords option
             , @Nullable Object exp, ParamMeta returnType) {
         return new OneArgAggregateWindowFunc(name, option, SQLFunctions.funcParam(exp), returnType);
     }
 
-    static MySQLSyntax._AggregateOverSpec safeMultiArgAggregateWindowFunc(String name, @Nullable SQLWords option
+    static MySQLFuncSyntax._AggregateOverSpec safeMultiArgAggregateWindowFunc(String name, @Nullable SQLWords option
             , List<ArmyExpression> argList, @Nullable Clause clause, ParamMeta returnType) {
         return new MultiArgAggregateWindowFunc(name, option, argList, clause, returnType);
     }
 
-    static MySQLSyntax._AggregateOverSpec multiArgAggregateWindowFunc(String name, @Nullable SQLWords option
+
+    static MySQLFuncSyntax._AggregateOverSpec multiArgAggregateWindowFunc(String name, @Nullable SQLWords option
             , List<?> argList, @Nullable Clause clause, ParamMeta returnType) {
         if (argList.size() == 0) {
             throw CriteriaUtils.funcArgError(name, argList);
@@ -74,7 +80,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
 
     private static abstract class WindowFunc extends WindowFuncClause
-            implements MySQLSyntax._OverSpec {
+            implements MySQLFuncSyntax._OverSpec {
 
 
         private WindowFunc(String name, ParamMeta returnType) {
@@ -142,7 +148,8 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     }//OneArgumentWindowFunc
 
-    private static final class MultiArgWindowFunc extends MySQLFunctions.WindowFunc {
+
+    private static class MultiArgWindowFunc extends MySQLFunctions.WindowFunc {
 
         private final SQLWords option;
 
@@ -156,20 +163,103 @@ abstract class MySQLFunctions extends SQLFunctions {
         }
 
         @Override
-        void appendArguments(final _SqlContext context) {
+        final void appendArguments(final _SqlContext context) {
             SQLFunctions.appendArguments(this.option, this.argumentList, null, context);
+
+            if (this instanceof FromFirstLastMultiArgWindowFunc) {
+                final FromFirstLast fromFirstLast = ((FromFirstLastMultiArgWindowFunc) this).fromFirstLast;
+                final StringBuilder sqlBuilder = context.sqlBuilder();
+                if (fromFirstLast != null) {
+                    sqlBuilder.append(fromFirstLast.words);
+                }
+                final NullTreatment nullTreatment = ((NullTreatmentMultiArgWindowFunc) this).nullTreatment;
+                if (nullTreatment != null) {
+                    sqlBuilder.append(nullTreatment.words);
+                }
+
+            } else if (this instanceof NullTreatmentMultiArgWindowFunc) {
+                final NullTreatment nullTreatment = ((NullTreatmentMultiArgWindowFunc) this).nullTreatment;
+                if (nullTreatment != null) {
+                    context.sqlBuilder().append(nullTreatment.words);
+                }
+            }
+
+
         }
 
         @Override
-        void argumentToString(final StringBuilder builder) {
+        final void argumentToString(final StringBuilder builder) {
             SQLFunctions.argumentsToString(this.option, this.argumentList, null, builder);
         }
 
 
     }//MultiArgWindowFunc
 
+
+    private static class NullTreatmentMultiArgWindowFunc extends MultiArgWindowFunc
+            implements MySQLFuncSyntax._NullTreatmentSpec {
+
+        private NullTreatment nullTreatment;
+
+        private NullTreatmentMultiArgWindowFunc(String name, @Nullable SQLWords option
+                , List<ArmyExpression> argumentList, ParamMeta returnType) {
+            super(name, option, argumentList, returnType);
+        }
+
+        @Override
+        public final MySQLFuncSyntax._OverSpec respectNulls() {
+            if (this.nullTreatment != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.nullTreatment = NullTreatment.RESPECT_NULLS;
+            return this;
+        }
+
+        @Override
+        public final MySQLFuncSyntax._OverSpec ignoreNulls() {
+            if (this.nullTreatment != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.nullTreatment = NullTreatment.IGNORE_NULLS;
+            return this;
+        }
+
+
+    }//NullTreatmentMultiArgWindowFunc
+
+    private static final class FromFirstLastMultiArgWindowFunc extends NullTreatmentMultiArgWindowFunc
+            implements MySQLFuncSyntax._FromFirstLastSpec {
+
+        private FromFirstLast fromFirstLast;
+
+        private FromFirstLastMultiArgWindowFunc(String name, @Nullable SQLWords option
+                , List<ArmyExpression> argumentList, ParamMeta returnType) {
+            super(name, option, argumentList, returnType);
+        }
+
+        @Override
+        public MySQLFuncSyntax._NullTreatmentSpec fromFirst() {
+            if (this.fromFirstLast != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.fromFirstLast = FromFirstLast.FROM_LAST;
+            return this;
+        }
+
+        @Override
+        public MySQLFuncSyntax._NullTreatmentSpec fromLast() {
+            if (this.fromFirstLast != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            this.fromFirstLast = FromFirstLast.FROM_LAST;
+            return this;
+        }
+
+
+    }//FromFirstLastMultiArgWindowFunc
+
     private static abstract class MySQLAggregateWindowFunc extends SQLFunctions.AggregateWindowFunc
-            implements MySQLSyntax._AggregateOverSpec {
+            implements MySQLFuncSyntax._AggregateOverSpec {
 
         private MySQLAggregateWindowFunc(String name, ParamMeta returnType) {
             super(name, returnType);

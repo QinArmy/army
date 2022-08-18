@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.FuncExpression;
 import io.army.criteria.Hint;
-import io.army.criteria.Window;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.lang.Nullable;
 
@@ -27,15 +25,6 @@ abstract class MySQLSyntax extends Functions {
     MySQLSyntax() {
     }
 
-    public interface _OverSpec extends Window._OverClause {
-
-        Window._SimpleOverLestParenSpec over();
-
-    }
-
-    public interface _AggregateOverSpec extends _OverSpec, FuncExpression {
-
-    }
 
 
     /*################################## blow join-order hint ##################################*/

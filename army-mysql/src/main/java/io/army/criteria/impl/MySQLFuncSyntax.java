@@ -36,6 +36,28 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     MySQLFuncSyntax() {
     }
 
+    public interface _OverSpec extends Window._OverClause {
+
+        Window._SimpleOverLestParenSpec over();
+
+    }
+
+    public interface _NullTreatmentSpec extends Functions._NullTreatmentClause<_OverSpec>, _OverSpec {
+
+
+    }
+
+    public interface _FromFirstLastSpec extends Functions._FromFirstLastClause<_NullTreatmentSpec>, _NullTreatmentSpec {
+
+
+    }
+
+
+    public interface _AggregateOverSpec extends _OverSpec, FuncExpression {
+
+    }
+
+
 
     /*-------------------below Aggregate Function  -------------------*/
 
@@ -480,24 +502,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * The {@link MappingType} of function return type:  {@link  LongType}.
      * </p>
      *
-     * @see #denseRankAsInt()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      */
     public static _OverSpec denseRank() {
-        return _denseRank(LongType.INSTANCE);
+        return MySQLFunctions.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
     }
 
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  IntegerType}.
-     * </p>
-     *
-     * @see #denseRank()
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
-     */
-    public static _OverSpec denseRankAsInt() {
-        return _denseRank(IntegerType.INSTANCE);
-    }
 
     /**
      * <p>
@@ -598,46 +608,104 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
-     * @param n    non-null,probably is below:
-     *             <ul>
-     *                 <li>{@link Long} type</li>
-     *                 <li>{@link Integer} type</li>
-     *                 <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                 <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
-     *             </ul>
+     * @param expr non-null {@link  Expression}
+     * @param n    positive.output literal.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
      */
-    public static _OverSpec nthValue(final Object expr, final Object n) {
+    public static _FromFirstLastSpec nthValue(final Expression expr, final long n) {
 
         final String funcName = "NTH_VALUE";
 
-        final ArmyExpression expression, nExp;
-        expression = SQLFunctions.funcParam(expr);
         if (expr instanceof SQLs.NullWord) {
             throw CriteriaUtils.funcArgError(funcName, expr);
-        }
-
-        final ParamMeta nType;
-        nExp = SQLFunctions.funcParam(n);
-        nType = nExp.paramMeta();
-
-        if (!(nExp instanceof ParamExpression.SingleParamExpression
-                || nExp instanceof LiteralExpression.SingleLiteralExpression)) {
-            throw CriteriaUtils.funcArgError(funcName, n);
-        } else if (nExp.isNullValue()) {
-            throw CriteriaUtils.funcArgError(funcName, n);
-        } else if (!(nType instanceof LongType || nType instanceof IntegerType)) {
+        } else if (n < 1L) {
             throw CriteriaUtils.funcArgError(funcName, n);
         }
-
         final List<ArmyExpression> argList;
-        argList = Arrays.asList(expression, nExp);
-        return MySQLFunctions.safeMultiArgWindowFunc(funcName, null, argList, expression.paramMeta());
+        argList = Arrays.asList((ArmyExpression) expr, (ArmyExpression) SQLs.literal(LongType.INSTANCE, n));
+        return MySQLFunctions.safeMultiArgFromFirstWindowFunc(funcName, null, argList, expr.paramMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType}
+     * </p>
+     *
+     * @param n positive number or {@link  Expression}.in any of the following forms:
+     *          <ul>
+     *               <li>positive number:
+     *                      <ul>
+     *                           <li>{@link  Long}</li>
+     *                           <li>{@link  Integer}</li>
+     *                           <li>{@link  Short}</li>
+     *                           <li>{@link  Byte}</li>
+     *                      </ul>
+     *               </li>
+     *               <li>positive number parameter {@link  Expression},eg:{@link SQLs#param(Object)}</li>
+     *               <li>positive number literal {@link  Expression},eg:{@link SQLs#literal(Object)}</li>
+     *               <li>variable {@link  Expression}</li>
+     *          </ul>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
+     */
+    public static _OverSpec ntile(final Object n) {
+        //TODO a local variable in a stored routine?
+        final String funcName = "NTILE";
+        if (n instanceof Long) {
+            if (((Long) n) < 1L) {
+                throw CriteriaUtils.funcArgError(funcName, n);
+            }
+        } else if (n instanceof Number) {
+            if (!(n instanceof Integer || n instanceof Short || n instanceof Byte)) {
+                throw CriteriaUtils.funcArgError(funcName, n);
+            }
+            if (((Number) n).intValue() < 1) {
+                throw CriteriaUtils.funcArgError(funcName, n);
+            }
+        } else if (!(n instanceof Expression)) {
+            throw CriteriaUtils.funcArgError(funcName, n);
+        }
+
+        final ArmyExpression expression;
+        expression = SQLFunctions.funcParam(n);
+        if (expression instanceof SQLs.NullWord) {
+            throw CriteriaUtils.funcArgError(funcName, n);
+        }
+        return MySQLFunctions.oneArgWindowFunc(funcName, null, expression, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">PERCENT_RANK() over_clause</a>
+     */
+    public static _OverSpec percentRank() {
+        return MySQLFunctions.noArgWindowFunc("PERCENT_RANK", DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
+     */
+    public static _OverSpec rank() {
+        return MySQLFunctions.noArgWindowFunc("RANK", LongType.INSTANCE);
     }
 
 
-
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
+     */
+    public static _OverSpec rowNumber() {
+        return MySQLFunctions.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
+    }
 
 
 
@@ -872,20 +940,6 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         return MySQLFunctions.aggregateWindowFunc(funcName, distinct, expression, actualReturnType);
     }
 
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:  returnType
-     * </p>
-     *
-     * @param returnType {@link  LongType} or {@link  IntegerType}
-     * @see #denseRank()
-     * @see #denseRankAsInt()
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
-     */
-    private static _OverSpec _denseRank(MappingType returnType) {
-        return MySQLFunctions.noArgWindowFunc("DENSE_RANK", returnType);
-    }
 
 
     /**

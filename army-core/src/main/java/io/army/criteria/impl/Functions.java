@@ -2,10 +2,13 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
+import io.army.criteria.SelectionSpec;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -27,6 +30,105 @@ abstract class Functions {
     Functions() {
         throw new UnsupportedOperationException();
     }
+
+
+    interface _NullTreatmentClause<NR> {
+
+        NR respectNulls();
+
+        NR ignoreNulls();
+
+    }
+
+    public interface _FromFirstLastClause<FR> {
+        FR fromFirst();
+
+        FR fromLast();
+
+    }
+
+
+    interface _CaseEndClause {
+
+        SelectionSpec end();
+    }
+
+    interface _CaseElseClause extends _CaseEndClause {
+        _CaseEndClause elseExp(Expression expression);
+
+        _CaseEndClause elseExp(Supplier<? extends Expression> supplier);
+
+        _CaseEndClause elseExp(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
+
+        _CaseEndClause elseExp(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
+        _CaseEndClause elseExp(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        _CaseEndClause elseExp(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+        _CaseEndClause ifElse(Supplier<? extends Expression> supplier);
+
+        _CaseEndClause ifElse(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
+
+        _CaseEndClause ifElse(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
+        _CaseEndClause ifElse(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        _CaseEndClause ifElse(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+
+    }
+
+    interface _CaseThenClause {
+
+        _CaseWhenSpec then(Expression expression);
+
+        _CaseWhenSpec then(Supplier<? extends Expression> supplier);
+
+        _CaseWhenSpec then(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
+
+        _CaseWhenSpec then(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
+        _CaseWhenSpec then(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        _CaseWhenSpec then(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+
+    }
+
+
+    interface _CaseWhenClause {
+
+        _CaseThenClause when(Expression expression);
+
+        _CaseThenClause when(Supplier<? extends Expression> supplier);
+
+        _CaseThenClause when(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
+
+        _CaseThenClause when(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
+        _CaseThenClause when(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        _CaseThenClause when(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+        _CaseThenClause ifWhen(Supplier<? extends Expression> supplier);
+
+        _CaseThenClause ifWhen(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
+
+        _CaseThenClause ifWhen(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
+        _CaseThenClause ifWhen(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        _CaseThenClause ifWhen(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+
+    }
+
+    interface _CaseWhenSpec extends _CaseWhenClause, _CaseElseClause {
+
+    }
+
+
 
 
 
@@ -178,6 +280,10 @@ abstract class Functions {
 
     public static Expression currentDate() {
         throw new UnsupportedOperationException();
+    }
+
+    public static _CaseWhenClause caseFunc() {
+        return SQLFunctions.caseFunc(null);
     }
 
     /*################################## blow static inner class  ##################################*/

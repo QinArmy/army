@@ -12,6 +12,9 @@ import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 abstract class SQLFunctions extends OperationExpression implements Expression {
 
@@ -43,9 +46,9 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return expList;
     }
 
-    static Expression noArgumentFunc(String name, MappingType returnType) {
-        // return new NoArgumentFunc<>(name, returnType);
-        return null;
+
+    static Functions._CaseWhenClause caseFunc(@Nullable Expression caseValue) {
+        return new CaseFunc((ArmyExpression) caseValue);
     }
 
     @Deprecated
@@ -136,6 +139,54 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         void appendFunc(_SqlContext context);
     }
+
+
+    enum NullTreatment implements SQLWords {
+
+        RESPECT_NULLS(" RESPECT NULLS"),
+        IGNORE_NULLS(" IGNORE NULLS");
+
+        final String words;
+
+        NullTreatment(String words) {
+            this.words = words;
+        }
+
+        @Override
+        public final String render() {
+            return this.words;
+        }
+
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", NullTreatment.class.getSimpleName(), this.name());
+        }
+
+
+    }//NullTreatment
+
+    enum FromFirstLast implements SQLWords {
+
+        FROM_FIRST(" FROM FIRST"),
+        FROM_LAST(" FROM LAST");
+
+        final String words;
+
+        FromFirstLast(String words) {
+            this.words = words;
+        }
+
+        @Override
+        public final String render() {
+            return this.words;
+        }
+
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", FromFirstLast.class.getSimpleName(), this.name());
+        }
+
+    }//FromFirstLast
 
     static abstract class ArgumentClause implements Clause, _SelfDescribed, CriteriaContextSpec {
 
@@ -515,6 +566,367 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     }//MultiArgOptionFunc
+
+
+    private static final class CaseFunc implements Functions._CaseWhenSpec, Functions._CaseThenClause
+            , FunctionSpec, CriteriaContextSpec, SelectionSpec {
+
+
+        private final ArmyExpression caseValue;
+
+        private final CriteriaContext criteriaContext;
+
+        private List<_Pair<ArmyExpression, ArmyExpression>> expPairList;
+
+        private ArmyExpression whenExpression;
+
+        private ArmyExpression elseExpression;
+
+        private ParamMeta returnType;
+
+        private CaseFunc(@Nullable ArmyExpression caseValue) {
+            this.caseValue = caseValue;
+            this.criteriaContext = CriteriaContextStack.peek();
+        }
+
+        @Override
+        public CriteriaContext getCriteriaContext() {
+            return this.criteriaContext;
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            final ParamMeta returnType = this.returnType;
+            if (returnType == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return returnType;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final int pairSize;
+            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+            if (expPairList == null || (pairSize = expPairList.size()) == 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" CASE");
+
+            final ArmyExpression caseValue = this.caseValue;
+            if (caseValue != null) {
+                caseValue.appendSql(context);
+            }
+            _Pair<ArmyExpression, ArmyExpression> pair;
+            for (int i = 0; i < pairSize; i++) {
+                pair = expPairList.get(i);
+
+                sqlBuilder.append(" WHEN");
+                pair.first.appendSql(context);
+                sqlBuilder.append(" THEN");
+                pair.second.appendSql(context);
+
+            }
+
+            final ArmyExpression elseExpression = this.elseExpression;
+            if (elseExpression != null) {
+                sqlBuilder.append(" ELSE");
+                elseExpression.appendSql(context);
+            }
+
+            sqlBuilder.append(" END");
+
+        }
+
+        @Override
+        public Functions._CaseThenClause when(final @Nullable Expression expression) {
+            if (this.whenExpression != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            if (expression == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            this.whenExpression = (ArmyExpression) expression;
+            return this;
+        }
+
+        @Override
+        public Functions._CaseThenClause when(Supplier<? extends Expression> supplier) {
+            return this.when(supplier.get());
+        }
+
+        @Override
+        public Functions._CaseThenClause when(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return this.when(operator.apply(supplier.get()));
+        }
+
+        @Override
+        public Functions._CaseThenClause when(Function<Object, ? extends Expression> operator
+                , Function<String, ?> function, String keyName) {
+            return this.when(operator.apply(function.apply(keyName)));
+        }
+
+        @Override
+        public Functions._CaseThenClause when(BiFunction<Object, Object, ? extends Expression> operator
+                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
+            return this.when(operator.apply(firstOperand.get(), secondOperand.get()));
+        }
+
+        @Override
+        public Functions._CaseThenClause when(BiFunction<Object, Object, ? extends Expression> operator
+                , Function<String, ?> function, String firstKey, String secondKey) {
+            return this.when(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+        }
+
+        @Override
+        public Functions._CaseThenClause ifWhen(Supplier<? extends Expression> supplier) {
+            final Expression expression;
+            if ((expression = supplier.get()) != null) {
+                this.when(expression);
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseThenClause ifWhen(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            final Object value;
+            if ((value = supplier.get()) != null) {
+                this.when(operator.apply(value));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseThenClause ifWhen(Function<Object, ? extends Expression> operator
+                , Function<String, ?> function, String keyName) {
+            final Object value;
+            if ((value = function.apply(keyName)) != null) {
+                this.when(operator.apply(value));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseThenClause ifWhen(BiFunction<Object, Object, ? extends Expression> operator
+                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
+            final Object firstValue, secondValue;
+            if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
+                this.when(operator.apply(firstValue, secondValue));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseThenClause ifWhen(BiFunction<Object, Object, ? extends Expression> operator
+                , Function<String, ?> function, String firstKey, String secondKey) {
+            final Object firstValue, secondValue;
+            if ((firstValue = function.apply(firstKey)) != null && (secondValue = function.apply(secondKey)) != null) {
+                this.when(operator.apply(firstValue, secondValue));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseWhenSpec then(final @Nullable Expression expression) {
+            final ArmyExpression whenExpression = this.whenExpression;
+            if (whenExpression != null) {
+                this.whenExpression = null; //clear for next when clause.
+                if (expression == null) {
+                    throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                }
+                List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+                if (expPairList == null) {
+                    this.expPairList = expPairList = new ArrayList<>();
+                } else if (!(expPairList instanceof ArrayList)) {
+                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                }
+                expPairList.add(_Pair.create(whenExpression, (ArmyExpression) expression));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseWhenSpec then(Supplier<? extends Expression> supplier) {
+            if (this.whenExpression != null) {
+                this.then(supplier.get());
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseWhenSpec then(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            if (this.whenExpression != null) {
+                this.then(operator.apply(supplier.get()));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseWhenSpec then(Function<Object, ? extends Expression> operator
+                , Function<String, ?> function, String keyName) {
+            if (this.whenExpression != null) {
+                this.then(operator.apply(function.apply(keyName)));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseWhenSpec then(BiFunction<Object, Object, ? extends Expression> operator
+                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
+            if (this.whenExpression != null) {
+                this.then(operator.apply(firstOperand.get(), secondOperand.get()));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseWhenSpec then(BiFunction<Object, Object, ? extends Expression> operator
+                , Function<String, ?> function, String firstKey, String secondKey) {
+            if (this.whenExpression != null) {
+                this.then(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseEndClause elseExp(final @Nullable Expression expression) {
+            if (this.elseExpression != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            if (expression == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            this.elseExpression = (ArmyExpression) expression;
+            return this;
+        }
+
+        @Override
+        public Functions._CaseEndClause elseExp(Supplier<? extends Expression> supplier) {
+            return this.elseExp(supplier.get());
+        }
+
+        @Override
+        public Functions._CaseEndClause elseExp(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return this.elseExp(operator.apply(supplier.get()));
+        }
+
+        @Override
+        public Functions._CaseEndClause elseExp(Function<Object, ? extends Expression> operator
+                , Function<String, ?> function, String keyName) {
+            return this.elseExp(operator.apply(function.apply(keyName)));
+        }
+
+        @Override
+        public Functions._CaseEndClause elseExp(BiFunction<Object, Object, ? extends Expression> operator
+                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
+            return this.elseExp(operator.apply(firstOperand.get(), secondOperand.get()));
+        }
+
+        @Override
+        public Functions._CaseEndClause elseExp(BiFunction<Object, Object, ? extends Expression> operator
+                , Function<String, ?> function, String firstKey, String secondKey) {
+            return this.elseExp(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+        }
+
+        @Override
+        public Functions._CaseEndClause ifElse(Supplier<? extends Expression> supplier) {
+            final Expression expression;
+            if ((expression = supplier.get()) != null) {
+                this.elseExp(expression);
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseEndClause ifElse(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            final Object value;
+            if ((value = supplier.get()) != null) {
+                this.elseExp(operator.apply(value));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseEndClause ifElse(Function<Object, ? extends Expression> operator
+                , Function<String, ?> function, String keyName) {
+            final Object value;
+            if ((value = function.apply(keyName)) != null) {
+                this.elseExp(operator.apply(value));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseEndClause ifElse(BiFunction<Object, Object, ? extends Expression> operator
+                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
+            final Object firstValue, secondValue;
+            if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
+                this.elseExp(operator.apply(firstValue, secondValue));
+            }
+            return this;
+        }
+
+        @Override
+        public Functions._CaseEndClause ifElse(BiFunction<Object, Object, ? extends Expression> operator
+                , Function<String, ?> function, String firstKey, String secondKey) {
+            final Object firstValue, secondValue;
+            if ((firstValue = function.apply(firstKey)) != null && (secondValue = function.apply(secondKey)) != null) {
+                this.elseExp(operator.apply(firstValue, secondValue));
+            }
+            return this;
+        }
+
+        @Override
+        public SelectionSpec end() {
+            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+            if (expPairList == null || expPairList.size() == 0) {
+                String m = "case function at least one when clause";
+                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+            } else if (expPairList instanceof ArrayList) {
+                ParamMeta returnType = null;
+                for (_Pair<ArmyExpression, ArmyExpression> pair : expPairList) {
+                    if (pair.second instanceof OperationExpression) {
+                        returnType = pair.second.paramMeta();
+                        break;
+                    }
+                }
+                if (returnType == null) {
+                    String m = "at least one then clause is operation expression.";
+                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                }
+                this.returnType = returnType;
+                this.expPairList = _CollectionUtils.unmodifiableList(expPairList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return this;
+        }
+
+        @Override
+        public Selection as(final String alias) {
+            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+            if (expPairList == null || expPairList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            return Selections.forFunc(this, alias);
+        }
+
+        @Override
+        public SelectionSpec asType(final @Nullable ParamMeta paramMeta) {
+            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+            if (expPairList == null || expPairList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            }
+            if (paramMeta == null) {
+                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            }
+            this.returnType = paramMeta;
+            return this;
+        }
+
+
+    }//CaseFunc
 
 
 }
