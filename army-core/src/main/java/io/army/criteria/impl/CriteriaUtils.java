@@ -311,16 +311,12 @@ abstract class CriteriaUtils {
         return rowCount;
     }
 
-    static int standardModifier(final SQLModifier distinct) {
+    static int standardModifier(final SQLs.Modifier distinct) {
         final int level;
-        switch (distinct) {
-            case DISTINCT:
-            case DISTINCTROW:
-            case ALL:
-                level = 1;
-                break;
-            default:
-                level = -1;
+        if (distinct == SQLs.ALL || distinct == SQLs.DISTINCT || distinct == SQLs.DISTINCTROW) {
+            level = 1;
+        } else {
+            level = -1;
         }
         return level;
     }
@@ -440,7 +436,7 @@ abstract class CriteriaUtils {
         return windowList;
     }
 
-    static <T extends Enum<T> & SQLWords> List<T> asModifierList(final CriteriaContext criteriaContext
+    static <T extends SQLWords> List<T> asModifierList(final CriteriaContext criteriaContext
             , final @Nullable List<T> list, final Function<T, Integer> function) {
         if (list == null) {
             throw CriteriaContextStack.criteriaError(criteriaContext, "modifier list must non-null");

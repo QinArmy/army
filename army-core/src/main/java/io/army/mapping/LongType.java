@@ -8,7 +8,7 @@ import io.army.sqltype.SqlType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public final class LongType extends _ArmyNoInjectionMapping {
+public final class LongType extends _NumericType {
 
     public static final LongType INSTANCE = new LongType();
 

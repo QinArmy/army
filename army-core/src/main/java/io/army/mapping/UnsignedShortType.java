@@ -8,7 +8,7 @@ import io.army.sqltype.SqlType;
 /**
  * @see Integer
  */
-public final class UnsignedShortType extends _ArmyNoInjectionMapping {
+public final class UnsignedShortType extends _NumericType._UnsignedNumericType {
 
     public static final UnsignedShortType INSTANCE = new UnsignedShortType();
 

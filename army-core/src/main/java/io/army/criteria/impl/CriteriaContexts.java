@@ -648,8 +648,8 @@ abstract class CriteriaContexts {
             final List<_TableBlock> blockList = _CollectionUtils.unmodifiableList(this.tableBlockList);
             this.tableBlockList = blockList;//store for recursive checking
             final int blockSize = blockList.size();
-            if (blockSize == 0) {
-                throw _Exceptions.castCriteriaApi();
+            if (blockSize == 0 && !(this instanceof SimpleQueryContext)) {
+                throw CriteriaContextStack.castCriteriaApi(this);
             }
             if (aliasToBlock.size() < blockSize) {// probably NestedItems
                 //no bug,never here

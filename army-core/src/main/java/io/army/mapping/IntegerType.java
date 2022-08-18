@@ -8,7 +8,7 @@ import io.army.sqltype.SqlType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public final class IntegerType extends _ArmyNoInjectionMapping {
+public final class IntegerType extends _NumericType {
 
 
     public static final IntegerType INSTANCE = new IntegerType();

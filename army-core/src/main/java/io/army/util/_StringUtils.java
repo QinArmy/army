@@ -41,6 +41,11 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
     }
 
 
+    public static StringBuilder builder() {
+        return new StringBuilder();
+    }
+
+
 
     /*################################## private method #############################################*/
 

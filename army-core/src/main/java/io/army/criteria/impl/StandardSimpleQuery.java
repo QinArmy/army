@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         C,
         Q,
-        SQLModifier,
+        SQLs.Modifier,
         StandardQuery._StandardFromSpec<C, Q>, // SR
         StandardQuery._JoinSpec<C, Q>,// FT
         StandardQuery._JoinSpec<C, Q>,// FS
@@ -209,7 +209,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
     @Override
-    final List<SQLModifier> asModifierList(@Nullable List<SQLModifier> modifiers) {
+    final List<SQLs.Modifier> asModifierList(@Nullable List<SQLs.Modifier> modifiers) {
         return CriteriaUtils.asModifierList(this.criteriaContext, modifiers, CriteriaUtils::standardModifier);
     }
 

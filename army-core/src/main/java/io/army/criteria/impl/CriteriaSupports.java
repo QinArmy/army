@@ -48,6 +48,10 @@ abstract class CriteriaSupports {
         return new BiDelayParamMetaWrapper(paramMeta1, paramMeta2, function);
     }
 
+    static ParamMeta delayParamMeta(Supplier<MappingType> supplier) {
+        return new SimpleDelayParamMeta(supplier);
+    }
+
 
     static final class RowConstructorImpl implements RowConstructor {
 
@@ -550,6 +554,22 @@ abstract class CriteriaSupports {
 
 
     }//OrderByClause
+
+
+    private static final class SimpleDelayParamMeta implements ParamMeta {
+
+        private final Supplier<MappingType> supplier;
+
+        private SimpleDelayParamMeta(Supplier<MappingType> supplier) {
+            this.supplier = supplier;
+        }
+
+        @Override
+        public MappingType mappingType() {
+            return this.supplier.get();
+        }
+
+    }//SimpleDelayParamMeta
 
 
     private static final class DelayParamMetaWrapper implements ParamMeta.Delay {

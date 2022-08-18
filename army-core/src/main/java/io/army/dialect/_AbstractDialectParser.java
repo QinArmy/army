@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.ArmyException;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._SQLConsultant;
 import io.army.criteria.impl.inner.*;
@@ -1525,15 +1526,15 @@ public abstract class _AbstractDialectParser implements ArmyParser {
                 break;
             case 1: {
                 final SQLWords modifier = modifierList.get(0);
-                if (!(modifier instanceof SQLModifier)) {
-                    String m = String.format("Standard query api support only %s", SQLModifier.class.getName());
+                if (!(modifier instanceof SQLs.Modifier)) {
+                    String m = String.format("Standard query api support only %s", SQLs.Modifier.class.getName());
                     throw new CriteriaException(m);
                 }
-                builder.append(((SQLModifier) modifier).keyWords);
+                builder.append(((SQLs.Modifier) modifier).keyWords);
             }
             break;
             default:
-                String m = String.format("Standard query api support only %s", SQLModifier.class.getName());
+                String m = String.format("Standard query api support only %s", SQLs.Modifier.class.getName());
                 throw new CriteriaException(m);
         }
 

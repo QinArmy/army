@@ -11,7 +11,7 @@ import java.math.BigInteger;
 /**
  * @see BigInteger
  */
-public final class UnsignedBigInteger extends _ArmyNoInjectionMapping {
+public final class UnsignedBigInteger extends _NumericType._UnsignedNumericType {
 
     public static final UnsignedBigInteger INSTANCE = new UnsignedBigInteger();
 

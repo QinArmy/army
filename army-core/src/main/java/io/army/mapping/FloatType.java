@@ -6,7 +6,7 @@ import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 
-public final class FloatType extends _ArmyNoInjectionMapping {
+public final class FloatType extends _NumericType {
 
     public static final FloatType INSTANCE = new FloatType();
 

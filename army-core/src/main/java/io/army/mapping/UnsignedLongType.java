@@ -10,7 +10,7 @@ import java.math.BigInteger;
 /**
  * @see BigInteger
  */
-public final class UnsignedLongType extends _ArmyNoInjectionMapping {
+public final class UnsignedLongType extends _NumericType._UnsignedNumericType {
 
     public static final UnsignedLongType INSTANCE = new UnsignedLongType();
 

@@ -1,11 +1,12 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.FuncExpression;
-import io.army.criteria.SelectionSpec;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -48,12 +49,13 @@ abstract class Functions {
     }
 
 
-    interface _CaseEndClause {
+    public interface _CaseEndClause {
 
-        SelectionSpec end();
+        Expression end();
+
     }
 
-    interface _CaseElseClause extends _CaseEndClause {
+    public interface _CaseElseClause extends _CaseEndClause {
         _CaseEndClause elseExp(Expression expression);
 
         _CaseEndClause elseExp(Supplier<? extends Expression> supplier);
@@ -79,7 +81,7 @@ abstract class Functions {
 
     }
 
-    interface _CaseThenClause {
+    public interface _CaseThenClause {
 
         _CaseWhenSpec then(Expression expression);
 
@@ -97,7 +99,7 @@ abstract class Functions {
     }
 
 
-    interface _CaseWhenClause {
+    public interface _CaseWhenClause {
 
         _CaseThenClause when(Expression expression);
 
@@ -124,7 +126,7 @@ abstract class Functions {
 
     }
 
-    interface _CaseWhenSpec extends _CaseWhenClause, _CaseElseClause {
+    public interface _CaseWhenSpec extends _CaseWhenClause, _CaseElseClause {
 
     }
 
@@ -286,6 +288,269 @@ abstract class Functions {
         return SQLFunctions.caseFunc(null);
     }
 
+
+    /**
+     * package class
+     */
+    static abstract class CaseValueFunctions extends Functions {
+
+        /**
+         * package constructor
+         */
+        CaseValueFunctions() {
+        }
+
+        /**
+         * @param expression non-null {@link Expression} ,if null then use CASE WHEN condition THEN result syntax
+         *                   ,else use CASE value WHEN compare_value THEN result syntax.
+         * @see #caseFunc(Supplier)
+         * @see #caseFunc(Function, Supplier)
+         * @see #caseFunc(Function, Function, String)
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
+         */
+        public static _CaseWhenClause caseFunc(final Expression expression) {
+            Objects.requireNonNull(expression);
+            return SQLFunctions.caseFunc(expression);
+        }
+
+        /**
+         * @param supplier supplier of nullable {@link Expression},if null then use CASE WHEN condition THEN result syntax
+         *                 ,else use CASE value WHEN compare_value THEN result syntax.
+         * @see #caseFunc(Expression)
+         * @see #caseFunc(Function, Supplier)
+         * @see #caseFunc(Function, Function, String)
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
+         */
+        public static _CaseWhenClause caseFunc(Supplier<? extends Expression> supplier) {
+            final Expression caseValue;
+            if ((caseValue = supplier.get()) == null) {
+                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            }
+            return SQLFunctions.caseFunc(caseValue);
+        }
+
+        /**
+         * @param supplier supplier of non-null parameter,if null then use CASE WHEN condition THEN result syntax
+         *                 ,else use CASE value WHEN compare_value THEN result syntax.
+         * @see #caseFunc(Expression)
+         * @see #caseFunc(Supplier)
+         * @see #caseFunc(Function, Function, String)
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
+         */
+        public static _CaseWhenClause caseFunc(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            final Object value;
+            if ((value = supplier.get()) == null) {
+                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            }
+            final Expression caseValue;
+            if ((caseValue = operator.apply(value)) == null) {
+                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            }
+            return SQLFunctions.caseFunc(caseValue);
+        }
+
+        /**
+         * <p>
+         * <pre>
+         *          <code><br/>
+         *              public void caseFunc(Map&lt;String,Object> criteria){
+         *                   final Select stmt;
+         *                   stmt = MySQLs.query(criteria)
+         *                            .select(this::simpleCaseFunc)
+         *                            .from(Numbers_.T, "u")
+         *                            .asQuery();
+         *                   printStmt(stmt);
+         *              }
+         *
+         *               private void simpleCaseFunc(Map&lt;String,Object> criteria,Consumer<SelectItem> consumer) {
+         *                   Selection selection;
+         *                   selection = MySQLs.caseFunc(Numbers_.number::plusLiteral,criteria,"number")
+         *                           .when(SQLs.literal(88))
+         *                           .then(SQLs.literal(1))
+         *
+         *                           .when(SQLs.literal(66))
+         *                           .then(SQLs.literal(2))
+         *
+         *                           .when(SQLs.literal(99))
+         *                           .then(SQLs.literal(3))
+         *
+         *                           .elseExp(SQLs.literal(0))
+         *
+         *                           .end()
+         *                           //.asType(StringType.INSTANCE)
+         *                           .as("result");
+         *
+         *                           consumer.accept(selection);
+         *                }
+         *
+         *          </code>
+         *     </pre>
+         * </p>
+         *
+         * @param function {@link Function#apply(Object keyName)} return non-null parameter
+         *                 ,use CASE value WHEN compare_value THEN result syntax.
+         * @param keyName  pass to {@link Function#apply(Object)} of function
+         * @throws NullPointerException throw when function return null or operator return null.
+         * @see #caseFunc(Expression)
+         * @see #caseFunc(Supplier)
+         * @see #caseFunc(Function, Supplier)
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
+         */
+        public static _CaseWhenClause caseFunc(Function<Object, ? extends Expression> operator
+                , Function<String, ?> function, String keyName) {
+            final Object value;
+            value = function.apply(keyName);
+            if (value == null) {
+                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            }
+            final Expression caseValue;
+            caseValue = operator.apply(value);
+            if (caseValue == null) {
+                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            }
+            return SQLFunctions.caseFunc(caseValue);
+        }
+
+        /**
+         * @param supplier supplier of nullable {@link Expression},if null then use CASE WHEN condition THEN result syntax
+         *                 ,else use CASE value WHEN compare_value THEN result syntax.
+         * @see #caseFunc(Expression)
+         * @see #caseFunc(Function, Supplier)
+         * @see #caseFunc(Function, Function, String)
+         * @see #caseIf(Function, Supplier)
+         * @see #caseIf(Function, Function, String)
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
+         */
+        public static _CaseWhenClause caseIf(Supplier<? extends Expression> supplier) {
+            return SQLFunctions.caseFunc(supplier.get());
+        }
+
+        /**
+         * <p>
+         * <pre>
+         *          <code><br/>
+         *              public void caseFunc(Criteria criteria){
+         *                   final Select stmt;
+         *                   stmt = MySQLs.query(criteria)
+         *                            .select(this::simpleCaseFunc)
+         *                            .from(Numbers_.T, "u")
+         *                            .asQuery();
+         *                   printStmt(stmt);
+         *              }
+         *
+         *               private void simpleCaseFunc(Criteria criteria,Consumer<SelectItem> consumer) {
+         *                   Selection selection;
+         *                   selection = MySQLs.caseFunc(Numbers_.number::plusLiteral,criteria::getNumber)
+         *                           .when(SQLs.literal(88))
+         *                           .then(SQLs.literal(1))
+         *
+         *                           .when(SQLs.literal(66))
+         *                           .then(SQLs.literal(2))
+         *
+         *                           .when(SQLs.literal(99))
+         *                           .then(SQLs.literal(3))
+         *
+         *                           .elseExp(SQLs.literal(0))
+         *
+         *                           .end()
+         *                           //.asType(StringType.INSTANCE)
+         *                           .as("result");
+         *
+         *                           consumer.accept(selection);
+         *                }
+         *
+         *          </code>
+         *     </pre>
+         * </p>
+         *
+         * @param supplier supplier of nullable parameter,if null then use CASE WHEN condition THEN result syntax
+         *                 ,else use CASE value WHEN compare_value THEN result syntax.
+         * @throws NullPointerException throw when operator return null.
+         * @throws CriteriaException    throw when invoking this method in non-statement context.
+         * @see #caseFunc(Expression)
+         * @see #caseFunc(Supplier)
+         * @see #caseFunc(Function, Function, String)
+         * @see #caseIf(Supplier)
+         * @see #caseIf(Function, Function, String)
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
+         */
+        public static _CaseWhenClause caseIf(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            final Object value;
+            final Expression caseValue;
+            if ((value = supplier.get()) == null) {
+                caseValue = null;
+            } else if ((caseValue = operator.apply(value)) == null) {
+                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            }
+            return SQLFunctions.caseFunc(caseValue);
+        }
+
+        /**
+         * <p>
+         * <pre>
+         *          <code><br/>
+         *              public void caseFunc(Map&lt;String,Object> criteria){
+         *                   final Select stmt;
+         *                   stmt = MySQLs.query(criteria)
+         *                            .select(this::simpleCaseFunc)
+         *                            .from(Numbers_.T, "u")
+         *                            .asQuery();
+         *                   printStmt(stmt);
+         *              }
+         *
+         *               private void simpleCaseFunc(Map&lt;String,Object> criteria,Consumer<SelectItem> consumer) {
+         *                   Selection selection;
+         *                   selection = MySQLs.caseFunc(Numbers_.number::plusLiteral,criteria,"number")
+         *                           .when(SQLs.literal(88))
+         *                           .then(SQLs.literal(1))
+         *
+         *                           .when(SQLs.literal(66))
+         *                           .then(SQLs.literal(2))
+         *
+         *                           .when(SQLs.literal(99))
+         *                           .then(SQLs.literal(3))
+         *
+         *                           .elseExp(SQLs.literal(0))
+         *
+         *                           .end()
+         *                           //.asType(StringType.INSTANCE)
+         *                           .as("result");
+         *
+         *                           consumer.accept(selection);
+         *                }
+         *
+         *          </code>
+         *     </pre>
+         * </p>
+         *
+         * @param function {@link Function#apply(Object keyName)} return nullable parameter,if null then use CASE WHEN condition THEN result syntax
+         *                 ,else use CASE value WHEN compare_value THEN result syntax.
+         * @param keyName  pass to {@link Function#apply(Object)} of function
+         * @throws NullPointerException throw when operator return null.
+         * @throws CriteriaException    throw when invoking this method in non-statement context.
+         * @see #caseFunc(Expression)
+         * @see #caseFunc(Supplier)
+         * @see #caseFunc(Function, Supplier)
+         * @see #caseFunc(Function, Function, String)
+         * @see #caseIf(Supplier)
+         * @see #caseIf(Function, Supplier)
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#operator_case">case function</a>
+         */
+        public static _CaseWhenClause caseIf(Function<Object, ? extends Expression> operator
+                , Function<String, ?> function, String keyName) {
+            final Object value;
+            final Expression caseValue;
+            if ((value = function.apply(keyName)) == null) {
+                caseValue = null;
+            } else if ((caseValue = operator.apply(value)) == null) {
+                throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+            }
+            return SQLFunctions.caseFunc(caseValue);
+        }
+
+
+    }
+
     /*################################## blow static inner class  ##################################*/
 
 
@@ -304,5 +569,6 @@ abstract class Functions {
         }
         return returnType;
     }
+
 
 }

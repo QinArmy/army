@@ -5,7 +5,7 @@ import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-public final class ByteType extends _ArmyNoInjectionMapping {
+public final class ByteType extends _NumericType {
 
     public static final ByteType INSTANCE = new ByteType();
 

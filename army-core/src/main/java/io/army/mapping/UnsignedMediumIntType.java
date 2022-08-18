@@ -5,7 +5,7 @@ import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-public final class UnsignedMediumIntType extends _ArmyNoInjectionMapping {
+public final class UnsignedMediumIntType extends _NumericType._UnsignedNumericType {
 
     public static final UnsignedMediumIntType INSTANCE = new UnsignedMediumIntType();
 

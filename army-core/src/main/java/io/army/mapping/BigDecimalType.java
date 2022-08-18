@@ -6,7 +6,7 @@ import io.army.sqltype.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public final class BigDecimalType extends _ArmyNoInjectionMapping {
+public final class BigDecimalType extends _NumericType {
 
     public static final BigDecimalType INSTANCE = new BigDecimalType();
 

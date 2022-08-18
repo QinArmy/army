@@ -5,7 +5,7 @@ import io.army.sqltype.MySqlType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-public final class DoubleType extends _ArmyNoInjectionMapping {
+public final class DoubleType extends _NumericType {
 
 
     public static final DoubleType INSTANCE = new DoubleType();

@@ -568,9 +568,9 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }//MultiArgOptionFunc
 
 
-    private static final class CaseFunc implements Functions._CaseWhenSpec, Functions._CaseThenClause
-            , FunctionSpec, CriteriaContextSpec, SelectionSpec {
-
+    private static final class CaseFunc extends OperationExpression
+            implements Functions._CaseWhenSpec, Functions._CaseThenClause
+            , FunctionSpec, CriteriaContextSpec, MutableParamMetaSpec {
 
         private final ArmyExpression caseValue;
 
@@ -596,11 +596,16 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         @Override
         public ParamMeta paramMeta() {
-            final ParamMeta returnType = this.returnType;
+            ParamMeta returnType = this.returnType;
             if (returnType == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                returnType = CriteriaSupports.delayParamMeta(this::inferAggregatedType);
             }
             return returnType;
+        }
+
+        @Override
+        public void updateParamMeta(final ParamMeta paramMeta) {
+            this.returnType = paramMeta;
         }
 
         @Override
@@ -637,6 +642,40 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
             sqlBuilder.append(" END");
 
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            final int pairSize;
+            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
+            if (expPairList == null || (pairSize = expPairList.size()) == 0) {
+                return super.toString();
+            }
+            builder.append(" CASE");
+
+            final ArmyExpression caseValue = this.caseValue;
+            if (caseValue != null) {
+                builder.append(caseValue);
+            }
+            _Pair<ArmyExpression, ArmyExpression> pair;
+            for (int i = 0; i < pairSize; i++) {
+                pair = expPairList.get(i);
+
+                builder.append(" WHEN")
+                        .append(pair.first)
+                        .append(" THEN")
+                        .append(pair.second);
+
+            }
+
+            final ArmyExpression elseExpression = this.elseExpression;
+            if (elseExpression != null) {
+                builder.append(" ELSE")
+                        .append(elseExpression);
+            }
+            return builder.append(" END")
+                    .toString();
         }
 
         @Override
@@ -878,7 +917,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public SelectionSpec end() {
+        public Expression end() {
             final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
             if (expPairList == null || expPairList.size() == 0) {
                 String m = "case function at least one when clause";
@@ -895,7 +934,6 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
                     String m = "at least one then clause is operation expression.";
                     throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
                 }
-                this.returnType = returnType;
                 this.expPairList = _CollectionUtils.unmodifiableList(expPairList);
             } else {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
@@ -903,30 +941,35 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
             return this;
         }
 
-        @Override
-        public Selection as(final String alias) {
+        private MappingType inferAggregatedType() {
             final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
-            if (expPairList == null || expPairList instanceof ArrayList) {
+            final int pairSize;
+            if (expPairList == null || (expPairList instanceof ArrayList) || (pairSize = expPairList.size()) == 0) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
-            return Selections.forFunc(this, alias);
-        }
+            _Pair<ArmyExpression, ArmyExpression> pair;
+            ParamMeta resultType;
+            for (int i = 0; i < pairSize; i++) {
+                pair = expPairList.get(i);
+                resultType = pair.second.paramMeta();
+                if (!(resultType instanceof MappingType)) {
+                    resultType = resultType.mappingType();
+                }
 
-        @Override
-        public SelectionSpec asType(final @Nullable ParamMeta paramMeta) {
-            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
-            if (expPairList == null || expPairList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+
             }
-            if (paramMeta == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
-            }
-            this.returnType = paramMeta;
-            return this;
+            //TODO
+            throw new UnsupportedOperationException();
         }
 
 
     }//CaseFunc
+
+    private enum CaseResultType {
+        DOUBLE,
+        DECIMAL,
+
+    }
 
 
 }

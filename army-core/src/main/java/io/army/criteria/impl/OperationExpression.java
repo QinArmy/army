@@ -826,8 +826,18 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression asType(ParamMeta paramMeta) {
-        return CastExpression.cast(this, paramMeta);
+    public final Expression asType(final @Nullable ParamMeta paramMeta) {
+        if (paramMeta == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        final Expression expression;
+        if (this instanceof MutableParamMetaSpec) {
+            ((MutableParamMetaSpec) this).updateParamMeta(paramMeta);
+            expression = this;
+        } else {
+            expression = CastExpression.cast(this, paramMeta);
+        }
+        return expression;
     }
 
     public final Expression bracket() {
@@ -842,6 +852,12 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final SortItem desc() {
         return new SortItemImpl(this, false);
+    }
+
+
+    interface MutableParamMetaSpec {
+
+        void updateParamMeta(ParamMeta paramMeta);
     }
 
 

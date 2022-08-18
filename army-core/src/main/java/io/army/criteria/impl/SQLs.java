@@ -16,6 +16,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.stmt.SingleParam;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -32,8 +33,46 @@ import java.util.function.Supplier;
 public abstract class SQLs extends StandardSyntax {
 
 
+    /**
+     * private constructor
+     */
     private SQLs() {
     }
+
+
+    public static final class Modifier implements SQLWords {
+        public final String keyWords;
+
+        /**
+         * private constructor
+         */
+        private Modifier(String keyWords) {
+            this.keyWords = keyWords;
+        }
+
+        @Override
+        public String render() {
+            return this.keyWords;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(SQLs.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(SQLs.Modifier.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.keyWords.substring(1))
+                    .toString();
+        }
+
+    }//Modifier
+
+    public static final Modifier ALL = new Modifier(" ALL");
+
+    public static final Modifier DISTINCT = new Modifier(" DISTINCT");
+
+    public static final Modifier DISTINCTROW = new Modifier(" DISTINCTROW");
 
 
     public static Insert._StandardDomainOptionSpec<Void> domainInsert() {
