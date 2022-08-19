@@ -258,6 +258,8 @@ abstract class CriteriaContexts {
 
         private Map<String, RefCte> refCteMap;
 
+        private List<Runnable> endListenerList;
+
         private boolean withClauseEnd;
 
 
@@ -280,6 +282,27 @@ abstract class CriteriaContexts {
         public void selectList(List<? extends SelectItem> selectItemList) {
             //no bug,never here
             throw new UnsupportedOperationException("current context don't support selectList(selectItemList)");
+        }
+
+        @Override
+        public final void contextEnd() {
+            final List<Runnable> endListenerList = this.endListenerList;
+            if (endListenerList != null) {
+                for (Runnable listener : endListenerList) {
+                    listener.run();
+                }
+                endListenerList.clear();
+                this.endListenerList = null;
+            }
+        }
+
+        @Override
+        public final void addEndEventListener(final Runnable listener) {
+            List<Runnable> endListenerList = this.endListenerList;
+            if (endListenerList == null) {
+                this.endListenerList = endListenerList = new ArrayList<>();
+            }
+            endListenerList.add(listener);
         }
 
         @Override

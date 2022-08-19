@@ -476,7 +476,21 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+        public OR ifOrderBy(Function<Object, ? extends Expression> operator, Supplier<?> operand
+                , Function<Expression, SortItem> sortFunction) {
+            final List<ArmySortItem> itemList;
+            final Object value;
+            if ((value = operand.get()) == null) {
+                itemList = Collections.emptyList();
+            } else {
+                itemList = Collections.singletonList((ArmySortItem) sortFunction.apply(operator.apply(value)));
+            }
+            return this.function.apply(itemList);
+        }
+
+        @Override
+        public OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand
+                , String operandKey) {
             final List<ArmySortItem> itemList;
             final Object value;
             if ((value = operand.apply(operandKey)) == null) {
@@ -488,7 +502,21 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
+        public OR ifOrderBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand
+                , String operandKey, Function<Expression, SortItem> sortFunction) {
+            final List<ArmySortItem> itemList;
+            final Object value;
+            if ((value = operand.apply(operandKey)) == null) {
+                itemList = Collections.emptyList();
+            } else {
+                itemList = Collections.singletonList((ArmySortItem) sortFunction.apply(operator.apply(value)));
+            }
+            return this.function.apply(itemList);
+        }
+
+        @Override
+        public OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand
+                , Supplier<?> secondOperand) {
             final List<ArmySortItem> itemList;
             final Object firstValue, secondValue;
             if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperand.get()) != null) {
@@ -500,7 +528,8 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+        public OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand
+                , String firstKey, String secondKey) {
             final List<ArmySortItem> itemList;
             final Object firstValue, secondValue;
             if ((firstValue = operand.apply(firstKey)) != null && (secondValue = operand.apply(secondKey)) != null) {
@@ -578,19 +607,40 @@ abstract class CriteriaSupports {
 
         private final Function<MappingType, MappingType> function;
 
+        private CriteriaContext criteriaContext;
+
+        private MappingType actualType;
+
         private DelayParamMetaWrapper(Delay paramMeta, Function<MappingType, MappingType> function) {
             this.paramMeta = paramMeta;
             this.function = function;
+            final CriteriaContext criteriaContext;
+            criteriaContext = CriteriaContextStack.peek();
+            this.criteriaContext = criteriaContext;
+            criteriaContext.addEndEventListener(this::contextEnd);
         }
 
         @Override
         public MappingType mappingType() {
-            return this.function.apply(this.paramMeta.mappingType());
+            final MappingType actualType = this.actualType;
+            if (actualType == null) {
+                String m = String.format("%s isn't prepared.", ParamMeta.Delay.class.getName());
+                throw new IllegalStateException(m);
+            }
+            return actualType;
         }
 
         @Override
         public boolean isPrepared() {
             return this.paramMeta.isPrepared();
+        }
+
+        private void contextEnd() {
+            if (this.criteriaContext == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            this.actualType = this.function.apply(this.paramMeta.mappingType());
+            this.criteriaContext = null;
         }
 
 
@@ -604,16 +654,30 @@ abstract class CriteriaSupports {
 
         private final BiFunction<MappingType, MappingType, MappingType> function;
 
+        private CriteriaContext criteriaContext;
+
+        private MappingType actualType;
+
         private BiDelayParamMetaWrapper(ParamMeta paramMeta1, ParamMeta paramMeta2
                 , BiFunction<MappingType, MappingType, MappingType> function) {
             this.paramMeta1 = paramMeta1;
             this.paramMeta2 = paramMeta2;
             this.function = function;
+
+            final CriteriaContext criteriaContext;
+            criteriaContext = CriteriaContextStack.peek();
+            this.criteriaContext = criteriaContext;
+            criteriaContext.addEndEventListener(this::contextEnd);
         }
 
         @Override
         public MappingType mappingType() {
-            return this.function.apply(this.paramMeta1.mappingType(), this.paramMeta2.mappingType());
+            final MappingType actualType = this.actualType;
+            if (actualType == null) {
+                String m = String.format("%s isn't prepared.", ParamMeta.Delay.class.getName());
+                throw new IllegalStateException(m);
+            }
+            return actualType;
         }
 
         @Override
@@ -625,6 +689,14 @@ abstract class CriteriaSupports {
                 prepared2 = ((Delay) this.paramMeta2).isPrepared();
             }
             return prepared1 && prepared2;
+        }
+
+        private void contextEnd() {
+            if (this.criteriaContext == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            this.actualType = this.function.apply(this.paramMeta1.mappingType(), this.paramMeta2.mappingType());
+            this.criteriaContext = null;
         }
 
 

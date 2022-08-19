@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Clause;
-import io.army.criteria.SQLWords;
-import io.army.criteria.SortItem;
-import io.army.criteria.Window;
+import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLClause;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -402,19 +399,36 @@ abstract class MySQLFunctions extends SQLFunctions {
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(Function<Object, ? extends Expression> operator
+                , Supplier<?> operand, Function<Expression, SortItem> sortFunction) {
+            return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>orderByClause(this.criteriaContext, this::orderByEnd)
+                    .ifOrderBy(operator, operand, sortFunction);
+        }
+
+        @Override
+        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(Function<Object, ? extends SortItem> operator
+                , Function<String, ?> operand, String operandKey) {
             return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>orderByClause(this.criteriaContext, this::orderByEnd)
                     .ifOrderBy(operator, operand, operandKey);
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
+        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(Function<Object, ? extends Expression> operator
+                , Function<String, ?> operand, String operandKey, Function<Expression, SortItem> sortFunction) {
+            return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>orderByClause(this.criteriaContext, this::orderByEnd)
+                    .ifOrderBy(operator, operand, operandKey, sortFunction);
+        }
+
+        @Override
+        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator
+                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
             return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>orderByClause(this.criteriaContext, this::orderByEnd)
                     .ifOrderBy(operator, firstOperand, secondOperand);
         }
 
         @Override
-        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+        public MySQLClause._GroupConcatSeparatorClause ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator
+                , Function<String, ?> operand, String firstKey, String secondKey) {
             return CriteriaSupports.<Void, MySQLClause._GroupConcatSeparatorClause>orderByClause(this.criteriaContext, this::orderByEnd)
                     .ifOrderBy(operator, operand, firstKey, secondKey);
         }

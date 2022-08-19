@@ -7,4 +7,11 @@ public interface TypeInfer {
     ParamMeta paramMeta();
 
 
+    interface TypeUpdateSpec {
+
+        SelectionSpec asType(ParamMeta paramMeta);
+
+    }
+
+
 }

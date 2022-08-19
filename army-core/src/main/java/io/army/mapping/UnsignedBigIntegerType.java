@@ -11,19 +11,19 @@ import java.math.BigInteger;
 /**
  * @see BigInteger
  */
-public final class UnsignedBigInteger extends _NumericType._UnsignedNumericType {
+public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerType {
 
-    public static final UnsignedBigInteger INSTANCE = new UnsignedBigInteger();
+    public static final UnsignedBigIntegerType INSTANCE = new UnsignedBigIntegerType();
 
-    public static UnsignedBigInteger from(final Class<?> fieldType) {
+    public static UnsignedBigIntegerType from(final Class<?> fieldType) {
         if (fieldType != BigInteger.class) {
-            throw errorJavaType(UnsignedBigInteger.class, fieldType);
+            throw errorJavaType(UnsignedBigIntegerType.class, fieldType);
         }
         return INSTANCE;
     }
 
 
-    private UnsignedBigInteger() {
+    private UnsignedBigIntegerType() {
     }
 
 
@@ -75,7 +75,7 @@ public final class UnsignedBigInteger extends _NumericType._UnsignedNumericType 
     }
 
     private static IllegalArgumentException valueOutOfMapping(final Object nonNull) {
-        String m = String.format("value[%s] out of range of %s .", nonNull, UnsignedBigInteger.class.getName());
+        String m = String.format("value[%s] out of range of %s .", nonNull, UnsignedBigIntegerType.class.getName());
         return new IllegalArgumentException(m);
     }
 

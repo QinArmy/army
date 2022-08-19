@@ -8,7 +8,7 @@ import io.army.sqltype.SqlType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public final class LongType extends _NumericType {
+public final class LongType extends _NumericType._IntegerType {
 
     public static final LongType INSTANCE = new LongType();
 

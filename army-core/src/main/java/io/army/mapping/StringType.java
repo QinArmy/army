@@ -19,7 +19,7 @@ import java.time.temporal.Temporal;
  *
  * @see String
  */
-public final class StringType extends AbstractMappingType {
+public final class StringType extends _SQLStringType {
 
 
     public static final StringType INSTANCE = new StringType();

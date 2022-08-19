@@ -8,7 +8,7 @@ import io.army.sqltype.SqlType;
 /**
  * @see Short
  */
-public final class UnsignedByteType extends _NumericType._UnsignedNumericType {
+public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
 
     public static final UnsignedByteType INSTANCE = new UnsignedByteType();
 

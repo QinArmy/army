@@ -10,7 +10,7 @@ import java.math.BigInteger;
 /**
  * @see BigInteger
  */
-public final class UnsignedLongType extends _NumericType._UnsignedNumericType {
+public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
 
     public static final UnsignedLongType INSTANCE = new UnsignedLongType();
 

@@ -46,6 +46,7 @@ abstract class CriteriaContextStack {
         }
         stack.clear(rootContext);
         HOLDER.remove();
+        rootContext.contextEnd();
         if (LOG.isTraceEnabled()) {
             LOG.trace("clearContextStack {},hash:{}", rootContext.getClass().getName()
                     , System.identityHashCode(rootContext));
@@ -68,6 +69,7 @@ abstract class CriteriaContextStack {
             throw noContextStack();
         }
         stack.pop(subContext);
+        subContext.contextEnd();
         if (LOG.isTraceEnabled()) {
             LOG.trace("pop {},hash:{}", subContext.getClass().getName(), System.identityHashCode(subContext));
         }

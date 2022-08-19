@@ -15,6 +15,10 @@ interface CriteriaContext {
 
     CteItem refCte(String cteName);
 
+    void contextEnd();
+
+    void addEndEventListener(Runnable listener);
+
     void onAddDerivedGroup(DerivedGroup group);
 
     void selectList(List<? extends SelectItem> selectItemList);

@@ -1,8 +1,6 @@
 package io.army.criteria;
 
 
-import io.army.meta.ParamMeta;
-
 /**
  * <p>
  * This interface representing the ability that create {@link Selection}.
@@ -15,14 +13,12 @@ import io.army.meta.ParamMeta;
  *
  * @since 1.0
  */
-public interface SelectionSpec {
+public interface SelectionSpec extends TypeInfer.TypeUpdateSpec {
 
     /**
      * @param alias non-null,non-empty.
      */
     Selection as(String alias);
 
-
-    SelectionSpec asType(ParamMeta paramMeta);
 
 }

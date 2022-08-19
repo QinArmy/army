@@ -270,19 +270,36 @@ abstract class SimpleWindow<C, AR, LR, PR, OR, FR, FC, BR, BC, NC, MA, MB, R> im
     }
 
     @Override
-    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
+    public final OR ifOrderBy(Function<Object, ? extends Expression> operator, Supplier<?> operand
+            , Function<Expression, SortItem> sortFunction) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand, sortFunction);
+    }
+
+    @Override
+    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand
+            , String operandKey) {
         return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
                 .ifOrderBy(operator, operand, operandKey);
     }
 
     @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
+    public final OR ifOrderBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand
+            , String operandKey, Function<Expression, SortItem> sortFunction) {
+        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+                .ifOrderBy(operator, operand, operandKey, sortFunction);
+    }
+
+    @Override
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand
+            , Supplier<?> secondOperand) {
         return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
                 .ifOrderBy(operator, firstOperand, secondOperand);
     }
 
     @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
+    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand
+            , String firstKey, String secondKey) {
         return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
                 .ifOrderBy(operator, operand, firstKey, secondKey);
     }

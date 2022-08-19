@@ -515,10 +515,30 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
+    public final GR ifGroupBy(Function<Object, ? extends Expression> operator, Supplier<?> operand
+            , Function<Expression, SortItem> sortFunction) {
+        final Object value;
+        if ((value = operand.get()) != null) {
+            this.groupBy(sortFunction.apply(operator.apply(value)));
+        }
+        return (GR) this;
+    }
+
+    @Override
     public final GR ifGroupBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
         final Object value;
         if ((value = operand.apply(operandKey)) != null) {
             this.groupBy(operator.apply(value));
+        }
+        return (GR) this;
+    }
+
+    @Override
+    public final GR ifGroupBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand
+            , String operandKey, Function<Expression, SortItem> sortFunction) {
+        final Object value;
+        if ((value = operand.apply(operandKey)) != null) {
+            this.groupBy(sortFunction.apply(operator.apply(value)));
         }
         return (GR) this;
     }

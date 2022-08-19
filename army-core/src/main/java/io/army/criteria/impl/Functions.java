@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
-import io.army.criteria.FuncExpression;
+import io.army.criteria.TypeInfer;
 import io.army.mapping.MappingType;
 import io.army.meta.ParamMeta;
 
@@ -48,10 +48,16 @@ abstract class Functions {
 
     }
 
+    public interface _FuncTypeUpdateClause extends TypeInfer.TypeUpdateSpec {
+
+        @Override
+        Expression asType(ParamMeta paramMeta);
+
+    }
 
     public interface _CaseEndClause {
 
-        Expression end();
+        _FuncTypeUpdateClause end();
 
     }
 
@@ -140,7 +146,7 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/mathematical-functions.html#function_abs">
      * MySQL ABS function</a>
      */
-    public static FuncExpression abs(Object expr) {
+    public static Expression abs(Object expr) {
         final ArmyExpression expression;
         expression = SQLFunctions.funcParam(expr);
         return SQLFunctions.oneArgOptionFunc("ABS", null, expression, null, expression.paramMeta());

@@ -52,7 +52,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }
 
     @Deprecated
-    static FuncExpression oneArgumentFunc(String name, @Nullable SQLWords option, @Nullable Object exp, MappingType returnType) {
+    static Expression oneArgumentFunc(String name, @Nullable SQLWords option, @Nullable Object exp, MappingType returnType) {
         return new OneArgFunc(name, funcParam(exp), returnType);
     }
 
@@ -68,13 +68,18 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return null;
     }
 
-    static FuncExpression oneArgOptionFunc(String name, @Nullable SQLWords option
+    static Expression oneArgOptionFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, @Nullable Clause clause, ParamMeta returnType) {
         return new OneArgOptionFunc(name, option, SQLFunctions.funcParam(expr), clause, returnType);
     }
 
 
-    static FuncExpression multiArgOptionFunc(String name, @Nullable SQLWords option
+    static Expression safeMultiArgOptionFunc(String name, @Nullable SQLWords option
+            , List<ArmyExpression> argList, @Nullable Clause clause, ParamMeta returnType) {
+        return new MultiArgOptionFunc(name, option, argList, clause, returnType);
+    }
+
+    static Expression multiArgOptionFunc(String name, @Nullable SQLWords option
             , List<?> argList, @Nullable Clause clause, ParamMeta returnType) {
         return new MultiArgOptionFunc(name, option, funcParamList(argList), clause, returnType);
     }
@@ -312,9 +317,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     static abstract class AggregateWindowFunc extends OperationExpression
-            implements Window._OverClause
-            , FuncExpression
-            , WinFuncSpec {
+            implements Window._OverClause, WinFuncSpec {
 
         final CriteriaContext criteriaContext;
 
@@ -333,11 +336,6 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         @Override
         public final CriteriaContext getCriteriaContext() {
             return this.criteriaContext;
-        }
-
-        @Override
-        public final String name() {
-            return this.name;
         }
 
         @Override
@@ -372,7 +370,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
             //2. OVER clause
-            sqlBuilder.append(_Constant.SPACE_OVER_LEFT_PAREN);
+            sqlBuilder.append(_Constant.SPACE_OVER_LEFT_PAREN)
+                    .append(_Constant.SPACE);
             context.parser().identifier(existingWindowName, sqlBuilder);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
@@ -396,7 +395,25 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         @Override
         public final String toString() {
-            return super.toString();
+            final String existingWindowName;
+            if ((existingWindowName = this.existingWindowName) == null) {
+                return super.toString();
+            }
+            //1. function
+            final StringBuilder sqlBuilder = new StringBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name) // function name
+                    .append(_Constant.LEFT_PAREN);
+
+            this.argumentToString(sqlBuilder);
+
+            //2. OVER clause
+            return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .append(_Constant.SPACE_OVER_LEFT_PAREN)
+                    .append(_Constant.SPACE)
+                    .append(existingWindowName)
+                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
         }
 
         abstract void appendArguments(_SqlContext context);
@@ -406,12 +423,12 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }//AggregateOverClause
 
 
-    static abstract class FunctionExpression extends OperationExpression implements FuncExpression
-            , FunctionSpec {
+    static abstract class FunctionExpression extends OperationExpression
+            implements FunctionSpec, MutableParamMetaSpec {
 
         private final String name;
 
-        private final ParamMeta returnType;
+        private ParamMeta returnType;
 
         FunctionExpression(String name, ParamMeta returnType) {
             this.name = name;
@@ -419,13 +436,13 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final String name() {
-            return this.name;
+        public final ParamMeta paramMeta() {
+            return this.returnType;
         }
 
         @Override
-        public final ParamMeta paramMeta() {
-            return this.returnType;
+        public void updateParamMeta(final ParamMeta paramMeta) {
+            this.returnType = paramMeta;
         }
 
         @Override
@@ -461,7 +478,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//FunctionExpression
 
-    private static final class OneArgFunc extends FunctionExpression implements FuncExpression {
+    private static final class OneArgFunc extends FunctionExpression {
 
         private final ArmyExpression argument;
 
@@ -570,7 +587,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     private static final class CaseFunc extends OperationExpression
             implements Functions._CaseWhenSpec, Functions._CaseThenClause
-            , FunctionSpec, CriteriaContextSpec, MutableParamMetaSpec {
+            , FunctionSpec, CriteriaContextSpec, MutableParamMetaSpec
+            , Functions._FuncTypeUpdateClause {
 
         private final ArmyExpression caseValue;
 
@@ -596,9 +614,9 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         @Override
         public ParamMeta paramMeta() {
-            ParamMeta returnType = this.returnType;
+            final ParamMeta returnType = this.returnType;
             if (returnType == null) {
-                returnType = CriteriaSupports.delayParamMeta(this::inferAggregatedType);
+                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return returnType;
         }
@@ -917,51 +935,18 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public Expression end() {
+        public Functions._FuncTypeUpdateClause end() {
             final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
             if (expPairList == null || expPairList.size() == 0) {
                 String m = "case function at least one when clause";
                 throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
             } else if (expPairList instanceof ArrayList) {
-                ParamMeta returnType = null;
-                for (_Pair<ArmyExpression, ArmyExpression> pair : expPairList) {
-                    if (pair.second instanceof OperationExpression) {
-                        returnType = pair.second.paramMeta();
-                        break;
-                    }
-                }
-                if (returnType == null) {
-                    String m = "at least one then clause is operation expression.";
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-                }
                 this.expPairList = _CollectionUtils.unmodifiableList(expPairList);
             } else {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
             return this;
         }
-
-        private MappingType inferAggregatedType() {
-            final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
-            final int pairSize;
-            if (expPairList == null || (expPairList instanceof ArrayList) || (pairSize = expPairList.size()) == 0) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            _Pair<ArmyExpression, ArmyExpression> pair;
-            ParamMeta resultType;
-            for (int i = 0; i < pairSize; i++) {
-                pair = expPairList.get(i);
-                resultType = pair.second.paramMeta();
-                if (!(resultType instanceof MappingType)) {
-                    resultType = resultType.mappingType();
-                }
-
-
-            }
-            //TODO
-            throw new UnsupportedOperationException();
-        }
-
 
     }//CaseFunc
 

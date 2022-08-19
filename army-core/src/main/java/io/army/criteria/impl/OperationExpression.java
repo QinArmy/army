@@ -28,7 +28,7 @@ abstract class OperationExpression implements ArmyExpression {
             selection = Selections.forField((TableField) this, alias);
         } else if (this instanceof DerivedField) {
             selection = CriteriaContexts.createDerivedSelection((DerivedField) this, alias);
-        } else if (this instanceof FuncExpression) {
+        } else if (this instanceof SQLFunctions.FunctionSpec) {
             selection = Selections.forFunc((SQLFunctions.FunctionSpec) this, alias);
         } else {
             selection = Selections.forExp(this, alias);

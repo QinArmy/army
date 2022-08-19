@@ -6,6 +6,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.pill.domain.User_;
 import io.army.example.pill.struct.UserType;
+import io.army.mapping.StringType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -49,7 +50,8 @@ public class MySQLFunctionUnitTests {
                 .elseExp(SQLs.literal(0))
 
                 .end()
-                //.asType(StringType.INSTANCE)
+
+                .asType(StringType.INSTANCE)
                 .as("result");
 
         consumer.accept(selection);

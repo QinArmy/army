@@ -444,7 +444,11 @@ public interface Statement {
 
         OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand);
 
+        OR ifOrderBy(Function<Object, ? extends Expression> operator, Supplier<?> operand, Function<Expression, SortItem> sortFunction);
+
         OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey);
+
+        OR ifOrderBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand, String operandKey, Function<Expression, SortItem> sortFunction);
 
         OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 

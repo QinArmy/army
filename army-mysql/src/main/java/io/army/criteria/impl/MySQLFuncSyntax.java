@@ -53,7 +53,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     }
 
 
-    public interface _AggregateOverSpec extends _OverSpec, FuncExpression {
+    public interface _AggregateOverSpec extends _OverSpec {
 
     }
 
@@ -71,7 +71,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static FuncExpression avg(@Nullable SQLs.Modifier distinct, @Nullable Object exp) {
+    public static Expression avg(@Nullable SQLs.Modifier distinct, @Nullable Object exp) {
         if (distinct != null && distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError("AVG", distinct);
         }
@@ -205,7 +205,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see #groupConcat(SQLs.Modifier, Object, Supplier)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT(expr)</a>
      */
-    public static FuncExpression groupConcat(@Nullable Object expressions) {
+    public static Expression groupConcat(@Nullable Object expressions) {
         return _groupConcat(null, expressions, null);
     }
 
@@ -220,7 +220,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see #groupConcat(SQLs.Modifier, Object, Supplier)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT(expr)</a>
      */
-    public static FuncExpression groupConcat(@Nullable SQLs.Modifier distinct, @Nullable Object expressions) {
+    public static Expression groupConcat(@Nullable SQLs.Modifier distinct, @Nullable Object expressions) {
         return _groupConcat(distinct, expressions, (Clause) null);
     }
 
@@ -237,7 +237,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see #groupConcatClause()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_group-concat">GROUP_CONCAT(expr)</a>
      */
-    public static FuncExpression groupConcat(@Nullable SQLs.Modifier distinct, @Nullable Object expressions, Supplier<Clause> supplier) {
+    public static Expression groupConcat(@Nullable SQLs.Modifier distinct, @Nullable Object expressions, Supplier<Clause> supplier) {
         return _groupConcat(distinct, expressions, supplier.get());
     }
 
@@ -709,7 +709,52 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
     /*-------------------below Flow Control Functions-------------------*/
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     *      <ul>
+     *          <li>If the {@link MappingType} of expr2 and the {@link MappingType} of expr3 same,then return type is the {@link MappingType} of expr2</li>
+     *          <li>If expr2 or expr3 produce a string, the result is {@link StringType}</li>
+     *          <li>If expr2 and expr3 are both not numeric, the result is {@link StringType}</li>
+     *          <li>If expr2 or expr3 produce a floating-point value,the result is {@link DoubleType}</li>
+     *          <li>If expr2 or expr3 produce unsigned numeric:
+     *              <ul>
+     *                  <li>If expr2 or expr3 {@link MappingType} is {@link  UnsignedBigDecimalType},the result is {@link UnsignedBigDecimalType}</li>
+     *                  <li>If expr2 or expr3 {@link MappingType} is {@link  UnsignedBigIntegerType},the result is {@link UnsignedBigIntegerType}</li>
+     *                  <li>If expr2 or expr3 {@link MappingType} is {@link UnsignedLongType},the result is {@link UnsignedLongType}</li>
+     *                  <li>Otherwise the result is {@link IntegerType}</li>
+     *              </ul>
+     *          </li>
+     *          <li>If expr2 or expr3 {@link MappingType} is {@link  BigDecimalType},the result is {@link BigDecimalType}</li>
+     *          <li>If expr2 or expr3 {@link MappingType} is {@link  BigIntegerType},the result is {@link BigIntegerType}</li>
+     *          <li>If expr2 or expr3 {@link MappingType} is {@link LongType},the result is {@link LongType}</li>
+     *          <li>Otherwise the result is {@link IntegerType}</li>
+     *      </ul>
+     * </p>
+     *
+     * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
+     */
+    public static Expression ifFunc(final IPredicate expr1, final @Nullable Expression expr2
+            , final @Nullable Expression expr3) {
+        Objects.requireNonNull(expr1);
+        final ArmyExpression expression2, expression3;
+        expression2 = SQLFunctions.funcParam(expr2);
+        expression3 = SQLFunctions.funcParam(expr3);
 
+        if (expression2 instanceof NonOperationExpression && expression3 instanceof NonOperationExpression) {
+            String m = "couldn't bo both non-operate " + Expression.class.getName();
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        }
+
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList((ArmyExpression) expr1, expression2, expression3);
+
+        final ParamMeta returnType;
+        returnType = Functions._returnType(expression2, expression3, MySQLFuncSyntax::ifFuncReturnType);
+
+        return SQLFunctions.safeMultiArgOptionFunc("IF", null, argList, null, returnType);
+    }
 
     /*-------------------below private method -------------------*/
 
@@ -781,7 +826,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     }
 
 
-    private static FuncExpression _groupConcat(@Nullable SQLs.Modifier distinct, @Nullable Object expressions
+    private static Expression _groupConcat(@Nullable SQLs.Modifier distinct, @Nullable Object expressions
             , @Nullable Clause clause) {
 
         final String funcName = "GROUP_CONCAT";
@@ -792,7 +837,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         if (clause != null && !(clause instanceof MySQLFunctions.GroupConcatClause)) {
             throw CriteriaUtils.funcArgError(funcName, clause);
         }
-        final FuncExpression func;
+        final Expression func;
         if (expressions instanceof List) {
             func = SQLFunctions.multiArgOptionFunc(funcName, distinct, (List<?>) expressions
                     , clause, StringType.INSTANCE);
@@ -1025,6 +1070,43 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
         return MySQLFunctions.oneArgWindowFunc(funcName, null, expression, expression.paramMeta());
+    }
+
+    /**
+     * @see #ifFunc(IPredicate, Expression, Expression)
+     */
+    private static MappingType ifFuncReturnType(final MappingType expr2Type, final MappingType expr3Type) {
+        final MappingType returnType;
+        if (expr2Type.getClass() == expr3Type.getClass()) {
+            returnType = expr2Type;
+        } else if (expr2Type instanceof _SQLStringType || expr3Type instanceof _SQLStringType) {
+            returnType = StringType.INSTANCE;
+        } else if (!(expr2Type instanceof _NumericType || expr3Type instanceof _NumericType)) {
+            returnType = StringType.INSTANCE;
+        } else if (expr2Type instanceof _NumericType._FloatNumericType
+                || expr3Type instanceof _NumericType._FloatNumericType) {
+            returnType = DoubleType.INSTANCE;
+        } else if (expr2Type instanceof _NumericType._UnsignedNumeric
+                || expr3Type instanceof _NumericType._UnsignedNumeric) {
+            if (expr2Type instanceof UnsignedBigDecimalType || expr3Type instanceof UnsignedBigDecimalType) {
+                returnType = UnsignedBigDecimalType.INSTANCE;
+            } else if (expr2Type instanceof UnsignedBigIntegerType || expr3Type instanceof UnsignedBigIntegerType) {
+                returnType = UnsignedBigIntegerType.INSTANCE;
+            } else if (expr2Type instanceof UnsignedLongType || expr3Type instanceof UnsignedLongType) {
+                returnType = UnsignedLongType.INSTANCE;
+            } else {
+                returnType = UnsignedIntegerType.INSTANCE;
+            }
+        } else if (expr2Type instanceof BigDecimalType || expr3Type instanceof BigDecimalType) {
+            returnType = BigDecimalType.INSTANCE;
+        } else if (expr2Type instanceof BigIntegerType || expr3Type instanceof BigIntegerType) {
+            returnType = BigIntegerType.INSTANCE;
+        } else if (expr2Type instanceof LongType || expr3Type instanceof LongType) {
+            returnType = LongType.INSTANCE;
+        } else {
+            returnType = IntegerType.INSTANCE;
+        }
+        return returnType;
     }
 
 

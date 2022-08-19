@@ -8,7 +8,7 @@ import io.army.sqltype.SqlType;
 /**
  * @see Short
  */
-public final class ShortType extends _NumericType {
+public final class ShortType extends _NumericType._IntegerType {
 
     public static final ShortType INSTANCE = new ShortType();
 

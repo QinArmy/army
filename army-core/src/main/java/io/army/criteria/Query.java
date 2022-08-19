@@ -68,7 +68,11 @@ public interface Query extends RowSet {
 
         GR ifGroupBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand);
 
+        GR ifGroupBy(Function<Object, ? extends Expression> operator, Supplier<?> operand, Function<Expression, SortItem> sortFunction);
+
         GR ifGroupBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey);
+
+        GR ifGroupBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand, String operandKey, Function<Expression, SortItem> sortFunction);
 
         GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator);
 
