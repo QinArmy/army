@@ -22,7 +22,10 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -141,45 +144,6 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
         return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
                 .orderBy(consumer);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends Expression> operator, Supplier<?> operand
-            , Function<Expression, SortItem> sortFunction) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, sortFunction);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand
-            , String operandKey) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, operandKey);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand
-            , String operandKey, Function<Expression, SortItem> sortFunction) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, operandKey, sortFunction);
-    }
-
-    @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, firstOperand, secondOperand);
-    }
-
-    @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, firstKey, secondKey);
     }
 
     @Override

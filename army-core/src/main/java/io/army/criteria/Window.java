@@ -290,9 +290,11 @@ public interface Window {
     }
 
 
-    interface _OverClause {
+    interface _OverClause<OR> {
 
-        SelectionSpec over(String windowName);
+        Expression over(String windowName);
+
+        OR over();
     }
 
 
@@ -581,8 +583,7 @@ public interface Window {
     }
 
 
-    interface _SimpleOverLestParenSpec extends Window._SimpleLeftParenClause<Void, SelectionSpec>
-            , SelectionSpec {
+    interface _AggregateWindowFunc<OR> extends Window._OverClause<OR>, Expression {
 
     }
 

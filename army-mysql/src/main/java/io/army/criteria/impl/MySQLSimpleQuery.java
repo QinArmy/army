@@ -120,12 +120,12 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, FJ, JT, 
 
     @Override
     final List<MySQLWords> asModifierList(@Nullable List<MySQLWords> modifiers) {
-        return MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::selectModifier);
+        return MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::selectModifier);
     }
 
     @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
-        return MySQLUtils.asHintList(this.criteriaContext, hints, MySQLHints::castHint);
+        return MySQLUtils.asHintList(this.context, hints, MySQLHints::castHint);
     }
 
     /*################################## blow private method ##################################*/

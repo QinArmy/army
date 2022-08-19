@@ -47,7 +47,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         , CriteriaContextSpec {
 
 
-    final CriteriaContext criteriaContext;
+    final CriteriaContext context;
     final C criteria;
 
     final ClauseCreator<FP, JT, JS, JP> clauseCreator;
@@ -60,11 +60,11 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
      * private constructor for {@link  LeftParenNestedItem}
      * </p>
      */
-    private JoinableClause(CriteriaContext criteriaContext, Consumer<_TableBlock> blockConsumer
+    private JoinableClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer
             , ClauseCreator<FP, JT, JS, JP> clauseCreator) {
 
-        this.criteriaContext = criteriaContext;
-        this.criteria = criteriaContext.criteria();
+        this.context = context;
+        this.criteria = context.criteria();
         this.blockConsumer = blockConsumer;
         this.clauseCreator = clauseCreator;
     }
@@ -74,9 +74,9 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
      * private constructor for {@link  LeftParenNestedItem#LeftParenNestedItem(CriteriaContext, List)}
      * </p>
      */
-    private JoinableClause(CriteriaContext criteriaContext, Consumer<_TableBlock> blockConsumer) {
-        this.criteriaContext = criteriaContext;
-        this.criteria = criteriaContext.criteria();
+    private JoinableClause(CriteriaContext context, Consumer<_TableBlock> blockConsumer) {
+        this.context = context;
+        this.criteria = context.criteria();
         this.blockConsumer = blockConsumer;
         this.clauseCreator = (ClauseCreator<FP, JT, JS, JP>) this;
     }
@@ -86,10 +86,10 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
      * package constructor for {@link  Statement}
      * </p>
      */
-    JoinableClause(CriteriaContext criteriaContext) {
-        this.criteriaContext = criteriaContext;
-        this.criteria = criteriaContext.criteria();
-        this.blockConsumer = criteriaContext::onAddBlock;
+    JoinableClause(CriteriaContext context) {
+        this.context = context;
+        this.criteria = context.criteria();
+        this.blockConsumer = context::onAddBlock;
         this.clauseCreator = (ClauseCreator<FP, JT, JS, JP>) this;
     }
 
@@ -98,10 +98,10 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
      * package constructor for {@link  Statement}
      * </p>
      */
-    JoinableClause(CriteriaContext criteriaContext, ClauseCreator<FP, JT, JS, JP> clauseCreator) {
-        this.criteriaContext = criteriaContext;
-        this.criteria = criteriaContext.criteria();
-        this.blockConsumer = criteriaContext::onAddBlock;
+    JoinableClause(CriteriaContext context, ClauseCreator<FP, JT, JS, JP> clauseCreator) {
+        this.context = context;
+        this.criteria = context.criteria();
+        this.blockConsumer = context::onAddBlock;
         this.clauseCreator = clauseCreator;
     }
 
@@ -112,8 +112,8 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final CriteriaContext getCriteriaContext() {
-        return this.criteriaContext;
+    public final CriteriaContext getContext() {
+        return this.context;
     }
 
     /*################################## blow JoinSpec method ##################################*/
@@ -152,7 +152,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS leftJoin(String cteName) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.LEFT_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.LEFT_JOIN, null, this.context.refCte(cteName), "");
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -160,7 +160,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS leftJoin(String cteName, String alias) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.LEFT_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.LEFT_JOIN, null, this.context.refCte(cteName), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -214,7 +214,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS join(String cteName) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.JOIN, null, this.criteriaContext.refCte(cteName), "");
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.JOIN, null, this.context.refCte(cteName), "");
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -222,7 +222,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS join(String cteName, String alias) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.JOIN, null, this.context.refCte(cteName), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -276,7 +276,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS rightJoin(String cteName) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.RIGHT_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.RIGHT_JOIN, null, this.context.refCte(cteName), "");
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -284,7 +284,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS rightJoin(String cteName, String alias) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.RIGHT_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.RIGHT_JOIN, null, this.context.refCte(cteName), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -337,7 +337,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS fullJoin(String cteName) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.FULL_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.FULL_JOIN, null, this.context.refCte(cteName), "");
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -345,7 +345,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS fullJoin(String cteName, String alias) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.FULL_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.FULL_JOIN, null, this.context.refCte(cteName), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -399,7 +399,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS straightJoin(String cteName) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.STRAIGHT_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.STRAIGHT_JOIN, null, this.context.refCte(cteName), "");
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -407,7 +407,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final JS straightJoin(String cteName, String alias) {
         final JS blockClause;
-        blockClause = this.clauseCreator.createItemBlock(_JoinType.STRAIGHT_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        blockClause = this.clauseCreator.createItemBlock(_JoinType.STRAIGHT_JOIN, null, this.context.refCte(cteName), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
         return blockClause;
     }
@@ -463,7 +463,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final FS crossJoin(String cteName) {
         final _TableBlock block;
-        block = this.clauseCreator.createNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.criteriaContext.refCte(cteName), "");
+        block = this.clauseCreator.createNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.context.refCte(cteName), "");
         this.blockConsumer.accept(block);
         return (FS) this;
     }
@@ -471,7 +471,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     @Override
     public final FS crossJoin(String cteName, String alias) {
         final _TableBlock block;
-        block = this.clauseCreator.createNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.criteriaContext.refCte(cteName), alias);
+        block = this.clauseCreator.createNoOnItemBlock(_JoinType.CROSS_JOIN, null, this.context.refCte(cteName), alias);
         this.blockConsumer.accept(block);
         return (FS) this;
     }
@@ -570,7 +570,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         } else if (this instanceof Values) {
             stmt = d.dialectStmt((Values) this, visible);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return d.printStmt(stmt, none);
     }
@@ -587,14 +587,14 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         } else if (this instanceof Values) {
             stmt = _MockDialects.from(dialect).dialectStmt((Values) this, visible);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return stmt;
     }
 
     @Deprecated
     void crossJoinEvent(boolean success) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        throw CriteriaContextStack.castCriteriaApi(this.context);
     }
 
 
@@ -603,14 +603,14 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
             return (FJ) this;
         }
         if (!(block instanceof DynamicBlock)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         final DynamicBlock<?> dynamicBlock = (DynamicBlock<?>) block;
-        if (dynamicBlock.criteriaContext != this.criteriaContext) {
-            throw CriteriaUtils.criteriaContextNotMatch(this.criteriaContext);
+        if (dynamicBlock.criteriaContext != this.context) {
+            throw CriteriaUtils.criteriaContextNotMatch(this.context);
         }
         if (dynamicBlock.hasOnClause() == (joinType == _JoinType.CROSS_JOIN)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         this.blockConsumer.accept(this.clauseCreator.createDynamicBlock(joinType, dynamicBlock));
         return (FJ) this;
@@ -939,14 +939,14 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
                 predicateList = Collections.emptyList();
                 this.predicateList = predicateList;
             } else if (predicateList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return predicateList;
         }
 
         private FJ onClauseEnd(final List<_Predicate> predicateList) {
             if (this.predicateList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.predicateList = predicateList;
             return (FJ) this;
@@ -958,7 +958,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
                 predicateList = new ArrayList<>();
                 this.predicateList = predicateList;
             } else if (!(predicateList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
 
             predicateList.add((OperationPredicate) predicate);
@@ -967,9 +967,9 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         private FJ endOnClause() {
             final List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::predicateListIsEmpty);
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
             } else if (!(predicateList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.predicateList = _CollectionUtils.unmodifiableList(predicateList);
             return (FJ) this;

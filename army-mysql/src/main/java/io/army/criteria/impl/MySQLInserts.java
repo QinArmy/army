@@ -157,7 +157,7 @@ abstract class MySQLInserts extends InsertSupport {
         private List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList;
 
         private DuplicateKeyUpdateClause(ClauseBeforeRowAlias clause) {
-            this.criteriaContext = clause.getCriteriaContext();
+            this.criteriaContext = clause.getContext();
             this.criteria = this.criteriaContext.criteria();
             this.clause = clause;
             this.table = clause.table();
@@ -920,7 +920,7 @@ abstract class MySQLInserts extends InsertSupport {
         private final ValueParentPartitionClause<C, T> clause;
 
         private ParentStaticValuesLeftParenClause(ValueParentPartitionClause<C, T> clause) {
-            super(clause.getCriteriaContext(), clause::validateField);
+            super(clause.getContext(), clause::validateField);
             this.clause = clause;
         }
 

@@ -66,7 +66,7 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
         final List<_Expression> columnList = this.columnList;
         final int currentColumnSize;
         if (columnList == null || (currentColumnSize = columnList.size()) == 0) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
 
         List<List<_Expression>> rowList = this.rowList;
@@ -74,7 +74,7 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
             rowList = new ArrayList<>();
             this.rowList = rowList;
         } else if (!(rowList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         } else if (currentColumnSize != rowList.get(0).size()) {
             throw _Exceptions.valuesColumnSizeNotMatch(rowList.get(0).size(), rowList.size(), currentColumnSize);
         }
@@ -91,7 +91,7 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
                 selectionList = Collections.unmodifiableList(tempList);
             }
             this.selectionList = selectionList;
-            this.criteriaContext.selectList(selectionList);//notify context
+            this.context.selectList(selectionList);//notify context
         }
         rowList.add(_CollectionUtils.unmodifiableList(columnList));
         this.columnList = null;
@@ -120,7 +120,7 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
     final V onAsValues() {
         final List<List<_Expression>> rowList = this.rowList;
         if (this.columnList != null || !(rowList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         this.rowList = _CollectionUtils.unmodifiableList(rowList);
         return (V) this;
@@ -163,7 +163,7 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
     @Override
     final _OrderBySpec<C, V> dynamicValuesEnd(List<List<_Expression>> rowList) {
         if (this.rowList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         this.rowList = rowList;
         return this;
@@ -173,7 +173,7 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
     final List<_Expression> createNewRow() {
         final List<List<_Expression>> rowList = this.rowList;
         if (this.columnList != null || (rowList != null && !(rowList instanceof ArrayList))) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         final List<_Expression> columnList;
         if (rowList == null) {
@@ -189,7 +189,7 @@ abstract class MySQLSimpleValues<C, V extends RowSet.DqlValues>
     final List<_Expression> getCurrentRow() {
         final List<_Expression> columnList = this.columnList;
         if (columnList == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return columnList;
     }

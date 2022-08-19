@@ -24,7 +24,7 @@ abstract class CriteriaUtils {
 
 
     static CriteriaContext getCriteriaContext(final Object statement) {
-        return ((CriteriaContextSpec) statement).getCriteriaContext();
+        return ((CriteriaContextSpec) statement).getContext();
     }
 
 
@@ -177,7 +177,7 @@ abstract class CriteriaUtils {
 
     static CriteriaException unionTypeError(final RowSet left, final String message) {
         final CriteriaContext leftContext, outerContext;
-        leftContext = ((CriteriaContextSpec) left).getCriteriaContext();
+        leftContext = ((CriteriaContextSpec) left).getContext();
         outerContext = ((CriteriaContext.OuterContextSpec) leftContext).getOuterContext();
         final CriteriaException e;
         if (outerContext == null) {
@@ -313,7 +313,7 @@ abstract class CriteriaUtils {
 
     static int standardModifier(final SQLs.Modifier distinct) {
         final int level;
-        if (distinct == SQLs.ALL || distinct == SQLs.DISTINCT || distinct == SQLs.DISTINCTROW) {
+        if (distinct == SQLs.ALL || distinct == SQLs.DISTINCT) {
             level = 1;
         } else {
             level = -1;

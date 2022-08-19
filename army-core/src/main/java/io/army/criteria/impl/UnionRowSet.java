@@ -30,9 +30,9 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
         super(criteriaContext, JoinableClause.voidClauseCreator());
         this.left = left;
         if (this instanceof SubStatement) {
-            CriteriaContextStack.push(this.criteriaContext);
+            CriteriaContextStack.push(this.context);
         } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
     }
 
@@ -83,7 +83,7 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     @Nullable
     public final Selection selection(String derivedFieldName) {
         if (!(this instanceof DerivedTable)) {
-            throw CriteriaUtils.unknownSelection(this.criteriaContext, derivedFieldName);
+            throw CriteriaUtils.unknownSelection(this.context, derivedFieldName);
         }
         return ((DerivedTable) this.left).selection(derivedFieldName);
     }
@@ -101,9 +101,9 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
     @Override
     final Q internalAsRowSet(final boolean fromAsQueryMethod) {
         if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.criteriaContext);
+            CriteriaContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            CriteriaContextStack.clearContextStack(this.context);
         }
         final Q query;
         if (this instanceof ScalarSubQuery) {

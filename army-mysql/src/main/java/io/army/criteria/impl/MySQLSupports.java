@@ -114,7 +114,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             MySQLQuery._QueryIndexHintClause<C, RR> indexClause = this.indexClause;
             if (indexClause == null) {
                 final CriteriaContext context;
-                context = ((CriteriaContextSpec) this.stmt).getCriteriaContext();
+                context = ((CriteriaContextSpec) this.stmt).getContext();
                 indexClause = new IndexHintClause<>(context, this::addIndexHint);
                 this.indexClause = indexClause;
             }

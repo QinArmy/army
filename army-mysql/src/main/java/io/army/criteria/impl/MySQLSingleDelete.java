@@ -16,7 +16,10 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -69,15 +72,15 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     @Override
     public final _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
-        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return this;
     }
 
     @Override
     public final _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
-        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.context, hints.apply(this.criteria), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return this;
     }
 
@@ -97,7 +100,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     @Override
     public final _LeftParenStringQuadraOptionalSpec<C, PR> partition() {
-        return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+        return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
     }
 
 
@@ -128,63 +131,25 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     @Override
     public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .orderBy(consumer);
     }
 
     @Override
     public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .orderBy(consumer);
     }
 
     @Override
-    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends Expression> operator, Supplier<?> operand
-            , Function<Expression, SortItem> sortFunction) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, sortFunction);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, operandKey);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand, String operandKey
-            , Function<Expression, SortItem> sortFunction) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, operandKey, sortFunction);
-    }
-
-    @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, firstOperand, secondOperand);
-    }
-
-    @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, firstKey, secondKey);
-    }
-
-    @Override
     public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .ifOrderBy(consumer);
     }
 
     @Override
     public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .ifOrderBy(consumer);
     }
 
@@ -196,37 +161,37 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     @Override
     public final LR limit(Supplier<? extends Number> supplier) {
-        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, supplier.get());
+        this.rowCount = MySQLUtils.asLimitParam(this.context, supplier.get());
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<C, ? extends Number> function) {
-        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, function.apply(this.criteria));
+        this.rowCount = MySQLUtils.asLimitParam(this.context, function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<String, ?> function, String keyName) {
-        this.rowCount = MySQLUtils.asLimitParam(this.criteriaContext, function.apply(keyName));
+        this.rowCount = MySQLUtils.asLimitParam(this.context, function.apply(keyName));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Supplier<? extends Number> supplier) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, supplier.get());
+        this.rowCount = MySQLUtils.asIfLimitParam(this.context, supplier.get());
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<C, ? extends Number> function) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, function.apply(this.criteria));
+        this.rowCount = MySQLUtils.asIfLimitParam(this.context, function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<String, ?> function, String keyName) {
-        this.rowCount = MySQLUtils.asIfLimitParam(this.criteriaContext, function.apply(keyName));
+        this.rowCount = MySQLUtils.asIfLimitParam(this.context, function.apply(keyName));
         return (LR) this;
     }
 
@@ -347,7 +312,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
      */
     private PR partitionEnd(List<String> partitionList) {
         if (this.partitionList == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         this.partitionList = partitionList;
         return (PR) this;
@@ -356,7 +321,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     private OR orderByEnd(List<ArmySortItem> itemList) {
         if (this.orderByList != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         this.orderByList = itemList;
         return (OR) this;

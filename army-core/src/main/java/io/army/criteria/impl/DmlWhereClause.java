@@ -52,7 +52,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     @Override
     public final WA where(@Nullable IPredicate predicate) {
         if (predicate == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            throw CriteriaContextStack.nullPointer(this.context);
         }
         this.predicateList.add((OperationPredicate) predicate);
         return (WA) this;
@@ -135,7 +135,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     @Override
     public final WA and(@Nullable IPredicate predicate) {
         if (predicate == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            throw CriteriaContextStack.nullPointer(this.context);
         }
         this.predicateList.add((OperationPredicate) predicate);
         return (WA) this;
@@ -265,7 +265,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
             final Expression expression;
             expression = firstOperator.apply(firstValue);
             if (expression == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw CriteriaContextStack.nullPointer(this.context);
             }
             this.and(secondOperator.apply(expression, secondOperand));
         }
@@ -276,7 +276,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     public final List<_Predicate> predicateList() {
         final List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null || predicateList instanceof ArrayList) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return predicateList;
     }
@@ -284,9 +284,9 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     final void asDmlStatement() {
         final List<_Predicate> predicates = this.predicateList;
         if (predicates == null || predicates.size() == 0) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::dmlNoWhereClause);
+            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
         } else if (!(predicates instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         this.predicateList = _CollectionUtils.unmodifiableList(predicates);
     }
@@ -299,7 +299,7 @@ abstract class DmlWhereClause<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA>
     private void addPredicate(final IPredicate predicate) {
         final List<_Predicate> predicateList = this.predicateList;
         if (!(predicateList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         predicateList.add((OperationPredicate) predicate);
     }

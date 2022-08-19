@@ -238,7 +238,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
         private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> getUseIndexClause() {
             MySQLQuery._QueryIndexHintClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> useIndexClause = this.useIndexClause;
             if (useIndexClause == null) {
-                useIndexClause = MySQLSupports.indexHintClause(this.criteriaContext, this::addIndexHint);
+                useIndexClause = MySQLSupports.indexHintClause(this.context, this::addIndexHint);
                 this.useIndexClause = useIndexClause;
             }
             return useIndexClause;
@@ -251,7 +251,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
                 indexHintList = new ArrayList<>();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             indexHintList.add(indexHint);
             return this;

@@ -46,11 +46,11 @@ abstract class MultiDelete<C, FT, FS, FP, FJ, JT, JS, JP, WR, WA, D extends DmlS
         _Assert.nonPrepared(this.prepared);
         this.validateBeforeClearContext();
         if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.criteriaContext);
+            CriteriaContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            CriteriaContextStack.clearContextStack(this.context);
         }
-        this.tableBlockList = this.criteriaContext.clear();
+        this.tableBlockList = this.context.clear();
         this.asDmlStatement();
         this.onAsDelete();
         this.prepared = Boolean.TRUE;

@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect.DialectParser;
+import io.army.criteria.impl.inner._Window;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -56,17 +56,6 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return new OneArgFunc(name, funcParam(exp), returnType);
     }
 
-    static Expression twoArgumentFunc(String name, MappingType returnType, Expression one
-            , Expression two) {
-        //  return new TwoArgumentFunc<>(name, returnType, (_Expression) one, (_Expression) two);
-        return null;
-    }
-
-    static Expression twoArgumentFunc(String name, MappingType returnType, List<String> format
-            , Expression one, Expression two) {
-        //  return new TwoArgumentFunc<>(name, returnType, format, (_Expression) one, (_Expression) two);
-        return null;
-    }
 
     static Expression oneArgOptionFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, @Nullable Clause clause, ParamMeta returnType) {
@@ -137,13 +126,12 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     interface FunctionSpec extends _SelfDescribed, TypeInfer {
 
+    }
+
+    interface NoArgFunction {
 
     }
 
-    interface WinFuncSpec extends FunctionSpec, CriteriaContextSpec {
-
-        void appendFunc(_SqlContext context);
-    }
 
 
     enum NullTreatment implements SQLWords {
@@ -210,26 +198,28 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }//ArgumentClause
 
 
-    static abstract class WindowFuncClause implements WinFuncSpec
-            , SelectionSpec
-            , Window._OverClause {
+    static abstract class WindowFunc<OR> extends OperationExpression
+            implements Window._OverClause<OR>, MutableParamMetaSpec, CriteriaContextSpec {
 
-        final CriteriaContext criteriaContext;
+        final CriteriaContext context;
+
         final String name;
 
         private ParamMeta returnType;
 
         private String existingWindowName;
 
-        WindowFuncClause(String name, ParamMeta returnType) {
-            this.criteriaContext = CriteriaContextStack.peek();
+        private _Window anonymousWindow;
+
+        WindowFunc(String name, ParamMeta returnType) {
+            this.context = CriteriaContextStack.peek();
             this.name = name;
             this.returnType = returnType;
         }
 
         @Override
-        public final CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
+        public final CriteriaContext getContext() {
+            return this.context;
         }
 
         @Override
@@ -238,166 +228,74 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final SelectionSpec asType(final @Nullable ParamMeta paramMeta) {
-            if (this.existingWindowName == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            if (paramMeta == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
-            }
+        public final void updateParamMeta(final ParamMeta paramMeta) {
             this.returnType = paramMeta;
-            return this;
         }
 
         @Override
-        public final Selection as(String alias) {
-            return Selections.forFunc(this, alias);
-        }
-
-
-        @Override
-        public final SelectionSpec over(final String windowName) {
+        public final Expression over(final String windowName) {
             if (this.existingWindowName != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
-            this.criteriaContext.onRefWindow(windowName);
+            this.context.onRefWindow(windowName);
             this.existingWindowName = windowName;
             return this;
         }
 
+        @SuppressWarnings("unchecked")
+        @Override
+        public final OR over() {
+            if (this.anonymousWindow != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.anonymousWindow = GlobalWindow.INSTANCE;
+            return (OR) this;
+        }
 
         @Override
         public final void appendSql(final _SqlContext context) {
             final String existingWindowName = this.existingWindowName;
-            if (existingWindowName == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            final _Window anonymousWindow = this.anonymousWindow;
+            if (existingWindowName != null && anonymousWindow != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
-            final StringBuilder sqlBuilder = context.sqlBuilder();
-            final DialectParser parser = context.parser();
             //1. function
-            sqlBuilder.append(_Constant.SPACE)
-                    .append(this.name) // function name
-                    .append(_Constant.LEFT_PAREN);
-
-            this.appendArguments(context);
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
-            //2. OVER clause
-            sqlBuilder.append(_Constant.SPACE_OVER_LEFT_PAREN);
-            parser.identifier(existingWindowName, sqlBuilder);
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
-        }
-
-        @Override
-        public final void appendFunc(final _SqlContext context) {
-            if (this.existingWindowName != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
 
-            this.appendArguments(context);
+            if (!(this instanceof NoArgFunction)) {
+                this.appendArguments(context);
+            }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+            //2. OVER clause
+            if (existingWindowName != null) {
+                sqlBuilder.append(_Constant.SPACE_OVER)
+                        .append(_Constant.LEFT_PAREN);
+                context.parser().identifier(existingWindowName, sqlBuilder);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            } else if (anonymousWindow instanceof GlobalWindow) {
+                sqlBuilder.append(_Constant.SPACE_OVER)
+                        .append(_Constant.LEFT_PAREN)
+                        .append(_Constant.RIGHT_PAREN);
+            } else if (anonymousWindow != null) {
+                sqlBuilder.append(_Constant.SPACE_OVER);
+                anonymousWindow.appendSql(context);
+            } else if (!(this instanceof Window._AggregateWindowFunc)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
         }
 
         @Override
         public final String toString() {
-            return super.toString();
-        }
+            final String existingWindowName = this.existingWindowName;
+            final _Window anonymousWindow = this.anonymousWindow;
 
-        abstract void appendArguments(final _SqlContext context);
-
-        abstract void argumentToString(StringBuilder builder);
-
-    }//WindowFuncClause
-
-
-    static abstract class AggregateWindowFunc extends OperationExpression
-            implements Window._OverClause, WinFuncSpec {
-
-        final CriteriaContext criteriaContext;
-
-        final String name;
-
-        private final ParamMeta returnType;
-
-        private String existingWindowName;
-
-        AggregateWindowFunc(String name, ParamMeta returnType) {
-            this.criteriaContext = CriteriaContextStack.peek();
-            this.name = name;
-            this.returnType = returnType;
-        }
-
-        @Override
-        public final CriteriaContext getCriteriaContext() {
-            return this.criteriaContext;
-        }
-
-        @Override
-        public final ParamMeta paramMeta() {
-            return this.returnType;
-        }
-
-        @Override
-        public final SelectionSpec over(final String windowName) {
-            if (this.existingWindowName != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            this.criteriaContext.onRefWindow(windowName);
-            this.existingWindowName = windowName;
-            return this;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final String existingWindowName;
-            if ((existingWindowName = this.existingWindowName) == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            //1. function
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name) // function name
-                    .append(_Constant.LEFT_PAREN);
-
-            this.appendArguments(context);
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
-            //2. OVER clause
-            sqlBuilder.append(_Constant.SPACE_OVER_LEFT_PAREN)
-                    .append(_Constant.SPACE);
-            context.parser().identifier(existingWindowName, sqlBuilder);
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-        }
-
-        @Override
-        public final void appendFunc(final _SqlContext context) {
-            if (this.existingWindowName != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            //1. function
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name) // function name
-                    .append(_Constant.LEFT_PAREN);
-
-            this.appendArguments(context);
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-        }
-
-
-        @Override
-        public final String toString() {
-            final String existingWindowName;
-            if ((existingWindowName = this.existingWindowName) == null) {
-                return super.toString();
+            if (existingWindowName != null && anonymousWindow != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             //1. function
             final StringBuilder sqlBuilder = new StringBuilder()
@@ -405,20 +303,41 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
 
-            this.argumentToString(sqlBuilder);
+            if (!(this instanceof NoArgFunction)) {
+                this.argumentToString(sqlBuilder);
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
             //2. OVER clause
-            return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .append(_Constant.SPACE_OVER_LEFT_PAREN)
-                    .append(_Constant.SPACE)
-                    .append(existingWindowName)
-                    .append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
+            if (existingWindowName != null) {
+                sqlBuilder.append(_Constant.SPACE_OVER)
+                        .append(_Constant.LEFT_PAREN)
+                        .append(existingWindowName)
+                        .append(_Constant.SPACE_RIGHT_PAREN);
+            } else if (anonymousWindow instanceof GlobalWindow) {
+                sqlBuilder.append(_Constant.SPACE_OVER)
+                        .append(_Constant.LEFT_PAREN)
+                        .append(_Constant.RIGHT_PAREN);
+            } else if (anonymousWindow != null) {
+                sqlBuilder.append(_Constant.SPACE_OVER)
+                        .append(anonymousWindow);
+            } else if (!(this instanceof Window._AggregateWindowFunc)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return sqlBuilder.toString();
         }
 
         abstract void appendArguments(_SqlContext context);
 
         abstract void argumentToString(StringBuilder builder);
+
+        final Expression windowEnd(final _Window anonymousWindow) {
+            if (this.anonymousWindow == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.anonymousWindow = anonymousWindow;
+            return this;
+        }
 
     }//AggregateOverClause
 
@@ -608,7 +527,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public CriteriaContext getCriteriaContext() {
+        public CriteriaContext getContext() {
             return this.criteriaContext;
         }
 
@@ -950,11 +869,30 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//CaseFunc
 
-    private enum CaseResultType {
-        DOUBLE,
-        DECIMAL,
 
-    }
+    private static final class GlobalWindow implements _Window, Window {
+
+        private static final GlobalWindow INSTANCE = new GlobalWindow();
+
+        private GlobalWindow() {
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void prepared() {
+            //no-op
+        }
+
+        @Override
+        public void clear() {
+            //no-op
+        }
+
+    }//GlobalWindow
 
 
 }

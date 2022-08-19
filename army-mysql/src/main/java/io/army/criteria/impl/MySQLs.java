@@ -273,15 +273,12 @@ public abstract class MySQLs extends MySQLFuncSyntax {
      */
     public static <C> Window._SimpleAsClause<C, Window> window(C criteria, final String windowName) {
         Objects.requireNonNull(criteria);
-        if (!_StringUtils.hasText(windowName)) {
-            throw _Exceptions.namedWindowNoText();
+        final CriteriaContext context;
+        context = CriteriaContextStack.peek();
+        if (criteria != context.criteria()) {
+            throw CriteriaUtils.criteriaNotMatch(context);
         }
-        final CriteriaContext criteriaContext;
-        criteriaContext = CriteriaContextStack.peek();
-        if (criteria != criteriaContext.criteria()) {
-            throw new CriteriaException("Current criteria object don't match,please check criteria.");
-        }
-        return SimpleWindow.standard(windowName, criteriaContext);
+        return SimpleWindow.standard(windowName, context);
     }
 
     public static MySQLQuery._MySQLNestedLeftParenClause<Void> nestedItems() {

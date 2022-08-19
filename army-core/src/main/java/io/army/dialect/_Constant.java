@@ -100,8 +100,6 @@ public interface _Constant {
 
     String SPACE_ROWS = " ROWS";
 
-    String SPACE_OVER_LEFT_PAREN = " OVER(";
-
     String SPACE_OVER = " OVER";
 
     String SPACE_PARTITION_BY = " PARTITION BY";

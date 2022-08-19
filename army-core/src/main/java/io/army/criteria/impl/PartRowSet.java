@@ -9,7 +9,10 @@ import io.army.util._Assert;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, OR, LR, SP>
@@ -176,71 +179,32 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
 
     @Override
     public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .orderBy(consumer);
     }
 
     @Override
     public final OR orderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .orderBy(consumer);
     }
 
     @Override
-    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand);
-    }
-
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends Expression> operator, Supplier<?> operand
-            , Function<Expression, SortItem> sortFunction) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, sortFunction);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, operandKey);
-    }
-
-    @Override
-    public final OR ifOrderBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand
-            , String operandKey, Function<Expression, SortItem> sortFunction) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, operandKey, sortFunction);
-    }
-
-    @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperand) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, firstOperand, secondOperand);
-    }
-
-    @Override
-    public final OR ifOrderBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
-                .ifOrderBy(operator, operand, firstKey, secondKey);
-    }
-
-    @Override
     public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .ifOrderBy(consumer);
     }
 
     @Override
     public final OR ifOrderBy(BiConsumer<C, Consumer<SortItem>> consumer) {
-        return CriteriaSupports.<C, OR>orderByClause(this.criteriaContext, this::orderByEnd)
+        return CriteriaSupports.<C, OR>orderByClause(this.context, this::orderByEnd)
                 .ifOrderBy(consumer);
     }
 
     @Override
     public final LR limit(final long rowCount) {
         if (rowCount < 0L) {
-            throw CriteriaUtils.limitParamError(this.criteriaContext, rowCount);
+            throw CriteriaUtils.limitParamError(this.context, rowCount);
         }
         this.rowCount = rowCount;
         return (LR) this;
@@ -248,38 +212,38 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
 
     @Override
     public final LR limit(Supplier<? extends Number> rowCountSupplier) {
-        this.rowCount = CriteriaUtils.asLimitParam(this.criteriaContext, rowCountSupplier.get());
+        this.rowCount = CriteriaUtils.asLimitParam(this.context, rowCountSupplier.get());
         return (LR) this;
     }
 
 
     @Override
     public final LR limit(Function<C, ? extends Number> function) {
-        this.rowCount = CriteriaUtils.asLimitParam(this.criteriaContext, function.apply(this.criteria));
+        this.rowCount = CriteriaUtils.asLimitParam(this.context, function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<String, ?> function, String rowCountKey) {
-        this.rowCount = CriteriaUtils.asLimitParam(this.criteriaContext, function.apply(rowCountKey));
+        this.rowCount = CriteriaUtils.asLimitParam(this.context, function.apply(rowCountKey));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Supplier<? extends Number> rowCountSupplier) {
-        this.rowCount = CriteriaUtils.asIfLimitParam(this.criteriaContext, rowCountSupplier.get());
+        this.rowCount = CriteriaUtils.asIfLimitParam(this.context, rowCountSupplier.get());
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<C, ? extends Number> function) {
-        this.rowCount = CriteriaUtils.asIfLimitParam(this.criteriaContext, function.apply(this.criteria));
+        this.rowCount = CriteriaUtils.asIfLimitParam(this.context, function.apply(this.criteria));
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<String, ?> function, String rowCountKey) {
-        this.rowCount = CriteriaUtils.asIfLimitParam(this.criteriaContext, function.apply(rowCountKey));
+        this.rowCount = CriteriaUtils.asIfLimitParam(this.context, function.apply(rowCountKey));
         return (LR) this;
     }
 
@@ -288,10 +252,10 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     @Override
     public final LR limit(final long offset, final long rowCount) {
         if (offset < 0L) {
-            throw CriteriaUtils.limitParamError(this.criteriaContext, offset);
+            throw CriteriaUtils.limitParamError(this.context, offset);
         }
         if (rowCount < 0L) {
-            throw CriteriaUtils.limitParamError(this.criteriaContext, rowCount);
+            throw CriteriaUtils.limitParamError(this.context, rowCount);
         }
         this.offset = offset;
         this.rowCount = rowCount;
@@ -300,13 +264,13 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
 
     @Override
     public final LR limit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
-        CriteriaUtils.limitPair(this.criteriaContext, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
+        CriteriaUtils.limitPair(this.context, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
         return (LR) this;
     }
 
     @Override
     public final LR limit(Function<String, ?> function, String offsetKey, String rowCountKey) {
-        CriteriaUtils.limitPair(this.criteriaContext, function.apply(offsetKey)
+        CriteriaUtils.limitPair(this.context, function.apply(offsetKey)
                 , function.apply(rowCountKey), this::limit);
         return (LR) this;
     }
@@ -315,7 +279,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     public final LR limit(Consumer<BiConsumer<Long, Long>> consumer) {
         consumer.accept(this::limit);
         if (this.offset < 0L || this.rowCount < 0L) {
-            throw CriteriaUtils.limitBiConsumerError(this.criteriaContext);
+            throw CriteriaUtils.limitBiConsumerError(this.context);
         }
         return (LR) this;
     }
@@ -324,7 +288,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     public final LR limit(BiConsumer<C, BiConsumer<Long, Long>> consumer) {
         consumer.accept(this.criteria, this::limit);
         if (this.offset < 0L || this.rowCount < 0L) {
-            throw CriteriaUtils.limitBiConsumerError(this.criteriaContext);
+            throw CriteriaUtils.limitBiConsumerError(this.context);
         }
         return (LR) this;
     }
@@ -332,13 +296,13 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
 
     @Override
     public final LR ifLimit(Supplier<? extends Number> offsetSupplier, Supplier<? extends Number> rowCountSupplier) {
-        CriteriaUtils.ifLimitPair(this.criteriaContext, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
+        CriteriaUtils.ifLimitPair(this.context, offsetSupplier.get(), rowCountSupplier.get(), this::limit);
         return (LR) this;
     }
 
     @Override
     public final LR ifLimit(Function<String, ?> function, String offsetKey, String rowCountKey) {
-        CriteriaUtils.ifLimitPair(this.criteriaContext, function.apply(offsetKey)
+        CriteriaUtils.ifLimitPair(this.context, function.apply(offsetKey)
                 , function.apply(rowCountKey), this::limit);
         return (LR) this;
     }
@@ -347,7 +311,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     public final LR ifLimit(Consumer<BiConsumer<Long, Long>> consumer) {
         consumer.accept(this::limit);
         if ((this.offset < 0L) ^ (this.rowCount < 0L)) {
-            throw CriteriaUtils.ifLimitBiConsumerError(this.criteriaContext);
+            throw CriteriaUtils.ifLimitBiConsumerError(this.context);
         }
         return (LR) this;
     }
@@ -357,7 +321,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
     public final LR ifLimit(BiConsumer<C, BiConsumer<Long, Long>> consumer) {
         consumer.accept(this.criteria, this::limit);
         if ((this.offset < 0L) ^ (this.rowCount < 0L)) {
-            throw CriteriaUtils.ifLimitBiConsumerError(this.criteriaContext);
+            throw CriteriaUtils.ifLimitBiConsumerError(this.context);
         }
         return (LR) this;
     }
@@ -446,7 +410,7 @@ abstract class PartRowSet<C, Q extends RowSet, FT, FS, FP, FJ, JT, JS, JP, UR, O
         } else if (right.isPrepared()) {
             u = this.createUnionRowSet(this.asQuery(), unionType, right);
         } else {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, "Right RowSet non-prepared.");
+            throw CriteriaContextStack.criteriaError(this.context, "Right RowSet non-prepared.");
         }
         return u;
     }

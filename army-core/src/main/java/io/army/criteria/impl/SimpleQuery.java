@@ -53,9 +53,9 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     SimpleQuery(CriteriaContext criteriaContext) {
         super(criteriaContext);
         if (this instanceof SubStatement) {
-            CriteriaContextStack.push(this.criteriaContext);
+            CriteriaContextStack.push(this.context);
         } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
     }
 
@@ -176,29 +176,29 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public final FT from(TableMeta<?> table, String tableAlias) {
-        this.criteriaContext.onAddBlock(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
+        this.context.onAddBlock(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
         return (FT) this;
     }
 
     @Override
     public final FS from(String cteName) {
         final _TableBlock block;
-        block = this.createNoOnItemBlock(_JoinType.NONE, null, this.criteriaContext.refCte(cteName), "");
-        this.criteriaContext.onAddBlock(block);
+        block = this.createNoOnItemBlock(_JoinType.NONE, null, this.context.refCte(cteName), "");
+        this.context.onAddBlock(block);
         return (FS) this;
     }
 
     @Override
     public final FS from(String cteName, String alias) {
         final _TableBlock block;
-        block = this.createNoOnItemBlock(_JoinType.NONE, null, this.criteriaContext.refCte(cteName), alias);
-        this.criteriaContext.onAddBlock(block);
+        block = this.createNoOnItemBlock(_JoinType.NONE, null, this.context.refCte(cteName), alias);
+        this.context.onAddBlock(block);
         return (FS) this;
     }
 
     @Override
     public final <T extends TableItem> FS from(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
+        this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
         return (FS) this;
     }
 
@@ -207,7 +207,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
         final _TableBlock block;
         block = this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria), alias);
-        this.criteriaContext.onAddBlock(block);
+        this.context.onAddBlock(block);
         return (FS) this;
     }
 
@@ -216,7 +216,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final WR where(Consumer<Consumer<IPredicate>> consumer) {
         consumer.accept(this::and);
         if (this.predicateList == null) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::predicateListIsEmpty);
+            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
         }
         return (WR) this;
     }
@@ -225,7 +225,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
         consumer.accept(this.criteria, this::and);
         if (this.predicateList == null) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::predicateListIsEmpty);
+            throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
         }
         return (WR) this;
     }
@@ -325,14 +325,14 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final WA and(final @Nullable IPredicate predicate) {
         if (predicate == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            throw CriteriaContextStack.nullPointer(this.context);
         }
         List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null) {
             predicateList = new ArrayList<>();
             this.predicateList = predicateList;
         } else if (!(predicateList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         predicateList.add((OperationPredicate) predicate);// must cast to OperationPredicate
         return (WA) this;
@@ -496,88 +496,33 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final GR groupBy(Consumer<Consumer<SortItem>> consumer) {
         consumer.accept(this::addGroupByItem);
-        return this.endGroupBy(false);
+        return this.endGroupBy(true);
     }
 
     @Override
     public final GR groupBy(BiConsumer<C, Consumer<SortItem>> consumer) {
         consumer.accept(this.criteria, this::addGroupByItem);
-        return this.endGroupBy(false);
+        return this.endGroupBy(true);
     }
 
-    @Override
-    public final GR ifGroupBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand) {
-        final Object value;
-        if ((value = operand.get()) != null) {
-            this.groupBy(operator.apply(value));
-        }
-        return (GR) this;
-    }
-
-    @Override
-    public final GR ifGroupBy(Function<Object, ? extends Expression> operator, Supplier<?> operand
-            , Function<Expression, SortItem> sortFunction) {
-        final Object value;
-        if ((value = operand.get()) != null) {
-            this.groupBy(sortFunction.apply(operator.apply(value)));
-        }
-        return (GR) this;
-    }
-
-    @Override
-    public final GR ifGroupBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey) {
-        final Object value;
-        if ((value = operand.apply(operandKey)) != null) {
-            this.groupBy(operator.apply(value));
-        }
-        return (GR) this;
-    }
-
-    @Override
-    public final GR ifGroupBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand
-            , String operandKey, Function<Expression, SortItem> sortFunction) {
-        final Object value;
-        if ((value = operand.apply(operandKey)) != null) {
-            this.groupBy(sortFunction.apply(operator.apply(value)));
-        }
-        return (GR) this;
-    }
-
-    @Override
-    public final GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator) {
-        final Object firstValue, secondValue;
-        if ((firstValue = firstOperand.get()) != null && (secondValue = secondOperator.get()) != null) {
-            this.groupBy(operator.apply(firstValue, secondValue));
-        }
-        return (GR) this;
-    }
-
-    @Override
-    public final GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey) {
-        final Object firstValue, secondValue;
-        if ((firstValue = operand.apply(firstKey)) != null && (secondValue = operand.apply(secondKey)) != null) {
-            this.groupBy(operator.apply(firstValue, secondValue));
-        }
-        return (GR) this;
-    }
 
     @Override
     public final GR ifGroupBy(Consumer<Consumer<SortItem>> consumer) {
         consumer.accept(this::addGroupByItem);
-        return this.endGroupBy(true);
+        return this.endGroupBy(false);
     }
 
     @Override
     public final GR ifGroupBy(BiConsumer<C, Consumer<SortItem>> consumer) {
         consumer.accept(this.criteria, this::addGroupByItem);
-        return this.endGroupBy(true);
+        return this.endGroupBy(false);
     }
 
     @Override
     public final HR having(final @Nullable IPredicate predicate) {
         if (this.groupByList != null) {
             if (predicate == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw CriteriaContextStack.nullPointer(this.context);
             }
             this.havingList = Collections.singletonList((OperationPredicate) predicate);
         }
@@ -588,7 +533,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final HR having(final @Nullable IPredicate predicate1, final @Nullable IPredicate predicate2) {
         if (this.groupByList != null) {
             if (predicate1 == null || predicate2 == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw CriteriaContextStack.nullPointer(this.context);
             }
             this.havingList = ArrayUtils.asUnmodifiableList(
                     (OperationPredicate) predicate1
@@ -716,7 +661,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     public final List<_Predicate> predicateList() {
         final List<_Predicate> predicateList = this.predicateList;
         if (predicateList == null || predicateList instanceof ArrayList) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return predicateList;
     }
@@ -733,7 +678,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     public final Selection selection() {
         if (!(this instanceof ScalarSubQuery)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return (Selection) this.selectItemList().get(0);
     }
@@ -746,7 +691,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public final void appendSql(final _SqlContext context) {
         if (!(this instanceof SubQuery)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         context.parser().rowSet(this, context);
     }
@@ -755,11 +700,11 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     protected final Q internalAsRowSet(final boolean fromAsQueryMethod) {
         if (this instanceof SubStatement) {
-            CriteriaContextStack.pop(this.criteriaContext);
+            CriteriaContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            CriteriaContextStack.clearContextStack(this.context);
         }
-        this.tableBlockList = this.criteriaContext.clear();
+        this.tableBlockList = this.context.clear();
 
         // hint list
         if (this.hintList == null) {
@@ -828,12 +773,12 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     @Override
     public FP createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        throw CriteriaContextStack.castCriteriaApi(this.context);
     }
 
     @Override
     public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        throw CriteriaContextStack.castCriteriaApi(this.context);
     }
 
     final boolean hasGroupBy() {
@@ -853,7 +798,7 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     private void addSelectItem(final SelectItem selectItem) {
         if (selectItem instanceof DerivedGroup) {
-            this.criteriaContext.onAddDerivedGroup((DerivedGroup) selectItem);
+            this.context.onAddDerivedGroup((DerivedGroup) selectItem);
         }
         List<SelectItem> selectItemList = this.selectItemList;
         if (selectItemList == null) {
@@ -873,12 +818,12 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
 
     private SR singleSelectItem(final SelectItem selectItem) {
         if (selectItem instanceof DerivedGroup) {
-            this.criteriaContext.onAddDerivedGroup((DerivedGroup) selectItem);
+            this.context.onAddDerivedGroup((DerivedGroup) selectItem);
         }
         final List<SelectItem> selectItemList;
         selectItemList = Collections.singletonList(selectItem);
         this.selectItemList = selectItemList;
-        this.criteriaContext.selectList(selectItemList);
+        this.context.selectList(selectItemList);
         this.selectionSize = 1;
         return (SR) this;
     }
@@ -890,50 +835,50 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         }
         selectItemList = _CollectionUtils.unmodifiableList(selectItemList);
         this.selectItemList = selectItemList;
-        this.criteriaContext.selectList(selectItemList);
+        this.context.selectList(selectItemList);
         return (SR) this;
     }
 
 
     private void addGroupByItem(final @Nullable SortItem sortItem) {
         if (sortItem == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            throw CriteriaContextStack.nullPointer(this.context);
         }
         List<ArmySortItem> itemList = this.groupByList;
         if (itemList == null) {
             itemList = new ArrayList<>();
             this.groupByList = itemList;
         } else if (!(itemList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         itemList.add((ArmySortItem) sortItem);
     }
 
-    private GR endGroupBy(final boolean optional) {
+    private GR endGroupBy(final boolean required) {
         final List<ArmySortItem> itemList = this.groupByList;
         if (itemList == null) {
-            if (!optional) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "group by clause is empty");
+            if (required) {
+                throw CriteriaContextStack.criteriaError(this.context, "group by clause is empty");
             }
             //null,no-op
         } else if (itemList instanceof ArrayList) {
             this.groupByList = _CollectionUtils.unmodifiableList(itemList);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return (GR) this;
     }
 
     private void addHavingPredicate(final @Nullable IPredicate predicate) {
         if (predicate == null) {
-            throw CriteriaContextStack.nullPointer(this.criteriaContext);
+            throw CriteriaContextStack.nullPointer(this.context);
         }
         List<_Predicate> predicateList = this.havingList;
         if (predicateList == null) {
             predicateList = new ArrayList<>();
             this.havingList = predicateList;
         } else if (!(predicateList instanceof ArrayList)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
 
         predicateList.add((OperationPredicate) predicate);
@@ -945,13 +890,13 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
             this.havingList = Collections.emptyList();
         } else if (predicateList == null) {
             if (!optional) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "having clause is empty");
+                throw CriteriaContextStack.criteriaError(this.context, "having clause is empty");
             }
             this.havingList = Collections.emptyList();
         } else if (predicateList instanceof ArrayList) {
             this.havingList = _CollectionUtils.unmodifiableList(predicateList);
         } else {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
 
     }

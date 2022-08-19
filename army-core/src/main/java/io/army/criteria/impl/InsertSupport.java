@@ -81,7 +81,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final CriteriaContext getCriteriaContext() {
+        public final CriteriaContext getContext() {
             return this.criteriaContext;
         }
 
@@ -152,7 +152,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final CriteriaContext getCriteriaContext() {
+        public final CriteriaContext getContext() {
             return this.criteriaContext;
         }
 
@@ -381,7 +381,7 @@ abstract class InsertSupport {
         private Map<FieldMeta<?>, _Expression> commonExpMap;
 
         ColumnDefaultClause(InsertOptions options, TableMeta<T> table) {
-            super(options.getCriteriaContext(), options.isMigration(), table);
+            super(options.getContext(), options.isMigration(), table);
             if (options instanceof ValueSyntaxOptions) {
                 this.nullHandleMode = ((ValueSyntaxOptions) options).nullHandle();
             } else {
@@ -700,7 +700,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final CriteriaContext getCriteriaContext() {
+        public final CriteriaContext getContext() {
             return this.criteriaContext;
         }
 
@@ -1089,7 +1089,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final CriteriaContext getCriteriaContext() {
+        public final CriteriaContext getContext() {
             return this.criteriaContext;
         }
 
@@ -1184,7 +1184,7 @@ abstract class InsertSupport {
         final boolean preferLiteral;
 
         AssignmentInsertClause(InsertOptions options, TableMeta<T> table) {
-            super(options.getCriteriaContext(), table);
+            super(options.getContext(), table);
 
             this.migration = options.isMigration();
             this.preferLiteral = options.isPreferLiteral();
@@ -1281,7 +1281,7 @@ abstract class InsertSupport {
         private Boolean prepared;
 
         InsertStatement(_Insert clause) {
-            this.criteriaContext = ((CriteriaContextSpec) clause).getCriteriaContext();
+            this.criteriaContext = ((CriteriaContextSpec) clause).getContext();
             this.table = clause.table();
         }
 

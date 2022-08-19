@@ -120,7 +120,7 @@ abstract class MySQLUnionValues<C, U extends RowSet.DqlValues> extends UnionRowS
 
     @Override
     final Void asUnionAndRowSet(UnionType unionType) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        throw CriteriaContextStack.castCriteriaApi(this.context);
     }
 
 

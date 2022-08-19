@@ -42,7 +42,7 @@ abstract class CriteriaContexts {
 
     static CriteriaContext primaryQueryContextFrom(final Query query) {
         final AbstractContext leftContext;
-        leftContext = (AbstractContext) ((CriteriaContextSpec) query).getCriteriaContext();
+        leftContext = (AbstractContext) ((CriteriaContextSpec) query).getContext();
 
         final SimpleQueryContext context;
         context = new SimpleQueryContext(null, ((CriteriaSpec<?>) query).getCriteria());
@@ -56,7 +56,7 @@ abstract class CriteriaContexts {
 
     static CriteriaContext subQueryContextFrom(final Query query) {
         final AbstractContext leftContext;
-        leftContext = (AbstractContext) ((CriteriaContextSpec) query).getCriteriaContext();
+        leftContext = (AbstractContext) ((CriteriaContextSpec) query).getContext();
 
         final SimpleQueryContext context;
         context = new SimpleQueryContext(CriteriaContextStack.peek(), ((CriteriaSpec<?>) query).getCriteria());
@@ -67,7 +67,7 @@ abstract class CriteriaContexts {
 
     static CriteriaContext bracketContext(final RowSet left) {
         final AbstractContext leftContext;
-        leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
+        leftContext = (AbstractContext) ((CriteriaContextSpec) left).getContext();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -82,7 +82,7 @@ abstract class CriteriaContexts {
 
     static CriteriaContext noActionContext(final RowSet rowSet) {
         final AbstractContext leftContext;
-        leftContext = (AbstractContext) ((CriteriaContextSpec) rowSet).getCriteriaContext();
+        leftContext = (AbstractContext) ((CriteriaContextSpec) rowSet).getContext();
         final CriteriaContext outerContext;
         if (rowSet instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -97,7 +97,7 @@ abstract class CriteriaContexts {
 
     static CriteriaContext unionContext(final RowSet left, final RowSet right) {
         final AbstractContext leftContext;
-        leftContext = (AbstractContext) ((CriteriaContextSpec) left).getCriteriaContext();
+        leftContext = (AbstractContext) ((CriteriaContextSpec) left).getContext();
         final CriteriaContext outerContext;
         if (left instanceof SubStatement) {
             outerContext = CriteriaContextStack.peek();
@@ -106,7 +106,7 @@ abstract class CriteriaContexts {
         }
         final UnionQueryContext context;
         context = new UnionQueryContext(outerContext, leftContext
-                , ((CriteriaContextSpec) right).getCriteriaContext());
+                , ((CriteriaContextSpec) right).getContext());
         ((AbstractContext) context).varMap = leftContext.varMap;
         return context;
     }
@@ -468,7 +468,7 @@ abstract class CriteriaContexts {
             final RefCte refCte;
             if ((refCte = refCteMap.remove(cteImpl.name)) != null && refCte.actualCte == null) {//refCte.actualCte != null,actualCte from outer context
                 final CriteriaContext context;
-                context = ((CriteriaContextSpec) cteImpl.subStatement).getCriteriaContext();
+                context = ((CriteriaContextSpec) cteImpl.subStatement).getContext();
                 if (this.recursive
                         && context instanceof UnionOperationContext
                         && ((UnionOperationContext) context).isRecursive(cteImpl.name)) {
@@ -717,7 +717,7 @@ abstract class CriteriaContexts {
 
         private void doOnAddDerived(final DerivedTable derivedTable, final String alias) {
             if (derivedTable instanceof SubQuery && !(derivedTable instanceof _LateralSubQuery)) {
-                final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getCriteriaContext();
+                final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
                 if (((SimpleQueryContext) context).refOuterField) {
                     String m = String.format("SubQuery %s isn't lateral,couldn't reference outer field.", alias);
                     throw CriteriaContextStack.criteriaError(this, m);

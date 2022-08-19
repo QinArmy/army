@@ -24,75 +24,75 @@ abstract class WithCteMultiDelete<C, SS extends SubStatement, WE, FT, FS, FP, FJ
 
     @Override
     public final WE with(String cteName, Supplier<? extends SS> supplier) {
-        CriteriaUtils.withClause(false, SQLs.cte(cteName, supplier.get()), this.criteriaContext, this::doWithCte);
+        CriteriaUtils.withClause(false, SQLs.cte(cteName, supplier.get()), this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE with(String cteName, Function<C, ? extends SS> function) {
         CriteriaUtils.withClause(false, SQLs.cte(cteName, function.apply(this.criteria))
-                , this.criteriaContext, this::doWithCte);
+                , this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE with(Consumer<Consumer<Cte>> consumer) {
-        CriteriaUtils.withClause(false, consumer, this.criteriaContext, this::doWithCte);
+        CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE with(BiConsumer<C, Consumer<Cte>> consumer) {
-        CriteriaUtils.withClause(false, consumer, this.criteriaContext, this::doWithCte);
+        CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE ifWith(Consumer<Consumer<Cte>> consumer) {
-        CriteriaUtils.ifWithClause(false, consumer, this.criteriaContext, this::doWithCte);
+        CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE ifWith(BiConsumer<C, Consumer<Cte>> consumer) {
-        CriteriaUtils.ifWithClause(false, consumer, this.criteriaContext, this::doWithCte);
+        CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
-        CriteriaUtils.withClause(true, SQLs.cte(cteName, supplier.get()), this.criteriaContext, this::doWithCte);
+        CriteriaUtils.withClause(true, SQLs.cte(cteName, supplier.get()), this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
         CriteriaUtils.withClause(true, SQLs.cte(cteName, function.apply(this.criteria))
-                , this.criteriaContext, this::doWithCte);
+                , this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE withRecursive(Consumer<Consumer<Cte>> consumer) {
-        CriteriaUtils.withClause(true, consumer, this.criteriaContext, this::doWithCte);
+        CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE withRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
-        CriteriaUtils.withClause(true, consumer, this.criteriaContext, this::doWithCte);
+        CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE ifWithRecursive(Consumer<Consumer<Cte>> consumer) {
-        CriteriaUtils.ifWithClause(true, consumer, this.criteriaContext, this::doWithCte);
+        CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
     public final WE ifWithRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
-        CriteriaUtils.ifWithClause(true, consumer, this.criteriaContext, this::doWithCte);
+        CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 

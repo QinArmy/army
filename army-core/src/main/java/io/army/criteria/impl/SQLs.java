@@ -72,8 +72,6 @@ public abstract class SQLs extends StandardSyntax {
 
     public static final Modifier DISTINCT = new Modifier(" DISTINCT");
 
-    public static final Modifier DISTINCTROW = new Modifier(" DISTINCTROW");
-
 
     public static Insert._StandardDomainOptionSpec<Void> domainInsert() {
         return StandardInserts.domainInsert(null);

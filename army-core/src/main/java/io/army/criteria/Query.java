@@ -65,19 +65,6 @@ public interface Query extends RowSet {
         GR groupBy(Consumer<Consumer<SortItem>> consumer);
 
         GR groupBy(BiConsumer<C, Consumer<SortItem>> consumer);
-
-        GR ifGroupBy(Function<Object, ? extends SortItem> operator, Supplier<?> operand);
-
-        GR ifGroupBy(Function<Object, ? extends Expression> operator, Supplier<?> operand, Function<Expression, SortItem> sortFunction);
-
-        GR ifGroupBy(Function<Object, ? extends SortItem> operator, Function<String, ?> operand, String operandKey);
-
-        GR ifGroupBy(Function<Object, ? extends Expression> operator, Function<String, ?> operand, String operandKey, Function<Expression, SortItem> sortFunction);
-
-        GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Supplier<?> firstOperand, Supplier<?> secondOperator);
-
-        GR ifGroupBy(BiFunction<Object, Object, ? extends SortItem> operator, Function<String, ?> operand, String firstKey, String secondKey);
-
         GR ifGroupBy(Consumer<Consumer<SortItem>> consumer);
 
         GR ifGroupBy(BiConsumer<C, Consumer<SortItem>> consumer);

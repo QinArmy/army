@@ -365,7 +365,8 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _WindowCommaSpec<C, Q extends Query> extends _OrderBySpec<C, Q>
+    interface
+    _WindowCommaSpec<C, Q extends Query> extends _OrderBySpec<C, Q>
             , Window._CommaClause<Window._SimpleAsClause<C, _WindowCommaSpec<C, Q>>> {
 
     }

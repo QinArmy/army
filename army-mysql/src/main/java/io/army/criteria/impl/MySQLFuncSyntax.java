@@ -14,6 +14,7 @@ import io.army.util._StringUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -36,9 +37,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     MySQLFuncSyntax() {
     }
 
-    public interface _OverSpec extends Window._OverClause {
+    public interface _OverSpec extends Window._OverClause<Window._SimpleLeftParenClause<Void, Expression>> {
 
-        Window._SimpleOverLestParenSpec over();
 
     }
 
@@ -53,7 +53,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     }
 
 
-    public interface _AggregateOverSpec extends _OverSpec {
+    public interface _AggregateOverSpec
+            extends Window._AggregateWindowFunc<Window._SimpleLeftParenClause<Void, Expression>> {
 
     }
 
@@ -65,7 +66,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
     public static _AggregateOverSpec avg(@Nullable Object expr) {
-        return MySQLFunctions.aggregateWindowFunc("AVG", expr, DoubleType.INSTANCE);
+        return MySQLFunctions.aggregateWindowFunc("AVG", null, expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -91,7 +92,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec bitAnd(@Nullable Object expr, MappingType mappingType) {
-        return MySQLFunctions.aggregateWindowFunc("BIT_AND", expr, mappingType);
+        return MySQLFunctions.aggregateWindowFunc("BIT_AND", null, expr, mappingType);
     }
 
 
@@ -108,7 +109,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec bitOr(@Nullable Object expr, MappingType mappingType) {
-        return MySQLFunctions.aggregateWindowFunc("BIT_OR", expr, mappingType);
+        return MySQLFunctions.aggregateWindowFunc("BIT_OR", null, expr, mappingType);
     }
 
     /**
@@ -124,65 +125,39 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec bitXor(@Nullable Object expr, MappingType mappingType) {
-        return MySQLFunctions.aggregateWindowFunc("BIT_XOR", expr, mappingType);
+        return MySQLFunctions.aggregateWindowFunc("BIT_XOR", null, expr, mappingType);
     }
 
     /**
-     * @see #count(Object)
-     * @see #countAsInt(Object)
-     * @see #countAsInt()
+     * @see #count(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec count() {
-        return _count(null, SQLs.star(), LongType.INSTANCE);
+        return _count(null, SQLs.star());
     }
 
     /**
-     * @see #count(Object)
-     * @see #countAsInt(Object)
      * @see #count()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec countAsInt() {
-        return _count(null, SQLs.star(), IntegerType.INSTANCE);
+    public static _AggregateOverSpec count(@Nullable Expression expr) {
+        return _count(null, expr);
     }
 
     /**
-     * @see #countAsInt(Object)
-     * @see #count()
-     * @see #countAsInt()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec count(@Nullable Object expr) {
-        return _count(null, expr, LongType.INSTANCE);
-    }
-
-    /**
-     * @see #count(Object)
-     * @see #count()
-     * @see #countAsInt()
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
-     */
-    public static _AggregateOverSpec countAsInt(@Nullable Object expr) {
-        return _count(null, expr, IntegerType.INSTANCE);
-    }
-
-    /**
-     * @see #countAsInt(SQLs.Modifier, Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
-     */
-    public static _AggregateOverSpec count(SQLs.Modifier distinct, @Nullable Object expressions) {
+    public static _AggregateOverSpec count(SQLs.Modifier distinct, @Nullable Expression expr) {
         Objects.requireNonNull(distinct);
-        return _count(distinct, expressions, LongType.INSTANCE);
+        return _count(distinct, expr);
     }
 
     /**
-     * @see #count(SQLs.Modifier, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec countAsInt(SQLs.Modifier distinct, @Nullable Object expressions) {
+    public static _AggregateOverSpec count(SQLs.Modifier distinct, List<Expression> list) {
         Objects.requireNonNull(distinct);
-        return _count(distinct, expressions, IntegerType.INSTANCE);
+        return _count(distinct, list);
     }
 
 
@@ -759,15 +734,14 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     /*-------------------below private method -------------------*/
 
     /**
-     * @see #count(Object)
      * @see #count()
-     * @see #countAsInt()
-     * @see #count(SQLs.Modifier, Object)
-     * @see #countAsInt(SQLs.Modifier, Object)
+     * @see #count(Expression)
+     * @see #count(SQLs.Modifier, Expression)
+     * @see #count(SQLs.Modifier, Consumer)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    private static _AggregateOverSpec _count(@Nullable SQLs.Modifier distinct, @Nullable Object expressions
-            , MappingType returnType) {
+    private static _AggregateOverSpec _count(final @Nullable SQLs.Modifier distinct
+            , final @Nullable Object expressions) {
 
         final String funcName = "COUNT";
 
@@ -780,12 +754,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
                 String m = String.format("function %s option[%s] but expr is null.", funcName, distinct);
                 throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
             }
-            func = MySQLFunctions.aggregateWindowFunc(funcName, distinct, expressions, returnType);
+            func = MySQLFunctions.aggregateWindowFunc(funcName, distinct, expressions, LongType.INSTANCE);
         } else if (distinct == null) {
             throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
         } else {
             func = MySQLFunctions.multiArgAggregateWindowFunc(funcName, distinct, (List<?>) expressions
-                    , null, returnType);
+                    , null, LongType.INSTANCE);
         }
         return func;
     }

@@ -39,9 +39,9 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         super(criteriaContext, JoinableClause.voidClauseCreator());
 
         if (this instanceof SubValues) {
-            CriteriaContextStack.push(this.criteriaContext);
+            CriteriaContextStack.push(this.context);
         } else {
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
     }
@@ -50,7 +50,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
     @Override
     public final VR values(Consumer<RowConstructor> consumer) {
         final CriteriaSupports.RowConstructorImpl constructor;
-        constructor = new CriteriaSupports.RowConstructorImpl(this.criteriaContext);
+        constructor = new CriteriaSupports.RowConstructorImpl(this.context);
         consumer.accept(constructor);
         return this.dynamicValuesEnd(constructor.endConstructor());
     }
@@ -58,7 +58,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
     @Override
     public final VR values(BiConsumer<C, RowConstructor> consumer) {
         final CriteriaSupports.RowConstructorImpl constructor;
-        constructor = new CriteriaSupports.RowConstructorImpl(this.criteriaContext);
+        constructor = new CriteriaSupports.RowConstructorImpl(this.context);
         consumer.accept(this.criteria, constructor);
         return this.dynamicValuesEnd(constructor.endConstructor());
     }
@@ -66,7 +66,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
 
     @Override
     public final _RightParenClause<RR> leftParen(Object value) {
-        this.createNewRow().add(CriteriaUtils.constantLiteral(this.criteriaContext, value));
+        this.createNewRow().add(CriteriaUtils.constantLiteral(this.context, value));
         return this;
     }
 
@@ -75,8 +75,8 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         final List<_Expression> columnList;
         columnList = this.createNewRow();
 
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value2));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value1));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value2));
         return this;
     }
 
@@ -85,17 +85,17 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         final List<_Expression> columnList;
         columnList = this.createNewRow();
 
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value2));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value3));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value4));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value1));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value2));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value3));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value4));
         return this;
     }
 
 
     @Override
     public final _RightParenClause<RR> comma(Object value) {
-        this.getCurrentRow().add(CriteriaUtils.constantLiteral(this.criteriaContext, value));
+        this.getCurrentRow().add(CriteriaUtils.constantLiteral(this.context, value));
         return this;
     }
 
@@ -104,8 +104,8 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         final List<_Expression> columnList;
         columnList = this.getCurrentRow();
 
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value2));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value1));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value2));
         return this;
     }
 
@@ -115,9 +115,9 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         final List<_Expression> columnList;
         columnList = this.getCurrentRow();
 
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value2));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value3));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value1));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value2));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value3));
         return this;
     }
 
@@ -126,10 +126,10 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
         final List<_Expression> columnList;
         columnList = this.getCurrentRow();
 
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value1));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value2));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value3));
-        columnList.add(CriteriaUtils.constantLiteral(this.criteriaContext, value4));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value1));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value2));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value3));
+        columnList.add(CriteriaUtils.constantLiteral(this.context, value4));
         return this;
     }
 
@@ -137,7 +137,7 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
     @Override
     public final void appendSql(final _SqlContext context) {
         if (!(this instanceof SubValues)) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         context.parser().rowSet(this, context);
     }
@@ -152,12 +152,12 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
     @Override
     final V internalAsRowSet(final boolean fromAsQueryMethod) {
         if (!fromAsQueryMethod) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);//VALUES statement don't support
+            throw CriteriaContextStack.castCriteriaApi(this.context);//VALUES statement don't support
         }
         if (this instanceof SubValues) {
-            CriteriaContextStack.pop(this.criteriaContext);
+            CriteriaContextStack.pop(this.context);
         } else {
-            CriteriaContextStack.clearContextStack(this.criteriaContext);
+            CriteriaContextStack.clearContextStack(this.context);
         }
         return this.onAsValues();
     }
@@ -175,12 +175,12 @@ abstract class SimpleValues<C, V extends RowSet.DqlValues, RR, VR, UR, OR, LR> e
 
     @Override
     final Void asUnionAndRowSet(UnionType unionType) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        throw CriteriaContextStack.castCriteriaApi(this.context);
     }
 
     @Override
     final void crossJoinEvent(boolean success) {
-        throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        throw CriteriaContextStack.castCriteriaApi(this.context);
     }
 
 

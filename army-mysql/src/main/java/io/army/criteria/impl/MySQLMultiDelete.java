@@ -68,16 +68,16 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
     @Override
     public final _MultiDeleteFromClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList) {
-        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         this.tableAliasList = _CollectionUtils.asUnmodifiableList(tableAliasList);
         return this;
     }
 
     @Override
     public final _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
-        this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
-        this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::deleteModifier);
+        this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
+        this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return new FromTableAliasClause<>(this::fromAliasEnd);
     }
 
@@ -107,47 +107,47 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
     @Override
     public final DT from(TableMeta<?> table, String tableAlias) {
-        this.criteriaContext.onAddBlock(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
+        this.context.onAddBlock(this.createNoOnTableBlock(_JoinType.NONE, null, table, tableAlias));
         return (DT) this;
     }
 
     @Override
     public final <T extends TableItem> DS from(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
+        this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
         return (DS) this;
     }
 
     @Override
     public final <T extends TableItem> DS from(Function<C, T> function, String alias) {
-        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria)
+        this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria)
                 , alias));
         return (DS) this;
     }
 
     @Override
     public final DS from(String cteName) {
-        final CriteriaContext context = this.criteriaContext;
+        final CriteriaContext context = this.context;
         context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, context.refCte(cteName), ""));
         return (DS) this;
     }
 
     @Override
     public final DS from(String cteName, String alias) {
-        final CriteriaContext context = this.criteriaContext;
+        final CriteriaContext context = this.context;
         context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, context.refCte(cteName), alias));
         return (DS) this;
     }
 
     @Override
     public final <T extends SubQuery> DS fromLateral(Supplier<T> supplier, String alias) {
-        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, supplier.get()
+        this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, supplier.get()
                 , alias));
         return (DS) this;
     }
 
     @Override
     public final <T extends SubQuery> DS fromLateral(Function<C, T> function, String alias) {
-        this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL
+        this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL
                 , function.apply(this.criteria), alias));
         return (DS) this;
     }
@@ -224,7 +224,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     @Override
     public final _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias) {
         if (itemWord != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         final MySQLSupports.MySQLNoOnBlock<C, DT> block;
         block = new MySQLSupports.MySQLNoOnBlock<>(joinType, null, table, alias, (DT) this);
@@ -234,7 +234,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
     @Override
     public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
-        MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
+        MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
         return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
     }
 
@@ -274,7 +274,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     public final List<_Pair<String, TableMeta<?>>> deleteTableList() {
         final List<_Pair<String, TableMeta<?>>> pairList = this.deleteTablePairList;
         if (pairList == null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return pairList;
     }
@@ -295,13 +295,13 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     final void validateBeforeClearContext() {
         final List<String> tableAliasList = this.tableAliasList;
         if (tableAliasList == null || tableAliasList.size() == 0) {
-            throw CriteriaContextStack.criteriaError(this.criteriaContext, "table alias list must non-empty.");
+            throw CriteriaContextStack.criteriaError(this.context, "table alias list must non-empty.");
         }
         List<_Pair<String, TableMeta<?>>> pairList;
         TableMeta<?> table;
         if (tableAliasList.size() == 1) {
             final String tableAlias = tableAliasList.get(0);
-            table = this.criteriaContext.getTable(tableAlias);
+            table = this.context.getTable(tableAlias);
             if (table == null) {
                 throw _Exceptions.unknownTableAlias(tableAlias);
             }
@@ -309,7 +309,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         } else {
             pairList = new ArrayList<>(tableAliasList.size());
             for (String tableAlias : tableAliasList) {
-                table = this.criteriaContext.getTable(tableAlias);
+                table = this.context.getTable(tableAlias);
                 if (table == null) {
                     throw _Exceptions.unknownTableAlias(tableAlias);
                 }
@@ -363,7 +363,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
     final void updateNoOnBlock(final MySQLSupports.MySQLNoOnBlock<C, DT> block) {
         if (this.noOnBlock != null) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         this.noOnBlock = block;
     }
@@ -375,8 +375,8 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
     private MySQLQuery._IndexHintForJoinClause<C, DT> getIndexHintClause() {
         final MySQLSupports.MySQLNoOnBlock<C, DT> block = this.noOnBlock;
-        if (block == null || this.criteriaContext.lastTableBlockWithoutOnClause() != block) {
-            throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+        if (block == null || this.context.lastTableBlockWithoutOnClause() != block) {
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return block.getUseIndexClause();
     }
@@ -407,7 +407,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         @Override
         public _MultiPartitionJoinClause<C> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new SimplePartitionJoinClause<>(joinType, table, this);
         }
@@ -415,7 +415,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         @Override
         public _MultiPartitionOnClause<C> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new SimplePartitionOnClause<>(joinType, table, this);
         }
@@ -423,14 +423,14 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         @Override
         public _MultiIndexHintOnSpec<C> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new SimpleOnTableBlock<>(joinType, table, tableAlias, this);
         }
 
         @Override
         public _OnClause<C, _MultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
-            MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
+            MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
         }
 
@@ -489,7 +489,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         @Override
         public _BatchMultiPartitionJoinClause<C> createNoOnTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new BatchPartitionJoinClause<>(joinType, table, this);
         }
@@ -497,7 +497,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         @Override
         public _BatchMultiPartitionOnClause<C> createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new BatchPartitionOnClause<>(joinType, table, this);
         }
@@ -505,14 +505,14 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         @Override
         public _BatchMultiIndexHintOnSpec<C> createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias) {
             if (itemWord != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new BatchOnTableBlock<>(joinType, table, tableAlias, this);
         }
 
         @Override
         public _OnClause<C, _BatchMultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
-            MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
+            MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
         }
 
@@ -527,7 +527,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         private final SimpleDelete<C> stmt;
 
         private SimplePartitionJoinClause(_JoinType joinType, TableMeta<?> table, SimpleDelete<C> stmt) {
-            super(stmt.criteriaContext, joinType, table);
+            super(stmt.context, joinType, table);
             this.stmt = stmt;
         }
 
@@ -538,7 +538,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
             final MySQLSupports.MySQLNoOnBlock<C, MySQLDelete._MultiIndexHintJoinSpec<C>> block;
             block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
             stmt.updateNoOnBlock(block);
-            stmt.criteriaContext.onAddBlock(block);
+            stmt.context.onAddBlock(block);
             return stmt;
         }
 
@@ -552,7 +552,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         private final SimpleDelete<C> stmt;
 
         private SimplePartitionOnClause(_JoinType joinType, TableMeta<?> table, SimpleDelete<C> stmt) {
-            super(stmt.criteriaContext, joinType, table);
+            super(stmt.context, joinType, table);
             this.stmt = stmt;
         }
 
@@ -561,7 +561,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
             final SimpleDelete<C> stmt = this.stmt;
             final SimpleOnTableBlock<C> block;
             block = new SimpleOnTableBlock<>(params, stmt);
-            stmt.criteriaContext.onAddBlock(block);
+            stmt.context.onAddBlock(block);
             return block;
         }
 
@@ -590,7 +590,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         private final BatchDelete<C> stmt;
 
         private BatchPartitionJoinClause(_JoinType joinType, TableMeta<?> table, BatchDelete<C> stmt) {
-            super(stmt.criteriaContext, joinType, table);
+            super(stmt.context, joinType, table);
             this.stmt = stmt;
         }
 
@@ -600,7 +600,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
             final MySQLSupports.MySQLNoOnBlock<C, MySQLDelete._BatchMultiIndexHintJoinSpec<C>> block;
             block = new MySQLSupports.MySQLNoOnBlock<>(params, stmt);
             stmt.updateNoOnBlock(block);
-            stmt.criteriaContext.onAddBlock(block);
+            stmt.context.onAddBlock(block);
             return stmt;
         }
 
@@ -614,7 +614,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         private final BatchDelete<C> stmt;
 
         private BatchPartitionOnClause(_JoinType joinType, TableMeta<?> table, BatchDelete<C> stmt) {
-            super(stmt.criteriaContext, joinType, table);
+            super(stmt.context, joinType, table);
             this.stmt = stmt;
         }
 
@@ -623,7 +623,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
             final BatchDelete<C> stmt = this.stmt;
             final BatchOnTableBlock<C> block;
             block = new BatchOnTableBlock<>(params, stmt);
-            stmt.criteriaContext.onAddBlock(block);
+            stmt.context.onAddBlock(block);
             return block;
         }
 

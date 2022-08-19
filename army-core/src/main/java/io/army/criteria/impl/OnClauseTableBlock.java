@@ -117,7 +117,7 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
     }
 
     final CriteriaContext getCriteriaContext() {
-        return ((CriteriaContextSpec) this.stmt).getCriteriaContext();
+        return ((CriteriaContextSpec) this.stmt).getContext();
     }
 
 
