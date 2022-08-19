@@ -31,6 +31,10 @@ public abstract class _NumericType extends _ArmyNoInjectionMapping {
 
   }
 
+  public interface _DecimalNumeric {
+
+  }
+
   /**
    * <p>This class is base class class of below:
    *     <ul>

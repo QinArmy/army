@@ -11,6 +11,7 @@ import io.army.meta.ParamMeta;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -34,6 +35,18 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
             expression = (ArmyExpression) value;
         } else {
             expression = (ArmyExpression) SQLs.param(value);
+        }
+        return expression;
+    }
+
+    static ArmyExpression funcLiteral(final @Nullable Object value) {
+        final ArmyExpression expression;
+        if (value == null) {
+            expression = (ArmyExpression) SQLs.nullWord();
+        } else if (value instanceof Expression) {
+            expression = (ArmyExpression) value;
+        } else {
+            expression = (ArmyExpression) SQLs.literal(value);
         }
         return expression;
     }
@@ -62,6 +75,10 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return new OneArgOptionFunc(name, option, SQLFunctions.funcParam(expr), clause, returnType);
     }
 
+    static Expression noArgFunc(String name, ParamMeta returnType) {
+        return new NoArgFunc(name, returnType);
+    }
+
 
     static Expression safeMultiArgOptionFunc(String name, @Nullable SQLWords option
             , List<ArmyExpression> argList, @Nullable Clause clause, ParamMeta returnType) {
@@ -71,6 +88,11 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     static Expression multiArgOptionFunc(String name, @Nullable SQLWords option
             , List<?> argList, @Nullable Clause clause, ParamMeta returnType) {
         return new MultiArgOptionFunc(name, option, funcParamList(argList), clause, returnType);
+    }
+
+    static Functions._FuncConditionTowClause conditionTwoFunc(final String name
+            , BiFunction<MappingType, MappingType, MappingType> function) {
+        return new ConditionTwoFunc(name, function);
     }
 
 
@@ -131,7 +153,6 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     interface NoArgFunction {
 
     }
-
 
 
     enum NullTreatment implements SQLWords {
@@ -396,6 +417,26 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         abstract void argumentsToString(StringBuilder builder);
 
     }//FunctionExpression
+
+
+    private static final class NoArgFunc extends FunctionExpression implements NoArgFunction {
+
+        private NoArgFunc(String name, ParamMeta returnType) {
+            super(name, returnType);
+        }
+
+        @Override
+        void appendArguments(_SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argumentsToString(StringBuilder builder) {
+            //no-op
+        }
+
+
+    }//NoArgFunc
 
     private static final class OneArgFunc extends FunctionExpression {
 
@@ -870,7 +911,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }//CaseFunc
 
 
-    private static final class GlobalWindow implements _Window, Window {
+    private static final class GlobalWindow implements _Window {
 
         private static final GlobalWindow INSTANCE = new GlobalWindow();
 
@@ -893,6 +934,275 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
     }//GlobalWindow
+
+
+    private static abstract class ConditionFunc<LR> extends OperationExpression
+            implements Functions._FuncConditionClause<LR>
+            , FunctionSpec
+            , Functions._FuncLastArgClause
+            , Statement._RightParenClause<Expression>
+            , MutableParamMetaSpec {
+
+        final CriteriaContext context;
+        private final String name;
+
+        private final Function<List<ArmyExpression>, ParamMeta> function;
+        private ParamMeta returnType;
+
+        private List<ArmyExpression> argList;
+
+        private ConditionFunc(String name, @Nullable ParamMeta returnType) {
+            this.context = CriteriaContextStack.peek();
+            this.name = name;
+            this.returnType = returnType;
+            this.function = this::inferReturnType;
+        }
+
+        private ConditionFunc(String name, Function<List<ArmyExpression>, ParamMeta> function) {
+            this.context = CriteriaContextStack.peek();
+            this.name = name;
+            this.returnType = null;
+            this.function = function;
+        }
+
+        @Override
+        public final ParamMeta paramMeta() {
+            ParamMeta returnType = this.returnType;
+            if (returnType == null) {
+                final List<ArmyExpression> argList = this.argList;
+                if (argList == null || argList instanceof ArrayList) {
+                    throw CriteriaContextStack.castCriteriaApi(this.context);
+                }
+                this.returnType = returnType = this.function.apply(argList);
+            }
+            return returnType;
+        }
+
+        @Override
+        public final void updateParamMeta(final ParamMeta paramMeta) {
+            this.returnType = paramMeta;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            final List<ArmyExpression> argList = this.argList;
+            if (!(argList instanceof ArrayList) || argList.size() < 2) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+
+            SQLFunctions.appendArguments(null, argList, null, context);
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
+        @Override
+        public final LR leftParen(final @Nullable IPredicate condition) {
+            if (condition == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            }
+            if (this.argList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            final List<ArmyExpression> argList = new ArrayList<>();
+            argList.add((OperationPredicate) condition);
+            this.argList = argList;
+            return this.leftParenEnd();
+        }
+
+        @Override
+        public final LR leftParen(Supplier<? extends IPredicate> supplier) {
+            return this.leftParen(supplier.get());
+        }
+
+        @Override
+        public final LR leftParen(Function<Object, ? extends IPredicate> operator, Supplier<?> supplier) {
+            return this.leftParen(operator.apply(supplier.get()));
+        }
+
+        @Override
+        public final LR leftParen(Function<Object, ? extends IPredicate> operator, Function<String, ?> function
+                , String keyName) {
+            return this.leftParen(operator.apply(function.apply(keyName)));
+        }
+
+        @Override
+        public final LR leftParen(BiFunction<Object, Object, ? extends IPredicate> operator, Supplier<?> firstOperand
+                , Supplier<?> secondOperand) {
+            return this.leftParen(operator.apply(firstOperand.get(), secondOperand.get()));
+        }
+
+        @Override
+        public final LR leftParen(BiFunction<Object, Object, ? extends IPredicate> operator, Function<String, ?> function
+                , String firstKey, String secondKey) {
+            return this.leftParen(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+        }
+
+        @Override
+        public final Statement._RightParenClause<Expression> comma(final @Nullable Expression expression) {
+            if (expression == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            }
+            final List<ArmyExpression> argList = this.argList;
+            if (!(argList instanceof ArrayList) || argList.size() == 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            argList.add((ArmyExpression) expression);
+            return this;
+        }
+
+        @Override
+        public final Statement._RightParenClause<Expression> comma(Supplier<? extends Expression> supplier) {
+            return this.comma(supplier.get());
+        }
+
+        @Override
+        public final Statement._RightParenClause<Expression> comma(Function<Object, ? extends Expression> operator
+                , Supplier<?> supplier) {
+            return this.comma(operator.apply(supplier.get()));
+        }
+
+        @Override
+        public final Statement._RightParenClause<Expression> comma(Function<Object, ? extends Expression> operator
+                , Function<String, ?> function, String keyName) {
+            return this.comma(operator.apply(function.apply(keyName)));
+        }
+
+        @Override
+        public final Statement._RightParenClause<Expression> comma(BiFunction<Object, Object, ? extends Expression> operator
+                , Supplier<?> firstOperand, Supplier<?> secondOperand) {
+            return this.comma(operator.apply(firstOperand.get(), secondOperand.get()));
+        }
+
+        @Override
+        public final Statement._RightParenClause<Expression> comma(BiFunction<Object, Object, ? extends Expression> operator
+                , Function<String, ?> function, String firstKey, String secondKey) {
+            return this.comma(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+        }
+
+        @Override
+        public final Expression rightParen() {
+            final List<ArmyExpression> argList = this.argList;
+            if (!(argList instanceof ArrayList) || argList.size() < 2) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.argList = Collections.unmodifiableList(argList);
+            return this;
+        }
+
+        abstract LR leftParenEnd();
+
+        final Functions._FuncLastArgClause argBeforeLastEnd(final ArmyExpression arg) {
+            final List<ArmyExpression> argList = this.argList;
+            if (!(argList instanceof ArrayList) || argList.size() == 0) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            argList.add(arg);
+            return this;
+        }
+
+
+        /**
+         * @param argList a unmodified list
+         */
+        ParamMeta inferReturnType(List<ArmyExpression> argList) {
+            throw new UnsupportedOperationException();
+        }
+
+
+    }//ConditionFunc
+
+
+    private static class FuncCommaClause<CR> implements Functions._FuncCommaClause<CR> {
+
+        final CriteriaContext context;
+
+        private Function<ArmyExpression, CR> function;
+
+        private FuncCommaClause(CriteriaContext context, Function<ArmyExpression, CR> function) {
+            this.context = context;
+            this.function = function;
+        }
+
+        @Override
+        public final CR comma(final @Nullable Expression expression) {
+            if (expression == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            }
+            return this.function.apply((ArmyExpression) expression);
+        }
+
+        @Override
+        public final CR comma(Supplier<? extends Expression> supplier) {
+            return this.comma(supplier.get());
+        }
+
+        @Override
+        public final CR comma(Function<Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return this.comma(operator.apply(supplier.get()));
+        }
+
+        @Override
+        public final CR comma(Function<Object, ? extends Expression> operator, Function<String, ?> function
+                , String keyName) {
+            return this.comma(operator.apply(function.apply(keyName)));
+        }
+
+        @Override
+        public final CR comma(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand
+                , Supplier<?> secondOperand) {
+            return this.comma(operator.apply(firstOperand.get(), secondOperand.get()));
+        }
+
+        @Override
+        public final CR comma(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function
+                , String firstKey, String secondKey) {
+            return this.comma(operator.apply(function.apply(firstKey), function.apply(secondKey)));
+        }
+
+
+    }//FuncCommaClause
+
+
+    private static final class FuncSecondArgcClause extends FuncCommaClause<Functions._FuncLastArgClause>
+            implements Functions._FuncSecondArgClause {
+
+        private FuncSecondArgcClause(CriteriaContext context
+                , Function<ArmyExpression, Functions._FuncLastArgClause> function) {
+            super(context, function);
+        }
+
+    }//FuncSecondArgcClause
+
+    private static final class ConditionTwoFunc extends ConditionFunc<Functions._FuncSecondArgClause>
+            implements Functions._FuncConditionTowClause {
+
+        private final BiFunction<MappingType, MappingType, MappingType> function;
+
+        private ConditionTwoFunc(String name, BiFunction<MappingType, MappingType, MappingType> function) {
+            super(name, (ParamMeta) null);
+            this.function = function;
+        }
+
+        @Override
+        ParamMeta inferReturnType(final List<ArmyExpression> argList) {
+            if (argList.size() != 3) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return Functions._returnType(argList.get(1), argList.get(2), this.function);
+        }
+
+        @Override
+        Functions._FuncSecondArgClause leftParenEnd() {
+            return new FuncSecondArgcClause(this.context, this::argBeforeLastEnd);
+        }
+
+    }//ThreeConditionFunc
 
 
 }

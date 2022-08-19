@@ -14,7 +14,6 @@ import io.army.util._StringUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -57,6 +56,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             extends Window._AggregateWindowFunc<Window._SimpleLeftParenClause<Void, Expression>> {
 
     }
+
+    /*-------------------below Date and Time Functions-------------------*/
+
 
 
 
@@ -708,10 +710,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * </p>
      *
      * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
+     * @see #ifFunc()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
      */
-    public static Expression ifFunc(final IPredicate expr1, final @Nullable Expression expr2
-            , final @Nullable Expression expr3) {
+    public static Expression ifFunc(final IPredicate expr1, final @Nullable Object expr2
+            , final @Nullable Object expr3) {
         Objects.requireNonNull(expr1);
         final ArmyExpression expression2, expression3;
         expression2 = SQLFunctions.funcParam(expr2);
@@ -731,13 +734,80 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         return SQLFunctions.safeMultiArgOptionFunc("IF", null, argList, null, returnType);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     *      <ul>
+     *          <li>If the {@link MappingType} of expr2 and the {@link MappingType} of expr3 same,then return type is the {@link MappingType} of expr2</li>
+     *          <li>If expr2 or expr3 produce a string, the result is {@link StringType}</li>
+     *          <li>If expr2 and expr3 are both not numeric, the result is {@link StringType}</li>
+     *          <li>If expr2 or expr3 produce a floating-point value,the result is {@link DoubleType}</li>
+     *          <li>If expr2 or expr3 produce unsigned numeric:
+     *              <ul>
+     *                  <li>If expr2 or expr3 {@link MappingType} is {@link  UnsignedBigDecimalType},the result is {@link UnsignedBigDecimalType}</li>
+     *                  <li>If expr2 or expr3 {@link MappingType} is {@link  UnsignedBigIntegerType},the result is {@link UnsignedBigIntegerType}</li>
+     *                  <li>If expr2 or expr3 {@link MappingType} is {@link UnsignedLongType},the result is {@link UnsignedLongType}</li>
+     *                  <li>Otherwise the result is {@link IntegerType}</li>
+     *              </ul>
+     *          </li>
+     *          <li>If expr2 or expr3 {@link MappingType} is {@link  BigDecimalType},the result is {@link BigDecimalType}</li>
+     *          <li>If expr2 or expr3 {@link MappingType} is {@link  BigIntegerType},the result is {@link BigIntegerType}</li>
+     *          <li>If expr2 or expr3 {@link MappingType} is {@link LongType},the result is {@link LongType}</li>
+     *          <li>Otherwise the result is {@link IntegerType}</li>
+     *      </ul>
+     * </p>
+     *
+     * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
+     * @see #ifFunc(IPredicate, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
+     */
+    public static _FuncConditionTowClause ifFunc() {
+        return SQLFunctions.conditionTwoFunc("IF", MySQLFuncSyntax::ifFuncReturnType);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * </p>
+     *
+     * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
+     * @see #ifFunc(IPredicate, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
+     */
+    public static Expression ifNull(@Nullable Object expr1, @Nullable Object expr2) {
+        final ArmyExpression expression1, expression2;
+        expression1 = SQLFunctions.funcParam(expr1);
+        expression2 = SQLFunctions.funcParam(expr2);
+        final ParamMeta returnType;
+        returnType = Functions._returnType(expression1, expression2, MySQLFuncSyntax::ifNullReturnType);
+        return SQLFunctions.safeMultiArgOptionFunc("IFNULL", null, Arrays.asList(expression1, expression2), null
+                , returnType);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link  MappingType} of expr1
+     * </p>
+     *
+     * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
+     * @see #ifFunc(IPredicate, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
+     */
+    public static Expression nullIf(@Nullable Object expr1, @Nullable Object expr2) {
+        final ArmyExpression expression1, expression2;
+        expression1 = SQLFunctions.funcParam(expr1);
+        expression2 = SQLFunctions.funcParam(expr2);
+        return SQLFunctions.safeMultiArgOptionFunc("NULLIF", null, Arrays.asList(expression1, expression2), null
+                , expression1.paramMeta());
+    }
+
+
     /*-------------------below private method -------------------*/
 
     /**
      * @see #count()
      * @see #count(Expression)
      * @see #count(SQLs.Modifier, Expression)
-     * @see #count(SQLs.Modifier, Consumer)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     private static _AggregateOverSpec _count(final @Nullable SQLs.Modifier distinct
@@ -1047,7 +1117,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     }
 
     /**
-     * @see #ifFunc(IPredicate, Expression, Expression)
+     * @see #ifFunc(IPredicate, Object, Object)
+     * @see #ifFunc()
      */
     private static MappingType ifFuncReturnType(final MappingType expr2Type, final MappingType expr3Type) {
         final MappingType returnType;
@@ -1076,6 +1147,45 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         } else if (expr2Type instanceof BigIntegerType || expr3Type instanceof BigIntegerType) {
             returnType = BigIntegerType.INSTANCE;
         } else if (expr2Type instanceof LongType || expr3Type instanceof LongType) {
+            returnType = LongType.INSTANCE;
+        } else {
+            returnType = IntegerType.INSTANCE;
+        }
+        return returnType;
+    }
+
+
+    /**
+     * @see #ifNull(Object, Object)
+     */
+    private static MappingType ifNullReturnType(final MappingType expr1Type, final MappingType expr2Type) {
+        final MappingType returnType;
+        if (expr1Type.getClass() == expr2Type.getClass()) {
+            returnType = expr1Type;
+        } else if (!(expr1Type instanceof _NumericType && expr2Type instanceof _NumericType)) {
+            returnType = StringType.INSTANCE;
+        } else if (expr1Type instanceof _NumericType._DecimalNumeric && expr2Type instanceof _NumericType._DecimalNumeric) {
+            if (expr1Type instanceof _NumericType._UnsignedNumeric
+                    && expr2Type instanceof _NumericType._UnsignedNumeric) {
+                returnType = UnsignedBigDecimalType.INSTANCE;
+            } else {
+                returnType = BigDecimalType.INSTANCE;
+            }
+        } else if (!(expr1Type instanceof _NumericType._IntegerNumeric
+                || expr2Type instanceof _NumericType._IntegerNumeric)) {
+            returnType = DoubleType.INSTANCE;
+        } else if (expr1Type instanceof _NumericType._UnsignedNumeric
+                && expr2Type instanceof _NumericType._UnsignedNumeric) {
+            if (expr1Type instanceof UnsignedBigIntegerType || expr2Type instanceof UnsignedBigIntegerType) {
+                returnType = UnsignedBigIntegerType.INSTANCE;
+            } else if (expr1Type instanceof UnsignedLongType || expr2Type instanceof UnsignedLongType) {
+                returnType = UnsignedLongType.INSTANCE;
+            } else {
+                returnType = UnsignedIntegerType.INSTANCE;
+            }
+        } else if (expr1Type instanceof BigIntegerType || expr2Type instanceof BigIntegerType) {
+            returnType = BigIntegerType.INSTANCE;
+        } else if (expr1Type instanceof LongType || expr2Type instanceof LongType) {
             returnType = LongType.INSTANCE;
         } else {
             returnType = IntegerType.INSTANCE;

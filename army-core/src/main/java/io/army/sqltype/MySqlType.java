@@ -4,6 +4,7 @@ import io.army.dialect.Database;
 
 public enum MySqlType implements SqlType {
 
+    NULL,
     BOOLEAN,
 
     TINYINT,

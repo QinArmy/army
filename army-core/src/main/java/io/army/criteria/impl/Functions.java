@@ -1,11 +1,12 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.Expression;
-import io.army.criteria.TypeInfer;
-import io.army.mapping.MappingType;
+import io.army.criteria.*;
+import io.army.lang.Nullable;
+import io.army.mapping.*;
 import io.army.meta.ParamMeta;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -137,147 +138,449 @@ abstract class Functions {
     }
 
 
+    public interface _FuncCommaClause<CR> {
+
+        CR comma(Expression expression);
+
+        CR comma(Supplier<? extends Expression> supplier);
+
+        CR comma(Function<Object, ? extends Expression> operator, Supplier<?> supplier);
+
+        CR comma(Function<Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
+
+        CR comma(BiFunction<Object, Object, ? extends Expression> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        CR comma(BiFunction<Object, Object, ? extends Expression> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+    }
+
+    public interface _FuncLastArgClause extends Functions._FuncCommaClause<Statement._RightParenClause<Expression>> {
+
+    }
+
+    public interface _FuncSecondArgClause extends Functions._FuncCommaClause<_FuncLastArgClause> {
+
+    }
+
+    public interface _FuncConditionClause<LR> {
+
+        LR leftParen(IPredicate condition);
+
+        LR leftParen(Supplier<? extends IPredicate> supplier);
+
+        LR leftParen(Function<Object, ? extends IPredicate> operator, Supplier<?> supplier);
+
+        LR leftParen(Function<Object, ? extends IPredicate> operator, Function<String, ?> function, String keyName);
+
+        LR leftParen(BiFunction<Object, Object, ? extends IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
+
+        LR leftParen(BiFunction<Object, Object, ? extends IPredicate> operator, Function<String, ?> function, String firstKey, String secondKey);
+
+    }
+
+    public interface _FuncConditionTowClause extends _FuncConditionClause<_FuncSecondArgClause> {
+
+    }
+
 
 
 
     /*################################## blow number function method ##################################*/
 
     /**
-     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/mathematical-functions.html#function_abs">
-     * MySQL ABS function</a>
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_abs">ABS(X)</a>
      */
-    public static Expression abs(Object expr) {
+    public static Expression abs(final @Nullable Object expr) {
         final ArmyExpression expression;
         expression = SQLFunctions.funcParam(expr);
         return SQLFunctions.oneArgOptionFunc("ABS", null, expression, null, expression.paramMeta());
     }
 
-    public static Expression acos(Expression x) {
-        throw new UnsupportedOperationException();
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_acos">ACOS(X)</a>
+     */
+    public static Expression acos(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("ACOS", null, SQLFunctions.funcParam(expr), null, DoubleType.INSTANCE);
     }
 
 
-    public static Expression asin(Expression x) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression atan(Expression x) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression atan(Expression one, Expression two) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression cell(Expression x) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression cellAsLong(Expression x) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression conv(Expression number, int fromBase, int toBase) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression cos(Expression x) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression cot(Expression x) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression crc32(Expression expression) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression degrees(Expression radian) {
-        throw new UnsupportedOperationException();
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_asin">ASIN(X)</a>
+     */
+    public static Expression asin(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("ASIN", null, SQLFunctions.funcParam(expr), null, DoubleType.INSTANCE);
     }
 
     /**
-     * @see #ln(Expression)
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan">ATAN(X)</a>
      */
-    public static Expression exp(Expression index) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression floor(Expression number) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression floorAsLong(Expression number) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression format(Expression number, Expression decimal) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression format(Expression number, int decimal) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression hex(Expression number) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression hex(Number number) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression hex(String numberText) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Expression hexForText(Expression numberText) {
-        throw new UnsupportedOperationException();
+    public static Expression atan(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("ATAN", null, SQLFunctions.funcParam(expr), null, DoubleType.INSTANCE);
     }
 
     /**
-     * @see #exp(Expression)
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan2">ATAN(X,y)</a>
      */
-    public static Expression ln(Expression power) {
-        throw new UnsupportedOperationException();
+    public static Expression atan(final @Nullable Object expr1, final @Nullable Object expr2) {
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(SQLFunctions.funcParam(expr1), SQLFunctions.funcParam(expr2));
+        return SQLFunctions.safeMultiArgOptionFunc("ATAN", null, argList, null, DoubleType.INSTANCE);
     }
 
     /**
-     * @see #ln(Expression)
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ceil">CEIL(X)</a>
      */
-    public static Expression log(Expression power) {
-        throw new UnsupportedOperationException();
+    public static Expression cell(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("CELL", null, SQLFunctions.funcParam(expr), null, LongType.INSTANCE);
     }
 
-    public static Expression log(Expression bottomNumber
-            , Expression power) {
-        throw new UnsupportedOperationException();
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link  MappingType} or expr
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_conv">CONV(X)</a>
+     */
+    public static Expression conv(final @Nullable Object expr, final Object fromBase, final Object toBase) {
+        final ArmyExpression expression;
+        expression = SQLFunctions.funcParam(expr);
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(expression, SQLFunctions.funcLiteral(fromBase), SQLFunctions.funcLiteral(toBase));
+
+        final ParamMeta returnType;
+        if (expression instanceof SQLs.NullWord) {
+            returnType = _NullType.INSTANCE;
+        } else {
+            returnType = expression.paramMeta();
+        }
+        return SQLFunctions.safeMultiArgOptionFunc("CONV", null, argList, null, returnType);
     }
 
     /**
-     * @see #ln(Expression)
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cos">COS(X)</a>
      */
-    public static Expression log2(Expression power) {
-        throw new UnsupportedOperationException();
+    public static Expression cos(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("COS", null, SQLFunctions.funcParam(expr), null, DoubleType.INSTANCE);
     }
 
     /**
-     * @see #ln(Expression)
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cot">COT(X)</a>
      */
-    public static Expression log10(Expression power) {
-        throw new UnsupportedOperationException();
+    public static Expression cot(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("COT", null, SQLFunctions.funcParam(expr), null, DoubleType.INSTANCE);
     }
 
-    public static Expression mod(Expression dividend
-            , Expression divisor) {
-        throw new UnsupportedOperationException();
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  IntegerType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_crc32">CRC32(expr)</a>
+     */
+    public static Expression crc32(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("CRC32", null, SQLFunctions.funcParam(expr), null, IntegerType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_degrees">DEGREES(x)</a>
+     */
+    public static Expression degrees(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("DEGREES", null, SQLFunctions.funcParam(expr), null, DoubleType.INSTANCE);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_exp">EXP(x)</a>
+     */
+    public static Expression exp(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("EXP", null, SQLFunctions.funcParam(expr), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_floor">FLOOR(x)</a>
+     */
+    public static Expression floor(final @Nullable Object expr) {
+        return SQLFunctions.oneArgOptionFunc("FLOOR", null, SQLFunctions.funcParam(expr), null, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  StringType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_format">FORMAT(x,d)</a>
+     */
+    public static Expression format(final @Nullable Object x, final Object d) {
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(SQLFunctions.funcParam(x), SQLFunctions.funcLiteral(d));
+        return SQLFunctions.safeMultiArgOptionFunc("FORMAT", null, argList, null, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  StringType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_hex">HEX(n_or_s)</a>
+     */
+    public static Expression hex(final @Nullable Object numOrStr) {
+        return SQLFunctions.oneArgOptionFunc("HEX", null, SQLFunctions.funcParam(numOrStr), null, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ln">LN(x)</a>
+     */
+    public static Expression ln(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("LN", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
+     */
+    public static Expression log(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("LOG", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
+     */
+    public static Expression log(final @Nullable Object b, final @Nullable Object x) {
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(SQLFunctions.funcLiteral(b), SQLFunctions.funcParam(x));
+        return SQLFunctions.safeMultiArgOptionFunc("LOG", null, argList, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log2">LOG2(x)</a>
+     */
+    public static Expression log2(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("LOG2", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  DoubleType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
+     */
+    public static Expression log10(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("LOG10", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} or n.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
+     */
+    public static Expression mod(final @Nullable Object n, final @Nullable Object m) {
+        final ArmyExpression nExp;
+        nExp = SQLFunctions.funcParam(n);
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(nExp, SQLFunctions.funcParam(m));
+        return SQLFunctions.safeMultiArgOptionFunc("MOD", null, argList, null, nExp.paramMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pi">PI()</a>
+     */
     public static Expression pi() {
-        throw new UnsupportedOperationException();
+        return SQLFunctions.noArgFunc("PI", DoubleType.INSTANCE);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pi">PI()</a>
+     */
+    public static Expression pow(final @Nullable Object x, final @Nullable Object y) {
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(SQLFunctions.funcParam(x), SQLFunctions.funcParam(y));
+        return SQLFunctions.safeMultiArgOptionFunc("POW", null, argList, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_radians">RADIANS(x)</a>
+     */
+    public static Expression radians(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("RADIANS", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
+     */
+    public static Expression rand() {
+        return SQLFunctions.noArgFunc("RAND", DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
+     */
+    public static Expression rand(final @Nullable Object n) {
+        return SQLFunctions.oneArgOptionFunc("RAND", null, SQLFunctions.funcParam(n), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x)</a>
+     */
+    public static Expression round(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("ROUND", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x,d)</a>
+     */
+    public static Expression round(final @Nullable Object x, @Nullable final Object d) {
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(SQLFunctions.funcParam(x), SQLFunctions.funcParam(d));
+        return SQLFunctions.safeMultiArgOptionFunc("ROUND", null, argList, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sign">SIGN(x)</a>
+     */
+    public static Expression sign(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("SIGN", null, SQLFunctions.funcParam(x), null, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sin">SIN(x)</a>
+     */
+    public static Expression sin(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("SIN", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sqrt">SQRT(x)</a>
+     */
+    public static Expression sqrt(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("SQRT", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_tan">TAN(x)</a>
+     */
+    public static Expression tan(final @Nullable Object x) {
+        return SQLFunctions.oneArgOptionFunc("TAN", null, SQLFunctions.funcParam(x), null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType} .
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_truncate">TRUNCATE(x,d)</a>
+     */
+    public static Expression truncate(final @Nullable Object x, @Nullable final Object d) {
+        final List<ArmyExpression> argList;
+        argList = Arrays.asList(SQLFunctions.funcParam(x), SQLFunctions.funcParam(d));
+        return SQLFunctions.safeMultiArgOptionFunc("TRUNCATE", null, argList, null, DoubleType.INSTANCE);
+    }
+
 
 
     /*################################## blow date time function method ##################################*/
@@ -286,9 +589,6 @@ abstract class Functions {
         throw new UnsupportedOperationException();
     }
 
-    public static Expression currentDate() {
-        throw new UnsupportedOperationException();
-    }
 
     public static _CaseWhenClause caseFunc() {
         return SQLFunctions.caseFunc(null);
@@ -568,13 +868,33 @@ abstract class Functions {
         keyType = keyExpr.paramMeta();
         valueType = valueExpr.paramMeta();
         final ParamMeta returnType;
-        if (keyType instanceof ParamMeta.Delay || valueType instanceof ParamMeta.Delay) {
+        if (keyExpr instanceof SQLs.NullWord && valueExpr instanceof SQLs.NullWord) {
+            returnType = _NullType.INSTANCE;
+        } else if (keyType instanceof ParamMeta.Delay || valueType instanceof ParamMeta.Delay) {
             returnType = CriteriaSupports.delayParamMeta(keyType, valueType, function);
         } else {
             returnType = function.apply(keyType.mappingType(), valueType.mappingType());
         }
         return returnType;
     }
+
+    static ParamMeta _returnType(ArmyExpression expression, Function<MappingType, MappingType> function) {
+        final ParamMeta exprType, returnType;
+        exprType = expression.paramMeta();
+        if (expression instanceof SQLs.NullWord) {
+            returnType = _NullType.INSTANCE;
+        } else if (exprType instanceof ParamMeta.Delay) {
+            returnType = CriteriaSupports.delayParamMeta((ParamMeta.Delay) exprType, function);
+        } else {
+            returnType = function.apply(exprType.mappingType());
+        }
+        return returnType;
+    }
+
+
+    /*-------------------below private method -------------------*/
+
+
 
 
 }

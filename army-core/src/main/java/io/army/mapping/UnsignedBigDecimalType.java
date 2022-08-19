@@ -7,7 +7,8 @@ import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 
-public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericType {
+public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericType
+        implements _NumericType._DecimalNumeric {
 
     public static final UnsignedBigDecimalType INSTANCE = new UnsignedBigDecimalType();
 

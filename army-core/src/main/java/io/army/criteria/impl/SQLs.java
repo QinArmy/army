@@ -11,6 +11,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
+import io.army.mapping._NullType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SingleParam;
@@ -921,7 +922,7 @@ public abstract class SQLs extends StandardSyntax {
 
         @Override
         public ParamMeta paramMeta() {
-            throw unsupportedOperation();
+            return _NullType.INSTANCE;
         }
 
         @Override
