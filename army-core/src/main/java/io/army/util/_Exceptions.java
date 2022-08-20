@@ -605,7 +605,7 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static ArmyException expectedTypeAndResultNotMatch(Selection selection, Class<?> resultType) {
         String m = String.format("expected type %s and query result mapping type %s not match."
-                , resultType.getName(), selection.paramMeta().mappingType().getClass().getName());
+                , resultType.getName(), selection.typeMeta().mappingType().getClass().getName());
         throw new ArmyException(m);
     }
 

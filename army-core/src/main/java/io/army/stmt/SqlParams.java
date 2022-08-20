@@ -4,7 +4,7 @@ import io.army.criteria.NamedParam;
 import io.army.criteria.SqlParam;
 import io.army.criteria.SqlValueParam;
 import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
@@ -14,7 +14,7 @@ import java.util.List;
 abstract class SqlParams implements SqlParam {
 
 
-    static SingleParam single(ParamMeta paramMeta, @Nullable Object value) {
+    static SingleParam single(TypeMeta paramMeta, @Nullable Object value) {
         return new NullableSingleParam(paramMeta, value);
     }
 
@@ -24,19 +24,19 @@ abstract class SqlParams implements SqlParam {
         if (valueList.size() != namedParam.valueSize()) {
             throw _Exceptions.namedMultiParamSizeError(namedParam, values.size());
         }
-        return new SqlMultiParam(namedParam.paramMeta(), valueList);
+        return new SqlMultiParam(namedParam.typeMeta(), valueList);
     }
 
 
-    private final ParamMeta paramMeta;
+    private final TypeMeta paramMeta;
 
-    private SqlParams(ParamMeta paramMeta) {
+    private SqlParams(TypeMeta paramMeta) {
         this.paramMeta = paramMeta;
     }
 
 
     @Override
-    public final ParamMeta paramMeta() {
+    public final TypeMeta typeMeta() {
         return this.paramMeta;
     }
 
@@ -46,7 +46,7 @@ abstract class SqlParams implements SqlParam {
 
         private final Object value;
 
-        private NullableSingleParam(ParamMeta paramMeta, @Nullable Object value) {
+        private NullableSingleParam(TypeMeta paramMeta, @Nullable Object value) {
             super(paramMeta);
             this.value = value;
         }
@@ -64,7 +64,7 @@ abstract class SqlParams implements SqlParam {
 
         private final List<?> valueList;
 
-        private SqlMultiParam(ParamMeta paramMeta, List<?> valueList) {
+        private SqlMultiParam(TypeMeta paramMeta, List<?> valueList) {
             super(paramMeta);
             assert valueList.size() > 0;
             this.valueList = valueList;

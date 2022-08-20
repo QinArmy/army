@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
 import io.army.stmt._StmtParams;
@@ -99,7 +99,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
                 paramList.add(sqlParam);
                 this.paramConsumer.hasNamedParam = true;
             } else {
-                paramList.add(SingleParam.build(sqlParam.paramMeta(), readNamedValue((NamedParam) sqlParam)));
+                paramList.add(SingleParam.build(sqlParam.typeMeta(), readNamedValue((NamedParam) sqlParam)));
             }
         } else if (sqlParam instanceof NamedParam.NamedMulti) {
             appendMultiParamPlaceholder(this.sqlBuilder, (SqlValueParam.MultiValue) sqlParam);
@@ -118,7 +118,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
     }
 
     @Override
-    public final void appendLiteral(final ParamMeta paramMeta, final Object nonNull) {
+    public final void appendLiteral(final TypeMeta paramMeta, final Object nonNull) {
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
         this.parser.literal(paramMeta, nonNull, sqlBuilder);
@@ -155,7 +155,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
             sqlBuilder.append(_Constant.SPACE_NULL);
         } else if (namedLiteral instanceof SqlValueParam.SingleValue) {
             sqlBuilder.append(_Constant.SPACE);
-            this.parser.literal(namedLiteral.paramMeta(), value, sqlBuilder);
+            this.parser.literal(namedLiteral.typeMeta(), value, sqlBuilder);
         } else if (!(namedLiteral instanceof SqlValueParam.NamedMultiValue)) {
             //no bug,never here
             throw new IllegalArgumentException();
@@ -164,7 +164,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
         } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).valueSize()) {
 
             final ArmyParser parser = this.parser;
-            final ParamMeta paramMeta = namedLiteral.paramMeta();
+            final TypeMeta paramMeta = namedLiteral.typeMeta();
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             int i = 0;
             for (Object v : (Collection<?>) value) {

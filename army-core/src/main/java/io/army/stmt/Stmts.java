@@ -85,7 +85,7 @@ public abstract class Stmts {
                     if (value == null && sqlParam instanceof SqlValueParam.NonNullValue) {
                         throw _Exceptions.nonNullNamedParam((NamedParam) sqlParam);
                     }
-                    group.add(SingleParam.build(sqlParam.paramMeta(), value));
+                    group.add(SingleParam.build(sqlParam.typeMeta(), value));
                 }
             }
 

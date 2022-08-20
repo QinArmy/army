@@ -7,7 +7,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
 
 import java.util.ArrayList;
@@ -62,30 +62,30 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     static Expression oneArgOptionFunc(String name, @Nullable SQLWords option
-            , @Nullable Object expr, @Nullable Clause clause, ParamMeta returnType) {
+            , @Nullable Object expr, @Nullable Clause clause, TypeMeta returnType) {
         return new OneArgOptionFunc(name, option, SQLs._funcParam(expr), clause, returnType);
     }
 
-    static Expression oneArgFunc(String name, @Nullable Object expr, ParamMeta returnType) {
+    static Expression oneArgFunc(String name, @Nullable Object expr, TypeMeta returnType) {
         return new OneArgFunc(name, SQLs._funcParam(expr), returnType);
     }
 
-    static Expression noArgFunc(String name, ParamMeta returnType) {
+    static Expression noArgFunc(String name, TypeMeta returnType) {
         return new NoArgFuncExpression(name, returnType);
     }
 
-    static Expression safeComplexArgFunc(String name, List<?> argList, ParamMeta returnType) {
+    static Expression safeComplexArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new ComplexArgFunc(name, argList, returnType);
     }
 
 
     static Expression safeMultiArgOptionFunc(String name, @Nullable SQLWords option
-            , List<ArmyExpression> argList, @Nullable Clause clause, ParamMeta returnType) {
+            , List<ArmyExpression> argList, @Nullable Clause clause, TypeMeta returnType) {
         return new MultiArgOptionFunc(name, option, argList, clause, returnType);
     }
 
     static Expression multiArgOptionFunc(String name, @Nullable SQLWords option
-            , List<?> argList, @Nullable Clause clause, ParamMeta returnType) {
+            , List<?> argList, @Nullable Clause clause, TypeMeta returnType) {
         return new MultiArgOptionFunc(name, option, funcParamList(argList), clause, returnType);
     }
 
@@ -225,13 +225,13 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         final String name;
 
-        private ParamMeta returnType;
+        private TypeMeta returnType;
 
         private String existingWindowName;
 
         private _Window anonymousWindow;
 
-        WindowFunc(String name, ParamMeta returnType) {
+        WindowFunc(String name, TypeMeta returnType) {
             this.context = CriteriaContextStack.peek();
             this.name = name;
             this.returnType = returnType;
@@ -243,12 +243,12 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final ParamMeta paramMeta() {
+        public final TypeMeta typeMeta() {
             return this.returnType;
         }
 
         @Override
-        public final void updateParamMeta(final ParamMeta paramMeta) {
+        public final void updateParamMeta(final TypeMeta paramMeta) {
             this.returnType = paramMeta;
         }
 
@@ -365,15 +365,15 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         private final String name;
 
-        private final ParamMeta returnType;
+        private final TypeMeta returnType;
 
-        private NoArgFuncExpression(String name, ParamMeta returnType) {
+        private NoArgFuncExpression(String name, TypeMeta returnType) {
             this.name = name;
             this.returnType = returnType;
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public TypeMeta typeMeta() {
             return this.returnType;
         }
 
@@ -395,20 +395,20 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         private final String name;
 
-        private ParamMeta returnType;
+        private TypeMeta returnType;
 
-        FunctionExpression(String name, ParamMeta returnType) {
+        FunctionExpression(String name, TypeMeta returnType) {
             this.name = name;
             this.returnType = returnType;
         }
 
         @Override
-        public final ParamMeta paramMeta() {
+        public final TypeMeta typeMeta() {
             return this.returnType;
         }
 
         @Override
-        public void updateParamMeta(final ParamMeta paramMeta) {
+        public void updateParamMeta(final TypeMeta paramMeta) {
             this.returnType = paramMeta;
         }
 
@@ -450,7 +450,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         private final ArmyExpression argument;
 
-        private OneArgFunc(String name, ArmyExpression argument, ParamMeta returnType) {
+        private OneArgFunc(String name, ArmyExpression argument, TypeMeta returnType) {
             super(name, returnType);
             this.argument = argument;
         }
@@ -479,7 +479,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         private OneArgOptionFunc(String name, @Nullable SQLWords option
                 , ArmyExpression argument, @Nullable Clause clause
-                , ParamMeta returnType) {
+                , TypeMeta returnType) {
             super(name, returnType);
             this.option = option;
             this.argument = argument;
@@ -525,9 +525,9 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         private final String name;
         private final List<?> argList;
 
-        private ParamMeta returnType;
+        private TypeMeta returnType;
 
-        private ComplexArgFunc(String name, List<?> argList, ParamMeta returnType) {
+        private ComplexArgFunc(String name, List<?> argList, TypeMeta returnType) {
             assert argList.size() > 1;
             this.name = name;
             this.argList = Collections.unmodifiableList(argList);
@@ -535,12 +535,12 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public TypeMeta typeMeta() {
             return this.returnType;
         }
 
         @Override
-        public void updateParamMeta(final ParamMeta paramMeta) {
+        public void updateParamMeta(final TypeMeta paramMeta) {
             this.returnType = paramMeta;
         }
 
@@ -606,7 +606,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         private MultiArgOptionFunc(String name, @Nullable SQLWords option
                 , List<ArmyExpression> argList, @Nullable Clause clause
-                , ParamMeta returnType) {
+                , TypeMeta returnType) {
             super(name, returnType);
             assert argList.size() > 0;
 
@@ -644,7 +644,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         private ArmyExpression elseExpression;
 
-        private ParamMeta returnType;
+        private TypeMeta returnType;
 
         private CaseFunc(@Nullable ArmyExpression caseValue) {
             this.caseValue = caseValue;
@@ -657,8 +657,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public ParamMeta paramMeta() {
-            final ParamMeta returnType = this.returnType;
+        public TypeMeta typeMeta() {
+            final TypeMeta returnType = this.returnType;
             if (returnType == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }
@@ -666,7 +666,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public void updateParamMeta(final ParamMeta paramMeta) {
+        public void updateParamMeta(final TypeMeta paramMeta) {
             this.returnType = paramMeta;
         }
 
@@ -1030,19 +1030,19 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         final CriteriaContext context;
         private final String name;
 
-        private final Function<List<ArmyExpression>, ParamMeta> function;
-        private ParamMeta returnType;
+        private final Function<List<ArmyExpression>, TypeMeta> function;
+        private TypeMeta returnType;
 
         private List<ArmyExpression> argList;
 
-        private ConditionFunc(String name, @Nullable ParamMeta returnType) {
+        private ConditionFunc(String name, @Nullable TypeMeta returnType) {
             this.context = CriteriaContextStack.peek();
             this.name = name;
             this.returnType = returnType;
             this.function = this::inferReturnType;
         }
 
-        private ConditionFunc(String name, Function<List<ArmyExpression>, ParamMeta> function) {
+        private ConditionFunc(String name, Function<List<ArmyExpression>, TypeMeta> function) {
             this.context = CriteriaContextStack.peek();
             this.name = name;
             this.returnType = null;
@@ -1050,8 +1050,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final ParamMeta paramMeta() {
-            ParamMeta returnType = this.returnType;
+        public final TypeMeta typeMeta() {
+            TypeMeta returnType = this.returnType;
             if (returnType == null) {
                 final List<ArmyExpression> argList = this.argList;
                 if (argList == null || argList instanceof ArrayList) {
@@ -1063,7 +1063,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final void updateParamMeta(final ParamMeta paramMeta) {
+        public final void updateParamMeta(final TypeMeta paramMeta) {
             this.returnType = paramMeta;
         }
 
@@ -1194,7 +1194,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         /**
          * @param argList a unmodified list
          */
-        ParamMeta inferReturnType(List<ArmyExpression> argList) {
+        TypeMeta inferReturnType(List<ArmyExpression> argList) {
             throw new UnsupportedOperationException();
         }
 
@@ -1269,12 +1269,12 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         private final BiFunction<MappingType, MappingType, MappingType> function;
 
         private ConditionTwoFunc(String name, BiFunction<MappingType, MappingType, MappingType> function) {
-            super(name, (ParamMeta) null);
+            super(name, (TypeMeta) null);
             this.function = function;
         }
 
         @Override
-        ParamMeta inferReturnType(final List<ArmyExpression> argList) {
+        TypeMeta inferReturnType(final List<ArmyExpression> argList) {
             if (argList.size() != 3) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }

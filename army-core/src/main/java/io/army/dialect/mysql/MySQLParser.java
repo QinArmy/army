@@ -186,7 +186,7 @@ abstract class MySQLParser extends _AbstractDialectParser {
     }
 
     @Override
-    public final StringBuilder literal(final ParamMeta paramMeta, final Object nonNull
+    public final StringBuilder literal(final TypeMeta paramMeta, final Object nonNull
             , final StringBuilder sqlBuilder) {
 
         final SqlType sqlType;

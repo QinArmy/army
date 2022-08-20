@@ -7,7 +7,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 
@@ -25,45 +25,45 @@ abstract class MySQLFunctions extends SQLFunctions {
     }
 
     static Expression intervalTimeFunc(String name, @Nullable Object date, @Nullable Object expr
-            , @Nullable MySQLUnit unit, ParamMeta returnType) {
+            , @Nullable MySQLUnit unit, TypeMeta returnType) {
         if (unit == null) {
             throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
         }
         return new IntervalTimeFunc(name, SQLs._funcParam(date), SQLs._funcParam(expr), unit, returnType);
     }
 
-    static MySQLFuncSyntax._OverSpec noArgWindowFunc(String name, ParamMeta returnType) {
+    static MySQLFuncSyntax._OverSpec noArgWindowFunc(String name, TypeMeta returnType) {
         return new NoArgWindowFunc(name, returnType);
     }
 
     static MySQLFuncSyntax._OverSpec oneArgWindowFunc(String name, @Nullable SQLWords option
-            , @Nullable Object expr, ParamMeta returnType) {
+            , @Nullable Object expr, TypeMeta returnType) {
         return new OneArgWindowFunc(name, option, SQLs._funcParam(expr), returnType);
     }
 
     static MySQLFuncSyntax._OverSpec safeMultiArgWindowFunc(String name, @Nullable SQLWords option
-            , List<ArmyExpression> argList, ParamMeta returnType) {
+            , List<ArmyExpression> argList, TypeMeta returnType) {
         return new MultiArgWindowFunc(name, option, argList, null, returnType);
     }
 
     static MySQLFuncSyntax._FromFirstLastSpec safeMultiArgFromFirstWindowFunc(String name, @Nullable SQLWords option
-            , List<ArmyExpression> argList, ParamMeta returnType) {
+            , List<ArmyExpression> argList, TypeMeta returnType) {
         return new FromFirstLastMultiArgWindowFunc(name, option, argList, returnType);
     }
 
     static MySQLFuncSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable SQLWords option
-            , @Nullable Object exp, ParamMeta returnType) {
+            , @Nullable Object exp, TypeMeta returnType) {
         return new OneArgAggregateWindowFunc(name, option, SQLs._funcParam(exp), returnType);
     }
 
     static MySQLFuncSyntax._AggregateOverSpec safeMultiArgAggregateWindowFunc(String name, @Nullable SQLWords option
-            , List<ArmyExpression> argList, @Nullable Clause clause, ParamMeta returnType) {
+            , List<ArmyExpression> argList, @Nullable Clause clause, TypeMeta returnType) {
         return new MultiArgAggregateWindowFunc(name, option, argList, clause, returnType);
     }
 
 
     static MySQLFuncSyntax._AggregateOverSpec multiArgAggregateWindowFunc(String name, @Nullable SQLWords option
-            , List<?> argList, @Nullable Clause clause, ParamMeta returnType) {
+            , List<?> argList, @Nullable Clause clause, TypeMeta returnType) {
         if (argList.size() == 0) {
             throw CriteriaUtils.funcArgError(name, argList);
         }
@@ -82,7 +82,7 @@ abstract class MySQLFunctions extends SQLFunctions {
     private static abstract class MySQLWindowFunc extends WindowFunc<Window._SimpleLeftParenClause<Void, Expression>>
             implements Window._SimpleLeftParenClause<Void, Expression>, MySQLFuncSyntax._OverSpec {
 
-        private MySQLWindowFunc(String name, ParamMeta returnType) {
+        private MySQLWindowFunc(String name, TypeMeta returnType) {
             super(name, returnType);
         }
 
@@ -128,7 +128,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     private static class NoArgWindowFunc extends MySQLWindowFunc implements SQLFunctions.NoArgFunction {
 
-        private NoArgWindowFunc(String name, ParamMeta returnType) {
+        private NoArgWindowFunc(String name, TypeMeta returnType) {
             super(name, returnType);
         }
 
@@ -152,7 +152,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         private final ArmyExpression argument;
 
         private OneArgWindowFunc(String name, @Nullable SQLWords option
-                , ArmyExpression argument, ParamMeta returnType) {
+                , ArmyExpression argument, TypeMeta returnType) {
             super(name, returnType);
             this.option = option;
             this.argument = argument;
@@ -189,7 +189,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         private final Clause clause;
 
         private MultiArgWindowFunc(String name, @Nullable SQLWords option
-                , List<ArmyExpression> argList, @Nullable Clause clause, ParamMeta returnType) {
+                , List<ArmyExpression> argList, @Nullable Clause clause, TypeMeta returnType) {
             super(name, returnType);
 
             assert argList.size() > 0;
@@ -221,7 +221,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         private NullTreatment nullTreatment;
 
         private NullTreatmentMultiArgWindowFunc(String name, @Nullable SQLWords option
-                , List<ArmyExpression> argumentList, ParamMeta returnType) {
+                , List<ArmyExpression> argumentList, TypeMeta returnType) {
             super(name, option, argumentList, null, returnType);
         }
 
@@ -252,7 +252,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         private FromFirstLast fromFirstLast;
 
         private FromFirstLastMultiArgWindowFunc(String name, @Nullable SQLWords option
-                , List<ArmyExpression> argumentList, ParamMeta returnType) {
+                , List<ArmyExpression> argumentList, TypeMeta returnType) {
             super(name, option, argumentList, returnType);
         }
 
@@ -281,7 +281,7 @@ abstract class MySQLFunctions extends SQLFunctions {
     private static final class NoArgAggregateWindowFunc extends NoArgWindowFunc
             implements MySQLFuncSyntax._AggregateOverSpec {
 
-        private NoArgAggregateWindowFunc(String name, ParamMeta returnType) {
+        private NoArgAggregateWindowFunc(String name, TypeMeta returnType) {
             super(name, returnType);
         }
 
@@ -292,7 +292,7 @@ abstract class MySQLFunctions extends SQLFunctions {
             implements MySQLFuncSyntax._AggregateOverSpec {
 
         private OneArgAggregateWindowFunc(String name, @Nullable SQLWords option
-                , ArmyExpression argument, ParamMeta returnType) {
+                , ArmyExpression argument, TypeMeta returnType) {
             super(name, option, argument, returnType);
         }
 
@@ -304,7 +304,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
         private MultiArgAggregateWindowFunc(String name, @Nullable SQLWords option
                 , List<ArmyExpression> argList, @Nullable Clause clause
-                , ParamMeta returnType) {
+                , TypeMeta returnType) {
             super(name, option, argList, clause, returnType);
         }
 
@@ -480,7 +480,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         private final MySQLUnit unit;
 
         private IntervalTimeFunc(String name, ArmyExpression date, ArmyExpression expr, MySQLUnit unit
-                , ParamMeta returnType) {
+                , TypeMeta returnType) {
             super(name, returnType);
             this.date = date;
             this.expr = expr;

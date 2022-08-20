@@ -7,7 +7,7 @@ import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Expression;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -39,16 +39,16 @@ abstract class CriteriaSupports {
         return new OrderByClause<>(function, criteriaContext);
     }
 
-    static ParamMeta delayParamMeta(ParamMeta.Delay paramMeta, Function<MappingType, MappingType> function) {
+    static TypeMeta delayParamMeta(TypeMeta.Delay paramMeta, Function<MappingType, MappingType> function) {
         return new DelayParamMetaWrapper(paramMeta, function);
     }
 
-    static ParamMeta delayParamMeta(ParamMeta paramMeta1, ParamMeta paramMeta2
+    static TypeMeta delayParamMeta(TypeMeta paramMeta1, TypeMeta paramMeta2
             , BiFunction<MappingType, MappingType, MappingType> function) {
         return new BiDelayParamMetaWrapper(paramMeta1, paramMeta2, function);
     }
 
-    static ParamMeta delayParamMeta(Supplier<MappingType> supplier) {
+    static TypeMeta delayParamMeta(Supplier<MappingType> supplier) {
         return new SimpleDelayParamMeta(supplier);
     }
 
@@ -509,7 +509,7 @@ abstract class CriteriaSupports {
     }//OrderByClause
 
 
-    private static final class SimpleDelayParamMeta implements ParamMeta {
+    private static final class SimpleDelayParamMeta implements TypeMeta {
 
         private final Supplier<MappingType> supplier;
 
@@ -525,7 +525,7 @@ abstract class CriteriaSupports {
     }//SimpleDelayParamMeta
 
 
-    private static final class DelayParamMetaWrapper implements ParamMeta.Delay {
+    private static final class DelayParamMetaWrapper implements TypeMeta.Delay {
 
         private final Delay paramMeta;
 
@@ -548,7 +548,7 @@ abstract class CriteriaSupports {
         public MappingType mappingType() {
             final MappingType actualType = this.actualType;
             if (actualType == null) {
-                String m = String.format("%s isn't prepared.", ParamMeta.Delay.class.getName());
+                String m = String.format("%s isn't prepared.", TypeMeta.Delay.class.getName());
                 throw new IllegalStateException(m);
             }
             return actualType;
@@ -570,11 +570,11 @@ abstract class CriteriaSupports {
 
     }//DelayParamMetaWrapper
 
-    private static final class BiDelayParamMetaWrapper implements ParamMeta.Delay {
+    private static final class BiDelayParamMetaWrapper implements TypeMeta.Delay {
 
-        private final ParamMeta paramMeta1;
+        private final TypeMeta paramMeta1;
 
-        private final ParamMeta paramMeta2;
+        private final TypeMeta paramMeta2;
 
         private final BiFunction<MappingType, MappingType, MappingType> function;
 
@@ -582,7 +582,7 @@ abstract class CriteriaSupports {
 
         private MappingType actualType;
 
-        private BiDelayParamMetaWrapper(ParamMeta paramMeta1, ParamMeta paramMeta2
+        private BiDelayParamMetaWrapper(TypeMeta paramMeta1, TypeMeta paramMeta2
                 , BiFunction<MappingType, MappingType, MappingType> function) {
             this.paramMeta1 = paramMeta1;
             this.paramMeta2 = paramMeta2;
@@ -598,7 +598,7 @@ abstract class CriteriaSupports {
         public MappingType mappingType() {
             final MappingType actualType = this.actualType;
             if (actualType == null) {
-                String m = String.format("%s isn't prepared.", ParamMeta.Delay.class.getName());
+                String m = String.format("%s isn't prepared.", TypeMeta.Delay.class.getName());
                 throw new IllegalStateException(m);
             }
             return actualType;
@@ -607,9 +607,9 @@ abstract class CriteriaSupports {
         @Override
         public boolean isPrepared() {
             boolean prepared1 = true, prepared2 = true;
-            if (this.paramMeta1 instanceof ParamMeta.Delay) {
+            if (this.paramMeta1 instanceof TypeMeta.Delay) {
                 prepared1 = ((Delay) this.paramMeta1).isPrepared();
-            } else if (this.paramMeta2 instanceof ParamMeta.Delay) {
+            } else if (this.paramMeta2 instanceof TypeMeta.Delay) {
                 prepared2 = ((Delay) this.paramMeta2).isPrepared();
             }
             return prepared1 && prepared2;

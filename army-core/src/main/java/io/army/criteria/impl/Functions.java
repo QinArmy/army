@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,7 +52,7 @@ abstract class Functions {
     public interface _FuncTypeUpdateClause extends TypeInfer.TypeUpdateSpec {
 
         @Override
-        Expression asType(ParamMeta paramMeta);
+        Expression asType(TypeMeta paramMeta);
 
     }
 
@@ -197,7 +197,7 @@ abstract class Functions {
     public static Expression abs(final @Nullable Object expr) {
         final ArmyExpression expression;
         expression = SQLs._funcParam(expr);
-        return SQLFunctions.oneArgOptionFunc("ABS", null, expression, null, expression.paramMeta());
+        return SQLFunctions.oneArgOptionFunc("ABS", null, expression, null, expression.typeMeta());
     }
 
     /**
@@ -272,11 +272,11 @@ abstract class Functions {
         final List<ArmyExpression> argList;
         argList = Arrays.asList(expression, SQLs._funcLiteral(fromBase), SQLs._funcLiteral(toBase));
 
-        final ParamMeta returnType;
+        final TypeMeta returnType;
         if (expression instanceof SQLs.NullWord) {
             returnType = _NullType.INSTANCE;
         } else {
-            returnType = expression.paramMeta();
+            returnType = expression.typeMeta();
         }
         return SQLFunctions.safeMultiArgOptionFunc("CONV", null, argList, null, returnType);
     }
@@ -440,7 +440,7 @@ abstract class Functions {
         nExp = SQLs._funcParam(n);
         final List<ArmyExpression> argList;
         argList = Arrays.asList(nExp, SQLs._funcParam(m));
-        return SQLFunctions.safeMultiArgOptionFunc("MOD", null, argList, null, nExp.paramMeta());
+        return SQLFunctions.safeMultiArgOptionFunc("MOD", null, argList, null, nExp.typeMeta());
     }
 
     /**
@@ -862,15 +862,15 @@ abstract class Functions {
 
     /*-------------------below package method -------------------*/
 
-    static ParamMeta _returnType(final ArmyExpression keyExpr, final ArmyExpression valueExpr
+    static TypeMeta _returnType(final ArmyExpression keyExpr, final ArmyExpression valueExpr
             , BiFunction<MappingType, MappingType, MappingType> function) {
-        final ParamMeta keyType, valueType;
-        keyType = keyExpr.paramMeta();
-        valueType = valueExpr.paramMeta();
-        final ParamMeta returnType;
+        final TypeMeta keyType, valueType;
+        keyType = keyExpr.typeMeta();
+        valueType = valueExpr.typeMeta();
+        final TypeMeta returnType;
         if (keyExpr instanceof SQLs.NullWord && valueExpr instanceof SQLs.NullWord) {
             returnType = _NullType.INSTANCE;
-        } else if (keyType instanceof ParamMeta.Delay || valueType instanceof ParamMeta.Delay) {
+        } else if (keyType instanceof TypeMeta.Delay || valueType instanceof TypeMeta.Delay) {
             returnType = CriteriaSupports.delayParamMeta(keyType, valueType, function);
         } else {
             returnType = function.apply(keyType.mappingType(), valueType.mappingType());
@@ -878,13 +878,13 @@ abstract class Functions {
         return returnType;
     }
 
-    static ParamMeta _returnType(ArmyExpression expression, Function<MappingType, MappingType> function) {
-        final ParamMeta exprType, returnType;
-        exprType = expression.paramMeta();
+    static TypeMeta _returnType(ArmyExpression expression, Function<MappingType, MappingType> function) {
+        final TypeMeta exprType, returnType;
+        exprType = expression.typeMeta();
         if (expression instanceof SQLs.NullWord) {
             returnType = _NullType.INSTANCE;
-        } else if (exprType instanceof ParamMeta.Delay) {
-            returnType = CriteriaSupports.delayParamMeta((ParamMeta.Delay) exprType, function);
+        } else if (exprType instanceof TypeMeta.Delay) {
+            returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) exprType, function);
         } else {
             returnType = function.apply(exprType.mappingType());
         }

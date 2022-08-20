@@ -5,7 +5,7 @@ import io.army.criteria.SqlValueParam;
 import io.army.criteria.TableField;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 final class BracketsExpression extends OperationExpression {
 
@@ -39,8 +39,8 @@ final class BracketsExpression extends OperationExpression {
 
 
     @Override
-    public ParamMeta paramMeta() {
-        return this.expression.paramMeta();
+    public TypeMeta typeMeta() {
+        return this.expression.typeMeta();
     }
 
     @Override

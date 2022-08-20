@@ -448,12 +448,12 @@ abstract class JdbcExecutor implements StmtExecutor {
         SqlParam sqlParam;
         Object value;
         MappingType mappingType;
-        ParamMeta paramMeta;
+        TypeMeta paramMeta;
         SqlType sqlType;
         for (int i = 0; i < size; i++) {
             sqlParam = paramGroup.get(i);
 
-            paramMeta = sqlParam.paramMeta();
+            paramMeta = sqlParam.typeMeta();
             if (paramMeta instanceof MappingType) {
                 mappingType = (MappingType) paramMeta;
             } else {
@@ -492,7 +492,7 @@ abstract class JdbcExecutor implements StmtExecutor {
     @Nullable
     private Object getColumnValue(final ResultSet resultSet, final Selection selection)
             throws SQLException {
-        final ParamMeta paramMeta = selection.paramMeta();
+        final TypeMeta paramMeta = selection.typeMeta();
         final MappingType mappingType;
         if (paramMeta instanceof MappingType) {
             mappingType = (MappingType) paramMeta;

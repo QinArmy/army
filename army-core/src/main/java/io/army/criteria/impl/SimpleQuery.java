@@ -6,8 +6,8 @@ import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
@@ -683,8 +683,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         return (Selection) this.selectItemList().get(0);
     }
 
-    public final ParamMeta paramMeta() {
-        return this.selection().paramMeta();
+    public final TypeMeta typeMeta() {
+        return this.selection().typeMeta();
     }
 
 

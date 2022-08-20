@@ -8,8 +8,8 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -410,7 +410,7 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final VarExpression createVar(String name, ParamMeta paramMeta) throws CriteriaException {
+        public final VarExpression createVar(String name, TypeMeta paramMeta) throws CriteriaException {
             throw new UnsupportedOperationException();
         }
 
@@ -1232,8 +1232,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public ParamMeta paramMeta() {
-            return this.selection.paramMeta();
+        public TypeMeta typeMeta() {
+            return this.selection.typeMeta();
         }
 
         @Override
@@ -1334,7 +1334,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public TypeMeta typeMeta() {
             return this.paramMeta;
         }
 
@@ -1376,7 +1376,7 @@ abstract class CriteriaContexts {
     }//DerivedFieldImpl
 
 
-    private static final class DelaySelection implements ParamMeta.Delay {
+    private static final class DelaySelection implements TypeMeta.Delay {
 
         private Selection selection;
 
@@ -1386,7 +1386,7 @@ abstract class CriteriaContexts {
             if (selection == null) {
                 throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
             }
-            return selection.paramMeta().mappingType();
+            return selection.typeMeta().mappingType();
         }
 
         @Override
@@ -1408,8 +1408,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public ParamMeta paramMeta() {
-            return this.selection.paramMeta();
+        public TypeMeta typeMeta() {
+            return this.selection.typeMeta();
         }
 
         @Override
@@ -1450,8 +1450,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public ParamMeta paramMeta() {
-            return this.field.paramMeta();
+        public TypeMeta typeMeta() {
+            return this.field.typeMeta();
         }
 
         @Override

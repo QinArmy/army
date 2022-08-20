@@ -362,7 +362,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public TypeMeta typeMeta() {
             return this.field;
         }
 

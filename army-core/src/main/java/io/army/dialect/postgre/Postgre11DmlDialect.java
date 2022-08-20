@@ -6,8 +6,8 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.DatabaseObject;
-import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
 
@@ -39,7 +39,7 @@ class Postgre11DmlDialect extends _AbstractDialectParser {
     }
 
     @Override
-    public StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder) {
+    public StringBuilder literal(TypeMeta paramMeta, Object nonNull, StringBuilder sqlBuilder) {
         return null;
     }
 

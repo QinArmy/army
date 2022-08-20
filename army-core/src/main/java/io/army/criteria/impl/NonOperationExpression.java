@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -737,7 +737,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final Expression asType(ParamMeta paramMeta) {
+    public final Expression asType(TypeMeta paramMeta) {
         if (!(this instanceof SQLs.NullWord)) {
             throw unsupportedOperation();
         }

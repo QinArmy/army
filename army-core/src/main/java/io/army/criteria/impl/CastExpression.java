@@ -3,19 +3,19 @@ package io.army.criteria.impl;
 import io.army.criteria.Expression;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._SqlContext;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 class CastExpression extends OperationExpression {
 
-    static CastExpression cast(Expression expression, ParamMeta paramMeta) {
+    static CastExpression cast(Expression expression, TypeMeta paramMeta) {
         return new CastExpression(expression, paramMeta);
     }
 
     private final _Expression expression;
 
-    private final ParamMeta paramMeta;
+    private final TypeMeta paramMeta;
 
-    private CastExpression(Expression expression, ParamMeta paramMeta) {
+    private CastExpression(Expression expression, TypeMeta paramMeta) {
         this.expression = (_Expression) expression;
         this.paramMeta = paramMeta;
     }
@@ -27,7 +27,7 @@ class CastExpression extends OperationExpression {
 
 
     @Override
-    public ParamMeta paramMeta() {
+    public TypeMeta typeMeta() {
         return this.paramMeta;
     }
 

@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.SubQuery;
 import io.army.mapping.MappingEnv;
 import io.army.meta.DatabaseObject;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 /**
  * package interface
@@ -53,7 +53,7 @@ interface ArmyParser extends DialectParser {
      * Append  literal
      * </p>
      */
-    StringBuilder literal(ParamMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
+    StringBuilder literal(TypeMeta paramMeta, Object nonNull, StringBuilder sqlBuilder);
 
 
     MappingEnv mappingEnv();

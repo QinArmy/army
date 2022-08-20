@@ -8,7 +8,7 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -88,12 +88,12 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
         return ((DerivedTable) this.left).selection(derivedFieldName);
     }
 
-    public final ParamMeta paramMeta() {
+    public final TypeMeta typeMeta() {
         final Q left = this.left;
         if (!(left instanceof ScalarExpression)) {
             throw _Exceptions.castCriteriaApi();
         }
-        return ((ScalarExpression) left).paramMeta();
+        return ((ScalarExpression) left).typeMeta();
     }
 
 

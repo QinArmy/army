@@ -7,7 +7,7 @@ import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
 /**
@@ -44,8 +44,8 @@ final class UnaryExpression extends OperationExpression {
     }
 
     @Override
-    public ParamMeta paramMeta() {
-        return this.expression.paramMeta();
+    public TypeMeta typeMeta() {
+        return this.expression.typeMeta();
     }
 
     @Override

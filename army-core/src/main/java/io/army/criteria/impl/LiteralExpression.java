@@ -5,7 +5,7 @@ import io.army.criteria.SqlValueParam;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
 
 import java.util.Collection;
@@ -20,33 +20,33 @@ import java.util.Objects;
  */
 abstract class LiteralExpression extends OperationExpression {
 
-    static LiteralExpression single(final @Nullable ParamMeta paramMeta, final @Nullable Object constant) {
+    static LiteralExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object constant) {
         assert paramMeta != null;
         return new SingleLiteralExpression(paramMeta, constant);
     }
 
-    static LiteralExpression multi(final @Nullable ParamMeta paramMeta, final Collection<?> values) {
+    static LiteralExpression multi(final @Nullable TypeMeta paramMeta, final Collection<?> values) {
         assert paramMeta != null && values.size() > 0;
         return new MultiLiteralExpression(paramMeta, values);
     }
 
-    static LiteralExpression nullableNamedSingle(final @Nullable ParamMeta paramMeta, final @Nullable String name) {
+    static LiteralExpression nullableNamedSingle(final @Nullable TypeMeta paramMeta, final @Nullable String name) {
         assert paramMeta != null && name != null;
         return new NamedSingleLiteral(paramMeta, name);
     }
 
-    static LiteralExpression namedSingle(final @Nullable ParamMeta paramMeta, final @Nullable String name) {
+    static LiteralExpression namedSingle(final @Nullable TypeMeta paramMeta, final @Nullable String name) {
         assert paramMeta != null && name != null;
         return new NonNullNamedSingleLiteral(paramMeta, name);
     }
 
-    static LiteralExpression namedMulti(final @Nullable ParamMeta paramMeta, final @Nullable String name, int size) {
+    static LiteralExpression namedMulti(final @Nullable TypeMeta paramMeta, final @Nullable String name, int size) {
         assert paramMeta != null && name != null && size > 0;
         return new NamedMultiLiteral(paramMeta, name, size);
     }
 
 
-    static void appendMultiLiteral(final _SqlContext context, final ParamMeta paramMeta, final List<?> valueList) {
+    static void appendMultiLiteral(final _SqlContext context, final TypeMeta paramMeta, final List<?> valueList) {
 
         final int size = valueList.size();
         assert size > 0;
@@ -81,16 +81,16 @@ abstract class LiteralExpression extends OperationExpression {
     }
 
 
-    final ParamMeta paramMeta;
+    final TypeMeta paramMeta;
 
 
-    private LiteralExpression(ParamMeta paramMeta) {
+    private LiteralExpression(TypeMeta paramMeta) {
         this.paramMeta = paramMeta;
     }
 
 
     @Override
-    public final ParamMeta paramMeta() {
+    public final TypeMeta typeMeta() {
         return this.paramMeta;
     }
 
@@ -100,7 +100,7 @@ abstract class LiteralExpression extends OperationExpression {
 
          private final Object value;
 
-         private SingleLiteralExpression(ParamMeta paramMeta, @Nullable Object value) {
+         private SingleLiteralExpression(TypeMeta paramMeta, @Nullable Object value) {
              super(paramMeta);
              this.value = value;
          }
@@ -160,7 +160,7 @@ abstract class LiteralExpression extends OperationExpression {
 
         private final List<?> valueList;
 
-        private MultiLiteralExpression(ParamMeta paramMeta, Collection<?> valueList) {
+        private MultiLiteralExpression(TypeMeta paramMeta, Collection<?> valueList) {
             super(paramMeta);
             this.valueList = _CollectionUtils.asUnmodifiableList(valueList);
             assert this.valueList.size() > 0;
@@ -206,7 +206,7 @@ abstract class LiteralExpression extends OperationExpression {
 
         private final String name;
 
-        private NamedSingleLiteral(ParamMeta paramMeta, String name) {
+        private NamedSingleLiteral(TypeMeta paramMeta, String name) {
             super(paramMeta);
             this.name = name;
         }
@@ -252,7 +252,7 @@ abstract class LiteralExpression extends OperationExpression {
     private static final class NonNullNamedSingleLiteral extends NamedSingleLiteral
             implements SqlValueParam.NonNullValue {
 
-        private NonNullNamedSingleLiteral(ParamMeta paramMeta, String name) {
+        private NonNullNamedSingleLiteral(TypeMeta paramMeta, String name) {
             super(paramMeta, name);
         }
 
@@ -267,7 +267,7 @@ abstract class LiteralExpression extends OperationExpression {
 
         private final int valueSize;
 
-        private NamedMultiLiteral(ParamMeta paramMeta, String name, int valueSize) {
+        private NamedMultiLiteral(TypeMeta paramMeta, String name, int valueSize) {
             super(paramMeta);
             assert valueSize > 0;
             this.name = name;

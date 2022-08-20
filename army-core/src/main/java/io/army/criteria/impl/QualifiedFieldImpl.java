@@ -10,8 +10,8 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
 
@@ -50,7 +50,7 @@ final class QualifiedFieldImpl<T> extends OperationField
     }
 
     @Override
-    public ParamMeta paramMeta() {
+    public TypeMeta typeMeta() {
         return this.field;
     }
 

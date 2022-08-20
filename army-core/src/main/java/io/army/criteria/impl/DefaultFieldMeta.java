@@ -336,7 +336,7 @@ abstract class DefaultFieldMeta<T> extends OperationField implements FieldMeta<T
     }
 
     @Override
-    public final ParamMeta paramMeta() {
+    public final TypeMeta typeMeta() {
         // always this
         return this;
     }

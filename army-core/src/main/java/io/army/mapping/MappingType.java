@@ -1,12 +1,12 @@
 package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
-import io.army.meta.ParamMeta;
 import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
 
 
-public interface MappingType extends ParamMeta {
+public interface MappingType extends TypeMeta {
 
     Class<?> javaType();
 

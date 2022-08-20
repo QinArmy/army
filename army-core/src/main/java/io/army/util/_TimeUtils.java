@@ -1,7 +1,7 @@
 package io.army.util;
 
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -66,7 +66,7 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
     }
 
 
-    public static String format(final LocalTime time, final ParamMeta paramMeta) {
+    public static String format(final LocalTime time, final TypeMeta paramMeta) {
         final int scale;
         if (paramMeta instanceof FieldMeta) {
             scale = ((FieldMeta<?>) paramMeta).scale();
@@ -102,7 +102,7 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
     }
 
 
-    public static String format(final LocalDateTime dateTime, final ParamMeta paramMeta) {
+    public static String format(final LocalDateTime dateTime, final TypeMeta paramMeta) {
         final int scale;
         if (paramMeta instanceof FieldMeta) {
             scale = ((FieldMeta<?>) paramMeta).scale();
@@ -137,7 +137,7 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
 
     }
 
-    public static String format(final OffsetTime time, final ParamMeta paramMeta) {
+    public static String format(final OffsetTime time, final TypeMeta paramMeta) {
         final int scale;
         if (paramMeta instanceof FieldMeta) {
             scale = ((FieldMeta<?>) paramMeta).scale();
@@ -173,7 +173,7 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
     }
 
 
-    public static String format(final OffsetDateTime dateTime, final ParamMeta paramMeta) {
+    public static String format(final OffsetDateTime dateTime, final TypeMeta paramMeta) {
         final int scale;
         if (paramMeta instanceof FieldMeta) {
             scale = ((FieldMeta<?>) paramMeta).scale();

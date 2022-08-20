@@ -7,8 +7,8 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.TypeMeta;
 
 import java.lang.reflect.Field;
 
@@ -25,7 +25,7 @@ import java.lang.reflect.Field;
  * @see QualifiedField
  */
 @SuppressWarnings("unused")
-public interface TableField extends DataField, FieldSelection, ParamMeta, SetLeftItem, DatabaseObject {
+public interface TableField extends DataField, FieldSelection, TypeMeta, SetLeftItem, DatabaseObject {
 
     TableMeta<?> tableMeta();
 

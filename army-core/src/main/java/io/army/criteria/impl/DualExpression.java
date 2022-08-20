@@ -6,7 +6,7 @@ import io.army.criteria.TableField;
 import io.army.criteria.impl.inner._Expression;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
 import java.util.function.Function;
@@ -66,8 +66,8 @@ final class DualExpression extends OperationExpression {
 
 
     @Override
-    public ParamMeta paramMeta() {
-        return this.left.paramMeta();
+    public TypeMeta typeMeta() {
+        return this.left.typeMeta();
     }
 
     @Override

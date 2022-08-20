@@ -16,11 +16,11 @@ import io.army.mapping.MappingType;
  * @see MappingType
  * @see FieldMeta
  */
-public interface ParamMeta extends Meta {
+public interface TypeMeta extends Meta {
 
     MappingType mappingType();
 
-    interface Delay extends ParamMeta {
+    interface Delay extends TypeMeta {
 
         boolean isPrepared();
     }

@@ -1,15 +1,15 @@
 package io.army.criteria;
 
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 public interface TypeInfer {
 
-    ParamMeta paramMeta();
+    TypeMeta typeMeta();
 
 
     interface TypeUpdateSpec {
 
-        SelectionSpec asType(ParamMeta paramMeta);
+        SelectionSpec asType(TypeMeta paramMeta);
 
     }
 

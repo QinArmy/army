@@ -5,8 +5,8 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.mapping._MappingFactory;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 abstract class OperationPredicate extends OperationExpression implements _Predicate {
 
     @Override
-    public final ParamMeta paramMeta() {
+    public final TypeMeta typeMeta() {
         return _MappingFactory.getDefault(Boolean.class);
     }
 

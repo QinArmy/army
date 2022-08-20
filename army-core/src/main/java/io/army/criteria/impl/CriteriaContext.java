@@ -4,8 +4,8 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.TypeMeta;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ interface CriteriaContext {
     /**
      * @throws CriteriaException when var exists.
      */
-    VarExpression createVar(String name, ParamMeta paramMeta) throws CriteriaException;
+    VarExpression createVar(String name, TypeMeta paramMeta) throws CriteriaException;
 
     /**
      * @throws CriteriaException when var not exists.

@@ -5,7 +5,7 @@ import io.army.criteria.ScalarSubQuery;
 import io.army.criteria.SelectItem;
 import io.army.criteria.Selection;
 import io.army.dialect._SqlContext;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 import java.util.List;
 
@@ -48,8 +48,8 @@ final class ScalarSubQueryExpression extends OperationExpression implements Scal
     }
 
     @Override
-    public ParamMeta paramMeta() {
-        return this.subQuery.paramMeta();
+    public TypeMeta typeMeta() {
+        return this.subQuery.typeMeta();
     }
 
 

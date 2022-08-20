@@ -10,7 +10,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 
 import java.util.Objects;
 
@@ -52,8 +52,8 @@ abstract class Selections implements _Selection {
         }
 
         @Override
-        public ParamMeta paramMeta() {
-            ParamMeta paramMeta = this.expression.paramMeta();
+        public TypeMeta typeMeta() {
+            TypeMeta paramMeta = this.expression.typeMeta();
             if (paramMeta instanceof TableField) {
                 // ExpressionSelection couldn't return io.army.criteria.TableField ,avoid to statement executor
                 // decode selection .
@@ -112,7 +112,7 @@ abstract class Selections implements _Selection {
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public TypeMeta typeMeta() {
             return this.field;
         }
 
@@ -182,18 +182,18 @@ abstract class Selections implements _Selection {
 
         private final String alias;
 
-        private final ParamMeta returnType;
+        private final TypeMeta returnType;
 
         private FuncSelection(SQLFunctions.FunctionSpec func, String alias) {
             super(alias);
             this.func = func;
             this.alias = alias;
-            this.returnType = func.paramMeta();
+            this.returnType = func.typeMeta();
         }
 
         @Override
-        public ParamMeta paramMeta() {
-            ParamMeta paramMeta = this.returnType;
+        public TypeMeta typeMeta() {
+            TypeMeta paramMeta = this.returnType;
             if (paramMeta instanceof TableField) {
                 // FuncSelection couldn't return io.army.criteria.TableField ,avoid to statement executor
                 // decode selection .

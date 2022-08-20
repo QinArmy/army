@@ -46,5 +46,32 @@ public enum MySQLUnit implements SQLWords {
         return String.format("%s.%s", MySQLUnit.class.getName(), this.name());
     }
 
+    public final boolean isTimePart() {
+        final boolean match;
+        switch (this) {
+            case HOUR:
+            case MINUTE:
+            case SECOND:
+            case DAY_HOUR:
+            case DAY_MINUTE:
+            case DAY_SECOND:
+            case DAY_MICROSECOND:
+            case HOUR_MINUTE:
+            case HOUR_SECOND:
+            case HOUR_MICROSECOND:
+            case MINUTE_SECOND:
+            case MINUTE_MICROSECOND:
+            case SECOND_MICROSECOND:
+            case MICROSECOND:
+                match = true;
+                break;
+            default:
+                match = false;
+
+        }
+
+        return match;
+    }
+
 
 }

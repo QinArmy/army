@@ -519,7 +519,7 @@ final class AssignmentInsertContext extends StatementContext
         }
 
         @Override
-        public ParamMeta paramMeta() {
+        public TypeMeta typeMeta() {
             return this.field;
         }
 

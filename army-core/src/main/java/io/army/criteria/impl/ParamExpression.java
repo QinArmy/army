@@ -7,7 +7,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
-import io.army.meta.ParamMeta;
+import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
 import io.army.util._CollectionUtils;
@@ -19,41 +19,41 @@ import java.util.Objects;
 abstract class ParamExpression extends OperationExpression implements SqlParam {
 
 
-    static ParamExpression single(final @Nullable ParamMeta paramMeta, final @Nullable Object value) {
+    static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {
         assert paramMeta != null;
         return new SingleParamExpression(paramMeta, value);
     }
 
-    static ParamExpression multi(final @Nullable ParamMeta paramMeta, Collection<?> values, boolean preferLiteral) {
+    static ParamExpression multi(final @Nullable TypeMeta paramMeta, Collection<?> values, boolean preferLiteral) {
         assert paramMeta != null && values.size() > 0;
         return new MultiParamExpression(paramMeta, values, preferLiteral);
     }
 
 
-    static ParamExpression namedNullableSingle(@Nullable ParamMeta paramMeta, @Nullable String name) {
+    static ParamExpression namedNullableSingle(@Nullable TypeMeta paramMeta, @Nullable String name) {
         assert paramMeta != null && name != null;
         return new NamedSingleParam(paramMeta, name);
     }
 
-    static ParamExpression namedNonNullSingle(@Nullable ParamMeta paramMeta, @Nullable String name) {
+    static ParamExpression namedNonNullSingle(@Nullable TypeMeta paramMeta, @Nullable String name) {
         assert paramMeta != null && name != null;
         return new NameNonNullSingleParam(paramMeta, name);
     }
 
-    static ParamExpression namedMulti(@Nullable ParamMeta paramMeta, @Nullable String name, int size) {
+    static ParamExpression namedMulti(@Nullable TypeMeta paramMeta, @Nullable String name, int size) {
         assert paramMeta != null && name != null && size > 0;
         return new NamedMultiParam(paramMeta, name, size);
     }
 
-    final ParamMeta paramMeta;
+    final TypeMeta paramMeta;
 
 
-    private ParamExpression(ParamMeta paramMeta) {
+    private ParamExpression(TypeMeta paramMeta) {
         this.paramMeta = paramMeta;
     }
 
 
-    public final ParamMeta paramMeta() {
+    public final TypeMeta typeMeta() {
         return this.paramMeta;
     }
 
@@ -63,7 +63,7 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
 
          private final Object value;
 
-         private SingleParamExpression(ParamMeta paramMeta, @Nullable Object value) {
+         private SingleParamExpression(TypeMeta paramMeta, @Nullable Object value) {
              super(paramMeta);
              this.value = value;
          }
@@ -112,7 +112,7 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
 
         private final boolean preferLiteral;
 
-        private MultiParamExpression(ParamMeta paramMeta, Collection<?> values, boolean preferLiteral) {
+        private MultiParamExpression(TypeMeta paramMeta, Collection<?> values, boolean preferLiteral) {
             super(paramMeta);
             this.valueList = _CollectionUtils.asUnmodifiableList(values);
             this.preferLiteral = preferLiteral;
@@ -130,7 +130,7 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            final ParamMeta paramMeta = this.paramMeta;
+            final TypeMeta paramMeta = this.paramMeta;
             if (this.preferLiteral && paramMeta.mappingType() instanceof _ArmyNoInjectionMapping) {//TODO field codec
                 LiteralExpression.appendMultiLiteral(context, this.paramMeta, this.valueList);
             } else {
@@ -176,7 +176,7 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
 
         private final String name;
 
-        private NamedSingleParam(ParamMeta paramMeta, String name) {
+        private NamedSingleParam(TypeMeta paramMeta, String name) {
             super(paramMeta);
             this.name = name;
         }
@@ -222,7 +222,7 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
     private static final class NameNonNullSingleParam extends NamedSingleParam
             implements SqlValueParam.NonNullValue {
 
-        private NameNonNullSingleParam(ParamMeta paramMeta, String name) {
+        private NameNonNullSingleParam(TypeMeta paramMeta, String name) {
             super(paramMeta, name);
         }
 
@@ -236,7 +236,7 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
 
         private final int valueSize;
 
-        private NamedMultiParam(ParamMeta paramMeta, String name, int valueSize) {
+        private NamedMultiParam(TypeMeta paramMeta, String name, int valueSize) {
             super(paramMeta);
             assert valueSize > 0;
             this.name = name;
