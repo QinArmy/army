@@ -22,6 +22,31 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     SQLFunctions() {
     }
 
+    enum FuncWord implements SQLWords {
+
+        INTERVAL(_Constant.SPACE_INTERVAL),
+        COMMA(_Constant.SPACE_COMMA),
+        FROM(_Constant.SPACE_FROM);
+
+        private final String word;
+
+        FuncWord(String word) {
+            this.word = word;
+        }
+
+        @Override
+        public final String render() {
+            return this.word;
+        }
+
+        @Override
+        public final String toString() {
+            return String.format("%s.%s", FuncWord.class.getSimpleName(), this.name());
+        }
+
+
+    }//Word
+
     /**
      * package method that is used by army developer.
      *
@@ -64,19 +89,22 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return new CaseFunc((ArmyExpression) caseValue);
     }
 
-    @Deprecated
-    static Expression oneArgumentFunc(String name, @Nullable SQLWords option, @Nullable Object exp, MappingType returnType) {
-        return new OneArgFunc(name, funcParam(exp), returnType);
-    }
-
 
     static Expression oneArgOptionFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, @Nullable Clause clause, ParamMeta returnType) {
         return new OneArgOptionFunc(name, option, SQLFunctions.funcParam(expr), clause, returnType);
     }
 
+    static Expression oneArgFunc(String name, @Nullable Object expr, ParamMeta returnType) {
+        return new OneArgFunc(name, SQLFunctions.funcParam(expr), returnType);
+    }
+
     static Expression noArgFunc(String name, ParamMeta returnType) {
-        return new NoArgFunc(name, returnType);
+        return new NoArgFuncExpression(name, returnType);
+    }
+
+    static Expression safeComplexArgFunc(String name, List<?> argList, ParamMeta returnType) {
+        return new ComplexArgFunc(name, argList, returnType);
     }
 
 
@@ -362,6 +390,34 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//AggregateOverClause
 
+    private static final class NoArgFuncExpression extends OperationExpression implements FunctionSpec {
+
+        private final String name;
+
+        private final ParamMeta returnType;
+
+        private NoArgFuncExpression(String name, ParamMeta returnType) {
+            this.name = name;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN)
+                    .append(_Constant.RIGHT_PAREN);
+        }
+
+
+    }//NoArgFuncExpression
+
 
     static abstract class FunctionExpression extends OperationExpression
             implements FunctionSpec, MutableParamMetaSpec {
@@ -419,30 +475,11 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }//FunctionExpression
 
 
-    private static final class NoArgFunc extends FunctionExpression implements NoArgFunction {
-
-        private NoArgFunc(String name, ParamMeta returnType) {
-            super(name, returnType);
-        }
-
-        @Override
-        void appendArguments(_SqlContext context) {
-            //no-op
-        }
-
-        @Override
-        void argumentsToString(StringBuilder builder) {
-            //no-op
-        }
-
-
-    }//NoArgFunc
-
     private static final class OneArgFunc extends FunctionExpression {
 
         private final ArmyExpression argument;
 
-        private OneArgFunc(String name, ArmyExpression argument, MappingType returnType) {
+        private OneArgFunc(String name, ArmyExpression argument, ParamMeta returnType) {
             super(name, returnType);
             this.argument = argument;
         }
@@ -510,6 +547,82 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     }//OneArgOptionFunc
+
+    private static final class ComplexArgFunc extends OperationExpression
+            implements FunctionSpec, MutableParamMetaSpec {
+
+        private final String name;
+        private final List<?> argList;
+
+        private ParamMeta returnType;
+
+        private ComplexArgFunc(String name, List<?> argList, ParamMeta returnType) {
+            assert argList.size() > 1;
+            this.name = name;
+            this.argList = Collections.unmodifiableList(argList);
+            this.returnType = returnType;
+        }
+
+        @Override
+        public ParamMeta paramMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public void updateParamMeta(final ParamMeta paramMeta) {
+            this.returnType = paramMeta;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+
+            for (Object o : this.argList) {
+                if (o instanceof Expression) {
+                    ((ArmyExpression) o).appendSql(context);
+                } else if (o instanceof SQLWords) {
+                    sqlBuilder.append(((SQLWords) o).render());
+                } else if (o instanceof Clause) {
+                    ((_SelfDescribed) o).appendSql(context);
+                } else {
+                    //no bug,never here
+                    throw new IllegalStateException();
+                }
+            }//for
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+
+            for (Object o : this.argList) {
+                if (o instanceof Expression) {
+                    builder.append(o);
+                } else if (o instanceof SQLWords) {
+                    builder.append(((SQLWords) o).render());
+                } else if (o instanceof Clause) {
+                    builder.append(o);
+                } else {
+                    //no bug,never here
+                    throw new IllegalStateException();
+                }
+            }//for
+            return builder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+
+    }//ComplexArgFunc
 
 
     private static final class MultiArgOptionFunc extends SQLFunctions.FunctionExpression {

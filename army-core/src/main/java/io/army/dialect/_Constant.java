@@ -102,6 +102,8 @@ public interface _Constant {
 
     String SPACE_OVER = " OVER";
 
+    String SPACE_INTERVAL = " INTERVAL";
+
     String SPACE_PARTITION_BY = " PARTITION BY";
 
     String SPACE_IS_NULL = " IS NULL";

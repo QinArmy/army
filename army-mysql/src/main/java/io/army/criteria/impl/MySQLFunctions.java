@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLClause;
+import io.army.criteria.mysql.MySQLUnit;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -21,6 +22,14 @@ import java.util.function.Supplier;
 abstract class MySQLFunctions extends SQLFunctions {
 
     private MySQLFunctions() {
+    }
+
+    static Expression intervalTimeFunc(String name, @Nullable Object date, @Nullable Object expr
+            , @Nullable MySQLUnit unit, ParamMeta returnType) {
+        if (unit == null) {
+            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
+        }
+        return new IntervalTimeFunc(name, SQLFunctions.funcParam(date), SQLFunctions.funcParam(expr), unit, returnType);
     }
 
     static MySQLFuncSyntax._OverSpec noArgWindowFunc(String name, ParamMeta returnType) {
@@ -461,6 +470,45 @@ abstract class MySQLFunctions extends SQLFunctions {
 
 
     }//GroupConcatClause
+
+    private static final class IntervalTimeFunc extends SQLFunctions.FunctionExpression {
+
+        private final ArmyExpression date;
+
+        private final ArmyExpression expr;
+
+        private final MySQLUnit unit;
+
+        private IntervalTimeFunc(String name, ArmyExpression date, ArmyExpression expr, MySQLUnit unit
+                , ParamMeta returnType) {
+            super(name, returnType);
+            this.date = date;
+            this.expr = expr;
+            this.unit = unit;
+        }
+
+        @Override
+        void appendArguments(final _SqlContext context) {
+            this.date.appendSql(context);
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_COMMA)
+                    .append(_Constant.SPACE_INTERVAL);
+
+            this.expr.appendSql(context);
+            sqlBuilder.append(this.unit);
+        }
+
+        @Override
+        void argumentsToString(final StringBuilder builder) {
+            builder.append(this.date)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(_Constant.SPACE_INTERVAL)
+                    .append(this.expr)
+                    .append(this.unit);
+        }
+
+    }//IntervalTimeFunc
 
 
 }
