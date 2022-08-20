@@ -47,39 +47,10 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//Word
 
-    /**
-     * package method that is used by army developer.
-     *
-     * @param value {@link Expression} or parameter
-     */
-    static ArmyExpression funcParam(final @Nullable Object value) {
-        final ArmyExpression expression;
-        if (value == null) {
-            expression = (ArmyExpression) SQLs.nullWord();
-        } else if (value instanceof Expression) {
-            expression = (ArmyExpression) value;
-        } else {
-            expression = (ArmyExpression) SQLs.param(value);
-        }
-        return expression;
-    }
-
-    static ArmyExpression funcLiteral(final @Nullable Object value) {
-        final ArmyExpression expression;
-        if (value == null) {
-            expression = (ArmyExpression) SQLs.nullWord();
-        } else if (value instanceof Expression) {
-            expression = (ArmyExpression) value;
-        } else {
-            expression = (ArmyExpression) SQLs.literal(value);
-        }
-        return expression;
-    }
-
     static List<ArmyExpression> funcParamList(final List<?> argList) {
         final List<ArmyExpression> expList = new ArrayList<>(argList.size());
         for (Object o : argList) {
-            expList.add(funcParam(o));
+            expList.add(SQLs._funcParam(o));
         }
         return expList;
     }
@@ -92,11 +63,11 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     static Expression oneArgOptionFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, @Nullable Clause clause, ParamMeta returnType) {
-        return new OneArgOptionFunc(name, option, SQLFunctions.funcParam(expr), clause, returnType);
+        return new OneArgOptionFunc(name, option, SQLs._funcParam(expr), clause, returnType);
     }
 
     static Expression oneArgFunc(String name, @Nullable Object expr, ParamMeta returnType) {
-        return new OneArgFunc(name, SQLFunctions.funcParam(expr), returnType);
+        return new OneArgFunc(name, SQLs._funcParam(expr), returnType);
     }
 
     static Expression noArgFunc(String name, ParamMeta returnType) {

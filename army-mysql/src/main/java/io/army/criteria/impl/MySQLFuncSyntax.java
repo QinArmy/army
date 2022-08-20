@@ -3,6 +3,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLClause;
+import io.army.criteria.mysql.MySQLFormat;
+import io.army.criteria.mysql.MySQLTimes;
 import io.army.criteria.mysql.MySQLUnit;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
@@ -11,6 +13,7 @@ import io.army.meta.ParamMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -79,7 +82,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression addDate(final @Nullable Object date, final @Nullable Object days) {
         final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLFunctions.funcParam(date), SQLFunctions.funcParam(days));
+        argList = Arrays.asList(SQLs._funcParam(date), SQLs._funcParam(days));
         return SQLFunctions.safeMultiArgOptionFunc("ADDDATE", null, argList, null, LocalDateType.INSTANCE);
     }
 
@@ -92,9 +95,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression addTime(final @Nullable Object expr1, final @Nullable Object expr2) {
         final ArmyExpression expression1;
-        expression1 = SQLFunctions.funcParam(expr1);
+        expression1 = SQLs._funcParam(expr1);
         final List<ArmyExpression> argList;
-        argList = Arrays.asList(expression1, SQLFunctions.funcParam(expr2));
+        argList = Arrays.asList(expression1, SQLs._funcParam(expr2));
         return SQLFunctions.safeMultiArgOptionFunc("ADDTIME", null, argList, null, expression1.paramMeta());
     }
 
@@ -107,8 +110,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression convertTz(@Nullable Object dt, @Nullable Object fromTz, @Nullable Object toTz) {
         final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLFunctions.funcParam(dt), SQLFunctions.funcParam(fromTz)
-                , SQLFunctions.funcParam(toTz));
+        argList = Arrays.asList(SQLs._funcParam(dt), SQLs._funcParam(fromTz)
+                , SQLs._funcParam(toTz));
         return SQLFunctions.safeMultiArgOptionFunc("ADDTIME", null, argList, null, LocalDateTimeType.INSTANCE);
     }
 
@@ -144,7 +147,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     public static Expression currentTime(final Object fsp) {
         final String funcName = "CURRENT_TIME";
         final ArmyExpression expression;
-        expression = SQLFunctions.funcParam(fsp);
+        expression = SQLs._funcParam(fsp);
         if (expression instanceof NonOperationExpression) {
             throw CriteriaUtils.funcArgError(funcName, fsp);
         }
@@ -175,7 +178,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     public static Expression currentTimestamp(final Object fsp) {
         final String funcName = "CURRENT_TIMESTAMP";
         final ArmyExpression expression;
-        expression = SQLFunctions.funcParam(fsp);
+        expression = SQLs._funcParam(fsp);
         if (expression instanceof NonOperationExpression) {
             throw CriteriaUtils.funcArgError(funcName, fsp);
         }
@@ -206,7 +209,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression dateDiff(final @Nullable Object expr1, final @Nullable Object expr2) {
         final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLFunctions.funcParam(expr1), SQLFunctions.funcParam(expr2));
+        argList = Arrays.asList(SQLs._funcParam(expr1), SQLs._funcParam(expr2));
         return SQLFunctions.safeMultiArgOptionFunc("DATEDIFF", null, argList, null, IntegerType.INSTANCE);
     }
 
@@ -263,7 +266,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression dateFormat(final @Nullable Object date, final @Nullable Object format) {
         final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLFunctions.funcParam(date), SQLFunctions.funcParam(format));
+        argList = Arrays.asList(SQLs._funcParam(date), SQLs._funcParam(format));
         return SQLFunctions.safeMultiArgOptionFunc("DATE_FORMAT", null, argList, null, StringType.INSTANCE);
     }
 
@@ -368,7 +371,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
                 throw _Exceptions.unexpectedEnum(unit);
         }
         final List<Object> argList;
-        argList = Arrays.asList(unit, SQLFunctions.FuncWord.FROM, SQLFunctions.funcParam(date));
+        argList = Arrays.asList(unit, SQLFunctions.FuncWord.FROM, SQLs._funcParam(date));
         return SQLFunctions.safeComplexArgFunc("EXTRACT", argList, returnType);
     }
 
@@ -382,7 +385,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-days">FROM_DAYS(date)</a>
      */
     public static Expression fromDays(final @Nullable Object n) {
-        return SQLFunctions.oneArgFunc("FROM_DAYS", SQLFunctions.funcParam(n), LocalDateType.INSTANCE);
+        return SQLFunctions.oneArgFunc("FROM_DAYS", SQLs._funcParam(n), LocalDateType.INSTANCE);
     }
 
     /**
@@ -412,11 +415,241 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     public static Expression fromUnixTime(final @Nullable Object unixTimestamp, final @Nullable Object format) {
         final List<Object> argList;
         argList = Arrays.asList(
-                SQLFunctions.funcParam(unixTimestamp)
+                SQLs._funcParam(unixTimestamp)
                 , SQLFunctions.FuncWord.COMMA
-                , SQLFunctions.funcParam(format));
+                , SQLs._funcParam(format));
         return SQLFunctions.safeComplexArgFunc("FROM_UNIXTIME", argList, StringType.INSTANCE);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param type   non-null
+     * @param format nullable
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_get-format">GET_FORMAT({DATE|TIME|DATETIME}, {'EUR'|'USA'|'JIS'|'ISO'|'INTERNAL'})</a>
+     */
+    public static Expression getFormat(MySQLTimes type, @Nullable MySQLFormat format) {
+        Objects.requireNonNull(type);
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(type);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(format);
+        return SQLFunctions.safeComplexArgFunc("GET_FORMAT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param time nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_hour">HOUR(time)</a>
+     */
+    public static Expression hour(final @Nullable Object time) {
+        return SQLFunctions.oneArgFunc("HOUR", time, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_last-day">LAST_DAY(date)</a>
+     */
+    public static Expression lastDay(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("LAST_DAY", date, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalDateTimeType}
+     * </p>
+     *
+     * @see #now(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
+     */
+    public static Expression now() {
+        return SQLFunctions.noArgFunc("NOW", LocalDateTimeType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalDateTimeType}
+     * </p>
+     *
+     * @param fsp non-null parameter or {@link Expression}
+     * @see #now()
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
+     */
+    public static Expression now(final Object fsp) {
+        Objects.requireNonNull(fsp);
+        return SQLFunctions.oneArgFunc("NOW", fsp, LocalDateTimeType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalDateType}
+     * </p>
+     *
+     * @param year      nullable parameter or {@link Expression}
+     * @param dayOfYear nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_makedate">MAKEDATE(year,dayofyear)</a>
+     */
+    public static Expression makeDate(final @Nullable Object year, final @Nullable Object dayOfYear) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(year));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(dayOfYear));
+        return SQLFunctions.safeComplexArgFunc("MAKEDATE", argList, LocalDateType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalTimeType}
+     * </p>
+     *
+     * @param hour   nullable parameter or {@link Expression}
+     * @param minute nullable parameter or {@link Expression}
+     * @param second nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_maketime">MAKETIME(hour,minute,second)</a>
+     */
+    public static Expression makeTime(@Nullable Object hour, @Nullable Object minute, @Nullable Object second) {
+        final List<Object> argList = new ArrayList<>(5);
+        argList.add(SQLs._funcParam(hour));
+
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(minute));
+
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(second));
+        return SQLFunctions.safeComplexArgFunc("MAKETIME", argList, LocalTimeType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param expr non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_microsecond">MICROSECOND(expr)</a>
+     */
+    public static Expression microSecond(final @Nullable Object expr) {
+        return SQLFunctions.oneArgFunc("MICROSECOND", expr, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param time non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_minute">MINUTE(expr)</a>
+     */
+    public static Expression minute(final @Nullable Object time) {
+        return SQLFunctions.oneArgFunc("MINUTE", time, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link MonthType}
+     * </p>
+     *
+     * @param date non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_month">MONTH(date)</a>
+     */
+    public static Expression month(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("MONTH", date, MonthType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link MonthType}
+     * </p>
+     *
+     * @param date non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_monthname">MONTHNAME(date)</a>
+     */
+    public static Expression monthName(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("MONTHNAME", date, MonthType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link YearMonthType}
+     * </p>
+     *
+     * @param p non-null parameter or {@link Expression}
+     * @param n non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-add">PERIOD_ADD(p,n)</a>
+     */
+    public static Expression periodAdd(final @Nullable Object p, final @Nullable Object n) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(p));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(n));
+        return SQLFunctions.safeComplexArgFunc("PERIOD_ADD", argList, YearMonthType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param p1 non-null parameter or {@link Expression}
+     * @param p2 non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-diff">PERIOD_DIFF(P1,P2)</a>
+     */
+    public static Expression periodDiff(final @Nullable Object p1, final @Nullable Object p2) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(p1));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(p2));
+        return SQLFunctions.safeComplexArgFunc("PERIOD_DIFF", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param date non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_quarter">QUARTER(date)</a>
+     */
+    public static Expression quarter(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("QUARTER", date, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param time non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_second">SECOND(time)</a>
+     */
+    public static Expression second(final @Nullable Object time) {
+        return SQLFunctions.oneArgFunc("SECOND", time, IntegerType.INSTANCE);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1012,7 +1245,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
 
         final ArmyExpression expression;
-        expression = SQLFunctions.funcParam(n);
+        expression = SQLs._funcParam(n);
         if (expression instanceof SQLs.NullWord) {
             throw CriteriaUtils.funcArgError(funcName, n);
         }
@@ -1086,8 +1319,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             , final @Nullable Object expr3) {
         Objects.requireNonNull(expr1);
         final ArmyExpression expression2, expression3;
-        expression2 = SQLFunctions.funcParam(expr2);
-        expression3 = SQLFunctions.funcParam(expr3);
+        expression2 = SQLs._funcParam(expr2);
+        expression3 = SQLs._funcParam(expr3);
 
         if (expression2 instanceof NonOperationExpression && expression3 instanceof NonOperationExpression) {
             String m = "couldn't bo both non-operate " + Expression.class.getName();
@@ -1145,8 +1378,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression ifNull(@Nullable Object expr1, @Nullable Object expr2) {
         final ArmyExpression expression1, expression2;
-        expression1 = SQLFunctions.funcParam(expr1);
-        expression2 = SQLFunctions.funcParam(expr2);
+        expression1 = SQLs._funcParam(expr1);
+        expression2 = SQLs._funcParam(expr2);
         final ParamMeta returnType;
         returnType = Functions._returnType(expression1, expression2, MySQLFuncSyntax::ifNullReturnType);
         return SQLFunctions.safeMultiArgOptionFunc("IFNULL", null, Arrays.asList(expression1, expression2), null
@@ -1164,8 +1397,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     public static Expression nullIf(@Nullable Object expr1, @Nullable Object expr2) {
         final ArmyExpression expression1, expression2;
-        expression1 = SQLFunctions.funcParam(expr1);
-        expression2 = SQLFunctions.funcParam(expr2);
+        expression1 = SQLs._funcParam(expr1);
+        expression2 = SQLs._funcParam(expr2);
         return SQLFunctions.safeMultiArgOptionFunc("NULLIF", null, Arrays.asList(expression1, expression2), null
                 , expression1.paramMeta());
     }
@@ -1278,7 +1511,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
         final ArmyExpression expression;
-        expression = SQLFunctions.funcParam(expr);
+        expression = SQLs._funcParam(expr);
         final ParamMeta elementType = expression.paramMeta();
 
         final ParamMeta actualReturnType;
@@ -1310,8 +1543,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final String funcName = "JSON_OBJECTAGG";
 
         final ArmyExpression keyExpr, valueExpr;
-        keyExpr = SQLFunctions.funcParam(key);
-        valueExpr = SQLFunctions.funcParam(value);
+        keyExpr = SQLs._funcParam(key);
+        valueExpr = SQLs._funcParam(value);
 
         if (keyExpr instanceof SQLs.NullWord) {
             throw CriteriaUtils.funcArgError(funcName, key);
@@ -1356,7 +1589,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             throw CriteriaUtils.funcArgError(funcName, distinct);
         }
         final ArmyExpression expression;
-        expression = SQLFunctions.funcParam(expr);
+        expression = SQLs._funcParam(expr);
         if (expression instanceof SQLs.NullWord) {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
@@ -1387,7 +1620,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             throw CriteriaUtils.funcArgError(funcName, distinct);
         }
         final ArmyExpression expression;
-        expression = SQLFunctions.funcParam(expr);
+        expression = SQLs._funcParam(expr);
         if (expression instanceof SQLs.NullWord) {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
@@ -1430,7 +1663,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         assert funcName.equals("LAG") || funcName.equals("LEAD");
 
         final ArmyExpression expression;
-        expression = SQLFunctions.funcParam(expr);
+        expression = SQLs._funcParam(expr);
         if (expr instanceof SQLs.NullWord) {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
@@ -1441,7 +1674,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             nExp = null;
             nType = null;
         } else {
-            nExp = SQLFunctions.funcParam(n);
+            nExp = SQLs._funcParam(n);
             nType = nExp.paramMeta();
         }
 
@@ -1478,7 +1711,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      */
     private static _OverSpec _nonNullArgWindowFunc(final String funcName, final Object expr) {
         final ArmyExpression expression;
-        expression = SQLFunctions.funcParam(expr);
+        expression = SQLs._funcParam(expr);
         if (expr instanceof SQLs.NullWord) {
             throw CriteriaUtils.funcArgError(funcName, expr);
         }
@@ -1586,7 +1819,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     private static Expression _dateAddOrSub(final String funcName, final @Nullable Object date
             , final @Nullable Object expr, final MySQLUnit unit) {
         final ArmyExpression dateExpr;
-        dateExpr = SQLFunctions.funcParam(date);
+        dateExpr = SQLs._funcParam(date);
         final ParamMeta type, returnType;
         type = dateExpr.paramMeta();
         if (type instanceof ParamMeta.Delay) {

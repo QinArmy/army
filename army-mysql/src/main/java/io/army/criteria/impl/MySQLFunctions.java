@@ -29,7 +29,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         if (unit == null) {
             throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
         }
-        return new IntervalTimeFunc(name, SQLFunctions.funcParam(date), SQLFunctions.funcParam(expr), unit, returnType);
+        return new IntervalTimeFunc(name, SQLs._funcParam(date), SQLs._funcParam(expr), unit, returnType);
     }
 
     static MySQLFuncSyntax._OverSpec noArgWindowFunc(String name, ParamMeta returnType) {
@@ -38,7 +38,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     static MySQLFuncSyntax._OverSpec oneArgWindowFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, ParamMeta returnType) {
-        return new OneArgWindowFunc(name, option, SQLFunctions.funcParam(expr), returnType);
+        return new OneArgWindowFunc(name, option, SQLs._funcParam(expr), returnType);
     }
 
     static MySQLFuncSyntax._OverSpec safeMultiArgWindowFunc(String name, @Nullable SQLWords option
@@ -53,7 +53,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     static MySQLFuncSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable SQLWords option
             , @Nullable Object exp, ParamMeta returnType) {
-        return new OneArgAggregateWindowFunc(name, option, SQLFunctions.funcParam(exp), returnType);
+        return new OneArgAggregateWindowFunc(name, option, SQLs._funcParam(exp), returnType);
     }
 
     static MySQLFuncSyntax._AggregateOverSpec safeMultiArgAggregateWindowFunc(String name, @Nullable SQLWords option
@@ -69,7 +69,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         }
         final List<ArmyExpression> expList = new ArrayList<>(argList.size());
         for (Object o : argList) {
-            expList.add(SQLFunctions.funcParam(o));
+            expList.add(SQLs._funcParam(o));
         }
         return new MultiArgAggregateWindowFunc(name, option, expList, clause, returnType);
     }

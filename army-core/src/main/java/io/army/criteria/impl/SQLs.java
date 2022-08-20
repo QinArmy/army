@@ -9,7 +9,6 @@ import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
-import io.army.mapping.StringType;
 import io.army.mapping._MappingFactory;
 import io.army.mapping._NullType;
 import io.army.meta.*;
@@ -39,6 +38,7 @@ public abstract class SQLs extends StandardSyntax {
      */
     private SQLs() {
     }
+
 
 
     public static final class Modifier implements SQLWords {
@@ -292,6 +292,45 @@ public abstract class SQLs extends StandardSyntax {
         return resultExpression;
     }
 
+
+    /**
+     * package method that is used by army developer.
+     *
+     * @param value {@link Expression} or parameter
+     */
+    static ArmyExpression _funcParam(final @Nullable Object value) {
+        final ArmyExpression expression;
+        if (value == null) {
+            expression = SQLs._nullParam();
+        } else if (value instanceof Expression) {
+            expression = (ArmyExpression) value;
+        } else {
+            expression = (ArmyExpression) param(value);
+        }
+        return expression;
+    }
+
+    static ArmyExpression _funcLiteral(final @Nullable Object value) {
+        final ArmyExpression expression;
+        if (value == null) {
+            expression = (ArmyExpression) nullWord();
+        } else if (value instanceof Expression) {
+            expression = (ArmyExpression) value;
+        } else {
+            expression = (ArmyExpression) literal(value);
+        }
+        return expression;
+    }
+
+    /**
+     * <p>
+     * package method that is used by army developer.
+     * </p>
+     */
+    static ArmyExpression _nullParam() {
+        return NullParam.INSTANCE;
+    }
+
     /**
      * package method that is used by army developer.
      *
@@ -368,14 +407,6 @@ public abstract class SQLs extends StandardSyntax {
         return ParamExpression.single(type, null);
     }
 
-    /**
-     * <p>
-     * package method that is used by army developer.
-     * </p>
-     */
-    static Expression _nullParam() {
-        return StringTypeNull.INSTANCE;
-    }
 
     /**
      * <p>
@@ -1167,17 +1198,17 @@ public abstract class SQLs extends StandardSyntax {
 
     }//RowItemPair
 
-    private static final class StringTypeNull extends NonOperationExpression
+    private static final class NullParam extends NonOperationExpression
             implements SingleParam, SqlValueParam.SingleValue {
 
-        private static final StringTypeNull INSTANCE = new StringTypeNull();
+        private static final NullParam INSTANCE = new NullParam();
 
-        private StringTypeNull() {
+        private NullParam() {
         }
 
         @Override
         public ParamMeta paramMeta() {
-            return StringType.INSTANCE;
+            return _NullType.INSTANCE;
         }
 
         @Override

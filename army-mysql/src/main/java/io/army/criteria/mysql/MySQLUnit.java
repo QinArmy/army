@@ -29,7 +29,7 @@ public enum MySQLUnit implements SQLWords {
     DAY_HOUR(" DAY_HOUR"),
     YEAR_MONTH(" YEAR_MONTH");
 
-    public final String words;
+    private final String words;
 
     MySQLUnit(String words) {
         this.words = words;
