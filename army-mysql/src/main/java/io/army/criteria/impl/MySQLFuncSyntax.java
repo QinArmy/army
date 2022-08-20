@@ -685,6 +685,275 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         return SQLFunctions.safeComplexArgFunc(funcName, argList, returnType);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     *      <ul>
+     *          <li>If {@link MySQLUnit#MINUTE} or {@link MySQLUnit#SECOND} or {@link MySQLUnit#MICROSECOND} then {@link LongType}</li>
+     *          <li>Else {@link IntegerType}</li>
+     *      </ul>
+     * </p>
+     *
+     * @param unit          non-null
+     * @param datetimeExpr1 nullable parameter or {@link  Expression}
+     * @param datetimeExpr2 nullable parameter or {@link  Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestampdiff">TIMESTAMPDIFF(unit,datetime_expr1,datetime_expr2)</a>
+     */
+    public static Expression timestampDiff(final MySQLUnit unit, final @Nullable Object datetimeExpr1
+            , final @Nullable Object datetimeExpr2) {
+        final TypeMeta returnType;
+        switch (unit) {
+            case MINUTE:
+            case SECOND:
+            case MICROSECOND:
+                returnType = LongType.INSTANCE;
+                break;
+            case HOUR:
+            case DAY_HOUR:
+            case DAY_MINUTE:
+            case DAY_SECOND:
+            case DAY_MICROSECOND:
+            case HOUR_MINUTE:
+            case HOUR_SECOND:
+            case HOUR_MICROSECOND:
+            case MINUTE_SECOND:
+            case MINUTE_MICROSECOND:
+            case SECOND_MICROSECOND:
+            case YEAR:
+            case QUARTER:
+            case YEAR_MONTH:
+            case MONTH:
+            case WEEK:
+            case DAY:
+                returnType = IntegerType.INSTANCE;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(unit);
+        }
+
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(unit);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(datetimeExpr1));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(datetimeExpr2));
+        return SQLFunctions.safeComplexArgFunc("TIMESTAMPDIFF", argList, returnType);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param timeFormat nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time-format">TIME_FORMAT(time,format)</a>
+     */
+    public static Expression timeFormat(final @Nullable Object timeFormat) {
+        return SQLFunctions.oneArgFunc("TIME_FORMAT", timeFormat, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-days">TO_DAYS(date)</a>
+     */
+    public static Expression toDays(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("TO_DAYS", date, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LongType}
+     * </p>
+     *
+     * @param expr nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-seconds">TO_SECONDS(expr)</a>
+     */
+    public static Expression toSeconds(final @Nullable Object expr) {
+        return SQLFunctions.oneArgFunc("TO_SECONDS", expr, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LongType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP()</a>
+     */
+    public static Expression unixTimestamp() {
+        return SQLFunctions.noArgFunc("UNIX_TIMESTAMP", LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LongType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP(date)</a>
+     */
+    public static Expression unixTimestamp(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("UNIX_TIMESTAMP", date, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalDateType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-date">UTC_DATE()</a>
+     */
+    public static Expression utcDate() {
+        return SQLFunctions.noArgFunc("UTC_DATE", LocalDateType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalTimeType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME()</a>
+     */
+    public static Expression utcTime() {
+        return SQLFunctions.noArgFunc("UTC_DATE", LocalTimeType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalTimeType}
+     * </p>
+     *
+     * @param fsp non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME(fsp)</a>
+     */
+    public static Expression utcTime(final Object fsp) {
+        return SQLFunctions.oneArgFunc("UTC_TIME", fsp, LocalTimeType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalDateTimeType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP()</a>
+     */
+    public static Expression utcTimestamp() {
+        return SQLFunctions.noArgFunc("UTC_TIMESTAMP", LocalDateTimeType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LocalDateTimeType}
+     * </p>
+     *
+     * @param fsp non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP(fsp)</a>
+     */
+    public static Expression utcTimestamp(final Object fsp) {
+        return SQLFunctions.oneArgFunc("UTC_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
+     */
+    public static Expression week(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("WEEK", date, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @param mode non-null parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
+     */
+    public static Expression week(final @Nullable Object date, final Object mode) {
+        Objects.requireNonNull(mode);
+
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(date));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(mode));
+        return SQLFunctions.safeComplexArgFunc("WEEK", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DayOfWeekType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekday">WEEKDAY(date)</a>
+     */
+    public static Expression weekDay(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("WEEKDAY", date, DayOfWeekType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekofyear">WEEKOFYEAR(date)</a>
+     */
+    public static Expression weekOfYear(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("WEEKOFYEAR", date, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link YearType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_year">YEAR(date)</a>
+     */
+    public static Expression year(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("YEAR", date, YearType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date)</a>
+     */
+    public static Expression yearWeek(final @Nullable Object date) {
+        return SQLFunctions.oneArgFunc("YEARWEEK", date, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param date nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date,mode)</a>
+     */
+    public static Expression yearWeek(final @Nullable Object date, final Object mode) {
+        Objects.requireNonNull(mode);
+
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(date));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(mode));
+        return SQLFunctions.safeComplexArgFunc("YEARWEEK", argList, IntegerType.INSTANCE);
+    }
+
 
     /**
      * <p>
@@ -907,6 +1176,21 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         return SQLFunctions.safeComplexArgFunc("STR_TO_DATE", argList, returnType);
     }
 
+
+
+    /*-------------------below String Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ascii">ASCII(str)</a>
+     */
+    public static Expression ascii(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
+    }
 
 
 
