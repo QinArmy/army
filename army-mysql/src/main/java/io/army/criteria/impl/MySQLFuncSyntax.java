@@ -13,10 +13,7 @@ import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -1192,7 +1189,134 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         return SQLFunctions.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param n nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bin">BIN(n)</a>
+     */
+    public static Expression bin(final @Nullable Object n) {
+        return SQLFunctions.oneArgFunc("BIN", n, StringType.INSTANCE);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bit-length">BIT_LENGTH(str)</a>
+     */
+    public static Expression binLength(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param n nullable parameter or {@link Collection} or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
+     */
+    public static Expression charFunc(final @Nullable Object n) {
+        final ArmyExpression expression;
+        if (n == null) {
+            expression = SQLs._nullParam();
+        } else if (n instanceof Expression) {
+            expression = (ArmyExpression) n;
+        } else if (n instanceof Collection) {
+            expression = (ArmyExpression) SQLs.params(IntegerType.INSTANCE, (Collection<?>) n);
+        } else {
+            expression = SQLs._funcParam(n);
+        }
+        return SQLFunctions.oneArgFunc("CHAR", expression, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param n           nullable parameter or {@link Collection} or {@link Expression}
+     * @param charsetName non-null MySQL charset,output literal
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
+     */
+    public static Expression charFunc(final @Nullable Object n, final String charsetName) {
+        CriteriaContextStack.assertNonNull(charsetName);
+
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParamList(StringType.INSTANCE, n));
+        argList.add(SQLFunctions.FuncWord.USING);
+        argList.add(SQLs._identifier(charsetName));
+        return SQLFunctions.safeComplexArgFunc("CHAR", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR_LENGTH(str)</a>
+     */
+    public static Expression charLength(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("CHAR_LENGTH", str, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Collection} or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat">CONCAT(str1,str2,...)</a>
+     */
+    public static Expression concat(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("CONCAT", SQLs._funcParamList(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param separator nullable parameter or {@link Expression}
+     * @param str       nullable parameter or {@link Collection} or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
+     */
+    public static Expression concatWs(final @Nullable Object separator, final @Nullable Object str) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, separator));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParamList(StringType.INSTANCE, str));
+        return SQLFunctions.safeComplexArgFunc("CONCAT_WS", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param n   non-null parameter or {@link Expression}
+     * @param str non-null parameter or {@link Collection} or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
+     */
+    public static Expression elt(final Object n, final Object str) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, n));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParamList(StringType.INSTANCE, str));
+        return SQLFunctions.safeComplexArgFunc("ELT", argList, StringType.INSTANCE);
+    }
 
 
     /*-------------------below Aggregate Function  -------------------*/

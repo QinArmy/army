@@ -9,10 +9,12 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -26,7 +28,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         INTERVAL(_Constant.SPACE_INTERVAL),
         COMMA(_Constant.SPACE_COMMA),
-        FROM(_Constant.SPACE_FROM);
+        FROM(_Constant.SPACE_FROM),
+        USING(_Constant.SPACE_USING);
 
         private final String word;
 
@@ -146,6 +149,10 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     interface FunctionSpec extends _SelfDescribed, TypeInfer {
+
+    }
+
+    interface ImmutableFunctionSpec extends FunctionSpec {
 
     }
 
@@ -361,7 +368,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//AggregateOverClause
 
-    private static final class NoArgFuncExpression extends OperationExpression implements FunctionSpec {
+    private static final class NoArgFuncExpression extends OperationExpression implements ImmutableFunctionSpec {
 
         private final String name;
 
@@ -384,6 +391,35 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
                     .append(this.name)
                     .append(_Constant.LEFT_PAREN)
                     .append(_Constant.RIGHT_PAREN);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof NoArgFuncExpression) {
+                final NoArgFuncExpression o = (NoArgFuncExpression) obj;
+                match = o.name.equals(this.name) && o.returnType == this.returnType;
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN)
+                    .append(_Constant.RIGHT_PAREN)
+                    .toString();
         }
 
 

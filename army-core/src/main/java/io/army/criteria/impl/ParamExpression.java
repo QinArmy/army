@@ -106,7 +106,7 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
 
 
     private static final class MultiParamExpression extends ParamExpression
-            implements MultiParam, SqlValueParam.MultiValue {
+            implements MultiParam, SqlValueParam.MultiValue, MultiValueExpression {
 
         private final List<?> valueList;
 
@@ -139,6 +139,14 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
 
         }
 
+
+        @Override
+        public void appendSqlWithParens(final _SqlContext context) {
+            final StringBuilder sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_LEFT_PAREN);
+            this.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
 
         @Override
         public int hashCode() {
@@ -230,7 +238,7 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
     }//NameNonNullSingleParam
 
     private static final class NamedMultiParam extends ParamExpression
-            implements NamedParam.NamedMulti {
+            implements NamedParam.NamedMulti, MultiValueExpression {
 
         private final String name;
 
@@ -258,6 +266,13 @@ abstract class ParamExpression extends OperationExpression implements SqlParam {
             context.appendParam(this);
         }
 
+        @Override
+        public void appendSqlWithParens(final _SqlContext context) {
+            final StringBuilder sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_LEFT_PAREN);
+            context.appendParam(this);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
 
         @Override
         public int hashCode() {

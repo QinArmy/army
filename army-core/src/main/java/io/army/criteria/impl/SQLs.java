@@ -9,6 +9,7 @@ import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
+import io.army.mapping.IntegerType;
 import io.army.mapping._MappingFactory;
 import io.army.mapping._NullType;
 import io.army.meta.*;
@@ -38,7 +39,6 @@ public abstract class SQLs extends StandardSyntax {
      */
     private SQLs() {
     }
-
 
 
     public static final class Modifier implements SQLWords {
@@ -273,6 +273,10 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
+    static ArmyExpression _identifier(String identifierStr) {
+        return IdentifierExpression.single(identifierStr);
+    }
+
     /**
      * package method that is used by army developer.
      *
@@ -297,6 +301,8 @@ public abstract class SQLs extends StandardSyntax {
      * package method that is used by army developer.
      *
      * @param value {@link Expression} or parameter
+     * @see #_funcLiteral(Object)
+     * @see #_funcParamList(TypeMeta, Object)
      */
     static ArmyExpression _funcParam(final @Nullable Object value) {
         final ArmyExpression expression;
@@ -306,6 +312,34 @@ public abstract class SQLs extends StandardSyntax {
             expression = (ArmyExpression) value;
         } else {
             expression = (ArmyExpression) param(value);
+        }
+        return expression;
+    }
+
+    static ArmyExpression _funcParam(final TypeMeta typeMeta, final @Nullable Object value) {
+        final ArmyExpression expression;
+        if (value instanceof Expression) {
+            expression = (ArmyExpression) value;
+        } else {
+            expression = (ArmyExpression) SQLs.param(typeMeta, value);
+        }
+        return expression;
+    }
+
+    /**
+     * @see #_funcParam(Object)
+     * @see #_funcLiteral(Object)
+     */
+    static ArmyExpression _funcParamList(final TypeMeta typeMeta, final @Nullable Object value) {
+        final ArmyExpression expression;
+        if (value == null) {
+            expression = (ArmyExpression) SQLs.nullParam(IntegerType.INSTANCE);
+        } else if (value instanceof Expression) {
+            expression = (ArmyExpression) value;
+        } else if (value instanceof Collection) {
+            expression = (ArmyExpression) SQLs.params(typeMeta, (Collection<?>) value);
+        } else {
+            expression = (ArmyExpression) SQLs.param(typeMeta, value);
         }
         return expression;
     }
@@ -432,7 +466,7 @@ public abstract class SQLs extends StandardSyntax {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <E> Expression preferLiteralParams(TypeMeta paramMeta, Collection<E> value) {
+    public static Expression preferLiteralParams(TypeMeta paramMeta, Collection<?> value) {
         return ParamExpression.multi(paramMeta, value, true);
     }
 
@@ -441,7 +475,7 @@ public abstract class SQLs extends StandardSyntax {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <E> Expression preferLiteralParams(TypeMeta paramMeta, Supplier<Collection<E>> supplier) {
+    public static Expression preferLiteralParams(TypeMeta paramMeta, Supplier<? extends Collection<?>> supplier) {
         return ParamExpression.multi(paramMeta, supplier.get(), true);
     }
 
@@ -450,8 +484,14 @@ public abstract class SQLs extends StandardSyntax {
      * Create optimizing collection param expression
      * </p>
      */
-    public static <C, E> Expression preferLiteralParams(TypeMeta paramMeta, Function<C, Collection<E>> function) {
-        return ParamExpression.multi(paramMeta, function.apply(CriteriaContextStack.getTopCriteria()), true);
+    public static Expression preferLiteralParams(TypeMeta paramMeta, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (!(value instanceof Collection)) {
+            String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        }
+        return ParamExpression.multi(paramMeta, (Collection<?>) value, true);
     }
 
     /**
@@ -459,7 +499,7 @@ public abstract class SQLs extends StandardSyntax {
      * Create strict collection param expression
      * </p>
      */
-    public static <E> Expression params(TypeMeta paramMeta, Collection<E> value) {
+    public static Expression params(TypeMeta paramMeta, Collection<?> value) {
         return ParamExpression.multi(paramMeta, value, false);
     }
 
@@ -468,7 +508,7 @@ public abstract class SQLs extends StandardSyntax {
      * Create strict collection param expression
      * </p>
      */
-    public static <E> Expression params(TypeMeta paramMeta, Supplier<Collection<E>> supplier) {
+    public static Expression params(TypeMeta paramMeta, Supplier<? extends Collection<?>> supplier) {
         return ParamExpression.multi(paramMeta, supplier.get(), false);
     }
 
@@ -477,8 +517,14 @@ public abstract class SQLs extends StandardSyntax {
      * Create strict collection param expression
      * </p>
      */
-    public static <C, E> Expression params(TypeMeta paramMeta, Function<C, Collection<E>> function) {
-        return ParamExpression.multi(paramMeta, function.apply(CriteriaContextStack.getTopCriteria()), false);
+    public static Expression params(TypeMeta paramMeta, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (!(value instanceof Collection)) {
+            String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        }
+        return ParamExpression.multi(paramMeta, (Collection<?>) value, false);
     }
 
 
@@ -590,12 +636,22 @@ public abstract class SQLs extends StandardSyntax {
         return LiteralExpression.single(paramMeta, value);
     }
 
-    public static <E> Expression literals(List<E> valueList) {
-        return LiteralExpression.multi(_MappingFactory.getDefault(valueList.get(0).getClass()), valueList);
+    public static Expression literals(TypeMeta paramMeta, Collection<?> values) {
+        return LiteralExpression.multi(paramMeta, values);
     }
 
-    public static <E> Expression literals(TypeMeta paramMeta, Collection<E> values) {
-        return LiteralExpression.multi(paramMeta, values);
+    public static Expression literals(TypeMeta paramMeta, Supplier<? extends Collection<?>> supplier) {
+        return LiteralExpression.multi(paramMeta, supplier.get());
+    }
+
+    public static Expression literals(TypeMeta paramMeta, Function<String, ?> function, String keyName) {
+        final Object value;
+        value = function.apply(keyName);
+        if (!(value instanceof Collection)) {
+            String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        }
+        return LiteralExpression.multi(paramMeta, (Collection<?>) value);
     }
 
     public static Expression namedLiteral(TypeMeta paramMeta, String name) {

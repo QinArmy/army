@@ -52,8 +52,6 @@ abstract class LiteralExpression extends OperationExpression {
         assert size > 0;
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
-
-        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
@@ -62,7 +60,6 @@ abstract class LiteralExpression extends OperationExpression {
             }
             context.appendLiteral(paramMeta, valueList.get(i));
         }
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
     static StringBuilder multiLiteralToString(final StringBuilder builder, final List<?> valueList) {
@@ -153,10 +150,11 @@ abstract class LiteralExpression extends OperationExpression {
         }
 
 
-    }//SingleLiteralExpression
+     }//SingleLiteralExpression
 
 
-    private static final class MultiLiteralExpression extends LiteralExpression {
+    private static final class MultiLiteralExpression extends LiteralExpression
+            implements MultiValueExpression {
 
         private final List<?> valueList;
 
@@ -171,6 +169,18 @@ abstract class LiteralExpression extends OperationExpression {
             appendMultiLiteral(context, this.paramMeta, this.valueList);
         }
 
+        @Override
+        public void appendSqlWithParens(final _SqlContext context) {
+            final StringBuilder sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_LEFT_PAREN);
+            appendMultiLiteral(context, this.paramMeta, this.valueList);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+        @Override
+        public int valueSize() {
+            return this.valueList.size();
+        }
 
         @Override
         public int hashCode() {
@@ -261,7 +271,7 @@ abstract class LiteralExpression extends OperationExpression {
 
 
     private static final class NamedMultiLiteral extends LiteralExpression
-            implements NamedLiteral, SqlValueParam.NamedMultiValue {
+            implements NamedLiteral, SqlValueParam.NamedMultiValue, MultiValueExpression {
 
         private final String name;
 
@@ -289,6 +299,13 @@ abstract class LiteralExpression extends OperationExpression {
             context.appendLiteral(this);
         }
 
+        @Override
+        public void appendSqlWithParens(final _SqlContext context) {
+            final StringBuilder sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_LEFT_PAREN);
+            context.appendLiteral(this);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
 
         @Override
         public int hashCode() {

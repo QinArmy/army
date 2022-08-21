@@ -55,11 +55,28 @@ final class DualPredicate extends OperationPredicate {
     }
 
     @Override
-    public void appendSql(_SqlContext context) {
+    public void appendSql(final _SqlContext context) {
         this.left.appendSql(context);
-        context.sqlBuilder()
-                .append(this.operator.signText);
-        this.right.appendSql(context);
+
+        final DualOperator operator = this.operator;
+        context.sqlBuilder().append(operator.signText);
+
+        final ArmyExpression right = this.right;
+        switch (operator) {
+            case IN:
+            case NOT_IN: {
+                if (right instanceof MultiValueExpression) {
+                    ((MultiValueExpression) right).appendSqlWithParens(context);
+                } else {
+                    right.appendSql(context);
+                }
+            }
+            break;
+            default:
+                right.appendSql(context);
+
+        }//switch
+
     }
 
     @Override

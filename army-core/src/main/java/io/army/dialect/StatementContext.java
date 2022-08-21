@@ -254,14 +254,12 @@ abstract class StatementContext implements StmtContext, _StmtParams {
         final int paramSize;
         paramSize = sqlParam.valueSize();
         assert paramSize > 0;
-        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
         for (int i = 0; i < paramSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             sqlBuilder.append(SPACE_PLACEHOLDER);
         }
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
 
