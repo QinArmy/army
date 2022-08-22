@@ -291,7 +291,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
     interface _ParentAssignmentSetSpec<C, P>
             extends Insert._AssignmentSetClause<C, P, _ParentAssignmentSetSpec<C, P>>, _LoadDataSpec {
 
-        _ChildLoadInfileClause<C, P> child(List<MySQLWords> modifierList);
+        _ChildLoadInfileClause<C, P> child(List<MySQLModifier> modifierList);
 
     }
 
@@ -415,7 +415,7 @@ public interface MySQLLoad extends DialectStatement, PrimaryStatement {
 
     interface _LoadDataClause<C> {
 
-        _LoadInfileClause<C, _StrategyOptionSpec<C>> loadData(List<MySQLWords> modifierList);
+        _LoadInfileClause<C, _StrategyOptionSpec<C>> loadData(List<MySQLModifier> modifierList);
 
     }
 

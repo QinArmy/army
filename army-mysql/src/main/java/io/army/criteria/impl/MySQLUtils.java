@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TableItem;
-import io.army.criteria.mysql.MySQLWords;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.lang.Nullable;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return list;
     }
 
-    static int selectModifier(final MySQLWords modifier) {
+    static int selectModifier(final MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case ALL:
@@ -85,7 +85,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int insertModifier(final MySQLWords modifier) {
+    static int insertModifier(final MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -102,7 +102,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int queryInsertModifier(final MySQLWords modifier) {
+    static int queryInsertModifier(final MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -119,7 +119,7 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    static int replaceModifier(final MySQLWords modifier) {
+    static int replaceModifier(final MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -132,7 +132,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int updateModifier(final MySQLWords modifier) {
+    static int updateModifier(final MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -147,7 +147,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int deleteModifier(final MySQLWords modifier) {
+    static int deleteModifier(final MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:
@@ -165,7 +165,7 @@ abstract class MySQLUtils extends CriteriaUtils {
         return level;
     }
 
-    static int loadDataModifier(final MySQLWords modifier) {
+    static int loadDataModifier(final MySQLModifier modifier) {
         final int level;
         switch (modifier) {
             case LOW_PRIORITY:

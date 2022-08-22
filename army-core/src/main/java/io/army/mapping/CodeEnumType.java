@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
@@ -47,7 +47,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.INT;
+                sqlType = MySQLTypes.INT;
                 break;
             case PostgreSQL:
                 sqlType = PostgreType.INTEGER;

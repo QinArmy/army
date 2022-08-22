@@ -25,7 +25,7 @@ public class MySQLLoadDataUnitTests {
         try {
             MySQLLoad stmt;
             stmt = MySQLs.loadDataStmt()
-                    .loadData(Collections.singletonList(MySQLWords.LOCAL))
+                    .loadData(Collections.singletonList(MySQLModifier.LOCAL))
                     .infile(tempFile)
                     .ignore()
                     .intoTable(ChinaRegion_.T)

@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.H2DataType;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
@@ -94,7 +94,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.ENUM;
+                sqlType = MySQLTypes.ENUM;
                 break;
             case PostgreSQL:
                 sqlType = PostgreType.VARCHAR;

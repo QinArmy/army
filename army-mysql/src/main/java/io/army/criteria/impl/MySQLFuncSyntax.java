@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.mysql.MySQLClause;
-import io.army.criteria.mysql.MySQLFormat;
-import io.army.criteria.mysql.MySQLTimes;
-import io.army.criteria.mysql.MySQLUnit;
+import io.army.criteria.mysql.*;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.*;
@@ -29,6 +26,7 @@ import java.util.function.Supplier;
  * </p>
  * package class
  */
+@SuppressWarnings("unused")
 abstract class MySQLFuncSyntax extends MySQLSyntax {
 
     /**
@@ -494,17 +492,35 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param type   non-null
+     * @param type   non-null,should be below:
+     *               <ul>
+     *                      <li>{@link MySQLWords#TIME}</li>
+     *                      <li>{@link MySQLWords#DATE}</li>
+     *                      <li>{@link MySQLWords#DATETIME}</li>
+     *               </ul>
      * @param format nullable
+     * @throws CriteriaException throw when 1.type error;2.invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_get-format">GET_FORMAT({DATE|TIME|DATETIME}, {'EUR'|'USA'|'JIS'|'ISO'|'INTERNAL'})</a>
      */
-    public static Expression getFormat(MySQLTimes type, @Nullable MySQLFormat format) {
-        Objects.requireNonNull(type);
+    public static Expression getFormat(final MySQLWords type, final @Nullable MySQLFormat format) {
+        final String funcName = "GET_FORMAT";
+        switch (type) {
+            case TIME:
+            case DATE:
+            case DATETIME:
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(funcName, type);
+        }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(type);
         argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(format);
-        return SQLFunctions.safeComplexArgFunc("GET_FORMAT", argList, StringType.INSTANCE);
+        if (format == null) {
+            argList.add(SQLs.nullWord());
+        } else {
+            argList.add(format);
+        }
+        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
     /**
@@ -1241,19 +1257,25 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param n           nullable parameter or {@link Collection} or {@link Expression}
-     * @param charsetName non-null MySQL charset,output literal
+     * @param n           nullable parameter or non-empty {@link List} or {@link Expression}
+     * @param charsetName non-null, {@link io.army.criteria.mysql.MySQLCharset} or {@link String} ,output identifier
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression charFunc(final @Nullable Object n, final String charsetName) {
-        CriteriaContextStack.assertNonNull(charsetName);
+    public static Expression charFunc(final @Nullable Object n, final Object charsetName) {
+        final String funcName = "CHAR";
 
         final List<Object> argList = new ArrayList<>(3);
         argList.add(SQLs._funcParamList(StringType.INSTANCE, n));
         argList.add(SQLFunctions.FuncWord.USING);
-        argList.add(SQLs._identifier(charsetName));
-        return SQLFunctions.safeComplexArgFunc("CHAR", argList, StringType.INSTANCE);
+        if (charsetName instanceof MySQLCharset) {
+            argList.add(charsetName);
+        } else if (charsetName instanceof String) {
+            argList.add(SQLFunctions.sqlIdentifier((String) charsetName));// sql identifier
+        } else {
+            throw CriteriaUtils.funcArgError(funcName, charsetName);
+        }
+        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
     /**
@@ -1305,17 +1327,935 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param n   non-null parameter or {@link Expression}
-     * @param str non-null parameter or {@link Collection} or {@link Expression}
+     * @param n       non-null parameter or {@link Expression}
+     * @param strList non-null parameter or non-empty {@link List} or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
      */
-    public static Expression elt(final Object n, final Object str) {
+    public static Expression elt(final Object n, final Object strList) {
         final List<Object> argList = new ArrayList<>(3);
         argList.add(SQLs._funcParam(IntegerType.INSTANCE, n));
         argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParamList(StringType.INSTANCE, str));
+        argList.add(SQLs._funcParamList(StringType.INSTANCE, strList));
         return SQLFunctions.safeComplexArgFunc("ELT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param bits non-null parameter or {@link Expression}
+     * @param on   non-null parameter or {@link Expression}
+     * @param off  non-null parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #exportSet(Object, Object, Object, Object)
+     * @see #exportSet(Object, Object, Object, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
+     */
+    public static Expression exportSet(final Object bits, final Object on, Object off) {
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(SQLs._funcParam(bits));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(on));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(off));
+        return SQLFunctions.safeComplexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param bits non-null parameter or {@link Expression}
+     * @param on   non-null parameter or {@link Expression}
+     * @param off  non-null parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #exportSet(Object, Object, Object)
+     * @see #exportSet(Object, Object, Object, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
+     */
+    public static Expression exportSet(final Object bits, final Object on, Object off, final Object separator) {
+        final List<Object> argList = new ArrayList<>(7);
+
+        argList.add(SQLs._funcParam(bits));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(on));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(off));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(separator));
+        return SQLFunctions.safeComplexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param bits non-null parameter or {@link Expression}
+     * @param on   non-null parameter or {@link Expression}
+     * @param off  non-null parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #exportSet(Object, Object, Object)
+     * @see #exportSet(Object, Object, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
+     */
+    public static Expression exportSet(final Object bits, final Object on, Object off, final Object separator
+            , final Object numberOfBits) {
+        final List<Object> argList = new ArrayList<>(9);
+
+        argList.add(SQLs._funcParam(bits));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(on));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(off));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(separator));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(numberOfBits));
+        return SQLFunctions.safeComplexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str     nullable parameter or {@link Expression}
+     * @param strList non-null parameter or non-empty {@link List} or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_field">FIELD(str,str1,str2,str3,...)</a>
+     */
+    public static Expression field(final @Nullable Object str, final Object strList) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParamList(StringType.INSTANCE, strList));
+        return SQLFunctions.safeComplexArgFunc("FIELD", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str     nullable parameter or {@link Expression}
+     * @param strList nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
+     */
+    public static Expression fieldInSet(final @Nullable Object str, final @Nullable Object strList) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, strList));
+        return SQLFunctions.safeComplexArgFunc("FIND_IN_SET", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param x nullable parameter or {@link Expression}
+     * @param d nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #format(Object, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
+     */
+    public static Expression format(final @Nullable Object x, final @Nullable Object d) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(x));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, d));
+        return SQLFunctions.safeComplexArgFunc("FORMAT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param x      nullable parameter or {@link Expression}
+     * @param d      nullable parameter or {@link Expression}
+     * @param locale nullable {@link MySQLLocale} or {@link String} or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #format(Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
+     */
+    public static Expression format(final @Nullable Object x, final @Nullable Object d, final @Nullable Object locale) {
+        final String funcName = "FORMAT";
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(SQLs._funcParam(x));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, d));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        if (locale == null) {
+            argList.add(SQLs._nullParam());
+        } else if (locale instanceof MySQLLocale || locale instanceof ArmyExpression) { //must be ArmyExpression not Expression
+            argList.add(locale);
+        } else if (locale instanceof String) {
+            argList.add(SQLFunctions.sqlIdentifier((String) locale));
+        } else {
+            throw CriteriaUtils.funcArgError(funcName, locale);
+        }
+        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #toBase64(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_from-base64">FROM_BASE64(str)</a>
+     */
+    public static Expression fromBase64(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("FROM_BASE64", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #fromBase64(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_to-base64">TO_BASE64(str)</a>
+     */
+    public static Expression toBase64(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("TO_BASE64", str, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param strOrNum nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #unhex(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_hex">HEX(str), HEX(N)</a>
+     */
+    public static Expression hex(final @Nullable Object strOrNum) {
+        return SQLFunctions.oneArgFunc("HEX", strOrNum, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #hex(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_unhex">UNHEX(str)</a>
+     */
+    public static Expression unhex(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("UNHEX", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str    nullable parameter or {@link Expression}
+     * @param pos    nullable parameter or {@link Expression}
+     * @param len    nullable parameter or {@link Expression}
+     * @param newStr nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_insert">INSERT(str,pos,len,newstr)</a>
+     */
+    public static Expression insert(final @Nullable Object str, final @Nullable Object pos
+            , final @Nullable Object len, final @Nullable Object newStr) {
+        final List<Object> argList = new ArrayList<>(7);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, pos));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, newStr));
+        return SQLFunctions.safeComplexArgFunc("INSERT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str    nullable parameter or {@link Expression}
+     * @param substr nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_instr">INSTR(str,substr)</a>
+     */
+    public static Expression instr(final @Nullable Object str, final @Nullable Object substr) {
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, substr));
+        return SQLFunctions.safeComplexArgFunc("INSTR", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lower">LOWER(str)</a>
+     */
+    public static Expression lower(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("LOWER", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #lower(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_upper">UPPER(str)</a>
+     */
+    public static Expression upper(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("UPPER", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @param len nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_left">LEFT(str,len)</a>
+     */
+    public static Expression left(final @Nullable Object str, final @Nullable Object len) {
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
+        return SQLFunctions.safeComplexArgFunc("LEFT", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
+     */
+    public static Expression length(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("LENGTH", str, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param fileName non-null parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_load-file">LOAD_FILE(fileName)</a>
+     */
+    public static Expression loadFile(final Object fileName) {
+        return SQLFunctions.oneArgFunc("LOAD_FILE", fileName, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param substr nullable parameter or {@link Expression}
+     * @param str    nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #locate(Object, Object, Object)
+     * @see #position(Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str)</a>
+     */
+    public static Expression locate(final @Nullable Object substr, final @Nullable Object str) {
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, substr));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, str));
+        return SQLFunctions.safeComplexArgFunc("LOCATE", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param substr nullable parameter or {@link Expression}
+     * @param str    nullable parameter or {@link Expression}
+     * @param pos    nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #locate(Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str,pos)</a>
+     */
+    public static Expression locate(final @Nullable Object substr, final @Nullable Object str
+            , final @Nullable Object pos) {
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, substr));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, pos));
+        return SQLFunctions.safeComplexArgFunc("LOCATE", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str    nullable parameter or {@link Expression}
+     * @param len    nullable parameter or {@link Expression}
+     * @param padstr nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #rpad(Object, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lpad">LPAD(str,len,padstr)</a>
+     */
+    public static Expression lpad(final @Nullable Object str, final @Nullable Object len
+            , final @Nullable Object padstr) {
+        return _leftOrRightpad("LPAD", str, len, padstr);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str    nullable parameter or {@link Expression}
+     * @param len    nullable parameter or {@link Expression}
+     * @param padstr nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #lpad(Object, Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_rpad">RPAD(str,len,padstr)</a>
+     */
+    public static Expression rpad(final @Nullable Object str, final @Nullable Object len
+            , final @Nullable Object padstr) {
+        return _leftOrRightpad("RPAD", str, len, padstr);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #rtrim(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ltrim">LTRIM(str)</a>
+     */
+    public static Expression ltrim(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("LTRIM", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #ltrim(Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_rtrim">RTRIM(str)</a>
+     */
+    public static Expression rtrim(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("RTRIM", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param bits    non-null {@link Long} or {@link Integer} or {@link BitSet} or {@link Expression}
+     * @param strList non-null {@link String} or {@link  List} or  {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">MAKE_SET(bits,str1,str2,...)</a>
+     */
+    public static Expression makeSet(final Object bits, final Object strList) {
+        final String funcName = "MAKE_SET";
+        final List<Object> argList = new ArrayList<>(3);
+
+        if (bits instanceof Long || bits instanceof Integer) {
+            argList.add(SQLs._funcParam(LongType.INSTANCE, bits));
+        } else if (bits instanceof BitSet) {
+            argList.add(SQLs._funcParam(BitSetType.INSTANCE, bits));
+        } else if (bits instanceof ArmyExpression) {
+            argList.add(bits);
+        } else {
+            throw CriteriaUtils.funcArgError(funcName, bits);
+        }
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParamList(StringType.INSTANCE, strList));
+        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @param pos nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos)</a>
+     */
+    public static Expression subString(final @Nullable Object str, final @Nullable Object pos) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, pos));
+        return SQLFunctions.safeComplexArgFunc("SUBSTRING", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @param pos nullable parameter or {@link Expression}
+     * @param len nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos,len)</a>
+     */
+    public static Expression subString(final @Nullable Object str, final @Nullable Object pos
+            , final @Nullable Object len) {
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, pos));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
+        return SQLFunctions.safeComplexArgFunc("SUBSTRING", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param n nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_oct">OCT(N)</a>
+     */
+    public static Expression oct(final @Nullable Object n) {
+        return SQLFunctions.oneArgFunc("OCT", n, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ord">ORD(str)</a>
+     */
+    public static Expression ord(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("ORD", SQLs._funcParam(StringType.INSTANCE, str), IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param substr nullable parameter or {@link Expression}
+     * @param str    nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #locate(Object, Object)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_position">POSITION(substr IN str)</a>
+     */
+    public static Expression position(final @Nullable Object substr, final @Nullable Object str) {
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, substr));
+        argList.add(SQLFunctions.FuncWord.IN);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, str));
+        return SQLFunctions.safeComplexArgFunc("POSITION", argList, IntegerType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_quote">QUOTE(str)</a>
+     */
+    public static Expression quote(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("QUOTE", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str   nullable parameter or {@link Expression}
+     * @param count nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_repeat">REPEAT(str,count)</a>
+     */
+    public static Expression repeat(final @Nullable Object str, final @Nullable Object count) {
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, count));
+        return SQLFunctions.safeComplexArgFunc("REPEAT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str     nullable parameter or {@link Expression}
+     * @param fromStr nullable parameter or {@link Expression}
+     * @param toStr   nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_replace">REPLACE(str,from_str,to_str)</a>
+     */
+    public static Expression replace(final @Nullable Object str, final @Nullable Object fromStr
+            , final @Nullable Object toStr) {
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, fromStr));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, toStr));
+        return SQLFunctions.safeComplexArgFunc("REPLACE", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_reverse">REVERSE(str)</a>
+     */
+    public static Expression reverse(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("REVERSE", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @param len nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_right">RIGHT(str,len)</a>
+     */
+    public static Expression right(final @Nullable Object str, final @Nullable Object len) {
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
+        return SQLFunctions.safeComplexArgFunc("RIGHT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_soundex">SOUNDEX(str)</a>
+     */
+    public static Expression soundex(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("SOUNDEX", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param n nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_space">SPACE(n)</a>
+     */
+    public static Expression space(final @Nullable Object n) {
+        return SQLFunctions.oneArgFunc("SPACE", SQLs._funcParam(IntegerType.INSTANCE, n), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str   nullable parameter or {@link Expression}
+     * @param delim nullable parameter or {@link Expression}
+     * @param count nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring-index">SUBSTRING_INDEX(str,delim,count)</a>
+     */
+    public static Expression substringIndex(final @Nullable Object str, final @Nullable Object delim
+            , final @Nullable Object count) {
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, delim));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, count));
+        return SQLFunctions.safeComplexArgFunc("SUBSTRING_INDEX", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(str)</a>
+     */
+    public static Expression trim(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("TRIM", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param remstr nullable parameter or {@link Expression}
+     * @param str    nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
+     */
+    public static Expression trim(final @Nullable Object remstr, final @Nullable Object str) {
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, remstr));
+        argList.add(SQLFunctions.FuncWord.FROM);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        return SQLFunctions.safeComplexArgFunc("TRIM", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param position non-null,should be below:
+     *                 <ul>
+     *                      <li>{@link MySQLWords#BOTH}</li>
+     *                      <li>{@link MySQLWords#LEADING}</li>
+     *                      <li>{@link MySQLWords#TRAILING}</li>
+     *                 </ul>
+     * @param remstr   nullable parameter or {@link Expression}
+     * @param str      nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
+     */
+    public static Expression trim(final MySQLWords position, final @Nullable Object remstr
+            , final @Nullable Object str) {
+        final String funcName = "TRIM";
+        switch (position) {
+            case BOTH:
+            case LEADING:
+            case TRAILING:
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(funcName, position);
+        }
+
+        final List<Object> argList = new ArrayList<>(4);
+
+        argList.add(position);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, remstr));
+        argList.add(SQLFunctions.FuncWord.FROM);
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+
+        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str nullable parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str)</a>
+     */
+    public static Expression weightString(final @Nullable Object str) {
+        return SQLFunctions.oneArgFunc("WEIGHT_STRING", str, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str  nullable parameter or {@link Expression}
+     * @param type non-null {@link  MySQLCastType#CHAR} or {@link  MySQLCastType#BINARY}
+     * @param n    non-null parameter or {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
+     */
+    public static Expression weightString(final @Nullable Object str, final MySQLCastType type, final Object n) {
+        final String funcName = "WEIGHT_STRING";
+        switch (type) {
+            case CHAR:
+            case BINARY:
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(funcName, type);
+        }
+        final List<Object> argList = new ArrayList<>(6);
+
+        argList.add(SQLs._funcParam(str));
+        argList.add(SQLFunctions.FuncWord.AS);
+        argList.add(type);
+        argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
+
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, n));
+        argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
+
+        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+    }
+
+    /*-------------------below Cast Functions and Operators -------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param exp  nullable parameter or {@link Expression}
+     * @param type non-null {@link  MySQLCastType} or {@link  String}(new type)
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS type [ARRAY])</a>
+     */
+    public static Expression cast(final @Nullable Object exp, final Object type) {
+        final String funcName = "CAST";
+
+        final MappingType returnType;
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(SQLs._funcParam(exp));
+        argList.add(SQLFunctions.FuncWord.AS);
+        if (type instanceof MySQLCastType) {
+            argList.add(type);
+            returnType = _castReturnType((MySQLCastType) type);
+        } else if (type instanceof String) {
+            argList.add(MySQLFunctions.castType((String) type));
+            returnType = StringType.INSTANCE;
+        } else {
+            throw CriteriaUtils.funcArgError(funcName, type);
+        }
+        return SQLFunctions.safeComplexArgFunc(funcName, argList, returnType);
+    }
+
+    /**
+     * @see #cast(Object, Object)
+     */
+    private static MappingType _castReturnType(final MySQLCastType type) {
+        final MappingType returnType;
+        switch (type) {
+            case BINARY:
+                returnType = ByteArrayType.INSTANCE;
+                break;
+            case CHAR:
+            case NCHAR:
+                returnType = StringType.INSTANCE;
+                break;
+            case TIME:
+                returnType = LocalTimeType.INSTANCE;
+                break;
+            case DATE:
+                returnType = LocalDateType.INSTANCE;
+                break;
+            case YEAR:
+                returnType = YearType.INSTANCE;
+                break;
+            case DATETIME:
+                returnType = LocalDateTimeType.INSTANCE;
+                break;
+            case SIGNED_INTEGER:
+                returnType = LongType.INSTANCE;
+                break;
+            case UNSIGNED_INTEGER:
+                returnType = UnsignedBigIntegerType.INSTANCE;
+                break;
+            case DECIMAL:
+                returnType = BigDecimalType.INSTANCE;
+                break;
+            case FLOAT:
+                returnType = FloatType.INSTANCE;
+                break;
+            case REAL:
+            case DOUBLE://Added in MySQL 8.0.17.
+                returnType = DoubleType.INSTANCE;
+                break;
+            case JSON:
+                returnType = JsonType.INSTANCE;
+                break;
+            case Point:
+            case MultiPoint:
+            case MultiLineString:
+            case LineString:
+            case Polygon:
+            case MultiPolygon:
+            case GeometryCollection:
+            default:
+                throw _Exceptions.unexpectedEnum(type);
+
+        }
+        return returnType;
     }
 
 
@@ -1332,10 +2272,21 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
     public static Expression avg(@Nullable SQLs.Modifier distinct, @Nullable Object exp) {
+        final String funcName = "AVG";
         if (distinct != null && distinct != SQLs.DISTINCT) {
-            throw CriteriaUtils.funcArgError("AVG", distinct);
+            throw CriteriaUtils.funcArgError(funcName, distinct);
         }
-        return SQLFunctions.oneArgOptionFunc("AVG", distinct, exp, null, DoubleType.INSTANCE);
+        final Expression func;
+        if (distinct == null) {
+            func = SQLFunctions.oneArgFunc(funcName, exp, DoubleType.INSTANCE);
+        } else {
+            final List<Object> argList = new ArrayList<>(3);
+            argList.add(distinct);
+            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(SQLs._funcParam(exp));
+            func = SQLFunctions.safeComplexArgFunc(funcName, argList, DoubleType.INSTANCE);
+        }
+        return func;
     }
 
     /**
@@ -2677,6 +3628,24 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             returnType = StringType.INSTANCE;
         }
         return returnType;
+    }
+
+
+    /**
+     * @see #lpad(Object, Object, Object)
+     * @see #rpad(Object, Object, Object)
+     */
+    private static Expression _leftOrRightpad(final String funcName, final @Nullable Object str
+            , final @Nullable Object len, final @Nullable Object padstr) {
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(SQLs._funcParam(StringType.INSTANCE, padstr));
+        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
 

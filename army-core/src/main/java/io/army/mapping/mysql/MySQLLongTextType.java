@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 
 import java.io.Reader;
@@ -46,7 +46,7 @@ public final class MySQLLongTextType extends AbstractMappingType {
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }
-        return MySqlType.LONGTEXT;
+        return MySQLTypes.LONGTEXT;
     }
 
     @Override

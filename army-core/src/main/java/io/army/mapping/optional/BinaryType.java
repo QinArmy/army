@@ -31,7 +31,7 @@ public final class BinaryType extends AbstractMappingType {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.BINARY;
+                sqlType = MySQLTypes.BINARY;
                 break;
             case PostgreSQL:
                 sqlType = PostgreType.BYTEA;

@@ -1,7 +1,7 @@
 package io.army.mapping;
 
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -37,7 +37,7 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.BIGINT_UNSIGNED;
+                sqlType = MySQLTypes.BIGINT_UNSIGNED;
                 break;
             case PostgreSQL:
 

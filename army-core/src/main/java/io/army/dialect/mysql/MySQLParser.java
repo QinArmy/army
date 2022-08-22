@@ -11,7 +11,7 @@ import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
@@ -199,14 +199,14 @@ abstract class MySQLParser extends _AbstractDialectParser {
         sqlType = mappingType.map(this.serverMeta);
 
         final Object valueAfterConvert;
-        if (sqlType == MySqlType.DATETIME
+        if (sqlType == MySQLTypes.DATETIME
                 && this.asOf80
                 && (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime)) {
             valueAfterConvert = nonNull;
         } else {
             valueAfterConvert = mappingType.beforeBind(sqlType, this.mappingEnv, nonNull);
         }
-        switch ((MySqlType) sqlType) {
+        switch ((MySQLTypes) sqlType) {
             case INT:
             case SMALLINT_UNSIGNED:
             case MEDIUMINT:
@@ -252,7 +252,7 @@ abstract class MySQLParser extends _AbstractDialectParser {
                 } else if (nonNull instanceof ZonedDateTime) {
                     timeText = _TimeUtils.format(((ZonedDateTime) nonNull).toOffsetDateTime(), paramMeta);
                 } else {
-                    throw _Exceptions.outRangeOfSqlType(MySqlType.DATETIME, nonNull);
+                    throw _Exceptions.outRangeOfSqlType(MySQLTypes.DATETIME, nonNull);
                 }
                 sqlBuilder.append(_Constant.QUOTE)
                         .append(timeText)
@@ -351,7 +351,7 @@ abstract class MySQLParser extends _AbstractDialectParser {
             case GEOMETRY://TODO
                 throw _Exceptions.outRangeOfSqlType(sqlType, nonNull);
             default:
-                throw _Exceptions.unexpectedEnum((MySqlType) sqlType);
+                throw _Exceptions.unexpectedEnum((MySQLTypes) sqlType);
         }
 
         return sqlBuilder;

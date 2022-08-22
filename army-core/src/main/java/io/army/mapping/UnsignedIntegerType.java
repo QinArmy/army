@@ -1,7 +1,7 @@
 package io.army.mapping;
 
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
@@ -33,7 +33,7 @@ public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.INT_UNSIGNED;
+                sqlType = MySQLTypes.INT_UNSIGNED;
                 break;
             case PostgreSQL:
                 sqlType = PostgreType.BIGINT;

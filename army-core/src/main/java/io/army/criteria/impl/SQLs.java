@@ -41,13 +41,17 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    public static final class Modifier implements SQLWords {
-        public final String keyWords;
+    public enum Modifier implements SQLWords {
+
+        ALL(" ALL"),
+        DISTINCT(" DISTINCT");
+
+        private final String keyWords;
 
         /**
          * private constructor
          */
-        private Modifier(String keyWords) {
+        Modifier(String keyWords) {
             this.keyWords = keyWords;
         }
 
@@ -69,9 +73,9 @@ public abstract class SQLs extends StandardSyntax {
 
     }//Modifier
 
-    public static final Modifier ALL = new Modifier(" ALL");
+    public static final Modifier ALL = Modifier.ALL;
 
-    public static final Modifier DISTINCT = new Modifier(" DISTINCT");
+    public static final Modifier DISTINCT = Modifier.DISTINCT;
 
 
     public static Insert._StandardDomainOptionSpec<Void> domainInsert() {
@@ -273,10 +277,6 @@ public abstract class SQLs extends StandardSyntax {
     }
 
 
-    static ArmyExpression _identifier(String identifierStr) {
-        return IdentifierExpression.single(identifierStr);
-    }
-
     /**
      * package method that is used by army developer.
      *
@@ -336,8 +336,8 @@ public abstract class SQLs extends StandardSyntax {
             expression = (ArmyExpression) SQLs.nullParam(IntegerType.INSTANCE);
         } else if (value instanceof Expression) {
             expression = (ArmyExpression) value;
-        } else if (value instanceof Collection) {
-            expression = (ArmyExpression) SQLs.params(typeMeta, (Collection<?>) value);
+        } else if (value instanceof List) {
+            expression = (ArmyExpression) SQLs.params(typeMeta, (List<?>) value);
         } else {
             expression = (ArmyExpression) SQLs.param(typeMeta, value);
         }

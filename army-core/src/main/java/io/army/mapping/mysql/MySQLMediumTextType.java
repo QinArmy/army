@@ -5,7 +5,7 @@ import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.StringType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 
 /**
@@ -38,7 +38,7 @@ public final class MySQLMediumTextType extends AbstractMappingType {
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }
-        return MySqlType.MEDIUMTEXT;
+        return MySQLTypes.MEDIUMTEXT;
     }
 
     @Override

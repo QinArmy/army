@@ -33,7 +33,7 @@ public final class BigDecimalType extends _NumericType implements _NumericType._
         final SqlType sqlDataType;
         switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.DECIMAL;
+                sqlDataType = MySQLTypes.DECIMAL;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreType.DECIMAL;

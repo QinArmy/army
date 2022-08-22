@@ -153,16 +153,16 @@ public interface MySQLUpdate extends Update {
 
     interface _SingleUpdate57Clause<C> {
 
-        <T> _SinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <T> _SinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , SingleTableMeta<T> table);
 
-        <T> _SingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <T> _SingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , SingleTableMeta<T> table, String tableAlias);
 
-        <P> _SinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <P> _SinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , ComplexTableMeta<P, ?> table);
 
-        <P> _SingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <P> _SingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , ComplexTableMeta<P, ?> table, String tableAlias);
 
         <T> _SinglePartitionClause<C, T> update(SingleTableMeta<T> table);
@@ -338,16 +338,16 @@ public interface MySQLUpdate extends Update {
 
     interface _BatchSingleUpdate57Clause<C> {
 
-        <T> _BatchSinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <T> _BatchSinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , SingleTableMeta<T> table);
 
-        <T> _BatchSingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <T> _BatchSingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , SingleTableMeta<T> table, String tableAlias);
 
-        <P> _BatchSinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <P> _BatchSinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , ComplexTableMeta<P, ?> table);
 
-        <P> _BatchSingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <P> _BatchSingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , ComplexTableMeta<P, ?> table, String tableAlias);
 
         <T> _BatchSinglePartitionClause<C, T> update(SingleTableMeta<T> table);
@@ -406,10 +406,10 @@ public interface MySQLUpdate extends Update {
      */
     interface MultiUpdateClause<C, UT, US, UP> {
 
-        UP update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        UP update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , TableMeta<?> table);
 
-        UT update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        UT update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , TableMeta<?> table, String tableAlias);
 
 
@@ -417,10 +417,10 @@ public interface MySQLUpdate extends Update {
 
         UT update(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Supplier<T> supplier, String alias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Function<C, T> function, String alias);
 
 
@@ -428,10 +428,10 @@ public interface MySQLUpdate extends Update {
 
         <T extends TableItem> US update(Function<C, T> function, String alias);
 
-        <T extends TableItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <T extends TableItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Supplier<T> supplier, String alias);
 
-        <T extends TableItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        <T extends TableItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Function<C, T> function, String alias);
 
         <T extends TableItem> US updateLateral(Supplier<T> supplier, String alias);

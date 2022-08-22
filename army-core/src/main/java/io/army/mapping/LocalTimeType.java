@@ -1,7 +1,7 @@
 package io.army.mapping;
 
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
@@ -39,7 +39,7 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.TIME;
+                sqlType = MySQLTypes.TIME;
                 break;
             case PostgreSQL:
                 sqlType = PostgreType.TIME;

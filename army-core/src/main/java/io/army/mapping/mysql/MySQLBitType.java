@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 
 import java.util.BitSet;
@@ -37,7 +37,7 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }
-        return MySqlType.BIT;
+        return MySQLTypes.BIT;
     }
 
     @Override

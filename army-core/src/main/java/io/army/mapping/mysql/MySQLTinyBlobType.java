@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 
 public final class MySQLTinyBlobType extends AbstractMappingType {
@@ -33,7 +33,7 @@ public final class MySQLTinyBlobType extends AbstractMappingType {
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }
-        return MySqlType.TINYBLOB;
+        return MySQLTypes.TINYBLOB;
     }
 
     @Override

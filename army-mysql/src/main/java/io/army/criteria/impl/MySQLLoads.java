@@ -4,8 +4,8 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner.mysql._MySQLLoadData;
 import io.army.criteria.mysql.MySQLLoad;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
-import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
@@ -65,7 +65,7 @@ abstract class MySQLLoads {
 
         private final CriteriaContext criteriaContext;
 
-        private List<MySQLWords> modifierList;
+        private List<MySQLModifier> modifierList;
 
         private Path filePath;
 
@@ -77,7 +77,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public MySQLLoad._LoadInfileClause<C, MySQLLoad._StrategyOptionSpec<C>> loadData(List<MySQLWords> modifierList) {
+        public MySQLLoad._LoadInfileClause<C, MySQLLoad._StrategyOptionSpec<C>> loadData(List<MySQLModifier> modifierList) {
             this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifierList
                     , MySQLUtils::loadDataModifier);
             return this;
@@ -197,7 +197,7 @@ abstract class MySQLLoads {
             , MySQLLoad._OptionallyClause<C, OR>
             , MySQLLoad._StartingByClause<C, RR> {
 
-        final List<MySQLWords> modifierList;
+        final List<MySQLModifier> modifierList;
 
         final Path filePath;
 
@@ -771,8 +771,8 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public MySQLLoad._ChildLoadInfileClause<C, P> child(List<MySQLWords> modifierList) {
-            final List<MySQLWords> list;
+        public MySQLLoad._ChildLoadInfileClause<C, P> child(List<MySQLModifier> modifierList) {
+            final List<MySQLModifier> list;
             list = MySQLUtils.asModifierList(this.criteriaContext, modifierList, MySQLUtils::loadDataModifier);
             return new ChildLoadDataInfileClause<>(this.criteriaContext, new SingleLoadDataStatement(this), list);
         }
@@ -796,14 +796,14 @@ abstract class MySQLLoads {
 
         private final SingleLoadDataStatement parentStatement;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private Path filePath;
 
         private StrategyOption strategyOption;
 
         private ChildLoadDataInfileClause(CriteriaContext criteriaContext, SingleLoadDataStatement parentStatement
-                , List<MySQLWords> modifierList) {
+                , List<MySQLModifier> modifierList) {
             this.criteriaContext = criteriaContext;
             this.parentStatement = parentStatement;
             this.modifierList = modifierList;
@@ -904,7 +904,7 @@ abstract class MySQLLoads {
 
         private final CriteriaContext criteriaContext;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private final Path fileName;
 
@@ -1032,7 +1032,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public final List<MySQLWords> modifierList() {
+        public final List<MySQLModifier> modifierList() {
             return this.modifierList;
         }
 

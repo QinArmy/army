@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 
 import java.nio.file.Path;
@@ -51,7 +51,7 @@ public final class GeometryType extends AbstractMappingType {
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }
-        return MySqlType.GEOMETRY;
+        return MySQLTypes.GEOMETRY;
     }
 
     @Override

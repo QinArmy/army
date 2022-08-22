@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._Window;
+import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -29,7 +30,11 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         INTERVAL(_Constant.SPACE_INTERVAL),
         COMMA(_Constant.SPACE_COMMA),
         FROM(_Constant.SPACE_FROM),
-        USING(_Constant.SPACE_USING);
+        USING(_Constant.SPACE_USING),
+        IN(" IN"),
+        AS(_Constant.SPACE_AS),
+        LEFT_PAREN(_Constant.SPACE_LEFT_PAREN),
+        RIGHT_PAREN(_Constant.SPACE_RIGHT_PAREN);
 
         private final String word;
 
@@ -63,6 +68,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return new CaseFunc((ArmyExpression) caseValue);
     }
 
+    @Deprecated
 
     static Expression oneArgOptionFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, @Nullable Clause clause, TypeMeta returnType) {
@@ -81,15 +87,20 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return new ComplexArgFunc(name, argList, returnType);
     }
 
-
+    @Deprecated
     static Expression safeMultiArgOptionFunc(String name, @Nullable SQLWords option
             , List<ArmyExpression> argList, @Nullable Clause clause, TypeMeta returnType) {
         return new MultiArgOptionFunc(name, option, argList, clause, returnType);
     }
 
+    @Deprecated
     static Expression multiArgOptionFunc(String name, @Nullable SQLWords option
             , List<?> argList, @Nullable Clause clause, TypeMeta returnType) {
         return new MultiArgOptionFunc(name, option, funcParamList(argList), clause, returnType);
+    }
+
+    static Object sqlIdentifier(String identifier) {
+        return new SQLIdentifier(identifier);
     }
 
     static Functions._FuncConditionTowClause conditionTwoFunc(final String name
@@ -505,6 +516,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }//OneArgFunc
 
 
+    @Deprecated
     private static final class OneArgOptionFunc extends SQLFunctions.FunctionExpression {
 
         private final SQLWords option;
@@ -555,6 +567,16 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//OneArgOptionFunc
 
+    private static final class SQLIdentifier {
+
+        private final String identifier;
+
+        private SQLIdentifier(String identifier) {
+            this.identifier = identifier;
+        }
+
+    }//SQLIdentifier
+
     private static final class ComplexArgFunc extends OperationExpression
             implements FunctionSpec, MutableParamMetaSpec {
 
@@ -566,7 +588,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         private ComplexArgFunc(String name, List<?> argList, TypeMeta returnType) {
             assert argList.size() > 1;
             this.name = name;
-            this.argList = Collections.unmodifiableList(argList);
+            this.argList = argList;
             this.returnType = returnType;
         }
 
@@ -588,11 +610,15 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
                     .append(this.name)
                     .append(_Constant.LEFT_PAREN);
 
+            final DialectParser parser = context.parser();
             for (Object o : this.argList) {
                 if (o instanceof Expression) {
-                    ((ArmyExpression) o).appendSql(context);
+                    ((ArmyExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
                 } else if (o instanceof SQLWords) {
                     sqlBuilder.append(((SQLWords) o).render());
+                } else if (o instanceof SQLIdentifier) { // sql identifier
+                    sqlBuilder.append(_Constant.SPACE);
+                    parser.identifier(((SQLIdentifier) o).identifier, sqlBuilder);
                 } else if (o instanceof Clause) {
                     ((_SelfDescribed) o).appendSql(context);
                 } else {

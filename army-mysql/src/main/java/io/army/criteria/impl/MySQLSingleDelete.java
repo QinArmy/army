@@ -5,9 +5,9 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
-import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
@@ -52,7 +52,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     private List<Hint> hintList;
 
-    private List<MySQLWords> modifierList;
+    private List<MySQLModifier> modifierList;
 
     private SingleTableMeta<?> table;
 
@@ -71,14 +71,14 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
 
     @Override
-    public final _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return this;
     }
 
     @Override
-    public final _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.apply(this.criteria), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return this;
@@ -213,7 +213,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
     }
 
     @Override
-    public final List<MySQLWords> modifierList() {
+    public final List<MySQLModifier> modifierList() {
         return this.modifierList;
     }
 

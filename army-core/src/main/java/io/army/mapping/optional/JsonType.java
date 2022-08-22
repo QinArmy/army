@@ -4,22 +4,24 @@ import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.StringType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
-public final class JsonStringType extends AbstractMappingType {
+public final class JsonType extends AbstractMappingType {
 
 
-    public static final JsonStringType INSTANCE = new JsonStringType();
+    public static final JsonType INSTANCE = new JsonType();
 
-    public static JsonStringType from(Class<?> javaType) {
+    public static JsonType from(Class<?> javaType) {
         if (javaType != String.class) {
-            throw errorJavaType(JsonStringType.class, javaType);
+            throw errorJavaType(JsonType.class, javaType);
         }
         return INSTANCE;
     }
 
+    private JsonType() {
+    }
 
     @Override
     public Class<?> javaType() {
@@ -31,7 +33,7 @@ public final class JsonStringType extends AbstractMappingType {
         final SqlType sqlDataType;
         switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.JSON;
+                sqlDataType = MySQLTypes.JSON;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreType.JSON;

@@ -5,9 +5,9 @@ import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
-import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
@@ -54,7 +54,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
     private final List<Hint> hintList;
 
-    private final List<MySQLWords> modifierList;
+    private final List<MySQLModifier> modifierList;
 
     private final TableMeta<?> table;
 
@@ -297,7 +297,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public final List<MySQLWords> modifierList() {
+    public final List<MySQLModifier> modifierList() {
         return this.modifierList;
     }
 
@@ -374,7 +374,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
         private List<Hint> hintList;
 
-        private List<MySQLWords> modifierList;
+        private List<MySQLModifier> modifierList;
 
         TableMeta<?> table;
 
@@ -396,7 +396,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
             this.cteList = cteList;
         }
 
-        final void doUpdate(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, TableMeta<?> table) {
+        final void doUpdate(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, TableMeta<?> table) {
             final CriteriaContext context = this.criteriaContext;
             this.hintList = MySQLUtils.asHintList(context, hints.get(), MySQLHints::castHint);
             this.modifierList = MySQLUtils.asModifierList(context, modifiers, MySQLUtils::updateModifier);
@@ -458,26 +458,26 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         }
 
         @Override
-        public <T> _SinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, SingleTableMeta<T> table) {
+        public <T> _SinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, SingleTableMeta<T> table) {
             this.doUpdate(hints, modifiers, table);
             return new SimplePartitionClause<>(this);
         }
 
         @Override
-        public <T> _SingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, SingleTableMeta<T> table, String tableAlias) {
+        public <T> _SingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, SingleTableMeta<T> table, String tableAlias) {
             this.doUpdate(hints, modifiers, table);
             this.tableAlias = tableAlias;
             return new SimpleUpdate<>(this);
         }
 
         @Override
-        public <P> _SinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, ComplexTableMeta<P, ?> table) {
+        public <P> _SinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, ComplexTableMeta<P, ?> table) {
             this.doUpdate(hints, modifiers, table);
             return new SimplePartitionClause<>(this);
         }
 
         @Override
-        public <P> _SingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers
+        public <P> _SingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , ComplexTableMeta<P, ?> table, String tableAlias) {
             this.doUpdate(hints, modifiers, table);
             this.tableAlias = tableAlias;
@@ -546,26 +546,26 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         }
 
         @Override
-        public <T> _BatchSinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, SingleTableMeta<T> table) {
+        public <T> _BatchSinglePartitionClause<C, T> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, SingleTableMeta<T> table) {
             this.doUpdate(hints, modifiers, table);
             return new BatchPartitionClause<>(this);
         }
 
         @Override
-        public <T> _BatchSingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, SingleTableMeta<T> table, String tableAlias) {
+        public <T> _BatchSingleIndexHintSpec<C, T> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, SingleTableMeta<T> table, String tableAlias) {
             this.doUpdate(hints, modifiers, table);
             this.tableAlias = tableAlias;
             return new BatchUpdate<>(this);
         }
 
         @Override
-        public <P> _BatchSinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, ComplexTableMeta<P, ?> table) {
+        public <P> _BatchSinglePartitionClause<C, P> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, ComplexTableMeta<P, ?> table) {
             this.doUpdate(hints, modifiers, table);
             return new BatchPartitionClause<>(this);
         }
 
         @Override
-        public <P> _BatchSingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, ComplexTableMeta<P, ?> table, String tableAlias) {
+        public <P> _BatchSingleIndexHintSpec<C, P> update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, ComplexTableMeta<P, ?> table, String tableAlias) {
             this.doUpdate(hints, modifiers, table);
             this.tableAlias = tableAlias;
             return new BatchUpdate<>(this);

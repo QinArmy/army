@@ -5,8 +5,8 @@ import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
-import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.util.ArrayUtils;
@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
-        extends WithCteSimpleQuery<C, Q, SubQuery, WE, MySQLWords, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
+        extends WithCteSimpleQuery<C, Q, SubQuery, WE, MySQLModifier, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
         implements _MySQLQuery, MySQLQuery._IntoSpec<C, Q> {
 
 
@@ -119,7 +119,7 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, FJ, JT, 
     }
 
     @Override
-    final List<MySQLWords> asModifierList(@Nullable List<MySQLWords> modifiers) {
+    final List<MySQLModifier> asModifierList(@Nullable List<MySQLModifier> modifiers) {
         return MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::selectModifier);
     }
 

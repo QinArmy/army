@@ -2,7 +2,7 @@ package io.army.sqltype;
 
 import io.army.dialect.Database;
 
-public enum MySqlType implements SqlType {
+public enum MySQLTypes implements SqlType {
 
     NULL,
     BOOLEAN,
@@ -31,6 +31,7 @@ public enum MySqlType implements SqlType {
     DATETIME,
 
     CHAR,
+    NCHAR,
     VARCHAR,
     TINYTEXT,
     TEXT,
@@ -58,9 +59,16 @@ public enum MySqlType implements SqlType {
     GEOMETRY,
     GEOMETRYCOLLECTION;
 
+
     @Override
     public final Database database() {
         return Database.MySQL;
+    }
+
+
+    @Override
+    public final String toString() {
+        return String.format("%s.%s", MySQLTypes.class.getName(), this.name());
     }
 
 

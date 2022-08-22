@@ -1,7 +1,7 @@
 package io.army.mapping;
 
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
@@ -44,7 +44,7 @@ public final class StringType extends _SQLStringType {
         final SqlType sqlDataType;
         switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySqlType.VARCHAR;
+                sqlDataType = MySQLTypes.VARCHAR;
                 break;
             case PostgreSQL:
                 sqlDataType = PostgreType.VARCHAR;

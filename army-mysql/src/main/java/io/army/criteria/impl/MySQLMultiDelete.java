@@ -6,8 +6,8 @@ import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLQuery;
-import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -50,7 +50,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
     private List<Hint> hintList;
 
-    private List<MySQLWords> modifierList;
+    private List<MySQLModifier> modifierList;
 
     private boolean usingSyntax;
 
@@ -67,7 +67,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
 
 
     @Override
-    public final _MultiDeleteFromClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList) {
+    public final _MultiDeleteFromClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, List<String> tableAliasList) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         this.tableAliasList = _CollectionUtils.asUnmodifiableList(tableAliasList);
@@ -75,7 +75,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers) {
+    public final _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return new FromTableAliasClause<>(this::fromAliasEnd);
@@ -260,7 +260,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final List<MySQLWords> modifierList() {
+    public final List<MySQLModifier> modifierList() {
         return this.modifierList;
     }
 

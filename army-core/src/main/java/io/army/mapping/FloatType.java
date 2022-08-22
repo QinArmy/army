@@ -1,7 +1,7 @@
 package io.army.mapping;
 
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
@@ -31,7 +31,7 @@ public final class FloatType extends _NumericType._FloatNumericType {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.FLOAT;
+                sqlType = MySQLTypes.FLOAT;
                 break;
             case PostgreSQL:
                 sqlType = PostgreType.REAL;

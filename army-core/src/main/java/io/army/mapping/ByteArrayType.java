@@ -27,7 +27,7 @@ public final class ByteArrayType extends AbstractMappingType {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.VARBINARY;
+                sqlType = MySQLTypes.VARBINARY;
                 break;
             case PostgreSQL:
                 sqlType = PostgreType.BYTEA;

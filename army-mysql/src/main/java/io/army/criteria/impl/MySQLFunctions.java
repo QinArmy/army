@@ -18,6 +18,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 abstract class MySQLFunctions extends SQLFunctions {
 
@@ -76,6 +77,15 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     static GroupConcatClause groupConcatClause() {
         return new GroupConcatClause();
+    }
+
+    static Object castType(final String type) {
+        final Pattern pattern = Pattern.compile("^[a-zA-Z]\\w+(?: [a-zA-Z]\\w*)?$");
+        if (!pattern.matcher(type).matches()) {
+            String m = String.format("the target[%s] of cast function error.", type);
+            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+        }
+        return SQLFunctions.sqlIdentifier(type);
     }
 
 

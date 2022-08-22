@@ -17,9 +17,9 @@ public interface MySQLReplace extends ReplaceInsert, DmlStatement.DmlInsert {
 
     interface _ReplaceClause<C, RR> {
 
-        RR replace(Supplier<List<Hint>> hints, List<MySQLWords> modifiers);
+        RR replace(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers);
 
-        RR replace(Function<C, List<Hint>> hints, List<MySQLWords> modifiers);
+        RR replace(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers);
 
     }
 

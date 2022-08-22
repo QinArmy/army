@@ -1530,7 +1530,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
                     String m = String.format("Standard query api support only %s", SQLs.Modifier.class.getName());
                     throw new CriteriaException(m);
                 }
-                builder.append(((SQLs.Modifier) modifier).keyWords);
+                builder.append(modifier.render());
             }
             break;
             default:

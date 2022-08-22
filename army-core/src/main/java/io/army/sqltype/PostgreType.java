@@ -148,4 +148,12 @@ public enum PostgreType implements SqlType {
     public final Database database() {
         return Database.PostgreSQL;
     }
+
+
+    @Override
+    public final String toString() {
+        return String.format("%s.%s", PostgreType.class.getName(), this.name());
+    }
+
+
 }

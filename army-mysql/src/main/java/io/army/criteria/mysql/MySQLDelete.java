@@ -32,9 +32,9 @@ public interface MySQLDelete extends Delete, DialectStatement {
      */
     interface _MySQLSingleDeleteClause<C, DT> extends Delete._SingleDeleteClause<DT> {
 
-        _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers);
+        _SingleDeleteFromClause<DT> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers);
 
-        _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLWords> modifiers);
+        _SingleDeleteFromClause<DT> delete(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers);
     }
 
 
@@ -399,9 +399,9 @@ public interface MySQLDelete extends Delete, DialectStatement {
      */
     interface _MultiDeleteClause<C, DT, DS, DP> {
 
-        _MultiDeleteFromClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers, List<String> tableAliasList);
+        _MultiDeleteFromClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, List<String> tableAliasList);
 
-        _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLWords> modifiers);
+        _MultiDeleteFromAliasClause<C, DT, DS, DP> delete(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers);
 
         _MultiDeleteFromClause<C, DT, DS, DP> delete(List<String> tableAliasList);
 

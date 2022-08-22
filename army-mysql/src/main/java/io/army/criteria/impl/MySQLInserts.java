@@ -7,7 +7,7 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner.mysql._MySQLInsert;
 import io.army.criteria.mysql.MySQLInsert;
-import io.army.criteria.mysql.MySQLWords;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -91,7 +91,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<Hint> hintList;
 
-        private List<MySQLWords> modifierList;
+        private List<MySQLModifier> modifierList;
 
         private MySQLInsertClause(CriteriaContext criteriaContext) {
             super(criteriaContext);
@@ -99,14 +99,14 @@ abstract class MySQLInserts extends InsertSupport {
 
 
         @Override
-        public final IR insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+        public final IR insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
             this.hintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
             this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
             return (IR) this;
         }
 
         @Override
-        public final IR insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+        public final IR insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
             this.hintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteriaContext.criteria())
                     , MySQLHints::castHint);
             this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
@@ -122,8 +122,8 @@ abstract class MySQLInserts extends InsertSupport {
             return list;
         }
 
-        final List<MySQLWords> modifierList() {
-            List<MySQLWords> list = this.modifierList;
+        final List<MySQLModifier> modifierList() {
+            List<MySQLModifier> list = this.modifierList;
             if (list == null) {
                 list = Collections.emptyList();
             }
@@ -451,7 +451,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private List<String> partitionList;
 
@@ -531,7 +531,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private List<String> partitionList;
 
@@ -539,7 +539,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<Hint> childHintList;
 
-        private List<MySQLWords> childModifierList;
+        private List<MySQLModifier> childModifierList;
 
         private DomainParentPartitionClause(DomainInsertOptionClause<C> clause, ParentTableMeta<P> table) {
             super(clause, table);
@@ -589,7 +589,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._DomainChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+        public MySQLInsert._DomainChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
                     , MySQLUtils::insertModifier);
@@ -597,7 +597,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._DomainChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+        public MySQLInsert._DomainChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
                     , MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
@@ -702,7 +702,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private final List<String> partitionList;
         private final List<?> domainList;
@@ -731,7 +731,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<MySQLWords> modifierList() {
+        public final List<MySQLModifier> modifierList() {
             return this.modifierList;
         }
 
@@ -988,7 +988,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private List<String> partitionList;
 
@@ -1096,7 +1096,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private List<String> partitionList;
 
@@ -1106,7 +1106,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<Hint> childHintList;
 
-        private List<MySQLWords> childModifierList;
+        private List<MySQLModifier> childModifierList;
 
         private ValueParentPartitionClause(ValueInsertOptionClause<C> clause, ParentTableMeta<P> table) {
             super(clause, table);
@@ -1128,7 +1128,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._ValueChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+        public MySQLInsert._ValueChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
                     , MySQLUtils::insertModifier);
@@ -1136,7 +1136,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._ValueChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+        public MySQLInsert._ValueChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
                     , MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
@@ -1240,7 +1240,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private final List<String> partitionList;
 
@@ -1273,7 +1273,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<MySQLWords> modifierList() {
+        public final List<MySQLModifier> modifierList() {
             return this.modifierList;
         }
 
@@ -1407,7 +1407,7 @@ abstract class MySQLInserts extends InsertSupport {
         private final _Insert._AssignmentInsert parentStmt;
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private List<String> partitionList;
 
@@ -1505,7 +1505,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private List<String> partitionList;
 
@@ -1513,7 +1513,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<Hint> childHintList;
 
-        private List<MySQLWords> childModifierList;
+        private List<MySQLModifier> childModifierList;
 
         private AssignmentParentPartitionClause(AssignmentInsertOptionClause<C> clause, ParentTableMeta<P> table) {
             super(clause, table);
@@ -1567,7 +1567,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._AssignmentChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+        public MySQLInsert._AssignmentChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
                     , MySQLUtils::insertModifier);
@@ -1575,7 +1575,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._AssignmentChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+        public MySQLInsert._AssignmentChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
                     , MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
@@ -1645,7 +1645,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private final List<String> partitionList;
 
@@ -1669,7 +1669,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<MySQLWords> modifierList() {
+        public final List<MySQLModifier> modifierList() {
             return this.modifierList;
         }
 
@@ -1768,7 +1768,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<Hint> hintList;
 
-        private List<MySQLWords> modifierList;
+        private List<MySQLModifier> modifierList;
 
         private QueryInsertIntoClause(@Nullable C criteria) {
             this.criteriaContext = CriteriaContexts.primaryInsertContext(criteria);
@@ -1776,7 +1776,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._QueryIntoClause<C> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+        public MySQLInsert._QueryIntoClause<C> insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
             this.hintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
             this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
                     , MySQLUtils::queryInsertModifier);
@@ -1784,7 +1784,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._QueryIntoClause<C> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+        public MySQLInsert._QueryIntoClause<C> insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
             this.hintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteriaContext.criteria())
                     , MySQLHints::castHint);
             this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
@@ -1838,7 +1838,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private List<String> partitionList;
 
@@ -1913,7 +1913,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private List<String> partitionList;
 
@@ -1921,7 +1921,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private List<Hint> childHintList;
 
-        private List<MySQLWords> childModifierList;
+        private List<MySQLModifier> childModifierList;
 
         private QueryParentPartitionClause(QueryInsertIntoClause<C> clause, ParentTableMeta<P> table) {
             super(clause.criteriaContext, table);
@@ -1941,7 +1941,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._QueryChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers) {
+        public MySQLInsert._QueryChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
                     , MySQLUtils::queryInsertModifier);
@@ -1949,7 +1949,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._QueryChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers) {
+        public MySQLInsert._QueryChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
             this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
                     , MySQLHints::castHint);
             this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
@@ -2028,7 +2028,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private final List<Hint> hintList;
 
-        private final List<MySQLWords> modifierList;
+        private final List<MySQLModifier> modifierList;
 
         private final List<String> partitionList;
 
@@ -2055,7 +2055,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<MySQLWords> modifierList() {
+        public final List<MySQLModifier> modifierList() {
             return this.modifierList;
         }
 

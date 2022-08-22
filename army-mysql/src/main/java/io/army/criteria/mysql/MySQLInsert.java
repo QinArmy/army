@@ -21,9 +21,9 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     interface _InsertClause<C, IR> {
 
-        IR insert(Supplier<List<Hint>> supplier, List<MySQLWords> modifiers);
+        IR insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers);
 
-        IR insert(Function<C, List<Hint>> function, List<MySQLWords> modifiers);
+        IR insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers);
 
     }
 

@@ -33,7 +33,7 @@ public interface MySQLQuery extends Query, DialectStatement {
      * @param <SR> next clause java type
      * @since 1.0
      */
-    interface _MySQLSelectClause<C, SR> extends _DialectSelectClause<C, MySQLWords, SR> {
+    interface _MySQLSelectClause<C, SR> extends _DialectSelectClause<C, MySQLModifier, SR> {
 
     }
 

@@ -1,7 +1,7 @@
 package io.army.mapping;
 
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySqlType;
+import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 
 public final class _NullType extends AbstractMappingType {
@@ -22,7 +22,7 @@ public final class _NullType extends AbstractMappingType {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySqlType.NULL;
+                sqlType = MySQLTypes.NULL;
                 break;
             case PostgreSQL:
             case Oracle:

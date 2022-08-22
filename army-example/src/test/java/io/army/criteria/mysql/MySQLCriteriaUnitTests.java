@@ -55,7 +55,7 @@ public class MySQLCriteriaUnitTests {
         };
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(supplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), ChinaCity_.T)
+                .update(supplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), ChinaCity_.T)
                 .partition()
                 .leftParen("p2", "p1")
                 .rightParen()
@@ -133,7 +133,7 @@ public class MySQLCriteriaUnitTests {
 
             final Delete stmt;
             stmt = MySQLs.singleDelete()
-                    .delete(hintSupplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE))
+                    .delete(hintSupplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.QUICK, MySQLModifier.IGNORE))
                     .from(ChinaRegion_.T, "r")
                     .partition()
                     .leftParen("p1")
@@ -193,7 +193,7 @@ public class MySQLCriteriaUnitTests {
 
             final Delete stmt;
             stmt = MySQLs.batchSingleDelete()
-                    .delete(hintSupplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE))
+                    .delete(hintSupplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.QUICK, MySQLModifier.IGNORE))
                     .from(ChinaRegion_.T, "r")
                     .partition()
                     .leftParen("p1")
@@ -237,8 +237,8 @@ public class MySQLCriteriaUnitTests {
                 return hintList;
             };
 
-            final List<MySQLWords> modifierList;
-            modifierList = Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE);
+            final List<MySQLModifier> modifierList;
+            modifierList = Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.QUICK, MySQLModifier.IGNORE);
             final List<String> deleteTarget = Arrays.asList("c", "r", "u");
             final Delete stmt;
             stmt = MySQLs.multiDelete()
@@ -295,8 +295,8 @@ public class MySQLCriteriaUnitTests {
             paramList.add(Collections.singletonMap(ChinaCity_.ID, 22));
             paramList.add(Collections.singletonMap(ChinaCity_.ID, 88L));
 
-            final List<MySQLWords> modifierList;
-            modifierList = Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.QUICK, MySQLWords.IGNORE);
+            final List<MySQLModifier> modifierList;
+            modifierList = Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.QUICK, MySQLModifier.IGNORE);
             final List<String> deleteTarget = Arrays.asList("c", "r");
             final Delete stmt;
             stmt = MySQLs.batchMultiDelete()
@@ -350,7 +350,7 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.multiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), BankUser_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), BankUser_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -505,7 +505,7 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.batchMultiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLWords.LOW_PRIORITY, MySQLWords.IGNORE), User_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLModifier.LOW_PRIORITY, MySQLModifier.IGNORE), User_.T)
                     .partition()
                     .leftParen("p1")
                     .rightParen()
@@ -630,7 +630,7 @@ public class MySQLCriteriaUnitTests {
         final Insert stmt;
         stmt = MySQLs.domainInsert()
                 .preferLiteral(true)
-                .insert(Collections::emptyList, Collections.singletonList(MySQLWords.HIGH_PRIORITY))
+                .insert(Collections::emptyList, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
                 .into(ChinaRegion_.T)
                 //.insertInto(ChinaCity_.T)
                 .partition()

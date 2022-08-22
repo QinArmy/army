@@ -4,34 +4,18 @@ import io.army.criteria.SQLWords;
 
 public enum MySQLWords implements SQLWords {
 
-    /*################################## blow SELECT modifiers ##################################*/
-    ALL(" ALL"),
-    DISTINCT(" DISTINCT"),
-    DISTINCTROW(" DISTINCTROW"),
+    TIME(" TIME"),
+    DATE(" DATE"),
+    DATETIME(" DATETIME"),
 
-    HIGH_PRIORITY(" HIGH_PRIORITY"),
+    BOTH(" BOTH"),
+    LEADING(" LEADING"),
+    TRAILING(" TRAILING"),
 
-    STRAIGHT_JOIN(" STRAIGHT_JOIN"),
+    CHAR(" CHAR"),
+    BINARY(" BINARY");
 
-    SQL_SMALL_RESULT(" SQL_SMALL_RESULT"),
-    SQL_BIG_RESULT(" SQL_BIG_RESULT"),
-    SQL_BUFFER_RESULT(" SQL_BUFFER_RESULT"),
-
-    SQL_NO_CACHE(" SQL_NO_CACHE"),
-    SQL_CALC_FOUND_ROWS(" SQL_CALC_FOUND_ROWS"),
-
-    /*################################## blow INSERT/UPDATE/DELETE modifiers ##################################*/
-    LOW_PRIORITY(" LOW_PRIORITY"),
-    DELAYED(" DELAYED"),
-
-    QUICK(" QUICK"),
-    IGNORE(" IGNORE"),
-
-    CONCURRENT(" CONCURRENT"),
-    LOCAL(" LOCAL");
-
-
-    public final String words;
+    private final String words;
 
     MySQLWords(String words) {
         this.words = words;
@@ -41,6 +25,7 @@ public enum MySQLWords implements SQLWords {
     public final String render() {
         return this.words;
     }
+
 
     @Override
     public final String toString() {

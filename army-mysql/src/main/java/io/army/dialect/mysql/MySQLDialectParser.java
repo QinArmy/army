@@ -9,8 +9,8 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql.*;
 import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLLoad;
+import io.army.criteria.mysql.MySQLModifier;
 import io.army.criteria.mysql.MySQLReplace;
-import io.army.criteria.mysql.MySQLWords;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
@@ -494,7 +494,7 @@ final class MySQLDialectParser extends MySQLParser {
 
 
     private void insertModifiers(StringBuilder sqlBuilder, _MySQLInsert stmt) {
-        for (MySQLWords modifier : stmt.modifierList()) {
+        for (MySQLModifier modifier : stmt.modifierList()) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case HIGH_PRIORITY:
@@ -516,9 +516,9 @@ final class MySQLDialectParser extends MySQLParser {
         }
     }
 
-    private void replaceModifiers(List<MySQLWords> modifierList, StringBuilder sqlBuilder) {
+    private void replaceModifiers(List<MySQLModifier> modifierList, StringBuilder sqlBuilder) {
         assert modifierList.size() == 1;
-        final MySQLWords modifier = modifierList.get(0);
+        final MySQLModifier modifier = modifierList.get(0);
         switch (modifier) {
             case LOW_PRIORITY:
             case DELAYED:
@@ -530,8 +530,8 @@ final class MySQLDialectParser extends MySQLParser {
         }
     }
 
-    private void updateModifiers(List<MySQLWords> modifierList, StringBuilder builder) {
-        for (MySQLWords modifier : modifierList) {
+    private void updateModifiers(List<MySQLModifier> modifierList, StringBuilder builder) {
+        for (MySQLModifier modifier : modifierList) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case IGNORE:
@@ -545,8 +545,8 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
 
-    private void deleteModifiers(List<MySQLWords> modifierList, StringBuilder builder) {
-        for (MySQLWords modifier : modifierList) {
+    private void deleteModifiers(List<MySQLModifier> modifierList, StringBuilder builder) {
+        for (MySQLModifier modifier : modifierList) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case QUICK:
@@ -562,7 +562,7 @@ final class MySQLDialectParser extends MySQLParser {
 
     private void selectModifiers(List<? extends SQLWords> modifierList, StringBuilder builder) {
         for (SQLWords modifier : modifierList) {
-            switch ((MySQLWords) modifier) {
+            switch ((MySQLModifier) modifier) {
                 case ALL:
                 case DISTINCT:
                 case DISTINCTROW:
@@ -573,7 +573,7 @@ final class MySQLDialectParser extends MySQLParser {
                 case SQL_BUFFER_RESULT:
                 case SQL_NO_CACHE:
                 case SQL_CALC_FOUND_ROWS:
-                    builder.append(((MySQLWords) modifier).words);
+                    builder.append(((MySQLModifier) modifier).words);
                     break;
                 default:
                     throw new CriteriaException(String.format("%s SELECT don't support %s", this.dialect, modifier));
@@ -585,8 +585,8 @@ final class MySQLDialectParser extends MySQLParser {
     /**
      * @see #simpleLoadData(_MySQLLoadData, Visible)
      */
-    private void loadDataModifier(final List<MySQLWords> modifierList, final StringBuilder sqlBuilder) {
-        for (MySQLWords modifier : modifierList) {
+    private void loadDataModifier(final List<MySQLModifier> modifierList, final StringBuilder sqlBuilder) {
+        for (MySQLModifier modifier : modifierList) {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case CONCURRENT:
