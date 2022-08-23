@@ -906,6 +906,34 @@ abstract class Functions {
     }
 
 
+    static Expression _simpleTowArgFunc(final String name, final Expression g1
+            , final Expression g2, final TypeMeta returnType) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(g1);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(g2);
+        return SQLFunctions.safeComplexArgFunc(name, argList, returnType);
+    }
+
+    static Expression _simpleMaxThreeArgFunc(final String name, final List<Expression> expList
+            , final TypeMeta returnType) {
+        final Expression func;
+        switch (expList.size()) {
+            case 1:
+                func = SQLFunctions.oneArgFunc(name, expList.get(0), returnType);
+                break;
+            case 2:
+            case 3:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+
+
     /*-------------------below private method -------------------*/
 
 

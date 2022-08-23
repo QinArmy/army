@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
     MySQLFuncSyntax2() {
@@ -1328,7 +1329,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcontains">MBRContains(g1, g2)</a>
      */
     public static Expression mbrContains(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBRContains", g1, g2);
+        return _simpleTowArgFunc("MBRContains", g1, g2, BooleanType.INSTANCE);
     }
 
     /**
@@ -1342,7 +1343,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcoveredby">MBRCoveredBy(g1, g2)</a>
      */
     public static Expression mbrCoveredBy(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBRCoveredBy", g1, g2);
+        return _simpleTowArgFunc("MBRCoveredBy", g1, g2, BooleanType.INSTANCE);
     }
 
     /**
@@ -1356,7 +1357,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcovers">MBRCovers(g1, g2)</a>
      */
     public static Expression mbrCovers(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBRCovers", g1, g2);
+        return _simpleTowArgFunc("MBRCovers", g1, g2, BooleanType.INSTANCE);
     }
 
     /**
@@ -1370,7 +1371,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrdisjoint">MBRDisjoint(g1, g2)</a>
      */
     public static Expression mbrDisjoint(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBRDisjoint", g1, g2);
+        return _simpleTowArgFunc("MBRDisjoint", g1, g2, BooleanType.INSTANCE);
     }
 
     /**
@@ -1384,7 +1385,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrequals">MBREquals(g1, g2)</a>
      */
     public static Expression mbrEquals(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBREquals", g1, g2);
+        return _simpleTowArgFunc("MBREquals", g1, g2, BooleanType.INSTANCE);
     }
 
     /**
@@ -1398,7 +1399,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrintersects">MBRIntersects(g1, g2)</a>
      */
     public static Expression mbrIntersects(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBRIntersects", g1, g2);
+        return _simpleTowArgFunc("MBRIntersects", g1, g2, BooleanType.INSTANCE);
     }
 
 
@@ -1413,7 +1414,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbroverlaps">MBROverlaps(g1, g2)</a>
      */
     public static Expression mbrOverlaps(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBROverlaps", g1, g2);
+        return _simpleTowArgFunc("MBROverlaps", g1, g2, BooleanType.INSTANCE);
     }
 
     /**
@@ -1427,7 +1428,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrtouches">MBRTouches(g1, g2)</a>
      */
     public static Expression mbrTouches(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBRTouches", g1, g2);
+        return _simpleTowArgFunc("MBRTouches", g1, g2, BooleanType.INSTANCE);
     }
 
     /**
@@ -1441,7 +1442,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrwithin">MBRWithin(g1, g2)</a>
      */
     public static Expression mbrWithin(final Expression g1, final Expression g2) {
-        return _doubleGeometryReturnBoolean("MBRWithin", g1, g2);
+        return _simpleTowArgFunc("MBRWithin", g1, g2, BooleanType.INSTANCE);
     }
 
     /**
@@ -1497,11 +1498,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-interiorringn">ST_InteriorRingN(poly, N)</a>
      */
     public static Expression stInteriorRingN(final Expression poly, final Expression n) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(poly);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(n);
-        return SQLFunctions.safeComplexArgFunc("ST_InteriorRingN", argList, ByteArrayType.INSTANCE);
+        return _simpleTowArgFunc("ST_InteriorRingN", poly, n, ByteArrayType.INSTANCE);
     }
 
 
@@ -1558,11 +1555,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsBinary(g [, options])</a>
      */
     public static Expression stAsBinary(final Expression g, final Expression options) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(g);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(options);
-        return SQLFunctions.safeComplexArgFunc("ST_AsBinary", argList, ByteArrayType.INSTANCE);
+        return _simpleTowArgFunc("ST_AsBinary", g, options, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1591,11 +1584,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsWKB(g [, options])</a>
      */
     public static Expression stAsWKB(final Expression g, final Expression options) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(g);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(options);
-        return SQLFunctions.safeComplexArgFunc("ST_AsWKB", argList, ByteArrayType.INSTANCE);
+        return _simpleTowArgFunc("ST_AsWKB", g, options, ByteArrayType.INSTANCE);
     }
 
 
@@ -1623,11 +1612,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsText(g [, options])</a>
      */
     public static Expression stAsText(final Expression g, final Expression options) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(g);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(options);
-        return SQLFunctions.safeComplexArgFunc("ST_AsText", argList, StringType.INSTANCE);
+        return _simpleTowArgFunc("ST_AsText", g, options, StringType.INSTANCE);
     }
 
     /**
@@ -1654,11 +1639,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsWKT(g [, options])</a>
      */
     public static Expression stAsWKT(final Expression g, final Expression options) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(g);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(options);
-        return SQLFunctions.safeComplexArgFunc("ST_AsWKT", argList, StringType.INSTANCE);
+        return _simpleTowArgFunc("ST_AsWKT", g, options, StringType.INSTANCE);
     }
 
     /**
@@ -1797,6 +1778,723 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         return SQLFunctions.oneArgFunc("ST_ConvexHull", g, ByteArrayType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-difference">ST_Difference(g1, g2)</a>
+     */
+    public static Expression stDifference(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Difference", g1, g2, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-intersection">ST_Intersection(g1, g2)</a>
+     */
+    public static Expression stIntersection(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Intersection", g1, g2, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ls                 non-null
+     * @param fractionalDistance non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-lineinterpolatepoint">ST_LineInterpolatePoint(ls, fractional_distance)</a>
+     */
+    public static Expression stLineInterpolatePoint(final Expression ls, final Expression fractionalDistance) {
+        return _simpleTowArgFunc("ST_LineInterpolatePoint", ls, fractionalDistance, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ls                 non-null
+     * @param fractionalDistance non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-lineinterpolatepoints">ST_LineInterpolatePoints(ls, fractional_distance)</a>
+     */
+    public static Expression stLineInterpolatePoints(final Expression ls, final Expression fractionalDistance) {
+        return _simpleTowArgFunc("ST_LineInterpolatePoints", ls, fractionalDistance, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ls       non-null
+     * @param distance non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-pointatdistance">ST_PointAtDistance(ls, distance)</a>
+     */
+    public static Expression stPointAtDistance(final Expression ls, final Expression distance) {
+        return _simpleTowArgFunc("ST_PointAtDistance", ls, distance, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-symdifference">ST_SymDifference(g1, g2)</a>
+     */
+    public static Expression stSymDifference(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_SymDifference", g1, g2, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g          non-null
+     * @param targetSrid non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-transform">ST_Transform(g, target_srid)</a>
+     */
+    public static Expression stTransform(final Expression g, final Expression targetSrid) {
+        return _simpleTowArgFunc("ST_Transform", g, targetSrid, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-union">ST_Union(g1, g2)</a>
+     */
+    public static Expression stUnion(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Union", g1, g2, ByteArrayType.INSTANCE);
+    }
+
+    /*-------------------below Spatial Convenience Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param expList non-null,size in [2,3].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-convenience-functions.html#function_st-distance-sphere">ST_Distance_Sphere(g1, g2 [, radius])</a>
+     */
+    public static Expression stDistanceSphere(final List<Expression> expList) {
+        final String name = "ST_Distance_Sphere";
+        final Expression func;
+        switch (expList.size()) {
+            case 2:
+            case 3:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                        , DoubleType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-convenience-functions.html#function_st-isvalid">ST_IsValid(g)</a>
+     */
+    public static Expression stIsValid(final Expression g) {
+        return SQLFunctions.oneArgFunc("ST_IsValid", g, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param pt1 non-null
+     * @param pt2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-makeenvelope">ST_MakeEnvelope(pt1, pt2)</a>
+     */
+    public static Expression stMakeEnvelope(final Expression pt1, final Expression pt2) {
+        return _simpleTowArgFunc("ST_MakeEnvelope", pt1, pt2, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g           non-null
+     * @param maxDistance non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-simplify">ST_Simplify(g, max_distance)</a>
+     */
+    public static Expression stSimplify(final Expression g, final Expression maxDistance) {
+        return _simpleTowArgFunc("ST_Simplify", g, maxDistance, ByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-convenience-functions.html#function_st-validate">ST_Validate(g)</a>
+     */
+    public static Expression stValidate(final Expression g) {
+        return SQLFunctions.oneArgFunc("ST_Validate", g, ByteArrayType.INSTANCE);
+    }
+
+
+    /*-------------------below LineString and MultiLineString Property Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ls non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-endpoint">ST_EndPoint(ls)</a>
+     */
+    public static Expression stEndPoint(final Expression ls) {
+        return SQLFunctions.oneArgFunc("ST_EndPoint", ls, ByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param ls non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-isclosed">ST_IsClosed(ls)</a>
+     */
+    public static Expression stIsClosed(final Expression ls) {
+        return SQLFunctions.oneArgFunc("ST_IsClosed", ls, BooleanType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param expList non-null,size in [1,2].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-length">ST_Length(ls [, unit])</a>
+     */
+    public static Expression stLength(final List<Expression> expList) {
+        final String name = "ST_Length";
+        final Expression func;
+        switch (expList.size()) {
+            case 1:
+                func = SQLFunctions.oneArgFunc(name, expList.get(0), DoubleType.INSTANCE);
+                break;
+            case 2:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                        , DoubleType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param ls non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-numpoints">ST_NumPoints(ls)</a>
+     */
+    public static Expression stNumPoints(final Expression ls) {
+        return SQLFunctions.oneArgFunc("ST_NumPoints", ls, IntegerType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ls non-null
+     * @param n  non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-pointn">ST_PointN(ls, N)</a>
+     */
+    public static Expression stPointN(final Expression ls, final Expression n) {
+        return _simpleTowArgFunc("ST_PointN", ls, n, ByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ls non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-startpoint">ST_StartPoint(ls)</a>
+     */
+    public static Expression stStartPoint(final Expression ls) {
+        return SQLFunctions.oneArgFunc("ST_StartPoint", ls, ByteArrayType.INSTANCE);
+    }
+
+
+    /*-------------------below Spatial Relation Functions That Use Object Shapes-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-contains">ST_Contains(g1, g2)</a>
+     */
+    public static Expression stContains(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Contains", g1, g2, BooleanType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-crosses">ST_Crosses(g1, g2)</a>
+     */
+    public static Expression stCrosses(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Crosses", g1, g2, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-disjoint">ST_Disjoint(g1, g2)</a>
+     */
+    public static Expression stDisjoint(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Disjoint", g1, g2, BooleanType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param expList non-null,size in [2,3].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-distance">ST_Distance(g1, g2 [, unit])</a>
+     */
+    public static Expression stDistance(final List<Expression> expList) {
+        final String name = "ST_Distance";
+        final Expression func;
+        switch (expList.size()) {
+            case 2:
+            case 3:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), DoubleType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-equals">ST_Equals(g1, g2)</a>
+     */
+    public static Expression stEquals(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Equals", g1, g2, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param expList non-null,size in [2,3].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-frechetdistance">ST_FrechetDistance(g1, g2 [, unit])</a>
+     */
+    public static Expression stFrechetDistance(final List<Expression> expList) {
+        final String name = "ST_FrechetDistance";
+        final Expression func;
+        switch (expList.size()) {
+            case 2:
+            case 3:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), DoubleType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param expList non-null,size in [2,3].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-hausdorffdistance">ST_HausdorffDistance(g1, g2 [, unit])</a>
+     */
+    public static Expression stHausdorffDistance(final List<Expression> expList) {
+        final String name = "ST_HausdorffDistance";
+        final Expression func;
+        switch (expList.size()) {
+            case 2:
+            case 3:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), DoubleType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-intersects">ST_Intersects(g1, g2)</a>
+     */
+    public static Expression stIntersects(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Intersects", g1, g2, BooleanType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-overlaps">ST_Overlaps(g1, g2)</a>
+     */
+    public static Expression stOverlaps(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Overlaps", g1, g2, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-touches">ST_Touches(g1, g2)</a>
+     */
+    public static Expression stTouches(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Touches", g1, g2, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-within">ST_Within(g1, g2)</a>
+     */
+    public static Expression stWithin(final Expression g1, final Expression g2) {
+        return _simpleTowArgFunc("ST_Within", g1, g2, BooleanType.INSTANCE);
+    }
+
+
+    /*-------------------below Spatial Geohash Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param expList non-null,size in [2,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-geohash">ST_GeoHash(longitude, latitude, max_length), ST_GeoHash(point, max_length)</a>
+     */
+    public static Expression stGeoHash(final List<Expression> expList) {
+        final String name = "ST_GeoHash";
+        final Expression func;
+        switch (expList.size()) {
+            case 2:
+            case 3:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), StringType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param geohashStr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-latfromgeohash">ST_LatFromGeoHash(geohash_str)</a>
+     */
+    public static Expression stLatFromGeoHash(final Expression geohashStr) {
+        return SQLFunctions.oneArgFunc("ST_LatFromGeoHash", geohashStr, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param geohashStr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-longfromgeohash">ST_LongFromGeoHash(geohash_str)</a>
+     */
+    public static Expression stLongFromGeoHash(final Expression geohashStr) {
+        return SQLFunctions.oneArgFunc("ST_LongFromGeoHash", geohashStr, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType}
+     * </p>
+     *
+     * @param geohashStr non-null
+     * @param srid       non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-pointfromgeohash">ST_PointFromGeoHash(geohash_str, srid)</a>
+     */
+    public static Expression stPointFromGeoHash(final Expression geohashStr, final Expression srid) {
+        return _simpleTowArgFunc("ST_PointFromGeoHash", geohashStr, srid, ByteArrayType.INSTANCE);
+    }
+
+    /*-------------------below Functions That Create Geometry Values from WKT Values-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-geomcollfromtext">ST_GeomCollFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stGeomCollFromText(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_GeomCollFromText", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-geomfromtext">ST_GeomFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stGeomFromText(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_GeomFromText", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-linefromtext">ST_LineStringFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stLineStringFromText(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_LineStringFromText", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mlinefromtext">ST_MultiLineStringFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiLineStringFromText(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_MultiLineStringFromText", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mpointfromtext">ST_MultiPointFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiPointFromText(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_MultiPointFromText", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-mpolyfromtext">ST_MultiPolygonFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stMultiPolygonFromText(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_MultiPolygonFromText", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-pointfromtext">ST_PointFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stPointFromText(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_PointFromText", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkt-functions.html#function_st-polyfromtext">ST_PolygonFromText(wkt [, srid [, options]])</a>
+     */
+    public static Expression stPolygonFromText(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_PolygonFromText", expList, ByteArrayType.INSTANCE);
+    }
+
+    /*-------------------below Functions That Create Geometry Values from WKB Values-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-geomcollfromwkb">ST_GeomCollFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stGeomCollFromWKB(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_GeomCollFromWKB", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-geomfromwkb">ST_GeomFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stGeomFromWKB(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_GeomFromWKB", expList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null,size in [1,3]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-wkb-functions.html#function_st-linefromwkb">ST_LineStringFromWKB(wkb [, srid [, options]])</a>
+     */
+    public static Expression stLineStringFromWKB(final List<Expression> expList) {
+        return _simpleMaxThreeArgFunc("ST_LineStringFromWKB", expList, ByteArrayType.INSTANCE);
+    }
 
 
 
@@ -2165,27 +2863,6 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
         }
         return func;
-    }
-
-
-    /**
-     * @see #mbrCovers(Expression, Expression)
-     * @see #mbrDisjoint(Expression, Expression)
-     * @see #mbrContains(Expression, Expression)
-     * @see #mbrCoveredBy(Expression, Expression)
-     * @see #mbrIntersects(Expression, Expression)
-     * @see #mbrEquals(Expression, Expression)
-     * @see #mbrOverlaps(Expression, Expression)
-     * @see #mbrTouches(Expression, Expression)
-     * @see #mbrWithin(Expression, Expression)
-     */
-    private static Expression _doubleGeometryReturnBoolean(final String name, final Expression g1
-            , final Expression g2) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(g1);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(g2);
-        return SQLFunctions.safeComplexArgFunc(name, argList, BooleanType.INSTANCE);
     }
 
 
