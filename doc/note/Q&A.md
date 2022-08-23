@@ -79,3 +79,6 @@
     * 保证运行时 ThreadLocal 的 CriteriaContext 是当前的
     * 保证运行时 SQLs.ref(derivedTable,fieldName) 能正确运行
 
+15. 为什么提供 SQL 函数的的静态方法使用 Expression 参数 而不使用 Object 参数?
+    * 使用 Expression 方便扩展重载
+

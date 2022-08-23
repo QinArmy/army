@@ -6,8 +6,8 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.PairBean;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
+import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
-import io.army.criteria.SqlParam;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -97,9 +97,9 @@ abstract class JdbcExecutor implements StmtExecutor {
     public List<Long> batchUpdate(final BatchStmt stmt, final int timeout) throws DataAccessException {
 
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
-            final List<List<SqlParam>> paramGroupList = stmt.groupList();
+            final List<List<SQLParam>> paramGroupList = stmt.groupList();
 
-            for (List<SqlParam> group : paramGroupList) {
+            for (List<SQLParam> group : paramGroupList) {
                 bindParameter(statement, group);
                 statement.addBatch();
             }
@@ -439,13 +439,13 @@ abstract class JdbcExecutor implements StmtExecutor {
     /**
      * @see #executeInsert(SimpleStmt, int)
      */
-    private void bindParameter(final PreparedStatement statement, final List<SqlParam> paramGroup)
+    private void bindParameter(final PreparedStatement statement, final List<SQLParam> paramGroup)
             throws SQLException {
         final int size = paramGroup.size();
         final ServerMeta serverMeta = this.factory.serverMeta;
         final MappingEnv mappingEnv = this.factory.mappingEnv;
 
-        SqlParam sqlParam;
+        SQLParam sqlParam;
         Object value;
         MappingType mappingType;
         TypeMeta paramMeta;

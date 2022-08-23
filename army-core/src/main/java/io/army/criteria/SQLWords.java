@@ -3,7 +3,7 @@ package io.army.criteria;
 public interface SQLWords {
 
     /**
-     * @return one space char and sql keywords.
+     * @return sql keywords.
      */
     String render();
 

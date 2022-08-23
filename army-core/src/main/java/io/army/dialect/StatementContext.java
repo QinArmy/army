@@ -82,11 +82,11 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
 
     @Override
-    public final void appendParam(final SqlParam sqlParam) {
+    public final void appendParam(final SQLParam sqlParam) {
         if (this instanceof _ValuesContext) {
             throw _Exceptions.valuesStatementDontSupportParam();
         }
-        final ArrayList<SqlParam> paramList = this.paramConsumer.paramList;
+        final ArrayList<SQLParam> paramList = this.paramConsumer.paramList;
         if (sqlParam instanceof SingleParam) {
             this.sqlBuilder.append(SPACE_PLACEHOLDER);
             paramList.add(sqlParam);
@@ -202,7 +202,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
     }
 
     @Override
-    public final List<SqlParam> paramList() {
+    public final List<SQLParam> paramList() {
         return _CollectionUtils.unmodifiableList(this.paramConsumer.paramList);
     }
 
@@ -265,7 +265,7 @@ abstract class StatementContext implements StmtContext, _StmtParams {
 
     private static final class ParamConsumer {
 
-        private final ArrayList<SqlParam> paramList = new ArrayList<>();
+        private final ArrayList<SQLParam> paramList = new ArrayList<>();
 
         private final Function<String, Object> function;
 

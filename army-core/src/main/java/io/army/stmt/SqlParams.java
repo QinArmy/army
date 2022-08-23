@@ -1,7 +1,7 @@
 package io.army.stmt;
 
 import io.army.criteria.NamedParam;
-import io.army.criteria.SqlParam;
+import io.army.criteria.SQLParam;
 import io.army.criteria.SqlValueParam;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
@@ -11,7 +11,7 @@ import io.army.util._Exceptions;
 import java.util.Collection;
 import java.util.List;
 
-abstract class SqlParams implements SqlParam {
+abstract class SqlParams implements SQLParam {
 
 
     static SingleParam single(TypeMeta paramMeta, @Nullable Object value) {

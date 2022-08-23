@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.NamedParam;
-import io.army.criteria.SqlParam;
+import io.army.criteria.SQLParam;
 import io.army.criteria.SqlValueParam;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-abstract class ParamExpression extends OperationExpression implements SqlParam {
+abstract class ParamExpression extends OperationExpression implements SQLParam {
 
 
     static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {

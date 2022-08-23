@@ -2,7 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.NamedLiteral;
 import io.army.criteria.QualifiedField;
-import io.army.criteria.SqlParam;
+import io.army.criteria.SQLParam;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -62,7 +62,7 @@ public interface _SqlContext {
      *     </ol>
      * </p>
      */
-    void appendParam(SqlParam sqlParam);
+    void appendParam(SQLParam sqlParam);
 
     void appendLiteral(TypeMeta paramMeta, Object nonNull);
 

@@ -12,6 +12,6 @@ import io.army.stmt.SingleParam;
  *     </ul>
  * </p>
  */
-public interface SqlParam extends SqlValueParam {
+public interface SQLParam extends SqlValueParam {
 
 }

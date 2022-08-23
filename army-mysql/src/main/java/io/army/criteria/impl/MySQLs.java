@@ -8,7 +8,7 @@ import io.army.util._StringUtils;
 
 import java.util.Objects;
 
-public abstract class MySQLs extends MySQLFuncSyntax {
+public abstract class MySQLs extends MySQLFuncSyntax2 {
 
     /**
      * private constructor

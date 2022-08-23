@@ -840,7 +840,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
             }
             joinType = block.jointType();
             if (i > 0) {
-                sqlBuilder.append(joinType.keyWords);
+                sqlBuilder.append(joinType.render());
             } else if (joinType != _JoinType.NONE) {
                 throw _Exceptions.unexpectedEnum(joinType);
             }
@@ -1530,7 +1530,8 @@ public abstract class _AbstractDialectParser implements ArmyParser {
                     String m = String.format("Standard query api support only %s", SQLs.Modifier.class.getName());
                     throw new CriteriaException(m);
                 }
-                builder.append(modifier.render());
+                builder.append(_Constant.SPACE)
+                        .append(modifier.render());
             }
             break;
             default:

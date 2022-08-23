@@ -5,9 +5,13 @@ import io.army.criteria.mysql.MySQLClause;
 import io.army.criteria.mysql.MySQLUnit;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
 import io.army.meta.TypeMeta;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.SingleParam;
+import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
 
@@ -86,6 +90,22 @@ abstract class MySQLFunctions extends SQLFunctions {
             throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
         }
         return SQLFunctions.sqlIdentifier(type);
+    }
+
+    static Expression statementDigest(final PrimaryStatement statement, final Visible visible, final boolean literal) {
+        return new StatementDigestFunc("STATEMENT_DIGEST", statement, visible, literal, StringType.INSTANCE);
+    }
+
+    static Expression statementDigest(final String statement, final Visible visible, final boolean literal) {
+        return new StatementDigestFunc("STATEMENT_DIGEST", statement, visible, literal, StringType.INSTANCE);
+    }
+
+    static Expression statementDigestText(final PrimaryStatement statement, final Visible visible, final boolean literal) {
+        return new StatementDigestFunc("STATEMENT_DIGEST_TEXT", statement, visible, literal, StringType.INSTANCE);
+    }
+
+    static Expression statementDigestText(final String statement, final Visible visible, final boolean literal) {
+        return new StatementDigestFunc("STATEMENT_DIGEST_TEXT", statement, visible, literal, StringType.INSTANCE);
     }
 
 
@@ -173,7 +193,9 @@ abstract class MySQLFunctions extends SQLFunctions {
         final void appendArguments(final _SqlContext context) {
             final SQLWords option = this.option;
             if (option != null) {
-                context.sqlBuilder().append(option.render());
+                context.sqlBuilder()
+                        .append(_Constant.SPACE)
+                        .append(option.render());
             }
             this.argument.appendSql(context);
         }
@@ -182,7 +204,8 @@ abstract class MySQLFunctions extends SQLFunctions {
         final void argumentToString(final StringBuilder builder) {
             final SQLWords option = this.option;
             if (option != null) {
-                builder.append(option.render());
+                builder.append(_Constant.SPACE)
+                        .append(option.render());
             }
             builder.append(this.argument);
         }
@@ -481,6 +504,94 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     }//GroupConcatClause
 
+    private static final class StatementDigestFunc extends SQLFunctions.FunctionExpression {
+
+        private final Object statement;
+
+        private final Visible visible;
+
+        private final boolean literal;
+
+        private StatementDigestFunc(String name, final Object statement, final Visible visible
+                , final boolean literal, TypeMeta returnType) {
+            super(name, returnType);
+            this.statement = statement;
+            this.visible = visible;
+            this.literal = literal;
+        }
+
+        @Override
+        void appendArguments(final _SqlContext context) {
+            final Object statement = this.statement;
+            if (statement instanceof String) {
+                if (this.literal) {
+                    context.appendLiteral(StringType.INSTANCE, statement);
+                } else {
+                    context.appendParam(SingleParam.build(StringType.INSTANCE, statement));
+                }
+                return;
+            }
+
+            final Stmt stmt;
+            if (!(statement instanceof PrimaryStatement)) {
+                //no bug,never here
+                throw new IllegalStateException();
+            } else if (statement instanceof Select) {
+                stmt = context.parser().select((Select) statement, this.visible);
+            } else if (statement instanceof Insert) {
+                stmt = context.parser().insert((Insert) statement, this.visible);
+            } else if (statement instanceof Update) {
+                stmt = context.parser().update((Update) statement, this.visible);
+            } else if (statement instanceof Delete) {
+                stmt = context.parser().delete((Delete) statement, this.visible);
+            } else if (statement instanceof DialectStatement) {
+                stmt = context.parser().dialectStmt((DialectStatement) statement, this.visible);
+            } else {
+                //no bug,never here
+                throw new IllegalArgumentException();
+            }
+
+            if (!(stmt instanceof SimpleStmt)) {
+                String m = String.format("the argument of %s must be simple statement.", this.name);
+                throw new CriteriaException(m);
+            }
+
+            if (this.literal) {
+                context.appendLiteral(StringType.INSTANCE, ((SimpleStmt) stmt).sql());
+            } else {
+                context.appendParam(SingleParam.build(StringType.INSTANCE, ((SimpleStmt) stmt).sql()));
+            }
+
+        }
+
+        @Override
+        void argumentsToString(final StringBuilder builder) {
+            final Object statement = this.statement;
+            if (statement instanceof String) {
+                builder.append(_Constant.SPACE)
+                        .append(statement);
+                return;
+            }
+            if (!(statement instanceof PrimaryStatement)) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            final Stmt stmt;
+            stmt = ((PrimaryStatement) statement).mockAsStmt(MySQLDialect.MySQL80, this.visible);
+
+            if (!(stmt instanceof SimpleStmt)) {
+                String m = String.format("the argument of %s must be simple statement.", this.name);
+                throw new CriteriaException(m);
+            }
+
+            builder.append(_Constant.SPACE)
+                    .append(((SimpleStmt) stmt).sql());
+
+        }
+
+    }//StatementDigestFunc
+
+    @Deprecated
     private static final class IntervalTimeFunc extends SQLFunctions.FunctionExpression {
 
         private final ArmyExpression date;

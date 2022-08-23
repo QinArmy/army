@@ -27,24 +27,36 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     enum FuncWord implements SQLWords {
 
-        INTERVAL(_Constant.SPACE_INTERVAL),
-        COMMA(_Constant.SPACE_COMMA),
-        FROM(_Constant.SPACE_FROM),
-        USING(_Constant.SPACE_USING),
-        IN(" IN"),
-        AS(_Constant.SPACE_AS),
-        LEFT_PAREN(_Constant.SPACE_LEFT_PAREN),
-        RIGHT_PAREN(_Constant.SPACE_RIGHT_PAREN);
-
-        private final String word;
-
-        FuncWord(String word) {
-            this.word = word;
-        }
+        INTERVAL,
+        COMMA,
+        FROM,
+        USING,
+        IN,
+        AS,
+        AT_TIME_ZONE,
+        LEFT_PAREN,
+        RIGHT_PAREN;
 
         @Override
         public final String render() {
-            return this.word;
+            final String words;
+            switch (this) {
+                case COMMA:
+                    words = ",";
+                    break;
+                case LEFT_PAREN:
+                    words = "(";
+                    break;
+                case RIGHT_PAREN:
+                    words = ")";
+                    break;
+                case AT_TIME_ZONE:
+                    words = "AT TIME ZONE";
+                    break;
+                default:
+                    words = this.name();
+            }
+            return words;
         }
 
         @Override
@@ -115,7 +127,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         final StringBuilder sqlBuilder = context.sqlBuilder();
 
         if (option != null) {
-            sqlBuilder.append(option.render());
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(option.render());
         }
 
         final int argSize = argList.size();
@@ -139,7 +152,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
             , final @Nullable Clause clause, final StringBuilder builder) {
 
         if (option != null) {
-            builder.append(option.render());
+            builder.append(_Constant.SPACE)
+                    .append(option.render());
         }
 
         final int argSize = argList.size();
@@ -440,7 +454,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     static abstract class FunctionExpression extends OperationExpression
             implements FunctionSpec, MutableParamMetaSpec {
 
-        private final String name;
+        final String name;
 
         private TypeMeta returnType;
 
@@ -538,7 +552,9 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         void appendArguments(final _SqlContext context) {
             final SQLWords option = this.option;
             if (option != null) {
-                context.sqlBuilder().append(option.render());
+                context.sqlBuilder()
+                        .append(_Constant.SPACE)
+                        .append(option.render());
             }
             this.argument.appendSql(context);
 
@@ -553,7 +569,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         void argumentsToString(final StringBuilder builder) {
             final SQLWords option = this.option;
             if (option != null) {
-                builder.append(option.render());
+                builder.append(_Constant.SPACE)
+                        .append(option.render());
             }
             builder.append(this.argument);
 
@@ -615,6 +632,9 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
                 if (o instanceof Expression) {
                     ((ArmyExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
                 } else if (o instanceof SQLWords) {
+                    if (o != FuncWord.LEFT_PAREN) {
+                        sqlBuilder.append(_Constant.SPACE);
+                    }
                     sqlBuilder.append(((SQLWords) o).render());
                 } else if (o instanceof SQLIdentifier) { // sql identifier
                     sqlBuilder.append(_Constant.SPACE);
@@ -642,7 +662,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
                 if (o instanceof Expression) {
                     builder.append(o);
                 } else if (o instanceof SQLWords) {
-                    builder.append(((SQLWords) o).render());
+                    builder.append(_Constant.SPACE)
+                            .append(((SQLWords) o).render());
                 } else if (o instanceof Clause) {
                     builder.append(o);
                 } else {

@@ -24,7 +24,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final Selection as(String alias) {
-        if (!(this instanceof SqlParam)) {
+        if (!(this instanceof SQLParam)) {
             throw unsupportedOperation();
         }
         return Selections.forExp(this, alias);

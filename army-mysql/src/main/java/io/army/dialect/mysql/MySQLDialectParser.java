@@ -499,14 +499,16 @@ final class MySQLDialectParser extends MySQLParser {
                 case LOW_PRIORITY:
                 case HIGH_PRIORITY:
                 case IGNORE:
-                    sqlBuilder.append(modifier.words);
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(modifier.render());
                     break;
                 case DELAYED: {
                     if (stmt instanceof _MySQLInsert._MySQQueryInsert) {
                         throw new CriteriaException(String.format("%s QUERY INSERT don't support %s"
                                 , this.dialect, modifier));
                     }
-                    sqlBuilder.append(modifier.words);
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(modifier.render());
                 }
                 break;
                 default:
@@ -522,7 +524,7 @@ final class MySQLDialectParser extends MySQLParser {
         switch (modifier) {
             case LOW_PRIORITY:
             case DELAYED:
-                sqlBuilder.append(modifier.words);
+                sqlBuilder.append(modifier.render());
                 break;
             default:
                 throw new CriteriaException(String.format("%s REPLACE don't support %s"
@@ -535,7 +537,7 @@ final class MySQLDialectParser extends MySQLParser {
             switch (modifier) {
                 case LOW_PRIORITY:
                 case IGNORE:
-                    builder.append(modifier.words);
+                    builder.append(modifier.render());
                     break;
                 default:
                     throw new CriteriaException(String.format("%s UPDATE don't support %s", this.dialect, modifier));
@@ -551,7 +553,8 @@ final class MySQLDialectParser extends MySQLParser {
                 case LOW_PRIORITY:
                 case QUICK:
                 case IGNORE:
-                    builder.append(modifier.render());
+                    builder.append(_Constant.SPACE)
+                            .append(modifier.render());
                     break;
                 default:
                     throw new CriteriaException(String.format("%s DELETE don't support %s", this.dialect, modifier));
@@ -573,7 +576,8 @@ final class MySQLDialectParser extends MySQLParser {
                 case SQL_BUFFER_RESULT:
                 case SQL_NO_CACHE:
                 case SQL_CALC_FOUND_ROWS:
-                    builder.append(((MySQLModifier) modifier).words);
+                    builder.append(_Constant.SPACE)
+                            .append(modifier.render());
                     break;
                 default:
                     throw new CriteriaException(String.format("%s SELECT don't support %s", this.dialect, modifier));
@@ -591,7 +595,8 @@ final class MySQLDialectParser extends MySQLParser {
                 case LOW_PRIORITY:
                 case CONCURRENT:
                 case LOCAL:
-                    sqlBuilder.append(modifier.words);
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(modifier.render());
                     break;
                 default:
                     throw new CriteriaException(String.format("%s LOAD DATA don't support %s", this.dialect, modifier));
@@ -717,7 +722,7 @@ final class MySQLDialectParser extends MySQLParser {
                 if (joinType == _JoinType.NONE) {
                     throw _Exceptions.dontSupportJoinType(joinType, this.dialect);
                 }
-                sqlBuilder.append(joinType.keyWords);
+                sqlBuilder.append(joinType.render());
             } else if (joinType != _JoinType.NONE) {
                 throw _Exceptions.unexpectedEnum(joinType);
             }
@@ -908,10 +913,12 @@ final class MySQLDialectParser extends MySQLParser {
             if (hintIndex > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            sqlBuilder.append(indexHint.command().render());
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(indexHint.command().render());
             purpose = indexHint.purpose();
             if (purpose != null) {
-                sqlBuilder.append(purpose.render());
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(purpose.render());
             }
             indexNameList = indexHint.indexNameList();
             indexSize = indexNameList.size();
@@ -968,14 +975,14 @@ final class MySQLDialectParser extends MySQLParser {
             , final @Nullable SQLWords lockOption, final StringBuilder sqlBuilder) {
         final String lockModeText;
         lockModeText = lockMode.render();
-        if (!this.asOf80 && lockModeText.equals(_Constant.SPACE_FOR_SHARE)) {
+        if (!this.asOf80 && lockModeText.equals(_Constant.FOR_SHARE)) {
             throw dontSupportLockWord(lockMode);
         }
         sqlBuilder.append(lockModeText); //append lock mode
 
         switch (lockModeText) {
-            case _Constant.SPACE_FOR_SHARE:
-            case _Constant.SPACE_FOR_UPDATE: {
+            case _Constant.FOR_SHARE:
+            case _Constant.FOR_UPDATE: {
                 final int ofSize = ofList.size();
                 if (ofSize > 0) {
                     if (!this.asOf80) {
@@ -992,11 +999,12 @@ final class MySQLDialectParser extends MySQLParser {
                     if (!this.asOf80) {
                         throw dontSupportLockWord(lockOption);
                     }
-                    sqlBuilder.append(lockOption.render());
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(lockOption.render());
                 }
             }
             break;
-            case _Constant.SPACE_LOCK_IN_SHARE_MODE:
+            case _Constant.LOCK_IN_SHARE_MODE:
                 break;
             default: {
                 String m = String.format("unknown lock mode[%s]", lockModeText);
@@ -1063,7 +1071,8 @@ final class MySQLDialectParser extends MySQLParser {
         final SQLWords strategyOption;
         strategyOption = loadData.strategyOption();
         if (strategyOption != null) {
-            sqlBuilder.append(strategyOption.render());
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(strategyOption.render());
         }
         //5. INTO TABLE clause
         sqlBuilder.append(" INTO TABLE ");
@@ -1238,7 +1247,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
     private CriteriaException dontSupportLockWord(SQLWords lockOption) {
-        return new CriteriaException(String.format("%s don't support%s clause"
+        return new CriteriaException(String.format("%s don't support %s clause"
                 , this.dialect, lockOption.render()));
     }
 

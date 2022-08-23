@@ -1,8 +1,8 @@
 package io.army.stmt;
 
 
+import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
-import io.army.criteria.SqlParam;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public interface _StmtParams {
     /**
      * @return a unmodified list
      */
-    List<SqlParam> paramList();
+    List<SQLParam> paramList();
 
     /**
      * @return a unmodified list

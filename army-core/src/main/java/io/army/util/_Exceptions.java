@@ -507,15 +507,15 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownParamValue(@Nullable SqlParam paramValue) {
-        String m = String.format("unknown %s type %s", SqlParam.class.getName()
+    public static CriteriaException unknownParamValue(@Nullable SQLParam paramValue) {
+        String m = String.format("unknown %s type %s", SQLParam.class.getName()
                 , _ClassUtils.safeClassName(paramValue));
         return new CriteriaException(m);
     }
 
-    public static ArmyException unexpectedSqlParam(@Nullable SqlParam sqlParam) {
+    public static ArmyException unexpectedSqlParam(@Nullable SQLParam sqlParam) {
         String m;
-        m = String.format("unexpected %s type %s", SqlParam.class.getName(), _ClassUtils.safeClassName(sqlParam));
+        m = String.format("unexpected %s type %s", SQLParam.class.getName(), _ClassUtils.safeClassName(sqlParam));
         return new ArmyException(m);
     }
 

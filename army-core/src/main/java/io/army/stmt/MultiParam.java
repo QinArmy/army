@@ -1,12 +1,12 @@
 package io.army.stmt;
 
 import io.army.criteria.NamedParam;
-import io.army.criteria.SqlParam;
+import io.army.criteria.SQLParam;
 
 import java.util.Collection;
 import java.util.List;
 
-public interface MultiParam extends SqlParam {
+public interface MultiParam extends SQLParam {
 
     List<?> valueList();
 

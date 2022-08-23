@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.SqlParam;
+import io.army.criteria.SQLParam;
 import io.army.stmt.SimpleStmt;
 
 /**
@@ -16,8 +16,8 @@ interface StmtContext extends _SqlContext {
     /**
      * for appending updateTime field in set clause.
      *
-     * @return true : currently exists {@link  SqlParam} in context
-     * @see #appendParam(SqlParam)
+     * @return true : currently exists {@link  SQLParam} in context
+     * @see #appendParam(SQLParam)
      */
     boolean hasParam();
 

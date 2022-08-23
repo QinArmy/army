@@ -47,7 +47,7 @@ public enum MySQLCastType implements SQLWords {
                 words = " UNSIGNED INTEGER";
                 break;
             default:
-                words = " " + this.name();
+                words = this.name();
 
         }
         return words;

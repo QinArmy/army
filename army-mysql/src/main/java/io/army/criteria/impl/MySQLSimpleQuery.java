@@ -134,9 +134,9 @@ abstract class MySQLSimpleQuery<C, Q extends Query, WE, SR, FT, FS, FP, FJ, JT, 
 
     enum MySQLLockMode implements SQLWords {
 
-        FOR_UPDATE(_Constant.SPACE_FOR_UPDATE),
-        LOCK_IN_SHARE_MODE(_Constant.SPACE_LOCK_IN_SHARE_MODE),
-        FOR_SHARE(_Constant.SPACE_FOR_SHARE);
+        FOR_UPDATE(_Constant.FOR_UPDATE),
+        LOCK_IN_SHARE_MODE(_Constant.LOCK_IN_SHARE_MODE),
+        FOR_SHARE(_Constant.FOR_SHARE);
 
         final String words;
 

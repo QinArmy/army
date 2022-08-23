@@ -43,31 +43,23 @@ public abstract class SQLs extends StandardSyntax {
 
     public enum Modifier implements SQLWords {
 
-        ALL(" ALL"),
-        DISTINCT(" DISTINCT");
+        ALL,
+        DISTINCT;
 
-        private final String keyWords;
 
-        /**
-         * private constructor
-         */
-        Modifier(String keyWords) {
-            this.keyWords = keyWords;
+        @Override
+        public final String render() {
+            return this.name();
         }
 
         @Override
-        public String render() {
-            return this.keyWords;
-        }
-
-        @Override
-        public String toString() {
+        public final String toString() {
             return _StringUtils.builder()
                     .append(SQLs.class.getSimpleName())
                     .append(_Constant.POINT)
                     .append(SQLs.Modifier.class.getSimpleName())
                     .append(_Constant.POINT)
-                    .append(this.keyWords.substring(1))
+                    .append(this.name())
                     .toString();
         }
 
@@ -352,6 +344,18 @@ public abstract class SQLs extends StandardSyntax {
             expression = (ArmyExpression) value;
         } else {
             expression = (ArmyExpression) literal(value);
+        }
+        return expression;
+    }
+
+    static ArmyExpression _funcLiteral(final TypeMeta typeMeta, final @Nullable Object value) {
+        final ArmyExpression expression;
+        if (value == null) {
+            expression = (ArmyExpression) nullWord();
+        } else if (value instanceof Expression) {
+            expression = (ArmyExpression) value;
+        } else {
+            expression = (ArmyExpression) literal(typeMeta, value);
         }
         return expression;
     }

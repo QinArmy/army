@@ -22,7 +22,7 @@ abstract class LiteralExpression extends OperationExpression {
 
     static LiteralExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object constant) {
         assert paramMeta != null;
-        return new SingleLiteralExpression(paramMeta, constant);
+        return new SingleLiteral(paramMeta, constant);
     }
 
     static LiteralExpression multi(final @Nullable TypeMeta paramMeta, final Collection<?> values) {
@@ -92,17 +92,17 @@ abstract class LiteralExpression extends OperationExpression {
     }
 
 
-     static final class SingleLiteralExpression extends LiteralExpression
-             implements SqlValueParam.SingleNonNamedValue {
+    static final class SingleLiteral extends LiteralExpression
+            implements SqlValueParam.SingleNonNamedValue {
 
-         private final Object value;
+        private final Object value;
 
-         private SingleLiteralExpression(TypeMeta paramMeta, @Nullable Object value) {
-             super(paramMeta);
-             this.value = value;
-         }
+        private SingleLiteral(TypeMeta paramMeta, @Nullable Object value) {
+            super(paramMeta);
+            this.value = value;
+        }
 
-         @Override
+        @Override
         public void appendSql(final _SqlContext context) {
             final Object value = this.value;
             if (value == null) {
@@ -129,8 +129,8 @@ abstract class LiteralExpression extends OperationExpression {
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof SingleLiteralExpression) {
-                final SingleLiteralExpression o = (SingleLiteralExpression) obj;
+            } else if (obj instanceof SingleLiteral) {
+                final SingleLiteral o = (SingleLiteral) obj;
                 match = o.paramMeta == this.paramMeta && Objects.equals(o.value, this.value);
             } else {
                 match = false;
@@ -211,7 +211,7 @@ abstract class LiteralExpression extends OperationExpression {
     }//MultiLiteralExpression
 
 
-    private static class NamedSingleLiteral extends LiteralExpression
+    static class NamedSingleLiteral extends LiteralExpression
             implements NamedLiteral, SqlValueParam.SingleValue {
 
         private final String name;
