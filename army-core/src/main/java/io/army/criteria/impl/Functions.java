@@ -5,6 +5,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -891,10 +892,21 @@ abstract class Functions {
         return returnType;
     }
 
+    static List<Object> _createSimpleMultiArgList(final List<Expression> expList) {
+        final int expSize = expList.size();
+        assert expSize > 1;
+        final List<Object> argList = new ArrayList<>((expSize << 1) - 1);
+        for (int i = 0; i < expSize; i++) {
+            if (i > 0) {
+                argList.add(SQLFunctions.FuncWord.COMMA);
+            }
+            argList.add(expList.get(i));
+        }
+        return argList;
+    }
+
 
     /*-------------------below private method -------------------*/
-
-
 
 
 }

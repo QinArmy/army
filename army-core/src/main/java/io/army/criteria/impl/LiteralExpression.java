@@ -153,16 +153,16 @@ abstract class LiteralExpression extends OperationExpression {
      }//SingleLiteralExpression
 
 
-    private static final class MultiLiteralExpression extends LiteralExpression
-            implements MultiValueExpression {
+     static final class MultiLiteralExpression extends LiteralExpression
+             implements MultiValueExpression {
 
-        private final List<?> valueList;
+         private final List<?> valueList;
 
-        private MultiLiteralExpression(TypeMeta paramMeta, Collection<?> valueList) {
-            super(paramMeta);
-            this.valueList = _CollectionUtils.asUnmodifiableList(valueList);
-            assert this.valueList.size() > 0;
-        }
+         private MultiLiteralExpression(TypeMeta paramMeta, Collection<?> valueList) {
+             super(paramMeta);
+             this.valueList = _CollectionUtils.asUnmodifiableList(valueList);
+             assert this.valueList.size() > 0;
+         }
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -270,7 +270,7 @@ abstract class LiteralExpression extends OperationExpression {
     }//NonNullNamedSingleLiteral
 
 
-    private static final class NamedMultiLiteral extends LiteralExpression
+    static final class NamedMultiLiteral extends LiteralExpression
             implements NamedLiteral, SqlValueParam.NamedMultiValue, MultiValueExpression {
 
         private final String name;

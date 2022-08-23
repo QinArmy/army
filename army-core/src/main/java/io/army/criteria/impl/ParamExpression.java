@@ -105,17 +105,17 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
     }//SingleParamExpression
 
 
-    private static final class MultiParamExpression extends ParamExpression
-            implements MultiParam, SqlValueParam.MultiValue, MultiValueExpression {
+     static final class MultiParamExpression extends ParamExpression
+             implements MultiParam, SqlValueParam.MultiValue, MultiValueExpression {
 
-        private final List<?> valueList;
+         private final List<?> valueList;
 
-        private final boolean preferLiteral;
+         private final boolean preferLiteral;
 
-        private MultiParamExpression(TypeMeta paramMeta, Collection<?> values, boolean preferLiteral) {
-            super(paramMeta);
-            this.valueList = _CollectionUtils.asUnmodifiableList(values);
-            this.preferLiteral = preferLiteral;
+         private MultiParamExpression(TypeMeta paramMeta, Collection<?> values, boolean preferLiteral) {
+             super(paramMeta);
+             this.valueList = _CollectionUtils.asUnmodifiableList(values);
+             this.preferLiteral = preferLiteral;
         }
 
         @Override
@@ -179,7 +179,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
     }//MultiParamExpression
 
 
-    private static class NamedSingleParam extends ParamExpression
+    static class NamedSingleParam extends ParamExpression
             implements NamedParam.NamedSingle {
 
         private final String name;
@@ -237,7 +237,7 @@ abstract class ParamExpression extends OperationExpression implements SQLParam {
 
     }//NameNonNullSingleParam
 
-    private static final class NamedMultiParam extends ParamExpression
+    static final class NamedMultiParam extends ParamExpression
             implements NamedParam.NamedMulti, MultiValueExpression {
 
         private final String name;

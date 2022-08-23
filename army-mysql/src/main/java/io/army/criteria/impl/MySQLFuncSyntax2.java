@@ -1000,6 +1000,804 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     }
 
 
+    /*-------------------below Information Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param count non-null
+     * @param expr  non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_benchmark">BENCHMARK(count,expr)</a>
+     */
+    public static Expression benchmark(final Expression count, final Expression expr) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(count);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(expr);
+        return SQLFunctions.safeComplexArgFunc("BENCHMARK", argList, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_charset">CHARSET(str)</a>
+     */
+    public static Expression charset(final Expression str) {
+        return SQLFunctions.oneArgFunc("CHARSET", str, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param str non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_coercibility">COERCIBILITY(str)</a>
+     */
+    public static Expression coercibility(final Expression str) {
+        return SQLFunctions.oneArgFunc("COERCIBILITY", str, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param str non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_collation">COLLATION(str)</a>
+     */
+    public static Expression collation(final Expression str) {
+        return SQLFunctions.oneArgFunc("COLLATION", str, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LongType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_connection-id">CONNECTION_ID()</a>
+     */
+    public static Expression connectionId() {
+        return SQLFunctions.noArgFunc("CONNECTION_ID", LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_current-role">CURRENT_ROLE()</a>
+     */
+    public static Expression currentRole() {
+        return SQLFunctions.noArgFunc("CURRENT_ROLE", StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_current-user">CURRENT_USER()</a>
+     */
+    public static Expression currentUser() {
+        return SQLFunctions.noArgFunc("CURRENT_USER", StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_database">DATABASE()</a>
+     */
+    public static Expression database() {
+        return SQLFunctions.noArgFunc("DATABASE", StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_icu-version">ICU_VERSION()</a>
+     */
+    public static Expression icuVersion() {
+        return SQLFunctions.noArgFunc("ICU_VERSION", StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LongType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
+     */
+    public static Expression lastInsertId() {
+        return SQLFunctions.noArgFunc("LAST_INSERT_ID", LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LongType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_last-insert-id">LAST_INSERT_ID(expr)</a>
+     */
+    public static Expression lastInsertId(final Expression expr) {
+        return SQLFunctions.oneArgFunc("LAST_INSERT_ID", expr, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_roles-graphml">ROLES_GRAPHML()</a>
+     */
+    public static Expression rolesGraphml() {
+        return SQLFunctions.noArgFunc("ROLES_GRAPHML", StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link LongType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_row-count">ROW_COUNT()</a>
+     */
+    public static Expression rowCount() {
+        return SQLFunctions.noArgFunc("ROW_COUNT", LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_user">USER()</a>
+     */
+    public static Expression user() {
+        return SQLFunctions.noArgFunc("USER", StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_version">VERSION()</a>
+     */
+    public static Expression version() {
+        return SQLFunctions.noArgFunc("VERSION", StringType.INSTANCE);
+    }
+
+
+    /*-------------------below MySQL-Specific Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param geometryList non-null,empty list or list
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_geomcollection">GeomCollection(g [, g] ...)</a>
+     */
+    public static Expression geomCollection(final List<Expression> geometryList) {
+        return _geometryTypeFunc("GeomCollection", geometryList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param geometryList non-null,empty list or list
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_geometrycollection">GeometryCollection(g [, g] ...)</a>
+     */
+    public static Expression geometryCollection(final List<Expression> geometryList) {
+        return _geometryTypeFunc("GeometryCollection", geometryList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ptList non-null,empty list or list
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_linestring">LineString(pt [, pt] ...)</a>
+     */
+    public static Expression lineString(final List<Expression> ptList) {
+        return _geometryTypeFunc("LineString", ptList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ptList non-null,empty list or list
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_multilinestring">MultiLineString(ls [, ls] ...)</a>
+     */
+    public static Expression multiLineString(final List<Expression> ptList) {
+        return _geometryTypeFunc("MultiLineString", ptList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ptList non-null,empty list or list
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_multipoint">MultiPoint(pt [, pt2] ...)</a>
+     */
+    public static Expression multiPoint(final List<Expression> ptList) {
+        return _geometryTypeFunc("MultiPoint", ptList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param ptList non-null,empty list or list
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_multipolygon">MultiPolygon(poly [, poly] ...)</a>
+     */
+    public static Expression multiPolygon(final List<Expression> ptList) {
+        return _geometryTypeFunc("MultiPolygon", ptList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param lsList non-null,empty list or list
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_polygon">Polygon(ls [, ls] ...)</a>
+     */
+    public static Expression polygon(final List<Expression> lsList) {
+        return _geometryTypeFunc("Polygon", lsList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param x non-null
+     * @param y non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_point">Point(x, y)</a>
+     */
+    public static Expression point(final Expression x, final Expression y) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(x);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(y);
+        return SQLFunctions.safeComplexArgFunc("Point", argList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcontains">MBRContains(g1, g2)</a>
+     */
+    public static Expression mbrContains(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBRContains", g1, g2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcoveredby">MBRCoveredBy(g1, g2)</a>
+     */
+    public static Expression mbrCoveredBy(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBRCoveredBy", g1, g2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcovers">MBRCovers(g1, g2)</a>
+     */
+    public static Expression mbrCovers(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBRCovers", g1, g2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrdisjoint">MBRDisjoint(g1, g2)</a>
+     */
+    public static Expression mbrDisjoint(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBRDisjoint", g1, g2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrequals">MBREquals(g1, g2)</a>
+     */
+    public static Expression mbrEquals(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBREquals", g1, g2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrintersects">MBRIntersects(g1, g2)</a>
+     */
+    public static Expression mbrIntersects(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBRIntersects", g1, g2);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbroverlaps">MBROverlaps(g1, g2)</a>
+     */
+    public static Expression mbrOverlaps(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBROverlaps", g1, g2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrtouches">MBRTouches(g1, g2)</a>
+     */
+    public static Expression mbrTouches(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBRTouches", g1, g2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrwithin">MBRWithin(g1, g2)</a>
+     */
+    public static Expression mbrWithin(final Expression g1, final Expression g2) {
+        return _doubleGeometryReturnBoolean("MBRWithin", g1, g2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param polyOrmpoly non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-area">ST_Area({poly|mpoly})</a>
+     */
+    public static Expression stArea(final Expression polyOrmpoly) {
+        return SQLFunctions.oneArgFunc("ST_Area", polyOrmpoly, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param polyOrmpoly non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-centroid">ST_Centroid({poly|mpoly})</a>
+     */
+    public static Expression stCentroid(final Expression polyOrmpoly) {
+        return SQLFunctions.oneArgFunc("ST_Centroid", polyOrmpoly, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param polyOrmpoly non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-exteriorring">ST_ExteriorRing(poly)</a>
+     */
+    public static Expression stExteriorRing(final Expression polyOrmpoly) {
+        return SQLFunctions.oneArgFunc("ST_ExteriorRing", polyOrmpoly, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param poly non-null
+     * @param n    non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-interiorringn">ST_InteriorRingN(poly, N)</a>
+     */
+    public static Expression stInteriorRingN(final Expression poly, final Expression n) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(poly);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(n);
+        return SQLFunctions.safeComplexArgFunc("ST_InteriorRingN", argList, ByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param poly non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-numinteriorrings">ST_NumInteriorRing(poly)</a>
+     */
+    public static Expression stNumInteriorRing(final Expression poly) {
+        return SQLFunctions.oneArgFunc("ST_NumInteriorRing", poly, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link IntegerType}
+     * </p>
+     *
+     * @param poly non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-numinteriorrings">ST_NumInteriorRings(poly)</a>
+     */
+    public static Expression stNumInteriorRings(final Expression poly) {
+        return SQLFunctions.oneArgFunc("ST_NumInteriorRings", poly, IntegerType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsBinary(g [, options])</a>
+     */
+    public static Expression stAsBinary(final Expression g) {
+        return SQLFunctions.oneArgFunc("ST_AsBinary", g, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g       non-null
+     * @param options non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsBinary(g [, options])</a>
+     */
+    public static Expression stAsBinary(final Expression g, final Expression options) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(g);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(options);
+        return SQLFunctions.safeComplexArgFunc("ST_AsBinary", argList, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsWKB(g [, options])</a>
+     */
+    public static Expression stAsWKB(final Expression g) {
+        return SQLFunctions.oneArgFunc("ST_AsWKB", g, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g       non-null
+     * @param options non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsWKB(g [, options])</a>
+     */
+    public static Expression stAsWKB(final Expression g, final Expression options) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(g);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(options);
+        return SQLFunctions.safeComplexArgFunc("ST_AsWKB", argList, ByteArrayType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param g non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsText(g [, options])</a>
+     */
+    public static Expression stAsText(final Expression g) {
+        return SQLFunctions.oneArgFunc("ST_AsText", g, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param g       non-null
+     * @param options non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsText(g [, options])</a>
+     */
+    public static Expression stAsText(final Expression g, final Expression options) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(g);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(options);
+        return SQLFunctions.safeComplexArgFunc("ST_AsText", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param g non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsWKT(g [, options])</a>
+     */
+    public static Expression stAsWKT(final Expression g) {
+        return SQLFunctions.oneArgFunc("ST_AsWKT", g, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param g       non-null
+     * @param options non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsWKT(g [, options])</a>
+     */
+    public static Expression stAsWKT(final Expression g, final Expression options) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(g);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(options);
+        return SQLFunctions.safeComplexArgFunc("ST_AsWKT", argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-swapxy">ST_SwapXY(g)</a>
+     */
+    public static Expression stSwapXY(final Expression g) {
+        return SQLFunctions.oneArgFunc("ST_SwapXY", g, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param expList non-null ,the list that size in [1,3].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geojson-functions.html#function_st-asgeojson">ST_AsGeoJSON(g [, max_dec_digits [, options]])</a>
+     */
+    public static Expression stAsGeoJson(final List<Expression> expList) {
+        final String name = "ST_AsGeoJSON";
+        final Expression func;
+        switch (expList.size()) {
+            case 1:
+                func = SQLFunctions.oneArgFunc(name, expList.get(0), StringType.INSTANCE);
+                break;
+            case 2:
+            case 3:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), StringType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null ,the list that size in [1,3].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geojson-functions.html#function_st-geomfromgeojson">ST_GeomFromGeoJSON(str [, options [, srid]])</a>
+     */
+    public static Expression stGeomFromGeoJson(final List<Expression> expList) {
+        final String name = "ST_GeomFromGeoJSON";
+        final Expression func;
+        switch (expList.size()) {
+            case 1:
+                func = SQLFunctions.oneArgFunc(name, expList.get(0), ByteArrayType.INSTANCE);
+                break;
+            case 2:
+            case 3:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                        , ByteArrayType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param expList non-null ,the list that size in [2,5].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-buffer">ST_Buffer(g, d [, strategy1 [, strategy2 [, strategy3]]])</a>
+     */
+    public static Expression stBuffer(final List<Expression> expList) {
+        final String name = "ST_Buffer";
+        final Expression func;
+        switch (expList.size()) {
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                        , ByteArrayType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType}
+     * </p>
+     *
+     * @param expList non-null ,the list that size in [1,2].
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#unction_st-buffer-strategy">ST_Buffer_Strategy(strategy [, points_per_circle])</a>
+     */
+    public static Expression stBufferStrategy(final List<Expression> expList) {
+        final String name = "ST_Buffer_Strategy";
+        final Expression func;
+        switch (expList.size()) {
+            case 1:
+                func = SQLFunctions.oneArgFunc(name, expList.get(0), ByteArrayType.INSTANCE);
+                break;
+            case 2:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                        , ByteArrayType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
+     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
+     * </p>
+     *
+     * @param g non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-convexhull">ST_ConvexHull(g)</a>
+     */
+    public static Expression stConvexHull(final Expression g) {
+        return SQLFunctions.oneArgFunc("ST_ConvexHull", g, ByteArrayType.INSTANCE);
+    }
+
+
 
 
 
@@ -1343,6 +2141,51 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             argList.add(argExp);
         }
         return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+    }
+
+
+    /**
+     * @see #geomCollection(List)
+     * @see #geometryCollection(List)
+     * @see #lineString(List)
+     */
+    private static Expression _geometryTypeFunc(final String name, final List<Expression> geometryList) {
+        final Expression func;
+        final int geometrySize = geometryList.size();
+        switch (geometrySize) {
+            case 0:
+                func = SQLFunctions.noArgFunc(name, ByteArrayType.INSTANCE);
+                break;
+            case 1:
+                func = SQLFunctions.oneArgFunc(name, geometryList.get(0), ByteArrayType.INSTANCE);
+                break;
+            default:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(geometryList)
+                        , ByteArrayType.INSTANCE);
+
+        }
+        return func;
+    }
+
+
+    /**
+     * @see #mbrCovers(Expression, Expression)
+     * @see #mbrDisjoint(Expression, Expression)
+     * @see #mbrContains(Expression, Expression)
+     * @see #mbrCoveredBy(Expression, Expression)
+     * @see #mbrIntersects(Expression, Expression)
+     * @see #mbrEquals(Expression, Expression)
+     * @see #mbrOverlaps(Expression, Expression)
+     * @see #mbrTouches(Expression, Expression)
+     * @see #mbrWithin(Expression, Expression)
+     */
+    private static Expression _doubleGeometryReturnBoolean(final String name, final Expression g1
+            , final Expression g2) {
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(g1);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(g2);
+        return SQLFunctions.safeComplexArgFunc(name, argList, BooleanType.INSTANCE);
     }
 
 
