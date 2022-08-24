@@ -99,6 +99,10 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         return new ComplexArgFunc(name, argList, returnType);
     }
 
+    static NamedExpression namedComplexArgFunc(String name, List<?> argList, TypeMeta returnType, String expAlias) {
+        return new NamedComplexArgFunc(name, argList, returnType, expAlias);
+    }
+
     @Deprecated
     static Expression safeMultiArgOptionFunc(String name, @Nullable SQLWords option
             , List<ArmyExpression> argList, @Nullable Clause clause, TypeMeta returnType) {
@@ -393,7 +397,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//AggregateOverClause
 
-    private static final class NoArgFuncExpression extends OperationExpression implements ImmutableFunctionSpec {
+    private static class NoArgFuncExpression extends OperationExpression implements FunctionSpec {
 
         private final String name;
 
@@ -405,12 +409,12 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public TypeMeta typeMeta() {
+        public final TypeMeta typeMeta() {
             return this.returnType;
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public final void appendSql(final _SqlContext context) {
             context.sqlBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name)
@@ -419,12 +423,12 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public int hashCode() {
+        public final int hashCode() {
             return Objects.hash(this.name, this.returnType);
         }
 
         @Override
-        public boolean equals(final Object obj) {
+        public final boolean equals(final Object obj) {
             final boolean match;
             if (obj == this) {
                 match = true;
@@ -438,7 +442,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
                     .append(this.name)
@@ -594,7 +598,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//SQLIdentifier
 
-    private static final class ComplexArgFunc extends OperationExpression
+    private static class ComplexArgFunc extends OperationExpression
             implements FunctionSpec, MutableParamMetaSpec {
 
         private final String name;
@@ -610,17 +614,17 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public TypeMeta typeMeta() {
+        public final TypeMeta typeMeta() {
             return this.returnType;
         }
 
         @Override
-        public void updateParamMeta(final TypeMeta paramMeta) {
+        public final void updateParamMeta(final TypeMeta paramMeta) {
             this.returnType = paramMeta;
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public final void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE)
@@ -652,7 +656,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
         @Override
-        public String toString() {
+        public final String toString() {
             final StringBuilder builder = new StringBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name)
@@ -677,6 +681,23 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     }//ComplexArgFunc
+
+    private static final class NamedComplexArgFunc extends ComplexArgFunc implements NamedExpression {
+
+        private final String expAlias;
+
+        private NamedComplexArgFunc(String name, List<?> argList, TypeMeta returnType, String expAlias) {
+            super(name, argList, returnType);
+            this.expAlias = expAlias;
+        }
+
+        @Override
+        public String alias() {
+            return this.expAlias;
+        }
+
+
+    }//NamedComplexArgFunc
 
 
     private static final class MultiArgOptionFunc extends SQLFunctions.FunctionExpression {

@@ -9,6 +9,7 @@ import io.army.mapping.optional.JsonType;
 import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.mapping.optional.OffsetTimeType;
 import io.army.mapping.optional.ZonedDateTimeType;
+import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
@@ -1466,18 +1467,14 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param x nullable parameter or {@link Expression}
-     * @param d nullable parameter or {@link Expression}
+     * @param x non-null
+     * @param d non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #format(Object, Object, Object)
+     * @see #format(Expression, Expression, MySQLLocale)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
      */
-    public static Expression format(final @Nullable Object x, final @Nullable Object d) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(SQLs._funcParam(x));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, d));
-        return SQLFunctions.safeComplexArgFunc("FORMAT", argList, StringType.INSTANCE);
+    public static Expression format(final Expression x, final Expression d) {
+        return _simpleTowArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
     /**
@@ -1485,32 +1482,23 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param x      nullable parameter or {@link Expression}
-     * @param d      nullable parameter or {@link Expression}
-     * @param locale nullable {@link MySQLLocale} or {@link String} or {@link Expression}
+     * @param x      non-null
+     * @param d      non-null
+     * @param locale non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #format(Object, Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
      */
-    public static Expression format(final @Nullable Object x, final @Nullable Object d, final @Nullable Object locale) {
-        final String funcName = "FORMAT";
+    public static Expression format(final Expression x, final Expression d, final MySQLLocale locale) {
         final List<Object> argList = new ArrayList<>(5);
 
-        argList.add(SQLs._funcParam(x));
+        argList.add(x);
         argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, d));
+        argList.add(d);
         argList.add(SQLFunctions.FuncWord.COMMA);
 
-        if (locale == null) {
-            argList.add(SQLs._nullParam());
-        } else if (locale instanceof MySQLLocale || locale instanceof ArmyExpression) { //must be ArmyExpression not Expression
-            argList.add(locale);
-        } else if (locale instanceof String) {
-            argList.add(SQLFunctions.sqlIdentifier((String) locale));
-        } else {
-            throw CriteriaUtils.funcArgError(funcName, locale);
-        }
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+        argList.add(locale);
+        return SQLFunctions.safeComplexArgFunc("FORMAT", argList, StringType.INSTANCE);
     }
 
     /**
@@ -2749,10 +2737,361 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
                 , expression1.typeMeta());
     }
 
+    /*-------------------below Miscellaneous Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link  MappingType} of arg
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_any-value">ANY_VALUE(arg)</a>
+     */
+    public static Expression anyValue(final Expression arg) {
+        return SQLFunctions.oneArgFunc("ANY_VALUE", arg, arg.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_bin-to-uuid">BIN_TO_UUID(binary_uuid, swap_flag)</a>
+     */
+    public static Expression binToUuid(final Expression binaryUuid) {
+        return SQLFunctions.oneArgFunc("BIN_TO_UUID", binaryUuid, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_bin-to-uuid">BIN_TO_UUID(binary_uuid, swap_flag)</a>
+     */
+    public static Expression binToUuid(final Expression binaryUuid, final Expression swapFlag) {
+        return _simpleTowArgFunc("BIN_TO_UUID", binaryUuid, swapFlag, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:the {@link  MappingType} of field
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">DEFAULT(col_name)</a>
+     */
+    public static Expression defaultValue(final TableField field) {
+        return SQLFunctions.oneArgFunc("DEFAULT", field, field);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">GROUPING(expr [, expr] ...)</a>
+     */
+    public static Expression grouping(final Expression expr) {
+        return SQLFunctions.oneArgFunc("GROUPING", expr, BooleanType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param expList size greater than one
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">GROUPING(expr [, expr] ...)</a>
+     */
+    public static Expression grouping(final List<Expression> expList) {
+        final String funcName = "GROUPING";
+        if (expList.size() == 0) {
+            throw CriteriaUtils.funcArgError(funcName, expList);
+        }
+        return SQLFunctions.safeComplexArgFunc(funcName, _createSimpleMultiArgList(expList), BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet-aton">INET_ATON(expr)</a>
+     */
+    public static Expression inetAton(final Expression expr) {
+        return SQLFunctions.oneArgFunc("INET_ATON", expr, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet-ntoa">INET_NTOA(expr)</a>
+     */
+    public static Expression inetNtoa(final Expression expr) {
+        return SQLFunctions.oneArgFunc("INET_NTOA", expr, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link ByteArrayType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet6-aton">INET6_ATON(expr)</a>
+     */
+    public static Expression inet6Aton(final Expression expr) {
+        return SQLFunctions.oneArgFunc("INET6_ATON", expr, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_inet6-ntoa">INET6_NTOA(expr)</a>
+     */
+    public static Expression inet6Ntoa(final Expression expr) {
+        return SQLFunctions.oneArgFunc("INET6_NTOA", expr, StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4">IS_IPV4(expr)</a>
+     */
+    public static Expression isIpv4(final Expression expr) {
+        return SQLFunctions.oneArgFunc("IS_IPV4", expr, BooleanType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-compat">IS_IPV4_COMPAT(expr)</a>
+     */
+    public static Expression isIpv4Compat(final Expression expr) {
+        return SQLFunctions.oneArgFunc("IS_IPV4_COMPAT", expr, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-mapped">IS_IPV4_MAPPED(expr)</a>
+     */
+    public static Expression isIpv4Mapped(final Expression expr) {
+        return SQLFunctions.oneArgFunc("IS_IPV4_MAPPED", expr, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param expr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv6">IS_IPV6(expr)</a>
+     */
+    public static Expression isIpv6(final Expression expr) {
+        return SQLFunctions.oneArgFunc("IS_IPV6", expr, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param stringUuid non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-uuid">IS_UUID(string_uuid)</a>
+     */
+    public static Expression isUuid(final Expression stringUuid) {
+        return SQLFunctions.oneArgFunc("IS_UUID", stringUuid, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param expList non-null,size is 0 or in [2,4]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_master-pos-wait">MASTER_POS_WAIT(log_name,log_pos[,timeout][,channel])</a>
+     */
+    public static Expression masterPosWait(final List<Expression> expList) {
+        final String name = "MASTER_POS_WAIT";
+        final Expression func;
+        switch (expList.size()) {
+            case 0:
+                func = SQLFunctions.noArgFunc(name, IntegerType.INSTANCE);
+                break;
+            case 2:
+            case 3:
+            case 4:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of value
+     * </p>
+     *
+     * @param name  non-null,parameter {@link Expression} or literal {@link Expression}
+     *              ,couldn't be named parameter {@link Expression} or named literal {@link Expression}
+     * @param value non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_name-const">NAME_CONST(name,value)</a>
+     */
+    public static NamedExpression nameConst(final Expression name, final Expression value) {
+        final String funcName = "NAME_CONST";
+        final Object paramValue;
+        if (!(name instanceof SqlValueParam.SingleNonNamedValue
+                && (paramValue = ((SqlValueParam.SingleNonNamedValue) name).value()) instanceof String)) {
+            throw CriteriaUtils.funcArgError(funcName, name);
+        }
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(name);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(value);
+        return SQLFunctions.namedComplexArgFunc("NAME_CONST", argList, value.typeMeta(), (String) paramValue);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param duration non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_sleep">SLEEP(duration)</a>
+     */
+    public static Expression sleep(final Expression duration) {
+        return SQLFunctions.oneArgFunc("SLEEP", duration, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param expList non-null,size is 0 or in [2,4]
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_source-pos-wait">SOURCE_POS_WAIT(log_name,log_pos[,timeout][,channel])</a>
+     */
+    public static Expression sourcePosWait(final List<Expression> expList) {
+        final String name = "SOURCE_POS_WAIT";
+        final Expression func;
+        switch (expList.size()) {
+            case 0:
+                func = SQLFunctions.noArgFunc(name, IntegerType.INSTANCE);
+                break;
+            case 2:
+            case 3:
+            case 4:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid">UUID()</a>
+     */
+    public static Expression uuid() {
+        return SQLFunctions.noArgFunc("UUID", StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-short">UUID_SHORT()</a>
+     */
+    public static Expression uuidShort() {
+        return SQLFunctions.noArgFunc("UUID_SHORT", LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link ByteArrayType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid)</a>
+     */
+    public static Expression uuidToBin(final Expression stringUuid) {
+        return SQLFunctions.oneArgFunc("UUID_TO_BIN", stringUuid, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link ByteArrayType}
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin">UUID_TO_BIN(string_uuid, swap_flag)</a>
+     */
+    public static Expression uuidToBin(final Expression stringUuid, final Expression swapFlag) {
+        return _simpleTowArgFunc("UUID_TO_BIN", stringUuid, swapFlag, ByteArrayType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of field
+     * </p>
+     *
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_values">VALUES(col_name)</a>
+     */
+    public static Expression values(final FieldMeta<?> field) {
+        return SQLFunctions.oneArgFunc("VALUES", field, field);
+    }
+
 
     /*-------------------below private method -------------------*/
-
-
 
 
     /**

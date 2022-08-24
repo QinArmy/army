@@ -932,6 +932,23 @@ abstract class Functions {
         return func;
     }
 
+    static Expression _simpleMaxTwoArgFunc(final String name, final List<Expression> expList
+            , final TypeMeta returnType) {
+        final Expression func;
+        switch (expList.size()) {
+            case 1:
+                func = SQLFunctions.oneArgFunc(name, expList.get(0), returnType);
+                break;
+            case 2:
+                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+                break;
+            default:
+                throw CriteriaUtils.funcArgError(name, expList);
+        }
+        return func;
+    }
+
+
 
 
     /*-------------------below private method -------------------*/
