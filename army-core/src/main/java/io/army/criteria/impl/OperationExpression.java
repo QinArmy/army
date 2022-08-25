@@ -857,7 +857,7 @@ abstract class OperationExpression implements ArmyExpression {
 
     interface MutableParamMetaSpec {
 
-        void updateParamMeta(TypeMeta paramMeta);
+        void updateParamMeta(TypeMeta typeMeta);
     }
 
 

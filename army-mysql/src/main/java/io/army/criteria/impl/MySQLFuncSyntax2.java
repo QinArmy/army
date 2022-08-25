@@ -2878,7 +2878,46 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         return _simpleTowArgFunc("GTID_SUBTRACT", set1, set2, set1.typeMeta());
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param gtidSet non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_FOR_EXECUTED_GTID_SET(gtid_set[, timeout])</a>
+     */
+    public static Expression waitForExecutedGtidSet(final Expression gtidSet) {
+        return SQLFunctions.oneArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, IntegerType.INSTANCE);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param gtidSet non-null
+     * @param timeout non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_FOR_EXECUTED_GTID_SET(gtid_set[, timeout])</a>
+     */
+    public static Expression waitForExecutedGtidSet(final Expression gtidSet, final Expression timeout) {
+        return _simpleTowArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, timeout, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param gtidSet non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS(gtid_set[, timeout][,channel])</a>
+     */
+    static Expression waitUntilSqlThreadAfterGtids(final Expression gtidSet) {
+        //TODO add ?
+        return SQLFunctions.oneArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, IntegerType.INSTANCE);
+    }
 
 
 

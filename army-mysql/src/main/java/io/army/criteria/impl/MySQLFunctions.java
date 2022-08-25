@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.mysql.MySQLCastType;
+import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLClause;
 import io.army.criteria.mysql.MySQLUnit;
 import io.army.dialect._Constant;
@@ -22,7 +24,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 abstract class MySQLFunctions extends SQLFunctions {
 
@@ -66,6 +67,17 @@ abstract class MySQLFunctions extends SQLFunctions {
         return new MultiArgAggregateWindowFunc(name, option, argList, clause, returnType);
     }
 
+    static MySQLClause._JsonValueReturningSpec jsonValueFunc(final Expression jsonDoc, final Expression path) {
+        final String name = "JSON_VALUE";
+        if (jsonDoc instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, jsonDoc);
+        }
+        if (path instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, path);
+        }
+        return new JsonValueFunc((ArmyExpression) jsonDoc, (ArmyExpression) path);
+    }
+
 
     static MySQLFuncSyntax._AggregateOverSpec multiArgAggregateWindowFunc(String name, @Nullable SQLWords option
             , List<?> argList, @Nullable Clause clause, TypeMeta returnType) {
@@ -83,14 +95,6 @@ abstract class MySQLFunctions extends SQLFunctions {
         return new GroupConcatClause();
     }
 
-    static Object castType(final String type) {
-        final Pattern pattern = Pattern.compile("^[a-zA-Z]\\w+(?: [a-zA-Z]\\w*)?$");
-        if (!pattern.matcher(type).matches()) {
-            String m = String.format("the target[%s] of cast function error.", type);
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
-        }
-        return SQLFunctions.sqlIdentifier(type);
-    }
 
     static Expression statementDigest(final PrimaryStatement statement, final Visible visible, final boolean literal) {
         return new StatementDigestFunc("STATEMENT_DIGEST", statement, visible, literal, StringType.INSTANCE);
@@ -630,6 +634,329 @@ abstract class MySQLFunctions extends SQLFunctions {
         }
 
     }//IntervalTimeFunc
+
+
+    private enum JsonValueWord {
+        NULL("NULL"),
+        ERROR("ERROR"),
+        ON_EMPTY("ON EMPTY"),
+        ON_ERROR("ON ERROR");
+
+        private final String words;
+
+        JsonValueWord(String words) {
+            this.words = words;
+        }
+
+
+    }//NullOrError
+
+    private static final class JsonValueFunc extends OperationExpression
+            implements SQLFunctions.FunctionSpec
+            , MutableParamMetaSpec
+            , MySQLClause._JsonValueReturningSpec
+            , MySQLClause._JsonValueOptionOnEmptySpec
+            , MySQLClause._JsonValueOnEmptySpec {
+
+        private final CriteriaContext context;
+
+        private final ArmyExpression jsonDoc;
+
+        private final ArmyExpression path;
+
+        private TypeMeta returnType;
+
+        private List<Object> returningList;
+
+        private List<_Pair<Object, JsonValueWord>> eventHandlerList;
+
+        private Object operateValue;
+
+        private JsonValueFunc(ArmyExpression jsonDoc, ArmyExpression path) {
+            this.context = CriteriaContextStack.peek();
+            this.jsonDoc = jsonDoc;
+            this.path = path;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            TypeMeta returnType = this.returnType;
+            if (returnType == null) {
+                final List<Object> returningList = this.returningList;
+                if (returningList == null) {
+                    returnType = StringType.INSTANCE;
+                } else {
+                    returnType = MySQLFuncSyntax._castReturnType((MySQLCastType) returningList.get(0));
+                }
+                this.returnType = returnType;
+            }
+            return returnType;
+        }
+
+        @Override
+        public void updateParamMeta(final TypeMeta typeMeta) {
+            this.returnType = typeMeta;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" JSON_VALUE(");
+
+            this.jsonDoc.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            this.path.appendSql(context);
+
+            final List<Object> returningList = this.returningList;
+            if (returningList != null) {
+                assert returningList.get(0) instanceof MySQLCastType;
+                for (Object o : returningList) {
+                    if (o instanceof MySQLCastType) {
+                        sqlBuilder.append(_Constant.SPACE_RETURNING)
+                                .append(_Constant.SPACE);
+                        sqlBuilder.append(((MySQLCastType) o).render());
+                    } else if (o == FuncWord.LEFT_PAREN) {
+                        sqlBuilder.append(((FuncWord) o).render());
+                    } else if (o instanceof FuncWord || o instanceof MySQLCharset) {
+                        sqlBuilder.append(_Constant.SPACE)
+                                .append(((SQLWords) o).render());
+                    } else if (o instanceof Expression) {
+                        ((ArmyExpression) o).appendSql(context);
+                    } else {
+                        //no bug,never here
+                        throw new IllegalStateException();
+                    }
+
+                }//for
+            }//if
+
+            final List<_Pair<Object, JsonValueWord>> eventHandlerList = this.eventHandlerList;
+            if (eventHandlerList != null) {
+                assert eventHandlerList.size() < 3;
+                for (_Pair<Object, JsonValueWord> pair : eventHandlerList) {
+                    if (pair.first instanceof JsonValueWord) {
+                        assert pair.first == JsonValueWord.NULL || pair.first == JsonValueWord.ERROR;
+                        sqlBuilder.append(_Constant.SPACE)
+                                .append(((JsonValueWord) pair.first).words);
+                    } else if (pair.first instanceof Expression) {
+                        sqlBuilder.append(_Constant.SPACE_DEFAULT);
+                        ((ArmyExpression) pair.first).appendSql(context);
+                    } else {
+                        //no bug,never here
+                        throw new IllegalStateException();
+                    }
+                    assert pair.second == JsonValueWord.ON_EMPTY || pair.second == JsonValueWord.ON_ERROR;
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(pair.second.words);
+
+                }//for
+            }//if
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder()
+                    .append(" JSON_VALUE(")
+                    .append(this.jsonDoc)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.path);
+
+            final List<Object> returningList = this.returningList;
+            if (returningList != null) {
+                assert returningList.get(0) instanceof MySQLCastType;
+                for (Object o : returningList) {
+                    if (o instanceof MySQLCastType) {
+                        builder.append(_Constant.SPACE_RETURNING)
+                                .append(_Constant.SPACE)
+                                .append(((MySQLCastType) o).render());
+                    } else if (o == FuncWord.LEFT_PAREN) {
+                        builder.append(((FuncWord) o).render());
+                    } else if (o instanceof FuncWord || o instanceof MySQLCharset) {
+                        builder.append(_Constant.SPACE)
+                                .append(((SQLWords) o).render());
+                    } else if (o instanceof Expression) {
+                        builder.append(o);
+                    } else {
+                        //no bug,never here
+                        throw new IllegalStateException();
+                    }
+
+                }//for
+
+            }//if
+
+            final List<_Pair<Object, JsonValueWord>> eventHandlerList = this.eventHandlerList;
+            if (eventHandlerList != null) {
+                assert eventHandlerList.size() < 3;
+                for (_Pair<Object, JsonValueWord> pair : eventHandlerList) {
+                    if (pair.first instanceof JsonValueWord) {
+                        assert pair.first == JsonValueWord.NULL || pair.first == JsonValueWord.ERROR;
+                        builder.append(_Constant.SPACE)
+                                .append(((JsonValueWord) pair.first).words);
+                    } else if (pair.first instanceof Expression) {
+                        builder.append(_Constant.SPACE_DEFAULT)
+                                .append(pair.first);
+                    } else {
+                        //no bug,never here
+                        throw new IllegalStateException();
+                    }
+                    assert pair.second == JsonValueWord.ON_EMPTY || pair.second == JsonValueWord.ON_ERROR;
+                    builder.append(_Constant.SPACE)
+                            .append(pair.second.words);
+
+                }//for
+            }//if
+
+            return builder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+        @Override
+        public MySQLClause._JsonValueOptionOnEmptySpec returning(final MySQLCastType type) {
+            if (this.returningList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.returningList = Collections.singletonList(type);
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonValueOptionOnEmptySpec returning(final MySQLCastType type, Expression n) {
+            if (this.returningList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            if (!MySQLUtils.isSingleParamType(type)) {
+                throw typeError(type);
+            }
+            final List<Object> list = new ArrayList<>(4);
+
+            list.add(type);
+            list.add(FuncWord.LEFT_PAREN);
+            list.add(n);
+            list.add(FuncWord.RIGHT_PAREN);
+
+            this.returningList = list;
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression n, MySQLCharset charset) {
+            if (this.returningList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            if (type != MySQLCastType.CHAR) {
+                throw typeError(type);
+            }
+            final List<Object> list = new ArrayList<>(5);
+
+            list.add(type);
+            list.add(FuncWord.LEFT_PAREN);
+            list.add(n);
+            list.add(FuncWord.RIGHT_PAREN);
+
+            list.add(charset);
+            this.returningList = list;
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonValueOptionOnEmptySpec returning(MySQLCastType type, Expression m, Expression d) {
+            if (this.returningList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            if (type != MySQLCastType.DECIMAL) {
+                throw typeError(type);
+            }
+            final List<Object> list = new ArrayList<>(6);
+
+            list.add(type);
+            list.add(FuncWord.LEFT_PAREN);
+            list.add(m);
+            list.add(FuncWord.COMMA);
+
+            list.add(d);
+            list.add(FuncWord.RIGHT_PAREN);
+            this.returningList = list;
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonValueOnEmptySpec nullValue() {
+            if (this.operateValue != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.operateValue = JsonValueWord.NULL;
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonValueOnEmptySpec error() {
+            if (this.operateValue != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.operateValue = JsonValueWord.ERROR;
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonValueOnEmptySpec defaultValue(final Expression value) {
+            if (this.operateValue != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            if (!(value instanceof ArmyExpression)) {
+                throw CriteriaContextStack.nonArmyExp(this.context);
+            }
+            this.operateValue = value;
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonValueOnEmptySpec defaultValue(Supplier<? extends Expression> supplier) {
+            return this.defaultValue(supplier.get());
+        }
+
+        @Override
+        public Expression onError() {
+            final Object operateValue = this.operateValue;
+            if (operateValue == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.operateValue = null;//clear
+            final List<_Pair<Object, JsonValueWord>> eventHandlerList = this.eventHandlerList;
+            if (eventHandlerList == null) {
+                this.eventHandlerList = Collections.singletonList(_Pair.create(operateValue, JsonValueWord.ON_ERROR));
+            } else if (eventHandlerList.size() == 1) {
+                eventHandlerList.add(_Pair.create(operateValue, JsonValueWord.ON_ERROR));
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonValueOptionSpec onEmpty() {
+            final Object operateValue = this.operateValue;
+            if (operateValue == null || this.eventHandlerList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.operateValue = null;//clear
+            final List<_Pair<Object, JsonValueWord>> eventHandlerList = new ArrayList<>(2);
+            this.eventHandlerList = eventHandlerList;
+            eventHandlerList.add(_Pair.create(operateValue, JsonValueWord.ON_EMPTY));
+            return this;
+        }
+
+        private CriteriaException typeError(MySQLCastType type) {
+            String m = String.format("%s error", type);
+            return CriteriaContextStack.criteriaError(this.context, m);
+        }
+
+
+    }//JsonValueFunc
 
 
 }

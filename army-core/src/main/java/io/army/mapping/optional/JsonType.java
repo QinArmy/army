@@ -8,6 +8,7 @@ import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
+@Deprecated
 public final class JsonType extends AbstractMappingType {
 
 

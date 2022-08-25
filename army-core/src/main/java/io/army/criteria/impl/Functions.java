@@ -884,8 +884,10 @@ abstract class Functions {
         exprType = expression.typeMeta();
         if (expression instanceof SQLs.NullWord) {
             returnType = _NullType.INSTANCE;
-        } else if (exprType instanceof TypeMeta.Delay) {
+        } else if (exprType instanceof TypeMeta.Delay && !((TypeMeta.Delay) exprType).isPrepared()) {
             returnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) exprType, function);
+        } else if (exprType instanceof MappingType) {
+            returnType = function.apply((MappingType) exprType);
         } else {
             returnType = function.apply(exprType.mappingType());
         }
@@ -896,11 +898,17 @@ abstract class Functions {
         final int expSize = expList.size();
         assert expSize > 1;
         final List<Object> argList = new ArrayList<>((expSize << 1) - 1);
+        Expression expression;
         for (int i = 0; i < expSize; i++) {
             if (i > 0) {
                 argList.add(SQLFunctions.FuncWord.COMMA);
             }
-            argList.add(expList.get(i));
+            expression = expList.get(i);
+            if (expression instanceof SqlValueParam.MultiValue) {
+                String m = "support multi parameter or literal";
+                throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+            }
+            argList.add(expression);
         }
         return argList;
     }
@@ -908,10 +916,38 @@ abstract class Functions {
 
     static Expression _simpleTowArgFunc(final String name, final Expression g1
             , final Expression g2, final TypeMeta returnType) {
+        if (g1 instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, g1);
+        }
+        if (g2 instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, g2);
+        }
         final List<Object> argList = new ArrayList<>(3);
         argList.add(g1);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(g2);
+        return SQLFunctions.safeComplexArgFunc(name, argList, returnType);
+    }
+
+    static Expression _simpleThreeArgFunc(final String name, final Expression e1
+            , final Expression e2, final Expression e3, final TypeMeta returnType) {
+        if (e1 instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, e1);
+        }
+        if (e2 instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, e2);
+        }
+        if (e3 instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, e3);
+        }
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(e1);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(e2);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+
+        argList.add(e3);
         return SQLFunctions.safeComplexArgFunc(name, argList, returnType);
     }
 

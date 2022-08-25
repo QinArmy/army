@@ -5,10 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.mysql.*;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
-import io.army.mapping.optional.JsonType;
-import io.army.mapping.optional.OffsetDateTimeType;
-import io.army.mapping.optional.OffsetTimeType;
-import io.army.mapping.optional.ZonedDateTimeType;
+import io.army.mapping.optional.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
@@ -2531,17 +2528,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     public static Expression convert(final Expression exp, final MySQLCastType type, final Expression n) {
         CriteriaContextStack.assertNonNull(exp);
         final String funcName = "CONVERT";
-        switch (type) {
-            case BINARY:
-            case CHAR:
-            case NCHAR:
-            case TIME:
-            case DATETIME:
-            case DECIMAL:
-            case FLOAT:
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(funcName, type);
+        if (!MySQLUtils.isSingleParamType(type)) {
+            throw CriteriaUtils.funcArgError(funcName, type);
         }
         if (!(n instanceof LiteralExpression.SingleLiteral || n instanceof LiteralExpression.NamedSingleLiteral)) {
             throw CriteriaUtils.funcArgError(funcName, n);
@@ -3091,6 +3079,406 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     }
 
 
+    /*-------------------below Functions That Create JSON Values-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonListType}
+     * ;the {@link MappingType} of element:the {@link MappingType} val.
+     * </p>
+     *
+     * @param val non-null,multi parameter or literal {@link Expression}
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
+     */
+    public static Expression jsonArray(final Expression val) {
+        final TypeMeta returnType;
+        returnType = _returnType((ArmyExpression) val, JsonListType::from);
+        return SQLFunctions.oneOrMultiArgFunc("JSON_ARRAY", val, returnType);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonListType}
+     * ;the {@link MappingType} of element:the {@link MappingType} of first element.
+     * </p>
+     *
+     * @param expList non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-array">JSON_ARRAY([val[, val] ...])</a>
+     */
+    public static Expression jsonArray(final List<Expression> expList) {
+        final TypeMeta returnType;
+        if (expList.size() == 0) {
+            returnType = _NullType.INSTANCE;
+        } else {
+            returnType = _returnType((ArmyExpression) expList.get(0), JsonListType::from);
+        }
+        return SQLFunctions.safeComplexArgFunc("JSON_ARRAY", _createSimpleMultiArgList(expList), returnType);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonMapType}
+     * ;the {@link MappingType} of element:the {@link MappingType} of first element.
+     * </p>
+     *
+     * @param expMap non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
+     */
+    public static Expression jsonObject(final Map<String, Expression> expMap) {
+        final String name = "JSON_OBJECT";
+        final Expression func;
+        if (expMap.size() == 0) {
+            func = SQLFunctions.noArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
+        } else {
+            TypeMeta valueType = null;
+            for (Expression value : expMap.values()) {
+                valueType = value.typeMeta();
+                break;
+            }
+            final TypeMeta returnType;
+            if (valueType instanceof TypeMeta.Delay && !((TypeMeta.Delay) valueType).isPrepared()) {
+                returnType = CriteriaSupports.delayParamMeta(StringType.INSTANCE, valueType, JsonMapType::from);
+            } else {
+                returnType = JsonMapType.from(StringType.INSTANCE, valueType.mappingType());
+            }
+            func = SQLFunctions.jsonObjectFunc(name, expMap, returnType);
+        }
+        return func;
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonMapType}
+     * ;the {@link MappingType} of element:the {@link MappingType} of first element.
+     * </p>
+     *
+     * @param expList non-null,empty or size even
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
+     */
+    public static Expression jsonObject(final List<Expression> expList) {
+        final String name = "JSON_OBJECT";
+        final int expSize = expList.size();
+        final Expression func;
+        if (expSize == 0) {
+            func = SQLFunctions.noArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
+        } else if ((expSize & 1) != 0) {
+            throw CriteriaUtils.funcArgError(name, expList);
+        } else {
+            final ArmyExpression keyExp, valueExp;
+            keyExp = (ArmyExpression) expList.get(0);
+            valueExp = (ArmyExpression) expList.get(1);
+            final TypeMeta returnType;
+            returnType = _returnType(keyExp, valueExp, JsonMapType::from);
+            func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+        }
+        return func;
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param string non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-quote">JSON_QUOTE(string)</a>
+     */
+    public static Expression jsonQuote(final Expression string) {
+        return SQLFunctions.oneArgFunc("JSON_QUOTE", string, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param target    non-null
+     * @param candidate non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonContains(Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains">JSON_CONTAINS(target, candidate[, path])</a>
+     */
+    public static Expression jsonContains(final Expression target, final Expression candidate) {
+        return _simpleTowArgFunc("JSON_CONTAINS", target, candidate, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param target    non-null
+     * @param candidate non-null
+     * @param path      non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonContains(Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains">JSON_CONTAINS(target, candidate[, path])</a>
+     */
+    public static Expression jsonContains(final Expression target, final Expression candidate, final Expression path) {
+        return _simpleThreeArgFunc("JSON_CONTAINS", target, candidate, path, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param jsonDoc  non-null
+     * @param oneOrAll non-null
+     * @param paths    non-null,multi parameter(literal) {@link Expression} is allowed
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonContainsPath(Expression, MySQLJsonContainWord, List)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
+     */
+    public static Expression jsonContainsPath(final Expression jsonDoc, final MySQLJsonContainWord oneOrAll
+            , final Expression paths) {
+        final String name = "JSON_CONTAINS_PATH";
+        if (jsonDoc instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, jsonDoc);
+        }
+        final List<Object> orgList = new ArrayList<>(5);
+
+        orgList.add(jsonDoc);
+        orgList.add(SQLFunctions.FuncWord.COMMA);
+        orgList.add(oneOrAll);
+        orgList.add(SQLFunctions.FuncWord.COMMA);
+
+        orgList.add(paths);
+        return SQLFunctions.safeComplexArgFunc(name, orgList, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param jsonDoc  non-null
+     * @param oneOrAll non-null
+     * @param pathList non-null,non-empty
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonContainsPath(Expression, MySQLJsonContainWord, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-contains-path">JSON_CONTAINS_PATH(json_doc, one_or_all, path[, path] ...)</a>
+     */
+    public static Expression jsonContainsPath(final Expression jsonDoc, final MySQLJsonContainWord oneOrAll
+            , final List<Expression> pathList) {
+        final String name = "JSON_CONTAINS_PATH";
+        if (jsonDoc instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, jsonDoc);
+        }
+        if (pathList.size() == 0) {
+            throw CriteriaUtils.funcArgError(name, pathList);
+        }
+        final List<Object> argList = new ArrayList<>(((2 + pathList.size()) << 1) - 1);
+        argList.add(jsonDoc);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(oneOrAll);
+
+        for (Expression path : pathList) {
+            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(path);
+        }
+        return SQLFunctions.safeComplexArgFunc(name, argList, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc non-null
+     * @param paths   non-null,multi parameter(literal) {@link Expression} is allowed
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonExtract(Expression, List)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
+     */
+    public static Expression jsonExtract(final Expression jsonDoc, final Expression paths) {
+        final String name = "JSON_EXTRACT";
+        if (jsonDoc instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, jsonDoc);
+        }
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(jsonDoc);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(paths);
+        return SQLFunctions.safeComplexArgFunc(name, argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc  non-null
+     * @param pathList non-null,non-empty
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonExtract(Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
+     */
+    public static Expression jsonExtract(final Expression jsonDoc, final List<Expression> pathList) {
+        final String name = "JSON_EXTRACT";
+        if (jsonDoc instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, jsonDoc);
+        }
+        if (pathList.size() == 0) {
+            throw CriteriaUtils.funcArgError(name, pathList);
+        }
+        final List<Object> argList = new ArrayList<>(((1 + pathList.size()) << 1) - 1);
+
+        argList.add(jsonDoc);
+        for (Expression path : pathList) {
+            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(path);
+        }
+        return SQLFunctions.safeComplexArgFunc(name, argList, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonKeys(Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
+     */
+    public static Expression jsonKeys(final Expression jsonDoc) {
+        return SQLFunctions.oneArgFunc("JSON_KEYS", jsonDoc, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc non-null
+     * @param path    non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonKeys(Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-keys">JSON_KEYS(json_doc[, path])</a>
+     */
+    public static Expression jsonKeys(final Expression jsonDoc, final Expression path) {
+        return _simpleTowArgFunc("JSON_KEYS", jsonDoc, path, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}
+     * </p>
+     *
+     * @param jsonDoc1 non-null
+     * @param jsonDoc2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-overlaps">JSON_OVERLAPS(json_doc1, json_doc2)</a>
+     */
+    public static Expression jsonOverlaps(final Expression jsonDoc1, final Expression jsonDoc2) {
+        return _simpleTowArgFunc("JSON_OVERLAPS", jsonDoc1, jsonDoc2, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc   non-null
+     * @param oneOrAll  non-null
+     * @param searchStr non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonSearch(Expression, MySQLJsonContainWord, Expression, List)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
+     */
+    public static Expression jsonSearch(final Expression jsonDoc, final MySQLJsonContainWord oneOrAll
+            , final Expression searchStr) {
+        return jsonSearch(jsonDoc, oneOrAll, searchStr, Collections.emptyList());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @param jsonDoc            non-null
+     * @param oneOrAll           non-null
+     * @param searchStr          non-null
+     * @param escapeCharAndPaths non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #jsonSearch(Expression, MySQLJsonContainWord, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-search">JSON_SEARCH(json_doc, one_or_all, search_str[, escape_char[, path] ...])</a>
+     */
+    public static Expression jsonSearch(final Expression jsonDoc, final MySQLJsonContainWord oneOrAll
+            , final Expression searchStr, final List<Expression> escapeCharAndPaths) {
+
+        final String name = "JSON_SEARCH";
+        if (jsonDoc instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, jsonDoc);
+        }
+        if (searchStr instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, searchStr);
+        }
+        final List<Object> argList = new ArrayList<>(((3 + escapeCharAndPaths.size()) << 1) - 1);
+        argList.add(jsonDoc);
+        argList.add(SQLFunctions.FuncWord.COMMA);
+        argList.add(searchStr);
+
+        for (Expression exp : escapeCharAndPaths) {
+            argList.add(SQLFunctions.FuncWord.COMMA);
+            argList.add(exp);
+        }
+        return SQLFunctions.safeComplexArgFunc(name, argList, StringType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     *      <ul>
+     *          <li>If don't specified RETURNING clause then {@link StringType}</li>
+     *          <li>Else if type is {@link MySQLCastType#BINARY }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
+     *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
+     *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
+     *          <li>Else if type is {@link MySQLCastType#DATE }then {@link LocalDateType}</li>
+     *          <li>Else if type is {@link MySQLCastType#YEAR }then {@link YearType}</li>
+     *          <li>Else if type is {@link MySQLCastType#DATETIME }then {@link LocalDateTimeType}</li>
+     *          <li>Else if type is {@link MySQLCastType#SIGNED_INTEGER }then {@link LongType}</li>
+     *          <li>Else if type is {@link MySQLCastType#UNSIGNED_INTEGER }then {@link UnsignedBigIntegerType}</li>
+     *          <li>Else if type is {@link MySQLCastType#DECIMAL }then {@link BigDecimalType}</li>
+     *          <li>Else if type is {@link MySQLCastType#FLOAT }then {@link FloatType}</li>
+     *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
+     *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
+     *          <li>Else if type is {@link MySQLCastType#JSON }then {@link JsonType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Point }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link ByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link ByteArrayType}</li>
+     *      </ul>
+     * </p>
+     *
+     * @param jsonDoc non-null
+     * @param path    non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-value">JSON_VALUE(json_doc, path)</a>
+     */
+    public static MySQLClause._JsonValueReturningSpec jsonValue(final Expression jsonDoc, final Expression path) {
+        return MySQLFunctions.jsonValueFunc(jsonDoc, path);
+    }
+
+
+
+
+
+
+
+
     /*-------------------below private method -------------------*/
 
 
@@ -3424,7 +3812,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see #convert(Expression, MySQLCastType)
      * @see #convert(Expression, MySQLCastType, Expression)
      */
-    private static MappingType _castReturnType(final MySQLCastType type) {
+    static MappingType _castReturnType(final MySQLCastType type) {
         final MappingType returnType;
         switch (type) {
             case BINARY:
@@ -3439,6 +3827,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
                 break;
             case CHAR:
             case NCHAR:
+            case JSON:
                 returnType = StringType.INSTANCE;
                 break;
             case TIME:
@@ -3468,9 +3857,6 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             case REAL:
             case DOUBLE://Added in MySQL 8.0.17.
                 returnType = DoubleType.INSTANCE;
-                break;
-            case JSON:
-                returnType = JsonType.INSTANCE;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(type);

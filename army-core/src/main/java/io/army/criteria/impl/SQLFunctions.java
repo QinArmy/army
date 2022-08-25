@@ -8,14 +8,12 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
 import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -88,7 +86,14 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }
 
     static Expression oneArgFunc(String name, @Nullable Object expr, TypeMeta returnType) {
+        if (expr instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, expr);
+        }
         return new OneArgFunc(name, SQLs._funcParam(expr), returnType);
+    }
+
+    static Expression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
+        return new OneArgFunc(name, (ArmyExpression) exp, returnType);
     }
 
     static Expression noArgFunc(String name, TypeMeta returnType) {
@@ -101,6 +106,10 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     static NamedExpression namedComplexArgFunc(String name, List<?> argList, TypeMeta returnType, String expAlias) {
         return new NamedComplexArgFunc(name, argList, returnType, expAlias);
+    }
+
+    static Expression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
+        return new JsonObjectFunc(name, expMap, returnType);
     }
 
     @Deprecated
@@ -178,10 +187,6 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     interface FunctionSpec extends _SelfDescribed, TypeInfer {
-
-    }
-
-    interface ImmutableFunctionSpec extends FunctionSpec {
 
     }
 
@@ -284,8 +289,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final void updateParamMeta(final TypeMeta paramMeta) {
-            this.returnType = paramMeta;
+        public final void updateParamMeta(final TypeMeta typeMeta) {
+            this.returnType = typeMeta;
         }
 
         @Override
@@ -473,8 +478,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public void updateParamMeta(final TypeMeta paramMeta) {
-            this.returnType = paramMeta;
+        public void updateParamMeta(final TypeMeta typeMeta) {
+            this.returnType = typeMeta;
         }
 
         @Override
@@ -532,6 +537,48 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     }//OneArgFunc
+
+    private static final class JsonObjectFunc extends FunctionExpression {
+
+        private final Map<String, Expression> expMap;
+
+        private JsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
+            super(name, returnType);
+            this.expMap = new HashMap<>(expMap);
+        }
+
+        @Override
+        void appendArguments(final _SqlContext context) {
+            final StringBuilder sqlBuilder = context.sqlBuilder();
+            int index = 0;
+            for (Map.Entry<String, Expression> e : this.expMap.entrySet()) {
+                if (index > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                context.appendLiteral(StringType.INSTANCE, e.getKey());
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+                ((ArmyExpression) e.getValue()).appendSql(context);
+                index++;
+            }
+
+        }
+
+        @Override
+        void argumentsToString(final StringBuilder builder) {
+            int index = 0;
+            for (Map.Entry<String, Expression> e : this.expMap.entrySet()) {
+                if (index > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                builder.append(e.getKey())
+                        .append(_Constant.SPACE_COMMA)
+                        .append(e.getValue());
+                index++;
+            }
+
+        }
+
+    }//JsonMapFunc
 
 
     @Deprecated
@@ -619,8 +666,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final void updateParamMeta(final TypeMeta paramMeta) {
-            this.returnType = paramMeta;
+        public final void updateParamMeta(final TypeMeta typeMeta) {
+            this.returnType = typeMeta;
         }
 
         @Override
@@ -770,8 +817,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public void updateParamMeta(final TypeMeta paramMeta) {
-            this.returnType = paramMeta;
+        public void updateParamMeta(final TypeMeta typeMeta) {
+            this.returnType = typeMeta;
         }
 
         @Override
@@ -1167,8 +1214,8 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
         }
 
         @Override
-        public final void updateParamMeta(final TypeMeta paramMeta) {
-            this.returnType = paramMeta;
+        public final void updateParamMeta(final TypeMeta typeMeta) {
+            this.returnType = typeMeta;
         }
 
         @Override

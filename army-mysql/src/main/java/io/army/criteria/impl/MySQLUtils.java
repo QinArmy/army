@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SubQuery;
 import io.army.criteria.TableItem;
+import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLModifier;
 import io.army.lang.Nullable;
 
@@ -48,6 +49,24 @@ abstract class MySQLUtils extends CriteriaUtils {
 
         }
         return list;
+    }
+
+    static boolean isSingleParamType(MySQLCastType type) {
+        final boolean match;
+        switch (type) {
+            case BINARY:
+            case CHAR:
+            case NCHAR:
+            case TIME:
+            case DATETIME:
+            case DECIMAL:
+            case FLOAT:
+                match = true;
+                break;
+            default:
+                match = false;
+        }
+        return match;
     }
 
     static int selectModifier(final MySQLModifier modifier) {
