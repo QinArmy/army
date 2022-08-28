@@ -134,7 +134,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS leftJoin(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.LEFT_JOIN, null, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -142,7 +142,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS leftJoin(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS leftJoin(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.LEFT_JOIN, null, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -167,7 +167,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <T extends TableItem> JS leftJoinLateral(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS leftJoinLateral(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.LEFT_JOIN, ItemWord.LATERAL, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -175,7 +175,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS leftJoinLateral(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS leftJoinLateral(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.LEFT_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -196,7 +196,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS join(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS join(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.JOIN, null, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -204,7 +204,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS join(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS join(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.JOIN, null, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -229,7 +229,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <T extends TableItem> JS joinLateral(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS joinLateral(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.JOIN, ItemWord.LATERAL, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -237,7 +237,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS joinLateral(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS joinLateral(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -258,7 +258,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS rightJoin(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.RIGHT_JOIN, null, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -266,7 +266,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS rightJoin(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS rightJoin(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.RIGHT_JOIN, null, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -290,7 +290,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS rightJoinLateral(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS rightJoinLateral(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.RIGHT_JOIN, ItemWord.LATERAL, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -298,7 +298,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS rightJoinLateral(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS rightJoinLateral(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.RIGHT_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -319,7 +319,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS fullJoin(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.FULL_JOIN, null, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -327,7 +327,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS fullJoin(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS fullJoin(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.FULL_JOIN, null, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -352,7 +352,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <T extends TableItem> JS fullJoinLateral(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS fullJoinLateral(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.FULL_JOIN, ItemWord.LATERAL, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -360,7 +360,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS fullJoinLateral(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS fullJoinLateral(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.FULL_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -381,7 +381,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS straightJoin(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.STRAIGHT_JOIN, null, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -389,7 +389,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS straightJoin(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS straightJoin(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.STRAIGHT_JOIN, null, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -414,7 +414,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <T extends TableItem> JS straightJoinLateral(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> JS straightJoinLateral(Supplier<T> supplier, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.STRAIGHT_JOIN, ItemWord.LATERAL, supplier.get(), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -422,7 +422,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> JS straightJoinLateral(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> JS straightJoinLateral(Function<C, T> function, String alias) {
         final JS blockClause;
         blockClause = this.clauseCreator.createItemBlock(_JoinType.STRAIGHT_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
         this.blockConsumer.accept((_TableBlock) blockClause);
@@ -444,7 +444,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> FS crossJoin(Supplier<T> supplier, String alias) {
         final _TableBlock block;
         block = this.clauseCreator.createNoOnItemBlock(_JoinType.CROSS_JOIN, null, supplier.get(), alias);
         this.blockConsumer.accept(block);
@@ -453,7 +453,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <T extends TableItem> FS crossJoin(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> FS crossJoin(Function<C, T> function, String alias) {
         final _TableBlock block;
         block = this.clauseCreator.createNoOnItemBlock(_JoinType.CROSS_JOIN, null, function.apply(this.criteria), alias);
         this.blockConsumer.accept(block);
@@ -478,7 +478,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
 
     @Override
-    public final <T extends TableItem> FS crossJoinLateral(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> FS crossJoinLateral(Supplier<T> supplier, String alias) {
         final _TableBlock block;
         block = this.clauseCreator.createNoOnItemBlock(_JoinType.CROSS_JOIN, ItemWord.LATERAL, supplier.get(), alias);
         this.blockConsumer.accept(block);
@@ -486,7 +486,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
     }
 
     @Override
-    public final <T extends TableItem> FS crossJoinLateral(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> FS crossJoinLateral(Function<C, T> function, String alias) {
         final _TableBlock block;
         block = this.clauseCreator.createNoOnItemBlock(_JoinType.CROSS_JOIN, ItemWord.LATERAL, function.apply(this.criteria), alias);
         this.blockConsumer.accept(block);
@@ -623,7 +623,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
         _TableBlock createNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String alias);
 
-        _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias);
+        _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias);
 
         _TableBlock createDynamicBlock(_JoinType joinType, DynamicBlock<?> block);
 
@@ -632,7 +632,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
         JT createTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table, String tableAlias);
 
-        JS createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias);
+        JS createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias);
 
     }
 
@@ -656,7 +656,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
             throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
         }
 
@@ -676,7 +676,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public Void createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        public Void createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
             throw CriteriaContextStack.castCriteriaApi(CriteriaContextStack.peek());
         }
 
@@ -736,7 +736,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final <T extends TableItem> LS leftParen(Supplier<T> supplier, String alias) {
+        public final <T extends TabularItem> LS leftParen(Supplier<T> supplier, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias);
             this.addFirstBlock(block);
@@ -744,7 +744,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final <T extends TableItem> LS leftParen(Function<C, T> function, String alias) {
+        public final <T extends TabularItem> LS leftParen(Function<C, T> function, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria), alias);
             this.addFirstBlock(block);
@@ -752,7 +752,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final <T extends TableItem> LS leftParenLateral(Supplier<T> supplier, String alias) {
+        public final <T extends TabularItem> LS leftParenLateral(Supplier<T> supplier, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, supplier.get(), alias);
             this.addFirstBlock(block);
@@ -760,7 +760,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final <T extends TableItem> LS leftParenLateral(Function<C, T> function, String alias) {
+        public final <T extends TabularItem> LS leftParenLateral(Function<C, T> function, String alias) {
             final _TableBlock block;
             block = this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, function.apply(this.criteria), alias);
             this.addFirstBlock(block);
@@ -839,7 +839,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
 
         private final _JoinType joinType;
 
-        private final TableItem tableItem;
+        private final TabularItem tableItem;
 
         private final String alias;
 
@@ -848,7 +848,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         private List<_Predicate> predicateList;
 
         OnOrJoinBlock(LeftParenNestedItem<C, ?, ?, FP, ?, JT, JS, JP> clause
-                , _JoinType joinType, TableItem tableItem, String alias) {
+                , _JoinType joinType, TabularItem tableItem, String alias) {
             super(clause.criteriaContext, clause.blockList::add, clause);
             this.joinType = joinType;
             this.tableItem = tableItem;
@@ -871,7 +871,7 @@ abstract class JoinableClause<C, FT, FS, FP, FJ, JT, JS, JP>
         }
 
         @Override
-        public final TableItem tableItem() {
+        public final TabularItem tableItem() {
             return this.tableItem;
         }
 

@@ -108,7 +108,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s self-join", table));
     }
 
-    public static CriteriaException dontSupportTableItem(TableItem item, String alias, @Nullable Dialect dialect) {
+    public static CriteriaException dontSupportTableItem(TabularItem item, String alias, @Nullable Dialect dialect) {
         final String dialectText;
         if (dialect == null) {
             dialectText = "standard statement";
@@ -116,7 +116,7 @@ public abstract class _Exceptions extends ExceptionUtils {
             dialectText = dialect.toString();
         }
         String m = String.format("%s don't support %s %s alias %s .",
-                dialectText, TableItem.class.getName(), _ClassUtils.safeClassName(item), alias);
+                dialectText, TabularItem.class.getName(), _ClassUtils.safeClassName(item), alias);
         return new CriteriaException(m);
     }
 
@@ -125,7 +125,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException dontSupportLateralItem(TableItem item, String alias, @Nullable Dialect dialect) {
+    public static CriteriaException dontSupportLateralItem(TabularItem item, String alias, @Nullable Dialect dialect) {
         String m = String.format("%s Don't support LATERAL %s alias %s ."
                 , dialect == null ? "Standard" : dialect, _ClassUtils.safeClassName(item), alias);
         return new CriteriaException(m);
@@ -141,7 +141,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("%s is immutable.", field));
     }
 
-    public static CriteriaException immutableTable(TableItem tableItem) {
+    public static CriteriaException immutableTable(TabularItem tableItem) {
         return new CriteriaException(String.format("%s is immutable.", tableItem));
     }
 
@@ -666,9 +666,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException tableItemAliasNoText(TableItem tableItem) {
+    public static CriteriaException tableItemAliasNoText(TabularItem tableItem) {
         String m = String.format("%s[%s] alias must be not empty."
-                , TableItem.class.getName(), _ClassUtils.safeClassName(tableItem));
+                , TabularItem.class.getName(), _ClassUtils.safeClassName(tableItem));
         return new CriteriaException(m);
     }
 

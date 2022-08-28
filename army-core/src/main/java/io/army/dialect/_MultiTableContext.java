@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.TableItem;
+import io.army.criteria.TabularItem;
 import io.army.meta.TableMeta;
 
 /**
@@ -23,7 +23,7 @@ public interface _MultiTableContext extends _SqlContext {
 
     String saTableAliasOf(TableMeta<?> table);
 
-    TableItem tableItemOf(String tableAlias);
+    TabularItem tableItemOf(String tableAlias);
 
 
 }

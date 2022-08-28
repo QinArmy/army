@@ -768,7 +768,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
 
         //3. append updateTime and visible for multi-table update target table
         SingleTableMeta<?> singleTable;
-        TableItem tableItem;
+        TabularItem tableItem;
         String safeTableAlias;
         for (String tableAlias : aliasMap.keySet()) {
             tableItem = context.tableItemOf(tableAlias);
@@ -829,7 +829,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
 
         final StringBuilder sqlBuilder = context.sqlBuilder();
         _TableBlock block;
-        TableItem tableItem;
+        TabularItem tableItem;
         _JoinType joinType;
         List<_Predicate> predicateList;
         final boolean supportTableOnly = this.supportTableOnly();
@@ -926,7 +926,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
             return;
         }
 
-        TableItem tableItem;
+        TabularItem tableItem;
         String safeTableAlias;
         SingleTableMeta<?> table;
         int count = 0;
@@ -1124,7 +1124,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
      */
     protected final void multiTableVisible(final List<_TableBlock> blockList, final _MultiTableContext context
             , final boolean firstPredicate) {
-        TableItem tableItem;
+        TabularItem tableItem;
         String safeTableAlias;
         SingleTableMeta<?> table;
         int count = 0;

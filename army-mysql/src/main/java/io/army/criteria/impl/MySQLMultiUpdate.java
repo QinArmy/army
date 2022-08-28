@@ -88,7 +88,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final <T extends TabularItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
@@ -98,7 +98,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+    public final <T extends TabularItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
             , Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
@@ -109,19 +109,19 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TableItem> US update(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> US update(Supplier<T> supplier, String alias) {
         this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
         return (US) this;
     }
 
     @Override
-    public final <T extends TableItem> US update(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> US update(Function<C, T> function, String alias) {
         this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria), alias));
         return (US) this;
     }
 
     @Override
-    public final <T extends TableItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, Supplier<T> supplier, String alias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
 
@@ -130,7 +130,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TableItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, Function<C, T> function, String alias) {
+    public final <T extends TabularItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers, Function<C, T> function, String alias) {
         this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::updateModifier);
 
@@ -140,13 +140,13 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TableItem> US updateLateral(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> US updateLateral(Supplier<T> supplier, String alias) {
         this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, supplier.get(), alias));
         return (US) this;
     }
 
     @Override
-    public final <T extends TableItem> US updateLateral(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> US updateLateral(Function<C, T> function, String alias) {
         this.criteriaContext.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, ItemWord.LATERAL, function.apply(this.criteria), alias));
         return (US) this;
     }
@@ -266,7 +266,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
         return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
     }
@@ -356,7 +356,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         }
 
         @Override
-        public _OnClause<C, _MultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        public _OnClause<C, _MultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
             MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
         }
@@ -447,7 +447,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
         }
 
         @Override
-        public _OnClause<C, _BatchMultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        public _OnClause<C, _BatchMultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
             MySQLUtils.assertItemWord(this.criteriaContext, itemWord, tableItem);
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
         }

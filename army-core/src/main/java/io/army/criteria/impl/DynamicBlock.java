@@ -16,25 +16,25 @@ import java.util.function.Function;
 
 abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statement._OnClause<C, JoinItemBlock<C>> {
 
-    static <C> StandardQuery._IfOnClause<C> standard(@Nullable C criteria, TableItem tableItem, String alias) {
+    static <C> StandardQuery._IfOnClause<C> standard(@Nullable C criteria, TabularItem tableItem, String alias) {
         return new StandardDynamicBlock<>(criteria, tableItem, alias);
     }
 
     final CriteriaContext criteriaContext;
 
-    final TableItem tableItem;
+    final TabularItem tableItem;
 
     final String alias;
 
     private List<_Predicate> predicateList;
 
-    DynamicBlock(@Nullable C criteria, TableItem tableItem, String alias) {
+    DynamicBlock(@Nullable C criteria, TabularItem tableItem, String alias) {
         this.criteriaContext = CriteriaContextStack.getCurrentContext(criteria);
         this.tableItem = tableItem;
         this.alias = alias;
     }
 
-    DynamicBlock(TableItem tableItem, String alias, CriteriaContext criteriaContext) {
+    DynamicBlock(TabularItem tableItem, String alias, CriteriaContext criteriaContext) {
         this.criteriaContext = criteriaContext;
         this.tableItem = tableItem;
         this.alias = alias;
@@ -133,7 +133,7 @@ abstract class DynamicBlock<C> implements JoinItemBlock<C>, ItemBlock<C>, Statem
 
     static final class StandardDynamicBlock<C> extends DynamicBlock<C> implements StandardQuery._IfOnClause<C> {
 
-        private StandardDynamicBlock(@Nullable C criteria, TableItem tableItem, String alias) {
+        private StandardDynamicBlock(@Nullable C criteria, TabularItem tableItem, String alias) {
             super(criteria, tableItem, alias);
         }
 

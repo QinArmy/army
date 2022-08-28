@@ -984,6 +984,18 @@ abstract class Functions {
         return func;
     }
 
+    static Expression _singleAndMultiArgFunc(final String name, final Expression single, final Expression multi
+            , final TypeMeta returnType) {
+        if (single instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, single);
+        }
+        final List<Object> argLit = new ArrayList<>(3);
+        argLit.add(single);
+        argLit.add(SQLFunctions.FuncWord.COMMA);
+        argLit.add(multi);
+        return SQLFunctions.safeComplexArgFunc(name, argLit, returnType);
+    }
+
 
 
 

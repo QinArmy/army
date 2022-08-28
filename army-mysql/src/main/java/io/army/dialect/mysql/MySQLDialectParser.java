@@ -710,7 +710,7 @@ final class MySQLDialectParser extends MySQLParser {
         final boolean asOf80 = this.asOf80;
 
         _TableBlock block;
-        TableItem tableItem;
+        TabularItem tableItem;
         TableMeta<?> table;
         String alias;
         _JoinType joinType;
@@ -820,7 +820,7 @@ final class MySQLDialectParser extends MySQLParser {
 
         final int aliasSize = deleteTablePairList.size();
         assert aliasSize > 0;
-        TableItem tableItem;
+        TabularItem tableItem;
         String tableAlias;
         _Pair<String, TableMeta<?>> pair;
         //io.army.dialect.TableContext no bug,below correctly run.

@@ -128,9 +128,9 @@ public interface Statement {
 
         FT from(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> FS from(Supplier<T> supplier, String alias);
+        <T extends TabularItem> FS from(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> FS from(Function<C, T> function, String alias);
+        <T extends TabularItem> FS from(Function<C, T> function, String alias);
 
     }
 
@@ -187,27 +187,27 @@ public interface Statement {
 
         JT leftJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> JS leftJoin(Function<C, T> function, String alias);
+        <T extends TabularItem> JS leftJoin(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS leftJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS leftJoin(Supplier<T> supplier, String alias);
 
         JT join(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> JS join(Function<C, T> function, String alias);
+        <T extends TabularItem> JS join(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS join(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS join(Supplier<T> supplier, String alias);
 
         JT rightJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> JS rightJoin(Function<C, T> function, String alias);
+        <T extends TabularItem> JS rightJoin(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS rightJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS rightJoin(Supplier<T> supplier, String alias);
 
         JT fullJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> JS fullJoin(Function<C, T> function, String alias);
+        <T extends TabularItem> JS fullJoin(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS fullJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS fullJoin(Supplier<T> supplier, String alias);
 
     }
 
@@ -231,9 +231,9 @@ public interface Statement {
 
         FT crossJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> FS crossJoin(Function<C, T> function, String alias);
+        <T extends TabularItem> FS crossJoin(Function<C, T> function, String alias);
 
-        <T extends TableItem> FS crossJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> FS crossJoin(Supplier<T> supplier, String alias);
 
     }
 
@@ -282,9 +282,9 @@ public interface Statement {
 
         LT leftParen(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> LS leftParen(Supplier<T> supplier, String alias);
+        <T extends TabularItem> LS leftParen(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> LS leftParen(Function<C, T> function, String alias);
+        <T extends TabularItem> LS leftParen(Function<C, T> function, String alias);
 
     }
 

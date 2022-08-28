@@ -24,13 +24,13 @@ import java.util.Map;
  */
 final class TableContext {
 
-    final Map<String, TableItem> aliasToTable;
+    final Map<String, TabularItem> aliasToTable;
 
     final Map<TableMeta<?>, String> tableToSafeAlias;
 
     final Map<String, String> childAliasToParentAlias;
 
-    private TableContext(Map<String, TableItem> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias
+    private TableContext(Map<String, TabularItem> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias
             , @Nullable Map<String, String> childAliasToParentAlias) {
         this.aliasToTable = _CollectionUtils.unmodifiableMap(aliasToTable);
         this.tableToSafeAlias = _CollectionUtils.unmodifiableMap(tableToSafeAlias);
@@ -43,7 +43,7 @@ final class TableContext {
 
 
     static TableContext forChild(final ChildTableMeta<?> table, final String tableAlias, final ArmyParser dialect) {
-        final Map<String, TableItem> aliasToTable = new HashMap<>(4);
+        final Map<String, TabularItem> aliasToTable = new HashMap<>(4);
         aliasToTable.put(tableAlias, table);
         final String parentAlias = _DialectUtils.parentAlias(tableAlias);
         aliasToTable.put(parentAlias, table.parentMeta());
@@ -140,7 +140,7 @@ final class TableContext {
 
     private static void iterateTableReferences(final List<? extends _TableBlock> blockList, final Context context) {
 
-        final Map<String, TableItem> aliasToTable = context.aliasToTable;
+        final Map<String, TabularItem> aliasToTable = context.aliasToTable;
         final Map<TableMeta<?>, String> tableToSafeAlias = context.tableToSafeAlias;
         final Map<String, String> childAliasToParentAlias = context.childAliasToParentAlias;
         final Map<ChildTableMeta<?>, Boolean> childMap = context.childMap;
@@ -152,7 +152,7 @@ final class TableContext {
 
         _TableBlock block, parentBlock;
         String safeAlias, alias, parentAlias;
-        TableItem tableItem;
+        TabularItem tableItem;
         ParentTableMeta<?> parent;
         ChildTableMeta<?> child;
         TableField parentId;
@@ -256,7 +256,7 @@ final class TableContext {
 
         final ParentTableMeta<?> parent = child.parentMeta();
         _TableBlock block, parentBlock = null;
-        TableItem tableItem;
+        TabularItem tableItem;
         _JoinType joinType;
         TableField parentId;
         outerFor:
@@ -351,7 +351,7 @@ final class TableContext {
 
         private final Visible visible;
 
-        private final Map<String, TableItem> aliasToTable;
+        private final Map<String, TabularItem> aliasToTable;
 
         private final Map<TableMeta<?>, String> tableToSafeAlias;
 

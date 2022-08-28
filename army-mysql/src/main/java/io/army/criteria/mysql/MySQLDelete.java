@@ -359,9 +359,9 @@ public interface MySQLDelete extends Delete, DialectStatement {
 
         DT using(TableMeta<?> table, String alias);
 
-        <T extends TableItem> DS using(Supplier<T> supplier, String alias);
+        <T extends TabularItem> DS using(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> DS using(Function<C, T> function, String alias);
+        <T extends TabularItem> DS using(Function<C, T> function, String alias);
 
         <T extends SubQuery> DS usingLateral(Supplier<T> supplier, String alias);
 

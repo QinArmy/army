@@ -110,9 +110,9 @@ public interface DialectStatement extends Statement {
 
     interface _FromLateralClause<C, FS> {
 
-        <T extends TableItem> FS fromLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> FS fromLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> FS fromLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> FS fromLateral(Function<C, T> function, String alias);
 
     }
 
@@ -136,9 +136,9 @@ public interface DialectStatement extends Statement {
 
         JT straightJoin(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> JS straightJoin(Function<C, T> function, String alias);
+        <T extends TabularItem> JS straightJoin(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS straightJoin(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS straightJoin(Supplier<T> supplier, String alias);
 
 
     }
@@ -146,39 +146,39 @@ public interface DialectStatement extends Statement {
 
     interface _JoinLateralClause<C, JS> {
 
-        <T extends TableItem> JS leftJoinLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS leftJoinLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> JS leftJoinLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> JS leftJoinLateral(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS joinLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS joinLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> JS joinLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> JS joinLateral(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS rightJoinLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS rightJoinLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> JS rightJoinLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> JS rightJoinLateral(Function<C, T> function, String alias);
 
-        <T extends TableItem> JS fullJoinLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS fullJoinLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> JS fullJoinLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> JS fullJoinLateral(Function<C, T> function, String alias);
 
 
     }
 
     interface _CrossJoinLateralClause<C, FS> {
 
-        <T extends TableItem> FS crossJoinLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> FS crossJoinLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> FS crossJoinLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> FS crossJoinLateral(Function<C, T> function, String alias);
 
     }
 
 
     interface _StraightJoinLateralClause<C, JS> {
 
-        <T extends TableItem> JS straightJoinLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> JS straightJoinLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> JS straightJoinLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> JS straightJoinLateral(Function<C, T> function, String alias);
 
 
     }
@@ -363,9 +363,9 @@ public interface DialectStatement extends Statement {
 
     interface _LeftParenLateralClause<C, LS> {
 
-        <T extends TableItem> LS leftParenLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> LS leftParenLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> LS leftParenLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> LS leftParenLateral(Function<C, T> function, String alias);
 
     }
 

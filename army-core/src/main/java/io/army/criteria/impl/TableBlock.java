@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.SQLWords;
-import io.army.criteria.TableItem;
+import io.army.criteria.TabularItem;
 import io.army.criteria.impl.inner._DialectTableBlock;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableBlock;
@@ -16,11 +16,11 @@ abstract class TableBlock implements _TableBlock {
 
     final _JoinType joinType;
 
-    final TableItem tableItem;
+    final TabularItem tableItem;
 
     final String alias;
 
-    TableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+    TableBlock(_JoinType joinType, TabularItem tableItem, String alias) {
         Objects.requireNonNull(alias);
         this.joinType = joinType;
         this.tableItem = tableItem;
@@ -35,7 +35,7 @@ abstract class TableBlock implements _TableBlock {
     }
 
     @Override
-    public final TableItem tableItem() {
+    public final TabularItem tableItem() {
         return this.tableItem;
     }
 
@@ -49,12 +49,12 @@ abstract class TableBlock implements _TableBlock {
         return this.alias;
     }
 
-    static TableBlock noneBlock(TableItem tableItem, String alias) {
+    static TableBlock noneBlock(TabularItem tableItem, String alias) {
         Objects.requireNonNull(tableItem);
         return new NoOnTableBlock(_JoinType.NONE, tableItem, alias);
     }
 
-    static TableBlock crossBlock(TableItem tableItem, String alias) {
+    static TableBlock crossBlock(TabularItem tableItem, String alias) {
         Objects.requireNonNull(tableItem);
         return new NoOnTableBlock(_JoinType.CROSS_JOIN, tableItem, alias);
     }
@@ -62,7 +62,7 @@ abstract class TableBlock implements _TableBlock {
 
     static class NoOnTableBlock extends TableBlock {
 
-        NoOnTableBlock(_JoinType joinType, TableItem tableItem, String alias) {
+        NoOnTableBlock(_JoinType joinType, TabularItem tableItem, String alias) {
             super(joinType, tableItem, alias);
             switch (joinType) {
                 case NONE:
@@ -98,7 +98,7 @@ abstract class TableBlock implements _TableBlock {
 
         private final ItemWord itemWord;
 
-        DialectNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        DialectNoOnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
             super(joinType, tableItem, alias);
             this.itemWord = itemWord;
         }
@@ -139,7 +139,7 @@ abstract class TableBlock implements _TableBlock {
 
         _JoinType joinType();
 
-        TableItem tableItem();
+        TabularItem tableItem();
 
         String alias();
 

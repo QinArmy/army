@@ -197,14 +197,14 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     }
 
     @Override
-    public final <T extends TableItem> FS from(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> FS from(Supplier<T> supplier, String alias) {
         this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
         return (FS) this;
     }
 
 
     @Override
-    public final <T extends TableItem> FS from(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> FS from(Function<C, T> function, String alias) {
         final _TableBlock block;
         block = this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria), alias);
         this.context.onAddBlock(block);

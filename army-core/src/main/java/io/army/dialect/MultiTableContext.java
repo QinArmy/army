@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.TableItem;
+import io.army.criteria.TabularItem;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 abstract class MultiTableContext extends StatementContext implements _MultiTableContext, StmtContext {
 
-    final Map<String, TableItem> aliasToTable;
+    final Map<String, TabularItem> aliasToTable;
 
     final Map<TableMeta<?>, String> tableToSafeAlias;
 
@@ -104,8 +104,8 @@ abstract class MultiTableContext extends StatementContext implements _MultiTable
     }
 
     @Override
-    public final TableItem tableItemOf(final String tableAlias) {
-        final TableItem tableItem;
+    public final TabularItem tableItemOf(final String tableAlias) {
+        final TabularItem tableItem;
         tableItem = this.aliasToTable.get(tableAlias);
         if (tableItem == null) {
             throw _Exceptions.unknownTableAlias(tableAlias);

@@ -7,7 +7,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface NestedItems extends TableItem {
+public interface NestedItems extends TabularItem {
 
 
 }

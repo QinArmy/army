@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.mapping._MappingFactory;
+import io.army.mapping.BooleanType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -22,7 +22,7 @@ abstract class OperationPredicate extends OperationExpression implements _Predic
 
     @Override
     public final TypeMeta typeMeta() {
-        return _MappingFactory.getDefault(Boolean.class);
+        return BooleanType.INSTANCE;
     }
 
     @Override

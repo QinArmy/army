@@ -35,7 +35,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
     static <C> MySQLQuery._IfUseIndexOnSpec<C> block(@Nullable C criteria, @Nullable ItemWord itemWord
-            , TableItem tableItem, String alias) {
+            , TabularItem tableItem, String alias) {
         if (!(tableItem instanceof TableMeta || tableItem instanceof SubQuery || tableItem instanceof CteItem)) {
             String m = "currently,MySQL support TableMeta or SubQuery or CteItem";
             throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
@@ -80,7 +80,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         private List<MySQLIndexHint> indexHintList;
 
 
-        MySQLNoOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias, RR stmt) {
+        MySQLNoOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias, RR stmt) {
             super(joinType, itemWord, tableItem, alias);
             this.partitionList = Collections.emptyList();
             this.stmt = stmt;
@@ -155,7 +155,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         private MySQLQuery._QueryIndexHintClause<C, RR> useIndexClause;
 
 
-        MySQLOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias, OR stmt) {
+        MySQLOnBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias, OR stmt) {
             super(joinType, itemWord, tableItem, alias, stmt);
             this.partitionList = Collections.emptyList();
         }
@@ -269,7 +269,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public final TableItem tableItem() {
+        public final TabularItem tableItem() {
             return this.table;
         }
 
@@ -321,7 +321,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._IfUseIndexOnSpec<C>> useIndexClause;
 
-        private MySQLDynamicBlock(@Nullable C criteria, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        private MySQLDynamicBlock(@Nullable C criteria, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
             super(criteria, tableItem, alias);
             this.itemWord = itemWord;
             this.partitionList = Collections.emptyList();

@@ -480,7 +480,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
         return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
     }
@@ -508,7 +508,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public final _OnClause<C, _JoinSpec<C, Q>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
         return new OnTableBlock<>(joinType, itemWord, tableItem, alias, this);
     }
@@ -798,7 +798,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
             extends MySQLSupports.MySQLOnBlock<C, _QueryUseIndexOnSpec<C, Q>, _JoinSpec<C, Q>>
             implements _QueryUseIndexOnSpec<C, Q> {
 
-        private OnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem
+        private OnTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem
                 , String alias, _JoinSpec<C, Q> stmt) {
             super(joinType, itemWord, tableItem, alias, stmt);
         }

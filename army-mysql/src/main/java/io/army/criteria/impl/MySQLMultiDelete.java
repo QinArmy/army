@@ -112,13 +112,13 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TableItem> DS from(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> DS from(Supplier<T> supplier, String alias) {
         this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, supplier.get(), alias));
         return (DS) this;
     }
 
     @Override
-    public final <T extends TableItem> DS from(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> DS from(Function<C, T> function, String alias) {
         this.context.onAddBlock(this.createNoOnItemBlock(_JoinType.NONE, null, function.apply(this.criteria)
                 , alias));
         return (DS) this;
@@ -164,13 +164,13 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final <T extends TableItem> DS using(Supplier<T> supplier, String alias) {
+    public final <T extends TabularItem> DS using(Supplier<T> supplier, String alias) {
         this.usingSyntax = true;
         return this.from(supplier, alias);
     }
 
     @Override
-    public final <T extends TableItem> DS using(Function<C, T> function, String alias) {
+    public final <T extends TabularItem> DS using(Function<C, T> function, String alias) {
         this.usingSyntax = true;
         return this.from(function, alias);
     }
@@ -233,7 +233,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public final _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
         return new TableBlock.DialectNoOnTableBlock(joinType, itemWord, tableItem, alias);
     }
@@ -429,7 +429,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         }
 
         @Override
-        public _OnClause<C, _MultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        public _OnClause<C, _MultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
             MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
         }
@@ -511,7 +511,7 @@ abstract class MySQLMultiDelete<C, WE, DT, DS, DP, JT, JS, JP, WR, WA>
         }
 
         @Override
-        public _OnClause<C, _BatchMultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+        public _OnClause<C, _BatchMultiJoinSpec<C>> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
             MySQLUtils.assertItemWord(this.context, itemWord, tableItem);
             return new OnClauseTableBlock.OnItemTableBlock<>(joinType, itemWord, tableItem, alias, this);
         }

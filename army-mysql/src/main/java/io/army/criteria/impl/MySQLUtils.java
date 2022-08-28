@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SubQuery;
-import io.army.criteria.TableItem;
+import io.army.criteria.TabularItem;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLModifier;
 import io.army.lang.Nullable;
@@ -18,7 +18,7 @@ abstract class MySQLUtils extends CriteriaUtils {
     }
 
 
-    static void assertItemWord(CriteriaContext criteriaContext, @Nullable ItemWord itemWord, TableItem tableItem) {
+    static void assertItemWord(CriteriaContext criteriaContext, @Nullable ItemWord itemWord, TabularItem tableItem) {
         if (itemWord == ItemWord.LATERAL && !(tableItem instanceof SubQuery)) {
             String m = "MySQL LATERAL support only %s" + SubQuery.class.getName();
             throw CriteriaContextStack.criteriaError(criteriaContext, m);

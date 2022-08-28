@@ -18,9 +18,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class SQLFunctions extends OperationExpression implements Expression {
+abstract class SQLFunctions {
 
     SQLFunctions() {
+        throw new UnsupportedOperationException();
     }
 
     enum FuncWord implements SQLWords {
@@ -79,7 +80,6 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }
 
     @Deprecated
-
     static Expression oneArgOptionFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, @Nullable Clause clause, TypeMeta returnType) {
         return new OneArgOptionFunc(name, option, SQLs._funcParam(expr), clause, returnType);
@@ -98,6 +98,17 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     static Expression noArgFunc(String name, TypeMeta returnType) {
         return new NoArgFuncExpression(name, returnType);
+    }
+
+    static IPredicate noArgFuncPredicate(final String name) {
+        return new NoArgFuncPredicate(name);
+    }
+
+    static IPredicate oneArgFuncPredicate(final String name, final Expression argument) {
+        if (argument instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, argument);
+        }
+        return new OneArgFuncPredicate(name, (ArmyExpression) argument);
     }
 
     static Expression safeComplexArgFunc(String name, List<?> argList, TypeMeta returnType) {
@@ -185,6 +196,45 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }
 
+    /**
+     * <p>
+     * This method must be private
+     * </p>
+     */
+    private static void appendComplexFunc(final String name, final List<?> argumentList, final _SqlContext context) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder()
+                .append(_Constant.SPACE)
+                .append(name)
+                .append(_Constant.LEFT_PAREN);
+
+        DialectParser parser = null;
+        for (Object o : argumentList) {
+            if (o instanceof Expression) {
+                ((ArmyExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
+            } else if (o == FuncWord.LEFT_PAREN) {
+                sqlBuilder.append(((SQLWords) o).render());
+            } else if (o instanceof SQLWords) {
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(((SQLWords) o).render());
+            } else if (o instanceof SQLIdentifier) { // sql identifier
+                sqlBuilder.append(_Constant.SPACE);
+                if (parser == null) {
+                    parser = context.parser();
+                }
+                parser.identifier(((SQLIdentifier) o).identifier, sqlBuilder);
+            } else if (o instanceof Clause) {
+                ((_SelfDescribed) o).appendSql(context);
+            } else {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+        }//for
+
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+    }
+
 
     interface FunctionSpec extends _SelfDescribed, TypeInfer {
 
@@ -260,7 +310,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
 
     static abstract class WindowFunc<OR> extends OperationExpression
-            implements Window._OverClause<OR>, MutableParamMetaSpec, CriteriaContextSpec {
+            implements Window._OverClause<OR>, OperationExpression.MutableParamMetaSpec, CriteriaContextSpec {
 
         final CriteriaContext context;
 
@@ -459,9 +509,77 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     }//NoArgFuncExpression
 
+    private static final class NoArgFuncPredicate extends OperationPredicate implements FunctionSpec {
+
+        private final String name;
+
+        private NoArgFuncPredicate(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN)
+                    .append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+    }//NoArgFuncPredicate
+
+
+    private static final class OneArgFuncPredicate extends OperationPredicate implements FunctionSpec {
+
+        private final String name;
+
+        private final ArmyExpression argument;
+
+        private OneArgFuncPredicate(String name, ArmyExpression argument) {
+            this.name = name;
+            this.argument = argument;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+
+            this.argument.appendSql(context);
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
+
+    }//OneArgFuncPredicate
+
+
+    private static final class ComplexFuncPredicate extends OperationPredicate implements FunctionSpec {
+
+        private final String name;
+
+        private final List<?> argumentList;
+
+        private ComplexFuncPredicate(String name, List<?> argumentList) {
+            this.name = name;
+            this.argumentList = argumentList;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            SQLFunctions.appendComplexFunc(this.name, this.argumentList, context);
+        }
+
+
+    }//ComplexFuncPredicate
+
 
     static abstract class FunctionExpression extends OperationExpression
-            implements FunctionSpec, MutableParamMetaSpec {
+            implements FunctionSpec, OperationExpression.MutableParamMetaSpec {
 
         final String name;
 
@@ -646,7 +764,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
     }//SQLIdentifier
 
     private static class ComplexArgFunc extends OperationExpression
-            implements FunctionSpec, MutableParamMetaSpec {
+            implements FunctionSpec, OperationExpression.MutableParamMetaSpec {
 
         private final String name;
         private final List<?> argList;
@@ -672,33 +790,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
         @Override
         public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
-
-            final DialectParser parser = context.parser();
-            for (Object o : this.argList) {
-                if (o instanceof Expression) {
-                    ((ArmyExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
-                } else if (o instanceof SQLWords) {
-                    if (o != FuncWord.LEFT_PAREN) {
-                        sqlBuilder.append(_Constant.SPACE);
-                    }
-                    sqlBuilder.append(((SQLWords) o).render());
-                } else if (o instanceof SQLIdentifier) { // sql identifier
-                    sqlBuilder.append(_Constant.SPACE);
-                    parser.identifier(((SQLIdentifier) o).identifier, sqlBuilder);
-                } else if (o instanceof Clause) {
-                    ((_SelfDescribed) o).appendSql(context);
-                } else {
-                    //no bug,never here
-                    throw new IllegalStateException();
-                }
-            }//for
-
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            SQLFunctions.appendComplexFunc(this.name, this.argList, context);
         }
 
 
@@ -782,7 +874,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
 
     private static final class CaseFunc extends OperationExpression
             implements Functions._CaseWhenSpec, Functions._CaseThenClause
-            , FunctionSpec, CriteriaContextSpec, MutableParamMetaSpec
+            , FunctionSpec, CriteriaContextSpec, OperationExpression.MutableParamMetaSpec
             , Functions._FuncTypeUpdateClause {
 
         private final ArmyExpression caseValue;
@@ -1176,7 +1268,7 @@ abstract class SQLFunctions extends OperationExpression implements Expression {
             , FunctionSpec
             , Functions._FuncLastArgClause
             , Statement._RightParenClause<Expression>
-            , MutableParamMetaSpec {
+            , OperationExpression.MutableParamMetaSpec {
 
         final CriteriaContext context;
         private final String name;

@@ -299,11 +299,11 @@ public abstract class MySQLs extends MySQLFuncSyntax2 {
         return MySQLSupports.block(criteria, table);
     }
 
-    public static MySQLQuery._IfUseIndexOnSpec<Void> block(TableItem tableItem, String alias) {
+    public static MySQLQuery._IfUseIndexOnSpec<Void> block(TabularItem tableItem, String alias) {
         return MySQLSupports.block(null, null, tableItem, alias);
     }
 
-    public static <C> MySQLQuery._IfUseIndexOnSpec<C> block(C criteria, TableItem tableItem, String alias) {
+    public static <C> MySQLQuery._IfUseIndexOnSpec<C> block(C criteria, TabularItem tableItem, String alias) {
         CriteriaContextStack.assertNonNull(criteria);
         return MySQLSupports.block(criteria, null, tableItem, alias);
     }

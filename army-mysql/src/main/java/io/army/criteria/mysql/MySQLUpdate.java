@@ -417,26 +417,26 @@ public interface MySQLUpdate extends Update {
 
         UT update(TableMeta<?> table, String tableAlias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        <T extends TabularItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Supplier<T> supplier, String alias);
 
-        <T extends TableItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        <T extends TabularItem> US update(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Function<C, T> function, String alias);
 
 
-        <T extends TableItem> US update(Supplier<T> supplier, String alias);
+        <T extends TabularItem> US update(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> US update(Function<C, T> function, String alias);
+        <T extends TabularItem> US update(Function<C, T> function, String alias);
 
-        <T extends TableItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        <T extends TabularItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Supplier<T> supplier, String alias);
 
-        <T extends TableItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
+        <T extends TabularItem> US updateLateral(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers
                 , Function<C, T> function, String alias);
 
-        <T extends TableItem> US updateLateral(Supplier<T> supplier, String alias);
+        <T extends TabularItem> US updateLateral(Supplier<T> supplier, String alias);
 
-        <T extends TableItem> US updateLateral(Function<C, T> function, String alias);
+        <T extends TabularItem> US updateLateral(Function<C, T> function, String alias);
 
     }
 

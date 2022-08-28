@@ -105,7 +105,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
         if (!(dataField instanceof TableField)) {
             final DerivedField field = (DerivedField) dataField;
             final String tableAlias = field.tableAlias();
-            final TableItem tableItem = this.aliasToTable.get(tableAlias);
+            final TabularItem tableItem = this.aliasToTable.get(tableAlias);
             if (!(tableItem instanceof DerivedTable)
                     || ((DerivedTable) tableItem).selection(field.fieldName()) == null) {
                 throw _Exceptions.unknownColumn(field);
@@ -260,7 +260,7 @@ final class MultiUpdateContext extends MultiTableContext implements _MultiUpdate
             return safeTableAlias;
         }
         String tableAlias = null;
-        for (Map.Entry<String, TableItem> e : this.aliasToTable.entrySet()) {
+        for (Map.Entry<String, TabularItem> e : this.aliasToTable.entrySet()) {
             if (e.getValue() == table) {
                 tableAlias = e.getKey();
             }

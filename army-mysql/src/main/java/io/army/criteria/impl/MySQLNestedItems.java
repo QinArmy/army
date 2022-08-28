@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.NestedItems;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SubQuery;
-import io.army.criteria.TableItem;
+import io.army.criteria.TabularItem;
 import io.army.criteria.impl.inner._DialectTableBlock;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._IndexHint;
@@ -93,7 +93,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     }
 
     @Override
-    public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -122,7 +122,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     }
 
     @Override
-    public MySQLQuery._NestedOnSpec<C> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public MySQLQuery._NestedOnSpec<C> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (!(itemWord == null || (itemWord == ItemWord.LATERAL && tableItem instanceof SubQuery))) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -181,7 +181,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
 
 
         private OnClauseBlock(MySQLNestedItems<C> clause, _JoinType joinType, @Nullable ItemWord itemWord
-                , TableItem tableItem, String alias) {
+                , TabularItem tableItem, String alias) {
             super(clause, joinType, tableItem, alias);
             this.itemWord = itemWord;
         }
@@ -209,7 +209,7 @@ final class MySQLNestedItems<C> extends JoinableClause.LeftParenNestedItem<
         private MySQLQuery._QueryIndexHintClause<C, MySQLQuery._NestedUseIndexOnSpec<C>> useIndexClause;
 
         private TableOnClauseBlock(MySQLNestedItems<C> clause, _JoinType joinType, @Nullable ItemWord itemWord
-                , TableItem tableItem, String alias) {
+                , TabularItem tableItem, String alias) {
             super(clause, joinType, itemWord, tableItem, alias);
             this.partitionList = Collections.emptyList();
         }

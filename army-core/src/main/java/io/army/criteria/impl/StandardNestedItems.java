@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.StandardQuery;
-import io.army.criteria.TableItem;
+import io.army.criteria.TabularItem;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
@@ -43,7 +43,7 @@ final class StandardNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     }
 
     @Override
-    public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public _TableBlock createNoOnItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -64,7 +64,7 @@ final class StandardNestedItems<C> extends JoinableClause.LeftParenNestedItem<
     }
 
     @Override
-    public StandardQuery._NestedOnSpec<C> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias) {
+    public StandardQuery._NestedOnSpec<C> createItemBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias) {
         if (itemWord != null) {
             throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
         }
@@ -81,7 +81,7 @@ final class StandardNestedItems<C> extends JoinableClause.LeftParenNestedItem<
             StandardQuery._NestedOnSpec<C>,
             Void> implements StandardQuery._NestedOnSpec<C> {
 
-        private OnClauseTableBlock(StandardNestedItems<C> clause, _JoinType joinType, TableItem tableItem, String alias) {
+        private OnClauseTableBlock(StandardNestedItems<C> clause, _JoinType joinType, TabularItem tableItem, String alias) {
             super(clause, joinType, tableItem, alias);
         }
 

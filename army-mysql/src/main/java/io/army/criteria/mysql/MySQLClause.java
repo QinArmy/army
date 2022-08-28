@@ -88,5 +88,5 @@ public interface MySQLClause {
 
     }
 
-
+    
 }

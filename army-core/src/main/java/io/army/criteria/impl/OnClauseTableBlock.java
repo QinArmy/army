@@ -21,7 +21,7 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
 
     private final OR stmt;
 
-    OnClauseTableBlock(_JoinType joinType, TableItem tableItem, String alias, OR stmt) {
+    OnClauseTableBlock(_JoinType joinType, TabularItem tableItem, String alias, OR stmt) {
         super(joinType, tableItem, alias);
         this.stmt = stmt;
     }
@@ -142,7 +142,7 @@ class OnClauseTableBlock<C, OR> extends TableBlock implements Statement._OnClaus
 
         private final ItemWord itemWord;
 
-        OnItemTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TableItem tableItem, String alias, OR stmt) {
+        OnItemTableBlock(_JoinType joinType, @Nullable ItemWord itemWord, TabularItem tableItem, String alias, OR stmt) {
             super(joinType, tableItem, alias, stmt);
             this.itemWord = itemWord;
         }

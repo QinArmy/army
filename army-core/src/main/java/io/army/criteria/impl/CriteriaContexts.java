@@ -551,7 +551,7 @@ abstract class CriteriaContexts {
             final List<_TableBlock> tableBlockList = this.tableBlockList;
             final int oldBlockSize = tableBlockList.size();
 
-            final TableItem tableItem = block.tableItem();
+            final TabularItem tableItem = block.tableItem();
             String alias = block.alias();
 
             if (tableItem instanceof CteItem) {
@@ -605,7 +605,7 @@ abstract class CriteriaContexts {
         public final TableMeta<?> getTable(final String tableAlias) {
             final _TableBlock block;
             block = this.aliasToBlock.get(tableAlias);
-            final TableItem tableItem;
+            final TabularItem tableItem;
             final TableMeta<?> table;
             if (block != null && ((tableItem = block.tableItem()) instanceof TableMeta)) {
                 table = (TableMeta<?>) tableItem;
@@ -637,7 +637,7 @@ abstract class CriteriaContexts {
                 throw CriteriaContextStack.castCriteriaApi(this);
             }
             final _TableBlock block = aliasToBlock.get(derivedTable);
-            final TableItem tableItem;
+            final TabularItem tableItem;
             final DerivedField field;
             if (block == null) {
                 field = getRefField(derivedTable, fieldName, true);
@@ -834,7 +834,7 @@ abstract class CriteriaContexts {
 
         private boolean doContainCte(final String cteName, final List<? extends _TableBlock> blockList) {
             boolean match = false;
-            TableItem item;
+            TabularItem item;
             for (_TableBlock block : blockList) {
                 item = block.tableItem();
                 if (item instanceof CteItem && cteName.equals(((CteItem) item).name())) {
@@ -857,7 +857,7 @@ abstract class CriteriaContexts {
          */
         private void addNestedItems(final NestedItems nestedItems) {
             final Map<String, _TableBlock> aliasToBlock = this.aliasToBlock;
-            TableItem tableItem;
+            TabularItem tableItem;
             String alias;
             for (_TableBlock block : ((_NestedItems) nestedItems).tableBlockList()) {
                 tableItem = block.tableItem();
