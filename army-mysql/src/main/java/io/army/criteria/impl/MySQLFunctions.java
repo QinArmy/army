@@ -1,21 +1,26 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLClause;
 import io.army.criteria.mysql.MySQLUnit;
+import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.StringType;
 import io.army.meta.TypeMeta;
+import io.army.sqltype.MySQLTypes;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
 import io.army.util.ArrayUtils;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -651,9 +656,10 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     }//NullOrError
 
+
     private static final class JsonValueFunc extends OperationExpression
             implements SQLFunctions.FunctionSpec
-            , MutableParamMetaSpec
+            , OperationExpression.MutableParamMetaSpec
             , MySQLClause._JsonValueReturningSpec
             , MySQLClause._JsonValueOptionOnEmptySpec
             , MySQLClause._JsonValueOnEmptySpec {
@@ -885,7 +891,7 @@ abstract class MySQLFunctions extends SQLFunctions {
         }
 
         @Override
-        public MySQLClause._JsonValueOnEmptySpec nullValue() {
+        public MySQLClause._JsonValueOnEmptySpec nullWord() {
             if (this.operateValue != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -957,6 +963,602 @@ abstract class MySQLFunctions extends SQLFunctions {
 
 
     }//JsonValueFunc
+
+
+    private interface JsonTableColumn extends _SelfDescribed {
+
+    }
+
+    private static final class ColumnForOrdinality<R> implements MySQLClause._ForOrdinalityClause<R>, JsonTableColumn {
+
+        private final String name;
+
+        private final MySQLClause._JsonTableColumnPathClause<R> columnsClause;
+
+        private boolean forOrdinalityClause;
+
+
+        private ColumnForOrdinality(String name, MySQLClause._JsonTableColumnPathClause<R> columnsClause) {
+            this.name = name;
+            this.columnsClause = columnsClause;
+        }
+
+        @Override
+        public MySQLClause._JsonTableColumnPathClause<R> forOrdinality() {
+            this.forOrdinalityClause = true;
+            return this.columnsClause;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            if (!this.forOrdinalityClause) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+            context.parser().identifier(this.name, sqlBuilder);
+            sqlBuilder.append(" FOR ORDINALITY");
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(" ")
+                    .append(this.name)
+                    .append(" FOR ORDINALITY")
+                    .toString();
+        }
+
+
+    }//ColumnForOrdinality
+
+    private static final class JsonTableOnEmptyOptionClause<R>
+            implements MySQLClause._JsonTableOnEmptyOptionClause<R>
+            , MySQLClause._JsonTableOnEmptySpec<R>
+            , _SelfDescribed {
+
+        private final JsonTableColumnListClause<R> clause;
+
+        private Object currentOption;
+
+        private JsonTableOnEmptyOptionClause(JsonTableColumnListClause<R> clause) {
+            this.clause = clause;
+        }
+
+        @Override
+        public MySQLClause._JsonTableOnEmptySpec<R> nullWord() {
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonTableOnEmptySpec<R> error() {
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonTableOnEmptySpec<R> defaultValue(final @Nullable String jsonString) {
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonTableColumnCommaSpec<R> onError() {
+            return this.clause;
+        }
+
+        @Override
+        public MySQLClause._JsonTableColumnOnErrorOptionClause<R> onEmpty() {
+            return this;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+
+        }
+
+    }//JsonTableOnEmptyOptionClause
+
+
+    private static final class JsonTableEventClause<R> implements MySQLClause._JsonTableOnEmptyOptionClause<R>
+            , MySQLClause._JsonTableOnEmptySpec<R>, _SelfDescribed {
+
+        private final JsonTableColumnListClause<R> columnsClause;
+
+        private List<Object> clauseList = new ArrayList<>();
+
+        private JsonTableEventClause(JsonTableColumnListClause<R> clause) {
+            this.columnsClause = clause;
+        }
+
+        @Override
+        public MySQLClause._JsonTableOnEmptySpec<R> nullWord() {
+            this.clauseList.add(JsonValueWord.NULL);
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonTableOnEmptySpec<R> error() {
+            this.clauseList.add(JsonValueWord.ERROR);
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonTableOnEmptySpec<R> defaultValue(final @Nullable String jsonString) {
+            if (jsonString == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.columnsClause.context);
+            }
+            this.clauseList.add(jsonString);
+            return this;
+        }
+
+        @Override
+        public MySQLClause._JsonTableColumnCommaSpec<R> onError() {
+            final List<Object> clauseList = this.clauseList;
+            final int clauseSize = clauseList.size();
+            if (clauseSize != 1 && clauseSize != 3) {
+                throw CriteriaContextStack.castCriteriaApi(this.columnsClause.context);
+            }
+            clauseList.add(JsonValueWord.ON_ERROR);
+            this.clauseList = _CollectionUtils.unmodifiableList(clauseList);
+            return this.columnsClause;
+        }
+
+        @Override
+        public MySQLClause._JsonTableColumnOnErrorOptionClause<R> onEmpty() {
+            final List<Object> clauseList = this.clauseList;
+            final int clauseSize = clauseList.size();
+            if (clauseSize != 1) {
+                throw CriteriaContextStack.castCriteriaApi(this.columnsClause.context);
+            }
+            clauseList.add(JsonValueWord.ON_EMPTY);
+            return this.columnsClause;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            for (Object clause : this.clauseList) {
+                sqlBuilder.append(_Constant.SPACE);
+                if (clause instanceof JsonValueWord) {
+                    sqlBuilder.append(((JsonValueWord) clause).words);
+                } else if (clause instanceof String) {
+                    context.appendLiteral(StringType.INSTANCE, clause);
+                } else {
+                    //no bug,never here
+                    throw new IllegalStateException();
+                }
+            }
+
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+
+            for (Object clause : this.clauseList) {
+                builder.append(_Constant.SPACE);
+                if (clause instanceof JsonValueWord) {
+                    builder.append(((JsonValueWord) clause).words);
+                } else if (clause instanceof String) {
+                    builder.append(clause);
+                } else {
+                    //no bug,never here
+                    throw new IllegalStateException();
+                }
+            }
+
+            return builder.toString();
+        }
+
+
+    }//JsonTableEventClause
+
+    private static class ColumnWithPath<R>
+            implements JsonTableColumn
+            , MySQLClause._JsonTableColumnPathClause<R> {
+
+        private final String name;
+
+        private final MySQLTypes type;
+
+        private final long precision;
+
+        private final int scale;
+
+        final JsonTableColumnListClause<R> columnsClause;
+
+        private boolean existsPath;
+
+        private String stringPath;
+
+        private MySQLClause._JsonTableOnEmptyOptionClause<R> eventClause;
+
+        private ColumnWithPath(String name, MySQLTypes type, JsonTableColumnListClause<R> clause) {
+            this.name = name;
+            this.type = type;
+            this.precision = -1L;
+            this.scale = -1;
+            this.columnsClause = clause;
+        }
+
+        private ColumnWithPath(String name, MySQLTypes type, long precision, int scale
+                , JsonTableColumnListClause<R> clause) {
+            this.name = name;
+            this.type = type;
+            this.precision = precision;
+            this.scale = scale;
+            this.columnsClause = clause;
+        }
+
+        private ColumnWithPath(String name, MySQLTypes type, long precision
+                , JsonTableColumnListClause<R> clause) {
+            this.name = name;
+            this.type = type;
+            this.precision = precision;
+            this.scale = -1;
+            this.columnsClause = clause;
+        }
+
+        @Override
+        public MySQLClause._JsonTableOnEmptyOptionClause<R> path(final @Nullable String stringPath) {
+            if (stringPath == null) {
+                throw CriteriaContextStack.nullPointer(this.columnsClause.context);
+            }
+            this.existsPath = false;
+            this.stringPath = stringPath;
+            return this.columnsClause;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnCommaSpec<R> existsPath(final @Nullable String stringPath) {
+            if (stringPath == null) {
+                throw CriteriaContextStack.nullPointer(this.columnsClause.context);
+            }
+            this.existsPath = true;
+            this.stringPath = stringPath;
+            return this.columnsClause;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+            context.parser().identifier(this.name, sqlBuilder);
+
+            final MySQLTypes type = this.type;
+            sqlBuilder.append(_Constant.SPACE)
+                    .append(type.render());
+
+            if (this.precision > 0) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN)
+                        .append(this.precision);
+                if (this.scale > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE)
+                            .append(this.scale);
+                }
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+            if (this instanceof ColumnWithPathAndCharSet) {
+                this.appendCharset(context);
+            }
+            if (this.existsPath) {
+                sqlBuilder.append(" EXISTS");
+            }
+            sqlBuilder.append(" PATH");
+            final String stringPath = this.stringPath;
+            if (stringPath == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            context.appendLiteral(StringType.INSTANCE, stringPath);
+
+            if (!this.existsPath) {
+                final MySQLClause._JsonTableOnEmptyOptionClause<R> eventClause = this.eventClause;
+                if (eventClause != null) {
+                    ((_SelfDescribed) eventClause).appendSql(context);
+                }
+            }
+
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(_Constant.SPACE)
+                    .append(this.name);
+
+            final MySQLTypes type = this.type;
+            builder.append(_Constant.SPACE)
+                    .append(type.render());
+
+            if (this.precision > 0) {
+                builder.append(_Constant.SPACE_LEFT_PAREN)
+                        .append(this.precision);
+                if (this.scale > 0) {
+                    builder.append(_Constant.SPACE_COMMA_SPACE)
+                            .append(this.scale);
+                }
+                builder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+            if (this instanceof ColumnWithPathAndCharSet) {
+                final ColumnWithPathAndCharSet<?> column = (ColumnWithPathAndCharSet<?>) this;
+                builder.append(" CHARACTER SET ");
+                if (column.charset instanceof MySQLCharset) {
+                    builder.append(((MySQLCharset) column.charset).render());
+                } else if (column.charset instanceof String) {
+                    builder.append(column.charset);
+                } else {
+                    throw _Exceptions.castCriteriaApi();
+                }
+                if (column.collate != null) {
+                    builder.append(" COLLATE ")
+                            .append(column.collate);
+                }
+            }
+            if (this.existsPath) {
+                builder.append(" EXISTS");
+            }
+            builder.append(" PATH");
+            final String stringPath = this.stringPath;
+            if (stringPath == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            builder.append(stringPath);
+
+            if (!this.existsPath) {
+                final MySQLClause._JsonTableOnEmptyOptionClause<R> eventClause = this.eventClause;
+                if (eventClause != null) {
+                    builder.append(eventClause);
+                }
+            }
+            return builder.toString();
+        }
+
+
+        void appendCharset(_SqlContext context) {
+            throw new UnsupportedOperationException();
+        }
+
+        final MySQLClause._JsonTableOnEmptyOptionClause<R> getEventClause() {
+            MySQLClause._JsonTableOnEmptyOptionClause<R> eventClause = this.eventClause;
+            if (eventClause == null) {
+                this.eventClause = eventClause = new JsonTableEventClause<>(this.columnsClause);
+            }
+            return eventClause;
+        }
+
+
+    }//ColumnWithPath
+
+    private static final class ColumnWithPathAndCharSet<R> extends ColumnWithPath<R> {
+
+        private final Object charset;
+
+        private final String collate;
+
+        private ColumnWithPathAndCharSet(String name, MySQLTypes type
+                , long precision, MySQLCharset charset, JsonTableColumnListClause<R> clause) {
+            super(name, type, precision, clause);
+            this.charset = charset;
+            this.collate = null;
+        }
+
+        private ColumnWithPathAndCharSet(String name, MySQLTypes type
+                , long precision, Object charset
+                , final String collate, JsonTableColumnListClause<R> clause) {
+            super(name, type, precision, clause);
+            this.charset = charset;
+            this.collate = collate;
+        }
+
+        @Override
+        void appendCharset(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" CHARACTER SET ");
+            DialectParser parser = null;
+            if (this.charset instanceof MySQLCharset) {
+                sqlBuilder.append(((MySQLCharset) this.charset).render());
+            } else if (this.charset instanceof String) {
+                parser = context.parser();
+                parser.identifier((String) this.charset, sqlBuilder);
+            } else {
+                throw _Exceptions.castCriteriaApi();
+            }
+            if (this.collate != null) {
+                sqlBuilder.append(" COLLATE ");
+                if (parser == null) {
+                    parser = context.parser();
+                }
+                parser.identifier(this.collate, sqlBuilder);
+            }
+
+
+        }
+
+
+    }//ColumnWithPathAndCharSet
+
+
+    private static abstract class JsonTableColumnListClause<R>
+            implements MySQLClause._JsonTableColumnLeftParenClause<R>
+            , MySQLClause._JsonTableColumnCommaSpec<R>
+            , MySQLClause._JsonTableColumnPathClause<R>
+            , MySQLClause._JsonTableOnEmptyOptionClause<R> {
+
+        private CriteriaContext context;
+
+        private List<JsonTableColumn> columnList = new ArrayList<>();
+
+
+        @Override
+        public final MySQLClause._ForOrdinalityClause<R> leftParen(String name) {
+            return this.comma(name);
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type) {
+            return this.comma(name, type);
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long n) {
+            return this.comma(name, type, n);
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long n, MySQLCharset charset) {
+            return this.comma(name, type, n, charset);
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long n, MySQLCharset charset, String collate) {
+            return this.comma(name, type, n, charset, collate);
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long n, String charset, String collate) {
+            return this.comma(name, type, n, charset, collate);
+        }
+
+        @Override
+        public MySQLClause._JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long p, int m) {
+            return this.comma(name, type, p, m);
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnsClause<R> leftParenNested(String path) {
+            return this.commaNested(path);
+        }
+
+
+        @Override
+        public final MySQLClause._JsonTableColumnsClause<R> leftParenNestedPath(String path) {
+            return this.commaNestedPath(path);
+        }
+
+
+        @Override
+        public final MySQLClause._ForOrdinalityClause<R> comma(String name) {
+            final ColumnForOrdinality<R> column = new ColumnForOrdinality<>(name, this);
+            this.columnList.add(column);
+            return column;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> comma(String name, MySQLTypes type) {
+            this.columnList.add(new ColumnWithPath<>(name, type, this));
+            return this;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long n) {
+            if (n < 1) {
+                throw precisionError(n);
+            }
+            this.columnList.add(new ColumnWithPath<>(name, type, n, this));
+            return this;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long n, MySQLCharset charset) {
+            if (n < 1) {
+                throw precisionError(n);
+            }
+            this.columnList.add(new ColumnWithPathAndCharSet<>(name, type, n, charset, this));
+            return this;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long n, MySQLCharset charset, String collate) {
+            if (n < 1) {
+                throw precisionError(n);
+            }
+            this.columnList.add(new ColumnWithPathAndCharSet<>(name, type, n, charset, collate, this));
+            return this;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long n, String charset, String collate) {
+            if (n < 1) {
+                throw precisionError(n);
+            }
+            this.columnList.add(new ColumnWithPathAndCharSet<>(name, type, n, charset, collate, this));
+            return this;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long p, int m) {
+            if (p < 1 || m < 0) {
+                String message = String.format("precision[%s] or scale[%s] error.", p, m);
+                throw CriteriaContextStack.criteriaError(this.context, message);
+            }
+            this.columnList.add(new ColumnWithPath<>(name, type, p, m, this));
+            return this;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnsClause<R> commaNested(String path) {
+            return null;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnsClause<R> commaNestedPath(String path) {
+            return null;
+        }
+
+
+        @Override
+        public final MySQLClause._JsonTableOnEmptyOptionClause<R> path(String path) {
+            return null;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableColumnCommaSpec<R> existsPath(String path) {
+            return null;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableOnEmptySpec<R> nullWord() {
+            return null;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableOnEmptySpec<R> error() {
+            return null;
+        }
+
+        @Override
+        public final MySQLClause._JsonTableOnEmptySpec<R> defaultValue(String jsonString) {
+            return null;
+        }
+
+
+        private CriteriaException precisionError(long p) {
+            String m = String.format("precision[%s] error", p);
+            return CriteriaContextStack.criteriaError(this.context, m);
+        }
+
+
+    }//JsonTableColumnListClause
+
+
+    private static final class PrimaryJsonTableColumnListClause extends JsonTableColumnListClause<TabularItem> {
+
+        private final CriteriaContext context;
+
+        private PrimaryJsonTableColumnListClause(CriteriaContext context) {
+            this.context = context;
+        }
+
+
+        @Override
+        public TabularItem rightParen() {
+            return null;
+        }
+    }//PrimaryJsonTableColumnListClause
 
 
 }

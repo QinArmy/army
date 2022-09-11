@@ -10,7 +10,18 @@ public interface SqlType {
      */
     String name();
 
-
     Database database();
+
+    default boolean supportNoPrecision() {
+        throw new UnsupportedOperationException();
+    }
+
+    default boolean supportPrecision() {
+        throw new UnsupportedOperationException();
+    }
+
+    default boolean supportPrecisionScale() {
+        throw new UnsupportedOperationException();
+    }
 
 }

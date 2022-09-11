@@ -3760,6 +3760,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
     /*-------------------below JSON Table Functions-------------------*/
 
+    public static MySQLClause._JsonTableColumnsClause jsonTable(Expression expr, Expression path) {
+        return null;
+    }
 
 
 
