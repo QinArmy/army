@@ -2,7 +2,6 @@ package io.army.criteria.mysql;
 
 import io.army.criteria.TabularItem;
 import io.army.criteria.impl.MySQLs;
-import io.army.criteria.impl.SQLs;
 import io.army.sqltype.MySQLTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +22,20 @@ public class MySQLJsonFuncUnitTests {
                 .forOrdinality()
                 .comma("", MySQLTypes.JSON)
                 .path("")
-                .defaultValue(SQLs.literal(""))
+                .defaultValue("")
                 .onEmpty()
                 .nullWord()
                 .onError()
+                .commaNested("")
+                .columns()
+                .leftParen("")
+                .forOrdinality()
+                .commaNestedPath("")
+                .columns()
+                .leftParen("")
+                .forOrdinality()
+                .rightParen()
+                .rightParen()
                 .rightParen();
 
     }

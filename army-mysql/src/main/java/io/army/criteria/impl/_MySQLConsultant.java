@@ -9,6 +9,7 @@ import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLLoad;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.dialect.Database;
+import io.army.util._ClassUtils;
 
 public abstract class _MySQLConsultant extends _SQLConsultant {
 
@@ -145,6 +146,15 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     public static void assertNestedItems(final NestedItems nestedItems) {
         if (!(nestedItems instanceof MySQLNestedItems || nestedItems instanceof StandardNestedItems)) {
             throw illegalNestedItems(nestedItems, Database.MySQL);
+        }
+
+    }
+
+    public static void assertJsonTable(final TabularItem jsonTable) {
+        if (!(jsonTable instanceof MySQLFunctions.JsonTable)) {
+            String m = String.format("%s isn't instance of %s", _ClassUtils.safeClassName(jsonTable)
+                    , MySQLFunctions.JsonTable.class);
+            throw new CriteriaException(m);
         }
 
     }

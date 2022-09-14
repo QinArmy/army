@@ -3,6 +3,7 @@ package io.army.criteria.mysql;
 import io.army.criteria.Clause;
 import io.army.criteria.Expression;
 import io.army.criteria.Statement;
+import io.army.sqltype.MySQLTypes;
 
 import java.util.function.Supplier;
 
@@ -35,7 +36,7 @@ public interface MySQLClause {
 
     interface _JsonValueOptionClause {
 
-        _JsonValueOnErrorClause nullValue();
+        _JsonValueOnErrorClause nullWord();
 
         _JsonValueOnErrorClause error();
 
@@ -62,7 +63,7 @@ public interface MySQLClause {
 
 
         @Override
-        _JsonValueOnEmptySpec nullValue();
+        _JsonValueOnEmptySpec nullWord();
 
         @Override
         _JsonValueOnEmptySpec error();
@@ -88,5 +89,109 @@ public interface MySQLClause {
 
     }
 
-    
+
+    interface _ForOrdinalityClause<R> {
+
+        _JsonTableColumnCommaSpec<R> forOrdinality();
+    }
+
+
+    interface _JsonTableColumnPathClause<R> {
+
+        _JsonTableOnEmptyOptionClause<R> path(String stringPath);
+
+        _JsonTableColumnCommaSpec<R> existsPath(String stringPath);
+
+    }
+
+    interface _JsonTableColumnsClause<R> {
+
+        _JsonTableColumnLeftParenClause<R> columns();
+
+    }
+
+    interface _JsonTableColumnLeftParenClause<R> {
+
+        _ForOrdinalityClause<R> leftParen(String name);
+
+        _JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type);
+
+        _JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long n);
+
+        _JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long n, MySQLCharset charset);
+
+        _JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long n, MySQLCharset charset, String collate);
+
+        _JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long n, String charset, String collate);
+
+        _JsonTableColumnPathClause<R> leftParen(String name, MySQLTypes type, long p, int m);
+
+        _JsonTableColumnsClause<_JsonTableColumnCommaSpec<R>> leftParenNested(String path);
+
+        _JsonTableColumnsClause<_JsonTableColumnCommaSpec<R>> leftParenNestedPath(String path);
+
+    }
+
+
+    interface _JsonTableColumnCommaSpec<R> extends Statement._RightParenClause<R> {
+
+        _ForOrdinalityClause<R> comma(String name);
+
+        _JsonTableColumnPathClause<R> comma(String name, MySQLTypes type);
+
+        _JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long n);
+
+        _JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long n, MySQLCharset charset);
+
+        _JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long n, MySQLCharset charset, String collate);
+
+        _JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long n, String charset, String collate);
+
+        _JsonTableColumnPathClause<R> comma(String name, MySQLTypes type, long p, int m);
+
+        _JsonTableColumnsClause<_JsonTableColumnCommaSpec<R>> commaNested(String path);
+
+        _JsonTableColumnsClause<_JsonTableColumnCommaSpec<R>> commaNestedPath(String path);
+
+    }
+
+    interface _JsonTableOnErrorClause<R> {
+
+        _JsonTableColumnCommaSpec<R> onError();
+
+    }
+
+    interface _JsonTableColumnOnErrorOptionClause<R> extends _JsonTableColumnCommaSpec<R> {
+
+        _JsonTableOnErrorClause<R> nullWord();
+
+        _JsonTableOnErrorClause<R> error();
+
+        _JsonTableOnErrorClause<R> defaultValue(String jsonString);
+
+
+    }
+
+    interface _JsonTableOnEmptySpec<R> extends _JsonTableOnErrorClause<R> {
+
+        _JsonTableColumnOnErrorOptionClause<R> onEmpty();
+
+    }
+
+    interface _JsonTableOnEmptyOptionClause<R> extends _JsonTableColumnOnErrorOptionClause<R> {
+
+
+        @Override
+        _JsonTableOnEmptySpec<R> nullWord();
+
+        @Override
+        _JsonTableOnEmptySpec<R> error();
+
+        @Override
+        _JsonTableOnEmptySpec<R> defaultValue(String jsonString);
+
+
+    }
+
+
 }
