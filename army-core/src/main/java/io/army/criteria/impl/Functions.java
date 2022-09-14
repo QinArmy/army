@@ -961,10 +961,6 @@ abstract class Functions {
     }
 
 
-    /**
-     * @see #elt(Expression, Object)
-     * @see #field(Expression, Object)
-     */
     static Expression _singleAndListFunc(final String name, final Expression expr
             , final TypeMeta elementType, final Object exprList, final TypeMeta returnType) {
         if (expr instanceof SqlValueParam.MultiValue) {

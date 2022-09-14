@@ -1315,7 +1315,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * </p>
      *
      * @param str     nullable parameter or {@link Expression}
-     * @param strList non-null literal or non-empty {@link List} of literal or {@link Expression}
+     * @param strList non-null literal or non-empty {@link List}  or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_field">FIELD(str,str1,str2,str3,...)</a>
      */
@@ -1334,12 +1334,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
      */
-    public static Expression fieldInSet(final @Nullable Object str, final @Nullable Object strList) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, strList));
-        return SQLFunctions.safeComplexArgFunc("FIND_IN_SET", argList, IntegerType.INSTANCE);
+    public static Expression fieldInSet(final Expression str, final Object strList) {
+        return _singleAndListFunc("FIND_IN_SET", str, StringType.INSTANCE, strList, IntegerType.INSTANCE);
     }
 
     /**
@@ -1354,7 +1350,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
      */
     public static Expression format(final Expression x, final Expression d) {
-        return _simpleTowArgFunc("FORMAT", x, d, StringType.INSTANCE);
+        return SQLFunctions.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
     /**
@@ -1366,7 +1362,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @param d      non-null
      * @param locale non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #format(Object, Object)
+     * @see #format(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
      */
     public static Expression format(final Expression x, final Expression d, final MySQLLocale locale) {
@@ -1388,11 +1384,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #toBase64(Object)
+     * @see #toBase64(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_from-base64">FROM_BASE64(str)</a>
      */
-    public static Expression fromBase64(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("FROM_BASE64", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression fromBase64(final Expression str) {
+        return SQLFunctions.oneArgFunc("FROM_BASE64", str, StringType.INSTANCE);
     }
 
     /**
@@ -1402,10 +1398,10 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #fromBase64(Object)
+     * @see #fromBase64(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_to-base64">TO_BASE64(str)</a>
      */
-    public static Expression toBase64(final @Nullable Object str) {
+    public static Expression toBase64(final Expression str) {
         return SQLFunctions.oneArgFunc("TO_BASE64", str, StringType.INSTANCE);
     }
 
@@ -1416,10 +1412,10 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      *
      * @param strOrNum nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #unhex(Object)
+     * @see #unhex(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_hex">HEX(str), HEX(N)</a>
      */
-    public static Expression hex(final @Nullable Object strOrNum) {
+    public static Expression hex(final Expression strOrNum) {
         return SQLFunctions.oneArgFunc("HEX", strOrNum, StringType.INSTANCE);
     }
 
@@ -1430,11 +1426,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #hex(Object)
+     * @see #hex(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_unhex">UNHEX(str)</a>
      */
-    public static Expression unhex(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("UNHEX", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression unhex(final Expression str) {
+        return SQLFunctions.oneArgFunc("UNHEX", str, StringType.INSTANCE);
     }
 
     /**
@@ -1449,18 +1445,18 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_insert">INSERT(str,pos,len,newstr)</a>
      */
-    public static Expression insert(final @Nullable Object str, final @Nullable Object pos
-            , final @Nullable Object len, final @Nullable Object newStr) {
+    public static Expression insert(final Expression str, final Expression pos
+            , final Expression len, final Expression newStr) {
         final List<Object> argList = new ArrayList<>(7);
 
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
+        argList.add(str);
         argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, pos));
+        argList.add(pos);
         argList.add(SQLFunctions.FuncWord.COMMA);
 
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
+        argList.add(len);
         argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, newStr));
+        argList.add(newStr);
         return SQLFunctions.safeComplexArgFunc("INSERT", argList, StringType.INSTANCE);
     }
 
@@ -1474,13 +1470,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_instr">INSTR(str,substr)</a>
      */
-    public static Expression instr(final @Nullable Object str, final @Nullable Object substr) {
-        final List<Object> argList = new ArrayList<>(3);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, substr));
-        return SQLFunctions.safeComplexArgFunc("INSTR", argList, IntegerType.INSTANCE);
+    public static Expression instr(final Expression str, final Expression substr) {
+        return SQLFunctions.twoArgFunc("INSTR", str, substr, IntegerType.INSTANCE);
     }
 
     /**
@@ -1492,8 +1483,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lower">LOWER(str)</a>
      */
-    public static Expression lower(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("LOWER", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression lower(final Expression str) {
+        return SQLFunctions.oneArgFunc("LOWER", str, StringType.INSTANCE);
     }
 
     /**
@@ -1503,11 +1494,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #lower(Object)
+     * @see #lower(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_upper">UPPER(str)</a>
      */
-    public static Expression upper(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("UPPER", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression upper(final Expression str) {
+        return SQLFunctions.oneArgFunc("UPPER", str, StringType.INSTANCE);
     }
 
     /**
@@ -1520,13 +1511,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_left">LEFT(str,len)</a>
      */
-    public static Expression left(final @Nullable Object str, final @Nullable Object len) {
-        final List<Object> argList = new ArrayList<>(3);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
-        return SQLFunctions.safeComplexArgFunc("LEFT", argList, IntegerType.INSTANCE);
+    public static Expression left(final Expression str, final Expression len) {
+        return SQLFunctions.twoArgFunc("LEFT", str, len, StringType.INSTANCE);
     }
 
     /**
@@ -1538,7 +1524,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
      */
-    public static Expression length(final @Nullable Object str) {
+    public static Expression length(final Expression str) {
         return SQLFunctions.oneArgFunc("LENGTH", str, IntegerType.INSTANCE);
     }
 
@@ -1551,7 +1537,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_load-file">LOAD_FILE(fileName)</a>
      */
-    public static Expression loadFile(final Object fileName) {
+    public static Expression loadFile(final Expression fileName) {
         return SQLFunctions.oneArgFunc("LOAD_FILE", fileName, StringType.INSTANCE);
     }
 
@@ -1563,17 +1549,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @param substr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #locate(Object, Object, Object)
-     * @see #position(Object, Object)
+     * @see #locate(Expression, Expression, Expression)
+     * @see #position(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str)</a>
      */
-    public static Expression locate(final @Nullable Object substr, final @Nullable Object str) {
-        final List<Object> argList = new ArrayList<>(3);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, substr));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, str));
-        return SQLFunctions.safeComplexArgFunc("LOCATE", argList, IntegerType.INSTANCE);
+    public static Expression locate(final Expression substr, final Expression str) {
+        return SQLFunctions.twoArgFunc("LOCATE", substr, str, IntegerType.INSTANCE);
     }
 
     /**
@@ -1585,20 +1566,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @param str    nullable parameter or {@link Expression}
      * @param pos    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #locate(Object, Object)
+     * @see #locate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str,pos)</a>
      */
-    public static Expression locate(final @Nullable Object substr, final @Nullable Object str
-            , final @Nullable Object pos) {
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, substr));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, pos));
-        return SQLFunctions.safeComplexArgFunc("LOCATE", argList, IntegerType.INSTANCE);
+    public static Expression locate(final Expression substr, final Expression str, final Expression pos) {
+        return SQLFunctions.threeArgFunc("LOCATE", substr, str, pos, IntegerType.INSTANCE);
     }
 
     /**
@@ -1610,12 +1582,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @param len    nullable parameter or {@link Expression}
      * @param padstr nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #rpad(Object, Object, Object)
+     * @see #rpad(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lpad">LPAD(str,len,padstr)</a>
      */
-    public static Expression lpad(final @Nullable Object str, final @Nullable Object len
-            , final @Nullable Object padstr) {
-        return _leftOrRightPad("LPAD", str, len, padstr);
+    public static Expression lpad(final Expression str, final Expression len, final Expression padstr) {
+        return SQLFunctions.threeArgFunc("LPAD", str, len, padstr, StringType.INSTANCE);
     }
 
     /**
@@ -1627,12 +1598,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @param len    nullable parameter or {@link Expression}
      * @param padstr nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #lpad(Object, Object, Object)
+     * @see #lpad(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_rpad">RPAD(str,len,padstr)</a>
      */
-    public static Expression rpad(final @Nullable Object str, final @Nullable Object len
-            , final @Nullable Object padstr) {
-        return _leftOrRightPad("RPAD", str, len, padstr);
+    public static Expression rpad(final Expression str, final Expression len, final Expression padstr) {
+        return SQLFunctions.threeArgFunc("RPAD", str, len, padstr, StringType.INSTANCE);
     }
 
 
@@ -1646,8 +1616,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see #rtrim(Object)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ltrim">LTRIM(str)</a>
      */
-    public static Expression ltrim(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("LTRIM", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression ltrim(final Expression str) {
+        return SQLFunctions.oneArgFunc("LTRIM", str, StringType.INSTANCE);
     }
 
     /**
@@ -1657,11 +1627,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #ltrim(Object)
+     * @see #ltrim(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_rtrim">RTRIM(str)</a>
      */
-    public static Expression rtrim(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("RTRIM", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression rtrim(final Expression str) {
+        return SQLFunctions.oneArgFunc("RTRIM", str, StringType.INSTANCE);
     }
 
     /**
@@ -1674,22 +1644,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">MAKE_SET(bits,str1,str2,...)</a>
      */
-    public static Expression makeSet(final Object bits, final Object strList) {
-        final String funcName = "MAKE_SET";
-        final List<Object> argList = new ArrayList<>(3);
-
-        if (bits instanceof Long || bits instanceof Integer) {
-            argList.add(SQLs._funcParam(LongType.INSTANCE, bits));
-        } else if (bits instanceof BitSet) {
-            argList.add(SQLs._funcParam(BitSetType.INSTANCE, bits));
-        } else if (bits instanceof ArmyExpression) {
-            argList.add(bits);
-        } else {
-            throw CriteriaUtils.funcArgError(funcName, bits);
-        }
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParamList(StringType.INSTANCE, strList));
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+    public static Expression makeSet(final Expression bits, final Object strList) {
+        return _singleAndListFunc("MAKE_SET", bits, StringType.INSTANCE, strList, StringType.INSTANCE);
     }
 
     /**
@@ -1702,12 +1658,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos)</a>
      */
-    public static Expression subString(final @Nullable Object str, final @Nullable Object pos) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, pos));
-        return SQLFunctions.safeComplexArgFunc("SUBSTRING", argList, StringType.INSTANCE);
+    public static Expression subString(final Expression str, final Expression pos) {
+        return SQLFunctions.twoArgFunc("SUBSTRING", str, pos, StringType.INSTANCE);
     }
 
     /**
@@ -1721,17 +1673,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos,len)</a>
      */
-    public static Expression subString(final @Nullable Object str, final @Nullable Object pos
-            , final @Nullable Object len) {
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, pos));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
-        return SQLFunctions.safeComplexArgFunc("SUBSTRING", argList, StringType.INSTANCE);
+    public static Expression subString(final Expression str, final Expression pos, final Expression len) {
+        return SQLFunctions.threeArgFunc("SUBSTRING", str, pos, len, StringType.INSTANCE);
     }
 
     /**
@@ -1743,7 +1686,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_oct">OCT(N)</a>
      */
-    public static Expression oct(final @Nullable Object n) {
+    public static Expression oct(final Expression n) {
         return SQLFunctions.oneArgFunc("OCT", n, StringType.INSTANCE);
     }
 
@@ -1756,8 +1699,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ord">ORD(str)</a>
      */
-    public static Expression ord(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("ORD", SQLs._funcParam(StringType.INSTANCE, str), IntegerType.INSTANCE);
+    public static Expression ord(final Expression str) {
+        return SQLFunctions.oneArgFunc("ORD", str, IntegerType.INSTANCE);
     }
 
     /**
@@ -1768,16 +1711,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @param substr nullable parameter or {@link Expression}
      * @param str    nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #locate(Object, Object)
+     * @see #locate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_position">POSITION(substr IN str)</a>
      */
-    public static Expression position(final @Nullable Object substr, final @Nullable Object str) {
-        final List<Object> argList = new ArrayList<>(3);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, substr));
-        argList.add(SQLFunctions.FuncWord.IN);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, str));
-        return SQLFunctions.safeComplexArgFunc("POSITION", argList, IntegerType.INSTANCE);
+    public static Expression position(final Expression substr, final Expression str) {
+        return SQLFunctions.twoArgFunc("POSITION", substr, str, IntegerType.INSTANCE);
     }
 
 
@@ -1790,8 +1728,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_quote">QUOTE(str)</a>
      */
-    public static Expression quote(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("QUOTE", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression quote(final Expression str) {
+        return SQLFunctions.oneArgFunc("QUOTE", str, StringType.INSTANCE);
     }
 
     /**
@@ -1804,13 +1742,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_repeat">REPEAT(str,count)</a>
      */
-    public static Expression repeat(final @Nullable Object str, final @Nullable Object count) {
-        final List<Object> argList = new ArrayList<>(3);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, count));
-        return SQLFunctions.safeComplexArgFunc("REPEAT", argList, StringType.INSTANCE);
+    public static Expression repeat(final Expression str, final Expression count) {
+        return SQLFunctions.twoArgFunc("REPEAT", str, count, StringType.INSTANCE);
     }
 
     /**
@@ -1824,17 +1757,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_replace">REPLACE(str,from_str,to_str)</a>
      */
-    public static Expression replace(final @Nullable Object str, final @Nullable Object fromStr
-            , final @Nullable Object toStr) {
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, fromStr));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, toStr));
-        return SQLFunctions.safeComplexArgFunc("REPLACE", argList, StringType.INSTANCE);
+    public static Expression replace(final Expression str, final Expression fromStr, final Expression toStr) {
+        return SQLFunctions.threeArgFunc("REPLACE", str, fromStr, toStr, StringType.INSTANCE);
     }
 
     /**
@@ -1846,8 +1770,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_reverse">REVERSE(str)</a>
      */
-    public static Expression reverse(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("REVERSE", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression reverse(final Expression str) {
+        return SQLFunctions.oneArgFunc("REVERSE", str, StringType.INSTANCE);
     }
 
     /**
@@ -1860,13 +1784,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_right">RIGHT(str,len)</a>
      */
-    public static Expression right(final @Nullable Object str, final @Nullable Object len) {
-        final List<Object> argList = new ArrayList<>(3);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, len));
-        return SQLFunctions.safeComplexArgFunc("RIGHT", argList, StringType.INSTANCE);
+    public static Expression right(final Expression str, final Expression len) {
+        return SQLFunctions.twoArgFunc("RIGHT", str, len, StringType.INSTANCE);
     }
 
     /**
@@ -1878,8 +1797,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_soundex">SOUNDEX(str)</a>
      */
-    public static Expression soundex(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("SOUNDEX", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression soundex(final Expression str) {
+        return SQLFunctions.oneArgFunc("SOUNDEX", str, StringType.INSTANCE);
     }
 
 
@@ -1892,8 +1811,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_space">SPACE(n)</a>
      */
-    public static Expression space(final @Nullable Object n) {
-        return SQLFunctions.oneArgFunc("SPACE", SQLs._funcParam(IntegerType.INSTANCE, n), StringType.INSTANCE);
+    public static Expression space(final Expression n) {
+        return SQLFunctions.oneArgFunc("SPACE", n, StringType.INSTANCE);
     }
 
     /**
@@ -1907,17 +1826,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring-index">SUBSTRING_INDEX(str,delim,count)</a>
      */
-    public static Expression substringIndex(final @Nullable Object str, final @Nullable Object delim
-            , final @Nullable Object count) {
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, delim));
-        argList.add(SQLFunctions.FuncWord.COMMA);
-
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, count));
-        return SQLFunctions.safeComplexArgFunc("SUBSTRING_INDEX", argList, StringType.INSTANCE);
+    public static Expression substringIndex(final Expression str, final Expression delim, final Expression count) {
+        return SQLFunctions.threeArgFunc("SUBSTRING_INDEX", str, delim, count, StringType.INSTANCE);
     }
 
     /**
@@ -1929,8 +1839,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(str)</a>
      */
-    public static Expression trim(final @Nullable Object str) {
-        return SQLFunctions.oneArgFunc("TRIM", SQLs._funcParam(StringType.INSTANCE, str), StringType.INSTANCE);
+    public static Expression trim(final Expression str) {
+        return SQLFunctions.oneArgFunc("TRIM", str, StringType.INSTANCE);
     }
 
     /**
@@ -1943,13 +1853,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
      */
-    public static Expression trim(final @Nullable Object remstr, final @Nullable Object str) {
-        final List<Object> argList = new ArrayList<>(3);
-
-        argList.add(SQLs._funcParam(StringType.INSTANCE, remstr));
-        argList.add(SQLFunctions.FuncWord.FROM);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-        return SQLFunctions.safeComplexArgFunc("TRIM", argList, StringType.INSTANCE);
+    public static Expression trim(final Expression remstr, final Expression str) {
+        return SQLFunctions.twoArgFunc("TRIM", remstr, str, StringType.INSTANCE);
     }
 
     /**
@@ -1968,8 +1873,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
      */
-    public static Expression trim(final MySQLWords position, final @Nullable Object remstr
-            , final @Nullable Object str) {
+    public static Expression trim(final MySQLWords position, final Expression remstr, final Expression str) {
         final String funcName = "TRIM";
         switch (position) {
             case BOTH:
@@ -1983,10 +1887,9 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         final List<Object> argList = new ArrayList<>(4);
 
         argList.add(position);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, remstr));
+        argList.add(remstr);
         argList.add(SQLFunctions.FuncWord.FROM);
-        argList.add(SQLs._funcParam(StringType.INSTANCE, str));
-
+        argList.add(str);
         return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
@@ -2000,7 +1903,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str)</a>
      */
-    public static Expression weightString(final @Nullable Object str) {
+    public static Expression weightString(final Expression str) {
         return SQLFunctions.oneArgFunc("WEIGHT_STRING", str, StringType.INSTANCE);
     }
 
@@ -2015,7 +1918,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
      */
-    public static Expression weightString(final @Nullable Object str, final MySQLCastType type, final Object n) {
+    public static Expression weightString(final Expression str, final MySQLCastType type, final Expression n) {
         final String funcName = "WEIGHT_STRING";
         switch (type) {
             case CHAR:
@@ -2026,12 +1929,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         }
         final List<Object> argList = new ArrayList<>(6);
 
-        argList.add(SQLs._funcParam(str));
+        argList.add(str);
         argList.add(SQLFunctions.FuncWord.AS);
         argList.add(type);
         argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
 
-        argList.add(SQLs._funcParam(IntegerType.INSTANCE, n));
+        argList.add(n);
         argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
 
         return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
@@ -2075,8 +1978,6 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_cast">CAST(expr AS type [ARRAY])</a>
      */
     public static Expression cast(final Expression exp, final MySQLCastType type) {
-        CriteriaContextStack.assertNonNull(exp);
-        CriteriaContextStack.assertNonNull(type);
 
         final MappingType returnType;
         final List<Object> argList = new ArrayList<>(3);
@@ -2221,7 +2122,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         CriteriaContextStack.assertNonNull(timestampValue);
         final String funcName = "CAST";
 
-        if (!(timezoneSpecifier instanceof LiteralExpression.SingleLiteral || timezoneSpecifier instanceof LiteralExpression.NamedSingleLiteral)) {
+        if (!(timezoneSpecifier instanceof LiteralExpression.SingleLiteral
+                || timezoneSpecifier instanceof LiteralExpression.NamedSingleLiteral)) {
             throw CriteriaUtils.funcArgError(funcName, timezoneSpecifier);
         }
 
@@ -2486,7 +2388,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_bit-count">BIT_COUNT(N)</a>
      */
-    public static Expression bitCount(final @Nullable Object n) {
+    public static Expression bitCount(final Expression n) {
         return SQLFunctions.oneArgFunc("BIT_COUNT", n, IntegerType.INSTANCE);
     }
 
