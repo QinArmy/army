@@ -1,12 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -195,10 +193,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_abs">ABS(X)</a>
      */
-    public static Expression abs(final @Nullable Object expr) {
-        final ArmyExpression expression;
-        expression = SQLs._funcParam(expr);
-        return SQLFunctions.oneArgOptionFunc("ABS", null, expression, null, expression.typeMeta());
+    public static Expression abs(final Expression expr) {
+        return SQLFunctions.oneArgFunc("ABS", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -208,8 +204,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_acos">ACOS(X)</a>
      */
-    public static Expression acos(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("ACOS", null, SQLs._funcParam(expr), null, DoubleType.INSTANCE);
+    public static Expression acos(final Expression expr) {
+        return SQLFunctions.oneArgFunc("ACOS", expr, DoubleType.INSTANCE);
     }
 
 
@@ -220,8 +216,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_asin">ASIN(X)</a>
      */
-    public static Expression asin(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("ASIN", null, SQLs._funcParam(expr), null, DoubleType.INSTANCE);
+    public static Expression asin(final Expression expr) {
+        return SQLFunctions.oneArgFunc("ASIN", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -231,8 +227,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan">ATAN(X)</a>
      */
-    public static Expression atan(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("ATAN", null, SQLs._funcParam(expr), null, DoubleType.INSTANCE);
+    public static Expression atan(final Expression expr) {
+        return SQLFunctions.oneArgFunc("ATAN", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -242,10 +238,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan2">ATAN(X,y)</a>
      */
-    public static Expression atan(final @Nullable Object expr1, final @Nullable Object expr2) {
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLs._funcParam(expr1), SQLs._funcParam(expr2));
-        return SQLFunctions.safeMultiArgOptionFunc("ATAN", null, argList, null, DoubleType.INSTANCE);
+    public static Expression atan(final Expression x, final Expression y) {
+        return SQLFunctions.twoArgFunc("ATAN", x, y, DoubleType.INSTANCE);
     }
 
     /**
@@ -255,8 +249,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ceil">CEIL(X)</a>
      */
-    public static Expression cell(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("CELL", null, SQLs._funcParam(expr), null, LongType.INSTANCE);
+    public static Expression cell(final Expression expr) {
+        return SQLFunctions.oneArgFunc("CEIL", expr, LongType.INSTANCE);
     }
 
 
@@ -267,19 +261,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_conv">CONV(X)</a>
      */
-    public static Expression conv(final @Nullable Object expr, final Object fromBase, final Object toBase) {
-        final ArmyExpression expression;
-        expression = SQLs._funcParam(expr);
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList(expression, SQLs._funcLiteral(fromBase), SQLs._funcLiteral(toBase));
-
-        final TypeMeta returnType;
-        if (expression instanceof SQLs.NullWord) {
-            returnType = _NullType.INSTANCE;
-        } else {
-            returnType = expression.typeMeta();
-        }
-        return SQLFunctions.safeMultiArgOptionFunc("CONV", null, argList, null, returnType);
+    public static Expression conv(final Expression expr, final Expression fromBase, final Expression toBase) {
+        return SQLFunctions.threeArgFunc("CONV", expr, fromBase, toBase, expr.typeMeta());
     }
 
     /**
@@ -289,8 +272,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cos">COS(X)</a>
      */
-    public static Expression cos(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("COS", null, SQLs._funcParam(expr), null, DoubleType.INSTANCE);
+    public static Expression cos(final Expression expr) {
+        return SQLFunctions.oneArgFunc("COS", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -300,8 +283,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cot">COT(X)</a>
      */
-    public static Expression cot(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("COT", null, SQLs._funcParam(expr), null, DoubleType.INSTANCE);
+    public static Expression cot(final Expression expr) {
+        return SQLFunctions.oneArgFunc("COT", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -311,8 +294,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_crc32">CRC32(expr)</a>
      */
-    public static Expression crc32(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("CRC32", null, SQLs._funcParam(expr), null, IntegerType.INSTANCE);
+    public static Expression crc32(final Expression expr) {
+        return SQLFunctions.oneArgFunc("CRC32", expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -322,8 +305,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_degrees">DEGREES(x)</a>
      */
-    public static Expression degrees(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("DEGREES", null, SQLs._funcParam(expr), null, DoubleType.INSTANCE);
+    public static Expression degrees(final Expression expr) {
+        return SQLFunctions.oneArgFunc("DEGREES", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -333,8 +316,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_exp">EXP(x)</a>
      */
-    public static Expression exp(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("EXP", null, SQLs._funcParam(expr), null, DoubleType.INSTANCE);
+    public static Expression exp(final Expression expr) {
+        return SQLFunctions.oneArgFunc("EXP", expr, DoubleType.INSTANCE);
     }
 
     /**
@@ -344,8 +327,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_floor">FLOOR(x)</a>
      */
-    public static Expression floor(final @Nullable Object expr) {
-        return SQLFunctions.oneArgOptionFunc("FLOOR", null, SQLs._funcParam(expr), null, LongType.INSTANCE);
+    public static Expression floor(final Expression expr) {
+        return SQLFunctions.oneArgFunc("FLOOR", expr, LongType.INSTANCE);
     }
 
     /**
@@ -355,10 +338,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_format">FORMAT(x,d)</a>
      */
-    public static Expression format(final @Nullable Object x, final Object d) {
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLs._funcParam(x), SQLs._funcLiteral(d));
-        return SQLFunctions.safeMultiArgOptionFunc("FORMAT", null, argList, null, StringType.INSTANCE);
+    public static Expression format(final Expression x, final Expression d) {
+        return SQLFunctions.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
     /**
@@ -368,8 +349,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_hex">HEX(n_or_s)</a>
      */
-    public static Expression hex(final @Nullable Object numOrStr) {
-        return SQLFunctions.oneArgOptionFunc("HEX", null, SQLs._funcParam(numOrStr), null, StringType.INSTANCE);
+    public static Expression hex(final Expression numOrStr) {
+        return SQLFunctions.oneArgFunc("HEX", numOrStr, StringType.INSTANCE);
     }
 
     /**
@@ -379,8 +360,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ln">LN(x)</a>
      */
-    public static Expression ln(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("LN", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression ln(final Expression x) {
+        return SQLFunctions.oneArgFunc("LN", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -390,8 +371,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
      */
-    public static Expression log(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("LOG", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression log(final Expression x) {
+        return SQLFunctions.oneArgFunc("LOG", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -401,10 +382,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
      */
-    public static Expression log(final @Nullable Object b, final @Nullable Object x) {
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLs._funcLiteral(b), SQLs._funcParam(x));
-        return SQLFunctions.safeMultiArgOptionFunc("LOG", null, argList, null, DoubleType.INSTANCE);
+    public static Expression log(final Expression b, final Expression x) {
+        return SQLFunctions.twoArgFunc("LOG", b, x, DoubleType.INSTANCE);
     }
 
     /**
@@ -414,8 +393,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log2">LOG2(x)</a>
      */
-    public static Expression log2(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("LOG2", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression log2(final Expression x) {
+        return SQLFunctions.oneArgFunc("LOG2", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -425,8 +404,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
      */
-    public static Expression log10(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("LOG10", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression log10(final Expression x) {
+        return SQLFunctions.oneArgFunc("LOG10", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -436,12 +415,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
      */
-    public static Expression mod(final @Nullable Object n, final @Nullable Object m) {
-        final ArmyExpression nExp;
-        nExp = SQLs._funcParam(n);
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList(nExp, SQLs._funcParam(m));
-        return SQLFunctions.safeMultiArgOptionFunc("MOD", null, argList, null, nExp.typeMeta());
+    public static Expression mod(final Expression n, final Expression m) {
+        return SQLFunctions.twoArgFunc("LOG10", n, m, n.typeMeta());
     }
 
     /**
@@ -460,12 +435,10 @@ abstract class Functions {
      * The {@link MappingType} of function return type: {@link DoubleType} .
      * </p>
      *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pi">PI()</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pow">POW(x,y)</a>
      */
-    public static Expression pow(final @Nullable Object x, final @Nullable Object y) {
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLs._funcParam(x), SQLs._funcParam(y));
-        return SQLFunctions.safeMultiArgOptionFunc("POW", null, argList, null, DoubleType.INSTANCE);
+    public static Expression pow(final Expression x, final Expression y) {
+        return SQLFunctions.twoArgFunc("POW", x, y, x.typeMeta());
     }
 
     /**
@@ -475,8 +448,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_radians">RADIANS(x)</a>
      */
-    public static Expression radians(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("RADIANS", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression radians(final Expression x) {
+        return SQLFunctions.oneArgFunc("RADIANS", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -497,8 +470,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
      */
-    public static Expression rand(final @Nullable Object n) {
-        return SQLFunctions.oneArgOptionFunc("RAND", null, SQLs._funcParam(n), null, DoubleType.INSTANCE);
+    public static Expression rand(final Expression n) {
+        return SQLFunctions.oneArgFunc("RAND", n, DoubleType.INSTANCE);
     }
 
     /**
@@ -508,8 +481,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x)</a>
      */
-    public static Expression round(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("ROUND", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression round(final Expression x) {
+        return SQLFunctions.oneArgFunc("ROUND", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -519,10 +492,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x,d)</a>
      */
-    public static Expression round(final @Nullable Object x, @Nullable final Object d) {
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLs._funcParam(x), SQLs._funcParam(d));
-        return SQLFunctions.safeMultiArgOptionFunc("ROUND", null, argList, null, DoubleType.INSTANCE);
+    public static Expression round(final Expression x, final Expression d) {
+        return SQLFunctions.twoArgFunc("ROUND", x, d, DoubleType.INSTANCE);
     }
 
     /**
@@ -532,8 +503,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sign">SIGN(x)</a>
      */
-    public static Expression sign(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("SIGN", null, SQLs._funcParam(x), null, IntegerType.INSTANCE);
+    public static Expression sign(final Expression x) {
+        return SQLFunctions.oneArgFunc("SIGN", x, IntegerType.INSTANCE);
     }
 
     /**
@@ -543,8 +514,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sin">SIN(x)</a>
      */
-    public static Expression sin(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("SIN", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression sin(final Expression x) {
+        return SQLFunctions.oneArgFunc("SIN", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -554,8 +525,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sqrt">SQRT(x)</a>
      */
-    public static Expression sqrt(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("SQRT", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression sqrt(final Expression x) {
+        return SQLFunctions.oneArgFunc("SQRT", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -565,8 +536,8 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_tan">TAN(x)</a>
      */
-    public static Expression tan(final @Nullable Object x) {
-        return SQLFunctions.oneArgOptionFunc("TAN", null, SQLs._funcParam(x), null, DoubleType.INSTANCE);
+    public static Expression tan(final Expression x) {
+        return SQLFunctions.oneArgFunc("TAN", x, DoubleType.INSTANCE);
     }
 
     /**
@@ -576,19 +547,12 @@ abstract class Functions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_truncate">TRUNCATE(x,d)</a>
      */
-    public static Expression truncate(final @Nullable Object x, @Nullable final Object d) {
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList(SQLs._funcParam(x), SQLs._funcParam(d));
-        return SQLFunctions.safeMultiArgOptionFunc("TRUNCATE", null, argList, null, DoubleType.INSTANCE);
+    public static Expression truncate(final Expression x, final Expression d) {
+        return SQLFunctions.twoArgFunc("TRUNCATE", x, d, DoubleType.INSTANCE);
     }
-
 
 
     /*################################## blow date time function method ##################################*/
-
-    public static Expression now() {
-        throw new UnsupportedOperationException();
-    }
 
 
     public static _CaseWhenClause caseFunc() {
@@ -996,6 +960,45 @@ abstract class Functions {
         return SQLFunctions.safeComplexArgFunc(name, argLit, returnType);
     }
 
+
+    /**
+     * @see #elt(Expression, Object)
+     * @see #field(Expression, Object)
+     */
+    static Expression _singleAndListFunc(final String name, final Expression expr
+            , final TypeMeta elementType, final Object exprList, final TypeMeta returnType) {
+        if (expr instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, expr);
+        }
+        final List<Object> argList;
+
+        if (exprList instanceof List) {
+            final List<?> actualExprList = (List<?>) exprList;
+            final int exprSize = actualExprList.size();
+            if (exprSize == 0) {
+                throw CriteriaUtils.funcArgError(name, exprList);
+            }
+            argList = new ArrayList<>(((1 + exprSize) << 1) - 1);
+            for (Object o : actualExprList) {
+                argList.add(SQLFunctions.FuncWord.COMMA);
+                if (o instanceof Expression) {
+                    argList.add(o);
+                } else {
+                    argList.add(SQLs.literal(elementType, o));
+                }
+            }
+        } else {
+            argList = new ArrayList<>(3);
+            argList.add(expr);
+            argList.add(SQLFunctions.FuncWord.COMMA);
+            if (exprList instanceof Expression) {
+                argList.add(exprList);
+            } else {
+                argList.add(SQLs.literal(elementType, exprList));
+            }
+        }
+        return SQLFunctions.safeComplexArgFunc(name, argList, returnType);
+    }
 
 
 

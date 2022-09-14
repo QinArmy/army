@@ -92,6 +92,44 @@ abstract class SQLFunctions {
         return new OneArgFunc(name, SQLs._funcParam(expr), returnType);
     }
 
+    static Expression twoArgFunc(final String name, final Expression one
+            , final Expression tow, TypeMeta returnType) {
+
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (tow instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, tow);
+        }
+
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(one);
+        argList.add(FuncWord.COMMA);
+        argList.add(tow);
+        return new ComplexArgFunc(name, argList, returnType);
+    }
+
+    static Expression threeArgFunc(final String name, final Expression one
+            , final Expression tow, final Expression three, TypeMeta returnType) {
+
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (tow instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, tow);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(one);
+        argList.add(FuncWord.COMMA);
+        argList.add(tow);
+        argList.add(FuncWord.COMMA);
+
+        argList.add(three);
+        return new ComplexArgFunc(name, argList, returnType);
+    }
+
+
     static Expression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
         return new OneArgFunc(name, (ArmyExpression) exp, returnType);
     }
@@ -772,7 +810,7 @@ abstract class SQLFunctions {
         private TypeMeta returnType;
 
         private ComplexArgFunc(String name, List<?> argList, TypeMeta returnType) {
-            assert argList.size() > 1;
+            assert argList.size() > 0;
             this.name = name;
             this.argList = argList;
             this.returnType = returnType;
