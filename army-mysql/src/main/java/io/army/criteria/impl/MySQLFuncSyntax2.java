@@ -13,7 +13,6 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -29,14 +28,14 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec avg(@Nullable Object expr) {
+    public static _AggregateOverSpec avg(Expression expr) {
         return MySQLFunctions.aggregateWindowFunc("AVG", null, expr, DoubleType.INSTANCE);
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_avg">AVG([DISTINCT] expr) [over_clause]</a>
      */
-    public static Expression avg(@Nullable SQLs.Modifier distinct, @Nullable Object exp) {
+    public static Expression avg(final @Nullable SQLs.Modifier distinct, final Expression exp) {
         final String funcName = "AVG";
         if (distinct != null && distinct != SQLs.DISTINCT) {
             throw CriteriaUtils.funcArgError(funcName, distinct);
@@ -55,53 +54,28 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     }
 
     /**
-     * @see #bitAnd(Object, MappingType)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec bitAnd(final @Nullable Object expr) {
-        return bitAnd(expr, _bitwiseFuncReturnType(expr));
-    }
-
-    /**
-     * @see #bitAnd(Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-and">BIT_AND(expr) [over_clause]</a>
-     */
-    public static _AggregateOverSpec bitAnd(@Nullable Object expr, MappingType mappingType) {
-        return MySQLFunctions.aggregateWindowFunc("BIT_AND", null, expr, mappingType);
+    public static _AggregateOverSpec bitAnd(final Expression expr) {
+        return MySQLFunctions.aggregateWindowFunc("BIT_AND", null, expr, _bitwiseFuncReturnType(expr));
     }
 
 
     /**
-     * @see #bitOr(Object, MappingType)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec bitOr(final @Nullable Object expr) {
-        return bitOr(expr, _bitwiseFuncReturnType(expr));
+    public static _AggregateOverSpec bitOr(final Expression expr) {
+        return MySQLFunctions.aggregateWindowFunc("BIT_OR", null, expr, _bitwiseFuncReturnType(expr));
     }
 
-    /**
-     * @see #bitOr(Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-or">BIT_OR(expr) [over_clause]</a>
-     */
-    public static _AggregateOverSpec bitOr(@Nullable Object expr, MappingType mappingType) {
-        return MySQLFunctions.aggregateWindowFunc("BIT_OR", null, expr, mappingType);
-    }
 
     /**
-     * @see #bitXor(Object, MappingType)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec bitXor(final @Nullable Object expr) {
-        return bitXor(expr, _bitwiseFuncReturnType(expr));
+    public static _AggregateOverSpec bitXor(final Expression expr) {
+        return MySQLFunctions.aggregateWindowFunc("BIT_XOR", null, expr, _bitwiseFuncReturnType(expr));
     }
 
-    /**
-     * @see #bitXor(Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_bit-xor">BIT_XOR(expr) [over_clause]</a>
-     */
-    public static _AggregateOverSpec bitXor(@Nullable Object expr, MappingType mappingType) {
-        return MySQLFunctions.aggregateWindowFunc("BIT_XOR", null, expr, mappingType);
-    }
 
     /**
      * @see #count(Expression)
@@ -115,15 +89,14 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see #count()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec count(@Nullable Expression expr) {
+    public static _AggregateOverSpec count(Expression expr) {
         return _count(null, expr);
     }
 
     /**
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateOverSpec count(SQLs.Modifier distinct, @Nullable Expression expr) {
-        Objects.requireNonNull(distinct);
+    public static _AggregateOverSpec count(SQLs.Modifier distinct, Expression expr) {
         return _count(distinct, expr);
     }
 
@@ -131,7 +104,6 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _AggregateOverSpec count(SQLs.Modifier distinct, List<Expression> list) {
-        Objects.requireNonNull(distinct);
         return _count(distinct, list);
     }
 
@@ -2955,35 +2927,27 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     }
 
     /**
-     * @see #bitAnd(Object)
-     * @see #bitOr(Object)
-     * @see #bitXor(Object)
+     * @see #bitAnd(Expression)
+     * @see #bitOr(Expression)
+     * @see #bitXor(Expression)
      */
-    private static MappingType _bitwiseFuncReturnType(final @Nullable Object expr) {
+    private static MappingType _bitwiseFuncReturnType(final Expression expr) {
         final MappingType returnType;
 
-        if (expr == null) {
+        final TypeMeta paramMeta = expr.typeMeta();
+        if (paramMeta instanceof TypeMeta.Delay) {
+            returnType = StringType.INSTANCE; //unknown,compatibility
+        } else if (!(paramMeta.mappingType() instanceof StringType)) {
             returnType = LongType.INSTANCE;
-        } else if (expr instanceof String) {
-            returnType = _StringUtils.isBinary((String) expr) ? StringType.INSTANCE : LongType.INSTANCE;
-        } else if (!(expr instanceof Expression)) {
-            returnType = LongType.INSTANCE;
+        } else if (!(expr instanceof SqlValueParam.SingleNonNamedValue)) {
+            returnType = StringType.INSTANCE; //unknown,compatibility
         } else {
-            final TypeMeta paramMeta = ((Expression) expr).typeMeta();
-            if (paramMeta instanceof TypeMeta.Delay) {
-                returnType = StringType.INSTANCE; //unknown,compatibility
-            } else if (!(paramMeta.mappingType() instanceof StringType)) {
-                returnType = LongType.INSTANCE;
-            } else if (!(expr instanceof SqlValueParam.SingleNonNamedValue)) {
-                returnType = StringType.INSTANCE; //unknown,compatibility
+            final Object value;
+            value = ((SqlValueParam.SingleNonNamedValue) expr).value();
+            if (value instanceof String && _StringUtils.isBinary((String) value)) {
+                returnType = StringType.INSTANCE;
             } else {
-                final Object value;
-                value = ((SqlValueParam.SingleNonNamedValue) expr).value();
-                if (value instanceof String && _StringUtils.isBinary((String) value)) {
-                    returnType = StringType.INSTANCE;
-                } else {
-                    returnType = LongType.INSTANCE;
-                }
+                returnType = LongType.INSTANCE;
             }
         }
         return returnType;

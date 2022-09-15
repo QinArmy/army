@@ -182,8 +182,6 @@ abstract class Functions {
     }
 
 
-
-
     /*################################## blow number function method ##################################*/
 
     /**

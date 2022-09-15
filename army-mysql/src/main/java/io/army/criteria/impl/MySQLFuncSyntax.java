@@ -1613,7 +1613,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      *
      * @param str nullable parameter or {@link Expression}
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see #rtrim(Object)
+     * @see #rtrim(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ltrim">LTRIM(str)</a>
      */
     public static Expression ltrim(final Expression str) {
@@ -2419,60 +2419,16 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * </p>
      *
      * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
-     * @see #ifFunc()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
      */
-    public static Expression ifFunc(final IPredicate expr1, final @Nullable Object expr2
-            , final @Nullable Object expr3) {
-        Objects.requireNonNull(expr1);
-        final ArmyExpression expression2, expression3;
-        expression2 = SQLs._funcParam(expr2);
-        expression3 = SQLs._funcParam(expr3);
-
-        if (expression2 instanceof NonOperationExpression && expression3 instanceof NonOperationExpression) {
-            String m = "couldn't bo both non-operate " + Expression.class.getName();
-            throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
-        }
-
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList((ArmyExpression) expr1, expression2, expression3);
+    public static Expression ifFunc(final IPredicate predicate, final Expression expr2, final Expression expr3) {
 
         final TypeMeta returnType;
-        returnType = Functions._returnType(expression2, expression3, MySQLFuncSyntax::ifFuncReturnType);
-
-        return SQLFunctions.safeMultiArgOptionFunc("IF", null, argList, null, returnType);
+        returnType = Functions._returnType((ArmyExpression) expr2, (ArmyExpression) expr3
+                , MySQLFuncSyntax::ifFuncReturnType);
+        return SQLFunctions.threeArgFunc("IF", predicate, expr2, expr3, returnType);
     }
 
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:
-     *      <ul>
-     *          <li>If the {@link MappingType} of expr2 and the {@link MappingType} of expr3 same,then return type is the {@link MappingType} of expr2</li>
-     *          <li>If expr2 or expr3 produce a string, the result is {@link StringType}</li>
-     *          <li>If expr2 and expr3 are both not numeric, the result is {@link StringType}</li>
-     *          <li>If expr2 or expr3 produce a floating-point value,the result is {@link DoubleType}</li>
-     *          <li>If expr2 or expr3 produce unsigned numeric:
-     *              <ul>
-     *                  <li>If expr2 or expr3 {@link MappingType} is {@link  UnsignedBigDecimalType},the result is {@link UnsignedBigDecimalType}</li>
-     *                  <li>If expr2 or expr3 {@link MappingType} is {@link  UnsignedBigIntegerType},the result is {@link UnsignedBigIntegerType}</li>
-     *                  <li>If expr2 or expr3 {@link MappingType} is {@link UnsignedLongType},the result is {@link UnsignedLongType}</li>
-     *                  <li>Otherwise the result is {@link IntegerType}</li>
-     *              </ul>
-     *          </li>
-     *          <li>If expr2 or expr3 {@link MappingType} is {@link  BigDecimalType},the result is {@link BigDecimalType}</li>
-     *          <li>If expr2 or expr3 {@link MappingType} is {@link  BigIntegerType},the result is {@link BigIntegerType}</li>
-     *          <li>If expr2 or expr3 {@link MappingType} is {@link LongType},the result is {@link LongType}</li>
-     *          <li>Otherwise the result is {@link IntegerType}</li>
-     *      </ul>
-     * </p>
-     *
-     * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
-     * @see #ifFunc(IPredicate, Object, Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_if">IF(expr1,expr2,expr3)</a>
-     */
-    public static _FuncConditionTowClause ifFunc() {
-        return SQLFunctions.conditionTwoFunc("IF", MySQLFuncSyntax::ifFuncReturnType);
-    }
 
     /**
      * <p>
@@ -2480,17 +2436,14 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * </p>
      *
      * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
-     * @see #ifFunc(IPredicate, Object, Object)
+     * @see #ifFunc(IPredicate, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
      */
-    public static Expression ifNull(@Nullable Object expr1, @Nullable Object expr2) {
-        final ArmyExpression expression1, expression2;
-        expression1 = SQLs._funcParam(expr1);
-        expression2 = SQLs._funcParam(expr2);
+    public static Expression ifNull(final Expression expr1, final Expression expr2) {
         final TypeMeta returnType;
-        returnType = Functions._returnType(expression1, expression2, MySQLFuncSyntax::ifNullReturnType);
-        return SQLFunctions.safeMultiArgOptionFunc("IFNULL", null, Arrays.asList(expression1, expression2), null
-                , returnType);
+        returnType = Functions._returnType((ArmyExpression) expr1, (ArmyExpression) expr2
+                , MySQLFuncSyntax::ifNullReturnType);
+        return SQLFunctions.twoArgFunc("IFNULL", expr1, expr2, returnType);
     }
 
     /**
@@ -2499,15 +2452,11 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * </p>
      *
      * @throws CriteriaException throw when expr2 and expr3 are both non-operate {@link Expression},eg:{@link SQLs#nullWord()}
-     * @see #ifFunc(IPredicate, Object, Object)
+     * @see #ifFunc(IPredicate, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
      */
-    public static Expression nullIf(@Nullable Object expr1, @Nullable Object expr2) {
-        final ArmyExpression expression1, expression2;
-        expression1 = SQLs._funcParam(expr1);
-        expression2 = SQLs._funcParam(expr2);
-        return SQLFunctions.safeMultiArgOptionFunc("NULLIF", null, Arrays.asList(expression1, expression2), null
-                , expression1.typeMeta());
+    public static Expression nullIf(final Expression expr1, final Expression expr2) {
+        return SQLFunctions.twoArgFunc("NULLIF", expr1, expr2, expr1.typeMeta());
     }
 
     /*-------------------below Miscellaneous Functions-------------------*/
@@ -2545,7 +2494,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_bin-to-uuid">BIN_TO_UUID(binary_uuid, swap_flag)</a>
      */
     public static Expression binToUuid(final Expression binaryUuid, final Expression swapFlag) {
-        return _simpleTowArgFunc("BIN_TO_UUID", binaryUuid, swapFlag, StringType.INSTANCE);
+        return SQLFunctions.twoArgFunc("BIN_TO_UUID", binaryUuid, swapFlag, StringType.INSTANCE);
     }
 
     /**
@@ -2570,8 +2519,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">GROUPING(expr [, expr] ...)</a>
      */
-    public static Expression grouping(final Expression expr) {
-        return SQLFunctions.oneArgFunc("GROUPING", expr, BooleanType.INSTANCE);
+    public static IPredicate grouping(final Expression expr) {
+        return SQLFunctions.oneArgFuncPredicate("GROUPING", expr);
     }
 
 
@@ -2584,12 +2533,12 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_default">GROUPING(expr [, expr] ...)</a>
      */
-    public static Expression grouping(final List<Expression> expList) {
+    public static IPredicate grouping(final List<Expression> expList) {
         final String funcName = "GROUPING";
         if (expList.size() == 0) {
             throw CriteriaUtils.funcArgError(funcName, expList);
         }
-        return SQLFunctions.safeComplexArgFunc(funcName, _createSimpleMultiArgList(expList), BooleanType.INSTANCE);
+        return SQLFunctions.complexArgPredicate(funcName, _createSimpleMultiArgList(expList));
     }
 
     /**
@@ -2654,8 +2603,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4">IS_IPV4(expr)</a>
      */
-    public static Expression isIpv4(final Expression expr) {
-        return SQLFunctions.oneArgFunc("IS_IPV4", expr, BooleanType.INSTANCE);
+    public static IPredicate isIpv4(final Expression expr) {
+        return SQLFunctions.oneArgFuncPredicate("IS_IPV4", expr);
     }
 
 
@@ -2668,8 +2617,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-compat">IS_IPV4_COMPAT(expr)</a>
      */
-    public static Expression isIpv4Compat(final Expression expr) {
-        return SQLFunctions.oneArgFunc("IS_IPV4_COMPAT", expr, BooleanType.INSTANCE);
+    public static IPredicate isIpv4Compat(final Expression expr) {
+        return SQLFunctions.oneArgFuncPredicate("IS_IPV4_COMPAT", expr);
     }
 
     /**
@@ -2681,8 +2630,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-mapped">IS_IPV4_MAPPED(expr)</a>
      */
-    public static Expression isIpv4Mapped(final Expression expr) {
-        return SQLFunctions.oneArgFunc("IS_IPV4_MAPPED", expr, BooleanType.INSTANCE);
+    public static IPredicate isIpv4Mapped(final Expression expr) {
+        return SQLFunctions.oneArgFuncPredicate("IS_IPV4_MAPPED", expr);
     }
 
     /**
@@ -2694,8 +2643,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv6">IS_IPV6(expr)</a>
      */
-    public static Expression isIpv6(final Expression expr) {
-        return SQLFunctions.oneArgFunc("IS_IPV6", expr, BooleanType.INSTANCE);
+    public static IPredicate isIpv6(final Expression expr) {
+        return SQLFunctions.oneArgFuncPredicate("IS_IPV6", expr);
     }
 
     /**
@@ -2707,8 +2656,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-uuid">IS_UUID(string_uuid)</a>
      */
-    public static Expression isUuid(final Expression stringUuid) {
-        return SQLFunctions.oneArgFunc("IS_UUID", stringUuid, BooleanType.INSTANCE);
+    public static IPredicate isUuid(final Expression stringUuid) {
+        return SQLFunctions.oneArgFuncPredicate("IS_UUID", stringUuid);
     }
 
     /**
@@ -3555,8 +3504,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
 
     /**
-     * @see #ifFunc(IPredicate, Object, Object)
-     * @see #ifFunc()
+     * @see #ifFunc(IPredicate, Expression, Expression)
      */
     private static MappingType ifFuncReturnType(final MappingType expr2Type, final MappingType expr3Type) {
         final MappingType returnType;
@@ -3594,7 +3542,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
 
     /**
-     * @see #ifNull(Object, Object)
+     * @see #ifNull(Expression, Expression)
      */
     private static MappingType ifNullReturnType(final MappingType expr1Type, final MappingType expr2Type) {
         final MappingType returnType;
@@ -3837,8 +3785,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
 
     /**
-     * @see #addDate(Object, Object)
-     * @see #subDate(Object, Object)
+     * @see #addDate(Expression, Expression)
+     * @see #subDate(Expression, Expression)
      */
     private static Expression _operateDateFunc(final String funcName, final @Nullable Object date
             , final @Nullable Object days) {
@@ -3850,7 +3798,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
     }
 
     /**
-     * @see #timestampAdd(MySQLUnit, Object, Object)
+     * @see #timestampAdd(MySQLUnit, Expression, Expression)
      */
     private static MappingType _timestampAdd(final MappingType type) {
         final MappingType returnType;
@@ -3868,8 +3816,8 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
 
     /**
-     * @see #lpad(Object, Object, Object)
-     * @see #rpad(Object, Object, Object)
+     * @see #lpad(Expression, Expression, Expression)
+     * @see #rpad(Expression, Expression, Expression)
      */
     private static Expression _leftOrRightPad(final String funcName, final @Nullable Object str
             , final @Nullable Object len, final @Nullable Object padstr) {

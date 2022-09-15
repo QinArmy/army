@@ -11,6 +11,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.meta.TypeMeta;
 import io.army.util._CollectionUtils;
+import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
@@ -129,6 +130,26 @@ abstract class SQLFunctions {
         return new ComplexArgFunc(name, argList, returnType);
     }
 
+    static IPredicate threeArgPredicateFunc(final String name, final Expression one
+            , final Expression tow, final Expression three) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (tow instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, tow);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        final List<Object> argList = new ArrayList<>(5);
+
+        argList.add(one);
+        argList.add(FuncWord.COMMA);
+        argList.add(tow);
+        argList.add(FuncWord.COMMA);
+
+        argList.add(three);
+        return new ComplexFuncPredicate(name, argList);
+    }
+
 
     static Expression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
         return new OneArgFunc(name, (ArmyExpression) exp, returnType);
@@ -148,6 +169,11 @@ abstract class SQLFunctions {
         }
         return new OneArgFuncPredicate(name, (ArmyExpression) argument);
     }
+
+    static IPredicate complexArgPredicate(final String name, List<?> argList) {
+        return new ComplexFuncPredicate(name, argList);
+    }
+
 
     static Expression safeComplexArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new ComplexArgFunc(name, argList, returnType);
@@ -406,7 +432,7 @@ abstract class SQLFunctions {
             final String existingWindowName = this.existingWindowName;
             final _Window anonymousWindow = this.anonymousWindow;
             if (existingWindowName != null && anonymousWindow != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw _Exceptions.castCriteriaApi();
             }
             //1. function
             final StringBuilder sqlBuilder;

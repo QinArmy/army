@@ -8,10 +8,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.BooleanType;
-import io.army.mapping.IntegerType;
-import io.army.mapping._MappingFactory;
-import io.army.mapping._NullType;
+import io.army.mapping.*;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.SingleParam;
@@ -957,6 +954,32 @@ public abstract class SQLs extends StandardSyntax {
         final C criteria;
         criteria = CriteriaContextStack.getTopCriteria();
         return UnaryPredicate.fromSubQuery(UnaryOperator.NOT_EXISTS, function.apply(criteria));
+    }
+
+
+    /*-------------------below Aggregate Function-------------------*/
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
+     */
+    public static Expression count() {
+        return SQLFunctions.oneArgFunc("COUNT", SQLs.star(), LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
+     */
+    public static Expression count(Expression expr) {
+        return SQLFunctions.oneArgFunc("COUNT", expr, LongType.INSTANCE);
     }
 
 
