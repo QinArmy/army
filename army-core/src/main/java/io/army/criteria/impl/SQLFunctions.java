@@ -260,18 +260,10 @@ abstract class SQLFunctions {
 
     }
 
-    /**
-     * <p>
-     * This method must be private
-     * </p>
-     */
-    private static void appendComplexFunc(final String name, final List<?> argumentList, final _SqlContext context) {
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(_Constant.SPACE)
-                .append(name)
-                .append(_Constant.LEFT_PAREN);
 
+    static void appendComplexArg(final List<?> argumentList, final _SqlContext context) {
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
         DialectParser parser = null;
         for (Object o : argumentList) {
             if (o instanceof Expression) {
@@ -293,10 +285,29 @@ abstract class SQLFunctions {
                 //no bug,never here
                 throw new IllegalStateException();
             }
+
         }//for
 
-        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+    }
 
+    static void complexArgToString(final List<?> argumentList, final StringBuilder builder) {
+        for (Object o : argumentList) {
+            if (o instanceof Expression || o instanceof Clause) {
+                builder.append(o);
+            } else if (o == FuncWord.LEFT_PAREN) {
+                builder.append(((SQLWords) o).render());
+            } else if (o instanceof SQLWords) {
+                builder.append(_Constant.SPACE)
+                        .append(((SQLWords) o).render());
+            } else if (o instanceof SQLIdentifier) { // sql identifier
+                builder.append(_Constant.SPACE)
+                        .append(((SQLIdentifier) o).identifier);
+            } else {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+
+        }//for
     }
 
 
@@ -355,22 +366,6 @@ abstract class SQLFunctions {
         }
 
     }//FromFirstLast
-
-    static abstract class ArgumentClause implements Clause, _SelfDescribed, CriteriaContextSpec {
-
-        final CriteriaContext criteriaContext;
-
-        ArgumentClause() {
-            this.criteriaContext = CriteriaContextStack.peek();
-        }
-
-        @Override
-        public String toString() {
-            return super.toString();
-        }
-
-
-    }//ArgumentClause
 
 
     static abstract class WindowFunc<OR> extends OperationExpression
@@ -590,6 +585,17 @@ abstract class SQLFunctions {
                     .append(_Constant.SPACE_RIGHT_PAREN);
         }
 
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN)
+                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+
     }//NoArgFuncPredicate
 
 
@@ -619,6 +625,18 @@ abstract class SQLFunctions {
         }
 
 
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN)
+                    .append(this.argument)
+                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+
     }//OneArgFuncPredicate
 
 
@@ -635,7 +653,29 @@ abstract class SQLFunctions {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            SQLFunctions.appendComplexFunc(this.name, this.argumentList, context);
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(name)
+                    .append(_Constant.LEFT_PAREN);
+
+            SQLFunctions.appendComplexArg(this.argumentList, context);
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder builder;
+            builder = new StringBuilder()
+                    .append(_Constant.SPACE)
+                    .append(name)
+                    .append(_Constant.LEFT_PAREN);
+
+            SQLFunctions.complexArgToString(this.argumentList, builder);
+            return builder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
         }
 
 
@@ -854,7 +894,16 @@ abstract class SQLFunctions {
 
         @Override
         public final void appendSql(final _SqlContext context) {
-            SQLFunctions.appendComplexFunc(this.name, this.argList, context);
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(name)
+                    .append(_Constant.LEFT_PAREN);
+
+            SQLFunctions.appendComplexArg(this.argList, context);
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
         }
 
 

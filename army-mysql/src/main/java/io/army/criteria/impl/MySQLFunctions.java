@@ -49,7 +49,7 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     static MySQLFuncSyntax._OverSpec oneArgWindowFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, TypeMeta returnType) {
-        return new OneArgWindowFunc(name, option, SQLs._funcParam(expr), returnType);
+        return new OneArgWindowFunc_(name, option, SQLs._funcParam(expr), returnType);
     }
 
     static MySQLFuncSyntax._OverSpec safeMultiArgWindowFunc(String name, @Nullable SQLWords option
@@ -62,10 +62,41 @@ abstract class MySQLFunctions extends SQLFunctions {
         return new FromFirstLastMultiArgWindowFunc(name, option, argList, returnType);
     }
 
+    @Deprecated
     static MySQLFuncSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable SQLWords option
             , @Nullable Object exp, TypeMeta returnType) {
         return new OneArgAggregateWindowFunc(name, option, SQLs._funcParam(exp), returnType);
     }
+
+    static MySQLFuncSyntax._AggregateOverSpec oneArgAggregateWindow(String name, Expression arg, TypeMeta returnType) {
+        if (arg instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, arg);
+        }
+        return new OneArgAggregateWindowFunc(name, (ArmyExpression) arg, returnType);
+    }
+
+    static MySQLFuncSyntax._AggregateOverSpec twoArgAggregateWindow(String name, Expression one, Expression two
+            , TypeMeta returnType) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(one);
+        argList.add(FuncWord.COMMA);
+        argList.add(two);
+        return new ComplexArgAggregateWindowFunc(name, argList, returnType);
+    }
+
+    static MySQLFuncSyntax._AggregateOverSpec multiArgAggregateWindow(String name, Expression arg, TypeMeta returnType) {
+        return new OneArgAggregateWindowFunc(name, (ArmyExpression) arg, returnType);
+    }
+
+    static MySQLFuncSyntax._AggregateOverSpec complexAggregateWindow(String name, List<?> argList, TypeMeta returnType) {
+        return new ComplexArgAggregateWindowFunc(name, argList, returnType);
+    }
+
 
     static MySQLFuncSyntax._AggregateOverSpec safeMultiArgAggregateWindowFunc(String name, @Nullable SQLWords option
             , List<ArmyExpression> argList, @Nullable Clause clause, TypeMeta returnType) {
@@ -96,8 +127,23 @@ abstract class MySQLFunctions extends SQLFunctions {
         return new MultiArgAggregateWindowFunc(name, option, expList, clause, returnType);
     }
 
-    static GroupConcatClause groupConcatClause() {
-        return new GroupConcatClause();
+    static GroupConcatClause groupConcatClause(final boolean distinct, final Object exprOrList) {
+        final List<ArmyExpression> list;
+        if (exprOrList instanceof Expression) {
+            list = Collections.singletonList((ArmyExpression) exprOrList);
+        } else if (exprOrList instanceof List) {
+            final List<?> argList = (List<?>) exprOrList;
+            list = new ArrayList<>(((argList.size() << 1) - 1));
+            for (Object arg : argList) {
+                if (!(arg instanceof Expression)) {
+                    throw CriteriaUtils.funcArgError("GROUP_CONCAT", exprOrList);
+                }
+                list.add((ArmyExpression) arg);
+            }
+        } else {
+            throw CriteriaUtils.funcArgError("GROUP_CONCAT", exprOrList);
+        }
+        return new GroupConcatClause(distinct, list);
     }
 
 
@@ -197,11 +243,34 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     private static class OneArgWindowFunc extends MySQLWindowFunc {
 
+        private final ArmyExpression argument;
+
+        private OneArgWindowFunc(String name, ArmyExpression argument, TypeMeta returnType) {
+            super(name, returnType);
+            this.argument = argument;
+        }
+
+        @Override
+        final void appendArguments(final _SqlContext context) {
+            this.argument.appendSql(context);
+        }
+
+        @Override
+        final void argumentToString(final StringBuilder builder) {
+            builder.append(this.argument);
+        }
+
+
+    }//OneArgWindowFunc
+
+
+    private static class OneArgWindowFunc_ extends MySQLWindowFunc {
+
         private final SQLWords option;
 
         private final ArmyExpression argument;
 
-        private OneArgWindowFunc(String name, @Nullable SQLWords option
+        private OneArgWindowFunc_(String name, @Nullable SQLWords option
                 , ArmyExpression argument, TypeMeta returnType) {
             super(name, returnType);
             this.option = option;
@@ -232,6 +301,38 @@ abstract class MySQLFunctions extends SQLFunctions {
 
 
     }//OneArgAggregateWindowFunc
+
+    private static class ComplexArgWindowFunc extends MySQLWindowFunc {
+
+        private final List<?> argList;
+
+        private ComplexArgWindowFunc(String name, List<?> argList, TypeMeta returnType) {
+            super(name, returnType);
+            this.argList = argList;
+        }
+
+        @Override
+        final void appendArguments(final _SqlContext context) {
+            SQLFunctions.appendComplexArg(this.argList, context);
+        }
+
+        @Override
+        final void argumentToString(final StringBuilder builder) {
+            SQLFunctions.complexArgToString(this.argList, builder);
+        }
+
+
+    }//ComplexArgWindowFunc
+
+    private static final class ComplexArgAggregateWindowFunc extends ComplexArgWindowFunc
+            implements MySQLFuncSyntax._AggregateOverSpec {
+
+        private ComplexArgAggregateWindowFunc(String name, List<?> argList, TypeMeta returnType) {
+            super(name, argList, returnType);
+        }
+
+
+    }//ComplexArgAggregateWindowFunc
 
     private static class MultiArgWindowFunc extends MySQLWindowFunc {
 
@@ -344,9 +445,8 @@ abstract class MySQLFunctions extends SQLFunctions {
     private static final class OneArgAggregateWindowFunc extends OneArgWindowFunc
             implements MySQLFuncSyntax._AggregateOverSpec {
 
-        private OneArgAggregateWindowFunc(String name, @Nullable SQLWords option
-                , ArmyExpression argument, TypeMeta returnType) {
-            super(name, option, argument, returnType);
+        private OneArgAggregateWindowFunc(String name, ArmyExpression argument, TypeMeta returnType) {
+            super(name, argument, returnType);
         }
 
     }//OneArgAggregateWindowFunc
@@ -364,23 +464,29 @@ abstract class MySQLFunctions extends SQLFunctions {
     }//MultiArgAggregateWindowFunc
 
 
-    static final class GroupConcatClause extends SQLFunctions.ArgumentClause
+    static final class GroupConcatClause extends OperationExpression
             implements MySQLClause._GroupConcatOrderBySpec {
 
         private final CriteriaContext criteriaContext;
+
+        private final boolean distinct;
+
+        private final List<ArmyExpression> exprList;
+
         private List<ArmySortItem> orderByList;
 
         private String stringValue;
 
-        private GroupConcatClause() {
+        private GroupConcatClause(boolean distinct, List<ArmyExpression> exprList) {
             this.criteriaContext = CriteriaContextStack.peek();
+            this.distinct = distinct;
+            this.exprList = exprList;
         }
 
         @Override
-        public CriteriaContext getContext() {
-            return this.criteriaContext;
+        public TypeMeta typeMeta() {
+            return StringType.INSTANCE;
         }
-
 
         @Override
         public MySQLClause._GroupConcatSeparatorClause orderBy(SortItem sortItem) {
@@ -461,12 +567,26 @@ abstract class MySQLFunctions extends SQLFunctions {
         @Override
         public void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
-            final List<ArmySortItem> orderByList = this.orderByList;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" GROUP_CONCAT(");
 
-            if (orderByList != null && orderByList.size() > 0) {
+            if (this.distinct) {
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(SQLs.DISTINCT.render());
+            }
+            final List<ArmyExpression> exprList = this.exprList;
+            final int exprSize = exprList.size();
+            for (int i = 0; i < exprSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                exprList.get(i).appendSql(context);
+            }
+
+            final List<ArmySortItem> orderByList = this.orderByList;
+            final int itemSize;
+            if (orderByList != null && (itemSize = orderByList.size()) > 0) {
                 sqlBuilder.append(_Constant.SPACE_ORDER_BY);
-                final int itemSize = orderByList.size();
                 for (int i = 0; i < itemSize; i++) {
                     if (i > 0) {
                         sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -480,6 +600,7 @@ abstract class MySQLFunctions extends SQLFunctions {
                 sqlBuilder.append(_Constant.SPACE_SEPARATOR);
                 context.appendLiteral(StringType.INSTANCE, strValue);
             }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
         @Override

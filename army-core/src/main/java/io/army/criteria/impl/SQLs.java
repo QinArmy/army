@@ -293,6 +293,7 @@ public abstract class SQLs extends StandardSyntax {
      * @see #_funcLiteral(Object)
      * @see #_funcParamList(TypeMeta, Object)
      */
+    @Deprecated
     static ArmyExpression _funcParam(final @Nullable Object value) {
         final ArmyExpression expression;
         if (value == null) {
