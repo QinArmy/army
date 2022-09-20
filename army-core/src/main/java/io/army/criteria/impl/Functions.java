@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -558,6 +559,73 @@ abstract class Functions {
     }
 
 
+    /*-------------------below custom function -------------------*/
+
+    private static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
+
+    public static Expression customFunc(String name, TypeMeta returnType) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw customFuncNameError(name);
+        }
+        return SQLFunctions.noArgFunc(name, returnType);
+    }
+
+    public static IPredicate customFunc(String name) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw customFuncNameError(name);
+        }
+        return SQLFunctions.noArgFuncPredicate(name);
+    }
+
+    public static Expression customFunc(String name, Expression expr, TypeMeta returnType) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw customFuncNameError(name);
+        }
+        return SQLFunctions.oneArgFunc(name, expr, returnType);
+    }
+
+    public static IPredicate customFunc(String name, Expression expr) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw customFuncNameError(name);
+        }
+        return SQLFunctions.oneArgFuncPredicate(name, expr);
+    }
+
+    public static Expression customFunc(String name, Expression expr1, Expression expr2, TypeMeta returnType) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw customFuncNameError(name);
+        }
+        return SQLFunctions.twoArgFunc(name, expr1, expr2, returnType);
+    }
+
+    public static IPredicate customFunc(String name, Expression expr1, Expression expr2) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw customFuncNameError(name);
+        }
+        return SQLFunctions.twoArgPredicateFunc(name, expr1, expr2);
+    }
+
+    public static Expression customFunc(String name, List<Expression> expList, TypeMeta returnType) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw customFuncNameError(name);
+        }
+        return SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+    }
+
+    public static IPredicate customFunc(String name, List<Expression> expList) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw customFuncNameError(name);
+        }
+        return SQLFunctions.complexArgPredicate(name, _createSimpleMultiArgList(expList));
+    }
+
+
+    private static CriteriaException customFuncNameError(String name) {
+        String m = String.format("custom function name[%s] error.", name);
+        return CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+    }
+
+
     /**
      * package class
      */
@@ -888,7 +956,7 @@ abstract class Functions {
         argList.add(g1);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(g2);
-        return SQLFunctions.safeComplexArgFunc(name, argList, returnType);
+        return SQLFunctions.complexArgFunc(name, argList, returnType);
     }
 
     static Expression _simpleThreeArgFunc(final String name, final Expression e1
@@ -910,7 +978,7 @@ abstract class Functions {
         argList.add(SQLFunctions.FuncWord.COMMA);
 
         argList.add(e3);
-        return SQLFunctions.safeComplexArgFunc(name, argList, returnType);
+        return SQLFunctions.complexArgFunc(name, argList, returnType);
     }
 
     static Expression _simpleMaxThreeArgFunc(final String name, final List<Expression> expList
@@ -921,8 +989,10 @@ abstract class Functions {
                 func = SQLFunctions.oneArgFunc(name, expList.get(0), returnType);
                 break;
             case 2:
+                func = SQLFunctions.twoArgFunc(name, expList.get(0), expList.get(1), returnType);
+                break;
             case 3:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+                func = SQLFunctions.threeArgFunc(name, expList.get(0), expList.get(1), expList.get(2), returnType);
                 break;
             default:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -938,7 +1008,7 @@ abstract class Functions {
                 func = SQLFunctions.oneArgFunc(name, expList.get(0), returnType);
                 break;
             case 2:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
                 break;
             default:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -955,7 +1025,7 @@ abstract class Functions {
         argLit.add(single);
         argLit.add(SQLFunctions.FuncWord.COMMA);
         argLit.add(multi);
-        return SQLFunctions.safeComplexArgFunc(name, argLit, returnType);
+        return SQLFunctions.complexArgFunc(name, argLit, returnType);
     }
 
 
@@ -991,7 +1061,7 @@ abstract class Functions {
                 argList.add(SQLs.literal(elementType, exprList));
             }
         }
-        return SQLFunctions.safeComplexArgFunc(name, argList, returnType);
+        return SQLFunctions.complexArgFunc(name, argList, returnType);
     }
 
 

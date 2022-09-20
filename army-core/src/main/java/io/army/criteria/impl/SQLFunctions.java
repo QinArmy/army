@@ -94,60 +94,22 @@ abstract class SQLFunctions {
     }
 
     static Expression twoArgFunc(final String name, final Expression one
-            , final Expression tow, TypeMeta returnType) {
-
-        if (one instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (tow instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, tow);
-        }
-
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(one);
-        argList.add(FuncWord.COMMA);
-        argList.add(tow);
-        return new ComplexArgFunc(name, argList, returnType);
+            , final Expression two, TypeMeta returnType) {
+        return new ComplexArgFunc(name, twoArgList(name, one, two), returnType);
     }
 
     static Expression threeArgFunc(final String name, final Expression one
-            , final Expression tow, final Expression three, TypeMeta returnType) {
+            , final Expression two, final Expression three, TypeMeta returnType) {
+        return new ComplexArgFunc(name, threeArgList(name, one, two, three), returnType);
+    }
 
-        if (one instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (tow instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, tow);
-        } else if (three instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, three);
-        }
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(one);
-        argList.add(FuncWord.COMMA);
-        argList.add(tow);
-        argList.add(FuncWord.COMMA);
-
-        argList.add(three);
-        return new ComplexArgFunc(name, argList, returnType);
+    static IPredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
+        return new ComplexFuncPredicate(name, twoArgList(name, one, two));
     }
 
     static IPredicate threeArgPredicateFunc(final String name, final Expression one
-            , final Expression tow, final Expression three) {
-        if (one instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (tow instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, tow);
-        } else if (three instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, three);
-        }
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(one);
-        argList.add(FuncWord.COMMA);
-        argList.add(tow);
-        argList.add(FuncWord.COMMA);
-
-        argList.add(three);
-        return new ComplexFuncPredicate(name, argList);
+            , final Expression two, final Expression three) {
+        return new ComplexFuncPredicate(name, threeArgList(name, one, two, three));
     }
 
 
@@ -175,7 +137,7 @@ abstract class SQLFunctions {
     }
 
 
-    static Expression safeComplexArgFunc(String name, List<?> argList, TypeMeta returnType) {
+    static Expression complexArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new ComplexArgFunc(name, argList, returnType);
     }
 
@@ -308,6 +270,38 @@ abstract class SQLFunctions {
             }
 
         }//for
+    }
+
+    static List<Object> twoArgList(final String name, Expression one, Expression two) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        final List<Object> argList = new ArrayList<>(3);
+        argList.add(one);
+        argList.add(FuncWord.COMMA);
+        argList.add(two);
+        return argList;
+    }
+
+    static List<Object> threeArgList(final String name, Expression one, Expression two, Expression three) {
+        if (one instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        final List<Object> argList = new ArrayList<>(3);
+
+        argList.add(one);
+        argList.add(FuncWord.COMMA);
+        argList.add(two);
+        argList.add(FuncWord.COMMA);
+
+        argList.add(three);
+        return argList;
     }
 
 

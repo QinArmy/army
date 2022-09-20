@@ -399,7 +399,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(unit);
         argList.add(SQLFunctions.FuncWord.FROM);
         argList.add(date);
-        return SQLFunctions.safeComplexArgFunc("EXTRACT", argList, returnType);
+        return SQLFunctions.complexArgFunc("EXTRACT", argList, returnType);
     }
 
 
@@ -476,7 +476,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         } else {
             argList.add(format);
         }
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
     /**
@@ -645,7 +645,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLFunctions.FuncWord.COMMA);
 
         argList.add(datetimeExpression);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, returnType);
+        return SQLFunctions.complexArgFunc(funcName, argList, returnType);
     }
 
     /**
@@ -702,7 +702,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLFunctions.FuncWord.COMMA);
 
         argList.add(SQLs._funcParam(datetimeExpr2));
-        return SQLFunctions.safeComplexArgFunc("TIMESTAMPDIFF", argList, returnType);
+        return SQLFunctions.complexArgFunc("TIMESTAMPDIFF", argList, returnType);
     }
 
     /**
@@ -1141,7 +1141,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
     public static Expression charFunc(final Expression n) {
-        return SQLFunctions.safeComplexArgFunc("CHAR", Collections.singletonList(n), StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc("CHAR", Collections.singletonList(n), StringType.INSTANCE);
     }
 
     /**
@@ -1167,7 +1167,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         } else {
             throw CriteriaUtils.funcArgError(funcName, charsetName);
         }
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
     /**
@@ -1215,7 +1215,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(separator);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(str);
-        return SQLFunctions.safeComplexArgFunc(name, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
     /**
@@ -1274,7 +1274,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(off);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(separator);
-        return SQLFunctions.safeComplexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
     }
 
     /**
@@ -1305,7 +1305,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLFunctions.FuncWord.COMMA);
 
         argList.add(numberOfBits);
-        return SQLFunctions.safeComplexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc("EXPORT_SET", argList, StringType.INSTANCE);
     }
 
 
@@ -1374,7 +1374,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLFunctions.FuncWord.COMMA);
 
         argList.add(locale);
-        return SQLFunctions.safeComplexArgFunc("FORMAT", argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc("FORMAT", argList, StringType.INSTANCE);
     }
 
     /**
@@ -1457,7 +1457,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(len);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(newStr);
-        return SQLFunctions.safeComplexArgFunc("INSERT", argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc("INSERT", argList, StringType.INSTANCE);
     }
 
     /**
@@ -1890,7 +1890,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(remstr);
         argList.add(SQLFunctions.FuncWord.FROM);
         argList.add(str);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
 
@@ -1937,7 +1937,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(n);
         argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
 
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
     /*-------------------below Cast Functions and Operators -------------------*/
@@ -1985,7 +1985,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(exp);
         argList.add(SQLFunctions.FuncWord.AS);
         argList.add(type);
-        return SQLFunctions.safeComplexArgFunc("CAST", argList, _castReturnType(type));
+        return SQLFunctions.complexArgFunc("CAST", argList, _castReturnType(type));
     }
 
     /**
@@ -2063,7 +2063,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
         argList.add(n);
         argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, _castReturnType(type));
+        return SQLFunctions.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
     /**
@@ -2106,7 +2106,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(d);
         argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
 
     /**
@@ -2135,7 +2135,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLFunctions.FuncWord.AS);
 
         argList.add(MySQLCastType.DATETIME);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
     }
 
     /**
@@ -2170,7 +2170,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLFunctions.FuncWord.LEFT_PAREN);
         argList.add(precision);
         argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, LocalDateTimeType.INSTANCE);
     }
 
 
@@ -2217,7 +2217,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(exp);
         argList.add(SQLFunctions.FuncWord.USING);
         argList.add(transcodingName);
-        return SQLFunctions.safeComplexArgFunc("CONVERT", argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc("CONVERT", argList, StringType.INSTANCE);
     }
 
     /**
@@ -2263,7 +2263,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(exp);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(type);
-        return SQLFunctions.safeComplexArgFunc("CONVERT", argList, _castReturnType(type));
+        return SQLFunctions.complexArgFunc("CONVERT", argList, _castReturnType(type));
     }
 
 
@@ -2329,7 +2329,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
         argList.add(n);
         argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, _castReturnType(type));
+        return SQLFunctions.complexArgFunc(funcName, argList, _castReturnType(type));
     }
 
     /**
@@ -2372,7 +2372,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(d);
         argList.add(SQLFunctions.FuncWord.RIGHT_PAREN);
 
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, BigDecimalType.INSTANCE);
     }
 
 
@@ -2679,7 +2679,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             case 2:
             case 3:
             case 4:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
                 break;
             default:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -2744,7 +2744,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             case 2:
             case 3:
             case 4:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), IntegerType.INSTANCE);
                 break;
             default:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -2848,7 +2848,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         } else {
             returnType = _returnType((ArmyExpression) expList.get(0), JsonListType::from);
         }
-        return SQLFunctions.safeComplexArgFunc("JSON_ARRAY", _createSimpleMultiArgList(expList), returnType);
+        return SQLFunctions.complexArgFunc("JSON_ARRAY", _createSimpleMultiArgList(expList), returnType);
     }
 
     /**
@@ -2908,7 +2908,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             valueExp = (ArmyExpression) expList.get(1);
             final TypeMeta returnType;
             returnType = _returnType(keyExp, valueExp, JsonMapType::from);
-            func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+            func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
         }
         return func;
     }
@@ -2984,7 +2984,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         orgList.add(SQLFunctions.FuncWord.COMMA);
 
         orgList.add(paths);
-        return SQLFunctions.safeComplexArgFunc(name, orgList, BooleanType.INSTANCE);
+        return SQLFunctions.complexArgFunc(name, orgList, BooleanType.INSTANCE);
     }
 
     /**
@@ -3017,7 +3017,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             argList.add(SQLFunctions.FuncWord.COMMA);
             argList.add(path);
         }
-        return SQLFunctions.safeComplexArgFunc(name, argList, BooleanType.INSTANCE);
+        return SQLFunctions.complexArgFunc(name, argList, BooleanType.INSTANCE);
     }
 
     /**
@@ -3040,7 +3040,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(jsonDoc);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(paths);
-        return SQLFunctions.safeComplexArgFunc(name, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
     /**
@@ -3069,7 +3069,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             argList.add(SQLFunctions.FuncWord.COMMA);
             argList.add(path);
         }
-        return SQLFunctions.safeComplexArgFunc(name, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
     /**
@@ -3164,7 +3164,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             argList.add(SQLFunctions.FuncWord.COMMA);
             argList.add(exp);
         }
-        return SQLFunctions.safeComplexArgFunc(name, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(name, argList, StringType.INSTANCE);
     }
 
 
@@ -3407,7 +3407,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             argList.add(SQLFunctions.FuncWord.COMMA);
             argList.add(path);
         }
-        return SQLFunctions.safeComplexArgFunc(name, argList, jsonDoc.typeMeta());
+        return SQLFunctions.complexArgFunc(name, argList, jsonDoc.typeMeta());
     }
 
 
@@ -3617,7 +3617,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(expr);
 
         argList.add(unit);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, returnType);
+        return SQLFunctions.complexArgFunc(funcName, argList, returnType);
     }
 
 
@@ -3774,13 +3774,13 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
 
         final List<Object> argList = new ArrayList<>(5);
 
-        argList.add(SQLs._funcParam(date));
+        argList.add(date);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(SQLFunctions.FuncWord.INTERVAL);
-        argList.add(SQLs._funcParam(expr));
+        argList.add(expr);
 
         argList.add(unit);
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, returnType);
+        return SQLFunctions.complexArgFunc(funcName, argList, returnType);
     }
 
 
@@ -3794,7 +3794,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLs._funcParam(date));
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(SQLs._funcParam(days));
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, LocalDateType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, LocalDateType.INSTANCE);
     }
 
     /**
@@ -3829,7 +3829,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
         argList.add(SQLFunctions.FuncWord.COMMA);
 
         argList.add(SQLs._funcParam(StringType.INSTANCE, padstr));
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
 
@@ -3915,7 +3915,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             argList.add(SQLFunctions.FuncWord.COMMA);
             argList.add(exp);
         }
-        return SQLFunctions.safeComplexArgFunc(name, argList, jsonDoc.typeMeta());
+        return SQLFunctions.complexArgFunc(name, argList, jsonDoc.typeMeta());
     }
 
 
@@ -3936,7 +3936,7 @@ abstract class MySQLFuncSyntax extends MySQLSyntax {
             argList.add(jsonDoc);
             index++;
         }
-        return SQLFunctions.safeComplexArgFunc(name, argList, jsonDocList.get(0).typeMeta());
+        return SQLFunctions.complexArgFunc(name, argList, jsonDocList.get(0).typeMeta());
     }
 
 

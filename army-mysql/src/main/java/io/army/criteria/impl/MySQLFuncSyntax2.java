@@ -12,7 +12,6 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
@@ -44,7 +43,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             argList.add(distinct);
             argList.add(SQLFunctions.FuncWord.COMMA);
             argList.add(exp);
-            func = SQLFunctions.safeComplexArgFunc(funcName, argList, DoubleType.INSTANCE);
+            func = SQLFunctions.complexArgFunc(funcName, argList, DoubleType.INSTANCE);
         } else {
             throw CriteriaUtils.funcArgError(funcName, distinct);
         }
@@ -117,7 +116,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         if (size == 0) {
             throw CriteriaUtils.funcArgError(name, exprList);
         }
-        final List<Object> argList = new ArrayList<>(2);
+        final List<Object> argList = new ArrayList<>(size << 1);
         argList.add(distinct);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
@@ -389,8 +388,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_first-value">FIRST_VALUE(expr) [null_treatment] over_clause</a>
      */
-    public static _OverSpec firstValue(final Object expr) {
-        return _nonNullArgWindowFunc("FIRST_VALUE", expr);
+    public static _OverSpec firstValue(final Expression expr) {
+        return MySQLFunctions.oneArgWindowFunc("FIRST_VALUE", expr, expr.typeMeta());
     }
 
     /**
@@ -401,8 +400,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_last-value">LAST_VALUE(expr) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lastValue(final Object expr) {
-        return _nonNullArgWindowFunc("LAST_VALUE", expr);
+    public static _OverSpec lastValue(final Expression expr) {
+        return MySQLFunctions.oneArgWindowFunc("LAST_VALUE", expr, expr.typeMeta());
     }
 
     /**
@@ -411,33 +410,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
-     * @see #lag(Object, Object, boolean)
+     * @see #lag(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lag(final Object expr) {
-        return _lagOrLead("LAG", expr, null, false);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
-     * </p>
-     *
-     * @param expr       non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
-     * @param n          nullable,probably is below:
-     *                   <ul>
-     *                       <li>null</li>
-     *                       <li>{@link Long} type</li>
-     *                       <li>{@link Integer} type</li>
-     *                       <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                       <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
-     *                   </ul>
-     * @param useDefault if n is non-nul and useDefault is true,output sql key word {@code DEFAULT}
-     * @see #lag(Object)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
-     */
-    public static _OverSpec lag(final Object expr, final @Nullable Object n, final boolean useDefault) {
-        return _lagOrLead("LAG", expr, n, useDefault);
+    public static _OverSpec lag(final Expression expr) {
+        return MySQLFunctions.oneArgWindowFunc("LAG", expr, expr.typeMeta());
     }
 
     /**
@@ -446,11 +423,19 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
-     * @see #lag(Object, Object, boolean)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     * @param n    nullable,probably is below:
+     *             <ul>
+     *                 <li>null</li>
+     *                 <li>{@link Long} type</li>
+     *                 <li>{@link Integer} type</li>
+     *                 <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *             </ul>
+     * @see #lag(Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lead(final Object expr) {
-        return _lagOrLead("LEAD", expr, null, false);
+    public static _OverSpec lag(final Expression expr, final Expression n) {
+        return MySQLFunctions.twoArgWindow("LAG", expr, n, expr.typeMeta());
     }
 
     /**
@@ -458,21 +443,85 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type: the {@link MappingType} of expr.
      * </p>
      *
-     * @param expr       non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
-     * @param n          nullable,probably is below:
-     *                   <ul>
-     *                       <li>null</li>
-     *                       <li>{@link Long} type</li>
-     *                       <li>{@link Integer} type</li>
-     *                       <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
-     *                       <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
-     *                   </ul>
-     * @param useDefault if n is non-nul and useDefault is true,output sql key word {@code DEFAULT}
-     * @see #lag(Object)
+     * @param expr        non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param n           nullable,probably is below:
+     *                    <ul>
+     *                        <li>null</li>
+     *                        <li>{@link Long} type</li>
+     *                        <li>{@link Integer} type</li>
+     *                        <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                        <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                    </ul>
+     * @param defaultWord {@link  SQLs#defaultWord()}
+     * @see #lag(Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lag">LAG(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec lag(final Expression expr, final Expression n, final Expression defaultWord) {
+        final String name = "LAG";
+        if (!(defaultWord instanceof SQLs.DefaultWord)) {
+            throw CriteriaUtils.funcArgError(name, defaultWord);
+        }
+        return MySQLFunctions.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @see #lag(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
      */
-    public static _OverSpec lead(final Object expr, final @Nullable Object n, final boolean useDefault) {
-        return _lagOrLead("LEAD", expr, n, useDefault);
+    public static _OverSpec lead(final Expression expr) {
+        return MySQLFunctions.oneArgWindowFunc("LEAD", expr, expr.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param n    nullable,probably is below:
+     *             <ul>
+     *                 <li>null</li>
+     *                 <li>{@link Long} type</li>
+     *                 <li>{@link Integer} type</li>
+     *                 <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                 <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *             </ul>
+     * @see #lead(Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec lead(final Expression expr, final Expression n) {
+        return MySQLFunctions.twoArgWindow("LEAD", expr, n, expr.typeMeta());
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of expr.
+     * </p>
+     *
+     * @param expr        non-null parameter or {@link  Expression},but couldn't be {@link  SQLs#nullWord()}
+     * @param n           nullable,probably is below:
+     *                    <ul>
+     *                        <li>null</li>
+     *                        <li>{@link Long} type</li>
+     *                        <li>{@link Integer} type</li>
+     *                        <li>{@link SQLs#param(Object)},argument type is {@link Long} or {@link Integer}</li>
+     *                        <li>{@link SQLs#literal(Object) },argument type is {@link Long} or {@link Integer}</li>
+     *                    </ul>
+     * @param defaultWord {@link  SQLs#defaultWord()}
+     * @see #lead(Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_lead">LEAD(expr [, N[, default]]) [null_treatment] over_clause</a>
+     */
+    public static _OverSpec lead(final Expression expr, final Expression n, final Expression defaultWord) {
+        final String name = "LEAD";
+        if (!(defaultWord instanceof SQLs.DefaultWord)) {
+            throw CriteriaUtils.funcArgError(name, defaultWord);
+        }
+        return MySQLFunctions.threeArgWindow(name, expr, n, defaultWord, expr.typeMeta());
     }
 
     /**
@@ -484,18 +533,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param n    positive.output literal.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_nth-value">NTH_VALUE(expr, N) [from_first_last] [null_treatment] over_clause</a>
      */
-    public static _FromFirstLastSpec nthValue(final Expression expr, final long n) {
-
-        final String funcName = "NTH_VALUE";
-
-        if (expr instanceof SQLs.NullWord) {
-            throw CriteriaUtils.funcArgError(funcName, expr);
-        } else if (n < 1L) {
-            throw CriteriaUtils.funcArgError(funcName, n);
-        }
-        final List<ArmyExpression> argList;
-        argList = Arrays.asList((ArmyExpression) expr, (ArmyExpression) SQLs.literal(LongType.INSTANCE, n));
-        return MySQLFunctions.safeMultiArgFromFirstWindowFunc(funcName, null, argList, expr.typeMeta());
+    public static _FromFirstLastSpec nthValue(final Expression expr, final Expression n) {
+        final String name = "NTH_VALUE";
+        final List<?> argList;
+        argList = SQLFunctions.twoArgList(name, expr, n);
+        return MySQLFunctions.fromFirstWindowFunc(name, argList, expr.typeMeta());
     }
 
     /**
@@ -519,30 +561,9 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *          </ul>
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
      */
-    public static _OverSpec ntile(final Object n) {
+    public static _OverSpec ntile(final Expression n) {
         //TODO a local variable in a stored routine?
-        final String funcName = "NTILE";
-        if (n instanceof Long) {
-            if (((Long) n) < 1L) {
-                throw CriteriaUtils.funcArgError(funcName, n);
-            }
-        } else if (n instanceof Number) {
-            if (!(n instanceof Integer || n instanceof Short || n instanceof Byte)) {
-                throw CriteriaUtils.funcArgError(funcName, n);
-            }
-            if (((Number) n).intValue() < 1) {
-                throw CriteriaUtils.funcArgError(funcName, n);
-            }
-        } else if (!(n instanceof Expression)) {
-            throw CriteriaUtils.funcArgError(funcName, n);
-        }
-
-        final ArmyExpression expression;
-        expression = SQLs._funcParam(n);
-        if (expression instanceof SQLs.NullWord) {
-            throw CriteriaUtils.funcArgError(funcName, n);
-        }
-        return MySQLFunctions.oneArgWindowFunc(funcName, null, expression, LongType.INSTANCE);
+        return MySQLFunctions.oneArgWindowFunc("NTILE", n, LongType.INSTANCE);
     }
 
     /**
@@ -594,14 +615,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xml-functions.html#function_extractvalue">ExtractValue(xml_frag, xpath_expr)</a>
      */
     public static Expression extractValue(final Expression xmlFrag, final Expression xpathExpr) {
-        CriteriaContextStack.assertNonNull(xmlFrag);
-        CriteriaContextStack.assertNonNull(xpathExpr);
-
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(xmlFrag);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(xpathExpr);
-        return SQLFunctions.safeComplexArgFunc("ExtractValue", argList, StringType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ExtractValue", xmlFrag, xpathExpr, StringType.INSTANCE);
     }
 
     /**
@@ -616,19 +630,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xml-functions.html#function_updatexml">UpdateXML(xml_target, xpath_expr, new_xml)</a>
      */
     public static Expression updateXml(final Expression xmlTarget, final Expression xpathExpr, final Expression newXml) {
-        CriteriaContextStack.assertNonNull(xmlTarget);
-        CriteriaContextStack.assertNonNull(xpathExpr);
-        CriteriaContextStack.assertNonNull(newXml);
-
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(xmlTarget);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(xpathExpr);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-
-        argList.add(newXml);
-        return SQLFunctions.safeComplexArgFunc("UpdateXML", argList, StringType.INSTANCE);
+        return SQLFunctions.threeArgFunc("UpdateXML", xmlTarget, xpathExpr, newXml, StringType.INSTANCE);
     }
 
     /*-------------------below Encryption and Compression Functions-------------------*/
@@ -759,7 +761,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         argList.add(str);
         argList.add(SQLFunctions.FuncWord.COMMA);
         argList.add(hashLength);
-        return SQLFunctions.safeComplexArgFunc("SHA2", argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc("SHA2", argList, StringType.INSTANCE);
     }
 
 
@@ -772,7 +774,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param visible non-null
      * @param literal true:output literal
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
      */
     public static Expression statementDigest(final PrimaryStatement stmt, final Visible visible, final boolean literal) {
         return MySQLFunctions.statementDigest(stmt, visible, literal);
@@ -787,7 +789,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param visible non-null
      * @param literal true:output literal
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest">STATEMENT_DIGEST(statement)</a>
      */
     public static Expression statementDigest(final String stmt, final Visible visible, final boolean literal) {
         return MySQLFunctions.statementDigest(stmt, visible, literal);
@@ -802,7 +804,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param visible non-null
      * @param literal true:output literal
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_statement-digest-text">STATEMENT_DIGEST_TEXT(statement)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest-text">STATEMENT_DIGEST_TEXT(statement)</a>
      */
     public static Expression statementDigestText(final PrimaryStatement stmt, final Visible visible
             , final boolean literal) {
@@ -818,7 +820,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @param visible non-null
      * @param literal true:output literal
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html#function_statement-digest-text">STATEMENT_DIGEST_TEXT(statement)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_statement-digest-text">STATEMENT_DIGEST_TEXT(statement)</a>
      */
     public static Expression statementDigestText(final String stmt, final Visible visible, final boolean literal) {
         return MySQLFunctions.statementDigestText(stmt, visible, literal);
@@ -863,11 +865,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_get-lock">GET_LOCK(str,timeout)</a>
      */
     public static Expression getLock(final Expression str, final Expression timeout) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(str);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(timeout);
-        return SQLFunctions.safeComplexArgFunc("GET_LOCK", argList, IntegerType.INSTANCE);
+        return SQLFunctions.twoArgFunc("GET_LOCK", str, timeout, IntegerType.INSTANCE);
     }
 
     /**
@@ -879,8 +877,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_is-free-lock">IS_FREE_LOCK(str)</a>
      */
-    public static Expression isFreeLock(final Expression str) {
-        return SQLFunctions.oneArgFunc("IS_FREE_LOCK", str, IntegerType.INSTANCE);
+    public static IPredicate isFreeLock(final Expression str) {
+        return SQLFunctions.oneArgFuncPredicate("IS_FREE_LOCK", str);
     }
 
     /**
@@ -892,9 +890,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_is-used-lock">IS_USED_LOCK(str)</a>
      */
-    public static Expression isUsedLock(final Expression str) {
-        //TODO return Type
-        return SQLFunctions.oneArgFunc("IS_USED_LOCK", str, StringType.INSTANCE);
+    public static IPredicate isUsedLock(final Expression str) {
+        return SQLFunctions.oneArgFuncPredicate("IS_USED_LOCK", str);
     }
 
     /**
@@ -936,11 +933,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_benchmark">BENCHMARK(count,expr)</a>
      */
     public static Expression benchmark(final Expression count, final Expression expr) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(count);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(expr);
-        return SQLFunctions.safeComplexArgFunc("BENCHMARK", argList, IntegerType.INSTANCE);
+        return SQLFunctions.twoArgFunc("BENCHMARK", count, expr, IntegerType.INSTANCE);
     }
 
     /**
@@ -950,7 +943,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_charset">CHARSET(str)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_charset">CHARSET(str)</a>
      */
     public static Expression charset(final Expression str) {
         return SQLFunctions.oneArgFunc("CHARSET", str, StringType.INSTANCE);
@@ -963,7 +956,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_coercibility">COERCIBILITY(str)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_coercibility">COERCIBILITY(str)</a>
      */
     public static Expression coercibility(final Expression str) {
         return SQLFunctions.oneArgFunc("COERCIBILITY", str, IntegerType.INSTANCE);
@@ -976,7 +969,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @param str non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_collation">COLLATION(str)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_collation">COLLATION(str)</a>
      */
     public static Expression collation(final Expression str) {
         return SQLFunctions.oneArgFunc("COLLATION", str, StringType.INSTANCE);
@@ -988,7 +981,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_connection-id">CONNECTION_ID()</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_connection-id">CONNECTION_ID()</a>
      */
     public static Expression connectionId() {
         return SQLFunctions.noArgFunc("CONNECTION_ID", LongType.INSTANCE);
@@ -1000,7 +993,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_current-role">CURRENT_ROLE()</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_current-role">CURRENT_ROLE()</a>
      */
     public static Expression currentRole() {
         return SQLFunctions.noArgFunc("CURRENT_ROLE", StringType.INSTANCE);
@@ -1012,7 +1005,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_current-user">CURRENT_USER()</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_current-user">CURRENT_USER()</a>
      */
     public static Expression currentUser() {
         return SQLFunctions.noArgFunc("CURRENT_USER", StringType.INSTANCE);
@@ -1024,7 +1017,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_database">DATABASE()</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_database">DATABASE()</a>
      */
     public static Expression database() {
         return SQLFunctions.noArgFunc("DATABASE", StringType.INSTANCE);
@@ -1036,7 +1029,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_icu-version">ICU_VERSION()</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_icu-version">ICU_VERSION()</a>
      */
     public static Expression icuVersion() {
         return SQLFunctions.noArgFunc("ICU_VERSION", StringType.INSTANCE);
@@ -1048,7 +1041,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * </p>
      *
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
      */
     public static Expression lastInsertId() {
         return SQLFunctions.noArgFunc("LAST_INSERT_ID", LongType.INSTANCE);
@@ -1061,7 +1054,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @param expr non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/encryption-functions.html#function_last-insert-id">LAST_INSERT_ID(expr)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id">LAST_INSERT_ID()</a>
      */
     public static Expression lastInsertId(final Expression expr) {
         return SQLFunctions.oneArgFunc("LAST_INSERT_ID", expr, LongType.INSTANCE);
@@ -1118,19 +1111,6 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
     /*-------------------below MySQL-Specific Functions-------------------*/
 
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link ByteArrayType},Well-Known Binary (WKB) format
-     * , not Internal Geometry Storage Format,that is converted by {@link io.army.stmt.Stmt} executor.
-     * </p>
-     *
-     * @param geometryList non-null,empty list or list
-     * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_geomcollection">GeomCollection(g [, g] ...)</a>
-     */
-    public static Expression geomCollection(final List<Expression> geometryList) {
-        return _geometryTypeFunc("GeomCollection", geometryList);
-    }
 
     /**
      * <p>
@@ -1233,11 +1213,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-mysql-specific-functions.html#function_point">Point(x, y)</a>
      */
     public static Expression point(final Expression x, final Expression y) {
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(x);
-        argList.add(SQLFunctions.FuncWord.COMMA);
-        argList.add(y);
-        return SQLFunctions.safeComplexArgFunc("Point", argList, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("Point", x, y, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1250,8 +1226,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcontains">MBRContains(g1, g2)</a>
      */
-    public static Expression mbrContains(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBRContains", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrContains(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBRContains", g1, g2);
     }
 
     /**
@@ -1264,8 +1240,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcoveredby">MBRCoveredBy(g1, g2)</a>
      */
-    public static Expression mbrCoveredBy(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBRCoveredBy", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrCoveredBy(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBRCoveredBy", g1, g2);
     }
 
     /**
@@ -1278,8 +1254,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrcovers">MBRCovers(g1, g2)</a>
      */
-    public static Expression mbrCovers(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBRCovers", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrCovers(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBRCovers", g1, g2);
     }
 
     /**
@@ -1292,8 +1268,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrdisjoint">MBRDisjoint(g1, g2)</a>
      */
-    public static Expression mbrDisjoint(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBRDisjoint", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrDisjoint(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBRDisjoint", g1, g2);
     }
 
     /**
@@ -1306,8 +1282,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrequals">MBREquals(g1, g2)</a>
      */
-    public static Expression mbrEquals(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBREquals", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrEquals(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBREquals", g1, g2);
     }
 
     /**
@@ -1320,8 +1296,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrintersects">MBRIntersects(g1, g2)</a>
      */
-    public static Expression mbrIntersects(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBRIntersects", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrIntersects(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBRIntersects", g1, g2);
     }
 
 
@@ -1335,8 +1311,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbroverlaps">MBROverlaps(g1, g2)</a>
      */
-    public static Expression mbrOverlaps(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBROverlaps", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrOverlaps(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBROverlaps", g1, g2);
     }
 
     /**
@@ -1349,8 +1325,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrtouches">MBRTouches(g1, g2)</a>
      */
-    public static Expression mbrTouches(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBRTouches", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrTouches(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBRTouches", g1, g2);
     }
 
     /**
@@ -1363,8 +1339,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-mbr.html#function_mbrwithin">MBRWithin(g1, g2)</a>
      */
-    public static Expression mbrWithin(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("MBRWithin", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate mbrWithin(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("MBRWithin", g1, g2);
     }
 
     /**
@@ -1420,7 +1396,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-interiorringn">ST_InteriorRingN(poly, N)</a>
      */
     public static Expression stInteriorRingN(final Expression poly, final Expression n) {
-        return _simpleTowArgFunc("ST_InteriorRingN", poly, n, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_InteriorRingN", poly, n, ByteArrayType.INSTANCE);
     }
 
 
@@ -1506,7 +1482,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-asbinary">ST_AsWKB(g [, options])</a>
      */
     public static Expression stAsWKB(final Expression g, final Expression options) {
-        return _simpleTowArgFunc("ST_AsWKB", g, options, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_AsWKB", g, options, ByteArrayType.INSTANCE);
     }
 
 
@@ -1534,7 +1510,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsText(g [, options])</a>
      */
     public static Expression stAsText(final Expression g, final Expression options) {
-        return _simpleTowArgFunc("ST_AsText", g, options, StringType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_AsText", g, options, StringType.INSTANCE);
     }
 
     /**
@@ -1561,7 +1537,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-format-conversion-functions.html#function_st-astext">ST_AsWKT(g [, options])</a>
      */
     public static Expression stAsWKT(final Expression g, final Expression options) {
-        return _simpleTowArgFunc("ST_AsWKT", g, options, StringType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_AsWKT", g, options, StringType.INSTANCE);
     }
 
     /**
@@ -1596,7 +1572,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
                 break;
             case 2:
             case 3:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), StringType.INSTANCE);
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList), StringType.INSTANCE);
                 break;
             default:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -1623,7 +1599,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
                 break;
             case 2:
             case 3:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList)
                         , ByteArrayType.INSTANCE);
                 break;
             default:
@@ -1651,7 +1627,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             case 3:
             case 4:
             case 5:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList)
                         , ByteArrayType.INSTANCE);
                 break;
             default:
@@ -1677,7 +1653,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
                 func = SQLFunctions.oneArgFunc(name, expList.get(0), ByteArrayType.INSTANCE);
                 break;
             case 2:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList)
                         , ByteArrayType.INSTANCE);
                 break;
             default:
@@ -1712,7 +1688,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-difference">ST_Difference(g1, g2)</a>
      */
     public static Expression stDifference(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Difference", g1, g2, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_Difference", g1, g2, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1727,7 +1703,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-intersection">ST_Intersection(g1, g2)</a>
      */
     public static Expression stIntersection(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Intersection", g1, g2, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_Intersection", g1, g2, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1742,7 +1718,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-lineinterpolatepoint">ST_LineInterpolatePoint(ls, fractional_distance)</a>
      */
     public static Expression stLineInterpolatePoint(final Expression ls, final Expression fractionalDistance) {
-        return _simpleTowArgFunc("ST_LineInterpolatePoint", ls, fractionalDistance, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_LineInterpolatePoint", ls, fractionalDistance, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1757,7 +1733,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-lineinterpolatepoints">ST_LineInterpolatePoints(ls, fractional_distance)</a>
      */
     public static Expression stLineInterpolatePoints(final Expression ls, final Expression fractionalDistance) {
-        return _simpleTowArgFunc("ST_LineInterpolatePoints", ls, fractionalDistance, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_LineInterpolatePoints", ls, fractionalDistance, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1772,7 +1748,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-pointatdistance">ST_PointAtDistance(ls, distance)</a>
      */
     public static Expression stPointAtDistance(final Expression ls, final Expression distance) {
-        return _simpleTowArgFunc("ST_PointAtDistance", ls, distance, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_PointAtDistance", ls, distance, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1787,7 +1763,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-symdifference">ST_SymDifference(g1, g2)</a>
      */
     public static Expression stSymDifference(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_SymDifference", g1, g2, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_SymDifference", g1, g2, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1802,7 +1778,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-transform">ST_Transform(g, target_srid)</a>
      */
     public static Expression stTransform(final Expression g, final Expression targetSrid) {
-        return _simpleTowArgFunc("ST_Transform", g, targetSrid, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_Transform", g, targetSrid, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1817,7 +1793,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-union">ST_Union(g1, g2)</a>
      */
     public static Expression stUnion(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Union", g1, g2, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_Union", g1, g2, ByteArrayType.INSTANCE);
     }
 
     /*-------------------below Spatial Convenience Functions-------------------*/
@@ -1837,7 +1813,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         switch (expList.size()) {
             case 2:
             case 3:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(expList)
                         , DoubleType.INSTANCE);
                 break;
             default:
@@ -1855,8 +1831,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-convenience-functions.html#function_st-isvalid">ST_IsValid(g)</a>
      */
-    public static Expression stIsValid(final Expression g) {
-        return SQLFunctions.oneArgFunc("ST_IsValid", g, BooleanType.INSTANCE);
+    public static IPredicate stIsValid(final Expression g) {
+        return SQLFunctions.oneArgFuncPredicate("ST_IsValid", g);
     }
 
     /**
@@ -1871,7 +1847,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-makeenvelope">ST_MakeEnvelope(pt1, pt2)</a>
      */
     public static Expression stMakeEnvelope(final Expression pt1, final Expression pt2) {
-        return _simpleTowArgFunc("ST_MakeEnvelope", pt1, pt2, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_MakeEnvelope", pt1, pt2, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -1886,7 +1862,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-operator-functions.html#function_st-simplify">ST_Simplify(g, max_distance)</a>
      */
     public static Expression stSimplify(final Expression g, final Expression maxDistance) {
-        return _simpleTowArgFunc("ST_Simplify", g, maxDistance, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_Simplify", g, maxDistance, ByteArrayType.INSTANCE);
     }
 
 
@@ -1935,31 +1911,31 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
         return SQLFunctions.oneArgFunc("ST_IsClosed", ls, BooleanType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param ls non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-length">ST_Length(ls [, unit])</a>
+     */
+    public static Expression stLength(Expression ls) {
+        return SQLFunctions.oneArgFunc("ST_Length", ls, DoubleType.INSTANCE);
+    }
 
     /**
      * <p>
      * The {@link MappingType} of function return type:{@link DoubleType}
      * </p>
      *
-     * @param expList non-null,size in [1,2].
+     * @param ls   non-null
+     * @param unit non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-length">ST_Length(ls [, unit])</a>
      */
-    public static Expression stLength(final List<Expression> expList) {
-        final String name = "ST_Length";
-        final Expression func;
-        switch (expList.size()) {
-            case 1:
-                func = SQLFunctions.oneArgFunc(name, expList.get(0), DoubleType.INSTANCE);
-                break;
-            case 2:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList)
-                        , DoubleType.INSTANCE);
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, expList);
-        }
-        return func;
+    public static Expression stLength(final Expression ls, Expression unit) {
+        return SQLFunctions.twoArgFunc("ST_Length", ls, unit, DoubleType.INSTANCE);
     }
 
     /**
@@ -1988,7 +1964,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-pointn">ST_PointN(ls, N)</a>
      */
     public static Expression stPointN(final Expression ls, final Expression n) {
-        return _simpleTowArgFunc("ST_PointN", ls, n, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_PointN", ls, n, ByteArrayType.INSTANCE);
     }
 
 
@@ -2019,8 +1995,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-contains">ST_Contains(g1, g2)</a>
      */
-    public static Expression stContains(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Contains", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate stContains(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("ST_Contains", g1, g2);
     }
 
 
@@ -2034,8 +2010,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-crosses">ST_Crosses(g1, g2)</a>
      */
-    public static Expression stCrosses(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Crosses", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate stCrosses(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("ST_Crosses", g1, g2);
     }
 
     /**
@@ -2048,8 +2024,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-disjoint">ST_Disjoint(g1, g2)</a>
      */
-    public static Expression stDisjoint(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Disjoint", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate stDisjoint(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("ST_Disjoint", g1, g2);
     }
 
 
@@ -2058,23 +2034,32 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type:{@link DoubleType}
      * </p>
      *
-     * @param expList non-null,size in [2,3].
+     * @param g1 non-null
+     * @param g2 non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-distance">ST_Distance(g1, g2 [, unit])</a>
+     * @see #stDistance(Expression, Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-distance">ST_Distance(g1, g2 [, unit])</a>
      */
-    public static Expression stDistance(final List<Expression> expList) {
-        final String name = "ST_Distance";
-        final Expression func;
-        switch (expList.size()) {
-            case 2:
-            case 3:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), DoubleType.INSTANCE);
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, expList);
-        }
-        return func;
+    public static Expression stDistance(final Expression g1, Expression g2) {
+        return SQLFunctions.twoArgFunc("ST_Distance", g1, g2, DoubleType.INSTANCE);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param g1   non-null
+     * @param g2   non-null
+     * @param unit non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see #stDistance(Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-distance">ST_Distance(g1, g2 [, unit])</a>
+     */
+    public static Expression stDistance(final Expression g1, Expression g2, Expression unit) {
+        return SQLFunctions.threeArgFunc("ST_Distance", g1, g2, unit, DoubleType.INSTANCE);
+    }
+
 
     /**
      * <p>
@@ -2086,8 +2071,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-equals">ST_Equals(g1, g2)</a>
      */
-    public static Expression stEquals(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Equals", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate stEquals(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("ST_Equals", g1, g2);
     }
 
     /**
@@ -2095,22 +2080,13 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type:{@link DoubleType}
      * </p>
      *
-     * @param expList non-null,size in [2,3].
+     * @param g1 non-null
+     * @param g2 non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-frechetdistance">ST_FrechetDistance(g1, g2 [, unit])</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-frechetdistance">ST_FrechetDistance(g1, g2 [, unit])</a>
      */
-    public static Expression stFrechetDistance(final List<Expression> expList) {
-        final String name = "ST_FrechetDistance";
-        final Expression func;
-        switch (expList.size()) {
-            case 2:
-            case 3:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), DoubleType.INSTANCE);
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, expList);
-        }
-        return func;
+    public static Expression stFrechetDistance(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgFunc("ST_FrechetDistance", g1, g2, DoubleType.INSTANCE);
     }
 
     /**
@@ -2118,23 +2094,44 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type:{@link DoubleType}
      * </p>
      *
-     * @param expList non-null,size in [2,3].
+     * @param g1   non-null
+     * @param g2   non-null
+     * @param unit non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-hausdorffdistance">ST_HausdorffDistance(g1, g2 [, unit])</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-frechetdistance">ST_FrechetDistance(g1, g2 [, unit])</a>
      */
-    public static Expression stHausdorffDistance(final List<Expression> expList) {
-        final String name = "ST_HausdorffDistance";
-        final Expression func;
-        switch (expList.size()) {
-            case 2:
-            case 3:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), DoubleType.INSTANCE);
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, expList);
-        }
-        return func;
+    public static Expression stFrechetDistance(final Expression g1, final Expression g2, final Expression unit) {
+        return SQLFunctions.threeArgFunc("ST_FrechetDistance", g1, g2, unit, DoubleType.INSTANCE);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param g1 non-null
+     * @param g2 non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-hausdorffdistance">ST_HausdorffDistance(g1, g2 [, unit])</a>
+     */
+    public static Expression stHausdorffDistance(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgFunc("ST_HausdorffDistance", g1, g2, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @param g1   non-null
+     * @param g2   non-null
+     * @param unit non-null
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-hausdorffdistance">ST_HausdorffDistance(g1, g2 [, unit])</a>
+     */
+    public static Expression stHausdorffDistance(final Expression g1, final Expression g2, final Expression unit) {
+        return SQLFunctions.threeArgFunc("ST_HausdorffDistance", g1, g2, unit, DoubleType.INSTANCE);
+    }
+
 
     /**
      * <p>
@@ -2143,11 +2140,10 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @param g1 non-null
      * @param g2 non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-intersects">ST_Intersects(g1, g2)</a>
      */
-    public static Expression stIntersects(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Intersects", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate stIntersects(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("ST_Intersects", g1, g2);
     }
 
 
@@ -2158,11 +2154,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @param g1 non-null
      * @param g2 non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @throws CriteriaException throw when g1 or g2 is multi parameter or literal
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-overlaps">ST_Overlaps(g1, g2)</a>
      */
-    public static Expression stOverlaps(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Overlaps", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate stOverlaps(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("ST_Overlaps", g1, g2);
     }
 
     /**
@@ -2172,11 +2168,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @param g1 non-null
      * @param g2 non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @throws CriteriaException throw when g1 or g2 is multi parameter or literal
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-touches">ST_Touches(g1, g2)</a>
      */
-    public static Expression stTouches(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Touches", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate stTouches(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("ST_Touches", g1, g2);
     }
 
     /**
@@ -2186,11 +2182,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      *
      * @param g1 non-null
      * @param g2 non-null
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @throws CriteriaException throw when g1 or g2 is multi parameter or literal
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-relation-functions-object-shapes.html#function_st-within">ST_Within(g1, g2)</a>
      */
-    public static Expression stWithin(final Expression g1, final Expression g2) {
-        return _simpleTowArgFunc("ST_Within", g1, g2, BooleanType.INSTANCE);
+    public static IPredicate stWithin(final Expression g1, final Expression g2) {
+        return SQLFunctions.twoArgPredicateFunc("ST_Within", g1, g2);
     }
 
 
@@ -2201,23 +2197,32 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * The {@link MappingType} of function return type:{@link StringType}
      * </p>
      *
-     * @param expList non-null,size in [2,3]
-     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @param point     non-null
+     * @param maxLength non-null
+     * @throws CriteriaException throw when any argument is multi parameter or literal
+     * @see #stGeoHash(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-geohash">ST_GeoHash(longitude, latitude, max_length), ST_GeoHash(point, max_length)</a>
      */
-    public static Expression stGeoHash(final List<Expression> expList) {
-        final String name = "ST_GeoHash";
-        final Expression func;
-        switch (expList.size()) {
-            case 2:
-            case 3:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(expList), StringType.INSTANCE);
-                break;
-            default:
-                throw CriteriaUtils.funcArgError(name, expList);
-        }
-        return func;
+    public static Expression stGeoHash(final Expression point, final Expression maxLength) {
+        return SQLFunctions.twoArgFunc("ST_GeoHash", point, maxLength, StringType.INSTANCE);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link StringType}
+     * </p>
+     *
+     * @param longitude non-null
+     * @param latitude  non-null
+     * @param maxLength non-null
+     * @throws CriteriaException throw when any argument is multi parameter or literal
+     * @see #stGeoHash(Expression, Expression)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-geohash">ST_GeoHash(longitude, latitude, max_length), ST_GeoHash(point, max_length)</a>
+     */
+    public static Expression stGeoHash(final Expression longitude, final Expression latitude, final Expression maxLength) {
+        return SQLFunctions.threeArgFunc("ST_GeoHash", longitude, latitude, maxLength, StringType.INSTANCE);
+    }
+
 
     /**
      * <p>
@@ -2257,7 +2262,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-geohash-functions.html#function_st-pointfromgeohash">ST_PointFromGeoHash(geohash_str, srid)</a>
      */
     public static Expression stPointFromGeoHash(final Expression geohashStr, final Expression srid) {
-        return _simpleTowArgFunc("ST_PointFromGeoHash", geohashStr, srid, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_PointFromGeoHash", geohashStr, srid, ByteArrayType.INSTANCE);
     }
 
     /*-------------------below Functions That Create Geometry Values from WKT Values-------------------*/
@@ -2490,7 +2495,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-geometrycollection-property-functions.html#function_st-geometryn">ST_GeometryN(gc, N)</a>
      */
     public static Expression stGeometryN(final Expression gc, final Expression n) {
-        return _simpleTowArgFunc("ST_GeometryN", gc, n, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_GeometryN", gc, n, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2599,7 +2604,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-srid">ST_SRID(g [, srid])</a>
      */
     public static Expression stSRID(final Expression p, final Expression srid) {
-        return _simpleTowArgFunc("ST_SRID", p, srid, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_SRID", p, srid, ByteArrayType.INSTANCE);
     }
 
     /*-------------------below Point Property Functions-------------------*/
@@ -2629,7 +2634,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-latitude">ST_Latitude(p [, new_latitude_val])</a>
      */
     public static Expression stLatitude(final Expression p, final Expression newLatitudeVal) {
-        return _simpleTowArgFunc("ST_Latitude", p, newLatitudeVal, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_Latitude", p, newLatitudeVal, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2657,7 +2662,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-longitude">ST_Longitude(p [, new_longitude_val])</a>
      */
     public static Expression stLongitude(final Expression p, final Expression newLongitudeVal) {
-        return _simpleTowArgFunc("ST_Longitude", p, newLongitudeVal, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_Longitude", p, newLongitudeVal, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2685,7 +2690,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-x">ST_X(p [, new_x_val])</a>
      */
     public static Expression stX(final Expression p, final Expression newXVal) {
-        return _simpleTowArgFunc("ST_X", p, newXVal, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_X", p, newXVal, ByteArrayType.INSTANCE);
     }
 
     /**
@@ -2713,7 +2718,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-point-property-functions.html#function_st-y">ST_Y(p [, new_y_val])</a>
      */
     public static Expression stY(final Expression p, final Expression newYVal) {
-        return _simpleTowArgFunc("ST_Y", p, newYVal, ByteArrayType.INSTANCE);
+        return SQLFunctions.twoArgFunc("ST_Y", p, newYVal, ByteArrayType.INSTANCE);
     }
 
     /*-------------------below Performance Schema Functions-------------------*/
@@ -2782,8 +2787,8 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_gtid-subset">GTID_SUBSET(set1,set2)</a>
      */
-    public static Expression gtidSubset(final Expression set1, final Expression set2) {
-        return _simpleTowArgFunc("GTID_SUBSET", set1, set2, BooleanType.INSTANCE);
+    public static IPredicate gtidSubset(final Expression set1, final Expression set2) {
+        return SQLFunctions.twoArgPredicateFunc("GTID_SUBSET", set1, set2);
     }
 
     /**
@@ -2797,7 +2802,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_gtid-subtract">GTID_SUBTRACT(set1,set2)</a>
      */
     public static Expression gtidSubtract(final Expression set1, final Expression set2) {
-        return _simpleTowArgFunc("GTID_SUBTRACT", set1, set2, set1.typeMeta());
+        return SQLFunctions.twoArgFunc("GTID_SUBTRACT", set1, set2, set1.typeMeta());
     }
 
     /**
@@ -2824,7 +2829,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_FOR_EXECUTED_GTID_SET(gtid_set[, timeout])</a>
      */
     public static Expression waitForExecutedGtidSet(final Expression gtidSet, final Expression timeout) {
-        return _simpleTowArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, timeout, IntegerType.INSTANCE);
+        return SQLFunctions.twoArgFunc("WAIT_FOR_EXECUTED_GTID_SET", gtidSet, timeout, IntegerType.INSTANCE);
     }
 
     /**
@@ -2837,44 +2842,25 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS(gtid_set[, timeout][,channel])</a>
      */
     static Expression waitUntilSqlThreadAfterGtids(final Expression gtidSet) {
-        //TODO add ?
         return SQLFunctions.oneArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, IntegerType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType}
+     * </p>
+     *
+     * @param gtidSet non-null
+     * @throws CriteriaException throw when invoking this method in non-statement context.
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gtid-functions.html#function_wait-for-executed-gtid-set">WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS(gtid_set[, timeout][,channel])</a>
+     */
+    static Expression waitUntilSqlThreadAfterGtids(Expression gtidSet, Expression timeout) {
+        return SQLFunctions.twoArgFunc("WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS", gtidSet, timeout, IntegerType.INSTANCE);
+    }
 
 
     /*-------------------below private method -------------------*/
 
-
-    /**
-     * @see #count()
-     * @see #count(Expression)
-     * @see #count(SQLs.Modifier, Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
-     */
-    private static _AggregateOverSpec _count(final @Nullable SQLs.Modifier distinct
-            , final @Nullable Object expressions) {
-
-        final String funcName = "COUNT";
-
-        if (distinct != null && distinct != SQLs.DISTINCT) {
-            throw CriteriaUtils.funcArgError(funcName, distinct);
-        }
-        final _AggregateOverSpec func;
-        if (!(expressions instanceof List)) {
-            if (distinct != null && expressions == null) {
-                String m = String.format("function %s option[%s] but expr is null.", funcName, distinct);
-                throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
-            }
-            func = MySQLFunctions.aggregateWindowFunc(funcName, distinct, expressions, LongType.INSTANCE);
-        } else if (distinct == null) {
-            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
-        } else {
-            func = MySQLFunctions.multiArgAggregateWindowFunc(funcName, distinct, (List<?>) expressions
-                    , null, LongType.INSTANCE);
-        }
-        return func;
-    }
 
     /**
      * @see #bitAnd(Expression)
@@ -2906,70 +2892,10 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: returnType or {@link JsonListType}
-     * </p>
-     *
-     * @param expr       parameter or {@link Expression},but couldn't be null.
-     * @param returnType if null,then the {@link MappingType} of function return type is {@link JsonListType}.
-     * @see #jsonArrayAgg(Expression)
-     * @see #jsonArrayAgg(Expression, MappingType)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-arrayagg">JSON_ARRAYAGG(col_or_expr) [over_clause]</a>
-     */
-    private static _AggregateOverSpec _jsonArrayAgg(final Expression expr, final @Nullable TypeMeta returnType) {
-        final String funcName = "JSON_ARRAYAGG";
-        if (expr instanceof SQLs.NullWord) {
-            throw CriteriaUtils.funcArgError(funcName, expr);
-        }
-        final TypeMeta elementType = expr.typeMeta();
-
-        final TypeMeta actualReturnType;
-        if (returnType != null) {
-            actualReturnType = returnType;
-        } else if (elementType instanceof TypeMeta.Delay) {
-            actualReturnType = CriteriaSupports.delayParamMeta((TypeMeta.Delay) elementType, JsonListType::from);
-        } else {
-            actualReturnType = JsonListType.from(elementType.mappingType());
-        }
-        return MySQLFunctions.aggregateWindowFunc(funcName, null, expr, actualReturnType);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: returnType or {@link  JsonMapType}
-     * </p>
-     *
-     * @param key   non-null parameter or {@link Expression},but couldn't be null.
-     * @param value non-null parameter or {@link Expression},but couldn't be null.
-     * @see #jsonObjectAgg(Expression, Expression)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-objectagg">JSON_OBJECTAGG(key, value) [over_clause]</a>
-     */
-    private static _AggregateOverSpec _jsonObjectAgg(final Expression key, final Expression value) {
-        final String funcName = "JSON_OBJECTAGG";
-
-        final ArmyExpression keyExpr, valueExpr;
-        keyExpr = SQLs._funcParam(key);
-        valueExpr = SQLs._funcParam(value);
-
-        if (keyExpr instanceof SQLs.NullWord) {
-            throw CriteriaUtils.funcArgError(funcName, key);
-        }
-        if (valueExpr instanceof SQLs.NullWord) {
-            throw CriteriaUtils.funcArgError(funcName, value);
-        }
-        final TypeMeta actualReturnType;
-        actualReturnType = Functions._returnType(keyExpr, valueExpr, JsonMapType::from);
-        return MySQLFunctions.safeMultiArgAggregateWindowFunc(funcName, null
-                , Arrays.asList(keyExpr, valueExpr), null
-                , actualReturnType);
-    }
-
-
-    /**
-     * <p>
      * The {@link MappingType} of function return type: the {@link  MappingType} of expr.
      * </p>
      *
-     * @param name MIN or MAX
+     * @param name     MIN or MAX
      * @param distinct null or {@link  SQLs.Modifier#DISTINCT}
      * @param expr     non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
      * @see #min(Expression)
@@ -2995,43 +2921,6 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             func = MySQLFunctions.complexAggregateWindow(name, argList, returnType);
         }
         return func;
-    }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: returnType or the {@link MappingType} of expr.
-     * </p>
-     *
-     * @param distinct   null or {@link  SQLs.Modifier#DISTINCT}
-     * @param expr       non-null parameter or {@link Expression},but couldn't be {@link SQLs#nullWord()}.
-     * @param returnType nullable,if null ,then {@link MappingType} of function return type is the {@link MappingType} of expr
-     * @see #sum(Object)
-     * @see #sum(SQLs.Modifier, Object)
-     * @see #sum(SQLs.Modifier, Object, MappingType)
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_sum">SUM([DISTINCT] expr) [over_clause]</a>
-     */
-    private static _AggregateOverSpec _sum(final @Nullable SQLs.Modifier distinct, final @Nullable Object expr
-            , final @Nullable TypeMeta returnType) {
-        if (expr == null) {
-            throw CriteriaContextStack.nullPointer(CriteriaContextStack.peek());
-        }
-        final String funcName = "SUM";
-        if (distinct != null && distinct != SQLs.DISTINCT) {
-            throw CriteriaUtils.funcArgError(funcName, distinct);
-        }
-        final ArmyExpression expression;
-        expression = SQLs._funcParam(expr);
-        if (expression instanceof SQLs.NullWord) {
-            throw CriteriaUtils.funcArgError(funcName, expr);
-        }
-        final TypeMeta actualReturnType;
-        if (returnType != null) {
-            actualReturnType = returnType;
-        } else {
-            actualReturnType = expression.typeMeta();
-        }
-        return MySQLFunctions.aggregateWindowFunc(funcName, distinct, expression, actualReturnType);
     }
 
 
@@ -3123,7 +3012,6 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
     /**
      * @see #groupConcat(Object)
      * @see #groupConcat(SQLs.Modifier, Object)
-     * @see #groupConcat(SQLs.Modifier, Object, Supplier)
      */
     private static Expression _groupConcat(@Nullable SQLs.Modifier distinct, @Nullable Object expressions
             , @Nullable Clause clause) {
@@ -3165,12 +3053,11 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
             argList.add(SQLFunctions.FuncWord.COMMA);
             argList.add(argExp);
         }
-        return SQLFunctions.safeComplexArgFunc(funcName, argList, StringType.INSTANCE);
+        return SQLFunctions.complexArgFunc(funcName, argList, StringType.INSTANCE);
     }
 
 
     /**
-     * @see #geomCollection(List)
      * @see #geometryCollection(List)
      * @see #lineString(List)
      */
@@ -3185,7 +3072,7 @@ abstract class MySQLFuncSyntax2 extends MySQLFuncSyntax {
                 func = SQLFunctions.oneArgFunc(name, geometryList.get(0), ByteArrayType.INSTANCE);
                 break;
             default:
-                func = SQLFunctions.safeComplexArgFunc(name, _createSimpleMultiArgList(geometryList)
+                func = SQLFunctions.complexArgFunc(name, _createSimpleMultiArgList(geometryList)
                         , ByteArrayType.INSTANCE);
 
         }

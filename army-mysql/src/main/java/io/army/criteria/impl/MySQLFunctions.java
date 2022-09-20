@@ -47,26 +47,39 @@ abstract class MySQLFunctions extends SQLFunctions {
         return new NoArgWindowFunc(name, returnType);
     }
 
+    @Deprecated
     static MySQLFuncSyntax._OverSpec oneArgWindowFunc(String name, @Nullable SQLWords option
             , @Nullable Object expr, TypeMeta returnType) {
         return new OneArgWindowFunc_(name, option, SQLs._funcParam(expr), returnType);
     }
+
+    static MySQLFuncSyntax._OverSpec oneArgWindowFunc(String name, Expression expr, TypeMeta returnType) {
+        if (expr instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.funcArgError(name, expr);
+        }
+        return new OneArgWindowFunc(name, (ArmyExpression) expr, returnType);
+    }
+
+    static MySQLFuncSyntax._OverSpec twoArgWindow(String name, Expression one, Expression two, TypeMeta returnType) {
+        return new ComplexArgWindowFunc(name, twoArgList(name, one, two), returnType);
+    }
+
+    static MySQLFuncSyntax._OverSpec threeArgWindow(String name, Expression one, Expression two
+            , Expression three, TypeMeta returnType) {
+        return new ComplexArgWindowFunc(name, threeArgList(name, one, two, three), returnType);
+    }
+
 
     static MySQLFuncSyntax._OverSpec safeMultiArgWindowFunc(String name, @Nullable SQLWords option
             , List<ArmyExpression> argList, TypeMeta returnType) {
         return new MultiArgWindowFunc(name, option, argList, null, returnType);
     }
 
-    static MySQLFuncSyntax._FromFirstLastSpec safeMultiArgFromFirstWindowFunc(String name, @Nullable SQLWords option
-            , List<ArmyExpression> argList, TypeMeta returnType) {
-        return new FromFirstLastMultiArgWindowFunc(name, option, argList, returnType);
+    static MySQLFuncSyntax._FromFirstLastSpec fromFirstWindowFunc(String name, List<?> argList
+            , TypeMeta returnType) {
+        return new FromFirstLastMultiArgWindowFunc(name, argList, returnType);
     }
 
-    @Deprecated
-    static MySQLFuncSyntax._AggregateOverSpec aggregateWindowFunc(String name, @Nullable SQLWords option
-            , @Nullable Object exp, TypeMeta returnType) {
-        return new OneArgAggregateWindowFunc(name, option, SQLs._funcParam(exp), returnType);
-    }
 
     static MySQLFuncSyntax._AggregateOverSpec oneArgAggregateWindow(String name, Expression arg, TypeMeta returnType) {
         if (arg instanceof SqlValueParam.MultiValue) {
@@ -77,31 +90,13 @@ abstract class MySQLFunctions extends SQLFunctions {
 
     static MySQLFuncSyntax._AggregateOverSpec twoArgAggregateWindow(String name, Expression one, Expression two
             , TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, two);
-        }
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(one);
-        argList.add(FuncWord.COMMA);
-        argList.add(two);
-        return new ComplexArgAggregateWindowFunc(name, argList, returnType);
-    }
-
-    static MySQLFuncSyntax._AggregateOverSpec multiArgAggregateWindow(String name, Expression arg, TypeMeta returnType) {
-        return new OneArgAggregateWindowFunc(name, (ArmyExpression) arg, returnType);
+        return new ComplexArgAggregateWindowFunc(name, twoArgList(name, one, two), returnType);
     }
 
     static MySQLFuncSyntax._AggregateOverSpec complexAggregateWindow(String name, List<?> argList, TypeMeta returnType) {
         return new ComplexArgAggregateWindowFunc(name, argList, returnType);
     }
 
-
-    static MySQLFuncSyntax._AggregateOverSpec safeMultiArgAggregateWindowFunc(String name, @Nullable SQLWords option
-            , List<ArmyExpression> argList, @Nullable Clause clause, TypeMeta returnType) {
-        return new MultiArgAggregateWindowFunc(name, option, argList, clause, returnType);
-    }
 
     static MySQLClause._JsonValueReturningSpec jsonValueFunc(final Expression jsonDoc, final Expression path) {
         final String name = "JSON_VALUE";
@@ -114,18 +109,6 @@ abstract class MySQLFunctions extends SQLFunctions {
         return new JsonValueFunc((ArmyExpression) jsonDoc, (ArmyExpression) path);
     }
 
-
-    static MySQLFuncSyntax._AggregateOverSpec multiArgAggregateWindowFunc(String name, @Nullable SQLWords option
-            , List<?> argList, @Nullable Clause clause, TypeMeta returnType) {
-        if (argList.size() == 0) {
-            throw CriteriaUtils.funcArgError(name, argList);
-        }
-        final List<ArmyExpression> expList = new ArrayList<>(argList.size());
-        for (Object o : argList) {
-            expList.add(SQLs._funcParam(o));
-        }
-        return new MultiArgAggregateWindowFunc(name, option, expList, clause, returnType);
-    }
 
     static GroupConcatClause groupConcatClause(final boolean distinct, final Object exprOrList) {
         final List<ArmyExpression> list;
@@ -369,14 +352,13 @@ abstract class MySQLFunctions extends SQLFunctions {
     }//MultiArgAggregateWindowFunc
 
 
-    private static class NullTreatmentMultiArgWindowFunc extends MultiArgWindowFunc
+    private static class NullTreatmentMultiArgWindowFunc extends ComplexArgWindowFunc
             implements MySQLFuncSyntax._NullTreatmentSpec {
 
         private NullTreatment nullTreatment;
 
-        private NullTreatmentMultiArgWindowFunc(String name, @Nullable SQLWords option
-                , List<ArmyExpression> argumentList, TypeMeta returnType) {
-            super(name, option, argumentList, null, returnType);
+        private NullTreatmentMultiArgWindowFunc(String name, List<?> argumentList, TypeMeta returnType) {
+            super(name, argumentList, returnType);
         }
 
         @Override
@@ -405,9 +387,8 @@ abstract class MySQLFunctions extends SQLFunctions {
 
         private FromFirstLast fromFirstLast;
 
-        private FromFirstLastMultiArgWindowFunc(String name, @Nullable SQLWords option
-                , List<ArmyExpression> argumentList, TypeMeta returnType) {
-            super(name, option, argumentList, returnType);
+        private FromFirstLastMultiArgWindowFunc(String name, List<?> argumentList, TypeMeta returnType) {
+            super(name, argumentList, returnType);
         }
 
         @Override
