@@ -4,7 +4,6 @@ import io.army.dialect.DialectEnv;
 import io.army.dialect._AbstractDialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.DatabaseObject;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -14,9 +13,9 @@ import io.army.util._Exceptions;
 import java.util.List;
 import java.util.Set;
 
-class Postgre11DmlDialect extends _AbstractDialectParser {
+abstract class PostgreParser extends _AbstractDialectParser {
 
-    Postgre11DmlDialect(DialectEnv environment, MySQLDialect dialect) {
+    PostgreParser(DialectEnv environment, PostgreDialect dialect) {
         super(environment, dialect);
     }
 
