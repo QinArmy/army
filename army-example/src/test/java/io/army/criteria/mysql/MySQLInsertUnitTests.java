@@ -12,6 +12,12 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.RegionType;
+import io.army.example.pill.domain.Person;
+import io.army.example.pill.domain.Person_;
+import io.army.example.pill.domain.User;
+import io.army.example.pill.domain.User_;
+import io.army.example.pill.struct.IdentityType;
+import io.army.example.pill.struct.UserType;
 import io.army.stmt.GeneratedKeyStmt;
 import io.army.stmt.PairStmt;
 import io.army.stmt.Stmt;
@@ -20,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +70,38 @@ public class MySQLInsertUnitTests {
 
     }
 
+    //@Test
+    public void domainInsertChild() {
+        assert ChinaRegion_.id.generatorType() != GeneratorType.POST;
+
+        final Supplier<List<Hint>> hintSupplier;
+        hintSupplier = () -> {
+            List<Hint> hintList = new ArrayList<>();
+            hintList.add(MySQLs.qbName("regionBlock"));
+            return hintList;
+        };
+
+        final Insert stmt;
+        stmt = MySQLs.domainInsert()
+                .preferLiteral(true)
+                .insert(hintSupplier, Collections.singletonList(MySQLModifier.HIGH_PRIORITY))
+                .into(User_.T)
+                .partition()
+                .leftParen("p1")
+                .rightParen()
+                .defaultLiteral(User_.visible, true)
+                .child()
+                .insertInto(Person_.T)
+                .defaultValue(Person_.birthday, LocalDate.now())
+                .values(this::createPsersonList)
+                .onDuplicateKey()
+                .update(Person_.birthday, 0L)
+                .asInsert();
+
+        printStmt(stmt);
+
+    }
+
 
     @Test
     public void assignmentInsertParentPost() {
@@ -92,6 +131,7 @@ public class MySQLInsertUnitTests {
         printStmt(stmt);
 
     }
+
 
 
     /*-------------------below query insert tests -------------------*/
@@ -161,6 +201,55 @@ public class MySQLInsertUnitTests {
                     .setVisible(Boolean.TRUE);
 
             list.add(c);
+        }
+        return list;
+    }
+
+
+    private List<Person> createPsersonList() {
+        final List<Person> list = new ArrayList<>();
+        Person u;
+        final int rowSize = 3;
+        final LocalDateTime now = LocalDateTime.now();
+
+        for (int i = 0; i < rowSize; i++) {
+            u = new Person();
+
+            u.setIdentityId(i + 1L);
+            u.setCreateTime(now);
+            u.setUpdateTime(now);
+            u.setUserType(UserType.NONE);
+
+            u.setIdentityType(IdentityType.PERSON);
+            u.setNickName("脉兽" + 1);
+            u.setBirthday(LocalDate.now());
+
+            list.add(u);
+
+        }
+        return list;
+    }
+
+
+    private List<User> createUserList() {
+        final List<User> list = new ArrayList<>();
+        User u;
+        final int rowSize = 3;
+        final LocalDateTime now = LocalDateTime.now();
+
+        for (int i = 0; i < rowSize; i++) {
+            u = new User();
+
+            u.setIdentityId(i + 1L);
+            u.setCreateTime(now);
+            u.setUpdateTime(now);
+            u.setUserType(UserType.NONE);
+
+            u.setIdentityType(IdentityType.PERSON);
+            u.setNickName("脉兽" + 1);
+
+            list.add(u);
+
         }
         return list;
     }

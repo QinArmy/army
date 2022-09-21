@@ -288,6 +288,29 @@ public interface Statement {
 
     }
 
+    interface _MinWhereClause<C, WR, WA> {
+
+        WR where(Consumer<Consumer<IPredicate>> consumer);
+
+        WR where(BiConsumer<C, Consumer<IPredicate>> consumer);
+
+        WA where(IPredicate predicate);
+
+        WA where(Supplier<IPredicate> supplier);
+
+        WA where(Function<C, IPredicate> function);
+
+        WA whereIf(Supplier<IPredicate> supplier);
+
+        WA whereIf(Function<C, IPredicate> function);
+    }
+
+    interface _MinQueryWhereClause<C, WR, WA> extends _MinWhereClause<C, WR, WA> {
+
+        WR ifWhere(Consumer<Consumer<IPredicate>> consumer);
+
+        WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer);
+    }
 
     /**
      * <p>
@@ -303,17 +326,7 @@ public interface Statement {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface _WhereClause<C, WR, WA> {
-
-        WR where(Consumer<Consumer<IPredicate>> consumer);
-
-        WR where(BiConsumer<C, Consumer<IPredicate>> consumer);
-
-        WA where(IPredicate predicate);
-
-        WA where(Supplier<IPredicate> supplier);
-
-        WA where(Function<C, IPredicate> function);
+    interface _WhereClause<C, WR, WA> extends _MinWhereClause<C, WR, WA> {
 
         WA where(Function<Object, IPredicate> operator, DataField operand);
 
@@ -326,10 +339,6 @@ public interface Statement {
         WA where(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
 
         WA whereIfNonNull(@Nullable Function<Object, IPredicate> operator, @Nullable Object operand);
-
-        WA whereIf(Supplier<IPredicate> supplier);
-
-        WA whereIf(Function<C, IPredicate> function);
 
         WA whereIf(Function<Object, IPredicate> operator, Supplier<?> operand);
 
@@ -356,11 +365,22 @@ public interface Statement {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface _QueryWhereClause<C, WR, WA> extends _WhereClause<C, WR, WA> {
+    interface _QueryWhereClause<C, WR, WA> extends _WhereClause<C, WR, WA>, _MinQueryWhereClause<C, WR, WA> {
 
-        WR ifWhere(Consumer<Consumer<IPredicate>> consumer);
+    }
 
-        WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer);
+
+    interface _MinWhereAndClause<C, WA> {
+
+        WA and(IPredicate predicate);
+
+        WA and(Supplier<IPredicate> supplier);
+
+        WA and(Function<C, IPredicate> function);
+
+        WA ifAnd(Supplier<IPredicate> supplier);
+
+        WA ifAnd(Function<C, IPredicate> function);
     }
 
 
@@ -377,13 +397,8 @@ public interface Statement {
      * @param <WA> next clause java type
      * @since 1.0
      */
-    interface _WhereAndClause<C, WA> {
+    interface _WhereAndClause<C, WA> extends _MinWhereAndClause<C, WA> {
 
-        WA and(IPredicate predicate);
-
-        WA and(Supplier<IPredicate> supplier);
-
-        WA and(Function<C, IPredicate> function);
 
         WA and(Function<Object, IPredicate> operator, DataField operand);
 
@@ -399,10 +414,6 @@ public interface Statement {
 
         WA ifNonNullAnd(Function<Object, ? extends Expression> firstOperator, @Nullable Object firstOperand
                 , BiFunction<Expression, Object, IPredicate> secondOperator, Object secondOperand);
-
-        WA ifAnd(Supplier<IPredicate> supplier);
-
-        WA ifAnd(Function<C, IPredicate> function);
 
         WA ifAnd(Function<Object, IPredicate> operator, Supplier<?> operand);
 

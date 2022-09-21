@@ -60,11 +60,6 @@ public interface MySQLInsert extends Insert, DialectStatement {
 
     }
 
-    interface _StaticOnDuplicateKeyAliasClause<C, T, KR> {
-
-        _StaticOnDuplicateKeyAliasUpdateClause<C, T, KR> onDuplicateKey();
-
-    }
 
 
     interface _DynamicOnDuplicateKeyUpdateClause<C, CC extends PairConsumer<?>, UR> {
@@ -234,7 +229,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
     interface _ValueDefaultSpec<C, T>
-            extends _ColumnDefaultClause<C, T, _ValueDefaultSpec<C, T>>
+            extends Insert._ColumnDefaultClause<C, T, _ValueDefaultSpec<C, T>>
             , Insert._StaticValuesClause<_ValueStaticValuesLeftParenClause<C, T>>
             , Insert._DynamicValuesClause<C, T, _OnDuplicateKeyUpdateFieldSpec<C, T>> {
 
