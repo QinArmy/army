@@ -12,5 +12,13 @@ package io.army.criteria;
  */
 public interface DqlStatement extends PrimaryStatement {
 
+    interface DqlInsert {
+
+    }
+
+    interface DqlInsertSpec<I extends DqlInsert> {
+
+        I asReturningInsert();
+    }
 
 }

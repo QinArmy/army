@@ -39,4 +39,23 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
 
+    public static PostgreInsert._ValueOptionSpec<Void> valueInsert() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> PostgreInsert._ValueOptionSpec<C> valueInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    public static PostgreInsert._ValueSubOptionSpec<Void> valueSubInsert() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> PostgreInsert._ValueSubOptionSpec<C> valueSubInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+
 }

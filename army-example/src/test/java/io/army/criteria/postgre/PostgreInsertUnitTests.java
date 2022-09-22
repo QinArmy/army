@@ -32,21 +32,24 @@ public class PostgreInsertUnitTests {
 
     @Test
     public void domainInsertChild() {
+        final List<Person> personList;
+        personList = this.createBankPersonList();
         final Insert stmt;
         stmt = Postgres.domainInsert()
                 .insertInto(BankUser_.T).as("u")
                 .overridingSystemValue()
-                .values(this::createBankPersonList)
+                .values(personList)
                 .onConflict()
                 .onConstraint("")
                 .doNothing()
                 .returning()
+
                 .child()
+
                 .insertInto(Person_.T)
-                .values(this::createBankPersonList)
+                .values(personList)
+                .returning()
                 .asInsert();
-
-
     }
 
 
