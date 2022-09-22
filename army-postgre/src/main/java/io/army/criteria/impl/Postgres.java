@@ -19,21 +19,21 @@ public abstract class Postgres extends PostgreFuncSyntax {
     }
 
 
-    public static PostgreInsert._DomainWithCteSpec<Void> domainInsert() {
+    public static PostgreInsert._DomainOptionSpec<Void> domainInsert() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> PostgreInsert._DomainWithCteSpec<C> domainInsert(C criteria) {
+    public static <C> PostgreInsert._DomainOptionSpec<C> domainInsert(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }
 
 
-    public static PostgreInsert._DomainSubWithCteSpec<Void> domainSubInsert() {
+    public static PostgreInsert._DomainSubOptionSpec<Void> domainSubInsert() {
         throw new UnsupportedOperationException();
     }
 
-    public static <C> PostgreInsert._DomainSubWithCteSpec<C> domainSubInsert(C criteria) {
+    public static <C> PostgreInsert._DomainSubOptionSpec<C> domainSubInsert(C criteria) {
         Objects.requireNonNull(criteria);
         throw new UnsupportedOperationException();
     }
