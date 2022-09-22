@@ -294,98 +294,14 @@ public interface PostgreInsert extends Insert, DialectStatement {
     }
 
     interface _DomainChildWithSpec<C, P>
-            extends DialectStatement._WithCteClause<C, SubStatement, _DomainChildInsertIntoClause<C, P>> {
+            extends DialectStatement._WithCteClause<C, SubStatement, _DomainChildInsertIntoClause<C, P>>
+            , _DomainChildInsertIntoClause<C, P> {
 
     }
-
-    interface _DomainChildClause<C, P> extends Insert._ChildPartClause<_DomainChildWithSpec<C, P>> {
-
-    }
-
-
-    interface _DomainParentReturningCommaSpec<C, P> extends _DomainChildClause<C, P>
-            , _StaticReturningCommaClause<_DomainChildClause<C, P>> {
-
-    }
-
-    interface _DomainParentReturningSpec<C, P> extends _DomainChildClause<C, P>
-            , _DynamicReturningClause<C, _DomainChildClause<C, P>>
-            , _StaticReturningClause<_DomainParentReturningCommaSpec<C, P>> {
-
-    }
-
-    interface _DomainParentDoUpdateWhereAndSpec<C, P>
-            extends Statement._MinWhereAndClause<C, _DomainParentDoUpdateWhereAndSpec<C, P>>
-            , _DomainParentReturningSpec<C, P> {
-
-
-    }
-
-    interface _DomainParentDoUpdateWhereSpec<C, P>
-            extends Statement._MinQueryWhereClause<C, _DomainParentReturningSpec<C, P>, _DomainParentDoUpdateWhereAndSpec<C, P>>
-            , _DomainParentDoUpdateSetClause<C, P>
-            , _DomainParentReturningSpec<C, P> {
-
-    }
-
-
-    interface _DomainParentDoUpdateSetClause<C, P>
-            extends Update._SimpleSetClause<C, FieldMeta<P>, _DomainParentDoUpdateWhereSpec<C, P>> {
-
-
-    }
-
-    interface _DomainParentConflictActionSpec<C, P>
-            extends _ConflictActionClause<_DomainParentReturningSpec<C, P>, _DomainParentDoUpdateSetClause<C, P>> {
-
-    }
-
-    interface _DomainParentConflictTargetWhereAndSpec<C, P>
-            extends Statement._MinWhereAndClause<C, _DomainParentConflictTargetWhereAndSpec<C, P>>
-            , _DomainParentConflictActionSpec<C, P> {
-
-    }
-
-
-    interface _DomainParentConflictTargetWhereSpec<C, P> extends _DomainParentConflictActionSpec<C, P>
-            , Statement._MinQueryWhereClause<C, _DomainParentConflictActionSpec<C, P>, _DomainParentConflictTargetWhereAndSpec<C, P>> {
-
-    }
-
-
-    interface _DomainParentConflictTargetCommaSpec<C, P>
-            extends Statement._RightParenClause<_DomainParentConflictTargetWhereSpec<C, P>>
-            , _ConflictTargetCommaClause<P, _DomainParentConflictCollateSpec<C, P>> {
-
-    }
-
-    interface _DomainParentConflictOpClassSpec<C, P> extends _DomainParentConflictTargetCommaSpec<C, P>
-            , _ConflictOpClassClause<C, _DomainParentConflictTargetCommaSpec<C, P>> {
-
-    }
-
-
-    interface _DomainParentConflictCollateSpec<C, P> extends _DomainParentConflictOpClassSpec<C, P>
-            , _ConflictCollateClause<_DomainParentConflictOpClassSpec<C, P>> {
-
-    }
-
-    interface _DomainParentConflictItemClause<C, P>
-            extends _ConflictItemClause<P, _DomainParentConflictCollateSpec<C, P>, _DomainParentConflictActionSpec<C, P>> {
-
-    }
-
-
-    interface _DomainParentOnConflictSpec<C, P> extends _DomainParentReturningSpec<C, P>
-            , _OnConflictClause<_DomainParentConflictItemClause<C, P>> {
-
-    }
-
 
     interface _DomainParentColumnDefaultSpec<C, P>
             extends Insert._ColumnDefaultClause<C, P, _DomainParentColumnDefaultSpec<C, P>>
-            , _DomainParentOnConflictSpec<C, P>
-            , _DomainValueSpec<C, P, Insert> {
+            , Insert._DomainValueClause2<C, P, _ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>>> {
 
     }
 

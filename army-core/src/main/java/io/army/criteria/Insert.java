@@ -145,6 +145,29 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
+    /**
+     * @since 1.0
+     */
+    interface _DomainValueClause2<C, P, VR> {
+
+        <T extends P> VR value(T domain);
+
+        <T extends P> VR value(Function<C, T> function);
+
+        <T extends P> VR value(Supplier<T> supplier);
+
+        VR value(Function<String, Object> function, String keyName);
+
+        <T extends P> VR values(List<T> domainList);
+
+        <T extends P> VR values(Function<C, List<T>> function);
+
+        <T extends P> VR values(Supplier<List<T>> supplier);
+
+        VR values(Function<String, Object> function, String keyName);
+    }
+
+
     interface _StaticValuesClause<VR> {
 
         VR values();
