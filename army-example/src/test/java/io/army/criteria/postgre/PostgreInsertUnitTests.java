@@ -2,6 +2,7 @@ package io.army.criteria.postgre;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
+import io.army.criteria.ReturningInsert;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.inner._Insert;
@@ -34,7 +35,7 @@ public class PostgreInsertUnitTests {
     public void domainInsertChild() {
         final List<Person> personList;
         personList = this.createBankPersonList();
-        final Insert stmt;
+        final ReturningInsert stmt;
         stmt = Postgres.domainInsert()
                 .insertInto(BankUser_.T).as("u")
                 .overridingSystemValue()
@@ -49,7 +50,7 @@ public class PostgreInsertUnitTests {
                 .insertInto(Person_.T)
                 .values(personList)
                 .returning()
-                .asInsert();
+                .asReturningInsert();
     }
 
 

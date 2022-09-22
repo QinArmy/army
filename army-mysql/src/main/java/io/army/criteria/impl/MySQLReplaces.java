@@ -197,10 +197,11 @@ abstract class MySQLReplaces extends InsertSupport {
             C,
             P,
             MySQLReplace._DomainParentDefaultSpec<C, P>,
-            ReplaceInsert._ReplaceSpec>
+            MySQLReplace._DomainChildSpec<C, P>>
             implements MySQLReplace._DomainParentPartitionSpec<C, P>
             , MySQLReplace._DomainChildReplaceIntoSpec<C, P>
             , MySQLReplace._DomainChildIntoClause<C, P>
+            , MySQLReplace._DomainChildSpec<C, P>
             , ValueSyntaxOptions {
 
 
@@ -229,6 +230,12 @@ abstract class MySQLReplaces extends InsertSupport {
         @Override
         public MySQLReplace._DomainChildReplaceIntoSpec<C, P> child() {
             return this;
+        }
+
+        @Override
+        public ReplaceInsert asInsert() {
+            return this.createParentStmt(this::domainList)
+                    .asInsert();
         }
 
         @Override
@@ -268,8 +275,8 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        ReplaceInsert._ReplaceSpec valuesEnd() {
-            return this.createParentStmt(this::domainList);
+        MySQLReplace._DomainChildSpec<C, P> valuesEnd() {
+            return this;
         }
 
         private MySQLReplace._DomainParentColumnsSpec<C, P> partitionEnd(List<String> partitionList) {

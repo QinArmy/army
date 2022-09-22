@@ -81,6 +81,9 @@ public class MySQLInsertUnitTests {
             return hintList;
         };
 
+        final List<Person> personList;
+        personList = this.createPsersonList();
+
         final Insert stmt;
         stmt = MySQLs.domainInsert()
                 .preferLiteral(true)
@@ -90,10 +93,11 @@ public class MySQLInsertUnitTests {
                 .leftParen("p1")
                 .rightParen()
                 .defaultLiteral(User_.visible, true)
+                .values(personList)
                 .child()
                 .insertInto(Person_.T)
                 .defaultValue(Person_.birthday, LocalDate.now())
-                .values(this::createPsersonList)
+                .values(personList)
                 .onDuplicateKey()
                 .update(Person_.birthday, 0L)
                 .asInsert();

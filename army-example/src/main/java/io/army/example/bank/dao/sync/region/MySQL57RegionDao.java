@@ -54,6 +54,7 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
                 .insertInto(ChinaRegion_.T)
                 .leftParen(ChinaCity_.name, ChinaCity_.parentId)
                 .rightParen()
+                .values(domainList)
                 .child()
                 .insertInto(ChinaCity_.T)
                 .values(domainList)

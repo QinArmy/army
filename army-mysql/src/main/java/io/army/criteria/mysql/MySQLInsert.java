@@ -113,7 +113,7 @@ public interface MySQLInsert extends Insert, DialectStatement {
     /*-------------------below domain insert syntax interfaces  -------------------*/
 
     interface _DomainValuesSpec<C, T>
-            extends Insert._DomainValueClause<C, T, _OnDuplicateKeyUpdateFieldSpec<C, T>> {
+            extends _DomainValueClause<C, T, _OnDuplicateKeyUpdateFieldSpec<C, T>> {
 
     }
 
@@ -145,36 +145,16 @@ public interface MySQLInsert extends Insert, DialectStatement {
     }
 
 
-    interface _DomainChildClause<C, P>
-            extends Insert._ChildPartClause<_DomainChildInsertIntoSpec<C, P>> {
-
-    }
-
-
-    interface _DomainParentStaticAssignmentCommaFieldSpec<C, P>
-            extends Insert._CommaFieldValuePairClause<C, P, _DomainParentStaticAssignmentCommaFieldSpec<C, P>>
-            , _DomainChildClause<C, P> {
-
-    }
-
-    interface _DomainParentOnDuplicateKeyUpdateFieldSpec<C, P>
-            extends _StaticOnDuplicateKeyFieldClause<C, P, _DomainParentStaticAssignmentCommaFieldSpec<C, P>>
-            , _DynamicOnDuplicateKeyUpdateClause<C, PairConsumer<P>, _DomainChildClause<C, P>>
-            , _DomainChildClause<C, P> {
-
-    }
-
-    interface _DomainParentDefaultSpec<C, P>
-            extends Insert._ColumnDefaultClause<C, P, _DomainParentDefaultSpec<C, P>>
-            , _DomainParentOnDuplicateKeyUpdateFieldSpec<C, P>
-            , _DomainValuesSpec<C, P> {
+    interface _DomainParentColumnDefaultSpec<C, P>
+            extends Insert._ColumnDefaultClause<C, P, _DomainParentColumnDefaultSpec<C, P>>
+            , _DomainValueClause<C, P, _ParentOnDuplicateKeyUpdateFieldSpec<C, P, _DomainChildInsertIntoSpec<C, P>>> {
 
     }
 
 
     interface _DomainParentColumnsSpec<C, P>
-            extends Insert._ColumnListClause<C, P, _DomainParentDefaultSpec<C, P>>
-            , _DomainParentDefaultSpec<C, P> {
+            extends Insert._ColumnListClause<C, P, _DomainParentColumnDefaultSpec<C, P>>
+            , _DomainParentColumnDefaultSpec<C, P> {
 
     }
 

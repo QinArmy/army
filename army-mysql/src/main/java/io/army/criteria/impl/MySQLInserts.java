@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
@@ -53,16 +52,6 @@ abstract class MySQLInserts extends InsertSupport {
 
     static <C> MySQLInsert._QueryInsertIntoSpec<C> queryInsert(@Nullable C criteria) {
         return new QueryInsertIntoClause<>(criteria);
-    }
-
-    private static void assertParent(CriteriaContext criteriaContext, _Insert parent, ChildTableMeta<?> childTable) {
-        final PrimaryFieldMeta<?> parentId;
-        parentId = parent.table().id();
-        if (parent instanceof _Insert._DuplicateKeyClause
-                && parentId.generatorType() == GeneratorType.POST) {
-            throw CriteriaContextStack.criteriaError(criteriaContext, _Exceptions::duplicateKeyAndPostIdInsert
-                    , childTable);
-        }
     }
 
 
@@ -373,29 +362,6 @@ abstract class MySQLInserts extends InsertSupport {
     }//ParentDuplicateKeyUpdateSpec
 
 
-    private static final class DomainDuplicateKeyUpdateSpec<C, P>
-            extends DuplicateKeyUpdateClause<
-            C,
-            P,
-            MySQLInsert._DomainParentStaticAssignmentCommaFieldSpec<C, P>,
-            MySQLInsert._DomainChildClause<C, P>>
-            implements MySQLInsert._DomainParentOnDuplicateKeyUpdateFieldSpec<C, P>
-            , MySQLInsert._DomainParentStaticAssignmentCommaFieldSpec<C, P> {
-
-        private DomainDuplicateKeyUpdateSpec(DomainParentPartitionClause<C, P> clause) {
-            super(clause);
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public MySQLInsert._DomainChildInsertIntoSpec<C, P> child() {
-            return ((DomainParentPartitionClause<C, P>) this.clause).parentStmtEnd(this.endDuplicateKeyClause());
-        }
-
-
-    }//DomainDuplicateKeyUpdateSpec
-
-
     /*-------------------below domain insert syntax classes-------------------*/
 
     private static final class DomainInsertOptionClause<C>
@@ -520,11 +486,10 @@ abstract class MySQLInserts extends InsertSupport {
             extends InsertSupport.DomainValueClause<
             C,
             P,
-            MySQLInsert._DomainParentDefaultSpec<C, P>,
-            MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, P>>
+            MySQLInsert._DomainParentColumnDefaultSpec<C, P>,
+            MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, MySQLInsert._DomainChildInsertIntoSpec<C, P>>>
             implements MySQLInsert._DomainParentPartitionSpec<C, P>
             , MySQLInserts.ParentClauseBeforeRowAlias<MySQLInsert._DomainChildInsertIntoSpec<C, P>>
-            , MySQLInsert._DomainChildClause<C, P>
             , MySQLInsert._DomainChildInsertIntoSpec<C, P>
             , MySQLInsert._DomainChildIntoClause<C, P>
             , ValueSyntaxOptions {
@@ -551,41 +516,6 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._DomainParentColumnsSpec<C, P>> partition() {
             return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
-        }
-
-        @Override
-        public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, P, MySQLInsert._DomainParentStaticAssignmentCommaFieldSpec<C, P>> onDuplicateKey() {
-            return new DomainDuplicateKeyUpdateSpec<>(this)
-                    .onDuplicateKey();
-        }
-
-        @Override
-        public MySQLInsert._DomainChildClause<C, P> onDuplicateKeyUpdate(Consumer<PairConsumer<P>> consumer) {
-            return new DomainDuplicateKeyUpdateSpec<>(this)
-                    .onDuplicateKeyUpdate(consumer);
-        }
-
-        @Override
-        public MySQLInsert._DomainChildClause<C, P> onDuplicateKeyUpdate(BiConsumer<C, PairConsumer<P>> consumer) {
-            return new DomainDuplicateKeyUpdateSpec<>(this)
-                    .onDuplicateKeyUpdate(consumer);
-        }
-
-        @Override
-        public MySQLInsert._DomainChildClause<C, P> ifOnDuplicateKeyUpdate(Consumer<PairConsumer<P>> consumer) {
-            return new DomainDuplicateKeyUpdateSpec<>(this)
-                    .ifOnDuplicateKeyUpdate(consumer);
-        }
-
-        @Override
-        public MySQLInsert._DomainChildClause<C, P> ifOnDuplicateKeyUpdate(BiConsumer<C, PairConsumer<P>> consumer) {
-            return new DomainDuplicateKeyUpdateSpec<>(this)
-                    .ifOnDuplicateKeyUpdate(consumer);
-        }
-
-        @Override
-        public MySQLInsert._DomainChildInsertIntoSpec<C, P> child() {
-            return this.parentStmtEnd(Collections.emptyList());
         }
 
         @Override
@@ -620,13 +550,13 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        MySQLInsert._DomainParentDefaultSpec<C, P> columnListEnd() {
+        MySQLInsert._DomainParentColumnDefaultSpec<C, P> columnListEnd() {
             return this;
         }
 
         @Override
-        MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, P> valuesEnd() {
-            return new NonParentDuplicateKeyUpdateSpec<>(this);
+        MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, MySQLInsert._DomainChildInsertIntoSpec<C, P>> valuesEnd() {
+            return new ParentDuplicateKeyUpdateSpec<>(this);
         }
 
         @Override

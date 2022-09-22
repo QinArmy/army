@@ -108,9 +108,10 @@ abstract class StandardInserts extends InsertSupport {
             C,
             P,
             Insert._StandardParentDomainDefaultSpec<C, P>,
-            Insert._InsertSpec>
+            Insert._StandardDomainChildSpec<C, P>>
             implements Insert._StandardParentDomainColumnsSpec<C, P>
             , Insert._StandardChildInsertIntoClause<C, P>
+            , Insert._StandardDomainChildSpec<C, P>
             , InsertOptions {
 
         private DomainParentColumnsClause(InsertOptions options, ParentTableMeta<P> table) {
@@ -119,8 +120,13 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public Insert._StandardChildInsertIntoClause<C, P> child() {
-            this.endColumnDefaultClause();
             return this;
+        }
+
+        @Override
+        public Insert asInsert() {
+            return this.createParentStmt(this::domainList)
+                    .asInsert();
         }
 
         @Override
@@ -134,8 +140,8 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        Insert._InsertSpec valuesEnd() {
-            return this.createParentStmt(this::domainList);
+        Insert._StandardDomainChildSpec<C, P> valuesEnd() {
+            return this;
         }
 
         private DomainsInsertStatement createParentStmt(Supplier<List<?>> supplier) {

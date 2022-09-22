@@ -121,34 +121,12 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
-    /**
-     * @since 1.0
-     */
-    interface _DomainValueClause<C, T, VR> {
-
-        VR value(T domain);
-
-        VR value(Function<C, T> function);
-
-        VR value(Supplier<T> supplier);
-
-        VR value(Function<String, Object> function, String keyName);
-
-        VR values(List<T> domainList);
-
-        VR values(Function<C, List<T>> function);
-
-        VR values(Supplier<List<T>> supplier);
-
-
-        VR values(Function<String, Object> function, String keyName);
-    }
 
 
     /**
      * @since 1.0
      */
-    interface _DomainValueClause2<C, P, VR> {
+    interface _DomainValueClause<C, P, VR> {
 
         <T extends P> VR value(T domain);
 
@@ -156,15 +134,12 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         <T extends P> VR value(Supplier<T> supplier);
 
-        VR value(Function<String, Object> function, String keyName);
-
         <T extends P> VR values(List<T> domainList);
 
         <T extends P> VR values(Function<C, List<T>> function);
 
         <T extends P> VR values(Supplier<List<T>> supplier);
 
-        VR values(Function<String, Object> function, String keyName);
     }
 
 
@@ -277,6 +252,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
 
 
+
     /*-------------------below standard domain insert syntax interface-------------------*/
 
     interface _StandardDomainDefaultSpec<C, T>
@@ -298,10 +274,14 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
+    interface _StandardDomainChildSpec<C, P> extends _ChildPartClause<_StandardChildInsertIntoClause<C, P>>
+            , _InsertSpec {
+
+    }
+
     interface _StandardParentDomainDefaultSpec<C, P>
             extends _ColumnDefaultClause<C, P, _StandardParentDomainDefaultSpec<C, P>>
-            , _DomainValueClause<C, P, _InsertSpec>
-            , _ChildPartClause<_StandardChildInsertIntoClause<C, P>> {
+            , _DomainValueClause<C, P, _StandardDomainChildSpec<C, P>> {
 
     }
 

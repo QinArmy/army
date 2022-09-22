@@ -56,10 +56,15 @@ public interface MySQLReplace extends ReplaceInsert, DmlStatement.DmlInsert {
         <T> _DomainPartitionSpec<C, T> replaceInto(ComplexTableMeta<P, T> table);
     }
 
+    interface _DomainChildSpec<C, P> extends Insert._ChildPartClause<_DomainChildReplaceIntoSpec<C, P>>
+            , _ReplaceSpec {
+
+    }
+
+
     interface _DomainParentDefaultSpec<C, P>
             extends Insert._ColumnDefaultClause<C, P, _DomainParentDefaultSpec<C, P>>
-            , Insert._DomainValueClause<C, P, _ReplaceSpec>
-            , Insert._ChildPartClause<_DomainChildReplaceIntoSpec<C, P>> {
+            , Insert._DomainValueClause<C, P, _DomainChildSpec<C, P>> {
 
     }
 

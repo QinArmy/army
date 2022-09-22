@@ -268,7 +268,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     interface _DomainColumnDefaultSpec<C, T, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
             extends Insert._ColumnDefaultClause<C, T, _DomainColumnDefaultSpec<C, T, I, Q>>
-            , Insert._DomainValueClause2<C, T, _OnConflictSpec<C, T, I, Q>>
+            , _DomainValueClause<C, T, _OnConflictSpec<C, T, I, Q>>
             , _DefaultValuesClause<_OnConflictSpec<C, T, I, Q>> {
 
     }
@@ -306,7 +306,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     interface _DomainParentColumnDefaultSpec<C, P>
             extends Insert._ColumnDefaultClause<C, P, _DomainParentColumnDefaultSpec<C, P>>
-            , Insert._DomainValueClause2<C, P, _ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>>>
+            , _DomainValueClause<C, P, _ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>>>
             , _DefaultValuesClause<_ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>>> {
 
     }

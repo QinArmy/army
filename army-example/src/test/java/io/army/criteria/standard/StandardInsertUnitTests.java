@@ -40,14 +40,17 @@ public class StandardInsertUnitTests {
 
     @Test
     public void domainInsertChild() {
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
 
-        Insert stmt;
+        final Insert stmt;
         stmt = SQLs.domainInsert()
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
+                .values(provinceList)
                 .child()
                 .insertInto(ChinaProvince_.T)
-                .values(this::createProvinceList)
+                .values(provinceList)
                 .asInsert();
 
         printStmt(stmt);

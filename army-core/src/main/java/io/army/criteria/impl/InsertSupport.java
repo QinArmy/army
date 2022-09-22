@@ -569,20 +569,19 @@ abstract class InsertSupport {
     }//CommonExpClause
 
 
-    @SuppressWarnings("unchecked")
-    static abstract class DomainValueClause<C, T, CR, VR>
-            extends ColumnDefaultClause<C, T, CR> implements Insert._DomainValueClause<C, T, VR>
+    static abstract class DomainValueClause<C, P, CR, VR>
+            extends ColumnDefaultClause<C, P, CR> implements Insert._DomainValueClause<C, P, VR>
             , _Insert._DomainInsert {
 
 
         private List<?> domainList;
 
-        DomainValueClause(InsertOptions options, TableMeta<T> table) {
+        DomainValueClause(InsertOptions options, TableMeta<P> table) {
             super(options, table);
         }
 
         @Override
-        public final VR value(@Nullable T domain) {
+        public final <T extends P> VR value(@Nullable T domain) {
             if (domain == null) {
                 throw CriteriaContextStack.nullPointer(this.criteriaContext);
             }
@@ -592,27 +591,18 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR value(Function<C, T> function) {
+        public final <T extends P> VR value(Function<C, T> function) {
             return this.value(function.apply(this.criteriaContext.criteria()));
         }
 
         @Override
-        public final VR value(Supplier<T> supplier) {
+        public final <T extends P> VR value(Supplier<T> supplier) {
             return this.value(supplier.get());
         }
 
-        @Override
-        public final VR value(Function<String, Object> function, String keyName) {
-            final Object domain;
-            domain = function.apply(keyName);
-            if (!this.insertTable.javaType().isInstance(domain)) {
-                throw nonDomainInstance(this.criteriaContext, domain, this.insertTable);
-            }
-            return this.value((T) domain);
-        }
 
         @Override
-        public final VR values(final @Nullable List<T> domainList) {
+        public final <T extends P> VR values(final @Nullable List<T> domainList) {
             if (domainList == null || domainList.size() == 0) {
                 throw domainListIsEmpty();
             }
@@ -622,35 +612,15 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR values(Function<C, List<T>> function) {
+        public final <T extends P> VR values(Function<C, List<T>> function) {
             return this.values(function.apply(this.criteriaContext.criteria()));
         }
 
         @Override
-        public final VR values(Supplier<List<T>> supplier) {
+        public final <T extends P> VR values(Supplier<List<T>> supplier) {
             return this.values(supplier.get());
         }
 
-        @Override
-        public final VR values(Function<String, Object> function, String keyName) {
-            final Object value;
-            value = function.apply(keyName);
-            if (!(value instanceof List)) {
-                String m = String.format("%s return isn't %s.", Function.class.getName(), List.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
-            }
-
-            final List<?> domainList = (List<?>) value;
-            if (domainList.size() == 0) {
-                throw domainListIsEmpty();
-            }
-            if (!this.insertTable.javaType().isInstance(domainList.get(0))) {
-                throw nonDomainInstance(this.criteriaContext, domainList.get(0), this.insertTable);
-            }
-            this.domainList = _CollectionUtils.asUnmodifiableList(domainList);
-            this.endColumnDefaultClause();
-            return this.valuesEnd();
-        }
 
 
         @Override
