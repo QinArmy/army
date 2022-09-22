@@ -57,5 +57,23 @@ public abstract class Postgres extends PostgreFuncSyntax {
         throw new UnsupportedOperationException();
     }
 
+    public static PostgreInsert._QueryOptionSpec<Void> queryInsert() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> PostgreInsert._QueryOptionSpec<C> queryInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
+    public static PostgreInsert._QuerySubOptionSpec<Void> querySubInsert() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <C> PostgreInsert._QuerySubOptionSpec<C> querySubInsert(C criteria) {
+        Objects.requireNonNull(criteria);
+        throw new UnsupportedOperationException();
+    }
+
 
 }

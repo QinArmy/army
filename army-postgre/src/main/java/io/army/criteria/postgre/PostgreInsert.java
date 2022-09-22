@@ -556,5 +556,129 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     }
 
+    /*-------------------below query insert syntax interfaces-------------------*/
+
+    interface _QuerySpaceClause<C, T, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Insert._SpaceSubQueryClause<C, _OnConflictSpec<C, T, I, Q>> {
+
+    }
+
+    interface _QueryOverridingValueSpec<C, T, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends _OverridingValueClause<_QuerySpaceClause<C, T, I, Q>>
+            , _QuerySpaceClause<C, T, I, Q> {
+
+    }
+
+    interface _QueryColumnListClause<C, T, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Insert._ColumnListClause<C, T, _QueryOverridingValueSpec<C, T, I, Q>> {
+
+    }
+
+    interface _QueryAliasSpec<C, T, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Statement._AsClause<_QueryColumnListClause<C, T, I, Q>>
+            , _QueryColumnListClause<C, T, I, Q> {
+
+    }
+
+
+    interface _QueryChildInsertIntoClause<C, P> {
+
+        <T> _QueryAliasSpec<C, T, Insert, ReturningInsert> insertInto(ComplexTableMeta<P, T> table);
+
+    }
+
+    interface _QueryChildWithCteSpec<C, P>
+            extends DialectStatement._WithCteClause<C, SubStatement, _QueryChildInsertIntoClause<C, P>>
+            , _QueryChildInsertIntoClause<C, P> {
+
+    }
+
+    interface _QueryParentSpaceClause<C, P>
+            extends Insert._SpaceSubQueryClause<C, _ParentOnConflictSpec<C, P, _QueryChildWithCteSpec<C, P>>> {
+
+    }
+
+    interface _QueryParentOverridingValueSpec<C, P>
+            extends _OverridingValueClause<_QueryParentSpaceClause<C, P>>
+            , _QueryParentSpaceClause<C, P> {
+
+    }
+
+    interface _QueryParentColumnListClause<C, P>
+            extends Insert._ColumnListClause<C, P, _QueryParentOverridingValueSpec<C, P>> {
+
+    }
+
+    interface _QueryParentAliasSpec<C, P> extends Statement._AsClause<_QueryParentColumnListClause<C, P>>
+            , _QueryParentColumnListClause<C, P> {
+
+    }
+
+
+    interface _QueryInsertIntoClause<C> {
+
+        <T> _QueryAliasSpec<C, T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table);
+
+        <P> _QueryParentAliasSpec<C, P> insertInto(ParentTableMeta<P> table);
+
+    }
+
+    interface _QueryWithCteSpec<C>
+            extends DialectStatement._WithCteClause<C, SubStatement, _QueryInsertIntoClause<C>>
+            , _QueryInsertIntoClause<C> {
+
+    }
+
+
+    interface _QueryPreferLiteralSpec<C>
+            extends Insert._PreferLiteralClause<_QueryWithCteSpec<C>>
+            , _QueryWithCteSpec<C> {
+
+    }
+
+    interface _QueryNullOptionSpec<C>
+            extends Insert._NullOptionClause<_QueryPreferLiteralSpec<C>>
+            , _QueryPreferLiteralSpec<C> {
+
+    }
+
+    interface _QueryOptionSpec<C>
+            extends Insert._MigrationOptionClause<_QueryNullOptionSpec<C>>
+            , _QueryNullOptionSpec<C> {
+
+    }
+
+
+    interface _QuerySubInsertIntoClause<C> {
+
+        <T> _QueryAliasSpec<C, T, SubInsert, SubReturningInsert> insertInto(SingleTableMeta<T> table);
+
+    }
+
+    interface _QuerySubWithCteSpec<C>
+            extends DialectStatement._WithCteClause<C, SubStatement, _QuerySubInsertIntoClause<C>>
+            , _QuerySubInsertIntoClause<C> {
+
+    }
+
+
+    interface _QuerySubPreferLiteralSpec<C>
+            extends Insert._PreferLiteralClause<_QuerySubWithCteSpec<C>>
+            , _QuerySubWithCteSpec<C> {
+
+    }
+
+    interface _QuerySubNullOptionSpec<C>
+            extends Insert._NullOptionClause<_QuerySubPreferLiteralSpec<C>>
+            , _QuerySubPreferLiteralSpec<C> {
+
+    }
+
+    interface _QuerySubOptionSpec<C>
+            extends Insert._MigrationOptionClause<_QuerySubNullOptionSpec<C>>
+            , _QuerySubNullOptionSpec<C> {
+
+    }
+
 
 }
