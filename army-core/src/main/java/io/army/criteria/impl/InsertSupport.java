@@ -42,6 +42,14 @@ abstract class InsertSupport {
 
     }
 
+    interface WithValueSyntaxOptions extends ValueSyntaxOptions {
+
+        boolean isRecursive();
+
+        List<Cte> cteList();
+
+    }
+
 
     interface ColumnListClause extends CriteriaContextSpec {
 
@@ -56,14 +64,14 @@ abstract class InsertSupport {
     static abstract class InsertOptionsImpl<MR, PR> implements InsertOptions, Insert._MigrationOptionClause<MR>
             , Insert._PreferLiteralClause<PR> {
 
-        final CriteriaContext criteriaContext;
+        final CriteriaContext context;
 
         private boolean migration;
 
         private boolean preferLiteral;
 
         InsertOptionsImpl(CriteriaContext criteriaContext) {
-            this.criteriaContext = criteriaContext;
+            this.context = criteriaContext;
         }
 
         @SuppressWarnings("unchecked")
@@ -82,7 +90,7 @@ abstract class InsertSupport {
 
         @Override
         public final CriteriaContext getContext() {
-            return this.criteriaContext;
+            return this.context;
         }
 
         @Override
@@ -97,7 +105,6 @@ abstract class InsertSupport {
 
 
     }//InsertOptionsImpl
-
 
     static abstract class NonQueryInsertOptionsImpl<MR, NR, PR> extends InsertOptionsImpl<MR, PR>
             implements ValueSyntaxOptions, Insert._NullOptionClause<NR> {
@@ -124,11 +131,127 @@ abstract class InsertSupport {
     }//NonQueryInsertOptionsImpl
 
 
+    @SuppressWarnings("unchecked")
+    static abstract class NonQueryWithCteOption<C, MR, NR, PR, SS extends SubStatement, WE>
+            extends NonQueryInsertOptionsImpl<MR, NR, PR>
+            implements DialectStatement._WithCteClause<C, SS, WE>
+            , WithValueSyntaxOptions {
+
+        private boolean recursive;
+
+        private List<Cte> cteList;
+
+        NonQueryWithCteOption(CriteriaContext criteriaContext) {
+            super(criteriaContext);
+        }
+
+
+        @Override
+        public final WE with(String cteName, Supplier<? extends SS> supplier) {
+            CriteriaUtils.withClause(false, SQLs.cte(cteName, supplier.get()), this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE with(String cteName, Function<C, ? extends SS> function) {
+            CriteriaUtils.withClause(false, SQLs.cte(cteName, function.apply(this.context.criteria()))
+                    , this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE with(Consumer<Consumer<Cte>> consumer) {
+            CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE with(BiConsumer<C, Consumer<Cte>> consumer) {
+            CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE ifWith(Consumer<Consumer<Cte>> consumer) {
+            CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE ifWith(BiConsumer<C, Consumer<Cte>> consumer) {
+            CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
+            CriteriaUtils.withClause(true, SQLs.cte(cteName, supplier.get()), this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
+            CriteriaUtils.withClause(true, SQLs.cte(cteName, function.apply(this.context.criteria()))
+                    , this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE withRecursive(Consumer<Consumer<Cte>> consumer) {
+            CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE withRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
+            CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE ifWithRecursive(Consumer<Consumer<Cte>> consumer) {
+            CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+        @Override
+        public final WE ifWithRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
+            CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
+            return (WE) this;
+        }
+
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<Cte> cteList() {
+            List<Cte> cteList = this.cteList;
+            if (cteList == null) {
+                cteList = Collections.emptyList();
+            }
+            return cteList;
+        }
+
+        /**
+         * @param cteList unmodified list
+         */
+        final void doWithCte(boolean recursive, List<Cte> cteList) {
+            this.recursive = recursive;
+            this.cteList = cteList;
+        }
+
+
+    }//NonQueryWithCteOption
+
+
     static abstract class ColumnsClause<C, T, RR>
             implements Insert._ColumnListClause<C, T, RR>, Insert._StaticColumnDualClause<T, RR>
             , _Insert._ColumnListInsert, ColumnListClause {
 
-        final CriteriaContext criteriaContext;
+        final CriteriaContext context;
 
         final C criteria;
 
@@ -145,7 +268,7 @@ abstract class InsertSupport {
                 //validate for insertInto method
                 throw CriteriaContextStack.nullPointer(criteriaContext);
             }
-            this.criteriaContext = criteriaContext;
+            this.context = criteriaContext;
             this.criteria = criteriaContext.criteria();
             this.migration = migration;
             this.insertTable = table;
@@ -153,7 +276,7 @@ abstract class InsertSupport {
 
         @Override
         public final CriteriaContext getContext() {
-            return this.criteriaContext;
+            return this.context;
         }
 
         @Override
@@ -203,10 +326,10 @@ abstract class InsertSupport {
                 this.fieldList = Collections.emptyList();
                 assert fieldMap == null;
             } else if (!(fieldList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             } else {
                 if (this.migration) {
-                    validateMigrationColumnList(this.criteriaContext, this.insertTable, fieldMap);
+                    validateMigrationColumnList(this.context, this.insertTable, fieldMap);
                     assert !(this.insertTable instanceof ChildTableMeta) || fieldMap.containsKey(this.insertTable.id());
                 }
                 if (fieldList.size() == 1) {
@@ -221,9 +344,9 @@ abstract class InsertSupport {
             } else if (fieldMap instanceof HashMap) {
                 this.fieldMap = Collections.unmodifiableMap(fieldMap);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
-            return this.columnListEnd();
+            return (RR) this;
         }
 
 
@@ -238,7 +361,7 @@ abstract class InsertSupport {
             if (fieldList == null) {
                 fieldList = Collections.emptyList();
             } else if (fieldList instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return fieldList;
         }
@@ -249,7 +372,7 @@ abstract class InsertSupport {
             if (map == null) {
                 map = Collections.emptyMap();
             } else if (map instanceof HashMap) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return map;
         }
@@ -260,29 +383,31 @@ abstract class InsertSupport {
             this.fieldMap = null;
         }
 
-        abstract RR columnListEnd();
+        RR columnListEnd() {
+            throw new UnsupportedOperationException();
+        }
 
 
         @Override
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             if (fieldMap == null) {
-                checkField(this.criteriaContext, this.insertTable, this.migration, field);
+                checkField(this.context, this.insertTable, this.migration, field);
             } else if (!fieldMap.containsKey(field)) {
-                throw notContainField(this.criteriaContext, field);
+                throw notContainField(this.context, field);
             }
             if (value != null && !field.nullable() && value.isNullValue()) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
             }
 
         }
 
         private void addField(final FieldMeta<T> field) {
-            checkField(this.criteriaContext, this.insertTable, this.migration, field);
+            checkField(this.context, this.insertTable, this.migration, field);
             if (!this.migration && _MetaBridge.VISIBLE.equals(field.fieldName())) {
                 String m = String.format("%s is managed by army for column list clause,in non-migration mode."
                         , _MetaBridge.VISIBLE);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             }
 
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
@@ -298,7 +423,7 @@ abstract class InsertSupport {
 
             if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
                 String m = String.format("%s duplication", field);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             }
             fieldList.add(field);
 
@@ -370,8 +495,8 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ColumnDefaultClause<C, T, RR> extends ColumnsClause<C, T, RR>
-            implements Insert._ColumnDefaultClause<C, T, RR>, _Insert._ValuesSyntaxInsert {
+    static abstract class ColumnDefaultClause<C, T, LR, DR> extends ColumnsClause<C, T, LR>
+            implements Insert._ColumnDefaultClause<C, T, DR>, _Insert._ValuesSyntaxInsert {
 
 
         final boolean preferLiteral;
@@ -391,10 +516,10 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final RR defaultValue(final FieldMeta<T> field, final @Nullable Object value) {
+        public final DR defaultValue(final FieldMeta<T> field, final @Nullable Object value) {
             if (this.migration) {
                 String m = "migration mode not support default value clause";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             }
             final ArmyExpression valueExp;
             if (value == null) {
@@ -405,13 +530,13 @@ abstract class InsertSupport {
                 }
             } else if (value instanceof DataField) {
                 String m = "column default value must be non-field";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             } else if (!(value instanceof Expression)) {
                 valueExp = (ArmyExpression) SQLs.param(field, value);
             } else if (value instanceof ArmyExpression) {
                 valueExp = (ArmyExpression) value;
             } else {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw CriteriaContextStack.nonArmyExp(this.context);
             }
 
             this.validateField(field, valueExp);
@@ -423,101 +548,101 @@ abstract class InsertSupport {
             }
             if (commonExpMap.putIfAbsent(field, valueExp) != null) {
                 String m = String.format("duplication default for %s.", field);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             }
-            return (RR) this;
+            return (DR) this;
         }
 
 
         @Override
-        public final RR defaultLiteral(FieldMeta<T> field, @Nullable Object value) {
+        public final DR defaultLiteral(FieldMeta<T> field, @Nullable Object value) {
             return this.defaultValue(field, SQLs._nullableLiteral(field, value));
         }
 
         @Override
-        public final RR defaultExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
+        public final DR defaultExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
             final Expression expression;
             expression = function.apply(this.criteria);
             if (expression == null) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw CriteriaContextStack.nonArmyExp(this.context);
             }
             return this.defaultValue(field, expression);
         }
 
         @Override
-        public final RR defaultExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+        public final DR defaultExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
             final Expression expression;
             expression = supplier.get();
             if (expression == null) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw CriteriaContextStack.nonArmyExp(this.context);
             }
             return this.defaultValue(field, expression);
         }
 
         @Override
-        public final RR defaultNull(FieldMeta<T> field) {
+        public final DR defaultNull(FieldMeta<T> field) {
             return this.defaultValue(field, SQLs.nullWord());
         }
 
 
         @Override
-        public final RR ifDefaultValue(FieldMeta<T> field, Function<C, ?> function) {
+        public final DR ifDefaultValue(FieldMeta<T> field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
                 this.defaultValue(field, value);
             }
-            return (RR) this;
+            return (DR) this;
         }
 
         @Override
-        public final RR ifDefaultValue(FieldMeta<T> field, Supplier<?> supplier) {
+        public final DR ifDefaultValue(FieldMeta<T> field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
                 this.defaultValue(field, value);
             }
-            return (RR) this;
+            return (DR) this;
         }
 
         @Override
-        public final RR ifDefaultValue(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+        public final DR ifDefaultValue(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
                 this.defaultValue(field, value);
             }
-            return (RR) this;
+            return (DR) this;
         }
 
         @Override
-        public final RR ifDefaultLiteral(FieldMeta<T> field, Supplier<?> supplier) {
+        public final DR ifDefaultLiteral(FieldMeta<T> field, Supplier<?> supplier) {
             final Object value;
             value = supplier.get();
             if (value != null) {
                 this.defaultValue(field, SQLs._nonNullLiteral(field, value));
             }
-            return (RR) this;
+            return (DR) this;
         }
 
         @Override
-        public final RR ifDefaultLiteral(FieldMeta<T> field, Function<C, ?> function) {
+        public final DR ifDefaultLiteral(FieldMeta<T> field, Function<C, ?> function) {
             final Object value;
             value = function.apply(this.criteria);
             if (value != null) {
                 this.defaultValue(field, SQLs._nonNullLiteral(field, value));
             }
-            return (RR) this;
+            return (DR) this;
         }
 
         @Override
-        public final RR ifDefaultLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+        public final DR ifDefaultLiteral(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             final Object value;
             value = function.apply(keyName);
             if (value != null) {
                 this.defaultValue(field, SQLs._nonNullLiteral(field, value));
             }
-            return (RR) this;
+            return (DR) this;
         }
 
         @Override
@@ -569,8 +694,8 @@ abstract class InsertSupport {
     }//CommonExpClause
 
 
-    static abstract class DomainValueClause<C, P, CR, VR>
-            extends ColumnDefaultClause<C, P, CR> implements Insert._DomainValueClause<C, P, VR>
+    static abstract class DomainValueClause<C, P, CR, DR, VR>
+            extends ColumnDefaultClause<C, P, CR, DR> implements Insert._DomainValueClause<C, P, VR>
             , _Insert._DomainInsert {
 
 
@@ -583,7 +708,7 @@ abstract class InsertSupport {
         @Override
         public final <T extends P> VR value(@Nullable T domain) {
             if (domain == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw CriteriaContextStack.nullPointer(this.context);
             }
             this.domainList = Collections.singletonList(domain);
             this.endColumnDefaultClause();
@@ -592,7 +717,7 @@ abstract class InsertSupport {
 
         @Override
         public final <T extends P> VR value(Function<C, T> function) {
-            return this.value(function.apply(this.criteriaContext.criteria()));
+            return this.value(function.apply(this.context.criteria()));
         }
 
         @Override
@@ -613,7 +738,7 @@ abstract class InsertSupport {
 
         @Override
         public final <T extends P> VR values(Function<C, List<T>> function) {
-            return this.values(function.apply(this.criteriaContext.criteria()));
+            return this.values(function.apply(this.context.criteria()));
         }
 
         @Override
@@ -627,7 +752,7 @@ abstract class InsertSupport {
         public final List<?> domainList() {
             final List<?> list = this.domainList;
             if (list == null || list instanceof ArrayList) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return list;
         }
@@ -641,11 +766,18 @@ abstract class InsertSupport {
         abstract VR valuesEnd();
 
         private CriteriaException domainListIsEmpty() {
-            return CriteriaContextStack.criteriaError(this.criteriaContext, "domainList must non-empty");
+            return CriteriaContextStack.criteriaError(this.context, "domainList must non-empty");
         }
 
 
     }//DomainValueClause
+
+    static abstract class DomainValueShortClause<C, P, DR, VR> extends DomainValueClause<C, P, DR, DR, VR> {
+
+        DomainValueShortClause(InsertOptions options, TableMeta<P> table) {
+            super(options, table);
+        }
+    }//DomainValueShortClause
 
 
     static abstract class StaticColumnValuePairClause<C, T, VR>
@@ -795,7 +927,7 @@ abstract class InsertSupport {
 
 
     static abstract class DynamicValueInsertValueClause<C, T, RR, VR>
-            extends ColumnDefaultClause<C, T, RR> implements Insert._DynamicValuesClause<C, T, VR>
+            extends ColumnDefaultClause<C, T, RR, RR> implements Insert._DynamicValuesClause<C, T, VR>
             , PairsConstructor<T>, ValueSyntaxOptions {
 
         private List<Map<FieldMeta<?>, _Expression>> valuePairList;
@@ -825,11 +957,11 @@ abstract class InsertSupport {
                     valuePairList = new ArrayList<>();
                     this.valuePairList = valuePairList;
                 } else if (!(valuePairList instanceof ArrayList)) {
-                    throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                    throw CriteriaContextStack.castCriteriaApi(this.context);
                 }
                 valuePairList.add(Collections.unmodifiableMap(currentPairMap));
             } else if (currentPairMap != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.valuePairMap = new HashMap<>();
             return this;
@@ -868,18 +1000,18 @@ abstract class InsertSupport {
             if (currentPairMap == null) {
                 String m = String.format("Not found any row,please use %s.row() method create row."
                         , PairsConstructor.class.getName());
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             } else if (!(currentPairMap instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
 
             if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw CriteriaContextStack.nonArmyExp(this.context);
             }
             this.validateField(field, (ArmyExpression) value);
 
             if (currentPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
+                throw duplicationValuePair(this.context, field);
             }
             return this;
         }
@@ -889,7 +1021,7 @@ abstract class InsertSupport {
         private VR multiRowValues(final Object callback) {
             //1. validate
             if (this.valuePairMap != null || this.valuePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             //2. callback
             if (callback instanceof Consumer) {
@@ -904,7 +1036,7 @@ abstract class InsertSupport {
             Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
             if (valuePairMap == null) {
                 String m = "Values insert must have one row at least";
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             }
             if (valuePairMap.size() == 0) {
                 valuePairMap = Collections.emptyMap();
@@ -919,7 +1051,7 @@ abstract class InsertSupport {
                 valuePairList.add(valuePairMap);
                 valuePairList = Collections.unmodifiableList(valuePairList);
             } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.valuePairList = valuePairList;
             return this.valueClauseEnd(valuePairList);
@@ -1218,7 +1350,7 @@ abstract class InsertSupport {
         public final SubQuery subQuery() {
             final SubQuery query = this.subQuery;
             if (query == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return query;
         }
@@ -1227,16 +1359,115 @@ abstract class InsertSupport {
 
         private SR innerSpace(final @Nullable SubQuery query) {
             if (query == null) {
-                throw CriteriaContextStack.nullPointer(this.criteriaContext);
+                throw CriteriaContextStack.nullPointer(this.context);
             }
             if (this.subQuery != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.subQuery = query;
             return this.spaceEnd();
         }
 
     }//QueryInsertSpaceClause
+
+
+    @SuppressWarnings("unchecked")
+    abstract class ConflictUpdateSetClause<C, T, SR> implements Update._SetClause<C, FieldMeta<T>, SR> {
+
+        final CriteriaContext context;
+
+        final C criteria;
+
+        final TableMeta<T> table;
+
+        private List<ItemPair> itemPairList;
+
+        ConflictUpdateSetClause(CriteriaContext context, TableMeta<T> table) {
+            this.context = context;
+            this.criteria = context.criteria();
+            this.table = table;
+        }
+
+        @Override
+        public final SR setPairs(Consumer<Consumer<ItemPair>> consumer) {
+            consumer.accept(this::addItemPair);
+            return (SR) this;
+        }
+
+        @Override
+        public final SR setPairs(BiConsumer<C, Consumer<ItemPair>> consumer) {
+            consumer.accept(this.criteria, this::addItemPair);
+            return (SR) this;
+        }
+
+        @Override
+        public final SR setExp(FieldMeta<T> field, Expression value) {
+            return this.addFieldValuePair(field, value);
+        }
+
+        @Override
+        public final SR setExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            return this.addFieldValuePair(field, supplier.get());
+        }
+
+        @Override
+        public final SR setExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
+            return this.addFieldValuePair(field, function.apply(this.criteria));
+        }
+
+        @Override
+        public final SR ifSetExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
+            final Expression value;
+            value = supplier.get();
+            if (value != null) {
+                this.addFieldValuePair(field, value);
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR ifSetExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
+            final Expression value;
+            value = function.apply(this.criteria);
+            if (value != null) {
+                this.addFieldValuePair(field, value);
+            }
+            return (SR) this;
+        }
+
+        @Override
+        public final SR setDefault(FieldMeta<T> field) {
+            return this.addFieldValuePair(field, SQLs.defaultWord());
+        }
+
+        @Override
+        public final SR setNull(FieldMeta<T> field) {
+            return this.addFieldValuePair(field, SQLs.nullWord());
+        }
+
+        private SR addFieldValuePair(FieldMeta<T> field, Expression value) {
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                this.itemPairList = itemPairList = new ArrayList<>();
+            }
+            itemPairList.add(SQLs._itemPair(field, null, value));
+
+            return (SR) this;
+        }
+
+        private void addItemPair(final ItemPair pair) {
+            if (!(pair instanceof SQLs.ArmyItemPair)) {
+                throw CriteriaContextStack.criteriaError(this.context, "Illegal ItemPair");
+            }
+            List<ItemPair> itemPairList = this.itemPairList;
+            if (itemPairList == null) {
+                this.itemPairList = itemPairList = new ArrayList<>();
+            }
+            itemPairList.add(pair);
+        }
+
+
+    }//ConflictUpdateSetClause
 
 
     static abstract class InsertStatement<I extends DmlStatement.DmlInsert>

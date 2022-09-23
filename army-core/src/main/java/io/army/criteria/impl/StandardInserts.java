@@ -50,7 +50,7 @@ abstract class StandardInserts extends InsertSupport {
 
         private StandardDomainOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
 
@@ -68,7 +68,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     private static final class DomainColumnsClause<C, T>
-            extends DomainValueClause<C, T, Insert._StandardDomainDefaultSpec<C, T>, Insert._InsertSpec>
+            extends DomainValueShortClause<C, T, Insert._StandardDomainDefaultSpec<C, T>, Insert._InsertSpec>
             implements Insert._StandardDomainColumnsSpec<C, T> {
 
         private final DomainParentColumnsClause<C, ?> parentClause;
@@ -104,7 +104,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     private static final class DomainParentColumnsClause<C, P>
-            extends InsertSupport.DomainValueClause<
+            extends DomainValueShortClause<
             C,
             P,
             Insert._StandardParentDomainDefaultSpec<C, P>,
@@ -224,7 +224,7 @@ abstract class StandardInserts extends InsertSupport {
 
         public StandardValueOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
 
@@ -249,7 +249,7 @@ abstract class StandardInserts extends InsertSupport {
         private final StandardValueColumnsClause<?, ?> clause;
 
         private StandardStaticValuesPairClause(StandardValueColumnsClause<C, T> clause) {
-            super(clause.criteriaContext, clause::validateField);
+            super(clause.context, clause::validateField);
             this.clause = clause;
         }
 
@@ -275,7 +275,7 @@ abstract class StandardInserts extends InsertSupport {
         private final StandardValueParentColumnsClause<C, P> clause;
 
         private StandardParentStaticValuesPairClause(StandardValueParentColumnsClause<C, P> clause) {
-            super(clause.criteriaContext, clause::validateField);
+            super(clause.context, clause::validateField);
             this.clause = clause;
         }
 
@@ -339,7 +339,7 @@ abstract class StandardInserts extends InsertSupport {
             } else if (rowList.size() == this.parentStmt.rowList().size()) {
                 spec = new StandardValueChildInsertStatement(this, rowList);
             } else {
-                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.insertTable
+                throw childAndParentRowsNotMatch(this.context, (ChildTableMeta<?>) this.insertTable
                         , this.parentStmt.rowList().size(), rowList.size());
             }
             return spec;
@@ -393,7 +393,7 @@ abstract class StandardInserts extends InsertSupport {
         @Override
         Insert._StandardValueChildSpec<C, P> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
             this.rowList = rowList;
@@ -403,7 +403,7 @@ abstract class StandardInserts extends InsertSupport {
         private ValuesInsertStatement createParentStmt() {
             final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowList;
             if (rowValuesList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new ValuesInsertStatement(this, rowValuesList);
         }
@@ -505,7 +505,7 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         private QueryColumnsClause(QueryParentColumnsClause<C, ?> clause, ChildTableMeta<T> table) {
-            super(clause.criteriaContext, table);
+            super(clause.context, table);
             this.parentStmt = clause.createParentStmt();//couldn't invoke asInsert
         }
 

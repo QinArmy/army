@@ -3,7 +3,10 @@ package io.army.criteria.postgre;
 import io.army.criteria.*;
 import io.army.meta.*;
 
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface PostgreInsert extends Insert, DialectStatement {
 
@@ -27,7 +30,6 @@ public interface PostgreInsert extends Insert, DialectStatement {
         R returning();
 
         R returning(SelectItem selectItem);
-
         R returning(Consumer<Consumer<SelectItem>> consumer);
 
         R returning(BiConsumer<C, Consumer<SelectItem>> consumer);
@@ -41,13 +43,11 @@ public interface PostgreInsert extends Insert, DialectStatement {
         UR doUpdate();
     }
 
-    interface _ConflictOpClassClause<C, R> {
+    interface _ConflictOpClassClause<R> {
 
         R opClass();
 
         R ifOpClass(BooleanSupplier supplier);
-
-        R ifOpClass(Predicate<C> predicate);
 
     }
 
@@ -116,7 +116,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
 
     interface _DoUpdateSetClause<C, T, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
-            extends Update._SimpleSetClause<C, FieldMeta<T>, _DoUpdateWhereSpec<C, T, I, Q>> {
+            extends Update._SetClause<C, FieldMeta<T>, _DoUpdateWhereSpec<C, T, I, Q>> {
 
 
     }
@@ -149,7 +149,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     interface _ConflictOpClassSpec<C, T, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
             extends _ConflictTargetCommaSpec<C, T, I, Q>
-            , _ConflictOpClassClause<C, _ConflictTargetCommaSpec<C, T, I, Q>> {
+            , _ConflictOpClassClause<_ConflictTargetCommaSpec<C, T, I, Q>> {
 
     }
 
@@ -210,7 +210,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
     }
 
     interface _ParentDoUpdateSetClause<C, P, CT>
-            extends Update._SimpleSetClause<C, FieldMeta<P>, _ParentDoUpdateWhereSpec<C, P, CT>> {
+            extends Update._SetClause<C, FieldMeta<P>, _ParentDoUpdateWhereSpec<C, P, CT>> {
 
 
     }
@@ -240,7 +240,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
 
     interface _ParentConflictOpClassSpec<C, P, CT> extends _ParentConflictTargetCommaSpec<C, P, CT>
-            , _ConflictOpClassClause<C, _ParentConflictTargetCommaSpec<C, P, CT>> {
+            , _ConflictOpClassClause<_ParentConflictTargetCommaSpec<C, P, CT>> {
 
     }
 
@@ -629,26 +629,6 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     }
 
-
-    interface _QueryPreferLiteralSpec<C>
-            extends Insert._PreferLiteralClause<_QueryWithCteSpec<C>>
-            , _QueryWithCteSpec<C> {
-
-    }
-
-    interface _QueryNullOptionSpec<C>
-            extends Insert._NullOptionClause<_QueryPreferLiteralSpec<C>>
-            , _QueryPreferLiteralSpec<C> {
-
-    }
-
-    interface _QueryOptionSpec<C>
-            extends Insert._MigrationOptionClause<_QueryNullOptionSpec<C>>
-            , _QueryNullOptionSpec<C> {
-
-    }
-
-
     interface _QuerySubInsertIntoClause<C> {
 
         <T> _QueryAliasSpec<C, T, SubInsert, SubReturningInsert> insertInto(SingleTableMeta<T> table);
@@ -661,24 +641,6 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     }
 
-
-    interface _QuerySubPreferLiteralSpec<C>
-            extends Insert._PreferLiteralClause<_QuerySubWithCteSpec<C>>
-            , _QuerySubWithCteSpec<C> {
-
-    }
-
-    interface _QuerySubNullOptionSpec<C>
-            extends Insert._NullOptionClause<_QuerySubPreferLiteralSpec<C>>
-            , _QuerySubPreferLiteralSpec<C> {
-
-    }
-
-    interface _QuerySubOptionSpec<C>
-            extends Insert._MigrationOptionClause<_QuerySubNullOptionSpec<C>>
-            , _QuerySubNullOptionSpec<C> {
-
-    }
 
 
 }

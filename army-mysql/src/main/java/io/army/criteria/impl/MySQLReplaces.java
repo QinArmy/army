@@ -58,17 +58,17 @@ abstract class MySQLReplaces extends InsertSupport {
         @SuppressWarnings("unchecked")
         @Override
         public final RR replace(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
-            this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
-            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::replaceModifier);
+            this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
+            this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::replaceModifier);
             return (RR) this;
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public final RR replace(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers) {
-            this.hintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteriaContext.criteria())
+            this.hintList = MySQLUtils.asHintList(this.context, hints.apply(this.context.criteria())
                     , MySQLHints::castHint);
-            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::replaceModifier);
+            this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::replaceModifier);
             return (RR) this;
         }
 
@@ -102,7 +102,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private DomainReplaceOptionClause(@Nullable C criteria) {
             super(criteria);
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -130,7 +130,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     private static final class DomainPartitionClause<C, T>
-            extends InsertSupport.DomainValueClause<
+            extends DomainValueShortClause<
             C,
             T,
             MySQLReplace._DomainDefaultSpec<C, T>,
@@ -162,7 +162,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._DomainColumnListSpec<C, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
@@ -193,7 +193,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     private static final class DomainParentPartitionClause<C, P>
-            extends InsertSupport.DomainValueClause<
+            extends DomainValueShortClause<
             C,
             P,
             MySQLReplace._DomainParentDefaultSpec<C, P>,
@@ -224,7 +224,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._DomainParentColumnsSpec<C, P>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
@@ -240,17 +240,17 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public MySQLReplace._DomainChildIntoClause<C, P> replace(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childHintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::replaceModifier);
             return this;
         }
 
         @Override
         public MySQLReplace._DomainChildIntoClause<C, P> replace(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria)
+            this.childHintList = MySQLUtils.asHintList(this.context, hints.apply(this.criteria)
                     , MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::replaceModifier);
             return this;
         }
@@ -401,7 +401,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private ValueReplaceOptionClause(@Nullable C criteria) {
             super(criteria);
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -460,7 +460,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._ValueColumnListSpec<C, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
@@ -481,7 +481,7 @@ abstract class MySQLReplaces extends InsertSupport {
             } else if (rowList.size() == this.parentStmt.rowList().size()) {
                 spec = new ValuesChildReplaceStatement(this, rowList);
             } else {
-                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.insertTable
+                throw childAndParentRowsNotMatch(this.context, (ChildTableMeta<?>) this.insertTable
                         , this.parentStmt.rowList().size(), rowList.size());
             }
             return spec;
@@ -529,7 +529,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._ValueParentColumnsSpec<C, P>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
@@ -549,17 +549,17 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public MySQLReplace._ValueChildIntoClause<C, P> replace(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childHintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::replaceModifier);
             return this;
         }
 
         @Override
         public MySQLReplace._ValueChildIntoClause<C, P> replace(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria)
+            this.childHintList = MySQLUtils.asHintList(this.context, hints.apply(this.criteria)
                     , MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::replaceModifier);
             return this;
         }
@@ -586,7 +586,7 @@ abstract class MySQLReplaces extends InsertSupport {
         @Override
         MySQLReplace._ValueChildSpec<C, P> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowValuesList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.rowValuesList = rowList;
             return this;
@@ -600,7 +600,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private ValuesReplaceStatement createParentStmt() {
             final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowValuesList;
             if (rowValuesList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new ValuesReplaceStatement(this, rowValuesList);
         }
@@ -616,7 +616,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private final ValuePartitionClause<C, T> clause;
 
         private MySQLStaticValuesSpec(ValuePartitionClause<C, T> clause) {
-            super(clause.criteriaContext, clause::validateField);
+            super(clause.context, clause::validateField);
             this.clause = clause;
         }
 
@@ -643,7 +643,7 @@ abstract class MySQLReplaces extends InsertSupport {
         private final ValueParentPartitionClause<C, P> clause;
 
         private MySQLParentStaticValuesSpec(ValueParentPartitionClause<C, P> clause) {
-            super(clause.criteriaContext, clause::validateField);
+            super(clause.context, clause::validateField);
             this.clause = clause;
         }
 
@@ -757,7 +757,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         private AssignmentReplaceOptionClause(@Nullable C criteria) {
             super(criteria);
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -1082,7 +1082,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         private QueryPartitionClause(QueryParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
-            super(clause.criteriaContext, table);
+            super(clause.context, table);
             this.hintList = _CollectionUtils.safeList(clause.childHintList);
             this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
             this.parentStmt = clause.createParentStmt();//couldn't invoke asInsert method
@@ -1090,7 +1090,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._QueryColumnListClause<C, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
@@ -1147,7 +1147,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLReplace._QueryParentColumnsClause<C, P>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
@@ -1163,17 +1163,17 @@ abstract class MySQLReplaces extends InsertSupport {
 
         @Override
         public MySQLReplace._QueryChildIntoClause<C, P> replace(Supplier<List<Hint>> hints, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.get(), MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childHintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::replaceModifier);
             return this;
         }
 
         @Override
         public MySQLReplace._QueryChildIntoClause<C, P> replace(Function<C, List<Hint>> hints, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, hints.apply(this.criteria)
+            this.childHintList = MySQLUtils.asHintList(this.context, hints.apply(this.criteria)
                     , MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::replaceModifier);
             return this;
         }

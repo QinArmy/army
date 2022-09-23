@@ -94,7 +94,11 @@ public class MySQLInsertUnitTests {
                 .rightParen()
                 .defaultLiteral(User_.visible, true)
                 .values(personList)
+                .onDuplicateKey()
+                .update(User_.identityId, 0)
+
                 .child()
+
                 .insertInto(Person_.T)
                 .defaultValue(Person_.birthday, LocalDate.now())
                 .values(personList)

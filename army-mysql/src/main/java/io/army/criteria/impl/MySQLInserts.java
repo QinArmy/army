@@ -89,16 +89,16 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public final IR insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
-            this.hintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
-            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
+            this.hintList = MySQLUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
+            this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
             return (IR) this;
         }
 
         @Override
         public final IR insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
-            this.hintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteriaContext.criteria())
+            this.hintList = MySQLUtils.asHintList(this.context, function.apply(this.context.criteria())
                     , MySQLHints::castHint);
-            this.modifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers, MySQLUtils::insertModifier);
+            this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::insertModifier);
             return (IR) this;
         }
 
@@ -376,7 +376,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private DomainInsertOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -405,7 +405,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class DomainPartitionClause<C, T>
-            extends InsertSupport.DomainValueClause<
+            extends DomainValueShortClause<
             C,
             T,
             MySQLInsert._DomainDefaultSpec<C, T>,
@@ -438,7 +438,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._DomainColumnListSpec<C, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
 
@@ -483,7 +483,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class DomainParentPartitionClause<C, P>
-            extends InsertSupport.DomainValueClause<
+            extends DomainValueShortClause<
             C,
             P,
             MySQLInsert._DomainParentColumnDefaultSpec<C, P>,
@@ -515,22 +515,22 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._DomainParentColumnsSpec<C, P>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
         public MySQLInsert._DomainChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childHintList = MySQLUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::insertModifier);
             return this;
         }
 
         @Override
         public MySQLInsert._DomainChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
+            this.childHintList = MySQLUtils.asHintList(this.context, function.apply(this.criteria)
                     , MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::insertModifier);
             return this;
         }
@@ -562,7 +562,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = pairList;
             return this.createParentStmt(this::domainList)
@@ -571,7 +571,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         public MySQLInsert._DomainChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.endColumnDefaultClause();
             this.duplicatePairList = pairList;
@@ -588,7 +588,7 @@ abstract class MySQLInserts extends InsertSupport {
         private DomainInsertStatement createParentStmt(Supplier<List<?>> supplier) {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             final DomainInsertStatement statement;
             if (pairList.size() == 0) {
@@ -761,7 +761,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private ValueInsertOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -794,7 +794,7 @@ abstract class MySQLInserts extends InsertSupport {
         private final ValuePartitionClause<C, T> clause;
 
         private StaticValuesLeftParenClause(ValuePartitionClause<C, T> clause) {
-            super(clause.criteriaContext, clause::validateField);
+            super(clause.context, clause::validateField);
             this.clause = clause;
         }
 
@@ -941,13 +941,13 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._ValueColumnListSpec<C, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
         public MySQLInsert._ValueStaticValuesLeftParenClause<C, T> values() {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new StaticValuesLeftParenClause<>(this);
         }
@@ -962,7 +962,7 @@ abstract class MySQLInserts extends InsertSupport {
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             final List<Map<FieldMeta<?>, _Expression>> rowList = this.rowList;
             if (rowList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             final Insert._InsertSpec spec;
             if (pairList.size() == 0) {
@@ -971,7 +971,7 @@ abstract class MySQLInserts extends InsertSupport {
                 } else if (rowList.size() == this.parentStmt.rowList().size()) {
                     spec = new ValueChildInsertStatement(this);
                 } else {
-                    throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.insertTable
+                    throw childAndParentRowsNotMatch(this.context, (ChildTableMeta<?>) this.insertTable
                             , this.parentStmt.rowList().size(), rowList.size());
                 }
             } else if (this.parentStmt == null) {
@@ -979,7 +979,7 @@ abstract class MySQLInserts extends InsertSupport {
             } else if (rowList.size() == this.parentStmt.rowList().size()) {
                 spec = new ValueChildInsertWithDuplicateKey(this, pairList);
             } else {
-                throw childAndParentRowsNotMatch(this.criteriaContext, (ChildTableMeta<?>) this.insertTable
+                throw childAndParentRowsNotMatch(this.context, (ChildTableMeta<?>) this.insertTable
                         , this.parentStmt.rowList().size(), rowList.size());
             }
             return spec.asInsert();
@@ -989,7 +989,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         MySQLInsert._OnDuplicateKeyUpdateFieldSpec<C, T> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return new NonParentDuplicateKeyUpdateSpec<>(this);
@@ -997,7 +997,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         Insert valueClauseEndBeforeAs(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return this.endInsert(Collections.emptyList());
@@ -1046,30 +1046,30 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._ValueParentColumnsSpec<C, P>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
         public MySQLInsert._ValueParentStaticValueLeftParenClause<C, P> values() {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return new ParentStaticValuesLeftParenClause<>(this);
         }
 
         @Override
         public MySQLInsert._ValueChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childHintList = MySQLUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::insertModifier);
             return this;
         }
 
         @Override
         public MySQLInsert._ValueChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
+            this.childHintList = MySQLUtils.asHintList(this.context, function.apply(this.criteria)
                     , MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::insertModifier);
             return this;
         }
@@ -1092,7 +1092,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._ValueChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> rowList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = rowList;
             return this;
@@ -1101,7 +1101,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> rowList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = rowList;
             return this.createParentStmt().asInsert();
@@ -1110,7 +1110,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         MySQLInsert._ParentOnDuplicateKeyUpdateFieldSpec<C, P, MySQLInsert._ValueChildInsertIntoSpec<C, P>> valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return new ParentDuplicateKeyUpdateSpec<>(this);
@@ -1118,7 +1118,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private Insert valueClauseEndBeforeAs(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return this.endInsert(Collections.emptyList());
@@ -1126,7 +1126,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private MySQLInsert._ValueChildInsertIntoSpec<C, P> childBeforeAs(final List<Map<FieldMeta<?>, _Expression>> rowList) {
             if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowList;
             return this;
@@ -1146,11 +1146,11 @@ abstract class MySQLInserts extends InsertSupport {
 
         private ValuesInsertStatement createParentStmt() {
             if (this.rowList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             final ValuesInsertStatement statement;
             if (pairList.size() == 0) {
@@ -1302,7 +1302,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         private AssignmentInsertOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.criteriaContext);
+            CriteriaContextStack.setContextStack(this.context);
         }
 
         @Override
@@ -1780,7 +1780,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         private QueryPartitionClause(QueryParentPartitionClause<C, ?> clause, ChildTableMeta<T> table) {
-            super(clause.criteriaContext, table);
+            super(clause.context, table);
             this.hintList = _CollectionUtils.safeList(clause.childHintList);
             this.modifierList = _CollectionUtils.safeList(clause.childModifierList);
             this.parentStmt = clause.createParentStmt(); //couldn't invoke asInsert method
@@ -1788,7 +1788,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._QueryColumnListClause<C, T>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
 
@@ -1862,7 +1862,7 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public Statement._LeftParenStringQuadraOptionalSpec<C, MySQLInsert._QueryParentColumnListClause<C, P>> partition() {
-            return CriteriaSupports.stringQuadra(this.criteriaContext, this::partitionEnd);
+            return CriteriaSupports.stringQuadra(this.context, this::partitionEnd);
         }
 
         @Override
@@ -1872,17 +1872,17 @@ abstract class MySQLInserts extends InsertSupport {
 
         @Override
         public MySQLInsert._QueryChildIntoClause<C, P> insert(Supplier<List<Hint>> supplier, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, supplier.get(), MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childHintList = MySQLUtils.asHintList(this.context, supplier.get(), MySQLHints::castHint);
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::queryInsertModifier);
             return this;
         }
 
         @Override
         public MySQLInsert._QueryChildIntoClause<C, P> insert(Function<C, List<Hint>> function, List<MySQLModifier> modifiers) {
-            this.childHintList = MySQLUtils.asHintList(this.criteriaContext, function.apply(this.criteria)
+            this.childHintList = MySQLUtils.asHintList(this.context, function.apply(this.criteria)
                     , MySQLHints::castHint);
-            this.childModifierList = MySQLUtils.asModifierList(this.criteriaContext, modifiers
+            this.childModifierList = MySQLUtils.asModifierList(this.context, modifiers
                     , MySQLUtils::queryInsertModifier);
             return this;
         }
@@ -1904,7 +1904,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public MySQLInsert._QueryChildInsertIntoSpec<C, P> parentStmtEnd(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = pairList;
             return this;
@@ -1913,7 +1913,7 @@ abstract class MySQLInserts extends InsertSupport {
         @Override
         public Insert endInsert(final List<_Pair<FieldMeta<?>, _Expression>> pairList) {
             if (this.duplicatePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.duplicatePairList = pairList;
             return this.createParentStmt().asInsert();
@@ -1938,7 +1938,7 @@ abstract class MySQLInserts extends InsertSupport {
         private MySQLQueryInsertStatement createParentStmt() {
             final List<_Pair<FieldMeta<?>, _Expression>> pairList = this.duplicatePairList;
             if (pairList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             final MySQLQueryInsertStatement statement;
             if (pairList.size() == 0) {
