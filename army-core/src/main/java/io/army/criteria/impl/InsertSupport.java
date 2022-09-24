@@ -1597,6 +1597,8 @@ abstract class InsertSupport {
                 this.predicateList = predicateList = Collections.emptyList();
             } else if (predicateList instanceof ArrayList) {
                 this.predicateList = predicateList = _CollectionUtils.unmodifiableList(predicateList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return predicateList;
         }
