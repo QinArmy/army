@@ -10,29 +10,31 @@ import java.util.function.Supplier;
 
 public interface PostgreInsert extends Insert, DialectStatement {
 
+    interface _StaticReturningCommaUnaryClause<RU> {
 
-    interface _StaticReturningCommaClause<R> {
-
-        R comma(SelectItem selectItem);
-
-        _StaticReturningCommaClause<R> comma(SelectItem selectItem1, SelectItem selectItem2);
-
-    }
-
-    interface _StaticReturningClause<R> {
-
-        R returning(SelectItem selectItem1, SelectItem selectItem2);
+        RU comma(SelectItem selectItem);
     }
 
 
-    interface _DynamicReturningClause<C, R> {
+    interface _StaticReturningCommaDualClause<RU, RD> {
 
-        R returning();
+        RU comma(SelectItem selectItem);
 
-        R returning(SelectItem selectItem);
-        R returning(Consumer<Consumer<SelectItem>> consumer);
+        RD comma(SelectItem selectItem1, SelectItem selectItem2);
 
-        R returning(BiConsumer<C, Consumer<SelectItem>> consumer);
+    }
+
+    interface _ReturningClause<C, RR, RU, RD> {
+
+        RR returning();
+
+        RU returning(SelectItem selectItem1);
+
+        RD returning(SelectItem selectItem1, SelectItem selectItem2);
+
+        RR returning(Consumer<Consumer<SelectItem>> consumer);
+
+        RR returning(BiConsumer<C, Consumer<SelectItem>> consumer);
     }
 
 
@@ -61,6 +63,8 @@ public interface PostgreInsert extends Insert, DialectStatement {
         R collation(String collationName);
 
         R collation(Supplier<String> supplier);
+
+        R ifCollation(Supplier<String> supplier);
     }
 
     interface _OnConflictClause<R> {
@@ -89,15 +93,21 @@ public interface PostgreInsert extends Insert, DialectStatement {
         OR overridingUserValue();
     }
 
-    interface _ReturningCommaSpec<Q extends DqlStatement.DqlInsert> extends DqlStatement.DqlInsertSpec<Q>
-            , _StaticReturningCommaClause<DqlStatement.DqlInsertSpec<Q>> {
+    interface _StaticReturningCommaUnarySpec<Q extends DqlStatement.DqlInsert>
+            extends _StaticReturningCommaUnaryClause<_StaticReturningCommaUnarySpec<Q>>
+            , DqlStatement.DqlInsertSpec<Q> {
+    }
+
+
+    interface _StaticReturningCommaDualSpec<Q extends DqlStatement.DqlInsert>
+            extends _StaticReturningCommaDualClause<DqlStatement.DqlInsertSpec<Q>, _StaticReturningCommaDualSpec<Q>>
+            , DqlStatement.DqlInsertSpec<Q> {
 
     }
 
 
     interface _ReturningSpec<C, I extends DmlInsert, Q extends DqlStatement.DqlInsert> extends _DmlInsertSpec<I>
-            , _DynamicReturningClause<C, DqlStatement.DqlInsertSpec<Q>>
-            , _StaticReturningClause<_ReturningCommaSpec<Q>> {
+            , _ReturningClause<C, DqlStatement.DqlInsertSpec<Q>,> {
 
     }
 
@@ -179,21 +189,50 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     }
 
-    interface _PostgreChildReturnSpec<CT> extends Insert._ChildPartClause<CT>
-            , DqlStatement.DqlInsertSpec<ReturningInsert> {
+    interface _PostgreChildReturnSpec<CT, Q extends DqlStatement.DqlInsert> extends Insert._ChildPartClause<CT>
+            , DqlStatement.DqlInsertSpec<Q> {
 
     }
 
-    interface _ParentReturningCommaSpec<CT> extends _PostgreChildReturnSpec<CT>
-            , _StaticReturningCommaClause<_PostgreChildReturnSpec<CT>> {
+    interface _ParentReturningCommaUnaryClause<CT, Q extends DqlStatement.DqlInsert>
+            extends _StaticReturningCommaUnaryClause<Q>, Insert._ChildPartClause<CT> {
+
+        _ParentReturningCommaUnaryClause<CT, Q> comma(SelectItem selectItem);
+
+    }
+
+
+    interface _ParentReturningCommaDualClause<CT, Q extends DqlStatement.DqlInsert>
+            extends _StaticReturningCommaDualClause<Q>, _PostgreChildReturnSpec<CT, Q> {
+
+        _PostgreChildReturnSpec<CT, Q> comma(SelectItem selectItem);
+
+        _ParentReturningCommaDualClause<CT, Q> comma(SelectItem selectItem1, SelectItem selectItem2);
+
+    }
+
+    interface _ParentReturningClause<C, CT, Q extends DqlStatement.DqlInsert> extends _ReturningClause<C, Q> {
+
+        @Override
+        _PostgreChildReturnSpec<CT, Q> returning();
+
+        @Override
+        _ParentReturningCommaUnaryClause<CT, Q> returning(SelectItem selectItem1);
+
+        @Override
+        _ParentReturningCommaDualClause<CT, Q> returning(SelectItem selectItem1, SelectItem selectItem2);
+
+        @Override
+        _PostgreChildReturnSpec<CT, Q> returning(Consumer<Consumer<SelectItem>> consumer);
+
+        @Override
+        _PostgreChildReturnSpec<CT, Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer);
 
     }
 
 
     interface _ParentReturningSpec<C, CT> extends _PostgreChildSpec<CT>
-            , _DynamicReturningClause<C, _PostgreChildReturnSpec<CT>>
-            , _StaticReturningClause<_ParentReturningCommaSpec<CT>> {
-
+            , _ParentReturningClause<C, CT, ReturningInsert> {
     }
 
     interface _ParentDoUpdateWhereAndSpec<C, CT>
@@ -640,7 +679,6 @@ public interface PostgreInsert extends Insert, DialectStatement {
             , _QuerySubInsertIntoClause<C> {
 
     }
-
 
 
 }

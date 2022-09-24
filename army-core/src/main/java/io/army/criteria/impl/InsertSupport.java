@@ -4,6 +4,7 @@ import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._DialectUtils;
@@ -747,7 +748,6 @@ abstract class InsertSupport {
         }
 
 
-
         @Override
         public final List<?> domainList() {
             final List<?> list = this.domainList;
@@ -1468,6 +1468,141 @@ abstract class InsertSupport {
 
 
     }//ConflictUpdateSetClause
+
+    @SuppressWarnings("unchecked")
+    static class MinWhereClause<C, WR, WA> implements Statement._MinQueryWhereClause<C, WR, WA>
+            , Statement._MinWhereAndClause<C, WA>
+            , CriteriaContextSpec {
+
+        final CriteriaContext context;
+
+        final C criteria;
+
+        private List<_Predicate> predicateList;
+
+        MinWhereClause(CriteriaContext context) {
+            this.context = context;
+            this.criteria = context.criteria();
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
+        }
+
+        @Override
+        public final WR where(Consumer<Consumer<IPredicate>> consumer) {
+            consumer.accept(this::and);
+            if (this.predicateList == null) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+            }
+            return (WR) this;
+        }
+
+        @Override
+        public final WR where(BiConsumer<C, Consumer<IPredicate>> consumer) {
+            consumer.accept(this.criteria, this::and);
+            if (this.predicateList == null) {
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
+            }
+            return (WR) this;
+        }
+
+        @Override
+        public final WA where(IPredicate predicate) {
+            return this.and(predicate);
+        }
+
+        @Override
+        public final WA where(Supplier<IPredicate> supplier) {
+            return this.and(supplier.get());
+        }
+
+        @Override
+        public final WR ifWhere(Consumer<Consumer<IPredicate>> consumer) {
+            consumer.accept(this::and);
+            return (WR) this;
+        }
+
+        @Override
+        public final WR ifWhere(BiConsumer<C, Consumer<IPredicate>> consumer) {
+            consumer.accept(this.criteria, this::and);
+            return (WR) this;
+        }
+
+
+        @Override
+        public final WA where(Function<C, IPredicate> function) {
+            return this.and(function.apply(this.criteria));
+        }
+
+        @Override
+        public final WA whereIf(Supplier<IPredicate> supplier) {
+            return this.ifAnd(supplier);
+        }
+
+        @Override
+        public final WA whereIf(Function<C, IPredicate> function) {
+            return this.ifAnd(function);
+        }
+
+        @Override
+        public final WA and(final @Nullable IPredicate predicate) {
+            if (predicate == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            }
+            List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null) {
+                this.predicateList = predicateList = new ArrayList<>();
+            } else if (!(predicateList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            predicateList.add((OperationPredicate) predicate);
+            return (WA) this;
+        }
+
+        @Override
+        public final WA and(Supplier<IPredicate> supplier) {
+            return this.and(supplier.get());
+        }
+
+        @Override
+        public final WA and(Function<C, IPredicate> function) {
+            return this.and(function.apply(this.criteria));
+        }
+
+        @Override
+        public final WA ifAnd(Supplier<IPredicate> supplier) {
+            final IPredicate predicate;
+            predicate = supplier.get();
+            if (predicate != null) {
+                this.and(predicate);
+            }
+            return (WA) this;
+        }
+
+        @Override
+        public final WA ifAnd(Function<C, IPredicate> function) {
+            final IPredicate predicate;
+            predicate = function.apply(this.criteria);
+            if (predicate != null) {
+                this.and(predicate);
+            }
+            return (WA) this;
+        }
+
+        final List<_Predicate> endWhereClause() {
+            List<_Predicate> predicateList = this.predicateList;
+            if (predicateList == null) {
+                this.predicateList = predicateList = Collections.emptyList();
+            } else if (predicateList instanceof ArrayList) {
+                this.predicateList = predicateList = _CollectionUtils.unmodifiableList(predicateList);
+            }
+            return predicateList;
+        }
+
+
+    }//MinWhereClause
 
 
     static abstract class InsertStatement<I extends DmlStatement.DmlInsert>
