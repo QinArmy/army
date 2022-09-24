@@ -175,7 +175,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
     }
 
 
-    interface _PostgreChildSpec<CT> extends Insert._ChildPartClause<CT>, Insert._InsertSpec {
+    interface _PostgreChildSpec<CT, I extends DmlInsert> extends Insert._ChildPartClause<CT>, _DmlInsertSpec<I> {
 
     }
 
@@ -201,8 +201,8 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     }
 
-    interface _ParentReturningClause<C, CT, I extends DmlInsert, Q extends DqlStatement.DqlInsert> extends _ReturningClause<C, Q>
-            , DmlStatement._DmlInsertSpec<I> {
+    interface _ParentReturningClause<C, CT, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends _ReturningClause<C, Q>, _PostgreChildSpec<CT, I> {
 
         @Override
         _PostgreChildReturnSpec<CT, Q> returning();
@@ -222,7 +222,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
     }
 
 
-    interface _ParentReturningSpec<C, CT> extends _PostgreChildSpec<CT>
+    interface _ParentReturningSpec<C, CT> extends _PostgreChildSpec<CT, Insert>
             , _ParentReturningClause<C, CT, Insert, ReturningInsert> {
     }
 
