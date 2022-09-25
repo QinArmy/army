@@ -1,7 +1,5 @@
 package io.army.criteria;
 
-import io.army.lang.Nullable;
-
 import java.util.List;
 
 /**
@@ -15,11 +13,9 @@ import java.util.List;
  *
  * @since 1.0
  */
-public interface DerivedTable extends TabularItem {
+public interface DerivedTable extends TabularItem, TabularItem.DerivedTableSpec {
 
     List<? extends SelectItem> selectItemList();
 
-    @Nullable
-    Selection selection(String derivedFieldName);
 
 }

@@ -10,7 +10,6 @@ import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -60,8 +59,12 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new SimpleScalarSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
-    static <C, P> StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<C, P>> parentInsertQuery(Function<SubQuery, Insert._StandardChildSpec<C, P>> function) {
-        return null;
+    static <C, P> StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<C, P>> parentInsertQuery(@Nullable C criteria, Function<SubQuery, Insert._StandardChildSpec<C, P>> function) {
+        return new ParentInsertSubQuery<>(CriteriaContexts.subQueryContext(criteria), function);
+    }
+
+    static <C> StandardQuery._StandardSelectClause<C, Insert._StandardInsertQuery> insertQuery(@Nullable C criteria, Function<SubQuery, Insert._InsertSpec> function) {
+        return new InsertSubQuery<>(CriteriaContexts.subQueryContext(criteria), function);
     }
 
     @SuppressWarnings("unchecked")
@@ -86,10 +89,10 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     private LockMode lockMode;
 
-   private StandardSimpleQuery(CriteriaContext criteriaContext) {
-       super(criteriaContext);
+    private StandardSimpleQuery(CriteriaContext criteriaContext) {
+        super(criteriaContext);
 
-   }
+    }
 
     @Override
     public final _UnionSpec<C, Q> lock(@Nullable LockMode lockMode) {
@@ -249,25 +252,62 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private static class SimpleSubQuery<C, Q extends SubQuery> extends StandardSimpleQuery<C, Q>
             implements SubQuery {
 
-        private Map<String, Selection> selectionMap;
-
         private SimpleSubQuery(CriteriaContext criteriaContext) {
             super(criteriaContext);
         }
 
 
+    } // SimpleSubQuery
+
+
+    private static final class ParentInsertSubQuery<C, P>
+            extends StandardSimpleQuery<C, Insert._StandardParentInsertQuery<C, P>>
+            implements SubQuery, Insert._StandardParentInsertQuery<C, P> {
+
+        private final Function<SubQuery, Insert._StandardChildSpec<C, P>> function;
+
+        private ParentInsertSubQuery(CriteriaContext criteriaContext, Function<SubQuery, Insert._StandardChildSpec<C, P>> function) {
+            super(criteriaContext);
+            this.function = function;
+        }
+
         @Override
-        public final Selection selection(String derivedFieldName) {
-            Map<String, Selection> selectionMap = this.selectionMap;
-            if (selectionMap == null) {
-                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
-                this.selectionMap = selectionMap;
-            }
-            return selectionMap.get(derivedFieldName);
+        public Insert asInsert() {
+            this.prepared();
+            return this.function.apply(this)
+                    .asInsert();
+        }
+
+        @Override
+        public Insert._StandardChildInsertIntoClause<C, P> child() {
+            this.prepared();
+            return this.function.apply(this)
+                    .child();
         }
 
 
-    } // SimpleSubQuery
+    }//ParentInsertSubQuery
+
+    private static final class InsertSubQuery<C> extends StandardSimpleQuery<C, Insert._StandardInsertQuery>
+            implements SubQuery, Insert._StandardInsertQuery {
+
+        private final Function<SubQuery, Insert._InsertSpec> function;
+
+        private InsertSubQuery(CriteriaContext context, Function<SubQuery, Insert._InsertSpec> function) {
+            super(context);
+            this.function = function;
+        }
+
+        @Override
+        public Insert asInsert() {
+            this.prepared();
+            return this.function.apply(this)
+                    .asInsert();
+        }
+
+
+    }//InsertSubQuery
+
 
     /**
      * @see #scalarSubQuery(Object)
@@ -322,22 +362,9 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     private static class UnionAndSubQuery<C, Q extends SubQuery> extends UnionAndQuery<C, Q>
             implements SubQuery, _SelfDescribed {
 
-        private Map<String, Selection> selectionMap;
-
         private UnionAndSubQuery(Q left, UnionType unionType, CriteriaContext context) {
             super(left, unionType, context);
         }
-
-        @Override
-        public final Selection selection(String derivedFieldName) {
-            Map<String, Selection> selectionMap = this.selectionMap;
-            if (selectionMap == null) {
-                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
-                this.selectionMap = selectionMap;
-            }
-            return selectionMap.get(derivedFieldName);
-        }
-
 
     }// UnionAndSubQuery
 

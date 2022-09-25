@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
@@ -17,7 +16,6 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.*;
 
 
@@ -643,21 +641,10 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private static class SimpleSubQuery<C, Q extends SubQuery> extends MySQL80SimpleQuery<C, Q> implements SubQuery {
 
-        private Map<String, Selection> selectionMap;
-
         private SimpleSubQuery(CriteriaContext criteriaContext) {
             super(criteriaContext);
         }
 
-        @Override
-        public final Selection selection(String derivedFieldName) {
-            Map<String, Selection> selectionMap = this.selectionMap;
-            if (selectionMap == null) {
-                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
-                this.selectionMap = selectionMap;
-            }
-            return selectionMap.get(derivedFieldName);
-        }
 
     }//SimpleSubQuery
 
@@ -707,23 +694,13 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }//UnionAndSelect
 
     private static class UnionAndSubQuery<C, Q extends SubQuery> extends UnionAndQuery<C, Q>
-            implements SubQuery, _SelfDescribed {
+            implements SubQuery {
 
-        private Map<String, Selection> selectionMap;
 
         private UnionAndSubQuery(Q left, UnionType unionType, CriteriaContext criteriaContext) {
             super(left, unionType, criteriaContext);
         }
 
-        @Override
-        public final Selection selection(String derivedFieldName) {
-            Map<String, Selection> selectionMap = this.selectionMap;
-            if (selectionMap == null) {
-                selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
-                this.selectionMap = selectionMap;
-            }
-            return selectionMap.get(derivedFieldName);
-        }
 
     }//UnionAndSubQuery
 

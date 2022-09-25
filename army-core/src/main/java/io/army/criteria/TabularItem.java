@@ -1,6 +1,8 @@
 package io.army.criteria;
 
 
+import io.army.lang.Nullable;
+
 /**
  * <p>
  * This interface representing row set.This interface is base interface of below:
@@ -15,5 +17,12 @@ package io.army.criteria;
  */
 public interface TabularItem {
 
+
+    interface DerivedTableSpec {
+
+        @Nullable
+        Selection selection(String derivedFieldName);
+
+    }
 
 }

@@ -15,6 +15,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.*;
 
 
@@ -31,7 +32,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
         implements Statement._QueryWhereClause<C, WR, WA>, Statement._WhereAndClause<C, WA>, Query._GroupClause<C, GR>
         , Query._HavingClause<C, HR>, _Query, Statement._FromClause<C, FT, FS>, DialectStatement._DialectFromClause<FP>
         , DialectStatement._DialectSelectClause<C, W, SR>, DialectStatement._FromCteClause<FS>, Query._QuerySpec<Q>
-        , JoinableClause.ClauseCreator<FP, JT, JS, JP> {
+        , JoinableClause.ClauseCreator<FP, JT, JS, JP>
+        , TabularItem.DerivedTableSpec {
 
     private List<Hint> hintList;
 
@@ -48,6 +50,11 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     private List<ArmySortItem> groupByList;
 
     private List<_Predicate> havingList;
+
+    /**
+     * @see #selection(String)
+     */
+    private Map<String, Selection> subQuerySelectionMap;
 
 
     SimpleQuery(CriteriaContext criteriaContext) {
@@ -779,6 +786,20 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     @Override
     public JP createTableClause(_JoinType joinType, @Nullable ItemWord itemWord, TableMeta<?> table) {
         throw CriteriaContextStack.castCriteriaApi(this.context);
+    }
+
+
+    @Override
+    public final Selection selection(final String derivedFieldName) {
+        if (!(this instanceof SubQuery)) {
+            throw CriteriaContextStack.castCriteriaApi(this.context);
+        }
+        Map<String, Selection> selectionMap = this.subQuerySelectionMap;
+        if (selectionMap == null) {
+            selectionMap = CriteriaUtils.createSelectionMap(this.selectItemList());
+            this.subQuerySelectionMap = selectionMap;
+        }
+        return selectionMap.get(derivedFieldName);
     }
 
     final boolean hasGroupBy() {

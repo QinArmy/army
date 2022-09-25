@@ -107,17 +107,22 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public Insert._StandardValueStaticLeftParenClause<C, T> values() {
-            return null;
+            return new NonParentValuesLeftParenClause<>(this);
         }
 
         @Override
         public StandardQuery._StandardSelectClause<C, Insert._StandardInsertQuery> space() {
-            return null;
+            return StandardSimpleQuery.insertQuery(this.criteria, this::staticInsertSubQueryEnd);
         }
 
         @Override
         public Insert asInsert() {
             return null;
+        }
+
+        private Insert._InsertSpec staticInsertSubQueryEnd(final SubQuery subQuery) {
+            this.staticSpaceSubQueryClauseEnd(subQuery);
+            return this;
         }
 
 
@@ -180,7 +185,7 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<C, P>> space() {
-            return StandardSimpleQuery.parentInsertQuery(this::staticInsertSubQueryEnd);
+            return StandardSimpleQuery.parentInsertQuery(this.criteria, this::staticInsertSubQueryEnd);
         }
 
         @Override
