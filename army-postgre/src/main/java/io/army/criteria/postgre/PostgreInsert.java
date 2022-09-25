@@ -213,7 +213,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
         _PostgreChildReturnSpec<CT, Q> returning();
 
         @Override
-        _ParentReturningCommaUnaryClause<CT, Q> returning(SelectItem selectItem1);
+        _ParentReturningCommaUnaryClause<CT, Q> returning(SelectItem selectItem);
 
         @Override
         _ParentReturningCommaDualClause<CT, Q> returning(SelectItem selectItem1, SelectItem selectItem2);
@@ -227,79 +227,79 @@ public interface PostgreInsert extends Insert, DialectStatement {
     }
 
 
-    interface _ParentReturningSpec<C, CT> extends _PostgreChildSpec<CT, Insert>
-            , _ParentReturningClause<C, CT, Insert, ReturningInsert> {
+    interface _ParentReturningSpec<C, P> extends _PostgreChildSpec<_ChildWithCteSpec<C, P>, Insert>
+            , _ParentReturningClause<C, _ChildWithCteSpec<C, P>, Insert, ReturningInsert> {
     }
 
-    interface _ParentDoUpdateWhereAndSpec<C, CT>
-            extends Statement._MinWhereAndClause<C, _ParentDoUpdateWhereAndSpec<C, CT>>
-            , _ParentReturningSpec<C, CT> {
-
-    }
-
-    interface _ParentDoUpdateWhereSpec<C, P, CT>
-            extends Statement._MinQueryWhereClause<C, _ParentReturningSpec<C, CT>, _ParentDoUpdateWhereAndSpec<C, CT>>
-            , _ParentDoUpdateSetClause<C, P, CT>
-            , _ParentReturningSpec<C, CT> {
+    interface _ParentDoUpdateWhereAndSpec<C, P>
+            extends Statement._MinWhereAndClause<C, _ParentDoUpdateWhereAndSpec<C, P>>
+            , _ParentReturningSpec<C, P> {
 
     }
 
-    interface _ParentDoUpdateSetClause<C, P, CT>
-            extends Update._SetClause<C, FieldMeta<P>, _ParentDoUpdateWhereSpec<C, P, CT>> {
-
-
-    }
-
-    interface _ParentConflictActionClause<C, P, CT>
-            extends _ConflictActionClause<_ParentReturningSpec<C, CT>, _ParentDoUpdateSetClause<C, P, CT>> {
+    interface _ParentDoUpdateWhereSpec<C, P>
+            extends Statement._MinQueryWhereClause<C, _ParentReturningSpec<C, P>, _ParentDoUpdateWhereAndSpec<C, P>>
+            , _ParentDoUpdateSetClause<C, P>
+            , _ParentReturningSpec<C, P> {
 
     }
 
-    interface _ParentConflictTargetWhereAndSpec<C, P, CT>
-            extends Statement._MinWhereAndClause<C, _ParentConflictTargetWhereAndSpec<C, P, CT>>
-            , _ParentConflictActionClause<C, P, CT> {
-
-    }
-
-
-    interface _ParentConflictTargetWhereSpec<C, P, CT> extends _ParentConflictActionClause<C, P, CT>
-            , Statement._MinQueryWhereClause<C, _ParentConflictActionClause<C, P, CT>, _ParentConflictTargetWhereAndSpec<C, P, CT>> {
-
-    }
-
-    interface _ParentConflictTargetCommaSpec<C, P, CT>
-            extends Statement._RightParenClause<_ParentConflictTargetWhereSpec<C, P, CT>>
-            , _ConflictTargetCommaClause<P, _ParentConflictCollateSpec<C, P, CT>> {
-
-    }
-
-
-    interface _ParentConflictOpClassSpec<C, P, CT> extends _ParentConflictTargetCommaSpec<C, P, CT>
-            , _ConflictOpClassClause<_ParentConflictTargetCommaSpec<C, P, CT>> {
-
-    }
-
-
-    interface _ParentConflictCollateSpec<C, P, CT> extends _ParentConflictOpClassSpec<C, P, CT>
-            , _ConflictCollateClause<_ParentConflictOpClassSpec<C, P, CT>> {
+    interface _ParentDoUpdateSetClause<C, P>
+            extends Update._SetClause<C, FieldMeta<P>, _ParentDoUpdateWhereSpec<C, P>> {
 
 
     }
 
-    interface _ParentConflictItemClause<C, P, CT>
-            extends _ConflictItemClause<P, _ParentConflictCollateSpec<C, P, CT>, _ParentConflictActionClause<C, P, CT>> {
+    interface _ParentConflictActionClause<C, P>
+            extends _ConflictActionClause<_ParentReturningSpec<C, P>, _ParentDoUpdateSetClause<C, P>> {
+
+    }
+
+    interface _ParentConflictTargetWhereAndSpec<C, P>
+            extends Statement._MinWhereAndClause<C, _ParentConflictTargetWhereAndSpec<C, P>>
+            , _ParentConflictActionClause<C, P> {
 
     }
 
 
-    interface _ParentOnConflictSpec<C, P, CT> extends _ParentReturningSpec<C, CT>
-            , _OnConflictClause<_ParentConflictItemClause<C, P, CT>> {
+    interface _ParentConflictTargetWhereSpec<C, P> extends _ParentConflictActionClause<C, P>
+            , Statement._MinQueryWhereClause<C, _ParentConflictActionClause<C, P>, _ParentConflictTargetWhereAndSpec<C, P>> {
+
+    }
+
+    interface _ParentConflictTargetCommaSpec<C, P>
+            extends Statement._RightParenClause<_ParentConflictTargetWhereSpec<C, P>>
+            , _ConflictTargetCommaClause<P, _ParentConflictCollateSpec<C, P>> {
+
+    }
+
+
+    interface _ParentConflictOpClassSpec<C, P> extends _ParentConflictTargetCommaSpec<C, P>
+            , _ConflictOpClassClause<_ParentConflictTargetCommaSpec<C, P>> {
+
+    }
+
+
+    interface _ParentConflictCollateSpec<C, P> extends _ParentConflictOpClassSpec<C, P>
+            , _ConflictCollateClause<_ParentConflictOpClassSpec<C, P>> {
+
+
+    }
+
+    interface _ParentConflictItemClause<C, P>
+            extends _ConflictItemClause<P, _ParentConflictCollateSpec<C, P>, _ParentConflictActionClause<C, P>> {
+
+    }
+
+
+    interface _ParentOnConflictSpec<C, P> extends _ParentReturningSpec<C, P>
+            , _OnConflictClause<_ParentConflictItemClause<C, P>> {
 
     }
 
 
 
-    /*-------------------below domain insert syntax interfaces  -------------------*/
+    /*-------------------below insert syntax interfaces  -------------------*/
 
     interface _ValuesLeftParenClause<C, T, I extends DmlInsert, Q extends DqlStatement.DqlInsert>
             extends Insert._StaticValueLeftParenClause<C, T, _ValuesLeftParenSpec<C, T, I, Q>> {
@@ -383,23 +383,23 @@ public interface PostgreInsert extends Insert, DialectStatement {
     }
 
     interface _ParentValuesLeftParenSpec<C, P>
-            extends _ParentValuesLeftParenClause<C, P>, _ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>> {
+            extends _ParentValuesLeftParenClause<C, P>, _ParentOnConflictSpec<C, P> {
 
     }
 
 
     interface _ParentValuesDefaultSpec<C, P>
             extends Insert._ColumnDefaultClause<C, P, _ParentValuesDefaultSpec<C, P>>
-            , Insert._DomainValueClause<C, P, _ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>>>
-            , _DefaultValuesClause<_ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>>>
-            , Insert._DynamicValuesClause<C, P, _ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>>>
+            , Insert._DomainValueClause<C, P, _ParentOnConflictSpec<C, P>>
+            , _DefaultValuesClause<_ParentOnConflictSpec<C, P>>
+            , Insert._DynamicValuesClause<C, P, _ParentOnConflictSpec<C, P>>
             , Insert._StaticValuesClause<_ParentValuesLeftParenClause<C, P>> {
 
     }
 
 
     interface _ParentSpaceSubQuerySpec<C, P>
-            extends Insert._SpaceSubQueryClause<C, _ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>>> {
+            extends Insert._SpaceSubQueryClause<C, _ParentOnConflictSpec<C, P>> {
 
     }
 

@@ -785,6 +785,110 @@ abstract class InsertSupport {
     }//DomainValueShortClause
 
 
+    @SuppressWarnings("unchecked")
+    static abstract class ComplexInsertValuesClause<C, T, CR, DR, VR> extends DomainValueClause<C, T, CR, DR, VR>
+            implements Insert._DynamicValuesClause<C, T, VR>
+            , Insert._SpaceSubQueryClause<C, VR> {
+
+        private InsertMode insertMode;
+
+        private List<Map<FieldMeta<?>, _Expression>> rowPairList;
+
+        private SubQuery subQuery;
+
+        ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table) {
+            super(options, table);
+        }
+
+        @Override
+        public final VR values(Consumer<PairsConstructor<T>> consumer) {
+            if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            final DynamicPairsConstructor<T> constructor;
+            constructor = new DynamicPairsConstructor<>(this.context, this::validateField);
+            consumer.accept(constructor);
+            this.rowPairList = constructor.endPairConsumer();
+            this.insertMode = InsertMode.VALUES;
+            return (VR) this;
+        }
+
+        @Override
+        public final VR values(BiConsumer<C, PairsConstructor<T>> consumer) {
+            if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            final DynamicPairsConstructor<T> constructor;
+            constructor = new DynamicPairsConstructor<>(this.context, this::validateField);
+            consumer.accept(this.criteria, constructor);
+            this.rowPairList = constructor.endPairConsumer();
+            this.insertMode = InsertMode.VALUES;
+            return (VR) this;
+        }
+
+        @Override
+        public final VR space(Supplier<? extends SubQuery> supplier) {
+            if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            final SubQuery subQuery;
+            subQuery = supplier.get();
+            if (subQuery == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            }
+            this.subQuery = subQuery;
+            this.insertMode = InsertMode.QUERY;
+            return (VR) this;
+        }
+
+        @Override
+        public final VR space(Function<C, ? extends SubQuery> function) {
+            if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            final SubQuery subQuery;
+            subQuery = function.apply(this.criteria);
+            if (subQuery == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            }
+            this.subQuery = subQuery;
+            this.insertMode = InsertMode.QUERY;
+            return (VR) this;
+        }
+
+
+        @Override
+        final VR valuesEnd() {
+            if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.insertMode = InsertMode.DOMAIN;
+            return (VR) this;
+        }
+
+        /**
+         * @param rowPairList a unmodified list,empty is allowed.
+         */
+        final void staticValuesClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowPairList) {
+            if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.rowPairList = rowPairList;
+            this.insertMode = InsertMode.VALUES;
+        }
+
+        final void staticSpaceSubQueryClauseEnd(final SubQuery subQuery) {
+            if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.subQuery = subQuery;
+            this.insertMode = InsertMode.QUERY;
+        }
+
+
+    }//ComplexInsertValuesClause
+
+
     static abstract class StaticColumnValuePairClause<C, T, VR>
             implements Insert._StaticValueLeftParenClause<C, T, VR>, Insert._StaticColumnValueClause<C, T, VR>
             , CriteriaContextSpec {
