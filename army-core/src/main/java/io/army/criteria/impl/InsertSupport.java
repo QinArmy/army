@@ -49,6 +49,14 @@ abstract class InsertSupport {
     }
 
 
+    enum InsertMode {
+        DOMAIN,
+        VALUES,
+        QUERY,
+        ASSIGNMENT
+    }
+
+
     interface ColumnListClause extends CriteriaContextSpec {
 
         /**
@@ -729,7 +737,7 @@ abstract class InsertSupport {
             if (domainList == null || domainList.size() == 0) {
                 throw domainListIsEmpty();
             }
-            this.domainList = Collections.unmodifiableList(new ArrayList<>(domainList));
+            this.domainList = domainList;
             this.endColumnDefaultClause();
             return this.valuesEnd();
         }
@@ -748,7 +756,7 @@ abstract class InsertSupport {
         @Override
         public final List<?> domainList() {
             final List<?> list = this.domainList;
-            if (list == null || list instanceof ArrayList) {
+            if (list == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return list;
@@ -811,12 +819,12 @@ abstract class InsertSupport {
 
         @Override
         public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Supplier<?> supplier) {
-            return this.comma(field, SQLs._nonNullParam(field, supplier.get()));
+            return this.comma(field, SQLs._nullableParam(field, supplier.get()));
         }
 
         @Override
         public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Function<C, ?> function) {
-            return this.comma(field, SQLs._nonNullParam(field, function.apply(this.criteria)));
+            return this.comma(field, SQLs._nullableParam(field, function.apply(this.criteria)));
         }
 
         @Override
@@ -860,17 +868,17 @@ abstract class InsertSupport {
 
         @Override
         public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Supplier<?> supplier) {
-            return this.comma(field, SQLs._nonNullParam(field, supplier.get()));
+            return this.comma(field, SQLs._nullableParam(field, supplier.get()));
         }
 
         @Override
         public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Function<C, ?> function) {
-            return this.comma(field, SQLs._nonNullParam(field, function.apply(this.criteria)));
+            return this.comma(field, SQLs._nullableParam(field, function.apply(this.criteria)));
         }
 
         @Override
         public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Function<String, ?> function, String keyName) {
-            return this.comma(field, SQLs._nonNullParam(field, function.apply(keyName)));
+            return this.comma(field, SQLs._nullableParam(field, function.apply(keyName)));
         }
 
         @Override
@@ -891,10 +899,6 @@ abstract class InsertSupport {
         @SuppressWarnings("unchecked")
         @Override
         public final VR rightParen() {
-            final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
-            if (!(currentRow instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
             List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
             if (rowValueList == null) {
                 rowValueList = new ArrayList<>();
@@ -902,9 +906,14 @@ abstract class InsertSupport {
             } else if (!(rowValueList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
-            rowValueList.add(Collections.unmodifiableMap(currentRow));
-            this.rowValuesMap = null;
+            final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
+            if (currentRow == null) {
+                rowValueList.add(Collections.emptyMap());
+            } else {
+                rowValueList.add(Collections.unmodifiableMap(currentRow));
+            }
 
+            this.rowValuesMap = null;// clear for next row
             return (VR) this;
         }
 
@@ -914,15 +923,13 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
-            if (rowValueList instanceof ArrayList) {
-                rowValueList = _CollectionUtils.unmodifiableList(rowValueList);
-            } else {
+            if (!(rowValueList instanceof ArrayList)) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
+            rowValueList = _CollectionUtils.unmodifiableList(rowValueList);
             this.rowList = rowValueList;
             return rowValueList;
         }
-
 
 
         private Map<FieldMeta<?>, _Expression> newMap() {
@@ -939,37 +946,87 @@ abstract class InsertSupport {
 
     }//StaticValueColumnClause
 
-
-    static abstract class DynamicValueInsertValueClause<C, T, RR, VR>
-            extends ColumnDefaultClause<C, T, RR, RR> implements Insert._DynamicValuesClause<C, T, VR>
+    static abstract class DynamicValueInsertValueClauseShort<C, T, RR, VR>
+            extends ColumnDefaultClause<C, T, RR, RR>
+            implements Insert._DynamicValuesClause<C, T, VR>
             , PairsConstructor<T>, ValueSyntaxOptions {
 
-        private List<Map<FieldMeta<?>, _Expression>> valuePairList;
-
-        private Map<FieldMeta<?>, _Expression> valuePairMap;
-
-        DynamicValueInsertValueClause(ValueSyntaxOptions options, TableMeta<T> table) {
+        public DynamicValueInsertValueClauseShort(ValueSyntaxOptions options, TableMeta<T> table) {
             super(options, table);
         }
 
         @Override
-        public final VR values(Consumer<PairsConstructor<T>> consumer) {
-            return this.multiRowValues(consumer);
+        public VR values(Consumer<PairsConstructor<T>> consumer) {
+            return null;
         }
 
         @Override
-        public final VR values(BiConsumer<C, PairsConstructor<T>> consumer) {
-            return this.multiRowValues(consumer);
+        public VR values(BiConsumer<C, PairsConstructor<T>> consumer) {
+            return null;
         }
 
         @Override
-        public final PairConsumer<T> row() {
-            final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
+        public PairConsumer<T> accept(FieldMeta<T> field, Expression value) {
+            return null;
+        }
+
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, Supplier<?> supplier) {
+            return null;
+        }
+
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+            return null;
+        }
+
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Object value) {
+            return null;
+        }
+
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return null;
+        }
+
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+            return null;
+        }
+
+        @Override
+        public PairConsumer<T> row() {
+            return null;
+        }
+
+        abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowList);
+    }
+
+
+    static final class DynamicPairsConstructor<T> implements PairsConstructor<T> {
+        final CriteriaContext context;
+
+        private final BiConsumer<FieldMeta<T>, ArmyExpression> validator;
+
+        private List<Map<FieldMeta<?>, _Expression>> rowPairList;
+
+        private Map<FieldMeta<?>, _Expression> rowMap;
+
+        DynamicPairsConstructor(CriteriaContext context, BiConsumer<FieldMeta<T>, ArmyExpression> validator) {
+            this.context = context;
+            this.validator = validator;
+        }
+
+
+        @Override
+        public PairConsumer<T> row() {
+            final Map<FieldMeta<?>, _Expression> currentPairMap = this.rowMap;
             if (currentPairMap instanceof HashMap) {
-                List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
+                List<Map<FieldMeta<?>, _Expression>> valuePairList = this.rowPairList;
                 if (valuePairList == null) {
                     valuePairList = new ArrayList<>();
-                    this.valuePairList = valuePairList;
+                    this.rowPairList = valuePairList;
                 } else if (!(valuePairList instanceof ArrayList)) {
                     throw CriteriaContextStack.castCriteriaApi(this.context);
                 }
@@ -977,77 +1034,59 @@ abstract class InsertSupport {
             } else if (currentPairMap != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
-            this.valuePairMap = new HashMap<>();
+            this.rowMap = new HashMap<>();
             return this;
         }
 
         @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, @Nullable Object value) {
-            return this.addValuePair(field, SQLs._nullableParam(field, value));
-        }
-
-        @Override
-        public final PairConsumer<T> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
-            return this.addValuePair(field, SQLs._nullableLiteral(field, value));
-        }
-
-        @Override
-        public final PairConsumer<T> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            return this.addValuePair(field, supplier.get());
-        }
-
-        @Override
-        public void clear() {
-            super.clear();
-            this.valuePairList = null;
-            this.valuePairMap = null;
-        }
-
-        /**
-         * @param rowList a unmodified list
-         */
-        abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowList);
-
-
-        private PairConsumer<T> addValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
-            final Map<FieldMeta<?>, _Expression> currentPairMap = this.valuePairMap;
-            if (currentPairMap == null) {
+        public PairConsumer<T> accept(final FieldMeta<T> field, final @Nullable Expression value) {
+            final Map<FieldMeta<?>, _Expression> currentRowMap = this.rowMap;
+            if (currentRowMap == null) {
                 String m = String.format("Not found any row,please use %s.row() method create row."
                         , PairsConstructor.class.getName());
                 throw CriteriaContextStack.criteriaError(this.context, m);
-            } else if (!(currentPairMap instanceof HashMap)) {
+            } else if (!(currentRowMap instanceof HashMap)) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
-
             if (!(value instanceof ArmyExpression)) {
                 throw CriteriaContextStack.nonArmyExp(this.context);
             }
-            this.validateField(field, (ArmyExpression) value);
+            this.validator.accept(field, (ArmyExpression) value);
 
-            if (currentPairMap.putIfAbsent(field, (ArmyExpression) value) != null) {
+            if (currentRowMap.putIfAbsent(field, (ArmyExpression) value) != null) {
                 throw duplicationValuePair(this.context, field);
             }
             return this;
         }
 
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, Supplier<?> supplier) {
+            return this.accept(field, SQLs._nullableParam(field, supplier.get()));
+        }
 
-        @SuppressWarnings("unchecked")
-        private VR multiRowValues(final Object callback) {
-            //1. validate
-            if (this.valuePairMap != null || this.valuePairList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            //2. callback
-            if (callback instanceof Consumer) {
-                ((Consumer<PairsConstructor<T>>) callback).accept(this);
-            } else if (callback instanceof BiConsumer) {
-                ((BiConsumer<C, PairsConstructor<T>>) callback).accept(this.criteria, this);
-            } else {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+            return this.accept(field, SQLs._nullableParam(field, function.apply(keyName)));
+        }
 
-            Map<FieldMeta<?>, _Expression> valuePairMap = this.valuePairMap;
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
+            return this.accept(field, operator.apply(field, SQLs._safeParam(value)));
+        }
+
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return this.accept(field, operator.apply(field, supplier.get()));
+        }
+
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+            return this.accept(field, operator.apply(field, function.apply(keyName)));
+        }
+
+
+        List<Map<FieldMeta<?>, _Expression>> endPairConsumer() {
+            Map<FieldMeta<?>, _Expression> valuePairMap = this.rowMap;
             if (valuePairMap == null) {
                 String m = "Values insert must have one row at least";
                 throw CriteriaContextStack.criteriaError(this.context, m);
@@ -1057,8 +1096,7 @@ abstract class InsertSupport {
             } else {
                 valuePairMap = Collections.unmodifiableMap(valuePairMap);
             }
-            this.valuePairMap = valuePairMap;
-            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.valuePairList;
+            List<Map<FieldMeta<?>, _Expression>> valuePairList = this.rowPairList;
             if (valuePairList == null) {
                 valuePairList = Collections.singletonList(valuePairMap);
             } else if (valuePairList instanceof ArrayList) {
@@ -1067,12 +1105,13 @@ abstract class InsertSupport {
             } else {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
-            this.valuePairList = valuePairList;
-            return this.valueClauseEnd(valuePairList);
+            this.rowMap = null;
+            this.rowPairList = null;
+            return valuePairList;
         }
 
 
-    }//ValueInsertValueClause
+    }//DynamicPairsConstructor
 
     @SuppressWarnings("unchecked")
     static abstract class AssignmentSetClause<C, T, SR>
@@ -1991,3 +2030,4 @@ abstract class InsertSupport {
 
 
 }
+

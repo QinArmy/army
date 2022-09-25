@@ -893,7 +893,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class ValuePartitionClause<C, T>
-            extends DynamicValueInsertValueClause<
+            extends DynamicValueInsertValueClauseShort<
             C,
             T,
             MySQLInsert._ValueDefaultSpec<C, T>,
@@ -1000,7 +1000,7 @@ abstract class MySQLInserts extends InsertSupport {
 
 
     private static final class ValueParentPartitionClause<C, P>
-            extends DynamicValueInsertValueClause<
+            extends DynamicValueInsertValueClauseShort<
             C,
             P,
             MySQLInsert._ValueParentDefaultSpec<C, P>,

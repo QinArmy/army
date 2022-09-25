@@ -290,7 +290,7 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardParentStaticValuesPairClause
 
     private static final class StandardValueColumnsClause<C, T>
-            extends DynamicValueInsertValueClause<
+            extends DynamicValueInsertValueClauseShort<
             C,
             T,
             Insert._StandardValueDefaultSpec<C, T>,
@@ -339,7 +339,7 @@ abstract class StandardInserts extends InsertSupport {
     }//StandardValueValuesClause
 
     private static final class StandardValueParentColumnsClause<C, P>
-            extends InsertSupport.DynamicValueInsertValueClause<
+            extends DynamicValueInsertValueClauseShort<
             C,
             P,
             Insert._StandardValueParentDefaultSpec<C, P>,

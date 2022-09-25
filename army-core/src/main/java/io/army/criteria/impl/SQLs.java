@@ -373,15 +373,15 @@ public abstract class SQLs extends StandardSyntax {
      * @param value {@link Expression} or parameter
      */
     static Expression _nullableParam(final Expression type, final @Nullable Object value) {
-        final Expression resultExpression;
+        final Expression expression;
         if (value instanceof Expression) {
-            resultExpression = (Expression) value;
+            expression = (Expression) value;
         } else if (type instanceof TableField) {
-            resultExpression = ParamExpression.single((TableField) type, value);
+            expression = ParamExpression.single((TableField) type, value);
         } else {
-            resultExpression = ParamExpression.single(type.typeMeta(), value);
+            expression = ParamExpression.single(type.typeMeta(), value);
         }
-        return resultExpression;
+        return expression;
     }
 
     @Nullable

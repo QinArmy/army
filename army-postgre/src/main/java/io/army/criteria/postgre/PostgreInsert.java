@@ -30,7 +30,7 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
         DqlStatement.DqlInsertSpec<Q> returning();
 
-        _StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem1);
+        _StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem);
 
         _StaticReturningCommaDualClause<Q> returning(SelectItem selectItem1, SelectItem selectItem2);
 
@@ -93,6 +93,11 @@ public interface PostgreInsert extends Insert, DialectStatement {
         OR overridingSystemValue();
 
         OR overridingUserValue();
+
+        OR ifOverridingSystemValue(BooleanSupplier supplier);
+
+        OR ifOverridingUserValue(BooleanSupplier supplier);
+
     }
 
 
@@ -359,15 +364,15 @@ public interface PostgreInsert extends Insert, DialectStatement {
 
     }
 
-    interface _DomainChildInsertIntoClause<C, P> {
+    interface _ChildInsertIntoClause<C, P> {
 
         <T> _TableAliasSpec<C, T, Insert, ReturningInsert> insertInto(ComplexTableMeta<P, T> table);
 
     }
 
-    interface _DomainChildWithSpec<C, P>
-            extends DialectStatement._WithCteClause<C, SubStatement, _DomainChildInsertIntoClause<C, P>>
-            , _DomainChildInsertIntoClause<C, P> {
+    interface _ChildWithCteSpec<C, P>
+            extends DialectStatement._WithCteClause<C, SubStatement, _ChildInsertIntoClause<C, P>>
+            , _ChildInsertIntoClause<C, P> {
 
     }
 
@@ -378,23 +383,23 @@ public interface PostgreInsert extends Insert, DialectStatement {
     }
 
     interface _ParentValuesLeftParenSpec<C, P>
-            extends _ParentValuesLeftParenClause<C, P>, _ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>> {
+            extends _ParentValuesLeftParenClause<C, P>, _ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>> {
 
     }
 
 
     interface _ParentValuesDefaultSpec<C, P>
             extends Insert._ColumnDefaultClause<C, P, _ParentValuesDefaultSpec<C, P>>
-            , Insert._DomainValueClause<C, P, _ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>>>
-            , _DefaultValuesClause<_ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>>>
-            , Insert._DynamicValuesClause<C, P, _ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>>>
+            , Insert._DomainValueClause<C, P, _ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>>>
+            , _DefaultValuesClause<_ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>>>
+            , Insert._DynamicValuesClause<C, P, _ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>>>
             , Insert._StaticValuesClause<_ParentValuesLeftParenClause<C, P>> {
 
     }
 
 
     interface _ParentSpaceSubQuerySpec<C, P>
-            extends Insert._SpaceSubQueryClause<C, _ParentOnConflictSpec<C, P, _DomainChildWithSpec<C, P>>> {
+            extends Insert._SpaceSubQueryClause<C, _ParentOnConflictSpec<C, P, _ChildWithCteSpec<C, P>>> {
 
     }
 
