@@ -19,10 +19,7 @@ import io.army.util._CollectionUtils;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 abstract class InsertSupport {
 
@@ -784,7 +781,7 @@ abstract class InsertSupport {
             implements Insert._StaticValueLeftParenClause<C, T, VR>, Insert._StaticColumnValueClause<C, T, VR>
             , CriteriaContextSpec {
 
-        final CriteriaContext criteriaContext;
+        final CriteriaContext context;
 
         final C criteria;
 
@@ -796,109 +793,58 @@ abstract class InsertSupport {
 
         StaticColumnValuePairClause(CriteriaContext criteriaContext
                 , BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
-            this.criteriaContext = criteriaContext;
+            this.context = criteriaContext;
             this.criteria = criteriaContext.criteria();
             this.validator = validator;
         }
 
         @Override
         public final CriteriaContext getContext() {
-            return this.criteriaContext;
+            return this.context;
+        }
+
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Expression value) {
+            return this.comma(field, value);
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, @Nullable Object value) {
-            this.innerAddValuePair(field, SQLs._nullableParam(field, value));
-            return this;
+        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Supplier<?> supplier) {
+            return this.comma(field, SQLs._nonNullParam(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParenLiteral(FieldMeta<T> field, @Nullable Object value) {
-            this.innerAddValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
+        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Function<C, ?> function) {
+            return this.comma(field, SQLs._nonNullParam(field, function.apply(this.criteria)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParenExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            final Expression exp;
-            exp = supplier.get();
-            this.innerAddValuePair(field, exp);
-            return this;
+        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+            return this.comma(field, SQLs._nullableParam(field, function.apply(keyName)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParenExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
-            final Expression exp;
-            exp = function.apply(this.criteria);
-            this.innerAddValuePair(field, exp);
-            return this;
+        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
+            return this.comma(field, operator.apply(field, SQLs._safeParam(value)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, @Nullable Object value) {
-            this.innerAddValuePair(field, SQLs._nullableParam(field, value));
-            return this;
+        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> commaLiteral(FieldMeta<T> field, @Nullable Object value) {
-            this.innerAddValuePair(field, SQLs._nullableLiteral(field, value));
-            return this;
+        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+            return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> commaExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            final Expression exp;
-            exp = supplier.get();
-            this.innerAddValuePair(field, exp);
-            return this;
-        }
-
-        @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> commaExp(FieldMeta<T> field, Function<C, ? extends Expression> function) {
-            final Expression exp;
-            exp = function.apply(this.criteria);
-            this.innerAddValuePair(field, exp);
-            return this;
-        }
-
-
-        final void endCurrentRow() {
-            final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
-            if (!(currentRow instanceof HashMap)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
-            if (rowValueList == null) {
-                rowValueList = new ArrayList<>();
-                this.rowList = rowValueList;
-            } else if (!(rowValueList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            rowValueList.add(Collections.unmodifiableMap(currentRow));
-            this.rowValuesMap = null;
-        }
-
-        final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
-            if (this.rowValuesMap != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
-            if (rowValueList instanceof ArrayList) {
-                rowValueList = _CollectionUtils.unmodifiableList(rowValueList);
-            } else {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
-            }
-            this.rowList = rowValueList;
-            return rowValueList;
-        }
-
-
-        private void innerAddValuePair(final FieldMeta<?> field, final @Nullable Expression value) {
+        public final Insert._StaticColumnValueClause<C, T, VR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
             if (value instanceof DataField) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "column value must be non-field.");
+                throw CriteriaContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
-                throw CriteriaContextStack.nonArmyExp(this.criteriaContext);
+                throw CriteriaContextStack.nonArmyExp(this.context);
             }
             this.validator.accept(field, (ArmyExpression) value);
             Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
@@ -907,9 +853,77 @@ abstract class InsertSupport {
                 this.rowValuesMap = currentRow;
             }
             if (currentRow.putIfAbsent(field, (ArmyExpression) value) != null) {
-                throw duplicationValuePair(this.criteriaContext, field);
+                throw duplicationValuePair(this.context, field);
             }
+            return this;
         }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Supplier<?> supplier) {
+            return this.comma(field, SQLs._nonNullParam(field, supplier.get()));
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Function<C, ?> function) {
+            return this.comma(field, SQLs._nonNullParam(field, function.apply(this.criteria)));
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+            return this.comma(field, SQLs._nonNullParam(field, function.apply(keyName)));
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
+            return this.comma(field, operator.apply(field, SQLs._safeParam(value)));
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+            return comma(field, operator.apply(field, supplier.get()));
+        }
+
+        @Override
+        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+            return this.comma(field, operator.apply(field, function.apply(keyName)));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final VR rightParen() {
+            final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
+            if (!(currentRow instanceof HashMap)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
+            if (rowValueList == null) {
+                rowValueList = new ArrayList<>();
+                this.rowList = rowValueList;
+            } else if (!(rowValueList instanceof ArrayList)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            rowValueList.add(Collections.unmodifiableMap(currentRow));
+            this.rowValuesMap = null;
+
+            return (VR) this;
+        }
+
+
+        final List<Map<FieldMeta<?>, _Expression>> endValuesClause() {
+            if (this.rowValuesMap != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
+            if (rowValueList instanceof ArrayList) {
+                rowValueList = _CollectionUtils.unmodifiableList(rowValueList);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.rowList = rowValueList;
+            return rowValueList;
+        }
+
+
 
         private Map<FieldMeta<?>, _Expression> newMap() {
             final List<Map<FieldMeta<?>, _Expression>> rowList = this.rowList;

@@ -799,13 +799,6 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public MySQLInsert._ValueStaticValuesLeftParenSpec<C, T> rightParen() {
-            this.endCurrentRow();
-            return this;
-        }
-
-
-        @Override
         public MySQLInsert._StaticOnDuplicateKeyFieldUpdateClause<C, T, MySQLInsert._StaticAssignmentCommaFieldSpec<C, T>> onDuplicateKey() {
             return this.clause.valueClauseEnd(this.endValuesClause())
                     .onDuplicateKey();
@@ -852,12 +845,6 @@ abstract class MySQLInserts extends InsertSupport {
         private ParentStaticValuesLeftParenClause(ValueParentPartitionClause<C, T> clause) {
             super(clause.getContext(), clause::validateField);
             this.clause = clause;
-        }
-
-        @Override
-        public MySQLInsert._ValueParentStaticValueLeftParenSpec<C, T> rightParen() {
-            this.endCurrentRow();
-            return this;
         }
 
         @Override

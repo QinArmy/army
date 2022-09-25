@@ -259,11 +259,6 @@ abstract class StandardInserts extends InsertSupport {
                     .asInsert();
         }
 
-        @Override
-        public Insert._StandardValueStaticLeftParenSpec<C, T> rightParen() {
-            this.endCurrentRow();
-            return this;
-        }
 
     }//StandardStaticValuesPairClause
 
@@ -291,11 +286,6 @@ abstract class StandardInserts extends InsertSupport {
                     .child();
         }
 
-        @Override
-        public Insert._StandardParentStaticValuesSpec<C, P> rightParen() {
-            this.endCurrentRow();
-            return this;
-        }
 
     }//StandardParentStaticValuesPairClause
 

@@ -7,10 +7,7 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.SimpleTableMeta;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * <p>
@@ -122,7 +119,6 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     }
 
 
-
     /**
      * @since 1.0
      */
@@ -166,27 +162,38 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     interface _StaticValueLeftParenClause<C, T, VR> {
 
-        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, @Nullable Object value);
+        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Expression value);
 
-        _StaticColumnValueClause<C, T, VR> leftParenLiteral(FieldMeta<T> field, @Nullable Object value);
+        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Supplier<?> supplier);
 
-        _StaticColumnValueClause<C, T, VR> leftParenExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Function<C, ?> function);
 
-        _StaticColumnValueClause<C, T, VR> leftParenExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
+        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Function<String, ?> function, String keyName);
+
+        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value);
+
+        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier);
+
+        _StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
 
     }
 
     interface _StaticColumnValueClause<C, T, VR> extends Statement._RightParenClause<VR> {
 
-        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, @Nullable Object value);
+        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Expression value);
 
-        _StaticColumnValueClause<C, T, VR> commaLiteral(FieldMeta<T> field, @Nullable Object value);
+        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Supplier<?> supplier);
 
-        _StaticColumnValueClause<C, T, VR> commaExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
+        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Function<C, ?> function);
 
-        _StaticColumnValueClause<C, T, VR> commaExp(FieldMeta<T> field, Function<C, ? extends Expression> function);
+        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Function<String, ?> function, String keyName);
 
+        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value);
+
+        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier);
+
+        _StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName);
 
     }
 

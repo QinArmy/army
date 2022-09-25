@@ -323,7 +323,7 @@ public abstract class SQLs extends StandardSyntax {
     static ArmyExpression _funcParamList(final TypeMeta typeMeta, final @Nullable Object value) {
         final ArmyExpression expression;
         if (value == null) {
-            expression = (ArmyExpression) SQLs.nullParam(IntegerType.INSTANCE);
+            expression = (ArmyExpression) SQLs.param(IntegerType.INSTANCE, null);
         } else if (value instanceof Expression) {
             expression = (ArmyExpression) value;
         } else if (value instanceof List) {
@@ -384,6 +384,12 @@ public abstract class SQLs extends StandardSyntax {
         return resultExpression;
     }
 
+    @Nullable
+    static Object _safeParam(final @Nullable Object value) {
+        return value instanceof Supplier ? ((Supplier<?>) value).get() : value;
+    }
+
+
     /**
      * package method that is used by army developer.
      *
@@ -439,6 +445,7 @@ public abstract class SQLs extends StandardSyntax {
         return (ArmyExpression) resultExpression;
     }
 
+    @Deprecated
     public static Expression nullParam(TypeMeta type) {
         return ParamExpression.single(type, null);
     }
@@ -462,6 +469,7 @@ public abstract class SQLs extends StandardSyntax {
     public static Expression param(final TypeMeta paramMeta, final @Nullable Object value) {
         return ParamExpression.single(paramMeta, value);
     }
+
 
     /**
      * <p>

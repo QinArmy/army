@@ -620,11 +620,6 @@ abstract class MySQLReplaces extends InsertSupport {
             this.clause = clause;
         }
 
-        @Override
-        public MySQLReplace._ValueStaticValuesLeftParenSpec<C, T> rightParen() {
-            this.endCurrentRow();
-            return this;
-        }
 
         @Override
         public ReplaceInsert asInsert() {
@@ -647,11 +642,6 @@ abstract class MySQLReplaces extends InsertSupport {
             this.clause = clause;
         }
 
-        @Override
-        public MySQLReplace._ValueParentStaticValuesLeftParenSpec<C, P> rightParen() {
-            this.endCurrentRow();
-            return this;
-        }
 
         @Override
         public ReplaceInsert asInsert() {

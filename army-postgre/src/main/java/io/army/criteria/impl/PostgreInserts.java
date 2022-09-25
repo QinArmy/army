@@ -24,7 +24,7 @@ abstract class PostgreInserts extends InsertSupport {
     }
 
 
-    static <C> PostgreInsert._DomainOptionSpec<C> domainInsert(@Nullable C criteria) {
+    static <C> PostgreInsert._PrimaryOptionSpec<C> domainInsert(@Nullable C criteria) {
         return new DomainInsertIntoClause<>(criteria);
     }
 
@@ -661,12 +661,12 @@ abstract class PostgreInserts extends InsertSupport {
 
     private static final class DomainInsertIntoClause<C> extends NonQueryWithCteOption<
             C,
-            PostgreInsert._DomainNullOptionSpec<C>,
-            PostgreInsert._DomainPreferLiteralSpec<C>,
-            PostgreInsert._DomainWithCteSpec<C>,
+            PostgreInsert._PrimaryNullOptionSpec<C>,
+            PostgreInsert._PrimaryPreferLiteralSpec<C>,
+            PostgreInsert._PrimaryWithCteSpec<C>,
             SubStatement,
-            PostgreInsert._DomainInsertIntoClause<C>>
-            implements PostgreInsert._DomainOptionSpec<C> {
+            PostgreInsert._PrimaryInsertIntoClause<C>>
+            implements PostgreInsert._PrimaryOptionSpec<C> {
 
         private DomainInsertIntoClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
@@ -674,12 +674,12 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public <T> PostgreInsert._DomainTableAliasSpec<C, T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table) {
+        public <T> PostgreInsert._TableAliasSpec<C, T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table) {
             return new DomainInsertIntoValuesClause<>(this, table);
         }
 
         @Override
-        public <P> PostgreInsert._DomainParentAliasSpec<C, P> insertInto(ParentTableMeta<P> table) {
+        public <P> PostgreInsert._ParentTableAliasSpec<C, P> insertInto(ParentTableMeta<P> table) {
             return null;
         }
 
@@ -691,10 +691,10 @@ abstract class PostgreInserts extends InsertSupport {
             extends DomainValueClause<
             C,
             T,
-            PostgreInsert._DomainOverridingValueSpec<C, T, I, Q>,
-            PostgreInsert._DomainColumnDefaultSpec<C, T, I, Q>,
+            PostgreInsert._OverridingValueSpec<C, T, I, Q>,
+            PostgreInsert._ComplexColumnDefaultSpec<C, T, I, Q>,
             PostgreInsert._OnConflictSpec<C, T, I, Q>>
-            implements PostgreInsert._DomainTableAliasSpec<C, T, I, Q>
+            implements PostgreInsert._TableAliasSpec<C, T, I, Q>
             , PostgreInsert._ParentReturningClause<C, CT, I, Q>
             , PostgreInsert._ParentReturningCommaUnaryClause<CT, Q>
             , PostgreInsert._ParentReturningCommaDualClause<CT, Q> {
@@ -708,7 +708,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._DomainColumnListSpec<C, T, I, Q> as(final @Nullable String alias) {
+        public PostgreInsert._ColumnListSpec<C, T, I, Q> as(final @Nullable String alias) {
             if (alias == null) {
                 throw CriteriaContextStack.nullPointer(this.context);
             }
@@ -727,12 +727,12 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public PostgreInsert._DomainColumnDefaultSpec<C, T, I, Q> overridingSystemValue() {
+        public PostgreInsert._ComplexColumnDefaultSpec<C, T, I, Q> overridingSystemValue() {
             return null;
         }
 
         @Override
-        public PostgreInsert._DomainColumnDefaultSpec<C, T, I, Q> overridingUserValue() {
+        public PostgreInsert._ComplexColumnDefaultSpec<C, T, I, Q> overridingUserValue() {
             return null;
         }
 
