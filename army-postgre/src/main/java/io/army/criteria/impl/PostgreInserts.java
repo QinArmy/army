@@ -656,6 +656,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         private PrimaryInsertIntoClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
+            CriteriaContextStack.setContextStack(this.context);
         }
 
 

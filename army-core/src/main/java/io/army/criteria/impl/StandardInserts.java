@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Insert;
-import io.army.criteria.StandardStatement;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.dialect.mysql.MySQLDialect;
@@ -27,16 +25,8 @@ abstract class StandardInserts extends InsertSupport {
         throw new UnsupportedOperationException();
     }
 
-    static <C> Insert._StandardDomainOptionSpec<C> domainInsert(@Nullable C criteria) {
+    static <C> Insert._StandardDomainOptionSpec<C> primaryInsert(@Nullable C criteria) {
         return new StandardDomainOptionClause<>(criteria);
-    }
-
-    static <C> Insert._StandardValueOptionSpec<C> valueInsert(@Nullable C criteria) {
-        return new StandardValueOptionClause<>(criteria);
-    }
-
-    static <C> Insert._StandardQueryInsertClause<C> rowSetInsert(@Nullable C criteria) {
-        return new StandardQueryInsertIntoClause<>(criteria);
     }
 
 
@@ -55,21 +45,52 @@ abstract class StandardInserts extends InsertSupport {
 
 
         @Override
-        public <T> Insert._StandardDomainColumnsSpec<C, T> insertInto(SimpleTableMeta<T> table) {
+        public <T> Insert._StandardColumnListSpec<C, T> insertInto(SimpleTableMeta<T> table) {
             return new DomainColumnsClause<>(this, table);
         }
 
         @Override
-        public <T> Insert._StandardParentDomainColumnsSpec<C, T> insertInto(ParentTableMeta<T> table) {
+        public <T> Insert._StandardParentColumnListSpec<C, T> insertInto(ParentTableMeta<T> table) {
             return new DomainParentColumnsClause<>(this, table);
         }
 
     }//StandardDomainOptionClause
 
 
+    private static final class NonParentValuesLeftParenClause<C, T> extends InsertSupport.StaticColumnValuePairClause<
+            C,
+            T,
+            Insert._StandardValueStaticLeftParenSpec<C, T>>
+            implements Insert._StandardValueStaticLeftParenSpec<C, T> {
+
+        private final DomainColumnsClause<C, T> clause;
+
+        private NonParentValuesLeftParenClause(DomainColumnsClause<C, T> clause) {
+            super(clause.context, clause::validateField);
+            this.clause = clause;
+        }
+
+        @Override
+        public Insert asInsert() {
+            final DomainColumnsClause<C, T> clause = this.clause;
+            clause.staticValuesClauseEnd(this.endValuesClause());
+            return clause.asInsert();
+        }
+
+
+    }//NonParentValuesLeftParenClause
+
+
     private static final class DomainColumnsClause<C, T>
-            extends DomainValueShortClause<C, T, Insert._StandardDomainDefaultSpec<C, T>, Insert._InsertSpec>
-            implements Insert._StandardDomainColumnsSpec<C, T> {
+            extends InsertSupport.ComplexInsertValuesClause<
+            C,
+            T,
+            Insert._StandardComplexColumnDefaultSpec<C, T>,
+            Insert._StandardValuesColumnDefaultSpec<C, T>,
+            Insert._InsertSpec>
+            implements Insert._StandardColumnListSpec<C, T>
+            , Insert._StandardComplexColumnDefaultSpec<C, T>
+            , Insert._InsertSpec {
 
         private final DomainParentColumnsClause<C, ?> parentClause;
 
@@ -85,37 +106,81 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        Insert._StandardDomainDefaultSpec<C, T> columnListEnd() {
-            return this;
+        public Insert._StandardValueStaticLeftParenClause<C, T> values() {
+            return null;
         }
 
         @Override
-        Insert._InsertSpec valuesEnd() {
-            final Insert._InsertSpec spec;
-            if (this.parentClause == null) {
-                spec = new DomainsInsertStatement(this);
-            } else {
-                spec = new StandardDomainChildInsertStatement(this);
-            }
-            return spec;
+        public StandardQuery._StandardSelectClause<C, Insert._StandardInsertQuery> space() {
+            return null;
         }
+
+        @Override
+        public Insert asInsert() {
+            return null;
+        }
+
 
     }//StandardDomainColumnsClause
 
 
-    private static final class DomainParentColumnsClause<C, P>
-            extends DomainValueShortClause<
+    private static final class ParentValuesLeftParenClause<C, P> extends InsertSupport.StaticColumnValuePairClause<
             C,
             P,
-            Insert._StandardParentDomainDefaultSpec<C, P>,
-            Insert._StandardDomainChildSpec<C, P>>
-            implements Insert._StandardParentDomainColumnsSpec<C, P>
+            Insert._StandardParentValueStaticLeftParenSpec<C, P>>
+            implements Insert._StandardParentValueStaticLeftParenSpec<C, P> {
+
+        private final DomainParentColumnsClause<C, P> clause;
+
+        private ParentValuesLeftParenClause(DomainParentColumnsClause<C, P> clause) {
+            super(clause.context, clause::validateField);
+            this.clause = clause;
+        }
+
+        @Override
+        public Insert asInsert() {
+            final DomainParentColumnsClause<C, P> clause = this.clause;
+            clause.staticValuesClauseEnd(this.endValuesClause());
+            return clause.asInsert();
+        }
+
+        @Override
+        public Insert._StandardChildInsertIntoClause<C, P> child() {
+            final DomainParentColumnsClause<C, P> clause = this.clause;
+            clause.staticValuesClauseEnd(this.endValuesClause());
+            return clause.child();
+        }
+
+
+    }//ParentValuesLeftParenClause
+
+
+    private static final class DomainParentColumnsClause<C, P>
+            extends InsertSupport.ComplexInsertValuesClause<
+            C,
+            P,
+            Insert._StandardParentComplexColumnDefaultSpec<C, P>,
+            Insert._StandardParentValuesColumnDefaultSpec<C, P>,
+            Insert._StandardChildSpec<C, P>>
+            implements Insert._StandardParentColumnListSpec<C, P>
+            , Insert._StandardParentComplexColumnDefaultSpec<C, P>
+            , Insert._StandardChildSpec<C, P>
             , Insert._StandardChildInsertIntoClause<C, P>
-            , Insert._StandardDomainChildSpec<C, P>
             , InsertOptions {
 
         private DomainParentColumnsClause(InsertOptions options, ParentTableMeta<P> table) {
             super(options, table);
+        }
+
+        @Override
+        public Insert._StandardParentValueStaticLeftParenClause<C, P> values() {
+            return new ParentValuesLeftParenClause<>(this);
+        }
+
+
+        @Override
+        public StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<C, P>> space() {
+            return StandardSimpleQuery.parentInsertQuery(this::staticInsertSubQueryEnd);
         }
 
         @Override
@@ -124,29 +189,21 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public Insert asInsert() {
-            return this.createParentStmt(this::domainList)
-                    .asInsert();
-        }
-
-        @Override
-        public <T> Insert._StandardDomainColumnsSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
+        public <T> Insert._StandardColumnListSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
+            this.getInsertMode();// assert
             return new DomainColumnsClause<>(this, table);
         }
 
         @Override
-        Insert._StandardParentDomainDefaultSpec<C, P> columnListEnd() {
+        public Insert asInsert() {
+            return null;
+        }
+
+        private Insert._StandardChildSpec<C, P> staticInsertSubQueryEnd(final SubQuery subQuery) {
+            this.staticSpaceSubQueryClauseEnd(subQuery);
             return this;
         }
 
-        @Override
-        Insert._StandardDomainChildSpec<C, P> valuesEnd() {
-            return this;
-        }
-
-        private DomainsInsertStatement createParentStmt(Supplier<List<?>> supplier) {
-            return new DomainsInsertStatement(this, supplier);
-        }
 
     }//StandardDomainParentColumnsClause
 
@@ -215,33 +272,6 @@ abstract class StandardInserts extends InsertSupport {
     /*-------------------below standard value insert syntax class-------------------*/
 
 
-    private static final class StandardValueOptionClause<C>
-            extends InsertSupport.NonQueryInsertOptionsImpl<
-            Insert._StandardValueNullOptionSpec<C>,
-            Insert._StandardValuePreferLiteralSpec<C>,
-            Insert._StandardValueInsertIntoClause<C>>
-            implements Insert._StandardValueOptionSpec<C> {
-
-        public StandardValueOptionClause(@Nullable C criteria) {
-            super(CriteriaContexts.primaryInsertContext(criteria));
-            CriteriaContextStack.setContextStack(this.context);
-        }
-
-
-        @Override
-        public <T> Insert._StandardValueColumnsSpec<C, T> insertInto(SimpleTableMeta<T> table) {
-            return new StandardValueColumnsClause<>(this, table);
-        }
-
-        @Override
-        public <T> Insert._StandardParentValueColumnsSpec<C, T> insertInto(ParentTableMeta<T> table) {
-            return new StandardValueParentColumnsClause<>(this, table);
-        }
-
-
-    }//StandardValueInsertOptionClause
-
-
     private static final class StandardStaticValuesPairClause<C, T>
             extends StaticColumnValuePairClause<C, T, Insert._StandardValueStaticLeftParenSpec<C, T>>
             implements Insert._StandardValueStaticLeftParenSpec<C, T> {
@@ -288,118 +318,6 @@ abstract class StandardInserts extends InsertSupport {
 
 
     }//StandardParentStaticValuesPairClause
-
-    private static final class StandardValueColumnsClause<C, T>
-            extends DynamicValueInsertValueClauseShort<
-            C,
-            T,
-            Insert._StandardValueDefaultSpec<C, T>,
-            Insert._InsertSpec>
-            implements Insert._StandardValueColumnsSpec<C, T> {
-
-        private final _ValuesInsert parentStmt;
-
-        private StandardValueColumnsClause(ValueSyntaxOptions options, SimpleTableMeta<T> table) {
-            super(options, table);
-            this.parentStmt = null;
-        }
-
-        private StandardValueColumnsClause(StandardValueParentColumnsClause<C, ?> clause, ChildTableMeta<T> table) {
-            super(clause, table);
-            this.parentStmt = clause.createParentStmt();//couldn't invoke asInsert method
-        }
-
-
-        @Override
-        public Insert._StandardValueStaticLeftParenClause<C, T> values() {
-            return new StandardStaticValuesPairClause<>(this);
-        }
-
-        @Override
-        Insert._StandardValueDefaultSpec<C, T> columnListEnd() {
-            return this;
-        }
-
-        @Override
-        Insert._InsertSpec valueClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowList) {
-            this.endColumnDefaultClause();
-            final Insert._InsertSpec spec;
-            if (this.parentStmt == null) {
-                spec = new ValuesInsertStatement(this, rowList);
-            } else if (rowList.size() == this.parentStmt.rowList().size()) {
-                spec = new StandardValueChildInsertStatement(this, rowList);
-            } else {
-                throw childAndParentRowsNotMatch(this.context, (ChildTableMeta<?>) this.insertTable
-                        , this.parentStmt.rowList().size(), rowList.size());
-            }
-            return spec;
-        }
-
-
-    }//StandardValueValuesClause
-
-    private static final class StandardValueParentColumnsClause<C, P>
-            extends DynamicValueInsertValueClauseShort<
-            C,
-            P,
-            Insert._StandardValueParentDefaultSpec<C, P>,
-            Insert._StandardValueChildSpec<C, P>>
-            implements Insert._StandardParentValueColumnsSpec<C, P>
-            , Insert._StandardValueChildSpec<C, P>
-            , Insert._StandardValueChildInsertIntoClause<C, P> {
-
-        private List<Map<FieldMeta<?>, _Expression>> rowList;
-
-        private StandardValueParentColumnsClause(ValueSyntaxOptions options, ParentTableMeta<P> table) {
-            super(options, table);
-        }
-
-        @Override
-        public Insert._StandardParentStaticValuesClause<C, P> values() {
-            return new StandardParentStaticValuesPairClause<>(this);
-        }
-
-        @Override
-        public Insert asInsert() {
-            return this.createParentStmt()
-                    .asInsert();
-        }
-
-        @Override
-        public Insert._StandardValueChildInsertIntoClause<C, P> child() {
-            return this;
-        }
-
-        @Override
-        public <T> Insert._StandardValueColumnsSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
-            return new StandardValueColumnsClause<>(this, table);
-        }
-
-        @Override
-        Insert._StandardValueParentDefaultSpec<C, P> columnListEnd() {
-            return this;
-        }
-
-        @Override
-        Insert._StandardValueChildSpec<C, P> valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowList) {
-            if (this.rowList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            this.endColumnDefaultClause();
-            this.rowList = rowList;
-            return this;
-        }
-
-        private ValuesInsertStatement createParentStmt() {
-            final List<Map<FieldMeta<?>, _Expression>> rowValuesList = this.rowList;
-            if (rowValuesList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            return new ValuesInsertStatement(this, rowValuesList);
-        }
-
-
-    }//StandardValueParentColumnsClause
 
 
     static class ValuesInsertStatement extends StandardValuesSyntaxStatement

@@ -805,6 +805,8 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnDefaultClause();
+
             final DynamicPairsConstructor<T> constructor;
             constructor = new DynamicPairsConstructor<>(this.context, this::validateField);
             consumer.accept(constructor);
@@ -818,6 +820,8 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnDefaultClause();
+
             final DynamicPairsConstructor<T> constructor;
             constructor = new DynamicPairsConstructor<>(this.context, this::validateField);
             consumer.accept(this.criteria, constructor);
@@ -831,6 +835,8 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnDefaultClause();
+
             final SubQuery subQuery;
             subQuery = supplier.get();
             if (subQuery == null) {
@@ -846,6 +852,8 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnDefaultClause();
+
             final SubQuery subQuery;
             subQuery = function.apply(this.criteria);
             if (subQuery == null) {
@@ -873,6 +881,8 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnDefaultClause();
+
             this.rowPairList = rowPairList;
             this.insertMode = InsertMode.VALUES;
         }
@@ -881,16 +891,27 @@ abstract class InsertSupport {
             if (this.insertMode != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
+            this.endColumnDefaultClause();
+
             this.subQuery = subQuery;
             this.insertMode = InsertMode.QUERY;
+        }
+
+
+        final InsertMode getInsertMode() {
+            final InsertMode mode = this.insertMode;
+            if (mode == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return mode;
         }
 
 
     }//ComplexInsertValuesClause
 
 
-    static abstract class StaticColumnValuePairClause<C, T, VR>
-            implements Insert._StaticValueLeftParenClause<C, T, VR>, Insert._StaticColumnValueClause<C, T, VR>
+    static abstract class StaticColumnValuePairClause<C, T, RR>
+            implements Insert._StaticValueLeftParenClause<C, T, RR>, Insert._StaticColumnValueClause<C, T, RR>
             , CriteriaContextSpec {
 
         final CriteriaContext context;
@@ -917,42 +938,42 @@ abstract class InsertSupport {
 
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Expression value) {
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Expression value) {
             return this.comma(field, value);
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Supplier<?> supplier) {
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Supplier<?> supplier) {
             return this.comma(field, SQLs._nullableParam(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Function<C, ?> function) {
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<C, ?> function) {
             return this.comma(field, SQLs._nullableParam(field, function.apply(this.criteria)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             return this.comma(field, SQLs._nullableParam(field, function.apply(keyName)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
             return this.comma(field, operator.apply(field, SQLs._safeParam(value)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
             return comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        public final Insert._StaticColumnValueClause<C, T, RR> leftParen(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
             return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
             if (value instanceof DataField) {
                 throw CriteriaContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
@@ -971,38 +992,38 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Supplier<?> supplier) {
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Supplier<?> supplier) {
             return this.comma(field, SQLs._nullableParam(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Function<C, ?> function) {
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<C, ?> function) {
             return this.comma(field, SQLs._nullableParam(field, function.apply(this.criteria)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, Function<String, ?> function, String keyName) {
             return this.comma(field, SQLs._nullableParam(field, function.apply(keyName)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, @Nullable Object value) {
             return this.comma(field, operator.apply(field, SQLs._safeParam(value)));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
             return comma(field, operator.apply(field, supplier.get()));
         }
 
         @Override
-        public final Insert._StaticColumnValueClause<C, T, VR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+        public final Insert._StaticColumnValueClause<C, T, RR> comma(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
             return this.comma(field, operator.apply(field, function.apply(keyName)));
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public final VR rightParen() {
+        public final RR rightParen() {
             List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
             if (rowValueList == null) {
                 rowValueList = new ArrayList<>();
@@ -1018,7 +1039,7 @@ abstract class InsertSupport {
             }
 
             this.rowValuesMap = null;// clear for next row
-            return (VR) this;
+            return (RR) this;
         }
 
 

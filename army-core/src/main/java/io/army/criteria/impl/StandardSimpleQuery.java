@@ -60,6 +60,10 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new SimpleScalarSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
+    static <C, P> StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<C, P>> parentInsertQuery(Function<SubQuery, Insert._StandardChildSpec<C, P>> function) {
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     static <C, Q extends Query> _StandardSelectClause<C, Q> unionAndQuery(Q query, UnionType unionType) {
         final _StandardSelectClause<C, ?> spec;

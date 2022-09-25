@@ -68,12 +68,12 @@ public abstract class SQLs extends StandardSyntax {
 
 
     public static Insert._StandardDomainOptionSpec<Void> domainInsert() {
-        return StandardInserts.domainInsert(null);
+        return StandardInserts.primaryInsert(null);
     }
 
     public static <C> Insert._StandardDomainOptionSpec<C> domainInsert(C criteria) {
         Objects.requireNonNull(criteria);
-        return StandardInserts.domainInsert(criteria);
+        return StandardInserts.primaryInsert(criteria);
     }
 
 
