@@ -955,19 +955,19 @@ abstract class MySQLInserts extends InsertSupport {
             if (pairList.size() == 0) {
                 if (this.parentStmt == null) {
                     spec = new ValuesInsertStatement(this);
-                } else if (rowList.size() == this.parentStmt.rowList().size()) {
+                } else if (rowList.size() == this.parentStmt.rowPairList().size()) {
                     spec = new ValueChildInsertStatement(this);
                 } else {
                     throw childAndParentRowsNotMatch(this.context, (ChildTableMeta<?>) this.insertTable
-                            , this.parentStmt.rowList().size(), rowList.size());
+                            , this.parentStmt.rowPairList().size(), rowList.size());
                 }
             } else if (this.parentStmt == null) {
                 spec = new ValuesInsertWithDuplicateKey(this, pairList);
-            } else if (rowList.size() == this.parentStmt.rowList().size()) {
+            } else if (rowList.size() == this.parentStmt.rowPairList().size()) {
                 spec = new ValueChildInsertWithDuplicateKey(this, pairList);
             } else {
                 throw childAndParentRowsNotMatch(this.context, (ChildTableMeta<?>) this.insertTable
-                        , this.parentStmt.rowList().size(), rowList.size());
+                        , this.parentStmt.rowPairList().size(), rowList.size());
             }
             return spec.asInsert();
         }
@@ -1200,7 +1200,7 @@ abstract class MySQLInserts extends InsertSupport {
         }
 
         @Override
-        public final List<Map<FieldMeta<?>, _Expression>> rowList() {
+        public final List<Map<FieldMeta<?>, _Expression>> rowPairList() {
             return this.rowList;
         }
 

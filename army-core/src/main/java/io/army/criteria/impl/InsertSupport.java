@@ -705,8 +705,6 @@ abstract class InsertSupport {
             , _Insert._DomainInsert {
 
 
-        private List<?> domainList;
-
         DomainValueClause(InsertOptions options, TableMeta<P> table) {
             super(options, table);
         }
@@ -716,9 +714,8 @@ abstract class InsertSupport {
             if (domain == null) {
                 throw CriteriaContextStack.nullPointer(this.context);
             }
-            this.domainList = Collections.singletonList(domain);
             this.endColumnDefaultClause();
-            return this.valuesEnd();
+            return this.domainValuesEnd(Collections.singletonList(domain));
         }
 
         @Override
@@ -737,9 +734,8 @@ abstract class InsertSupport {
             if (domainList == null || domainList.size() == 0) {
                 throw domainListIsEmpty();
             }
-            this.domainList = domainList;
             this.endColumnDefaultClause();
-            return this.valuesEnd();
+            return this.domainValuesEnd(domainList);
         }
 
         @Override
@@ -755,20 +751,21 @@ abstract class InsertSupport {
 
         @Override
         public final List<?> domainList() {
-            final List<?> list = this.domainList;
-            if (list == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            return list;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void clear() {
             super.clear();
-            this.domainList = null;
         }
 
-        abstract VR valuesEnd();
+        VR valuesEnd() {
+            throw new UnsupportedOperationException();
+        }
+
+        VR domainValuesEnd(List<?> domainList) {
+            throw new UnsupportedOperationException();
+        }
 
         private CriteriaException domainListIsEmpty() {
             return CriteriaContextStack.criteriaError(this.context, "domainList must non-empty");
@@ -788,9 +785,13 @@ abstract class InsertSupport {
     @SuppressWarnings("unchecked")
     static abstract class ComplexInsertValuesClause<C, T, CR, DR, VR> extends DomainValueClause<C, T, CR, DR, VR>
             implements Insert._DynamicValuesClause<C, T, VR>
-            , Insert._SpaceSubQueryClause<C, VR> {
+            , Insert._SpaceSubQueryClause<C, VR>
+            , _Insert._ValuesInsert
+            , _Insert._QueryInsert {
 
         private InsertMode insertMode;
+
+        private List<?> domainList;
 
         private List<Map<FieldMeta<?>, _Expression>> rowPairList;
 
@@ -904,6 +905,78 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return mode;
+        }
+
+        @Override
+        final VR domainValuesEnd(final List<?> domainList) {
+            if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.domainList = domainList;
+            this.insertMode = InsertMode.DOMAIN;
+            return (VR) this;
+        }
+
+        final InsertMode assertInsertMode(final @Nullable ComplexInsertValuesClause<?, ?, ?, ?, ?> parent) {
+            final InsertMode mode = this.insertMode;
+            assert mode != null;
+            if (parent != null && mode == parent.insertMode) {
+                String m = String.format("%s and %s insert syntax not match", this.insertTable, parent.insertTable);
+                throw CriteriaContextStack.criteriaError(this.context, m);
+            }
+            return mode;
+        }
+
+        /**
+         * @return a unmodified list,new instance each time.
+         */
+        final List<?> domainListForSingle() {
+            assert this.insertTable instanceof SingleTableMeta;
+            final List<?> domainList = this.domainList;
+            if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return _CollectionUtils.asUnmodifiableList(domainList);
+        }
+
+        /**
+         * @return a unmodified list,new instance each time.
+         */
+        final List<?> domainListForChild(final ComplexInsertValuesClause<?, ?, ?, ?, ?> parent) {
+            assert this.insertTable instanceof ChildTableMeta;
+            assert parent.insertTable instanceof ParentTableMeta;
+            assert parent.insertMode == InsertMode.DOMAIN;
+
+            final List<?> domainList = this.domainList, parentDomainList = parent.domainList;
+            if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            if (domainList != parentDomainList
+                    && domainList.size() != 1
+                    && parentDomainList.size() != 1
+                    && domainList.get(0) != parentDomainList.get(0)) {
+                String m = String.format("%s and %s domain list not match.", this.insertTable, parent.insertTable);
+                throw CriteriaContextStack.criteriaError(this.context, m);
+            }
+            return _CollectionUtils.asUnmodifiableList(domainList);
+        }
+
+        @Override
+        public final List<Map<FieldMeta<?>, _Expression>> rowPairList() {
+            final List<Map<FieldMeta<?>, _Expression>> list = this.rowPairList;
+            if (this.insertMode != InsertMode.VALUES || list == null || list instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return list;
+        }
+
+        @Override
+        public final SubQuery subQuery() {
+            final SubQuery query = this.subQuery;
+            if (this.insertMode != InsertMode.QUERY || query == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return query;
         }
 
 
@@ -1790,14 +1863,14 @@ abstract class InsertSupport {
             , DmlStatement.DmlInsert {
 
 
-        final CriteriaContext criteriaContext;
+        final CriteriaContext context;
 
         final TableMeta<?> table;
 
         private Boolean prepared;
 
         InsertStatement(_Insert clause) {
-            this.criteriaContext = ((CriteriaContextSpec) clause).getContext();
+            this.context = ((CriteriaContextSpec) clause).getContext();
             this.table = clause.table();
         }
 
@@ -1827,22 +1900,31 @@ abstract class InsertSupport {
 
             if (this instanceof QueryInsertStatement) {
                 ((QueryInsertStatement<I>) this).validateQueryInsertStatement();
+            } else if (this instanceof _Insert._ChildValuesInsert) {
+                final _Insert._ChildValuesInsert child = (_Insert._ChildValuesInsert) this;
+                final _Insert._ValuesInsert parent = child.parentStmt();
+                if (child.rowPairList().size() != parent.rowPairList().size()) {
+                    String m = String.format("%s rowList size[%s] and %s rowList size[%s] not match"
+                            , child.table(), child.rowPairList().size()
+                            , parent.table(), parent.rowPairList().size());
+                    throw CriteriaContextStack.criteriaError(this.context, m);
+                }
             } else if (this instanceof _Insert._ChildInsert) {
                 final _Insert parentStmt = ((_ChildInsert) this).parentStmt();
                 if (parentStmt instanceof _Insert._DuplicateKeyClause
                         && parentStmt.table().id().generatorType() == GeneratorType.POST
                         && !(parentStmt instanceof _Insert._SupportReturningClause)) {
-                    throw CriteriaContextStack.criteriaError(this.criteriaContext
+                    throw CriteriaContextStack.criteriaError(this.context
                             , _Exceptions::duplicateKeyAndPostIdInsert, (ChildTableMeta<?>) this.table);
                 }
             }
 
+            //finally clear context
             if (this instanceof SubStatement) {
-                CriteriaContextStack.pop(this.criteriaContext);
+                CriteriaContextStack.pop(this.context);
             } else {
-                CriteriaContextStack.clearContextStack(this.criteriaContext);
+                CriteriaContextStack.clearContextStack(this.context);
             }
-
             this.prepared = Boolean.TRUE;
             return (I) this;
         }
@@ -1873,7 +1955,7 @@ abstract class InsertSupport {
                 stmt = parser.dialectStmt((DialectStatement) this, visible);
             } else {
                 //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return stmt;
         }
@@ -1995,13 +2077,13 @@ abstract class InsertSupport {
 
         private final Map<FieldMeta<?>, Boolean> fieldMap;
 
-        private final SubQuery subQuery;
+        private final SubQuery query;
 
         QueryInsertStatement(_QueryInsert clause) {
             super(clause);
             this.fieldList = clause.fieldList();
             this.fieldMap = clause.fieldMap();
-            this.subQuery = clause.subQuery();
+            this.query = clause.subQuery();
         }
 
 
@@ -2017,7 +2099,7 @@ abstract class InsertSupport {
 
         @Override
         public final SubQuery subQuery() {
-            return this.subQuery;
+            return this.query;
         }
 
         /**
@@ -2031,7 +2113,7 @@ abstract class InsertSupport {
                 final _Insert._QueryInsert parentStmt = ((_ChildQueryInsert) this).parentStmt();
                 this.doValidateStatement(parentStmt.table(), parentStmt.fieldList(), parentStmt.subQuery());
             }
-            this.doValidateStatement(this.table, this.fieldList, this.subQuery);
+            this.doValidateStatement(this.table, this.fieldList, this.query);
         }
 
 
@@ -2040,12 +2122,12 @@ abstract class InsertSupport {
             final int fieldSize;
             fieldSize = fieldList.size();
             if (fieldSize == 0) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext
+                throw CriteriaContextStack.criteriaError(this.context
                         , _Exceptions::noFieldsForQueryInsert, insertTable);
             }
             if (query == null) {
                 String m = String.format("SubQuery must be non-null for query insert of %s", insertTable);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, m);
+                throw CriteriaContextStack.criteriaError(this.context, m);
             }
             final List<Selection> selectionList;
             selectionList = _DialectUtils.flatSelectItem(query.selectItemList());
@@ -2053,7 +2135,7 @@ abstract class InsertSupport {
             if (selectionList.size() != fieldSize) {
                 Supplier<CriteriaException> supplier;
                 supplier = () -> _Exceptions.rowSetSelectionAndFieldSizeNotMatch(selectionList.size(), fieldSize, insertTable);
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, supplier);
+                throw CriteriaContextStack.criteriaError(this.context, supplier);
             }
 
         }

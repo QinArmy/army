@@ -478,11 +478,11 @@ abstract class MySQLReplaces extends InsertSupport {
             final MySQLReplace._ReplaceSpec spec;
             if (this.parentStmt == null) {
                 spec = new ValuesReplaceStatement(this, rowList);
-            } else if (rowList.size() == this.parentStmt.rowList().size()) {
+            } else if (rowList.size() == this.parentStmt.rowPairList().size()) {
                 spec = new ValuesChildReplaceStatement(this, rowList);
             } else {
                 throw childAndParentRowsNotMatch(this.context, (ChildTableMeta<?>) this.insertTable
-                        , this.parentStmt.rowList().size(), rowList.size());
+                        , this.parentStmt.rowPairList().size(), rowList.size());
             }
             return spec;
         }
@@ -704,7 +704,7 @@ abstract class MySQLReplaces extends InsertSupport {
         }
 
         @Override
-        public final List<Map<FieldMeta<?>, _Expression>> rowList() {
+        public final List<Map<FieldMeta<?>, _Expression>> rowPairList() {
             return this.rowValuesList;
         }
 

@@ -58,9 +58,9 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         super(dialect, domainStmt, visible);
 
         if (domainStmt instanceof _Insert._ChildValuesInsert) {
-            this.rowList = ((_Insert._ChildValuesInsert) domainStmt).parentStmt().rowList();
+            this.rowList = ((_Insert._ChildValuesInsert) domainStmt).parentStmt().rowPairList();
         } else {
-            this.rowList = domainStmt.rowList();
+            this.rowList = domainStmt.rowPairList();
         }
 
         final int rowSize = this.rowList.size();
@@ -89,7 +89,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
             , ArmyParser dialect, Visible visible) {
         super(parentContext, stmt, dialect, visible);
 
-        this.rowList = stmt.rowList();
+        this.rowList = stmt.rowPairList();
         assert this.rowList.size() == parentContext.rowList.size();
 
         assert this.rowList != parentContext.rowList;

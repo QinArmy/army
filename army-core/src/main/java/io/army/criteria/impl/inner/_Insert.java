@@ -62,7 +62,7 @@ public interface _Insert extends _Statement {
     interface _ValuesInsert extends _ValuesSyntaxInsert {
 
 
-        List<Map<FieldMeta<?>, _Expression>> rowList();
+        List<Map<FieldMeta<?>, _Expression>> rowPairList();
 
 
     }
