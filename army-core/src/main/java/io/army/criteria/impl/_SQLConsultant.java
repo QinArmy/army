@@ -47,8 +47,8 @@ public abstract class _SQLConsultant {
                 throw instanceNotMatch(insert, StandardInserts.ValuesInsertStatement.class);
             }
         } else if (insert instanceof _Insert._QueryInsert) {
-            if (!(insert instanceof StandardInserts.StandardQueryInsertStatement)) {
-                throw instanceNotMatch(insert, StandardInserts.StandardQueryInsertStatement.class);
+            if (!(insert instanceof StandardInserts.QueryInsertStatement)) {
+                throw instanceNotMatch(insert, StandardInserts.QueryInsertStatement.class);
             }
         } else {
             throw new CriteriaException("Not standard insert statement");

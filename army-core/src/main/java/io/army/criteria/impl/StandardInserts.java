@@ -50,8 +50,8 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public <T> Insert._StandardParentColumnListSpec<C, T> insertInto(ParentTableMeta<T> table) {
-            return new ParentComplexValuesClause<>(this, table);
+        public <P> Insert._StandardParentColumnListSpec<C, P, Insert._StandardChildInsertIntoClause<C, P>> insertInto(ParentTableMeta<P> table) {
+            return new SimpleParentComplexValuesClause<>(this, table);
         }
 
     }//StandardDomainOptionClause
@@ -92,7 +92,7 @@ abstract class StandardInserts extends InsertSupport {
             , Insert._StandardComplexColumnDefaultSpec<C, T>
             , Insert._InsertSpec {
 
-        private final ParentComplexValuesClause<C, ?> parentClause;
+        private final ParentComplexValuesClause<C, ?, ?> parentClause;
 
 
         private NonParentComplexValuesClause(InsertOptions options, SimpleTableMeta<T> table) {
@@ -100,7 +100,7 @@ abstract class StandardInserts extends InsertSupport {
             this.parentClause = null;
         }
 
-        private NonParentComplexValuesClause(ParentComplexValuesClause<C, ?> clause, ChildTableMeta<T> table) {
+        private NonParentComplexValuesClause(ParentComplexValuesClause<C, ?, ?> clause, ChildTableMeta<T> table) {
             super(clause, table);
             this.parentClause = clause;
         }
@@ -117,7 +117,7 @@ abstract class StandardInserts extends InsertSupport {
 
         @Override
         public Insert asInsert() {
-            final ParentComplexValuesClause<C, ?> parentClause = this.parentClause;
+            final ParentComplexValuesClause<C, ?, ?> parentClause = this.parentClause;
             final InsertMode mode;
             mode = this.assertInsertMode(parentClause);
             final Insert._InsertSpec spec;
@@ -138,9 +138,14 @@ abstract class StandardInserts extends InsertSupport {
                     }
                 }
                 break;
-                case QUERY:
-                    spec = new StandardQueryInsertStatement(this);
-                    break;
+                case QUERY: {
+                    if (parentClause == null) {
+                        spec = new QueryInsertStatement(this);
+                    } else {
+                        spec = new ChildQueryInsertStatement(parentClause, this);
+                    }
+                }
+                break;
                 default:
                     throw _Exceptions.unexpectedEnum(mode);
             }
@@ -156,29 +161,29 @@ abstract class StandardInserts extends InsertSupport {
     }//NonParentComplexValuesClause
 
 
-    private static final class ParentValuesLeftParenClause<C, P> extends InsertSupport.StaticColumnValuePairClause<
+    private static final class ParentValuesLeftParenClause<C, P, CT> extends InsertSupport.StaticColumnValuePairClause<
             C,
             P,
-            Insert._StandardParentValueStaticLeftParenSpec<C, P>>
-            implements Insert._StandardParentValueStaticLeftParenSpec<C, P> {
+            Insert._StandardParentValueStaticLeftParenSpec<C, P, CT>>
+            implements Insert._StandardParentValueStaticLeftParenSpec<C, P, CT> {
 
-        private final ParentComplexValuesClause<C, P> clause;
+        private final ParentComplexValuesClause<C, P, CT> clause;
 
-        private ParentValuesLeftParenClause(ParentComplexValuesClause<C, P> clause) {
+        private ParentValuesLeftParenClause(ParentComplexValuesClause<C, P, CT> clause) {
             super(clause.context, clause::validateField);
             this.clause = clause;
         }
 
         @Override
         public Insert asInsert() {
-            final ParentComplexValuesClause<C, P> clause = this.clause;
+            final ParentComplexValuesClause<C, P, CT> clause = this.clause;
             clause.staticValuesClauseEnd(this.endValuesClause());
             return clause.asInsert();
         }
 
         @Override
-        public Insert._StandardChildInsertIntoClause<C, P> child() {
-            final ParentComplexValuesClause<C, P> clause = this.clause;
+        public CT child() {
+            final ParentComplexValuesClause<C, P, CT> clause = this.clause;
             clause.staticValuesClauseEnd(this.endValuesClause());
             return clause.child();
         }
@@ -187,17 +192,16 @@ abstract class StandardInserts extends InsertSupport {
     }//ParentValuesLeftParenClause
 
 
-    private static final class ParentComplexValuesClause<C, P>
+    private static abstract class ParentComplexValuesClause<C, P, CT>
             extends InsertSupport.ComplexInsertValuesClause<
             C,
             P,
-            Insert._StandardParentComplexColumnDefaultSpec<C, P>,
-            Insert._StandardParentValuesColumnDefaultSpec<C, P>,
-            Insert._StandardChildSpec<C, P>>
-            implements Insert._StandardParentColumnListSpec<C, P>
-            , Insert._StandardParentComplexColumnDefaultSpec<C, P>
-            , Insert._StandardChildSpec<C, P>
-            , Insert._StandardChildInsertIntoClause<C, P>
+            Insert._StandardParentComplexColumnDefaultSpec<C, P, CT>,
+            Insert._StandardParentValuesColumnDefaultSpec<C, P, CT>,
+            Insert._StandardChildSpec<CT>>
+            implements Insert._StandardParentColumnListSpec<C, P, CT>
+            , Insert._StandardParentComplexColumnDefaultSpec<C, P, CT>
+            , Insert._StandardChildSpec<CT>
             , InsertOptions {
 
         private ParentComplexValuesClause(InsertOptions options, ParentTableMeta<P> table) {
@@ -205,14 +209,55 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._StandardParentValueStaticLeftParenClause<C, P> values() {
+        public final Insert._StandardParentValueStaticLeftParenClause<C, P, CT> values() {
             return new ParentValuesLeftParenClause<>(this);
         }
 
 
         @Override
-        public StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<C, P>> space() {
+        public final StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<CT>> space() {
             return StandardSimpleQuery.parentInsertQuery(this.criteria, this::staticInsertSubQueryEnd);
+        }
+
+
+        @Override
+        public final Insert asInsert() {
+            final InsertMode mode;
+            mode = this.getInsertMode();
+            final Insert._InsertSpec spec;
+            switch (mode) {
+                case DOMAIN:
+                    spec = new DomainsInsertStatement(this, this.domainListForSingle());
+                    break;
+                case VALUES:
+                    spec = new ValuesInsertStatement(this);
+                    break;
+                case QUERY:
+                    spec = new QueryInsertStatement(this);
+                    break;
+                default:
+                    //no bug,never here
+                    throw _Exceptions.unexpectedEnum(mode);
+            }
+            return spec.asInsert();
+        }
+
+        private Insert._StandardChildSpec<CT> staticInsertSubQueryEnd(final SubQuery subQuery) {
+            this.staticSpaceSubQueryClauseEnd(subQuery);
+            return this;
+        }
+
+
+    }//ParentComplexValuesClause
+
+    private static final class SimpleParentComplexValuesClause<C, P> extends ParentComplexValuesClause<
+            C,
+            P,
+            Insert._StandardChildInsertIntoClause<C, P>>
+            implements Insert._StandardChildInsertIntoClause<C, P> {
+
+        private SimpleParentComplexValuesClause(InsertOptions options, ParentTableMeta<P> table) {
+            super(options, table);
         }
 
         @Override
@@ -226,18 +271,8 @@ abstract class StandardInserts extends InsertSupport {
             return new NonParentComplexValuesClause<>(this, table);
         }
 
-        @Override
-        public Insert asInsert() {
-            return null;
-        }
 
-        private Insert._StandardChildSpec<C, P> staticInsertSubQueryEnd(final SubQuery subQuery) {
-            this.staticSpaceSubQueryClauseEnd(subQuery);
-            return this;
-        }
-
-
-    }//StandardDomainParentColumnsClause
+    }//SimpleParentComplexValuesClause
 
 
     private static abstract class StandardValuesSyntaxStatement extends InsertSupport.ValueSyntaxStatement<Insert>
@@ -270,12 +305,12 @@ abstract class StandardInserts extends InsertSupport {
             this.domainList = clause.domainListForSingle();
         }
 
-        private DomainsInsertStatement(NonParentComplexValuesClause<?, ?> clause, ParentComplexValuesClause<?, ?> parentClause) {
+        private DomainsInsertStatement(ParentComplexValuesClause<?, ?, ?> parentClause, NonParentComplexValuesClause<?, ?> clause) {
             super(clause);
             this.domainList = clause.domainListForChild(parentClause);
         }
 
-        private DomainsInsertStatement(ParentComplexValuesClause<?, ?> clause, List<?> domainList) {
+        private DomainsInsertStatement(ParentComplexValuesClause<?, ?, ?> clause, List<?> domainList) {
             super(clause);
             this.domainList = domainList;
         }
@@ -287,13 +322,13 @@ abstract class StandardInserts extends InsertSupport {
 
     }//DomainsInsertStatement
 
-    static final class ChildDomainInsertStatement extends DomainsInsertStatement
+    private static final class ChildDomainInsertStatement extends DomainsInsertStatement
             implements _Insert._ChildDomainInsert {
 
         private final DomainsInsertStatement parentStmt;
 
-        private ChildDomainInsertStatement(ParentComplexValuesClause<?, ?> parentClause, NonParentComplexValuesClause<?, ?> clause) {
-            super(clause, parentClause);
+        private ChildDomainInsertStatement(ParentComplexValuesClause<?, ?, ?> parentClause, NonParentComplexValuesClause<?, ?> clause) {
+            super(parentClause, clause);
             this.parentStmt = new DomainsInsertStatement(parentClause, ((DomainsInsertStatement) this).domainList);
         }
 
@@ -315,7 +350,7 @@ abstract class StandardInserts extends InsertSupport {
             this.rowPairList = clause.rowPairList();
         }
 
-        private ValuesInsertStatement(ParentComplexValuesClause<?, ?> clause) {
+        private ValuesInsertStatement(ParentComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             this.rowPairList = clause.rowPairList();
         }
@@ -328,12 +363,12 @@ abstract class StandardInserts extends InsertSupport {
 
     }//ValuesInsertStatement
 
-    static final class ChildValuesInsertStatement extends ValuesInsertStatement
+    private static final class ChildValuesInsertStatement extends ValuesInsertStatement
             implements _Insert._ChildValuesInsert {
 
         private final ValuesInsertStatement parentStmt;
 
-        private ChildValuesInsertStatement(ParentComplexValuesClause<?, ?> parentClause, NonParentComplexValuesClause<?, ?> clause) {
+        private ChildValuesInsertStatement(ParentComplexValuesClause<?, ?, ?> parentClause, NonParentComplexValuesClause<?, ?> clause) {
             super(clause);
             this.parentStmt = new ValuesInsertStatement(parentClause);
         }
@@ -346,11 +381,15 @@ abstract class StandardInserts extends InsertSupport {
 
     }//ChildValuesInsertStatement
 
-    static class StandardQueryInsertStatement extends InsertSupport.QueryInsertStatement<Insert>
+    static class QueryInsertStatement extends InsertSupport.QuerySyntaxInsertStatement<Insert>
             implements Insert, StandardStatement, Insert._InsertSpec {
 
 
-        private StandardQueryInsertStatement(NonParentComplexValuesClause<?, ?> clause) {
+        private QueryInsertStatement(NonParentComplexValuesClause<?, ?> clause) {
+            super(clause);
+        }
+
+        private QueryInsertStatement(ParentComplexValuesClause<?, ?, ?> clause) {
             super(clause);
         }
 
@@ -367,6 +406,23 @@ abstract class StandardInserts extends InsertSupport {
 
 
     }//StandardQueryInsertStatement
+
+    private static final class ChildQueryInsertStatement extends QueryInsertStatement
+            implements _Insert._ChildQueryInsert {
+
+        private final QueryInsertStatement parentStmt;
+
+        private ChildQueryInsertStatement(ParentComplexValuesClause<?, ?, ?> parentClause, NonParentComplexValuesClause<?, ?> clause) {
+            super(clause);
+            this.parentStmt = new QueryInsertStatement(parentClause);
+        }
+
+        @Override
+        public _QueryInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+    }//StandardChildQueryInsertStatement
 
 
 }

@@ -59,7 +59,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new SimpleScalarSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
-    static <C, P> StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<C, P>> parentInsertQuery(@Nullable C criteria, Function<SubQuery, Insert._StandardChildSpec<C, P>> function) {
+    static <C, CT> StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<CT>> parentInsertQuery(@Nullable C criteria, Function<SubQuery, Insert._StandardChildSpec<CT>> function) {
         return new ParentInsertSubQuery<>(CriteriaContexts.subQueryContext(criteria), function);
     }
 
@@ -260,13 +260,13 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     } // SimpleSubQuery
 
 
-    private static final class ParentInsertSubQuery<C, P>
-            extends StandardSimpleQuery<C, Insert._StandardParentInsertQuery<C, P>>
-            implements SubQuery, Insert._StandardParentInsertQuery<C, P> {
+    private static final class ParentInsertSubQuery<C, CT>
+            extends StandardSimpleQuery<C, Insert._StandardParentInsertQuery<CT>>
+            implements SubQuery, Insert._StandardParentInsertQuery<CT> {
 
-        private final Function<SubQuery, Insert._StandardChildSpec<C, P>> function;
+        private final Function<SubQuery, Insert._StandardChildSpec<CT>> function;
 
-        private ParentInsertSubQuery(CriteriaContext criteriaContext, Function<SubQuery, Insert._StandardChildSpec<C, P>> function) {
+        private ParentInsertSubQuery(CriteriaContext criteriaContext, Function<SubQuery, Insert._StandardChildSpec<CT>> function) {
             super(criteriaContext);
             this.function = function;
         }
@@ -279,7 +279,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         }
 
         @Override
-        public Insert._StandardChildInsertIntoClause<C, P> child() {
+        public CT child() {
             this.prepared();
             return this.function.apply(this)
                     .child();

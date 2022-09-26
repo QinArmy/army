@@ -306,44 +306,44 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
     }
 
-    interface _StandardChildSpec<C, P> extends _ChildPartClause<_StandardChildInsertIntoClause<C, P>>
+    interface _StandardChildSpec<CT> extends _ChildPartClause<CT>
             , _InsertSpec {
 
     }
 
-    interface _StandardParentValueStaticLeftParenClause<C, P>
-            extends _StaticValueLeftParenClause<C, P, _StandardParentValueStaticLeftParenSpec<C, P>> {
+    interface _StandardParentValueStaticLeftParenClause<C, P, CT>
+            extends _StaticValueLeftParenClause<C, P, _StandardParentValueStaticLeftParenSpec<C, P, CT>> {
 
     }
 
 
-    interface _StandardParentValueStaticLeftParenSpec<C, P>
-            extends _StandardParentValueStaticLeftParenClause<C, P>, _StandardChildSpec<C, P> {
+    interface _StandardParentValueStaticLeftParenSpec<C, P, CT>
+            extends _StandardParentValueStaticLeftParenClause<C, P, CT>, _StandardChildSpec<CT> {
 
     }
 
-    interface _StandardParentValuesColumnDefaultSpec<C, P>
-            extends _ColumnDefaultClause<C, P, _StandardParentValuesColumnDefaultSpec<C, P>>
-            , _DomainValueClause<C, P, _StandardChildSpec<C, P>>
-            , _DynamicValuesClause<C, P, _StandardChildSpec<C, P>>
-            , _StaticValuesClause<_StandardParentValueStaticLeftParenClause<C, P>> {
+    interface _StandardParentValuesColumnDefaultSpec<C, P, CT>
+            extends _ColumnDefaultClause<C, P, _StandardParentValuesColumnDefaultSpec<C, P, CT>>
+            , _DomainValueClause<C, P, _StandardChildSpec<CT>>
+            , _DynamicValuesClause<C, P, _StandardChildSpec<CT>>
+            , _StaticValuesClause<_StandardParentValueStaticLeftParenClause<C, P, CT>> {
 
     }
 
-    interface _StandardParentInsertQuery<C, P> extends StandardQuery, _StandardChildSpec<C, P> {
+    interface _StandardParentInsertQuery<CT> extends StandardQuery, _StandardChildSpec<CT> {
 
     }
 
-    interface _StandardParentComplexColumnDefaultSpec<C, P> extends _StandardParentValuesColumnDefaultSpec<C, P>
-            , Insert._SpaceSubQueryClause<C, _StandardChildSpec<C, P>> {
+    interface _StandardParentComplexColumnDefaultSpec<C, P, CT> extends _StandardParentValuesColumnDefaultSpec<C, P, CT>
+            , Insert._SpaceSubQueryClause<C, _StandardChildSpec<CT>> {
 
-        StandardQuery._StandardSelectClause<C, _StandardParentInsertQuery<C, P>> space();
+        StandardQuery._StandardSelectClause<C, _StandardParentInsertQuery<CT>> space();
     }
 
 
-    interface _StandardParentColumnListSpec<C, P>
-            extends _ColumnListClause<C, P, _StandardParentComplexColumnDefaultSpec<C, P>>
-            , _StandardParentValuesColumnDefaultSpec<C, P> {
+    interface _StandardParentColumnListSpec<C, P, CT>
+            extends _ColumnListClause<C, P, _StandardParentComplexColumnDefaultSpec<C, P, CT>>
+            , _StandardParentValuesColumnDefaultSpec<C, P, CT> {
 
     }
 
@@ -352,7 +352,7 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
         <T> _StandardColumnListSpec<C, T> insertInto(SimpleTableMeta<T> table);
 
-        <T> _StandardParentColumnListSpec<C, T> insertInto(ParentTableMeta<T> table);
+        <P> _StandardParentColumnListSpec<C, P, _StandardChildInsertIntoClause<C, P>> insertInto(ParentTableMeta<P> table);
     }
 
 

@@ -67,33 +67,13 @@ public abstract class SQLs extends StandardSyntax {
     public static final Modifier DISTINCT = Modifier.DISTINCT;
 
 
-    public static Insert._StandardDomainOptionSpec<Void> domainInsert() {
+    public static Insert._StandardDomainOptionSpec<Void> primaryInsert() {
         return StandardInserts.primaryInsert(null);
     }
 
-    public static <C> Insert._StandardDomainOptionSpec<C> domainInsert(C criteria) {
+    public static <C> Insert._StandardDomainOptionSpec<C> primaryInsert(C criteria) {
         Objects.requireNonNull(criteria);
         return StandardInserts.primaryInsert(criteria);
-    }
-
-
-    public static Insert._StandardValueOptionSpec<Void> valueInsert() {
-        return StandardInserts.valueInsert(null);
-    }
-
-    public static <C> Insert._StandardValueOptionSpec<C> valueInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardInserts.valueInsert(criteria);
-    }
-
-
-    public static Insert._StandardQueryInsertClause<Void> rowSetInsert() {
-        return StandardInserts.rowSetInsert(null);
-    }
-
-    public static <C> Insert._StandardQueryInsertClause<C> rowSetInsert(C criteria) {
-        Objects.requireNonNull(criteria);
-        return StandardInserts.rowSetInsert(criteria);
     }
 
     public static Update._StandardDomainUpdateClause<Void> domainUpdate() {

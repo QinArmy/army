@@ -1940,7 +1940,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//QueryParentPartitionClause
 
 
-    static class MySQLQueryInsertStatement extends InsertSupport.QueryInsertStatement<Insert>
+    static class MySQLQueryInsertStatement extends QuerySyntaxInsertStatement<Insert>
             implements MySQLInsert, Insert._InsertSpec, _MySQLInsert._MySQQueryInsert {
 
         private final List<Hint> hintList;

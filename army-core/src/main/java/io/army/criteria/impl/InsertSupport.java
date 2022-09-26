@@ -1898,8 +1898,8 @@ abstract class InsertSupport {
         public final I asInsert() {
             _Assert.nonPrepared(this.prepared);
 
-            if (this instanceof QueryInsertStatement) {
-                ((QueryInsertStatement<I>) this).validateQueryInsertStatement();
+            if (this instanceof QuerySyntaxInsertStatement) {
+                ((QuerySyntaxInsertStatement<I>) this).validateQueryInsertStatement();
             } else if (this instanceof _Insert._ChildValuesInsert) {
                 final _Insert._ChildValuesInsert child = (_Insert._ChildValuesInsert) this;
                 final _Insert._ValuesInsert parent = child.parentStmt();
@@ -2068,7 +2068,7 @@ abstract class InsertSupport {
     }//AssignmentInsertStatement
 
 
-    static abstract class QueryInsertStatement<I extends DmlStatement.DmlInsert>
+    static abstract class QuerySyntaxInsertStatement<I extends DmlStatement.DmlInsert>
             extends InsertStatement<I>
             implements _Insert._QueryInsert {
 
@@ -2079,7 +2079,7 @@ abstract class InsertSupport {
 
         private final SubQuery query;
 
-        QueryInsertStatement(_QueryInsert clause) {
+        QuerySyntaxInsertStatement(_QueryInsert clause) {
             super(clause);
             this.fieldList = clause.fieldList();
             this.fieldMap = clause.fieldMap();

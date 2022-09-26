@@ -1204,7 +1204,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
     }//QueryParentPartitionClause
 
-    static class QueryReplaceStatement extends InsertSupport.QueryInsertStatement<ReplaceInsert>
+    static class QueryReplaceStatement extends QuerySyntaxInsertStatement<ReplaceInsert>
             implements MySQLReplace
             , ReplaceInsert._ReplaceSpec
             , _MySQLInsert._MySQQueryInsert

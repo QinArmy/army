@@ -22,7 +22,7 @@ public class StandardInsertUnitTests {
     @Test
     public void domainInsertParent() {
         final Insert stmt;
-        stmt = SQLs.domainInsert()
+        stmt = SQLs.primaryInsert()
 //                .migration(true)
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
@@ -44,7 +44,7 @@ public class StandardInsertUnitTests {
         provinceList = this.createProvinceList();
 
         final Insert stmt;
-        stmt = SQLs.domainInsert()
+        stmt = SQLs.primaryInsert()
                 .preferLiteral(true)
                 .insertInto(ChinaRegion_.T)
                 .values(provinceList)
