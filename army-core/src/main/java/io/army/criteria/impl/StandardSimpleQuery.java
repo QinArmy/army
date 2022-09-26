@@ -59,11 +59,11 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         return new SimpleScalarSubQuery<>(CriteriaContexts.subQueryContext(criteria));
     }
 
-    static <C, CT> StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<CT>> parentInsertQuery(@Nullable C criteria, Function<SubQuery, Insert._StandardChildSpec<CT>> function) {
+    static <C, CT> StandardQuery._StandardSelectClause<C, StandardInsert._ParentInsertQuery<CT>> parentInsertQuery(@Nullable C criteria, Function<SubQuery, StandardInsert._ChildPartSpec<CT>> function) {
         return new ParentInsertSubQuery<>(CriteriaContexts.subQueryContext(criteria), function);
     }
 
-    static <C> StandardQuery._StandardSelectClause<C, Insert._StandardInsertQuery> insertQuery(@Nullable C criteria, Function<SubQuery, Insert._InsertSpec> function) {
+    static <C> StandardQuery._StandardSelectClause<C, StandardInsert._InsertQuery> insertQuery(@Nullable C criteria, Function<SubQuery, Insert._InsertSpec> function) {
         return new InsertSubQuery<>(CriteriaContexts.subQueryContext(criteria), function);
     }
 
@@ -261,18 +261,18 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     interface ParentInsertSubQuerySpec<CT> {
 
-        Insert._StandardChildSpec<CT> fromLeft(SubQuery query);
+        StandardInsert._ChildPartSpec<CT> fromLeft(SubQuery query);
 
     }
 
 
     private static final class ParentInsertSubQuery<C, CT>
-            extends StandardSimpleQuery<C, Insert._StandardParentInsertQuery<CT>>
-            implements SubQuery, Insert._StandardParentInsertQuery<CT>, ParentInsertSubQuerySpec<CT> {
+            extends StandardSimpleQuery<C, StandardInsert._ParentInsertQuery<CT>>
+            implements SubQuery, StandardInsert._ParentInsertQuery<CT>, ParentInsertSubQuerySpec<CT> {
 
-        private final Function<SubQuery, Insert._StandardChildSpec<CT>> function;
+        private final Function<SubQuery, StandardInsert._ChildPartSpec<CT>> function;
 
-        private ParentInsertSubQuery(CriteriaContext context, Function<SubQuery, Insert._StandardChildSpec<CT>> function) {
+        private ParentInsertSubQuery(CriteriaContext context, Function<SubQuery, StandardInsert._ChildPartSpec<CT>> function) {
             super(context);
             this.function = function;
         }
@@ -292,7 +292,7 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
         }
 
         @Override
-        public Insert._StandardChildSpec<CT> fromLeft(final SubQuery query) {
+        public StandardInsert._ChildPartSpec<CT> fromLeft(final SubQuery query) {
             return this.function.apply(query);
         }
 
@@ -305,8 +305,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
     }
 
 
-    private static final class InsertSubQuery<C> extends StandardSimpleQuery<C, Insert._StandardInsertQuery>
-            implements SubQuery, Insert._StandardInsertQuery, InsertSubQuerySpec {
+    private static final class InsertSubQuery<C> extends StandardSimpleQuery<C, StandardInsert._InsertQuery>
+            implements SubQuery, StandardInsert._InsertQuery, InsertSubQuerySpec {
 
         private final Function<SubQuery, Insert._InsertSpec> function;
 

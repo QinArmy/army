@@ -25,7 +25,7 @@ abstract class StandardInserts extends InsertSupport {
         throw new UnsupportedOperationException();
     }
 
-    static <C> Insert._StandardDomainOptionSpec<C> primaryInsert(@Nullable C criteria) {
+    static <C> StandardInsert._PrimaryOptionSpec<C> primaryInsert(@Nullable C criteria) {
         return new StandardDomainOptionClause<>(criteria);
     }
 
@@ -33,10 +33,10 @@ abstract class StandardInserts extends InsertSupport {
     /*-------------------below standard domain insert syntax class-------------------*/
     private static final class StandardDomainOptionClause<C>
             extends NonQueryInsertOptionsImpl<
-            Insert._StandardDomainNullOptionSpec<C>,
-            Insert._StandardDomainPreferLiteralSpec<C>,
-            Insert._StandardDomainInsertIntoClause<C>>
-            implements Insert._StandardDomainOptionSpec<C> {
+            StandardInsert._PrimaryNullOptionSpec<C>,
+            StandardInsert._PrimaryPreferLiteralSpec<C>,
+            StandardInsert._PrimaryInsertIntoClause<C>>
+            implements StandardInsert._PrimaryOptionSpec<C> {
 
         private StandardDomainOptionClause(@Nullable C criteria) {
             super(CriteriaContexts.primaryInsertContext(criteria));
@@ -45,12 +45,12 @@ abstract class StandardInserts extends InsertSupport {
 
 
         @Override
-        public <T> Insert._StandardColumnListSpec<C, T> insertInto(SimpleTableMeta<T> table) {
+        public <T> StandardInsert._ColumnListSpec<C, T> insertInto(SimpleTableMeta<T> table) {
             return new NonParentComplexValuesClause<>(this, table);
         }
 
         @Override
-        public <P> Insert._StandardParentColumnListSpec<C, P, Insert._StandardChildInsertIntoClause<C, P>> insertInto(ParentTableMeta<P> table) {
+        public <P> StandardInsert._ParentColumnListSpec<C, P, StandardInsert._ChildInsertIntoClause<C, P>> insertInto(ParentTableMeta<P> table) {
             return new SimpleParentComplexValuesClause<>(this, table);
         }
 
@@ -60,8 +60,8 @@ abstract class StandardInserts extends InsertSupport {
     private static final class NonParentValuesLeftParenClause<C, T> extends InsertSupport.StaticColumnValuePairClause<
             C,
             T,
-            Insert._StandardValueStaticLeftParenSpec<C, T>>
-            implements Insert._StandardValueStaticLeftParenSpec<C, T> {
+            StandardInsert._ValueStaticLeftParenSpec<C, T>>
+            implements StandardInsert._ValueStaticLeftParenSpec<C, T> {
 
         private final NonParentComplexValuesClause<C, T> clause;
 
@@ -85,11 +85,11 @@ abstract class StandardInserts extends InsertSupport {
             extends InsertSupport.ComplexInsertValuesClause<
             C,
             T,
-            Insert._StandardComplexColumnDefaultSpec<C, T>,
-            Insert._StandardValuesColumnDefaultSpec<C, T>,
+            StandardInsert._ComplexColumnDefaultSpec<C, T>,
+            StandardInsert._ValuesColumnDefaultSpec<C, T>,
             Insert._InsertSpec>
-            implements Insert._StandardColumnListSpec<C, T>
-            , Insert._StandardComplexColumnDefaultSpec<C, T>
+            implements StandardInsert._ColumnListSpec<C, T>
+            , StandardInsert._ComplexColumnDefaultSpec<C, T>
             , Insert._InsertSpec {
 
         private final ParentComplexValuesClause<C, ?, ?> parentClause;
@@ -106,12 +106,12 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public Insert._StandardValueStaticLeftParenClause<C, T> values() {
+        public StandardInsert._StandardValueStaticLeftParenClause<C, T> values() {
             return new NonParentValuesLeftParenClause<>(this);
         }
 
         @Override
-        public StandardQuery._StandardSelectClause<C, Insert._StandardInsertQuery> space() {
+        public StandardQuery._StandardSelectClause<C, StandardInsert._InsertQuery> space() {
             return StandardSimpleQuery.insertQuery(this.criteria, this::staticInsertSubQueryEnd);
         }
 
@@ -164,8 +164,8 @@ abstract class StandardInserts extends InsertSupport {
     private static final class ParentValuesLeftParenClause<C, P, CT> extends InsertSupport.StaticColumnValuePairClause<
             C,
             P,
-            Insert._StandardParentValueStaticLeftParenSpec<C, P, CT>>
-            implements Insert._StandardParentValueStaticLeftParenSpec<C, P, CT> {
+            StandardInsert._ParentValueStaticLeftParenSpec<C, P, CT>>
+            implements StandardInsert._ParentValueStaticLeftParenSpec<C, P, CT> {
 
         private final ParentComplexValuesClause<C, P, CT> clause;
 
@@ -196,12 +196,12 @@ abstract class StandardInserts extends InsertSupport {
             extends InsertSupport.ComplexInsertValuesClause<
             C,
             P,
-            Insert._StandardParentComplexColumnDefaultSpec<C, P, CT>,
-            Insert._StandardParentValuesColumnDefaultSpec<C, P, CT>,
-            Insert._StandardChildSpec<CT>>
-            implements Insert._StandardParentColumnListSpec<C, P, CT>
-            , Insert._StandardParentComplexColumnDefaultSpec<C, P, CT>
-            , Insert._StandardChildSpec<CT>
+            StandardInsert._ParentComplexColumnDefaultSpec<C, P, CT>,
+            StandardInsert._ParentValuesColumnDefaultSpec<C, P, CT>,
+            StandardInsert._ChildPartSpec<CT>>
+            implements StandardInsert._ParentColumnListSpec<C, P, CT>
+            , StandardInsert._ParentComplexColumnDefaultSpec<C, P, CT>
+            , StandardInsert._ChildPartSpec<CT>
             , InsertOptions {
 
         private ParentComplexValuesClause(InsertOptions options, ParentTableMeta<P> table) {
@@ -209,13 +209,13 @@ abstract class StandardInserts extends InsertSupport {
         }
 
         @Override
-        public final Insert._StandardParentValueStaticLeftParenClause<C, P, CT> values() {
+        public final StandardInsert._ParentValueStaticLeftParenClause<C, P, CT> values() {
             return new ParentValuesLeftParenClause<>(this);
         }
 
 
         @Override
-        public final StandardQuery._StandardSelectClause<C, Insert._StandardParentInsertQuery<CT>> space() {
+        public final StandardQuery._StandardSelectClause<C, StandardInsert._ParentInsertQuery<CT>> space() {
             return StandardSimpleQuery.parentInsertQuery(this.criteria, this::staticInsertSubQueryEnd);
         }
 
@@ -242,7 +242,7 @@ abstract class StandardInserts extends InsertSupport {
             return spec.asInsert();
         }
 
-        private Insert._StandardChildSpec<CT> staticInsertSubQueryEnd(final SubQuery subQuery) {
+        private StandardInsert._ChildPartSpec<CT> staticInsertSubQueryEnd(final SubQuery subQuery) {
             this.staticSpaceSubQueryClauseEnd(subQuery);
             return this;
         }
@@ -253,20 +253,20 @@ abstract class StandardInserts extends InsertSupport {
     private static final class SimpleParentComplexValuesClause<C, P> extends ParentComplexValuesClause<
             C,
             P,
-            Insert._StandardChildInsertIntoClause<C, P>>
-            implements Insert._StandardChildInsertIntoClause<C, P> {
+            StandardInsert._ChildInsertIntoClause<C, P>>
+            implements StandardInsert._ChildInsertIntoClause<C, P> {
 
         private SimpleParentComplexValuesClause(InsertOptions options, ParentTableMeta<P> table) {
             super(options, table);
         }
 
         @Override
-        public Insert._StandardChildInsertIntoClause<C, P> child() {
+        public StandardInsert._ChildInsertIntoClause<C, P> child() {
             return this;
         }
 
         @Override
-        public <T> Insert._StandardColumnListSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
+        public <T> StandardInsert._ColumnListSpec<C, T> insertInto(ComplexTableMeta<P, T> table) {
             this.getInsertMode();// assert
             return new NonParentComplexValuesClause<>(this, table);
         }
@@ -276,7 +276,7 @@ abstract class StandardInserts extends InsertSupport {
 
 
     private static abstract class StandardValuesSyntaxStatement extends InsertSupport.ValueSyntaxStatement<Insert>
-            implements StandardStatement, Insert, Insert._InsertSpec {
+            implements StandardInsert, Insert, Insert._InsertSpec {
 
         private StandardValuesSyntaxStatement(_ValuesSyntaxInsert clause) {
             super(clause);
@@ -382,7 +382,7 @@ abstract class StandardInserts extends InsertSupport {
     }//ChildValuesInsertStatement
 
     static class QueryInsertStatement extends InsertSupport.QuerySyntaxInsertStatement<Insert>
-            implements Insert, StandardStatement, Insert._InsertSpec {
+            implements Insert, StandardInsert, Insert._InsertSpec {
 
 
         private QueryInsertStatement(NonParentComplexValuesClause<?, ?> clause) {

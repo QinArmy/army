@@ -1,10 +1,7 @@
 package io.army.criteria;
 
 import io.army.lang.Nullable;
-import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.SimpleTableMeta;
 
 import java.util.List;
 import java.util.function.*;
@@ -261,115 +258,6 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
 
     /*-------------------below standard domain insert syntax interface-------------------*/
-
-
-    interface _StandardValueStaticLeftParenClause<C, T>
-            extends _StaticValueLeftParenClause<C, T, _StandardValueStaticLeftParenSpec<C, T>> {
-
-    }
-
-
-    interface _StandardValueStaticLeftParenSpec<C, T>
-            extends _StandardValueStaticLeftParenClause<C, T>, _InsertSpec {
-
-    }
-
-    interface _StandardValuesColumnDefaultSpec<C, T>
-            extends _ColumnDefaultClause<C, T, _StandardValuesColumnDefaultSpec<C, T>>
-            , _DomainValueClause<C, T, _InsertSpec>
-            , _DynamicValuesClause<C, T, _InsertSpec>
-            , _StaticValuesClause<_StandardValueStaticLeftParenClause<C, T>> {
-
-    }
-
-
-    interface _StandardInsertQuery extends StandardQuery, _InsertSpec {
-
-    }
-
-    interface _StandardComplexColumnDefaultSpec<C, T> extends _StandardValuesColumnDefaultSpec<C, T>
-            , Insert._SpaceSubQueryClause<C, _InsertSpec> {
-
-        StandardQuery._StandardSelectClause<C, _StandardInsertQuery> space();
-    }
-
-    interface _StandardColumnListSpec<C, T>
-            extends _ColumnListClause<C, T, _StandardComplexColumnDefaultSpec<C, T>>
-            , _StandardValuesColumnDefaultSpec<C, T> {
-
-    }
-
-
-    interface _StandardChildInsertIntoClause<C, P> {
-
-        <T> _StandardColumnListSpec<C, T> insertInto(ComplexTableMeta<P, T> table);
-
-    }
-
-    interface _StandardChildSpec<CT> extends _ChildPartClause<CT>
-            , _InsertSpec {
-
-    }
-
-    interface _StandardParentValueStaticLeftParenClause<C, P, CT>
-            extends _StaticValueLeftParenClause<C, P, _StandardParentValueStaticLeftParenSpec<C, P, CT>> {
-
-    }
-
-
-    interface _StandardParentValueStaticLeftParenSpec<C, P, CT>
-            extends _StandardParentValueStaticLeftParenClause<C, P, CT>, _StandardChildSpec<CT> {
-
-    }
-
-    interface _StandardParentValuesColumnDefaultSpec<C, P, CT>
-            extends _ColumnDefaultClause<C, P, _StandardParentValuesColumnDefaultSpec<C, P, CT>>
-            , _DomainValueClause<C, P, _StandardChildSpec<CT>>
-            , _DynamicValuesClause<C, P, _StandardChildSpec<CT>>
-            , _StaticValuesClause<_StandardParentValueStaticLeftParenClause<C, P, CT>> {
-
-    }
-
-    interface _StandardParentInsertQuery<CT> extends StandardQuery, _StandardChildSpec<CT> {
-
-    }
-
-    interface _StandardParentComplexColumnDefaultSpec<C, P, CT> extends _StandardParentValuesColumnDefaultSpec<C, P, CT>
-            , Insert._SpaceSubQueryClause<C, _StandardChildSpec<CT>> {
-
-        StandardQuery._StandardSelectClause<C, _StandardParentInsertQuery<CT>> space();
-    }
-
-
-    interface _StandardParentColumnListSpec<C, P, CT>
-            extends _ColumnListClause<C, P, _StandardParentComplexColumnDefaultSpec<C, P, CT>>
-            , _StandardParentValuesColumnDefaultSpec<C, P, CT> {
-
-    }
-
-
-    interface _StandardDomainInsertIntoClause<C> {
-
-        <T> _StandardColumnListSpec<C, T> insertInto(SimpleTableMeta<T> table);
-
-        <P> _StandardParentColumnListSpec<C, P, _StandardChildInsertIntoClause<C, P>> insertInto(ParentTableMeta<P> table);
-    }
-
-
-    interface _StandardDomainPreferLiteralSpec<C> extends _PreferLiteralClause<_StandardDomainInsertIntoClause<C>>
-            , _StandardDomainInsertIntoClause<C> {
-
-    }
-
-    interface _StandardDomainNullOptionSpec<C> extends _NullOptionClause<_StandardDomainPreferLiteralSpec<C>>
-            , _StandardDomainPreferLiteralSpec<C> {
-
-    }
-
-    interface _StandardDomainOptionSpec<C> extends _MigrationOptionClause<_StandardDomainNullOptionSpec<C>>
-            , _StandardDomainNullOptionSpec<C> {
-
-    }
 
 
 }
