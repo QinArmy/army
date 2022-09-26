@@ -693,6 +693,8 @@ abstract class InsertSupport {
                 this.commonExpMap = Collections.emptyMap();
             } else if (map instanceof HashMap) {
                 this.commonExpMap = Collections.unmodifiableMap(map);
+            } else {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
         }
 
@@ -783,8 +785,9 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ComplexInsertValuesClause<C, T, CR, DR, VR> extends DomainValueClause<C, T, CR, DR, VR>
-            implements Insert._DynamicValuesClause<C, T, VR>
+    static abstract class ComplexInsertValuesClause<C, T, CR, DR, VR> extends ColumnDefaultClause<C, T, CR, DR>
+            implements Insert._DomainValueClause<C, T, VR>
+            , Insert._DynamicValuesClause<C, T, VR>
             , Insert._SpaceSubQueryClause<C, VR>
             , _Insert._ValuesInsert
             , _Insert._QueryInsert {
@@ -801,8 +804,61 @@ abstract class InsertSupport {
             super(options, table);
         }
 
+
         @Override
-        public final VR values(Consumer<PairsConstructor<T>> consumer) {
+        public final <TS extends T> VR value(@Nullable TS domain) {
+            if (domain == null) {
+                throw CriteriaContextStack.nullPointer(this.context);
+            } else if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.endColumnDefaultClause();
+            this.domainList = Collections.singletonList(domain);
+            this.insertMode = InsertMode.DOMAIN;
+            return (VR) this;
+        }
+
+        @Override
+        public final <TS extends T> VR value(Function<C, TS> function) {
+            return this.value(function.apply(this.context.criteria()));
+        }
+
+        @Override
+        public final <TS extends T> VR value(Supplier<TS> supplier) {
+            return this.value(supplier.get());
+        }
+
+
+        /**
+         * @see #domainListForSingle()
+         * @see #domainListForChild(ComplexInsertValuesClause)
+         */
+        @Override
+        public final <TS extends T> VR values(final @Nullable List<TS> domainList) {
+            if (domainList == null || domainList.size() == 0) {
+                throw CriteriaContextStack.criteriaError(this.context, "domainList must non-empty");
+            } else if (this.insertMode != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.endColumnDefaultClause();
+            this.domainList = domainList;//just store
+            this.insertMode = InsertMode.DOMAIN;
+            return (VR) this;
+        }
+
+        @Override
+        public final <TS extends T> VR values(Function<C, List<TS>> function) {
+            return this.values(function.apply(this.context.criteria()));
+        }
+
+        @Override
+        public final <TS extends T> VR values(Supplier<List<TS>> supplier) {
+            return this.values(supplier.get());
+        }
+
+
+        @Override
+        public final VR values(final Consumer<PairsConstructor<T>> consumer) {
             if (this.insertMode != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -817,7 +873,7 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final VR values(BiConsumer<C, PairsConstructor<T>> consumer) {
+        public final VR values(final BiConsumer<C, PairsConstructor<T>> consumer) {
             if (this.insertMode != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -866,15 +922,6 @@ abstract class InsertSupport {
         }
 
 
-        @Override
-        final VR valuesEnd() {
-            if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            this.insertMode = InsertMode.DOMAIN;
-            return (VR) this;
-        }
-
         /**
          * @param rowPairList a unmodified list,empty is allowed.
          */
@@ -905,16 +952,6 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return mode;
-        }
-
-        @Override
-        final VR domainValuesEnd(final List<?> domainList) {
-            if (this.insertMode != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.context);
-            }
-            this.domainList = domainList;
-            this.insertMode = InsertMode.DOMAIN;
-            return (VR) this;
         }
 
         final InsertMode assertInsertMode(final @Nullable ComplexInsertValuesClause<?, ?, ?, ?, ?> parent) {
@@ -952,8 +989,6 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             if (domainList != parentDomainList
-                    && domainList.size() != 1
-                    && parentDomainList.size() != 1
                     && domainList.get(0) != parentDomainList.get(0)) {
                 String m = String.format("%s and %s domain list not match.", this.insertTable, parent.insertTable);
                 throw CriteriaContextStack.criteriaError(this.context, m);
@@ -1424,21 +1459,38 @@ abstract class InsertSupport {
 
 
         @Override
-        public final PairConsumer<T> accept(FieldMeta<T> field, @Nullable Object value) {
-            this.addFieldPair(field, SQLs._nullableParam(field, value));
-            return this;
+        public final PairConsumer<T> accept(FieldMeta<T> field, Expression value) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public final PairConsumer<T> acceptLiteral(FieldMeta<T> field, @Nullable Object value) {
-            this.addFieldPair(field, SQLs._nullableLiteral(field, value));
-            return this;
+        public final PairConsumer<T> accept(FieldMeta<T> field, Supplier<?> supplier) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public final PairConsumer<T> acceptExp(FieldMeta<T> field, Supplier<? extends Expression> supplier) {
-            this.addFieldPair(field, supplier.get());
-            return this;
+        public final PairConsumer<T> accept(FieldMeta<T> field, Function<String, ?> function, String keyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Object value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final void validateField(FieldMeta<?> field, @Nullable ArmyExpression value) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -1544,14 +1596,6 @@ abstract class InsertSupport {
         }
 
 
-        @Override
-        public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
-            InsertSupport.checkField(this.criteriaContext, this.insertTable, true, field);
-            if (value != null && !field.nullable() && value.isNullValue()) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::nonNullField, field);
-            }
-
-        }
 
         @Override
         public final TableMeta<?> table() {

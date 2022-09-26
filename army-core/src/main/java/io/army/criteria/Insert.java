@@ -122,19 +122,19 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
     /**
      * @since 1.0
      */
-    interface _DomainValueClause<C, P, VR> {
+    interface _DomainValueClause<C, T, VR> {
 
-        <T extends P> VR value(T domain);
+        <TS extends T> VR value(TS domain);
 
-        <T extends P> VR value(Function<C, T> function);
+        <TS extends T> VR value(Function<C, TS> function);
 
-        <T extends P> VR value(Supplier<T> supplier);
+        <TS extends T> VR value(Supplier<TS> supplier);
 
-        <T extends P> VR values(List<T> domainList);
+        <TS extends T> VR values(List<TS> domainList);
 
-        <T extends P> VR values(Function<C, List<T>> function);
+        <TS extends T> VR values(Function<C, List<TS>> function);
 
-        <T extends P> VR values(Supplier<List<T>> supplier);
+        <TS extends T> VR values(Supplier<List<TS>> supplier);
 
     }
 
