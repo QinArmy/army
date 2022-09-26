@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
@@ -14,7 +13,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 abstract class CriteriaUtils {
 
@@ -220,7 +218,7 @@ abstract class CriteriaUtils {
         return selectionMap;
     }
 
-    static void assertSelectItemSizeMatch(RowSet left, RowSet right) {
+    static void assertSelectItemSizeMatch(final RowSet left, final RowSet right) {
         final List<? extends SelectItem> leftList, rightList;
 
         leftList = ((_PartRowSet) left).selectItemList();
@@ -234,7 +232,7 @@ abstract class CriteriaUtils {
             } else if (item instanceof SelectionGroup) {
                 leftSize += ((SelectionGroup) item).selectionList().size();
             } else {
-                throw _Exceptions.unknownSelectItem(item);
+                throw unknownSelectItem(left, item);
             }
         }
 
@@ -244,16 +242,24 @@ abstract class CriteriaUtils {
             } else if (item instanceof SelectionGroup) {
                 rightSize += ((SelectionGroup) item).selectionList().size();
             } else {
-                throw _Exceptions.unknownSelectItem(item);
+                throw unknownSelectItem(left, item);
             }
         }
 
         if (leftSize != rightSize) {
             String m = String.format("Left select list size[%s] and right select list size[%s] not match."
                     , leftSize, rightSize);
-            throw new CriteriaException(m);
+            throw criteriaError(left, m);
         }
 
+    }
+
+    static CriteriaException criteriaError(final RowSet left, final String m) {
+        return CriteriaContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), m);
+    }
+
+    static <T> CriteriaException criteriaError(RowSet left, Function<T, CriteriaException> function, T item) {
+        return CriteriaContextStack.criteriaError(((CriteriaContextSpec) left).getContext(), function, item);
     }
 
     static void limitPair(final CriteriaContext criteriaContext, final @Nullable Object offsetValue
@@ -338,48 +344,6 @@ abstract class CriteriaUtils {
     }
 
 
-    static <E extends Expression> List<_Expression> asExpressionList(final List<E> expressionList) {
-        final int size = expressionList.size();
-        List<_Expression> expList;
-        switch (size) {
-            case 0:
-                throw new CriteriaException("expression list must not empty.");
-            case 1:
-                expList = Collections.singletonList((ArmyExpression) expressionList.get(0));
-                break;
-            default: {
-                expList = new ArrayList<>(size);
-                for (E exp : expressionList) {
-                    expList.add((ArmyExpression) exp);
-                }
-                expList = Collections.unmodifiableList(expList);
-            }
-
-        }
-        return expList;
-    }
-
-    static <S extends SortItem> List<ArmySortItem> asSortItemList(final List<S> sortItemList) {
-        final int size = sortItemList.size();
-        List<ArmySortItem> itemList;
-        switch (size) {
-            case 0:
-                throw _Exceptions.sortItemListIsEmpty();
-            case 1:
-                itemList = Collections.singletonList((ArmySortItem) sortItemList.get(0));
-                break;
-            default: {
-                itemList = new ArrayList<>(size);
-                for (S sortItem : sortItemList) {
-                    itemList.add((ArmySortItem) sortItem);
-                }
-                itemList = Collections.unmodifiableList(itemList);
-            }
-
-        }
-        return itemList;
-    }
-
 
     static List<Object> paramList(final @Nullable List<?> paramList) {
         final int size;
@@ -409,32 +373,6 @@ abstract class CriteriaUtils {
         return Collections.unmodifiableList(wrapperList);
     }
 
-
-    static List<Window> asWindowList(final @Nullable List<Window> list, final Predicate<Window> predicate) {
-        final int size;
-        if (list == null || (size = list.size()) == 0) {
-            throw _Exceptions.windowListIsEmpty();
-        }
-        List<Window> windowList;
-        if (size == 1) {
-            final Window window;
-            window = list.get(0);
-            if (predicate.test(window)) {
-                throw illegalWindow(window);
-            }
-            windowList = Collections.singletonList(window);
-        } else {
-            windowList = new ArrayList<>(size);
-            for (Window window : list) {
-                if (predicate.test(window)) {
-                    throw illegalWindow(window);
-                }
-                windowList.add(window);
-            }
-            windowList = Collections.unmodifiableList(windowList);
-        }
-        return windowList;
-    }
 
     static <T extends SQLWords> List<T> asModifierList(final CriteriaContext criteriaContext
             , final @Nullable List<T> list, final Function<T, Integer> function) {
@@ -540,12 +478,6 @@ abstract class CriteriaUtils {
     }
 
 
-    private static CriteriaException illegalWindow(Window window) {
-        String m = String.format("window %s is illegal", _ClassUtils.safeClassName(window));
-        return new CriteriaException(m);
-    }
-
-
     static int selectionCount(final RowSet rowSet) {
         int count = 0;
         for (SelectItem selectItem : ((_PartRowSet) rowSet).selectItemList()) {
@@ -590,6 +522,12 @@ abstract class CriteriaUtils {
     static CriteriaException funcArgError(String funcName, @Nullable Object errorArg) {
         String m = String.format("%s don't support %s", funcName, errorArg);
         throw CriteriaContextStack.criteriaError(CriteriaContextStack.peek(), m);
+    }
+
+
+    private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
+        return CriteriaContextStack.criteriaError(((CriteriaContextSpec) left).getContext()
+                , _Exceptions::unknownSelectItem, item);
     }
 
 

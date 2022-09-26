@@ -89,8 +89,8 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     private LockMode lockMode;
 
-    private StandardSimpleQuery(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+    private StandardSimpleQuery(CriteriaContext context) {
+        super(context);
 
     }
 
@@ -259,15 +259,21 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
 
     } // SimpleSubQuery
 
+    interface ParentInsertSubQuerySpec<CT> {
+
+        Insert._StandardChildSpec<CT> fromLeft(SubQuery query);
+
+    }
+
 
     private static final class ParentInsertSubQuery<C, CT>
             extends StandardSimpleQuery<C, Insert._StandardParentInsertQuery<CT>>
-            implements SubQuery, Insert._StandardParentInsertQuery<CT> {
+            implements SubQuery, Insert._StandardParentInsertQuery<CT>, ParentInsertSubQuerySpec<CT> {
 
         private final Function<SubQuery, Insert._StandardChildSpec<CT>> function;
 
-        private ParentInsertSubQuery(CriteriaContext criteriaContext, Function<SubQuery, Insert._StandardChildSpec<CT>> function) {
-            super(criteriaContext);
+        private ParentInsertSubQuery(CriteriaContext context, Function<SubQuery, Insert._StandardChildSpec<CT>> function) {
+            super(context);
             this.function = function;
         }
 
@@ -285,11 +291,22 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
                     .child();
         }
 
+        @Override
+        public Insert._StandardChildSpec<CT> fromLeft(final SubQuery query) {
+            return this.function.apply(query);
+        }
+
 
     }//ParentInsertSubQuery
 
+    interface InsertSubQuerySpec {
+
+        Insert._InsertSpec fromLeft(SubQuery query);
+    }
+
+
     private static final class InsertSubQuery<C> extends StandardSimpleQuery<C, Insert._StandardInsertQuery>
-            implements SubQuery, Insert._StandardInsertQuery {
+            implements SubQuery, Insert._StandardInsertQuery, InsertSubQuerySpec {
 
         private final Function<SubQuery, Insert._InsertSpec> function;
 
@@ -303,6 +320,11 @@ abstract class StandardSimpleQuery<C, Q extends Query> extends SimpleQuery<
             this.prepared();
             return this.function.apply(this)
                     .asInsert();
+        }
+
+        @Override
+        public Insert._InsertSpec fromLeft(final SubQuery query) {
+            return this.function.apply(query);
         }
 
 

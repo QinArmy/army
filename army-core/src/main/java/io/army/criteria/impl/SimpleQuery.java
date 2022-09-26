@@ -57,8 +57,8 @@ abstract class SimpleQuery<C, Q extends Query, W extends SQLWords, SR, FT, FS, F
     private Map<String, Selection> subQuerySelectionMap;
 
 
-    SimpleQuery(CriteriaContext criteriaContext) {
-        super(criteriaContext);
+    SimpleQuery(CriteriaContext context) {
+        super(context);
         if (this instanceof SubStatement) {
             CriteriaContextStack.push(this.context);
         } else {
