@@ -1,6 +1,8 @@
 package io.army.criteria.impl.inner.postgre;
 
+import io.army.criteria.Cte;
 import io.army.criteria.ItemPair;
+import io.army.criteria.SQLWords;
 import io.army.criteria.SelectItem;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
@@ -10,11 +12,21 @@ import java.util.List;
 
 public interface _PostgreInsert extends _Insert {
 
+    boolean isRecursive();
 
-    List<? extends SelectItem> returningList();
+    List<Cte> cteList();
+
+    @Nullable
+    String tableAlias();
+
+    @Nullable
+    SQLWords overridingValueWords();
+
 
     @Nullable
     _ConflictActionClauseResult getConflictActionResult();
+
+    List<? extends SelectItem> returningList();
 
 
     interface _ConflictActionClauseResult {
@@ -32,6 +44,16 @@ public interface _PostgreInsert extends _Insert {
         List<ItemPair> updateSetClauseList();
 
         List<_Predicate> updateSetPredicateList();
+    }
+
+    interface _PostgreDomainInsert extends _Insert._DomainInsert, _PostgreInsert {
+
+
+    }
+
+    interface _PostgreChildDomainInsert extends _Insert._ChildDomainInsert, _PostgreDomainInsert {
+
+
     }
 
 

@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner.postgre._PostgreInsert;
 import io.army.criteria.postgre.PostgreInsert;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._CollectionUtils;
@@ -662,7 +663,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<C, T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table) {
-            return new NonParentComplexValuesClause<>(this, table);
+            return new PrimaryComplexValuesClause<>(this, table);
         }
 
         @Override
@@ -672,7 +673,7 @@ abstract class PostgreInserts extends InsertSupport {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<C, T, Insert, ReturningInsert> insertInto(ChildTableMeta<T> table) {
-            return new NonParentComplexValuesClause<>(this, table);
+            return new PrimaryComplexValuesClause<>(this, table);
         }
 
 
@@ -722,12 +723,18 @@ abstract class PostgreInserts extends InsertSupport {
             , PostgreInsert._ParentReturningCommaUnaryClause<CT, Q>
             , PostgreInsert._ParentReturningCommaDualClause<CT, Q> {
 
+        private final boolean recursive;
+
+        private final List<Cte> cteList;
+
         private String tableAlias;
 
         private List<SelectItem> selectItemList;
 
         private ComplexValuesClause(WithValueSyntaxOptions options, TableMeta<T> table) {
             super(options, table);
+            this.cteList = options.cteList();
+            this.recursive = options.isRecursive();
         }
 
         @Override
@@ -796,6 +803,19 @@ abstract class PostgreInserts extends InsertSupport {
             return this;
         }
 
+        private List<? extends SelectItem> returningList() {
+            final List<SelectItem> selectItemList = this.selectItemList;
+            final List<? extends SelectItem> effectiveReturningList;
+            if (selectItemList == null) {
+                effectiveReturningList = Collections.emptyList();
+            } else if (selectItemList.size() == 0) {
+                effectiveReturningList = this.effectiveFieldList();
+            } else {
+                effectiveReturningList = _CollectionUtils.unmodifiableList(selectItemList);
+            }
+            return effectiveReturningList;
+        }
+
     }//ComplexValuesClause
 
 
@@ -820,7 +840,7 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlStatement.DqlInsertSpec<Q> returning() {
+        public DqlStatement._DqlInsertSpec<Q> returning() {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returning();
         }
@@ -838,13 +858,13 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public DqlStatement.DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer) {
+        public DqlStatement._DqlInsertSpec<Q> returning(Consumer<Consumer<SelectItem>> consumer) {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returning(consumer);
         }
 
         @Override
-        public DqlStatement.DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
+        public DqlStatement._DqlInsertSpec<Q> returning(BiConsumer<C, Consumer<SelectItem>> consumer) {
             this.clause.staticValuesClauseEnd(this.endValuesClause());
             return this.clause.returning(consumer);
         }
@@ -859,7 +879,7 @@ abstract class PostgreInserts extends InsertSupport {
     }//NonParentStaticValuesLeftParenClause
 
 
-    private static class NonParentComplexValuesClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+    private static abstract class NonParentComplexValuesClause<C, T, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
             extends ComplexValuesClause<
             C,
             T,
@@ -927,14 +947,6 @@ abstract class PostgreInserts extends InsertSupport {
 
 
         @Override
-        public final PostgreInsert._OnConflictSpec<C, T, I, Q> defaultValues() {
-            this.staticValuesClauseEnd(Collections.emptyList());
-            this.defaultValues = true;
-            return this;
-        }
-
-
-        @Override
         public final PostgreInsert._ValuesLeftParenClause<C, T, I, Q> values() {
             return new NonParentStaticValuesLeftParenClause<>(this);
         }
@@ -946,22 +958,12 @@ abstract class PostgreInserts extends InsertSupport {
         }
 
         @Override
-        public final I asInsert() {
-            return null;
-        }
-
-        @Override
-        public final Q asReturningInsert() {
-            return null;
-        }
-
-        @Override
         public final Void child() {
             throw CriteriaContextStack.castCriteriaApi(this.context);
         }
 
         @Override
-        public PostgreInsert._ParentReturningClause<C, Void, I, Q> onConflictClauseEnd(final _PostgreInsert._ConflictActionClauseResult result) {
+        public final PostgreInsert._ParentReturningClause<C, Void, I, Q> onConflictClauseEnd(final _PostgreInsert._ConflictActionClauseResult result) {
             if (this.conflictAction != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
@@ -971,6 +973,73 @@ abstract class PostgreInserts extends InsertSupport {
 
 
     }//NonParentComplexValuesClause
+
+    private static final class PrimaryComplexValuesClause<C, T>
+            extends NonParentComplexValuesClause<C, T, Insert, ReturningInsert> {
+
+        private final ParentComplexValuesClause<C, ?> parentClause;
+
+        private PrimaryComplexValuesClause(PrimaryInsertIntoClause<C> options, SimpleTableMeta<T> table) {
+            super(options, table);
+            this.parentClause = null;
+        }
+
+        private PrimaryComplexValuesClause(PrimaryInsertIntoClause<C> options, ChildTableMeta<T> table) {
+            super(options, table);
+            this.parentClause = null;
+        }
+
+        private PrimaryComplexValuesClause(ParentComplexValuesClause<C, ?> parentClause, ChildTableMeta<T> table) {
+            super(parentClause, table);
+            this.parentClause = parentClause;
+        }
+
+        @Override
+        public Insert asInsert() {
+            final ParentComplexValuesClause<C, ?> parentClause = this.parentClause;
+            final InsertMode mode;
+            mode = this.assertInsertMode(parentClause);
+            final Insert._InsertSpec spec;
+
+            switch (mode) {
+                case DOMAIN: {
+                    if (parentClause != null) {
+                        spec = new PrimaryChildDomainInsertStatement(parentClause, this);
+                    } else if (this.insertTable instanceof ChildTableMeta) {
+                        spec = new StandardInserts.ChildDomainInsertStatement(parentClause, this);
+                    } else {
+                        spec = new PrimaryDomainInsertStatement(this);
+                    }
+                }
+                break;
+                case VALUES: {
+                    if (parentClause == null) {
+                        spec = new StandardInserts.ValuesInsertStatement(this);
+                    } else {
+                        spec = new StandardInserts.ChildValuesInsertStatement(parentClause, this);
+                    }
+                }
+                break;
+                case QUERY: {
+                    if (parentClause == null) {
+                        spec = new StandardInserts.QueryInsertStatement(this);
+                    } else {
+                        spec = new StandardInserts.ChildQueryInsertStatement(parentClause, this);
+                    }
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(mode);
+            }
+            return spec.asInsert();
+        }
+
+        @Override
+        public ReturningInsert asReturningInsert() {
+            return null;
+        }
+
+    }//PrimaryNonParentComplexValuesClause
 
 
     private static final class ParentStaticValuesLeftParenClause<C, P>
@@ -1052,19 +1121,24 @@ abstract class PostgreInserts extends InsertSupport {
             , PostgreInsert._ParentComplexOverridingValueSpec<C, P>
             , PostgreInsert._ParentComplexColumnDefaultSpec<C, P>
             , PostgreInsert._ParentOnConflictSpec<C, P>
-            , PostgreInsertValuesClauseSpec<C, PostgreInsert._ChildWithCteSpec<C, P>, Insert, ReturningInsert> {
+            , PostgreInsertValuesClauseSpec<C, PostgreInsert._ChildWithCteSpec<C, P>, Insert, ReturningInsert>
+            , WithValueSyntaxOptions {
+
+        private final boolean recursive;
+
+        private final List<Cte> cteList;
 
         private String tableAlias;
 
         private OverridingMode overridingMode;
-
-        private boolean defaultValues;
 
 
         private _PostgreInsert._ConflictActionClauseResult conflictAction;
 
         private ParentComplexValuesClause(WithValueSyntaxOptions options, ParentTableMeta<P> table) {
             super(options, table);
+            this.recursive = options.isRecursive();
+            this.cteList = options.cteList();
         }
 
         @Override
@@ -1096,13 +1170,6 @@ abstract class PostgreInserts extends InsertSupport {
             } else {
                 this.overridingMode = null;
             }
-            return this;
-        }
-
-        @Override
-        public PostgreInsert._ParentOnConflictSpec<C, P> defaultValues() {
-            this.staticValuesClauseEnd(Collections.emptyList());
-            this.defaultValues = true;
             return this;
         }
 
@@ -1142,8 +1209,142 @@ abstract class PostgreInserts extends InsertSupport {
             return this;
         }
 
+        @Override
+        public boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public List<Cte> cteList() {
+            return this.cteList;
+        }
+
 
     }//ParentComplexValuesClause
+
+
+    private static abstract class PrimaryValueSyntaxInsertStatement
+            extends InsertSupport.ValueSyntaxStatement<Insert>
+            implements PostgreInsert, _PostgreInsert, Insert, Insert._InsertSpec {
+
+        private final boolean recursive;
+
+        private final List<Cte> cteList;
+
+        private final String tableAlias;
+
+        private final List<? extends SelectItem> returningList;
+
+        private PrimaryValueSyntaxInsertStatement(ComplexValuesClause<?, ?, ?, ?, ?, ?, ?, ?, ?> clause) {
+            super(clause);
+            this.recursive = clause.recursive;
+            this.cteList = clause.cteList;
+            this.tableAlias = clause.tableAlias;
+            this.returningList = clause.returningList();
+        }
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<Cte> cteList() {
+            return this.cteList;
+        }
+
+        @Override
+        public final String tableAlias() {
+            return this.tableAlias;
+        }
+
+        @Override
+        public final List<? extends SelectItem> returningList() {
+            return this.returningList;
+        }
+
+        @Override
+        public final String toString() {
+            final String s;
+            if (this.isPrepared()) {
+                s = this.mockAsString(PostgreDialect.POSTGRE14, Visible.ONLY_VISIBLE, true);
+            } else {
+                s = super.toString();
+            }
+            return s;
+        }
+
+
+    }//PrimaryValueSyntaxInsertStatement
+
+
+    static class PrimaryDomainInsertStatement extends PrimaryValueSyntaxInsertStatement
+            implements _PostgreInsert._PostgreDomainInsert {
+
+        final List<?> domainList;
+
+        private final OverridingMode overridingMode;
+
+        private final _ConflictActionClauseResult conflictAction;
+
+        private PrimaryDomainInsertStatement(final NonParentComplexValuesClause<?, ?, ?, ?> clause) {
+            super(clause);
+            this.domainList = clause.domainListForSingle();
+            this.overridingMode = clause.overridingMode;
+            this.conflictAction = clause.conflictAction;
+        }
+
+        private PrimaryDomainInsertStatement(final ParentComplexValuesClause<?, ?> clause, List<?> domainList) {
+            super(clause);
+            this.domainList = domainList;
+            this.overridingMode = clause.overridingMode;
+            this.conflictAction = clause.conflictAction;
+        }
+
+        private PrimaryDomainInsertStatement(ParentComplexValuesClause<?, ?> parentClause
+                , final NonParentComplexValuesClause<?, ?, ?, ?> clause) {
+            super(clause);
+            this.domainList = clause.domainListForChild(parentClause);
+            this.overridingMode = clause.overridingMode;
+            this.conflictAction = clause.conflictAction;
+        }
+
+
+        @Nullable
+        @Override
+        public final SQLWords overridingValueWords() {
+            return this.overridingMode;
+        }
+
+        @Override
+        public final _ConflictActionClauseResult getConflictActionResult() {
+            return this.conflictAction;
+        }
+
+        @Override
+        public final List<?> domainList() {
+            return this.domainList;
+        }
+
+
+    }//PrimaryDomainInsertStatement
+
+    private static final class PrimaryChildDomainInsertStatement extends PrimaryDomainInsertStatement
+            implements _PostgreInsert._PostgreChildDomainInsert {
+
+        private final PrimaryDomainInsertStatement parentStmt;
+
+        private PrimaryChildDomainInsertStatement(ParentComplexValuesClause<?, ?> parentClause, final NonParentComplexValuesClause<?, ?, ?, ?> clause) {
+            super(clause);
+            this.parentStmt = new PrimaryDomainInsertStatement(parentClause, this.domainList);
+        }
+
+        @Override
+        public _DomainInsert parentStmt() {
+            return this.parentStmt;
+        }
+
+    }//PrimaryChildDomainInsertStatement
 
 
 }

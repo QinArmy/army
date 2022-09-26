@@ -16,7 +16,7 @@ public interface DqlStatement extends PrimaryStatement {
 
     }
 
-    interface DqlInsertSpec<I extends DqlInsert> {
+    interface _DqlInsertSpec<I extends DqlInsert> {
 
         I asReturningInsert();
     }

@@ -257,7 +257,4 @@ public interface Insert extends DmlStatement, DmlStatement.DmlInsert {
 
 
 
-    /*-------------------below standard domain insert syntax interface-------------------*/
-
-
 }

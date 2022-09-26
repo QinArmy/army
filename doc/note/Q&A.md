@@ -82,3 +82,9 @@
 15. 为什么提供 SQL 函数的的静态方法使用 Expression 参数 而不使用 Object 参数?
     * 使用 Expression 方便扩展重载
 
+16. 为什么 Postgre insert 不支持 DEFAULT VALUES 子句?
+    * 因为 army 管理 createTime ,updateTime 等 field.
+
+17. 为什么 standard insert parent 部分要预留 CT 类型变量?
+    * 因为 standard 将来要支持 with cte 子句.
+

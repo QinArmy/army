@@ -287,42 +287,64 @@ abstract class InsertSupport {
 
         @Override
         public final Statement._RightParenClause<RR> leftParen(Consumer<Consumer<FieldMeta<T>>> consumer) {
-            consumer.accept(this::addField);
+            consumer.accept(this::comma);
             return this;
         }
 
         @Override
         public final Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<FieldMeta<T>>> consumer) {
-            consumer.accept(this.criteria, this::addField);
+            consumer.accept(this.criteria, this::comma);
             return this;
         }
 
         @Override
         public final Statement._RightParenClause<RR> leftParen(FieldMeta<T> field) {
-            this.addField(field);
-            return this;
+            return this.comma(field);
         }
 
         @Override
         public final Insert._StaticColumnDualClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2) {
-            this.addField(field1);
-            this.addField(field2);
+            this.comma(field1);
+            this.comma(field2);
             return this;
         }
 
         @Override
         public final Statement._RightParenClause<RR> comma(FieldMeta<T> field) {
-            this.addField(field);
+            checkField(this.context, this.insertTable, this.migration, field);
+            if (!this.migration && _MetaBridge.VISIBLE.equals(field.fieldName())) {
+                String m = String.format("%s is managed by army for column list clause,in non-migration mode."
+                        , _MetaBridge.VISIBLE);
+                throw CriteriaContextStack.criteriaError(this.context, m);
+            }
+
+            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            List<FieldMeta<?>> fieldList;
+            if (fieldMap == null) {
+                fieldMap = this.createAndInitializingFieldMap(); // create map and add the fields that is managed by army.
+                this.fieldMap = fieldMap;
+                fieldList = this.fieldList;
+                assert fieldList != null && fieldList.size() == fieldMap.size();
+            } else {
+                fieldList = this.fieldList;
+            }
+
+            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                String m = String.format("%s duplication", field);
+                throw CriteriaContextStack.criteriaError(this.context, m);
+            }
+            fieldList.add(field);
             return this;
         }
 
         @Override
         public final Insert._StaticColumnDualClause<T, RR> comma(FieldMeta<T> field1, FieldMeta<T> field2) {
-            this.addField(field1);
-            this.addField(field2);
+            this.comma(field1);
+            this.comma(field2);
             return this;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public final RR rightParen() {
             final List<FieldMeta<?>> fieldList = this.fieldList;
@@ -372,6 +394,20 @@ abstract class InsertSupport {
             return fieldList;
         }
 
+        final List<? extends TableField> effectiveFieldList() {
+            final List<FieldMeta<?>> fieldList = this.fieldList;
+
+            final List<? extends TableField> effectiveList;
+            if (fieldList == null) {
+                effectiveList = this.insertTable.fieldList();
+            } else if (fieldList instanceof ArrayList) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            } else {
+                effectiveList = fieldList;
+            }
+            return effectiveList;
+        }
+
         @Override
         public final Map<FieldMeta<?>, Boolean> fieldMap() {
             Map<FieldMeta<?>, Boolean> map = this.fieldMap;
@@ -389,6 +425,7 @@ abstract class InsertSupport {
             this.fieldMap = null;
         }
 
+        @Deprecated
         RR columnListEnd() {
             throw new UnsupportedOperationException();
         }
@@ -408,32 +445,6 @@ abstract class InsertSupport {
 
         }
 
-        private void addField(final FieldMeta<T> field) {
-            checkField(this.context, this.insertTable, this.migration, field);
-            if (!this.migration && _MetaBridge.VISIBLE.equals(field.fieldName())) {
-                String m = String.format("%s is managed by army for column list clause,in non-migration mode."
-                        , _MetaBridge.VISIBLE);
-                throw CriteriaContextStack.criteriaError(this.context, m);
-            }
-
-            Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            List<FieldMeta<?>> fieldList;
-            if (fieldMap == null) {
-                fieldMap = this.createAndInitializingFieldMap(); // create map and add the fields that is managed by army.
-                this.fieldMap = fieldMap;
-                fieldList = this.fieldList;
-                assert fieldList != null && fieldList.size() == fieldMap.size();
-            } else {
-                fieldList = this.fieldList;
-            }
-
-            if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                String m = String.format("%s duplication", field);
-                throw CriteriaContextStack.criteriaError(this.context, m);
-            }
-            fieldList.add(field);
-
-        }
 
         private Map<FieldMeta<?>, Boolean> createAndInitializingFieldMap() {
             assert this.fieldMap == null && this.fieldList == null;
@@ -781,6 +792,7 @@ abstract class InsertSupport {
         DomainValueShortClause(InsertOptions options, TableMeta<P> table) {
             super(options, table);
         }
+
     }//DomainValueShortClause
 
 
@@ -1190,47 +1202,47 @@ abstract class InsertSupport {
 
         @Override
         public VR values(Consumer<PairsConstructor<T>> consumer) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public VR values(BiConsumer<C, PairsConstructor<T>> consumer) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public PairConsumer<T> accept(FieldMeta<T> field, Expression value) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public PairConsumer<T> accept(FieldMeta<T> field, Supplier<?> supplier) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public PairConsumer<T> accept(FieldMeta<T> field, Function<String, ?> function, String keyName) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Object value) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Supplier<?> supplier) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public PairConsumer<T> accept(FieldMeta<T> field, BiFunction<? super FieldMeta<T>, Object, ? extends Expression> operator, Function<String, ?> function, String keyName) {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public PairConsumer<T> row() {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         abstract VR valueClauseEnd(List<Map<FieldMeta<?>, _Expression>> rowList);
@@ -1594,7 +1606,6 @@ abstract class InsertSupport {
             this.migration = options.isMigration();
             this.preferLiteral = options.isPreferLiteral();
         }
-
 
 
         @Override
@@ -2186,6 +2197,56 @@ abstract class InsertSupport {
 
 
     }//QueryInsertStatement
+
+    static abstract class ReturningInsertStatement<I extends DqlStatement.DqlInsert>
+            implements _Insert
+            , DqlStatement._DqlInsertSpec<I>
+            , DqlStatement.DqlInsert
+            , Statement.StatementMockSpec {
+
+
+        @Override
+        public I asReturningInsert() {
+            return null;
+        }
+
+        @Override
+        public final TableMeta<?> table() {
+            return null;
+        }
+
+        @Override
+        public final void clear() {
+
+        }
+
+        @Override
+        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
+            final DialectParser parser;
+            parser = _MockDialects.from(dialect);
+            return parser.printStmt(this.mockStmt(parser, visible), none);
+        }
+
+        @Override
+        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
+            return this.mockStmt(_MockDialects.from(dialect), visible);
+        }
+
+        private Stmt mockStmt(final DialectParser parser, final Visible visible) {
+            final Stmt stmt;
+            if (this instanceof ReturningInsert) {
+                stmt = parser.insert((Insert) this, visible);
+            } else if (this instanceof ReplaceInsert || this instanceof MergeInsert) {
+                stmt = parser.dialectStmt((DialectStatement) this, visible);
+            } else {
+                //non-primary insert
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return stmt;
+        }
+
+
+    }//ReturningInsertStatement
 
 
     static void checkField(final CriteriaContext context, final TableMeta<?> table
