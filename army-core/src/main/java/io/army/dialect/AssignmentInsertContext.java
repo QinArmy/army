@@ -90,7 +90,7 @@ final class AssignmentInsertContext extends StatementContext
 
         this.migration = nonChildStmt.isMigration();
         this.preferLiteral = nonChildStmt.isPreferLiteral();
-        this.duplicateKeyClause = nonChildStmt instanceof _Insert._DuplicateKeyClause;
+        this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
         this.pairList = nonChildStmt.pairList();
 
         final Map<FieldMeta<?>, _Expression> pairMap;
@@ -140,7 +140,7 @@ final class AssignmentInsertContext extends StatementContext
         this.insertTable = stmt.table();
         this.migration = stmt.isMigration();
         this.preferLiteral = stmt.isPreferLiteral();
-        this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
+        this.duplicateKeyClause = stmt instanceof _Insert._SupportConflictClauseSpec;
 
         assert this.insertTable instanceof ChildTableMeta
                 && this.migration == parentContext.migration

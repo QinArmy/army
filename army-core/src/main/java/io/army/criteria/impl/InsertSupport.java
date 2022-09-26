@@ -1914,8 +1914,11 @@ abstract class InsertSupport {
 
 
     static abstract class InsertStatement<I extends DmlStatement.DmlInsert>
-            implements _Insert, Statement.StatementMockSpec, DmlStatement._DmlInsertSpec<I>
-            , DmlStatement.DmlInsert {
+            implements _Insert
+            , Statement.StatementMockSpec
+            , DmlStatement._DmlInsertSpec<I>
+            , DmlStatement.DmlInsert
+            , CriteriaContextSpec {
 
 
         final CriteriaContext context;
@@ -1929,6 +1932,10 @@ abstract class InsertSupport {
             this.table = clause.table();
         }
 
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
+        }
 
         @Override
         public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
@@ -1953,26 +1960,7 @@ abstract class InsertSupport {
         public final I asInsert() {
             _Assert.nonPrepared(this.prepared);
 
-            if (this instanceof QuerySyntaxInsertStatement) {
-                ((QuerySyntaxInsertStatement<I>) this).validateQueryInsertStatement();
-            } else if (this instanceof _Insert._ChildValuesInsert) {
-                final _Insert._ChildValuesInsert child = (_Insert._ChildValuesInsert) this;
-                final _Insert._ValuesInsert parent = child.parentStmt();
-                if (child.rowPairList().size() != parent.rowPairList().size()) {
-                    String m = String.format("%s rowList size[%s] and %s rowList size[%s] not match"
-                            , child.table(), child.rowPairList().size()
-                            , parent.table(), parent.rowPairList().size());
-                    throw CriteriaContextStack.criteriaError(this.context, m);
-                }
-            } else if (this instanceof _Insert._ChildInsert) {
-                final _Insert parentStmt = ((_ChildInsert) this).parentStmt();
-                if (parentStmt instanceof _Insert._DuplicateKeyClause
-                        && parentStmt.table().id().generatorType() == GeneratorType.POST
-                        && !(parentStmt instanceof _Insert._SupportReturningClause)) {
-                    throw CriteriaContextStack.criteriaError(this.context
-                            , _Exceptions::duplicateKeyAndPostIdInsert, (ChildTableMeta<?>) this.table);
-                }
-            }
+            insertStatementGuard(this);
 
             //finally clear context
             if (this instanceof SubStatement) {
@@ -2198,26 +2186,55 @@ abstract class InsertSupport {
 
     }//QueryInsertStatement
 
-    static abstract class ReturningInsertStatement<I extends DqlStatement.DqlInsert>
+    static abstract class ReturningInsertStatement<Q extends DqlStatement.DqlInsert>
             implements _Insert
-            , DqlStatement._DqlInsertSpec<I>
+            , DqlStatement._DqlInsertSpec<Q>
             , DqlStatement.DqlInsert
-            , Statement.StatementMockSpec {
+            , Statement.StatementMockSpec
+            , CriteriaContextSpec {
 
+        private final CriteriaContext context;
+
+        final TableMeta<?> insertTable;
+
+        private Boolean prepared;
+
+        private ReturningInsertStatement(CriteriaContext context, TableMeta<?> insertTable) {
+            this.context = context;
+            this.insertTable = insertTable;
+        }
 
         @Override
-        public I asReturningInsert() {
-            return null;
+        public final CriteriaContext getContext() {
+            return this.context;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final Q asReturningInsert() {
+            _Assert.nonPrepared(this.prepared);
+
+            insertStatementGuard(this);
+
+            //finally clear context
+            if (this instanceof SubStatement) {
+                CriteriaContextStack.pop(this.context);
+            } else {
+                CriteriaContextStack.clearContextStack(this.context);
+            }
+            this.prepared = Boolean.TRUE;
+            return (Q) this;
         }
 
         @Override
         public final TableMeta<?> table() {
-            return null;
+            return this.insertTable;
         }
 
         @Override
         public final void clear() {
-
+            _Assert.prepared(this.prepared);
+            this.prepared = Boolean.FALSE;
         }
 
         @Override
@@ -2235,12 +2252,10 @@ abstract class InsertSupport {
         private Stmt mockStmt(final DialectParser parser, final Visible visible) {
             final Stmt stmt;
             if (this instanceof ReturningInsert) {
-                stmt = parser.insert((Insert) this, visible);
-            } else if (this instanceof ReplaceInsert || this instanceof MergeInsert) {
                 stmt = parser.dialectStmt((DialectStatement) this, visible);
             } else {
                 //non-primary insert
-                throw CriteriaContextStack.castCriteriaApi(this.context);
+                throw _Exceptions.castCriteriaApi();
             }
             return stmt;
         }
@@ -2338,6 +2353,83 @@ abstract class InsertSupport {
             }
         }
 
+    }
+
+
+    /**
+     * <p>
+     * Check insert statement for safety.
+     * </p>
+     *
+     * @see ReturningInsertStatement#asReturningInsert()
+     * @see InsertStatement#asInsert()
+     */
+    private static void insertStatementGuard(final _Insert statement) {
+        if (statement instanceof _Insert._QueryInsert) {
+            validateQueryInsert((_Insert._QueryInsert) statement);
+        } else if (!(statement instanceof _Insert._ChildInsert)) {
+            if (statement instanceof _Insert._SupportWithClauseInsert) {
+                validateSupportWithClauseInsert((_Insert._SupportWithClauseInsert) statement);
+            }
+        } else if (isForbidChildSyntax((_Insert._ChildInsert) statement)) {
+            final ParentTableMeta<?> parentTable;
+            parentTable = ((ChildTableMeta<?>) statement.table()).parentMeta();
+            String m = String.format("%s id %s is %s ,so you couldn't use duplicate key clause(on conflict)"
+                    , parentTable, GeneratorType.class.getName()
+                    , parentTable.id().generatorType());
+            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+        } else if (statement instanceof _Insert._ChildDomainInsert) {
+            validateChildDomainInsert((_Insert._ChildDomainInsert) statement);
+        } else if (statement instanceof _Insert._ChildValuesInsert) {
+            validateChildValueInsert((_Insert._ChildValuesInsert) statement);
+        } else if (!(statement instanceof _Insert._ChildAssignmentInsert)) {
+            //no bug,never here
+            throw new IllegalStateException();
+        }
+
+    }
+
+    /**
+     * @see #insertStatementGuard(_Insert)
+     */
+    private static void validateSupportWithClauseInsert(final _Insert._SupportWithClauseInsert statement) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @return true : representing insert {@link ChildTableMeta} and syntax error
+     * , statement executor couldn't get the auto increment primary key of {@link ParentTableMeta}
+     * @see #insertStatementGuard(_Insert)
+     */
+    private static boolean isForbidChildSyntax(final _Insert._ChildInsert child) {
+        final _Insert parentStmt;
+        parentStmt = child.parentStmt();
+        return parentStmt instanceof _Insert._SupportConflictClauseSpec
+                && !(parentStmt instanceof _Insert._SupportReturningClauseSpec)
+                && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
+                && parentStmt.table().id().generatorType() == GeneratorType.POST;
+    }
+
+    /**
+     * @see #insertStatementGuard(_Insert)
+     */
+    private static void validateQueryInsert(final _Insert._QueryInsert insert) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @see #insertStatementGuard(_Insert)
+     */
+    private static void validateChildDomainInsert(final _Insert._ChildDomainInsert childStmt) {
+
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @see #insertStatementGuard(_Insert)
+     */
+    private static void validateChildValueInsert(final _Insert._ChildValuesInsert child) {
+        throw new UnsupportedOperationException();
     }
 
 

@@ -19,7 +19,7 @@ public interface _MySQLInsert extends _Insert {
 
 
 
-    interface _InsertWithDuplicateKey extends _Insert._DuplicateKeyClause {
+    interface _InsertWithDuplicateKey extends _SupportConflictClauseSpec {
 
         List<_Pair<FieldMeta<?>, _Expression>> duplicatePairList();
 

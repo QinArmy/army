@@ -1722,7 +1722,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
 
 
     private void checkParentStmt(_Insert parentStmt, ChildTableMeta<?> childTable) {
-        if (parentStmt instanceof _Insert._DuplicateKeyClause
+        if (parentStmt instanceof _Insert._SupportConflictClauseSpec
                 && parentStmt.table().id().generatorType() == GeneratorType.POST
                 && !this.supportInsertReturning()) {
             throw _Exceptions.duplicateKeyAndPostIdInsert(childTable);

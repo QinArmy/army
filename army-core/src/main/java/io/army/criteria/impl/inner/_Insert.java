@@ -1,6 +1,8 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.Cte;
 import io.army.criteria.NullHandleMode;
+import io.army.criteria.SelectItem;
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl._Pair;
 import io.army.lang.Nullable;
@@ -15,12 +17,33 @@ public interface _Insert extends _Statement {
     TableMeta<?> table();
 
 
-    interface _DuplicateKeyClause {
+    interface _SupportConflictClauseSpec extends _Insert {
+
+        boolean hasConflictAction();
 
     }
 
-    interface _SupportReturningClause {
+    /**
+     * <p>
+     * This interface representing dialect support returning clause,for example PostgreSQL.
+     * </p>
+     */
+    interface _SupportReturningClauseSpec extends _Insert {
 
+        List<? extends SelectItem> returningList();
+
+    }
+
+    /**
+     * <p>
+     * This interface representing dialect support sub insert statement in with clause,for example PostgreSQL.
+     * </p>
+     */
+    interface _SupportWithClauseInsert extends _Insert {
+
+        boolean isRecursive();
+
+        List<Cte> cteList();
     }
 
 

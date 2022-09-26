@@ -66,7 +66,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
         this.preferLiteral = nonChildStmt.isPreferLiteral();
 
-        this.duplicateKeyClause = nonChildStmt instanceof _Insert._DuplicateKeyClause;
+        this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
         this.insertTable = nonChildStmt.table();
         assert this.insertTable instanceof SingleTableMeta;
 
@@ -119,7 +119,7 @@ abstract class ValuesSyntaxInsertContext extends StatementContext implements _Va
         this.nullHandleMode = handleMode == null ? NullHandleMode.INSERT_DEFAULT : handleMode;
         this.preferLiteral = stmt.isPreferLiteral();
 
-        this.duplicateKeyClause = stmt instanceof _Insert._DuplicateKeyClause;
+        this.duplicateKeyClause = stmt instanceof _Insert._SupportConflictClauseSpec;
         this.insertTable = stmt.table();
 
         assert this.insertTable instanceof ChildTableMeta

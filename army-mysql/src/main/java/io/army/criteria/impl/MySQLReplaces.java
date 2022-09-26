@@ -294,7 +294,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
     private static abstract class MySQLValuesSyntaxReplaceStatement
             extends InsertSupport.ValueSyntaxStatement<ReplaceInsert>
-            implements MySQLReplace, ReplaceInsert._ReplaceSpec, _Insert._DuplicateKeyClause {
+            implements MySQLReplace, ReplaceInsert._ReplaceSpec, _Insert._SupportConflictClauseSpec {
 
         private MySQLValuesSyntaxReplaceStatement(_ValuesSyntaxInsert clause) {
             super(clause);
@@ -922,7 +922,7 @@ abstract class MySQLReplaces extends InsertSupport {
             implements MySQLReplace
             , ReplaceInsert._ReplaceSpec
             , _MySQLInsert._MySQLAssignmentInsert
-            , _Insert._DuplicateKeyClause {
+            , _Insert._SupportConflictClauseSpec {
 
         private final List<Hint> hintList;
 
@@ -1208,7 +1208,7 @@ abstract class MySQLReplaces extends InsertSupport {
             implements MySQLReplace
             , ReplaceInsert._ReplaceSpec
             , _MySQLInsert._MySQQueryInsert
-            , _Insert._DuplicateKeyClause {
+            , _Insert._SupportConflictClauseSpec {
 
         private final List<Hint> hintList;
 

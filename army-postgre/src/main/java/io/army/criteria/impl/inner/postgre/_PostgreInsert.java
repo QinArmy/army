@@ -1,6 +1,5 @@
 package io.army.criteria.impl.inner.postgre;
 
-import io.army.criteria.Cte;
 import io.army.criteria.ItemPair;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SelectItem;
@@ -10,11 +9,9 @@ import io.army.lang.Nullable;
 
 import java.util.List;
 
-public interface _PostgreInsert extends _Insert {
+public interface _PostgreInsert extends _Insert, _Insert._SupportReturningClauseSpec
+        , _Insert._SupportConflictClauseSpec, _Insert._SupportWithClauseInsert {
 
-    boolean isRecursive();
-
-    List<Cte> cteList();
 
     @Nullable
     String tableAlias();

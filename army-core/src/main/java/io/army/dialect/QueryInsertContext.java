@@ -66,7 +66,7 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
         this.subQuery = nonChildStmt.subQuery();
         this.selectionList = _DialectUtils.flatSelectItem(this.subQuery.selectItemList());
 
-        this.duplicateKeyClause = nonChildStmt instanceof _Insert._DuplicateKeyClause;
+        this.duplicateKeyClause = nonChildStmt instanceof _Insert._SupportConflictClauseSpec;
 
         assert this.fieldList.size() == this.selectionList.size();
 
@@ -88,7 +88,7 @@ final class QueryInsertContext extends StatementContext implements _QueryInsertC
         this.subQuery = domainStmt.subQuery();
         this.selectionList = _DialectUtils.flatSelectItem(this.subQuery.selectItemList());
 
-        this.duplicateKeyClause = domainStmt instanceof _Insert._DuplicateKeyClause;
+        this.duplicateKeyClause = domainStmt instanceof _Insert._SupportConflictClauseSpec;
 
         assert this.insertTable instanceof ChildTableMeta
                 && parentContext.insertTable == ((ChildTableMeta<?>) this.insertTable).parentMeta()
