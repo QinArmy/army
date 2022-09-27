@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.FieldSelection;
-import io.army.criteria.QualifiedField;
-import io.army.criteria.Selection;
-import io.army.criteria.TableField;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
@@ -79,7 +76,7 @@ abstract class Selections implements _Selection {
         }
 
         @Override
-        public _Expression selectionExp() {
+        public Expression selectionExp() {
             return this.expression;
         }
 
@@ -132,8 +129,8 @@ abstract class Selections implements _Selection {
         }
 
         @Override
-        public _Expression selectionExp() {
-            return (_Expression) this.field;
+        public Expression selectionExp() {
+            return this.field;
         }
 
         @Override
@@ -223,8 +220,8 @@ abstract class Selections implements _Selection {
         }
 
         @Override
-        public _Expression selectionExp() {
-            return (_Expression) this.func;
+        public Expression selectionExp() {
+            return (Expression) this.func;
         }
 
         @Override

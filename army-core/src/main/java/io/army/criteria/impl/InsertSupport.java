@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Expression;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.impl.inner._Query;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._DialectUtils;
@@ -14,6 +11,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.stmt.Stmt;
+import io.army.struct.CodeEnum;
 import io.army.util._Assert;
 import io.army.util._ClassUtils;
 import io.army.util._CollectionUtils;
@@ -2366,11 +2364,11 @@ abstract class InsertSupport {
      * @see InsertStatement#asInsert()
      */
     private static void insertStatementGuard(final _Insert statement) {
-        if (statement instanceof _Insert._QueryInsert) {
-            validateQueryInsert((_Insert._QueryInsert) statement);
-        } else if (!(statement instanceof _Insert._ChildInsert)) {
+        if (!(statement instanceof _Insert._ChildInsert)) {
             if (statement instanceof _Insert._SupportWithClauseInsert) {
                 validateSupportWithClauseInsert((_Insert._SupportWithClauseInsert) statement);
+            } else if (statement instanceof _Insert._QueryInsert) {
+                validateQueryInsert((_Insert._QueryInsert) statement);
             }
         } else if (isForbidChildSyntax((_Insert._ChildInsert) statement)) {
             final ParentTableMeta<?> parentTable;
@@ -2379,6 +2377,8 @@ abstract class InsertSupport {
                     , parentTable, GeneratorType.class.getName()
                     , parentTable.id().generatorType());
             throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+        } else if (statement instanceof _Insert._QueryInsert) {
+            validateQueryInsert((_Insert._QueryInsert) statement);
         } else if (statement instanceof _Insert._ChildDomainInsert) {
             validateChildDomainInsert((_Insert._ChildDomainInsert) statement);
         } else if (statement instanceof _Insert._ChildValuesInsert) {
@@ -2394,6 +2394,9 @@ abstract class InsertSupport {
      * @see #insertStatementGuard(_Insert)
      */
     private static void validateSupportWithClauseInsert(final _Insert._SupportWithClauseInsert statement) {
+        final TableMeta<?> insertTable;
+        insertTable = statement.table();
+
         throw new UnsupportedOperationException();
     }
 
@@ -2444,29 +2447,126 @@ abstract class InsertSupport {
         }
         //2. validate parent statement discriminator
         final List<FieldMeta<?>> fieldList;
-        fieldList = statement.fieldList();
+        final List<? extends SelectItem> selectItemList;
+        if (statement instanceof _Insert._ChildQueryInsert) {
+            final _Insert._QueryInsert parentStmt;
+            parentStmt = ((_Insert._ChildQueryInsert) statement).parentStmt();
+            fieldList = parentStmt.fieldList();
+            selectItemList = parentStmt.subQuery().selectItemList();
+        } else {
+            fieldList = statement.fieldList();
+            selectItemList = statement.subQuery().selectItemList();
+        }
+        //2.1 find discriminatorSelection
         final int fieldSize = fieldList.size();
         final FieldMeta<?> discriminatorField = insertTable.discriminator();
-        for (int i = 0; i < fieldSize; i++) {
+        assert discriminatorField != null;
+        Selection discriminatorSelection = null;
+        outerFor:
+        for (int i = 0, selectionIndex; i < fieldSize; i++) {
             if (fieldList.get(i) != discriminatorField) {
                 continue;
             }
+            selectionIndex = 0;
+            for (SelectItem selectItem : selectItemList) {
+                if (selectItem instanceof Selection) {
+                    if (selectionIndex == i) {
+                        discriminatorSelection = (Selection) selectItem;
+                        break outerFor;
+                    }
+                    selectionIndex++;
+                    continue;
+                }
+                if (!(selectItem instanceof SelectionGroup)) {
+                    //no bug,never here
+                    throw _Exceptions.unknownSelectItem(selectItem);
+                }
+                for (Selection selection : ((SelectionGroup) selectItem).selectionList()) {
+                    if (selectionIndex == i) {
+                        discriminatorSelection = selection;
+                        break outerFor;
+                    }
+                    selectionIndex++;
+                }
+
+            }
+
+            break;
+        }//outerFor
+
+        if (discriminatorSelection == null) {
+            //army syntax api forbid this
+            throw CriteriaContextStack.castCriteriaApi(((CriteriaContextSpec) statement).getContext());
         }
-        throw new UnsupportedOperationException();
+
+        //2.2 validate discriminatorExp
+        final Expression discriminatorExp;
+        discriminatorExp = ((_Selection) discriminatorSelection).selectionExp();
+
+        if (!(discriminatorExp instanceof LiteralExpression.SingleLiteral)) {
+            String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."
+                    , Selection.class.getSimpleName(), discriminatorSelection.alias()
+                    , discriminatorField);
+            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+        }
+
+        final Object value;
+        value = ((LiteralExpression.SingleLiteral) discriminatorExp).value();
+        final Class<?> discriminatorJavaType;
+        discriminatorJavaType = discriminatorField.javaType();
+
+        if (!discriminatorJavaType.isInstance(value)) {
+            String m = String.format("The appropriate %s[%s] of discriminator %s must be instance of %s."
+                    , Selection.class.getSimpleName(), discriminatorSelection.alias()
+                    , discriminatorField, discriminatorJavaType.getName());
+            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+        }
+
+        final CodeEnum discriminatorEnum;
+        discriminatorEnum = CodeEnum.resolve(discriminatorJavaType, insertTable.discriminatorValue());
+        if (discriminatorEnum == null) {
+            throw _Exceptions.discriminatorNoMapping(insertTable);
+        }
+        if (value != discriminatorEnum) {
+            String m = String.format("The appropriate %s[%s] of discriminator %s must be %s.%s ."
+                    , Selection.class.getSimpleName(), discriminatorSelection.alias()
+                    , discriminatorField, discriminatorJavaType.getName()
+                    , discriminatorEnum.name());
+            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+        }
+
     }
 
     /**
      * @see #insertStatementGuard(_Insert)
      */
     private static void validateChildDomainInsert(final _Insert._ChildDomainInsert childStmt) {
-        throw new UnsupportedOperationException();
+        final List<?> childDomainList, parentDomainList;
+        childDomainList = childStmt.domainList();
+        parentDomainList = childStmt.parentStmt().domainList();
+        if (childDomainList != parentDomainList
+                && (childDomainList.size() != 1
+                || parentDomainList.size() != 1
+                || childDomainList.get(0) != parentDomainList.get(0))) {
+            String m = String.format("%s insert domain list and parent insert statement domain list not match"
+                    , childStmt.table());
+            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) childStmt).getContext(), m);
+        }
     }
 
     /**
      * @see #insertStatementGuard(_Insert)
      */
     private static void validateChildValueInsert(final _Insert._ChildValuesInsert childStmt) {
-        throw new UnsupportedOperationException();
+        final List<?> childPairList, parentPairList;
+        childPairList = childStmt.rowPairList();
+        parentPairList = childStmt.parentStmt().rowPairList();
+        if (childPairList.size() != parentPairList.size()) {
+            String m = String.format("%s insert row number[%s] and parent insert row number[%s] not match"
+                    , childStmt.table(), childPairList.size()
+                    , parentPairList.size());
+            throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) childStmt).getContext(), m);
+        }
     }
 
 
