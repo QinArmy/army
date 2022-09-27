@@ -15,6 +15,7 @@ import io.army.dialect.DialectParser;
  *
  * @since 1.0
  */
+@Deprecated
 public interface _SubQuery extends SubQuery, _SelfDescribed {
 
 }

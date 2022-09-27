@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.impl.inner._Query;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._DialectUtils;
@@ -2413,7 +2414,44 @@ abstract class InsertSupport {
     /**
      * @see #insertStatementGuard(_Insert)
      */
-    private static void validateQueryInsert(final _Insert._QueryInsert insert) {
+    private static void validateQueryInsert(final _Insert._QueryInsert statement) {
+        SubQuery query;
+        _Insert._QueryInsert currentStatement = statement;
+        //1. validate column size and sub query selection size
+        for (int i = 0, selectionSize, columnSize; i < 2; i++) {
+
+            query = currentStatement.subQuery();
+            selectionSize = ((_Query) query).selectionSize();
+            columnSize = currentStatement.fieldList().size();
+            if (columnSize == 0) {
+                throw CriteriaContextStack.castCriteriaApi(((CriteriaContextSpec) statement).getContext());
+            }
+            if (selectionSize != columnSize) {
+                String m = String.format("%s insert statement selection size[%s] and column size[%s] not match"
+                        , currentStatement.table(), selectionSize, columnSize);
+                throw CriteriaContextStack.criteriaError(((CriteriaContextSpec) statement).getContext(), m);
+            }
+            if (!(currentStatement instanceof _Insert._ChildQueryInsert)) {
+                break;
+            }
+            currentStatement = ((_Insert._ChildQueryInsert) currentStatement).parentStmt();
+        }
+
+        final TableMeta<?> insertTable;
+        insertTable = statement.table();
+        if (insertTable instanceof SimpleTableMeta) {
+            return;
+        }
+        //2. validate parent statement discriminator
+        final List<FieldMeta<?>> fieldList;
+        fieldList = statement.fieldList();
+        final int fieldSize = fieldList.size();
+        final FieldMeta<?> discriminatorField = insertTable.discriminator();
+        for (int i = 0; i < fieldSize; i++) {
+            if (fieldList.get(i) != discriminatorField) {
+                continue;
+            }
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -2421,14 +2459,13 @@ abstract class InsertSupport {
      * @see #insertStatementGuard(_Insert)
      */
     private static void validateChildDomainInsert(final _Insert._ChildDomainInsert childStmt) {
-
         throw new UnsupportedOperationException();
     }
 
     /**
      * @see #insertStatementGuard(_Insert)
      */
-    private static void validateChildValueInsert(final _Insert._ChildValuesInsert child) {
+    private static void validateChildValueInsert(final _Insert._ChildValuesInsert childStmt) {
         throw new UnsupportedOperationException();
     }
 

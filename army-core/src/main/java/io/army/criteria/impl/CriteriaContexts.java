@@ -1217,6 +1217,11 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public Expression selectionExp() {
+            return this;
+        }
+
+        @Override
         public String fieldName() {
             return this.selection.alias();
         }
@@ -1316,6 +1321,11 @@ abstract class CriteriaContexts {
                 throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
             }
             return ((_Selection) selection).tableField();
+        }
+
+        @Override
+        public Expression selectionExp() {
+            return this;
         }
 
         @Override
@@ -1454,6 +1464,7 @@ abstract class CriteriaContexts {
             return this.field.typeMeta();
         }
 
+
         @Override
         public void appendSelection(final _SqlContext context) {
             ((_SelfDescribed) this.field).appendSql(context);
@@ -1463,6 +1474,11 @@ abstract class CriteriaContexts {
 
             context.parser()
                     .identifier(this.alias, builder);
+        }
+
+        @Override
+        public Expression selectionExp() {
+            return this.field;
         }
 
         @Override

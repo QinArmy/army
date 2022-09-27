@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._SubQuery;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.criteria.mysql.MySQL80Query;
 import io.army.criteria.mysql.MySQLDqlValues;
@@ -234,7 +233,7 @@ abstract class MySQL80UnionQuery<C, Q extends Query> extends UnionRowSet<
     }//UnionSelect
 
     private static class UnionSubQuery<C, Q extends SubQuery> extends UnionQuery<C, Q>
-            implements _SubQuery {
+            implements SubQuery {
 
         private UnionSubQuery(Q left, UnionType unionType, RowSet right, CriteriaContext context) {
             super(left, unionType, right, context);

@@ -1,5 +1,6 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.criteria.TableField;
 import io.army.dialect._SqlContext;
@@ -11,6 +12,8 @@ public interface _Selection extends Selection {
 
     @Nullable
     TableField tableField();
+
+    Expression selectionExp();
 
 
 }

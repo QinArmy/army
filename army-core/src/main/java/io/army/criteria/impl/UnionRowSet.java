@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._LateralSubQuery;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._UnionRowSet;
 import io.army.dialect.DialectParser;
@@ -9,7 +8,6 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
-import io.army.util._Exceptions;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ import java.util.List;
  */
 abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
         extends PartRowSet<C, Q, Void, Void, Void, Void, Void, Void, Void, UR, OR, LR, SP>
-        implements _UnionRowSet {
+        implements _UnionRowSet, TypeInfer {
 
     final Q left;
 
@@ -88,10 +86,11 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
         return ((DerivedTable) this.left).selection(derivedFieldName);
     }
 
+    @Override
     public final TypeMeta typeMeta() {
         final Q left = this.left;
         if (!(left instanceof ScalarExpression)) {
-            throw _Exceptions.castCriteriaApi();
+            throw CriteriaContextStack.castCriteriaApi(this.context);
         }
         return ((ScalarExpression) left).typeMeta();
     }
@@ -110,12 +109,6 @@ abstract class UnionRowSet<C, Q extends RowSet, UR, OR, LR, SP>
             query = (Q) ScalarSubQueryExpression.create((ScalarSubQuery) this);
         } else {
             query = (Q) this;
-        }
-        if (this.left instanceof _LateralSubQuery
-                && !(this instanceof _LateralSubQuery)) {
-            String m = String.format("%s don't implements %s."
-                    , this.getClass().getName(), _LateralSubQuery.class.getName());
-            throw new IllegalStateException(m);
         }
         return query;
     }

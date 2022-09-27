@@ -5,6 +5,7 @@ import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
+import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -57,6 +58,11 @@ final class QualifiedFieldImpl<T> extends OperationField
     @Override
     public TableField tableField() {
         // return this
+        return this;
+    }
+
+    @Override
+    public _Expression selectionExp() {
         return this;
     }
 

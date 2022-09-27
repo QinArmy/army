@@ -41,7 +41,6 @@ abstract class Selections implements _Selection {
         return this.alias;
     }
 
-
     private static final class ExpressionSelection extends Selections {
 
         private final ArmyExpression expression;
@@ -77,6 +76,11 @@ abstract class Selections implements _Selection {
         public TableField tableField() {
             //always null
             return null;
+        }
+
+        @Override
+        public _Expression selectionExp() {
+            return this.expression;
         }
 
         @Override
@@ -125,6 +129,11 @@ abstract class Selections implements _Selection {
                     .append(_Constant.SPACE_AS_SPACE);
 
             context.parser().identifier(this.alias, sqlBuilder);
+        }
+
+        @Override
+        public _Expression selectionExp() {
+            return (_Expression) this.field;
         }
 
         @Override
@@ -211,6 +220,11 @@ abstract class Selections implements _Selection {
                     .append(_Constant.SPACE_AS_SPACE);
 
             context.parser().identifier(this.alias, sqlBuilder);
+        }
+
+        @Override
+        public _Expression selectionExp() {
+            return (_Expression) this.func;
         }
 
         @Override

@@ -40,7 +40,7 @@
 
 9. 为什么 不支持 application 开发者重写 默认 mapping type?
     * army 的默认 mapping 已经足够满足大多数场景.
-    * army 的默认 mapping 是内置实现相对安全.
+    * army 的默认 mapping 是内置实现,相对安全.
     * 如果支持重写默认 mapping ,会给新入开发团队的的开发者造成认知混乱,对于项目管理和每一位开发者来说都是不利的.
 
 
@@ -51,9 +51,9 @@
 11. 什么是 SQL style 的神(这里的神是形神兼备的神)?
     * sql style 不是 sql 本身
     * sql style 是 sql 子句的有序组合
-    * sql style 是弱类型的,为什么敢于说弱类型,因为:
+    * sql style 是弱类型的,为什么敢于是弱类型,因为:
         * sql 是弱类型
-        * java 是强类型语言,已经提供了类型安全
+        * java 是强类型语言,已经提供了一定程度类型安全
         * 如果你使用 Map 作为 criteria 对象,那么你已经选择放弃类型安全,不是吗?
     * sql style 追求代码的整体性,即不被 if 或 for 分割
     * sql style 追求更高的可读性
@@ -83,8 +83,14 @@
     * 使用 Expression 方便扩展重载
 
 16. 为什么 Postgre insert 不支持 DEFAULT VALUES 子句?
-    * 因为 army 管理 createTime ,updateTime 等 field.
+    * 因为 army 管理 createTime ,updateTime,Generator field 等 field.
 
 17. 为什么 standard insert parent 部分要预留 CT 类型变量?
     * 因为 standard 将来要支持 with cte 子句.
+
+18. 为什么 with 子句 的 CTE 创建没有采用常规的 static 方法而采用了构造器?
+    * 常规的表态方法在实现层面总是对 CTE 有外部上下文存疑.
+    * 由于确定了 CTE 的外部上下文能更好的实现 RECURSIVE 引用.
+    
+
 

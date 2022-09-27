@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.ArmyException;
 import io.army.annotation.*;
+import io.army.criteria.Expression;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
@@ -427,6 +428,11 @@ abstract class DefaultFieldMeta<T> extends OperationField implements FieldMeta<T
                 .append(_Constant.SPACE_AS_SPACE);
 
         context.parser().identifier(this.fieldName, sqlBuilder);
+    }
+
+    @Override
+    public final Expression selectionExp() {
+        return this;
     }
 
     @Override
