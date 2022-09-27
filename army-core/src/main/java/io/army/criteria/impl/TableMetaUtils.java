@@ -118,7 +118,7 @@ abstract class TableMetaUtils {
         }
     }
 
-    static int discriminatorValue(final ParentTableMeta<?> parent, final Class<?> domainClass) {
+    static int discriminatorValue(final Class<?> domainClass) {
 
         final DiscriminatorValue discriminatorValue;
         discriminatorValue = domainClass.getAnnotation(DiscriminatorValue.class);
@@ -128,24 +128,10 @@ abstract class TableMetaUtils {
             throw new MetaException(m);
         }
 
-        Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = TableMetaUtils.discriminatorCodeMap;
-        if (discriminatorCodeMap == null) {
-            discriminatorCodeMap = createDiscriminatorCodeMap();
-        }
-        final Map<Integer, Class<?>> codeMap;
-        codeMap = discriminatorCodeMap.computeIfAbsent(parent.javaType(), k -> new HashMap<>());
-
         final int value;
         value = discriminatorValue.value();
         if (value == 0) {
             String m = String.format("Child Domain[%s] must not 0 .", domainClass.getName());
-            throw new MetaException(m);
-        }
-        final Class<?> oldDomainClass;
-        oldDomainClass = codeMap.putIfAbsent(value, domainClass);
-        if (oldDomainClass != null && oldDomainClass != domainClass) {
-            String m = String.format("Domain[%s] and Domain[%s] %s duplication."
-                    , domainClass.getName(), parent.javaType().getName(), DiscriminatorValue.class.getName());
             throw new MetaException(m);
         }
         return value;
@@ -174,6 +160,7 @@ abstract class TableMetaUtils {
         }
         return discriminator;
     }
+
 
     static MetaException notFoundDiscriminator(String fieldName, Class<?> domainClass) {
         String m = String.format("Not found discriminator[%s] in domain[%s].", fieldName, domainClass.getName());

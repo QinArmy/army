@@ -124,7 +124,12 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
 
 
         final FieldMeta<?> discriminator = domainTable.discriminator();
-        final int discriminatorValue = domainTable.discriminatorValue();
+        final int discriminatorValue;
+        if (domainTable instanceof ChildTableMeta) {
+            discriminatorValue = domainTable.discriminatorValue().code();
+        } else {
+            discriminatorValue = 0;
+        }
         final Map<Integer, Object> postIdMap = rowWrapper.postIdMap;
         final boolean manageVisible;
         final int generatedFieldSize;

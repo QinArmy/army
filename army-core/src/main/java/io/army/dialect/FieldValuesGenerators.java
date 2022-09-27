@@ -47,13 +47,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             final FieldMeta<?> discriminator;
             discriminator = domainTable.discriminator();
             assert discriminator != null;
-
-            final CodeEnum codeEnum;
-            codeEnum = CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
-            if (codeEnum == null) {
-                throw _Exceptions.discriminatorNoMapping(domainTable);
-            }
-            wrapper.set(discriminator, codeEnum);
+            wrapper.set(discriminator, domainTable.discriminatorValue());
         }
 
         if (domainTable instanceof ChildTableMeta) {
@@ -74,10 +68,8 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             final FieldMeta<?> discriminator = domainTable.discriminator();
             assert discriminator != null;
             final CodeEnum codeEnum;
-            codeEnum = CodeEnum.resolve(discriminator.javaType(), domainTable.discriminatorValue());
-            if (codeEnum == null) {
-                throw _Exceptions.discriminatorNoMapping(domainTable);
-            }
+            codeEnum = domainTable.discriminatorValue();
+            assert codeEnum != null;
             if (wrapper.readonlyWrapper().get(discriminator.fieldName()) != codeEnum) {
                 Class<?> enumClass = codeEnum.getClass();
                 if (enumClass.isAnonymousClass()) {

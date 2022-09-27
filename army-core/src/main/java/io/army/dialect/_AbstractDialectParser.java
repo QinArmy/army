@@ -1055,7 +1055,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
 
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE)
-                .append(table.discriminatorValue());
+                .append(table.discriminatorValue().code());
     }
 
 

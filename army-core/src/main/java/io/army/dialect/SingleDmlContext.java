@@ -201,7 +201,7 @@ abstract class SingleDmlContext extends StatementContext implements DmlContext, 
         dialect.safeObjectName(discriminator, sqlBuilder)
 
                 .append(_Constant.SPACE_EQUAL_SPACE)
-                .append(childTable.discriminatorValue())
+                .append(childTable.discriminatorValue().code())
                 //below sub query right paren
                 .append(_Constant.SPACE_RIGHT_PAREN);
 

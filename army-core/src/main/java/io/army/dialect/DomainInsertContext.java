@@ -99,7 +99,12 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
         final boolean manageVisible;
         final FieldMeta<?> discriminator = domainTable.discriminator();
-        final int discriminatorValue = domainTable.discriminatorValue();
+        final int discriminatorValue;
+        if (domainTable instanceof ChildTableMeta) {
+            discriminatorValue = domainTable.discriminatorValue().code();
+        } else {
+            discriminatorValue = 0;
+        }
         if (insertTable instanceof ChildTableMeta) {
             assert insertTable == domainTable;
             generator = null;

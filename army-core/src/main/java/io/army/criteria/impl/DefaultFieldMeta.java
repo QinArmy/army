@@ -177,12 +177,14 @@ abstract class DefaultFieldMeta<T> extends OperationField implements FieldMeta<T
         this.fieldName = field.getName();
         this.javaType = field.getType();
         try {
-            final Column column = FieldMetaUtils.columnMeta(table.javaType(), field);
+            final Column column;
+            column = FieldMetaUtils.columnMeta(table.javaType(), field);
 
             this.precision = column.precision();
             this.scale = column.scale();
             this.columnName = FieldMetaUtils.columnName(column, field);
-            final boolean isDiscriminator = FieldMetaUtils.isDiscriminator(this);
+            final boolean isDiscriminator;
+            isDiscriminator = FieldMetaUtils.isDiscriminator(this.table.javaType, this.fieldName);
 
             this.mappingType = FieldMetaUtils.fieldMappingType(field, isDiscriminator);
             if (this.mappingType instanceof ElementMappingType) {

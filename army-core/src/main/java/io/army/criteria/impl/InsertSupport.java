@@ -2523,7 +2523,7 @@ abstract class InsertSupport {
         }
 
         final CodeEnum discriminatorEnum;
-        discriminatorEnum = CodeEnum.resolve(discriminatorJavaType, insertTable.discriminatorValue());
+        discriminatorEnum = insertTable.discriminatorValue();
         if (discriminatorEnum == null) {
             throw _Exceptions.discriminatorNoMapping(insertTable);
         }
