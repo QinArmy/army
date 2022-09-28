@@ -471,38 +471,44 @@ public interface PostgreInsert extends DialectStatement {
     /*-------------------below sub insert syntax -------------------*/
 
 
-    interface _SubInsertIntoClause<C> {
+    interface _SubInsertIntoClause<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert> {
 
-        <T> _TableAliasSpec<C, T, SubInsert, SubReturningInsert> insertInto(SimpleTableMeta<T> table);
+        <T> _TableAliasSpec<C, T, I, Q> insertInto(SimpleTableMeta<T> table);
 
-        <T> _TableAliasSpec<C, T, SubInsert, SubReturningInsert> insertInto(ChildTableMeta<T> table);
+        <T> _TableAliasSpec<C, T, I, Q> insertInto(ChildTableMeta<T> table);
 
-        <T> _TableAliasSpec<C, T, SubInsert, SubReturningInsert> insertInto(ParentTableMeta<T> table, Enum<?> discriminator);
+        <T> _TableAliasSpec<C, T, I, Q> insertInto(ParentTableMeta<T> table, Enum<?> discriminator);
 
     }
 
-    interface _SubWithCteSpec<C>
+    interface _SubWithCteSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
             extends PostgreQuery._PostgreDynamicWithSpec<C>
-            , _SubInsertIntoClause<C> {
+            , _SubInsertIntoClause<C, I, Q> {
 
     }
 
 
-    interface _SubPreferLiteralSpec<C>
-            extends Insert._PreferLiteralClause<_SubWithCteSpec<C>>
-            , _SubWithCteSpec<C> {
+    interface _SubPreferLiteralSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Insert._PreferLiteralClause<_SubWithCteSpec<C, I, Q>>
+            , _SubWithCteSpec<C, I, Q> {
 
     }
 
-    interface _SubNullOptionSpec<C>
-            extends Insert._NullOptionClause<_SubPreferLiteralSpec<C>>
-            , _SubPreferLiteralSpec<C> {
+    interface _SubNullOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Insert._NullOptionClause<_SubPreferLiteralSpec<C, I, Q>>
+            , _SubPreferLiteralSpec<C, I, Q> {
 
     }
 
-    interface _SubOptionSpec<C>
-            extends Insert._MigrationOptionClause<_SubNullOptionSpec<C>>
-            , _SubNullOptionSpec<C> {
+    interface _SubOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Insert._MigrationOptionClause<_SubNullOptionSpec<C, I, Q>>
+            , _SubNullOptionSpec<C, I, Q> {
+
+    }
+
+    interface _DynamicCteInsert<C> extends _SubOptionSpec<C, SubInsert, SubReturningInsert>
+            , Statement._LeftParenStringQuadraOptionalSpec<C, _SubOptionSpec<C, SubInsert, SubReturningInsert>> {
+
 
     }
 

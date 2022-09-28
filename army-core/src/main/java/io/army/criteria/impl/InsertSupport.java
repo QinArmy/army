@@ -154,9 +154,7 @@ abstract class InsertSupport {
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(builder);
-            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
-            ;
-            return (WE) this;
+            return this.endWithClause(builder, true);
         }
 
         @Override
@@ -164,9 +162,7 @@ abstract class InsertSupport {
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(this.context.criteria(), builder);
-            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
-            ;
-            return (WE) this;
+            return this.endWithClause(builder, true);
         }
 
         @Override
@@ -174,9 +170,7 @@ abstract class InsertSupport {
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
-
-            return (WE) this;
+            return this.endWithClause(builder, true);
         }
 
         @Override
@@ -184,8 +178,7 @@ abstract class InsertSupport {
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(this.context.criteria(), builder);
-            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
-            return (WE) this;
+            return this.endWithClause(builder, true);
         }
 
         @Override
@@ -193,8 +186,7 @@ abstract class InsertSupport {
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(builder);
-            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
-            return (WE) this;
+            return this.endWithClause(builder, false);
         }
 
         @Override
@@ -202,8 +194,7 @@ abstract class InsertSupport {
             final B builder;
             builder = this.createCteBuilder(false);
             consumer.accept(this.context.criteria(), builder);
-            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
-            return (WE) this;
+            return this.endWithClause(builder, false);
         }
 
         @Override
@@ -211,8 +202,7 @@ abstract class InsertSupport {
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(builder);
-            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
-            return (WE) this;
+            return this.endWithClause(builder, false);
         }
 
         @Override
@@ -220,9 +210,7 @@ abstract class InsertSupport {
             final B builder;
             builder = this.createCteBuilder(true);
             consumer.accept(this.context.criteria(), builder);
-            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
-
-            return (WE) this;
+            return this.endWithClause(builder, false);
         }
 
         @Override
@@ -242,13 +230,23 @@ abstract class InsertSupport {
         /**
          * @param cteList unmodified list
          */
-        final void doWithCte(boolean recursive, List<_Cte> cteList) {
+        final void doWithCte(final boolean recursive, final List<_Cte> cteList) {
+            if (this.cteList != null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
             this.recursive = recursive;
             this.cteList = cteList;
         }
 
 
         abstract B createCteBuilder(boolean recursive);
+
+
+        private WE endWithClause(final B builder, final boolean required) {
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause(required);
+            assert this.cteList != null;
+            return (WE) this;
+        }
 
 
     }//NonQueryWithCteOption

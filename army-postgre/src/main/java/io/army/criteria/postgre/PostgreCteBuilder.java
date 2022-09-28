@@ -4,5 +4,9 @@ import io.army.criteria.DialectStatement;
 
 public interface PostgreCteBuilder extends DialectStatement._CteBuilder {
 
+    PostgreInsert._DynamicCteInsert<Void> cteInsert(String name);
+
+    <C> PostgreInsert._DynamicCteInsert<C> cteInsert(C criteria, String name);
+
 
 }

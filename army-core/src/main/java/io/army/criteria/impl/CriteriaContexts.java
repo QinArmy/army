@@ -113,7 +113,14 @@ abstract class CriteriaContexts {
 
 
     static CriteriaContext primaryInsertContext(@Nullable Object criteria) {
-        return new InsertContext(null, criteria);
+        return new InsertContext(criteria);
+    }
+
+    static CriteriaContext cteInsertContext(CriteriaContext outContext, @Nullable Object criteria) {
+        final AbstractContext subContext;
+        subContext = new SubInsertContext(outContext, criteria);
+        subContext.varMap = ((AbstractContext) outContext).varMap;
+        return subContext;
     }
 
 
@@ -895,11 +902,23 @@ abstract class CriteriaContexts {
      */
     private static final class InsertContext extends AbstractContext {
 
-        private InsertContext(@Nullable CriteriaContext outerContext, @Nullable Object criteria) {
-            super(outerContext, criteria);
+        private InsertContext(@Nullable Object criteria) {
+            super(null, criteria);
         }
 
     }// InsertContext
+
+
+    /**
+     * @see #subInsertContext(CriteriaContext)
+     */
+    private static final class SubInsertContext extends AbstractContext {
+
+        private SubInsertContext(CriteriaContext outerContext, @Nullable Object criteria) {
+            super(outerContext, criteria);
+        }
+
+    }//SubInsertContext
 
 
     /**

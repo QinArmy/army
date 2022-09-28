@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -172,6 +173,12 @@ abstract class CriteriaContextStack {
             , @Nullable T input) {
         clearStackOnError(criteriaContext);
         return function.apply(input);
+    }
+
+    static <T, U> CriteriaException criteriaError(CriteriaContext criteriaContext, BiFunction<T, U, CriteriaException> function
+            , @Nullable T input, @Nullable U input2) {
+        clearStackOnError(criteriaContext);
+        return function.apply(input, input2);
     }
 
 

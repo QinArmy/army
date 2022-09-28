@@ -629,7 +629,7 @@ abstract class CriteriaSupports {
 
     interface CteBuilderSpec {
 
-        void endWithClause();
+        void endWithClause(boolean required);
     }
 
 

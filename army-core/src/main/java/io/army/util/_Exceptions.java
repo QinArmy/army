@@ -666,6 +666,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException discriminatorError(ParentTableMeta<?> table, Enum<?> discriminator) {
+        String m = String.format("%s.%s isn't discriminator of %s"
+                , discriminator.getClass().getName(), discriminator.name(), table);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException tableItemAliasNoText(TabularItem tableItem) {
         String m = String.format("%s[%s] alias must be not empty."
                 , TabularItem.class.getName(), _ClassUtils.safeClassName(tableItem));

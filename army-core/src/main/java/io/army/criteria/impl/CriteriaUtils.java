@@ -509,6 +509,10 @@ abstract class CriteriaUtils {
         return CriteriaContextStack.criteriaError(criteriaContext, m);
     }
 
+    static CriteriaException cteListIsEmpty(CriteriaContext context) {
+        return CriteriaContextStack.criteriaError(context, "WITH clause couldn't be empty.");
+    }
+
 
     private static CriteriaException noDefaultMappingType(CriteriaContext criteriaContext, final Object value) {
         String m = String.format("Not found default %s for %s."
