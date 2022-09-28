@@ -275,7 +275,7 @@ abstract class StandardInserts extends InsertSupport {
     }//SimpleParentComplexValuesClause
 
 
-    private static abstract class StandardValuesSyntaxStatement extends InsertSupport.ValueSyntaxStatement<Insert>
+    private static abstract class StandardValuesSyntaxStatement extends ValueSyntaxInsertStatement<Insert>
             implements StandardInsert, Insert, Insert._InsertSpec {
 
         private StandardValuesSyntaxStatement(_ValuesSyntaxInsert clause) {

@@ -9,5 +9,9 @@ package io.army.criteria;
  */
 public interface ReturningInsert extends DqlStatement, DialectStatement, DqlStatement.DqlInsert {
 
+    interface _ReturningInsertSpec extends DqlStatement._DqlInsertSpec<ReturningInsert> {
+
+    }
+
 
 }

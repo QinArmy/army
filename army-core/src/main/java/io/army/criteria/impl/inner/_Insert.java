@@ -7,6 +7,7 @@ import io.army.criteria.impl._Pair;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.struct.CodeEnum;
 
 import java.util.List;
 import java.util.Map;
@@ -140,6 +141,13 @@ public interface _Insert extends _Statement {
     interface _ChildQueryInsert extends _QueryInsert, _ChildInsert {
 
         _QueryInsert parentStmt();
+    }
+
+
+    interface _SubInsert {
+
+        @Nullable
+        CodeEnum discriminatorValue();
     }
 
 

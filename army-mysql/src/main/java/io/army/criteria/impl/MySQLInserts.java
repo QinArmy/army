@@ -603,7 +603,7 @@ abstract class MySQLInserts extends InsertSupport {
     }//DomainParentPartitionClause
 
 
-    static abstract class MySQLValueSyntaxStatement extends InsertSupport.ValueSyntaxStatement<Insert>
+    static abstract class MySQLValueSyntaxStatement extends ValueSyntaxInsertStatement<Insert>
             implements MySQLInsert, _MySQLInsert, Insert._InsertSpec {
 
 

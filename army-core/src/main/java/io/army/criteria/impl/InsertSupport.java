@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
-import io.army.dialect._DialectUtils;
 import io.army.dialect._MockDialects;
 import io.army.lang.Nullable;
 import io.army.meta.*;
@@ -268,13 +267,13 @@ abstract class InsertSupport {
 
         private Map<FieldMeta<?>, Boolean> fieldMap;
 
-        ColumnsClause(CriteriaContext criteriaContext, boolean migration, @Nullable TableMeta<T> table) {
+        ColumnsClause(CriteriaContext context, boolean migration, @Nullable TableMeta<T> table) {
             if (table == null) {
                 //validate for insertInto method
-                throw CriteriaContextStack.nullPointer(criteriaContext);
+                throw CriteriaContextStack.nullPointer(context);
             }
-            this.context = criteriaContext;
-            this.criteria = criteriaContext.criteria();
+            this.context = context;
+            this.criteria = context.criteria();
             this.migration = migration;
             this.insertTable = table;
         }
@@ -980,6 +979,18 @@ abstract class InsertSupport {
          */
         final List<?> domainListForSingle() {
             assert this.insertTable instanceof SingleTableMeta;
+            final List<?> domainList = this.domainList;
+            if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            return _CollectionUtils.asUnmodifiableList(domainList);
+        }
+
+        /**
+         * @return a unmodified list,new instance each time.
+         */
+        final List<?> domainListForWithInsert() {
+            assert this instanceof _Insert._SupportWithClauseInsert;
             final List<?> domainList = this.domainList;
             if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
@@ -1911,14 +1922,12 @@ abstract class InsertSupport {
 
     }//MinWhereClause
 
-
-    static abstract class InsertStatement<I extends DmlStatement.DmlInsert>
+    private static abstract class AbstractInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
             implements _Insert
             , Statement.StatementMockSpec
-            , DmlStatement._DmlInsertSpec<I>
-            , DmlStatement.DmlInsert
-            , CriteriaContextSpec {
-
+            , Statement
+            , CriteriaContextSpec
+            , DmlStatement._DmlInsertSpec<I>, DqlStatement._DqlInsertSpec<Q> {
 
         final CriteriaContext context;
 
@@ -1926,7 +1935,7 @@ abstract class InsertSupport {
 
         private Boolean prepared;
 
-        InsertStatement(_Insert clause) {
+        AbstractInsertStatement(_Insert clause) {
             this.context = ((CriteriaContextSpec) clause).getContext();
             this.insertTable = clause.table();
         }
@@ -1953,34 +1962,6 @@ abstract class InsertSupport {
             return this.insertTable;
         }
 
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final I asInsert() {
-            _Assert.nonPrepared(this.prepared);
-
-            if (this instanceof _Insert._ChildInsert) {
-                final _Insert parentStmt;
-                parentStmt = ((_ChildInsert) this).parentStmt();
-                if (parentStmt instanceof DmlStatement.DmlInsert) {
-                    ((InsertStatement<?>) parentStmt).prepareParentStatement();
-                } else if (parentStmt instanceof DqlStatement.DqlInsert) {
-                    ((ReturningInsertStatement<?>) parentStmt).prepareParentStatement();
-                }
-            }
-            insertStatementGuard(this);
-
-
-            //finally clear context
-            if (this instanceof SubStatement) {
-                CriteriaContextStack.pop(this.context);
-            } else {
-                CriteriaContextStack.clearContextStack(this.context);
-            }
-            this.prepared = Boolean.TRUE;
-            return (I) this;
-        }
-
         @Override
         public final void prepared() {
             _Assert.prepared(this.prepared);
@@ -2001,12 +1982,51 @@ abstract class InsertSupport {
             this.prepared = Boolean.FALSE;
         }
 
+        @SuppressWarnings("unchecked")
+        @Override
+        public final I asInsert() {
+            if (!(this instanceof DmlStatement.DmlInsert)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.asInsertStatement();
+            return (I) this;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final Q asReturningInsert() {
+            if (!(this instanceof DqlStatement.DqlInsert)) {
+                throw CriteriaContextStack.castCriteriaApi(this.context);
+            }
+            this.asInsertStatement();
+            return (Q) this;
+        }
+
+        private void asInsertStatement() {
+            _Assert.nonPrepared(this.prepared);
+
+            if (this instanceof _Insert._ChildInsert) {
+                ((AbstractInsertStatement<?, ?>) ((_ChildInsert) this).parentStmt())
+                        .prepareParentStatement();
+            }
+            insertStatementGuard(this);
+
+            //finally clear context
+            if (this instanceof SubStatement) {
+                CriteriaContextStack.pop(this.context);
+            } else {
+                CriteriaContextStack.clearContextStack(this.context);
+            }
+            this.prepared = Boolean.TRUE;
+        }
 
         private Stmt mockStmt(DialectParser parser, Visible visible) {
             final Stmt stmt;
             if (this instanceof Insert) {
                 stmt = parser.insert((Insert) this, visible);
-            } else if (this instanceof ReplaceInsert || this instanceof MergeInsert) {
+            } else if (this instanceof ReplaceInsert
+                    || this instanceof MergeInsert
+                    || this instanceof ReturningInsert) {
                 stmt = parser.dialectStmt((DialectStatement) this, visible);
             } else {
                 //non-primary insert
@@ -2015,6 +2035,7 @@ abstract class InsertSupport {
             return stmt;
         }
 
+
         private void prepareParentStatement() {
             _Assert.nonPrepared(this.prepared);
             assert this.insertTable instanceof ParentTableMeta;
@@ -2022,14 +2043,15 @@ abstract class InsertSupport {
             this.prepared = Boolean.TRUE;
         }
 
+    }//AbstractInsertStatement
 
-    }//InsertStatement
 
-
-    static abstract class ValueSyntaxStatement<I extends DmlStatement.DmlInsert>
-            extends InsertStatement<I> implements _Insert._ValuesSyntaxInsert {
+    static abstract class AbstractValueSyntaxStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends AbstractInsertStatement<I, Q>
+            implements _Insert._ValuesSyntaxInsert {
 
         private final boolean migration;
+
         private final NullHandleMode nullHandleMode;
 
         private final boolean preferLiteral;
@@ -2040,8 +2062,9 @@ abstract class InsertSupport {
 
         private final Map<FieldMeta<?>, _Expression> defaultExpMap;
 
-        ValueSyntaxStatement(_ValuesSyntaxInsert clause) {
+        AbstractValueSyntaxStatement(_ValuesSyntaxInsert clause) {
             super(clause);
+
             this.migration = clause.isMigration();
             this.nullHandleMode = clause.nullHandle();
             this.preferLiteral = clause.isPreferLiteral();
@@ -2083,11 +2106,23 @@ abstract class InsertSupport {
         }
 
 
+    }//AbstractValueSyntaxStatement
+
+
+    static abstract class ValueSyntaxInsertStatement<I extends DmlStatement.DmlInsert>
+            extends AbstractValueSyntaxStatement<I, DqlStatement.DqlInsert> {
+
+        ValueSyntaxInsertStatement(_ValuesSyntaxInsert clause) {
+            super(clause);
+
+        }
+
+
     }//ValueInsertStatement
 
-    static abstract class AssignmentInsertStatement<I extends DmlStatement.DmlInsert>
-            extends InsertStatement<I>
-            implements _Insert._AssignmentInsert {
+
+    private static abstract class AbstractAssignmentInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends AbstractInsertStatement<I, Q> implements _Insert._AssignmentInsert {
 
         private final boolean migration;
 
@@ -2097,7 +2132,7 @@ abstract class InsertSupport {
 
         private final Map<FieldMeta<?>, _Expression> fieldMap;
 
-        AssignmentInsertStatement(_AssignmentInsert clause) {
+        AbstractAssignmentInsertStatement(_AssignmentInsert clause) {
             super(clause);
             this.migration = clause.isMigration();
             this.preferLiteral = clause.isPreferLiteral();
@@ -2126,14 +2161,21 @@ abstract class InsertSupport {
             return this.rowPairList;
         }
 
+    }//AbstractAssignmentInsertStatement
+
+    static abstract class AssignmentInsertStatement<I extends DmlStatement.DmlInsert>
+            extends AbstractAssignmentInsertStatement<I, DqlStatement.DqlInsert> {
+
+        AssignmentInsertStatement(_AssignmentInsert clause) {
+            super(clause);
+        }
 
     }//AssignmentInsertStatement
 
 
-    static abstract class QuerySyntaxInsertStatement<I extends DmlStatement.DmlInsert>
-            extends InsertStatement<I>
+    static abstract class AbstractQuerySyntaxInsertStatement<I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends AbstractInsertStatement<I, Q>
             implements _Insert._QueryInsert {
-
 
         private final List<FieldMeta<?>> fieldList;
 
@@ -2141,13 +2183,12 @@ abstract class InsertSupport {
 
         private final SubQuery query;
 
-        QuerySyntaxInsertStatement(_QueryInsert clause) {
+        AbstractQuerySyntaxInsertStatement(_QueryInsert clause) {
             super(clause);
             this.fieldList = clause.fieldList();
             this.fieldMap = clause.fieldMap();
             this.query = clause.subQuery();
         }
-
 
         @Override
         public final List<FieldMeta<?>> fieldList() {
@@ -2164,141 +2205,31 @@ abstract class InsertSupport {
             return this.query;
         }
 
-        /**
-         * <p>
-         * This method is invoked after {@link  CriteriaContextStack#clearContextStack(CriteriaContext)}
-         * and {@link  CriteriaContextStack#pop(CriteriaContext)}.
-         * </p>
-         */
-        private void validateQueryInsertStatement() {
-            if (this instanceof _Insert._ChildQueryInsert) {
-                final _Insert._QueryInsert parentStmt = ((_ChildQueryInsert) this).parentStmt();
-                this.doValidateStatement(parentStmt.table(), parentStmt.fieldList(), parentStmt.subQuery());
-            }
-            this.doValidateStatement(this.insertTable, this.fieldList, this.query);
-        }
+    }//AbstractQuerySyntaxInsertStatement
 
 
-        private void doValidateStatement(final TableMeta<?> insertTable, final List<FieldMeta<?>> fieldList
-                , final @Nullable SubQuery query) {
-            final int fieldSize;
-            fieldSize = fieldList.size();
-            if (fieldSize == 0) {
-                throw CriteriaContextStack.criteriaError(this.context
-                        , _Exceptions::noFieldsForQueryInsert, insertTable);
-            }
-            if (query == null) {
-                String m = String.format("SubQuery must be non-null for query insert of %s", insertTable);
-                throw CriteriaContextStack.criteriaError(this.context, m);
-            }
-            final List<Selection> selectionList;
-            selectionList = _DialectUtils.flatSelectItem(query.selectItemList());
+    static abstract class QuerySyntaxInsertStatement<I extends DmlStatement.DmlInsert>
+            extends AbstractQuerySyntaxInsertStatement<I, DqlStatement.DqlInsert> {
 
-            if (selectionList.size() != fieldSize) {
-                Supplier<CriteriaException> supplier;
-                supplier = () -> _Exceptions.rowSetSelectionAndFieldSizeNotMatch(selectionList.size(), fieldSize, insertTable);
-                throw CriteriaContextStack.criteriaError(this.context, supplier);
-            }
+
+        QuerySyntaxInsertStatement(_QueryInsert clause) {
+            super(clause);
 
         }
 
 
     }//QueryInsertStatement
 
-    static abstract class ReturningInsertStatement<Q extends DqlStatement.DqlInsert>
-            implements _Insert
-            , DqlStatement._DqlInsertSpec<Q>
-            , DqlStatement.DqlInsert
-            , Statement.StatementMockSpec
-            , CriteriaContextSpec {
 
-        private final CriteriaContext context;
+    static abstract class QuerySyntaxReturningInsertStatement<Q extends DqlStatement.DqlInsert>
+            extends AbstractQuerySyntaxInsertStatement<DmlStatement.DmlInsert, Q>
+            implements DqlStatement.DqlInsert {
 
-        final TableMeta<?> insertTable;
-
-        private Boolean prepared;
-
-        private ReturningInsertStatement(CriteriaContext context, TableMeta<?> insertTable) {
-            this.context = context;
-            this.insertTable = insertTable;
+        QuerySyntaxReturningInsertStatement(_QueryInsert clause) {
+            super(clause);
         }
 
-        @Override
-        public final CriteriaContext getContext() {
-            return this.context;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final Q asReturningInsert() {
-            _Assert.nonPrepared(this.prepared);
-
-            if (this instanceof _Insert._ChildInsert) {
-                final _Insert parentStmt;
-                parentStmt = ((_ChildInsert) this).parentStmt();
-                if (parentStmt instanceof DqlStatement.DqlInsert) {
-                    ((ReturningInsertStatement<?>) parentStmt).prepareParentStatement();
-                } else if (parentStmt instanceof DmlStatement.DmlInsert) {
-                    ((InsertStatement<?>) parentStmt).prepareParentStatement();
-                }
-            }
-            insertStatementGuard(this);
-            //finally clear context
-            if (this instanceof SubStatement) {
-                CriteriaContextStack.pop(this.context);
-            } else {
-                CriteriaContextStack.clearContextStack(this.context);
-            }
-            this.prepared = Boolean.TRUE;
-            return (Q) this;
-        }
-
-        @Override
-        public final TableMeta<?> table() {
-            return this.insertTable;
-        }
-
-        @Override
-        public final void clear() {
-            _Assert.prepared(this.prepared);
-            if (this instanceof _Insert._ChildInsert) {
-                ((_ChildInsert) this).parentStmt().clear();
-            }
-            this.prepared = Boolean.FALSE;
-        }
-
-        @Override
-        public final String mockAsString(Dialect dialect, Visible visible, boolean none) {
-            final DialectParser parser;
-            parser = _MockDialects.from(dialect);
-            return parser.printStmt(this.mockStmt(parser, visible), none);
-        }
-
-        @Override
-        public final Stmt mockAsStmt(Dialect dialect, Visible visible) {
-            return this.mockStmt(_MockDialects.from(dialect), visible);
-        }
-
-        private Stmt mockStmt(final DialectParser parser, final Visible visible) {
-            final Stmt stmt;
-            if (this instanceof ReturningInsert) {
-                stmt = parser.dialectStmt((DialectStatement) this, visible);
-            } else {
-                //non-primary insert
-                throw _Exceptions.castCriteriaApi();
-            }
-            return stmt;
-        }
-
-        private void prepareParentStatement() {
-            _Assert.nonPrepared(this.prepared);
-            assert this.insertTable instanceof ParentTableMeta;
-            assert !(this instanceof _Insert._ChildInsert);
-            this.prepared = Boolean.TRUE;
-        }
-
-
-    }//ReturningInsertStatement
+    }//QuerySyntaxReturningInsertStatement
 
 
     static void checkField(final CriteriaContext context, final TableMeta<?> table

@@ -293,7 +293,7 @@ abstract class MySQLReplaces extends InsertSupport {
 
 
     private static abstract class MySQLValuesSyntaxReplaceStatement
-            extends InsertSupport.ValueSyntaxStatement<ReplaceInsert>
+            extends ValueSyntaxInsertStatement<ReplaceInsert>
             implements MySQLReplace, ReplaceInsert._ReplaceSpec, _Insert._SupportConflictClauseSpec {
 
         private MySQLValuesSyntaxReplaceStatement(_ValuesSyntaxInsert clause) {
