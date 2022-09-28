@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
@@ -45,7 +46,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
 
     private boolean recursive;
 
-    private List<Cte> cteList;
+    private List<_Cte> cteList;
 
     private List<Hint> hintList;
 
@@ -175,7 +176,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
     }
 
     @Override
-    public final List<Cte> cteList() {
+    public final List<_Cte> cteList() {
         return this.cteList;
     }
 
@@ -249,7 +250,7 @@ abstract class MySQLMultiUpdate<C, WE, SR, UT, US, UP, JT, JS, JP, WR, WA>
 
 
     @Override
-    final void doWithCte(boolean recursive, List<Cte> cteList) {
+    final void doWithCte(boolean recursive, List<_Cte> cteList) {
         this.recursive = recursive;
         this.cteList = cteList;
     }

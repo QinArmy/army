@@ -50,6 +50,32 @@ public interface _PostgreInsert extends _Insert, _Insert._SupportReturningClause
 
     interface _PostgreChildDomainInsert extends _Insert._ChildDomainInsert, _PostgreDomainInsert {
 
+        @Override
+        _PostgreDomainInsert parentStmt();
+
+    }
+
+    interface _PostgreValueInsert extends _Insert._ValuesInsert, _PostgreInsert {
+
+
+    }
+
+    interface _PostgreChildValueInsert extends _Insert._ChildValuesInsert, _PostgreValueInsert {
+
+        @Override
+        _PostgreValueInsert parentStmt();
+
+    }
+
+
+    interface _PostgreQueryInsert extends _Insert._QueryInsert, _PostgreInsert {
+
+    }
+
+    interface _PostgreChildQueryInsert extends _Insert._ChildQueryInsert, _PostgreQueryInsert {
+
+        @Override
+        _PostgreQueryInsert parentStmt();
 
     }
 

@@ -760,10 +760,10 @@ final class MySQLDialectParser extends MySQLParser {
                 this.mysqlTableReferences(((_NestedItems) tableItem).tableBlockList(), context, true);
             } else if (!asOf80) {
                 throw _Exceptions.dontSupportTableItem(tableItem, alias, this.dialect);
-            } else if (tableItem instanceof Cte) {
-                _MySQLConsultant.assertMySQLCte((Cte) tableItem);
+            } else if (tableItem instanceof _Cte) {
+                _MySQLConsultant.assertMySQLCte((_Cte) tableItem);
                 sqlBuilder.append(_Constant.SPACE);
-                this.identifier(((Cte) tableItem).name(), sqlBuilder);
+                this.identifier(((_Cte) tableItem).name(), sqlBuilder);
                 if (_StringUtils.hasText(alias)) {
                     sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                     this.identifier(alias, sqlBuilder);
@@ -938,7 +938,7 @@ final class MySQLDialectParser extends MySQLParser {
     }
 
 
-    private void mySqlWithClauseAndSpace(final boolean recursive, final List<Cte> cteList, final _SqlContext context) {
+    private void mySqlWithClauseAndSpace(final boolean recursive, final List<_Cte> cteList, final _SqlContext context) {
         if (cteList.size() == 0) {
             return;
         }

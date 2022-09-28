@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
@@ -50,7 +51,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
     private final boolean recursive;
 
-    private final List<Cte> cteList;
+    private final List<_Cte> cteList;
 
     private final List<Hint> hintList;
 
@@ -259,7 +260,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
     }
 
     @Override
-    public List<Cte> cteList() {
+    public List<_Cte> cteList() {
         return this.cteList;
     }
 
@@ -370,7 +371,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
 
         private boolean recursive;
 
-        private List<Cte> cteList;
+        private List<_Cte> cteList;
 
         private List<Hint> hintList;
 
@@ -388,7 +389,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         }
 
         @Override
-        final void doWithCte(boolean recursive, List<Cte> cteList) {
+        final void doWithCte(boolean recursive, List<_Cte> cteList) {
             if (this.cteList != null) {
                 throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
             }

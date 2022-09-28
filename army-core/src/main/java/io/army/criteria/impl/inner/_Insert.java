@@ -1,6 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.Cte;
 import io.army.criteria.NullHandleMode;
 import io.army.criteria.SelectItem;
 import io.army.criteria.SubQuery;
@@ -43,7 +42,7 @@ public interface _Insert extends _Statement {
 
         boolean isRecursive();
 
-        List<Cte> cteList();
+        List<_Cte> cteList();
     }
 
 

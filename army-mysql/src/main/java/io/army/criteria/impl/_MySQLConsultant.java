@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._SingleDelete;
-import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.criteria.impl.inner._UnionRowSet;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.MySQLDqlValues;
 import io.army.criteria.mysql.MySQLLoad;
 import io.army.criteria.mysql.MySQLReplace;
@@ -128,7 +125,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         }
     }
 
-    public static void assertMySQLCte(final Cte cte) {
+    public static void assertMySQLCte(final _Cte cte) {
         if (!(cte instanceof SQLs.CteImpl || cte instanceof CriteriaContexts.RefCte)) {
             throw new CriteriaException("Illegal Cte");
         }

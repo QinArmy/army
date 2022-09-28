@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._PartRowSet;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
@@ -54,14 +55,14 @@ abstract class CriteriaUtils {
         return expression;
     }
 
-    static void withClause(final boolean recursive, final Cte cte, final CriteriaContext context
-            , BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+    static void withClause(final boolean recursive, final _Cte cte, final CriteriaContext context
+            , BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
 
         final CriteriaContext.CteConsumer cteConsumer;
         cteConsumer = context.onBeforeWithClause(recursive);
         cteConsumer.addCte(cte);
 
-        final List<Cte> cteList;
+        final List<_Cte> cteList;
         cteList = cteConsumer.end();
         if (cteList.size() == 0) {
             throw _Exceptions.cteListIsEmpty();
@@ -70,14 +71,14 @@ abstract class CriteriaUtils {
     }
 
 
-    static <C> void withClause(final boolean recursive, final BiConsumer<C, Consumer<Cte>> consumer
-            , final CriteriaContext context, BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+    static <C> void withClause(final boolean recursive, final BiConsumer<C, Consumer<_Cte>> consumer
+            , final CriteriaContext context, BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
 
         final CriteriaContext.CteConsumer cteConsumer;
         cteConsumer = context.onBeforeWithClause(recursive);
         consumer.accept(context.criteria(), cteConsumer::addCte);
 
-        final List<Cte> cteList;
+        final List<_Cte> cteList;
         cteList = cteConsumer.end();
         if (cteList.size() == 0) {
             throw _Exceptions.cteListIsEmpty();
@@ -85,14 +86,14 @@ abstract class CriteriaUtils {
         subClassConsumer.accept(recursive, cteList);
     }
 
-    static void withClause(final boolean recursive, final Consumer<Consumer<Cte>> consumer
-            , final CriteriaContext context, BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+    static void withClause(final boolean recursive, final Consumer<Consumer<_Cte>> consumer
+            , final CriteriaContext context, BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
 
         final CriteriaContext.CteConsumer cteConsumer;
         cteConsumer = context.onBeforeWithClause(recursive);
         consumer.accept(cteConsumer::addCte);
 
-        final List<Cte> cteList;
+        final List<_Cte> cteList;
         cteList = cteConsumer.end();
         if (cteList.size() == 0) {
             throw _Exceptions.cteListIsEmpty();
@@ -100,14 +101,14 @@ abstract class CriteriaUtils {
         subClassConsumer.accept(recursive, cteList);
     }
 
-    static <C> void ifWithClause(final boolean recursive, final BiConsumer<C, Consumer<Cte>> consumer
-            , final CriteriaContext context, BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+    static <C> void ifWithClause(final boolean recursive, final BiConsumer<C, Consumer<_Cte>> consumer
+            , final CriteriaContext context, BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
 
         final CriteriaContext.CteConsumer cteConsumer;
         cteConsumer = context.onBeforeWithClause(recursive);
         consumer.accept(context.criteria(), cteConsumer::addCte);
 
-        final List<Cte> cteList;
+        final List<_Cte> cteList;
         cteList = cteConsumer.end();
         if (cteList.size() > 0) {
             subClassConsumer.accept(recursive, cteList);
@@ -115,14 +116,14 @@ abstract class CriteriaUtils {
 
     }
 
-    static void ifWithClause(final boolean recursive, final Consumer<Consumer<Cte>> consumer
-            , final CriteriaContext context, BiConsumer<Boolean, List<Cte>> subClassConsumer) {
+    static void ifWithClause(final boolean recursive, final Consumer<Consumer<_Cte>> consumer
+            , final CriteriaContext context, BiConsumer<Boolean, List<_Cte>> subClassConsumer) {
 
         final CriteriaContext.CteConsumer cteConsumer;
         cteConsumer = context.onBeforeWithClause(recursive);
         consumer.accept(cteConsumer::addCte);
 
-        final List<Cte> cteList;
+        final List<_Cte> cteList;
         cteList = cteConsumer.end();
         if (cteList.size() > 0) {
             subClassConsumer.accept(recursive, cteList);

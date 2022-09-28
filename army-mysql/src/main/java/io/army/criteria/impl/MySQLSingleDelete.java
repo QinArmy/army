@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.impl.inner.mysql._MySQLWithClause;
 import io.army.criteria.mysql.MySQLDelete;
@@ -48,7 +49,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
     private boolean recursive;
 
-    private List<Cte> cteList;
+    private List<_Cte> cteList;
 
     private List<Hint> hintList;
 
@@ -203,7 +204,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
     }
 
     @Override
-    public final List<Cte> cteList() {
+    public final List<_Cte> cteList() {
         return this.cteList;
     }
 
@@ -258,7 +259,7 @@ abstract class MySQLSingleDelete<C, WE, DT, PR, WR, WA, OR, LR>
 
 
     @Override
-    final void doWithCte(boolean recursive, List<Cte> cteList) {
+    final void doWithCte(boolean recursive, List<_Cte> cteList) {
         this.recursive = recursive;
         this.cteList = cteList;
     }

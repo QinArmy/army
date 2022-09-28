@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.dialect._Constant;
@@ -915,11 +916,11 @@ public abstract class SQLs extends StandardSyntax {
         return SelectionGroups.derivedGroup(alias, derivedFieldNameList);
     }
 
-    public static Cte cte(String name, SubStatement subStatement) {
+    public static _Cte cte(String name, SubStatement subStatement) {
         return new CteImpl(name, subStatement);
     }
 
-    public static Cte cte(String name, List<String> aliasLst, SubStatement subStatement) {
+    public static _Cte cte(String name, List<String> aliasLst, SubStatement subStatement) {
         return new CteImpl(name, aliasLst, subStatement);
     }
 
@@ -1324,7 +1325,7 @@ public abstract class SQLs extends StandardSyntax {
     }//BetweenPair
 
 
-    static final class CteImpl implements Cte {
+    static final class CteImpl implements _Cte {
 
         final String name;
 

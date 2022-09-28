@@ -612,8 +612,8 @@ public abstract class _AbstractDialectParser implements ArmyParser {
     }
 
 
-    protected final void withSubQueryAndSpace(final boolean recursive, final List<Cte> cteList
-            , final _SqlContext context, final Consumer<Cte> assetConsumer) {
+    protected final void withSubQueryAndSpace(final boolean recursive, final List<_Cte> cteList
+            , final _SqlContext context, final Consumer<_Cte> assetConsumer) {
         final int cteSize = cteList.size();
         if (cteSize == 0) {
             return;
@@ -626,7 +626,7 @@ public abstract class _AbstractDialectParser implements ArmyParser {
         if (recursive) {
             sqlBuilder.append(_Constant.SPACE_RECURSIVE);
         }
-        Cte cte;
+        _Cte cte;
         List<String> columnAliasList;
         SubQuery subQuery;
         for (int i = 0; i < cteSize; i++) {

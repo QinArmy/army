@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.impl.inner.mysql._MySQL80Query;
@@ -93,7 +94,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
 
     private boolean recursive;
 
-    private List<Cte> cteList;
+    private List<_Cte> cteList;
 
     private Boolean groupByWithRollup;
 
@@ -400,7 +401,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    final void doWithCte(boolean recursive, List<Cte> cteList) {
+    final void doWithCte(boolean recursive, List<_Cte> cteList) {
         if (cteList.size() == 0) {
             throw _Exceptions.cteListIsEmpty();
         }
@@ -418,7 +419,7 @@ abstract class MySQL80SimpleQuery<C, Q extends Query> extends MySQLSimpleQuery<
     }
 
     @Override
-    public final List<Cte> cteList() {
+    public final List<_Cte> cteList() {
         this.prepared();
         return this.cteList;
     }

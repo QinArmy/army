@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Cte;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.DmlStatement;
 import io.army.criteria.SubStatement;
+import io.army.criteria.impl.inner._Cte;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -36,25 +36,25 @@ abstract class WithCteSingleDelete<C, SS extends SubStatement, WE, WR, WA, D ext
     }
 
     @Override
-    public final WE with(Consumer<Consumer<Cte>> consumer) {
+    public final WE with(Consumer<Consumer<_Cte>> consumer) {
         CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE with(BiConsumer<C, Consumer<Cte>> consumer) {
+    public final WE with(BiConsumer<C, Consumer<_Cte>> consumer) {
         CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE ifWith(Consumer<Consumer<Cte>> consumer) {
+    public final WE ifWith(Consumer<Consumer<_Cte>> consumer) {
         CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE ifWith(BiConsumer<C, Consumer<Cte>> consumer) {
+    public final WE ifWith(BiConsumer<C, Consumer<_Cte>> consumer) {
         CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
@@ -73,25 +73,25 @@ abstract class WithCteSingleDelete<C, SS extends SubStatement, WE, WR, WA, D ext
     }
 
     @Override
-    public final WE withRecursive(Consumer<Consumer<Cte>> consumer) {
+    public final WE withRecursive(Consumer<Consumer<_Cte>> consumer) {
         CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE withRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
+    public final WE withRecursive(BiConsumer<C, Consumer<_Cte>> consumer) {
         CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE ifWithRecursive(Consumer<Consumer<Cte>> consumer) {
+    public final WE ifWithRecursive(Consumer<Consumer<_Cte>> consumer) {
         CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
 
     @Override
-    public final WE ifWithRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
+    public final WE ifWithRecursive(BiConsumer<C, Consumer<_Cte>> consumer) {
         CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
         return (WE) this;
     }
@@ -99,7 +99,7 @@ abstract class WithCteSingleDelete<C, SS extends SubStatement, WE, WR, WA, D ext
     /**
      * @param cteList unmodified list
      */
-    void doWithCte(boolean recursive, List<Cte> cteList) {
+    void doWithCte(boolean recursive, List<_Cte> cteList) {
         throw _Exceptions.castCriteriaApi();
     }
 

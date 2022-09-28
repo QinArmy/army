@@ -178,7 +178,7 @@ abstract class CriteriaContexts {
     }
 
     private static CriteriaException notFoundCte(CriteriaContext context, String name) {
-        String m = String.format("Not found the %s[%s]", Cte.class.getName(), name);
+        String m = String.format("Not found the %s[%s]", _Cte.class.getName(), name);
         return CriteriaContextStack.criteriaError(context, m);
     }
 
@@ -446,18 +446,18 @@ abstract class CriteriaContexts {
             return Collections.emptyList();
         }
 
-        private void addCte(final Cte cte) {
+        private void addCte(final _Cte cte) {
             final Map<String, SQLs.CteImpl> withClauseCteMap = this.withClauseCteMap;
             if (withClauseCteMap == null || this.withClauseEnd) {
                 throw CriteriaContextStack.castCriteriaApi(this);
             }
             if (!(cte instanceof SQLs.CteImpl)) {
-                String m = String.format("Illegal implementation of %s", Cte.class.getName());
+                String m = String.format("Illegal implementation of %s", _Cte.class.getName());
                 throw CriteriaContextStack.criteriaError(this, m);
             }
             final SQLs.CteImpl cteImpl = (SQLs.CteImpl) cte;
             if (withClauseCteMap.putIfAbsent(cteImpl.name, cteImpl) != null) {
-                String m = String.format("%s %s duplication.", Cte.class.getName(), cteImpl.name);
+                String m = String.format("%s %s duplication.", _Cte.class.getName(), cteImpl.name);
                 throw CriteriaContextStack.criteriaError(this, m);
             }
             final Map<String, RefCte> refCteMap = this.refCteMap;
@@ -491,7 +491,7 @@ abstract class CriteriaContexts {
                     //here,actualCte is from outer context.
                     continue;
                 }
-                c.actualCte = (Cte) outerContext.refCte(c.name);
+                c.actualCte = (_Cte) outerContext.refCte(c.name);
             }
 
         }
@@ -511,7 +511,7 @@ abstract class CriteriaContexts {
                     if (outerContext == null) {
                         throw notFoundCte(this, refCte.name);
                     }
-                    refCte.actualCte = (Cte) outerContext.refCte(refCte.name);
+                    refCte.actualCte = (_Cte) outerContext.refCte(refCte.name);
                 }
                 refCteMap.clear();
             }
@@ -1507,11 +1507,11 @@ abstract class CriteriaContexts {
     }//DerivedAliasSelection
 
 
-    static final class RefCte implements Cte {
+    static final class RefCte implements _Cte {
 
         private final String name;
 
-        private Cte actualCte;
+        private _Cte actualCte;
 
         private RefCte(String name) {
             this.name = name;
@@ -1519,7 +1519,7 @@ abstract class CriteriaContexts {
 
         @Override
         public List<String> columnNameList() {
-            final Cte actualCte = this.actualCte;
+            final _Cte actualCte = this.actualCte;
             if (actualCte == null) {
                 throw new IllegalStateException("No actual cte");
             }
@@ -1528,7 +1528,7 @@ abstract class CriteriaContexts {
 
         @Override
         public SubStatement subStatement() {
-            final Cte actualCte = this.actualCte;
+            final _Cte actualCte = this.actualCte;
             if (actualCte == null) {
                 throw new IllegalStateException("No actual cte");
             }
@@ -1542,7 +1542,7 @@ abstract class CriteriaContexts {
 
         @Override
         public List<? extends SelectItem> selectItemList() {
-            final Cte actualCte = this.actualCte;
+            final _Cte actualCte = this.actualCte;
             if (actualCte == null) {
                 throw new IllegalStateException("No actual cte");
             }
@@ -1551,7 +1551,7 @@ abstract class CriteriaContexts {
 
         @Override
         public Selection selection(String derivedFieldName) {
-            final Cte actualCte = this.actualCte;
+            final _Cte actualCte = this.actualCte;
             if (actualCte == null) {
                 throw new IllegalStateException("No actual cte");
             }
@@ -1569,25 +1569,25 @@ abstract class CriteriaContexts {
     private static final class CteConsumerImpl implements CriteriaContext.CteConsumer {
 
 
-        private final Consumer<Cte> cteConsumer;
+        private final Consumer<_Cte> cteConsumer;
 
         private final Runnable endCallback;
 
-        private final List<Cte> cteList = new ArrayList<>();
+        private final List<_Cte> cteList = new ArrayList<>();
 
-        private CteConsumerImpl(Consumer<Cte> cteConsumer, Runnable endCallback) {
+        private CteConsumerImpl(Consumer<_Cte> cteConsumer, Runnable endCallback) {
             this.cteConsumer = cteConsumer;
             this.endCallback = endCallback;
         }
 
         @Override
-        public void addCte(Cte cte) {
+        public void addCte(_Cte cte) {
             this.cteConsumer.accept(cte);
             this.cteList.add(cte);
         }
 
         @Override
-        public List<Cte> end() {
+        public List<_Cte> end() {
             this.endCallback.run();
             return _CollectionUtils.unmodifiableList(this.cteList);
         }

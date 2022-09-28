@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._TableBlock;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -65,12 +66,12 @@ interface CriteriaContext {
 
     interface CteConsumer {
 
-        void addCte(Cte cte);
+        void addCte(_Cte cte);
 
         /**
          * @return a unmodified list.
          */
-        List<Cte> end();
+        List<_Cte> end();
 
     }
 

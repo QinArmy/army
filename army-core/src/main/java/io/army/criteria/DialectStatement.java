@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.impl.inner._Cte;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 
@@ -31,25 +32,25 @@ public interface DialectStatement extends Statement {
 
         WE with(String cteName, Function<C, ? extends SS> function);
 
-        WE with(Consumer<Consumer<Cte>> consumer);
+        WE with(Consumer<Consumer<_Cte>> consumer);
 
-        WE with(BiConsumer<C, Consumer<Cte>> consumer);
+        WE with(BiConsumer<C, Consumer<_Cte>> consumer);
 
-        WE ifWith(Consumer<Consumer<Cte>> consumer);
+        WE ifWith(Consumer<Consumer<_Cte>> consumer);
 
-        WE ifWith(BiConsumer<C, Consumer<Cte>> consumer);
+        WE ifWith(BiConsumer<C, Consumer<_Cte>> consumer);
 
         WE withRecursive(String cteName, Supplier<? extends SS> supplier);
 
         WE withRecursive(String cteName, Function<C, ? extends SS> function);
 
-        WE withRecursive(Consumer<Consumer<Cte>> consumer);
+        WE withRecursive(Consumer<Consumer<_Cte>> consumer);
 
-        WE withRecursive(BiConsumer<C, Consumer<Cte>> consumer);
+        WE withRecursive(BiConsumer<C, Consumer<_Cte>> consumer);
 
-        WE ifWithRecursive(Consumer<Consumer<Cte>> consumer);
+        WE ifWithRecursive(Consumer<Consumer<_Cte>> consumer);
 
-        WE ifWithRecursive(BiConsumer<C, Consumer<Cte>> consumer);
+        WE ifWithRecursive(BiConsumer<C, Consumer<_Cte>> consumer);
 
 
     }

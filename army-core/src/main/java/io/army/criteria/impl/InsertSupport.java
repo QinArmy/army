@@ -43,7 +43,7 @@ abstract class InsertSupport {
 
         boolean isRecursive();
 
-        List<Cte> cteList();
+        List<_Cte> cteList();
 
     }
 
@@ -144,7 +144,7 @@ abstract class InsertSupport {
 
         private boolean recursive;
 
-        private List<Cte> cteList;
+        private List<_Cte> cteList;
 
         NonQueryWithCteOption(CriteriaContext criteriaContext) {
             super(criteriaContext);
@@ -165,25 +165,25 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final WE with(Consumer<Consumer<Cte>> consumer) {
+        public final WE with(Consumer<Consumer<_Cte>> consumer) {
             CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
             return (WE) this;
         }
 
         @Override
-        public final WE with(BiConsumer<C, Consumer<Cte>> consumer) {
+        public final WE with(BiConsumer<C, Consumer<_Cte>> consumer) {
             CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
             return (WE) this;
         }
 
         @Override
-        public final WE ifWith(Consumer<Consumer<Cte>> consumer) {
+        public final WE ifWith(Consumer<Consumer<_Cte>> consumer) {
             CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
             return (WE) this;
         }
 
         @Override
-        public final WE ifWith(BiConsumer<C, Consumer<Cte>> consumer) {
+        public final WE ifWith(BiConsumer<C, Consumer<_Cte>> consumer) {
             CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
             return (WE) this;
         }
@@ -202,25 +202,25 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final WE withRecursive(Consumer<Consumer<Cte>> consumer) {
+        public final WE withRecursive(Consumer<Consumer<_Cte>> consumer) {
             CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
             return (WE) this;
         }
 
         @Override
-        public final WE withRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
+        public final WE withRecursive(BiConsumer<C, Consumer<_Cte>> consumer) {
             CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
             return (WE) this;
         }
 
         @Override
-        public final WE ifWithRecursive(Consumer<Consumer<Cte>> consumer) {
+        public final WE ifWithRecursive(Consumer<Consumer<_Cte>> consumer) {
             CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
             return (WE) this;
         }
 
         @Override
-        public final WE ifWithRecursive(BiConsumer<C, Consumer<Cte>> consumer) {
+        public final WE ifWithRecursive(BiConsumer<C, Consumer<_Cte>> consumer) {
             CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
             return (WE) this;
         }
@@ -232,8 +232,8 @@ abstract class InsertSupport {
         }
 
         @Override
-        public final List<Cte> cteList() {
-            List<Cte> cteList = this.cteList;
+        public final List<_Cte> cteList() {
+            List<_Cte> cteList = this.cteList;
             if (cteList == null) {
                 cteList = Collections.emptyList();
             }
@@ -243,7 +243,7 @@ abstract class InsertSupport {
         /**
          * @param cteList unmodified list
          */
-        final void doWithCte(boolean recursive, List<Cte> cteList) {
+        final void doWithCte(boolean recursive, List<_Cte> cteList) {
             this.recursive = recursive;
             this.cteList = cteList;
         }
@@ -1922,13 +1922,13 @@ abstract class InsertSupport {
 
         final CriteriaContext context;
 
-        final TableMeta<?> table;
+        final TableMeta<?> insertTable;
 
         private Boolean prepared;
 
         InsertStatement(_Insert clause) {
             this.context = ((CriteriaContextSpec) clause).getContext();
-            this.table = clause.table();
+            this.insertTable = clause.table();
         }
 
         @Override
@@ -1950,7 +1950,7 @@ abstract class InsertSupport {
 
         @Override
         public final TableMeta<?> table() {
-            return this.table;
+            return this.insertTable;
         }
 
 
@@ -1959,7 +1959,17 @@ abstract class InsertSupport {
         public final I asInsert() {
             _Assert.nonPrepared(this.prepared);
 
+            if (this instanceof _Insert._ChildInsert) {
+                final _Insert parentStmt;
+                parentStmt = ((_ChildInsert) this).parentStmt();
+                if (parentStmt instanceof DmlStatement.DmlInsert) {
+                    ((InsertStatement<?>) parentStmt).prepareParentStatement();
+                } else if (parentStmt instanceof DqlStatement.DqlInsert) {
+                    ((ReturningInsertStatement<?>) parentStmt).prepareParentStatement();
+                }
+            }
             insertStatementGuard(this);
+
 
             //finally clear context
             if (this instanceof SubStatement) {
@@ -1985,6 +1995,9 @@ abstract class InsertSupport {
         @Override
         public final void clear() {
             _Assert.prepared(this.prepared);
+            if (this instanceof _Insert._ChildInsert) {
+                ((_ChildInsert) this).parentStmt().clear();
+            }
             this.prepared = Boolean.FALSE;
         }
 
@@ -2000,6 +2013,13 @@ abstract class InsertSupport {
                 throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             return stmt;
+        }
+
+        private void prepareParentStatement() {
+            _Assert.nonPrepared(this.prepared);
+            assert this.insertTable instanceof ParentTableMeta;
+            assert !(this instanceof _Insert._ChildInsert);
+            this.prepared = Boolean.TRUE;
         }
 
 
@@ -2155,7 +2175,7 @@ abstract class InsertSupport {
                 final _Insert._QueryInsert parentStmt = ((_ChildQueryInsert) this).parentStmt();
                 this.doValidateStatement(parentStmt.table(), parentStmt.fieldList(), parentStmt.subQuery());
             }
-            this.doValidateStatement(this.table, this.fieldList, this.query);
+            this.doValidateStatement(this.insertTable, this.fieldList, this.query);
         }
 
 
@@ -2213,8 +2233,16 @@ abstract class InsertSupport {
         public final Q asReturningInsert() {
             _Assert.nonPrepared(this.prepared);
 
+            if (this instanceof _Insert._ChildInsert) {
+                final _Insert parentStmt;
+                parentStmt = ((_ChildInsert) this).parentStmt();
+                if (parentStmt instanceof DqlStatement.DqlInsert) {
+                    ((ReturningInsertStatement<?>) parentStmt).prepareParentStatement();
+                } else if (parentStmt instanceof DmlStatement.DmlInsert) {
+                    ((InsertStatement<?>) parentStmt).prepareParentStatement();
+                }
+            }
             insertStatementGuard(this);
-
             //finally clear context
             if (this instanceof SubStatement) {
                 CriteriaContextStack.pop(this.context);
@@ -2233,6 +2261,9 @@ abstract class InsertSupport {
         @Override
         public final void clear() {
             _Assert.prepared(this.prepared);
+            if (this instanceof _Insert._ChildInsert) {
+                ((_ChildInsert) this).parentStmt().clear();
+            }
             this.prepared = Boolean.FALSE;
         }
 
@@ -2257,6 +2288,13 @@ abstract class InsertSupport {
                 throw _Exceptions.castCriteriaApi();
             }
             return stmt;
+        }
+
+        private void prepareParentStatement() {
+            _Assert.nonPrepared(this.prepared);
+            assert this.insertTable instanceof ParentTableMeta;
+            assert !(this instanceof _Insert._ChildInsert);
+            this.prepared = Boolean.TRUE;
         }
 
 
@@ -2366,7 +2404,9 @@ abstract class InsertSupport {
     private static void insertStatementGuard(final _Insert statement) {
         if (!(statement instanceof _Insert._ChildInsert)) {
             if (statement instanceof _Insert._SupportWithClauseInsert) {
-                validateSupportWithClauseInsert((_Insert._SupportWithClauseInsert) statement);
+                if (statement instanceof PrimaryStatement) {
+                    validateSupportWithClauseInsert((_Insert._SupportWithClauseInsert) statement);
+                }
             } else if (statement instanceof _Insert._QueryInsert) {
                 validateQueryInsert((_Insert._QueryInsert) statement);
             }
@@ -2394,10 +2434,30 @@ abstract class InsertSupport {
      * @see #insertStatementGuard(_Insert)
      */
     private static void validateSupportWithClauseInsert(final _Insert._SupportWithClauseInsert statement) {
-        final TableMeta<?> insertTable;
-        insertTable = statement.table();
-
-        throw new UnsupportedOperationException();
+        assert statement instanceof PrimaryStatement;
+        //TODO 完成校验
+//
+//        final List<Cte> cteList;
+//         cteList = statement.cteList();
+//           final int cteSize ;
+//            cteSize = cteList.size();
+//           SQLs.CteImpl cte;
+//           TableMeta<?> insertTable;
+//        _Insert._SupportWithClauseInsert subInsert;
+//        for (int i = cteSize - 1; i > -1 ; i--) {
+//             cte = (SQLs.CteImpl)cteList.get(i);
+//             if(!(cte.subStatement instanceof SubReturningInsert)){
+//                  continue;
+//             }
+//            subInsert = (_Insert._SupportWithClauseInsert)cte.subStatement;
+//            insertTable = subInsert.table();
+//            if(insertTable instanceof SimpleTableMeta){
+//                continue;
+//            }
+//
+//
+//        }
+        // throw new UnsupportedOperationException();
     }
 
     /**
@@ -2524,9 +2584,7 @@ abstract class InsertSupport {
 
         final CodeEnum discriminatorEnum;
         discriminatorEnum = insertTable.discriminatorValue();
-        if (discriminatorEnum == null) {
-            throw _Exceptions.discriminatorNoMapping(insertTable);
-        }
+        assert discriminatorEnum != null;
         if (value != discriminatorEnum) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be %s.%s ."
                     , Selection.class.getSimpleName(), discriminatorSelection.alias()
