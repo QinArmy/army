@@ -148,7 +148,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link _WithCteClause2}</li>
      *          <li>{@link MySQLDelete._SingleDelete57Clause}</li>
      *     </ul>
      * </p>
@@ -161,7 +161,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _WithAndSingleDeleteSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _SingleDelete57Clause<C>>
+    interface _WithAndSingleDeleteSpec<C> extends _WithCteClause2<C, SubQuery, _SingleDelete57Clause<C>>
             , _SingleDelete57Clause<C> {
 
 
@@ -298,7 +298,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link _WithCteClause2}</li>
      *          <li>{@link MySQLDelete._BatchSingleDeleteClause}</li>
      *     </ul>
      * </p>
@@ -312,7 +312,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @since 1.0
      */
     interface _BatchWithAndSingleDeleteSpec<C>
-            extends DialectStatement._WithCteClause<C, SubQuery, _BatchSingleDeleteClause<C>>
+            extends _WithCteClause2<C, SubQuery, _BatchSingleDeleteClause<C>>
             , _BatchSingleDeleteClause<C> {
 
     }
@@ -553,7 +553,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link _WithCteClause2}</li>
      *          <li>{@link _MultiDelete57Clause}</li>
      *     </ul>
      * </p>
@@ -566,7 +566,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _WithAndMultiDeleteSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _MultiDelete57Clause<C>>
+    interface _WithAndMultiDeleteSpec<C> extends _WithCteClause2<C, SubQuery, _MultiDelete57Clause<C>>
             , _MultiDelete57Clause<C> {
 
     }
@@ -720,7 +720,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link _WithCteClause2}</li>
      *          <li>{@link _BatchMultiDeleteClause}</li>
      *     </ul>
      * </p>
@@ -734,7 +734,7 @@ public interface MySQLDelete extends Delete, DialectStatement {
      * @since 1.0
      */
     interface _BatchWithAndMultiDeleteSpec<C>
-            extends DialectStatement._WithCteClause<C, SubQuery, _BatchMultiDeleteClause<C>>
+            extends _WithCteClause2<C, SubQuery, _BatchMultiDeleteClause<C>>
             , _BatchMultiDeleteClause<C> {
 
     }

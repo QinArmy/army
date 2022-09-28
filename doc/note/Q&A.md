@@ -91,6 +91,9 @@
 18. 为什么 with 子句 的 CTE 创建没有采用常规的 static 方法而采用了构造器?
     * 常规的表态方法在实现层面总是对 CTE 有外部上下文存疑.
     * 由于确定了 CTE 的外部上下文能更好的实现 RECURSIVE 引用.
-    
+
+19. 为什么 static with clause 只能出现在 primary statement api 中?
+    * 如果 sub statement 出现 static with clause 将影响整个 sql api 代码的可读性,这违背了 army 的价值观
+
 
 

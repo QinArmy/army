@@ -33,7 +33,7 @@ public interface MySQL80Query extends MySQLQuery {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link _WithCteClause} for MySQL 8.0</li>
+     *          <li>{@link _WithCteClause2} for MySQL 8.0</li>
      *          <li>the composite {@link _Select80Clause}</li>
      *     </ul>
      * </p>
@@ -47,7 +47,7 @@ public interface MySQL80Query extends MySQLQuery {
      * @param <Q> {@link io.army.criteria.Select} or {@link io.army.criteria.SubQuery} or {@link io.army.criteria.ScalarExpression}
      * @since 1.0
      */
-    interface _WithSpec<C, Q extends Query> extends _WithCteClause<C, SubQuery, _Select80Clause<C, Q>>
+    interface _WithSpec<C, Q extends Query> extends _WithCteClause2<C, SubQuery, _Select80Clause<C, Q>>
             , _Select80Clause<C, Q> {
 
 

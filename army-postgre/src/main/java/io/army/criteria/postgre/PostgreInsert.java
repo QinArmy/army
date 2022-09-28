@@ -365,7 +365,7 @@ public interface PostgreInsert extends DialectStatement {
     }
 
     interface _ChildWithCteSpec<C, P>
-            extends DialectStatement._WithCteClause<C, SubStatement, _ChildInsertIntoClause<C, P>>
+            extends _WithCteClause2<C, SubStatement, _ChildInsertIntoClause<C, P>>
             , _ChildInsertIntoClause<C, P> {
 
     }
@@ -443,7 +443,8 @@ public interface PostgreInsert extends DialectStatement {
     }
 
     interface _PrimaryWithCteSpec<C>
-            extends DialectStatement._WithCteClause<C, SubStatement, _PrimaryInsertIntoClause<C>>
+            extends PostgreQuery._PostgreDynamicWithSpec<C>
+            , DialectStatement._StaticWithCteClause<PostgreQuery._PostgreComplexCommandSpec<C>>
             , _PrimaryInsertIntoClause<C> {
 
     }
@@ -481,7 +482,7 @@ public interface PostgreInsert extends DialectStatement {
     }
 
     interface _SubWithCteSpec<C>
-            extends DialectStatement._WithCteClause<C, SubStatement, _SubInsertIntoClause<C>>
+            extends PostgreQuery._PostgreDynamicWithSpec<C>
             , _SubInsertIntoClause<C> {
 
     }

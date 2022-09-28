@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class WithCteMultiUpdate<C, SS extends SubStatement, WE, F extends DataField, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U extends DmlStatement.DmlUpdate>
         extends MultiUpdate<C, F, SR, FT, FS, FP, FJ, JT, JS, JP, WR, WA, U>
-        implements DialectStatement._WithCteClause<C, SS, WE> {
+        implements DialectStatement._WithCteClause2<C, SS, WE> {
 
     WithCteMultiUpdate(CriteriaContext criteriaContext) {
         super(criteriaContext);

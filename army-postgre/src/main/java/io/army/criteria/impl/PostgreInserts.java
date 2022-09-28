@@ -7,7 +7,9 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner.postgre._ConflictTargetItem;
 import io.army.criteria.impl.inner.postgre._PostgreInsert;
+import io.army.criteria.postgre.PostgreCteBuilder;
 import io.army.criteria.postgre.PostgreInsert;
+import io.army.criteria.postgre.PostgreQuery;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.postgre.PostgreDialect;
@@ -656,8 +658,8 @@ abstract class PostgreInserts extends InsertSupport {
             PostgreInsert._PrimaryNullOptionSpec<C>,
             PostgreInsert._PrimaryPreferLiteralSpec<C>,
             PostgreInsert._PrimaryWithCteSpec<C>,
-            SubStatement,
-            PostgreInsert._PrimaryInsertIntoClause<C>>
+            PostgreCteBuilder,
+            PostgreQuery._PostgreComplexCommandSpec<C>>
             implements PostgreInsert._PrimaryOptionSpec<C> {
 
         private PrimaryInsertIntoClause(@Nullable C criteria) {
@@ -665,6 +667,15 @@ abstract class PostgreInserts extends InsertSupport {
             CriteriaContextStack.setContextStack(this.context);
         }
 
+        @Override
+        public PostgreQuery._PostgreComplexCommandSpec<C> with(final @Nullable String name) {
+            return null;
+        }
+
+        @Override
+        public PostgreQuery._PostgreComplexCommandSpec<C> withRecursive(final @Nullable String name) {
+            return null;
+        }
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<C, T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table) {
@@ -681,6 +692,10 @@ abstract class PostgreInserts extends InsertSupport {
             return new PrimaryComplexValuesClause<>(this, table);
         }
 
+        @Override
+        PostgreCteBuilder createCteBuilder(final boolean recursive) {
+            return PostgreSupports.cteBuilder(recursive, this.context, this::doWithCte);
+        }
 
     }//PrimaryInsertIntoClause
 

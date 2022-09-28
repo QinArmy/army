@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 abstract class WithCteClause<C, SS extends SubStatement, WE>
-        implements DialectStatement._WithCteClause<C, SS, WE> {
+        implements DialectStatement._WithCteClause2<C, SS, WE> {
 
     final CriteriaContext criteriaContext;
 

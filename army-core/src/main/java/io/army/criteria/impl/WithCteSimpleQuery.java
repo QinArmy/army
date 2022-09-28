@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 /**
  * <p>
- * This class is base class of the implementation {@link DialectStatement._WithCteClause}
+ * This class is base class of the implementation {@link DialectStatement._WithCteClause2}
  * </p>
  *
  * @since 1.0
@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 abstract class WithCteSimpleQuery<C, Q extends Query, SS extends SubStatement, WE, W extends SQLWords, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
         extends SimpleQuery<C, Q, W, SR, FT, FS, FP, FJ, JT, JS, JP, WR, AR, GR, HR, OR, LR, UR, SP>
-        implements DialectStatement._WithCteClause<C, SS, WE> {
+        implements DialectStatement._WithCteClause2<C, SS, WE> {
 
 
     WithCteSimpleQuery(CriteriaContext criteriaContext) {

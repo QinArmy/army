@@ -136,9 +136,9 @@ abstract class InsertSupport {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class NonQueryWithCteOption<C, MR, NR, PR, SS extends SubStatement, WE>
+    static abstract class NonQueryWithCteOption<C, MR, NR, PR, B extends DialectStatement._CteBuilder, WE>
             extends NonQueryInsertOptionsImpl<MR, NR, PR>
-            implements DialectStatement._WithCteClause<C, SS, WE>
+            implements DialectStatement._DynamicWithCteClause<C, B, WE>
             , WithValueSyntaxOptions {
 
         private boolean recursive;
@@ -149,81 +149,81 @@ abstract class InsertSupport {
             super(criteriaContext);
         }
 
-
         @Override
-        public final WE with(String cteName, Supplier<? extends SS> supplier) {
-            CriteriaUtils.withClause(false, SQLs.cte(cteName, supplier.get()), this.context, this::doWithCte);
+        public final WE with(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
+            ;
             return (WE) this;
         }
 
         @Override
-        public final WE with(String cteName, Function<C, ? extends SS> function) {
-            CriteriaUtils.withClause(false, SQLs.cte(cteName, function.apply(this.context.criteria()))
-                    , this.context, this::doWithCte);
+        public final WE with(BiConsumer<C, B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(this.context.criteria(), builder);
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
+            ;
             return (WE) this;
         }
 
         @Override
-        public final WE with(Consumer<Consumer<_Cte>> consumer) {
-            CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
+        public final WE withRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
+
             return (WE) this;
         }
 
         @Override
-        public final WE with(BiConsumer<C, Consumer<_Cte>> consumer) {
-            CriteriaUtils.withClause(false, consumer, this.context, this::doWithCte);
+        public final WE withRecursive(BiConsumer<C, B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(this.context.criteria(), builder);
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
             return (WE) this;
         }
 
         @Override
-        public final WE ifWith(Consumer<Consumer<_Cte>> consumer) {
-            CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
+        public final WE ifWith(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(builder);
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
             return (WE) this;
         }
 
         @Override
-        public final WE ifWith(BiConsumer<C, Consumer<_Cte>> consumer) {
-            CriteriaUtils.ifWithClause(false, consumer, this.context, this::doWithCte);
+        public final WE ifWith(BiConsumer<C, B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(false);
+            consumer.accept(this.context.criteria(), builder);
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
             return (WE) this;
         }
 
         @Override
-        public final WE withRecursive(String cteName, Supplier<? extends SS> supplier) {
-            CriteriaUtils.withClause(true, SQLs.cte(cteName, supplier.get()), this.context, this::doWithCte);
+        public final WE ifWithRecursive(Consumer<B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(builder);
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
             return (WE) this;
         }
 
         @Override
-        public final WE withRecursive(String cteName, Function<C, ? extends SS> function) {
-            CriteriaUtils.withClause(true, SQLs.cte(cteName, function.apply(this.context.criteria()))
-                    , this.context, this::doWithCte);
+        public final WE ifWithRecursive(BiConsumer<C, B> consumer) {
+            final B builder;
+            builder = this.createCteBuilder(true);
+            consumer.accept(this.context.criteria(), builder);
+            ((CriteriaSupports.CteBuilderSpec) builder).endWithClause();
+
             return (WE) this;
         }
-
-        @Override
-        public final WE withRecursive(Consumer<Consumer<_Cte>> consumer) {
-            CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
-            return (WE) this;
-        }
-
-        @Override
-        public final WE withRecursive(BiConsumer<C, Consumer<_Cte>> consumer) {
-            CriteriaUtils.withClause(true, consumer, this.context, this::doWithCte);
-            return (WE) this;
-        }
-
-        @Override
-        public final WE ifWithRecursive(Consumer<Consumer<_Cte>> consumer) {
-            CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
-            return (WE) this;
-        }
-
-        @Override
-        public final WE ifWithRecursive(BiConsumer<C, Consumer<_Cte>> consumer) {
-            CriteriaUtils.ifWithClause(true, consumer, this.context, this::doWithCte);
-            return (WE) this;
-        }
-
 
         @Override
         public final boolean isRecursive() {
@@ -246,6 +246,9 @@ abstract class InsertSupport {
             this.recursive = recursive;
             this.cteList = cteList;
         }
+
+
+        abstract B createCteBuilder(boolean recursive);
 
 
     }//NonQueryWithCteOption

@@ -12,6 +12,37 @@ import java.util.function.Supplier;
 
 public interface DialectStatement extends Statement {
 
+    interface _CteBuilder {
+
+    }
+
+    interface _DynamicWithCteClause<C, B extends _CteBuilder, WE> {
+        WE with(Consumer<B> consumer);
+
+        WE with(BiConsumer<C, B> consumer);
+
+        WE withRecursive(Consumer<B> consumer);
+
+        WE withRecursive(BiConsumer<C, B> consumer);
+
+        WE ifWith(Consumer<B> consumer);
+
+        WE ifWith(BiConsumer<C, B> consumer);
+
+        WE ifWithRecursive(Consumer<B> consumer);
+
+        WE ifWithRecursive(BiConsumer<C, B> consumer);
+
+    }
+
+    interface _StaticWithCteClause<WS> {
+
+        WS with(String name);
+
+        WS withRecursive(String name);
+
+    }
+
 
     /**
      * <p>
@@ -26,7 +57,7 @@ public interface DialectStatement extends Statement {
      * @param <C>  criteria object java type
      * @param <WE> next clause java type
      */
-    interface _WithCteClause<C, SS extends SubStatement, WE> {
+    interface _WithCteClause2<C, SS extends SubStatement, WE> {
 
         WE with(String cteName, Supplier<? extends SS> supplier);
 

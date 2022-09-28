@@ -180,7 +180,7 @@ public interface MySQLUpdate extends Update {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link DialectStatement._WithCteClause2}</li>
      *          <li>method {@link _SingleUpdate57Clause}</li>
      *     </ul>
      * </p>
@@ -194,7 +194,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _SingleWithAndUpdateSpec<C>
-            extends DialectStatement._WithCteClause<C, SubQuery, _SingleUpdate57Clause<C>>
+            extends DialectStatement._WithCteClause2<C, SubQuery, _SingleUpdate57Clause<C>>
             , _SingleUpdate57Clause<C> {
 
     }
@@ -365,7 +365,7 @@ public interface MySQLUpdate extends Update {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link DialectStatement._WithCteClause2}</li>
      *          <li>method {@link _BatchSingleUpdate57Clause}</li>
      *     </ul>
      * </p>
@@ -379,7 +379,7 @@ public interface MySQLUpdate extends Update {
      * @since 1.0
      */
     interface _BatchSingleWithAndUpdateSpec<C>
-            extends DialectStatement._WithCteClause<C, SubQuery, _BatchSingleUpdate57Clause<C>>
+            extends DialectStatement._WithCteClause2<C, SubQuery, _BatchSingleUpdate57Clause<C>>
             , _BatchSingleUpdate57Clause<C> {
 
     }
@@ -639,7 +639,7 @@ public interface MySQLUpdate extends Update {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link DialectStatement._WithCteClause2}</li>
      *          <li>{@link MySQLUpdate._MultiUpdate57Clause}</li>
      *     </ul>
      * </p>
@@ -652,7 +652,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _WithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _MultiUpdate57Clause<C>>
+    interface _WithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause2<C, SubQuery, _MultiUpdate57Clause<C>>
             , _MultiUpdate57Clause<C> {
 
     }
@@ -860,7 +860,7 @@ public interface MySQLUpdate extends Update {
      * <p>
      * This interface representing the composite of below:
      *     <ul>
-     *          <li>{@link DialectStatement._WithCteClause}</li>
+     *          <li>{@link DialectStatement._WithCteClause2}</li>
      *          <li>{@link _BatchMultiUpdateClause}</li>
      *     </ul>
      * </p>
@@ -873,7 +873,7 @@ public interface MySQLUpdate extends Update {
      * @param <C> criteria object java type
      * @since 1.0
      */
-    interface _BatchWithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause<C, SubQuery, _BatchMultiUpdateClause<C>>
+    interface _BatchWithAndMultiUpdateSpec<C> extends DialectStatement._WithCteClause2<C, SubQuery, _BatchMultiUpdateClause<C>>
             , _BatchMultiUpdateClause<C> {
 
     }

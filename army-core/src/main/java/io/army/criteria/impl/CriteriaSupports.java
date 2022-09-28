@@ -627,4 +627,10 @@ abstract class CriteriaSupports {
     }//BiDelayParamMetaWrapper
 
 
+    interface CteBuilderSpec {
+
+        void endWithClause();
+    }
+
+
 }
