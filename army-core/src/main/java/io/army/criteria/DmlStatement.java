@@ -26,7 +26,7 @@ public interface DmlStatement extends PrimaryStatement {
      *
      * @since 1.0
      */
-    interface DmlInsert extends Statement {
+    interface DmlInsert {
 
 
     }

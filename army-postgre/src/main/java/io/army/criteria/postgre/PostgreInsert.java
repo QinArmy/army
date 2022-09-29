@@ -29,7 +29,7 @@ public interface PostgreInsert extends DialectStatement {
 
     interface _ReturningClause<C, Q extends DqlStatement.DqlInsert> {
 
-        DqlStatement._DqlInsertSpec<Q> returning();
+        DqlStatement._DqlInsertSpec<Q> returningAll();
 
         _StaticReturningCommaUnaryClause<Q> returning(SelectItem selectItem);
 
@@ -206,7 +206,7 @@ public interface PostgreInsert extends DialectStatement {
             extends _ReturningClause<C, Q>, _PostgreChildSpec<CT, I> {
 
         @Override
-        _PostgreChildReturnSpec<CT, Q> returning();
+        _PostgreChildReturnSpec<CT, Q> returningAll();
 
         @Override
         _ParentReturningCommaUnaryClause<CT, Q> returning(SelectItem selectItem);
@@ -467,7 +467,7 @@ public interface PostgreInsert extends DialectStatement {
     }
 
 
-    interface _CteComplexCommandSpec<C> extends _CteInsertIntoClause<C, _CteInsert<C>, _CteReturningInsert<C>> {
+    interface _CteComplexCommandSpec<C> extends _StaticSubOptionSpec<C, _CteInsert<C>, _CteReturningInsert<C>> {
 
     }
 
@@ -535,9 +535,27 @@ public interface PostgreInsert extends DialectStatement {
 
     }
 
-    interface _DynamicCteInsert<C> extends _SubOptionSpec<C, SubInsert, SubReturningInsert>
+    interface _DynamicSubInsert<C> extends _SubOptionSpec<C, SubInsert, SubReturningInsert>
             , Statement._LeftParenStringQuadraOptionalSpec<C, _SubOptionSpec<C, SubInsert, SubReturningInsert>> {
 
+
+    }
+
+    interface _StaticSubPreferLiteralSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Insert._PreferLiteralClause<_CteInsertIntoClause<C, I, Q>>
+            , _CteInsertIntoClause<C, I, Q> {
+
+    }
+
+    interface _StaticSubNullOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Insert._NullOptionClause<_StaticSubPreferLiteralSpec<C, I, Q>>
+            , _StaticSubPreferLiteralSpec<C, I, Q> {
+
+    }
+
+    interface _StaticSubOptionSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
+            extends Insert._MigrationOptionClause<_StaticSubNullOptionSpec<C, I, Q>>
+            , _StaticSubNullOptionSpec<C, I, Q> {
 
     }
 

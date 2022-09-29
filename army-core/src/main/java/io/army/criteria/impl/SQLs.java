@@ -1325,7 +1325,7 @@ public abstract class SQLs extends StandardSyntax {
     }//BetweenPair
 
 
-    static final class CteImpl implements _Cte {
+    static class CteImpl implements _Cte {
 
         final String name;
 
@@ -1333,14 +1333,14 @@ public abstract class SQLs extends StandardSyntax {
 
         final SubStatement subStatement;
 
-        private CteImpl(String name, SubStatement subStatement) {
+        CteImpl(String name, SubStatement subStatement) {
             this.name = name;
             this.columnNameList = Collections.emptyList();
             this.subStatement = subStatement;
         }
 
 
-        private CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
+        CteImpl(String name, List<String> columnNameList, SubStatement subStatement) {
             this.name = name;
             this.columnNameList = _CollectionUtils.asUnmodifiableList(columnNameList);
             if (subStatement instanceof SubQuery) {
@@ -1359,22 +1359,22 @@ public abstract class SQLs extends StandardSyntax {
         }
 
         @Override
-        public String name() {
+        public final String name() {
             return this.name;
         }
 
         @Override
-        public List<String> columnNameList() {
+        public final List<String> columnNameList() {
             return this.columnNameList;
         }
 
         @Override
-        public SubStatement subStatement() {
+        public final SubStatement subStatement() {
             return this.subStatement;
         }
 
         @Override
-        public List<? extends SelectItem> selectItemList() {
+        public final List<? extends SelectItem> selectItemList() {
             final SubStatement subStatement = this.subStatement;
             final List<? extends SelectItem> list;
             if (subStatement instanceof DerivedTable) {

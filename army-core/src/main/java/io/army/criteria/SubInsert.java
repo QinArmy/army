@@ -7,7 +7,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface SubInsert extends DmlStatement.DmlInsert {
+public interface SubInsert extends DmlStatement.DmlInsert, SubStatement {
 
     interface _SubInsertSpec extends DmlStatement._DmlInsertSpec<SubInsert> {
 

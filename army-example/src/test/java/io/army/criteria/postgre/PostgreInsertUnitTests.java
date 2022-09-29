@@ -43,13 +43,13 @@ public class PostgreInsertUnitTests {
                 .onConflict()
                 .onConstraint("")
                 .doNothing()
-                .returning()
+                .returningAll()
 
                 .child()
 
                 .insertInto(Person_.T)
                 .values(personList)
-                .returning()
+                .returningAll()
                 .asReturningInsert();
     }
 

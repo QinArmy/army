@@ -116,8 +116,8 @@ abstract class InsertSupport {
 
         private NullHandleMode nullHandleMode;
 
-        NonQueryInsertOptionsImpl(CriteriaContext criteriaContext) {
-            super(criteriaContext);
+        NonQueryInsertOptionsImpl(CriteriaContext context) {
+            super(context);
         }
 
         @SuppressWarnings("unchecked")
@@ -712,6 +712,7 @@ abstract class InsertSupport {
     }//CommonExpClause
 
 
+    @Deprecated
     static abstract class DomainValueClause<C, P, CR, DR, VR>
             extends ColumnDefaultClause<C, P, CR, DR> implements Insert._DomainValueClause<C, P, VR>
             , _Insert._DomainInsert {
@@ -1005,7 +1006,6 @@ abstract class InsertSupport {
         final List<?> domainListForChild(final ComplexInsertValuesClause<?, ?, ?, ?, ?> parent) {
             assert this.insertTable instanceof ChildTableMeta;
             assert parent.insertTable instanceof ParentTableMeta;
-            assert parent.insertMode == InsertMode.DOMAIN;
 
             final List<?> domainList = this.domainList, parentDomainList = parent.domainList;
             if (this.insertMode != InsertMode.DOMAIN || domainList == null) {
