@@ -465,7 +465,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         RR stringConsumerEnd(final List<String> stringList) {
             final MySQLIndexHint.Command command = this.command;
             if (command == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             final MySQLIndexHint.Purpose purpose = this.purpose;
             //clear below for reuse this instance

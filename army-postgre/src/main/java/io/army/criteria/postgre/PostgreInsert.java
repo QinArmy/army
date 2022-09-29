@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 
 public interface PostgreInsert extends DialectStatement {
 
+
     interface _StaticReturningCommaUnaryClause<Q extends DqlStatement.DqlInsert>
             extends DqlStatement._DqlInsertSpec<Q> {
 
@@ -442,9 +443,47 @@ public interface PostgreInsert extends DialectStatement {
         <P> _ParentTableAliasSpec<C, P> insertInto(ParentTableMeta<P> table);
     }
 
+
+    interface _CteInsertIntoClause<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert> {
+
+        <T> _TableAliasSpec<C, T, I, Q> insertInto(TableMeta<T> table);
+
+    }
+
+    interface _CteCommaSpec<C> {
+
+        _CteAliasLeftParenSpec<C> comma(String name);
+
+        _PrimaryInsertIntoClause<C> space();
+
+    }
+
+    interface _CteInsert<C> extends DmlStatement.DmlInsert, _CteCommaSpec<C> {
+
+    }
+
+    interface _CteReturningInsert<C> extends DqlStatement.DqlInsert, _CteCommaSpec<C> {
+
+    }
+
+
+    interface _CteComplexCommandSpec<C> extends _CteInsertIntoClause<C, _CteInsert<C>, _CteReturningInsert<C>> {
+
+    }
+
+    interface _CteAsClause<C> extends Statement._StaticAsClaus<_CteComplexCommandSpec<C>> {
+
+
+    }
+
+    interface _CteAliasLeftParenSpec<C> extends Statement._LeftParenStringQuadraSpec<C, _CteAsClause<C>>
+            , _CteAsClause<C> {
+
+    }
+
     interface _PrimaryWithCteSpec<C>
-            extends PostgreQuery._PostgreDynamicWithSpec<C>
-            , DialectStatement._StaticWithCteClause<PostgreQuery._PostgreComplexCommandSpec<C>>
+            extends PostgreQuery._PostgreDynamicWithSpec<C, _PrimaryInsertIntoClause<C>>
+            , DialectStatement._StaticWithCteClause<_CteAliasLeftParenSpec<C>>
             , _PrimaryInsertIntoClause<C> {
 
     }
@@ -471,19 +510,9 @@ public interface PostgreInsert extends DialectStatement {
     /*-------------------below sub insert syntax -------------------*/
 
 
-    interface _SubInsertIntoClause<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert> {
-
-        <T> _TableAliasSpec<C, T, I, Q> insertInto(SimpleTableMeta<T> table);
-
-        <T> _TableAliasSpec<C, T, I, Q> insertInto(ChildTableMeta<T> table);
-
-        <T> _TableAliasSpec<C, T, I, Q> insertInto(ParentTableMeta<T> table, Enum<?> discriminator);
-
-    }
-
     interface _SubWithCteSpec<C, I extends DmlStatement.DmlInsert, Q extends DqlStatement.DqlInsert>
-            extends PostgreQuery._PostgreDynamicWithSpec<C>
-            , _SubInsertIntoClause<C, I, Q> {
+            extends PostgreQuery._PostgreDynamicWithSpec<C, _CteInsertIntoClause<C, I, Q>>
+            , _CteInsertIntoClause<C, I, Q> {
 
     }
 

@@ -12,7 +12,21 @@ import java.util.List;
 
 interface CriteriaContext {
 
+    @Nullable
+    CriteriaContext getOuterContext();
+
     CteConsumer onBeforeWithClause(boolean recursive);
+
+    void onStartCte(String name);
+
+    void onCteColumnAlias(String name, List<String> columnAliasList);
+
+    void onAddCte(_Cte cte);
+
+    /**
+     * @return a unmodified list
+     */
+    List<_Cte> endWithClause(boolean required);
 
     CteItem refCte(String cteName);
 

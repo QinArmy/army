@@ -428,10 +428,10 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         public final AR as(final String alias) {
             final List<String> partitionList = this.partitionList;
             if (partitionList == null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             if (!_StringUtils.hasText(alias)) {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, _Exceptions::tableAliasIsEmpty);
+                throw CriteriaContextStack.criteriaError(this.context, _Exceptions::tableAliasIsEmpty);
             }
             return this.partitionAsEnd(partitionList, alias);
         }
@@ -439,7 +439,7 @@ abstract class MySQLSingleUpdate<C, T, UT, SR, WR, WA, OR, LR>
         @Override
         final Statement._AsClause<AR> stringConsumerEnd(List<String> stringList) {
             if (this.partitionList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             this.partitionList = stringList;
             return this;

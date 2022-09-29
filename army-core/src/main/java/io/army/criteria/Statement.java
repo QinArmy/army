@@ -63,6 +63,11 @@ public interface Statement {
         AR as(String alias);
     }
 
+    interface _StaticAsClaus<AR> {
+
+        AR as();
+    }
+
 
     /**
      * <p>

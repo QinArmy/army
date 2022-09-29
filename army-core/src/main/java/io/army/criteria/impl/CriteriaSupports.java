@@ -161,7 +161,7 @@ abstract class CriteriaSupports {
             , Statement._CommaStringDualSpec<RR>
             , Statement._CommaStringQuadraSpec<RR> {
 
-        final CriteriaContext criteriaContext;
+        final CriteriaContext context;
 
         private final Function<List<String>, RR> function;
 
@@ -176,7 +176,7 @@ abstract class CriteriaSupports {
          * </p>
          */
         private ParenStringConsumerClause(CriteriaContext criteriaContext, Function<List<String>, RR> function) {
-            this.criteriaContext = criteriaContext;
+            this.context = criteriaContext;
             this.function = function;
         }
 
@@ -185,9 +185,9 @@ abstract class CriteriaSupports {
          * package constructor for sub class
          * </p>
          */
-        ParenStringConsumerClause(CriteriaContext criteriaContext) {
+        ParenStringConsumerClause(CriteriaContext context) {
             assert this.getClass() != ParenStringConsumerClause.class;
-            this.criteriaContext = criteriaContext;
+            this.context = context;
             this.function = this::stringConsumerEnd;
         }
 
@@ -225,7 +225,7 @@ abstract class CriteriaSupports {
         @Override
         public final Statement._RightParenClause<RR> leftParen(BiConsumer<C, Consumer<String>> consumer) {
             this.optionalClause = false;
-            consumer.accept(this.criteriaContext.criteria(), this::comma);
+            consumer.accept(this.context.criteria(), this::comma);
             return this;
         }
 
@@ -239,7 +239,7 @@ abstract class CriteriaSupports {
         @Override
         public final Statement._RightParenClause<RR> leftParenIf(BiConsumer<C, Consumer<String>> consumer) {
             this.optionalClause = true;
-            consumer.accept(this.criteriaContext.criteria(), this::comma);
+            consumer.accept(this.context.criteria(), this::comma);
             return this;
         }
 
@@ -250,7 +250,7 @@ abstract class CriteriaSupports {
                 stringList = new ArrayList<>();
                 this.stringList = stringList;
             } else if (!(stringList instanceof ArrayList)) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             }
             stringList.add(string);
             return this;
@@ -287,11 +287,11 @@ abstract class CriteriaSupports {
             if (stringList instanceof ArrayList) {
                 stringList = _CollectionUtils.unmodifiableList(stringList);
             } else if (stringList != null) {
-                throw CriteriaContextStack.castCriteriaApi(this.criteriaContext);
+                throw CriteriaContextStack.castCriteriaApi(this.context);
             } else if (this.optionalClause) {
                 stringList = Collections.emptyList();
             } else {
-                throw CriteriaContextStack.criteriaError(this.criteriaContext, "You don't add any string item");
+                throw CriteriaContextStack.criteriaError(this.context, "You don't add any string item");
             }
             //clear below for reuse this instance
             this.stringList = null;
